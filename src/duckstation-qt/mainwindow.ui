@@ -839,6 +839,10 @@
    </property>
   </action>
   <action name="actionChangeDiscFromFile">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-line.svg</normaloff>:/icons/monochrome/svg/file-line.svg</iconset>
+   </property>
    <property name="text">
     <string>From File...</string>
    </property>
@@ -847,6 +851,10 @@
    </property>
   </action>
   <action name="actionChangeDiscFromDevice">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
+   </property>
    <property name="text">
     <string>From Device...</string>
    </property>
@@ -855,6 +863,10 @@
    </property>
   </action>
   <action name="actionChangeDiscFromGameList">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/list-check.svg</normaloff>:/icons/monochrome/svg/list-check.svg</iconset>
+   </property>
    <property name="text">
     <string>From Game List...</string>
    </property>
@@ -863,6 +875,10 @@
    </property>
   </action>
   <action name="actionRemoveDisc">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/eject-line.svg</normaloff>:/icons/monochrome/svg/eject-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Remove Disc</string>
    </property>

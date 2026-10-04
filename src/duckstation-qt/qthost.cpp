@@ -1532,21 +1532,23 @@ void CoreThread::setSystemPaused(bool paused)
   System::PauseSystem(paused);
 }
 
-void CoreThread::changeDisc(const QString& new_disc_filename, bool reset_system, bool check_memcard_busy)
+void CoreThread::changeDisc(const QString& new_disc_filename, bool reset_system, bool check_memcard_busy,
+                            quint32 subimage_index)
 {
   if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &CoreThread::changeDisc, Qt::QueuedConnection, new_disc_filename, reset_system,
-                              check_memcard_busy);
+                              check_memcard_busy, subimage_index);
     return;
   }
 
   if (check_memcard_busy && System::IsSavingMemoryCards())
   {
-    confirmActionWithSafetyCheck(tr("change disc"), false, false, [new_disc_filename, reset_system](bool result) {
-      if (result)
-        g_core_thread->changeDisc(new_disc_filename, reset_system, false);
-    });
+    confirmActionWithSafetyCheck(tr("change disc"), false, false,
+                                 [new_disc_filename, reset_system, subimage_index](bool result) {
+                                   if (result)
+                                     g_core_thread->changeDisc(new_disc_filename, reset_system, false, subimage_index);
+                                 });
     return;
   }
 
@@ -1554,27 +1556,12 @@ void CoreThread::changeDisc(const QString& new_disc_filename, bool reset_system,
     return;
 
   if (!new_disc_filename.isEmpty())
-    System::InsertMedia(new_disc_filename.toStdString().c_str());
+    System::InsertMedia(new_disc_filename.toStdString().c_str(), subimage_index);
   else
     System::RemoveMedia();
 
   if (reset_system)
     System::ResetSystem();
-}
-
-void CoreThread::changeDiscFromPlaylist(quint32 index)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::changeDiscFromPlaylist, Qt::QueuedConnection, index);
-    return;
-  }
-
-  if (System::IsShutdown())
-    return;
-
-  if (!System::SwitchMediaSubImage(index))
-    errorReported(tr("Error"), tr("Failed to switch to subimage %1").arg(index));
 }
 
 void CoreThread::setLidState(bool manual_control, bool manual_state)

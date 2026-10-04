@@ -16,6 +16,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace Threading {
 class ThreadHandle;
@@ -55,7 +56,7 @@ struct SystemBootParameters
   std::string path;
   std::string save_state;
   std::string override_exe;
-  u32 media_playlist_index = 0;
+  u32 media_subimage_index = 0;
 
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
@@ -84,6 +85,15 @@ struct ExtendedSaveStateInfo
   std::time_t timestamp;
 
   Image screenshot;
+};
+
+struct MediaChangeEntry
+{
+  std::string title;
+  std::string path;
+  std::string icon_path;
+  u32 subimage_index;
+  bool is_current;
 };
 
 namespace System {
@@ -358,25 +368,16 @@ bool DumpVRAM(std::string path, Error* error);
 /// Dumps sound RAM to a file.
 bool DumpSPURAM(std::string path, Error* error);
 
-bool InsertMedia(const char* path);
+/// Inserts the specified disc image, switching to the specified subimage for multi-disc images (e.g. m3u).
+/// If the path is the same as the current media, only the subimage is switched.
+bool InsertMedia(const char* path, u32 subimage_index = 0);
 void RemoveMedia();
 
-/// Returns true if this is a multi-subimage image (e.g. m3u).
-bool HasMediaSubImages();
+/// Returns the list of discs that the current media can be changed to, i.e. the subimages for multi-disc images,
+/// otherwise the other discs in the game list from the same disc set. Must be called on the core thread.
+std::vector<MediaChangeEntry> GetMediaChangeList(bool localized_titles);
 
-/// Returns the number of entries in the media/disc playlist.
-u32 GetMediaSubImageCount();
-
-/// Returns the current image from the media/disc playlist.
-u32 GetMediaSubImageIndex();
-
-/// Returns the path to the specified playlist index.
-std::string GetMediaSubImageTitle(u32 index);
-
-/// Switches to the specified media/disc playlist index.
-bool SwitchMediaSubImage(u32 index);
-
-/// Switches to the previous/next disc in the disc set, if any.
+/// Switches to the previous/next subimage or disc in the disc set, if any.
 bool SwitchToPreviousDisc(bool display_osd_message);
 bool SwitchToNextDisc(bool display_osd_message);
 

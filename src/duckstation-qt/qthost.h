@@ -147,8 +147,8 @@ public:
   void shutdownSystem(bool save_state, bool check_safety);
   void resetSystem(bool check_memcard_busy);
   void setSystemPaused(bool paused);
-  void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy);
-  void changeDiscFromPlaylist(quint32 index);
+  void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy,
+                  quint32 subimage_index = 0);
   void setLidState(bool manual_control, bool manual_state);
   void loadState(const QString& path);
   void loadState(bool global, qint32 slot);

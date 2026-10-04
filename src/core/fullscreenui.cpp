@@ -3,6 +3,7 @@
 
 #include "fullscreenui.h"
 #include "achievements_private.h"
+#include "cdrom.h"
 #include "controller.h"
 #include "core.h"
 #include "fullscreenui_private.h"
@@ -1039,54 +1040,10 @@ void FullscreenUI::StartChangeDiscFromFile(bool return_to_game)
 
 void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 {
-  if (System::HasMediaSubImages())
+  // Multi-disc images don't need the game list, only disc sets do.
+  if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry();
+      entry && entry->disc_set && !(CDROM::HasMedia() && CDROM::GetMedia()->HasSubImages()))
   {
-    const u32 current_index = System::GetMediaSubImageIndex();
-    const u32 count = System::GetMediaSubImageCount();
-    ChoiceDialogOptions options;
-    options.reserve(count + 1);
-    options.emplace_back(FSUI_STR("From File..."), false);
-
-    for (u32 i = 0; i < count; i++)
-      options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
-
-    VideoThread::RunOnThread([options = std::move(options), return_to_game]() mutable {
-      Initialize();
-      OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
-                       [return_to_game](s32 index, const std::string& title, bool checked) {
-                         if (index == 0)
-                         {
-                           StartChangeDiscFromFile(return_to_game);
-                         }
-                         else if (index > 0)
-                         {
-                           ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [index](bool result) {
-                             if (result)
-                             {
-                               System::SwitchMediaSubImage(static_cast<u32>(index - 1));
-                               ClosePauseMenuImmediately();
-                             }
-                           });
-                         }
-                         else
-                         {
-                           if (return_to_game)
-                             UnpauseForMenuClose();
-                         }
-                       });
-      UpdateRunIdleState();
-      FixStateIfPaused();
-    });
-
-    return;
-  }
-
-  if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
-  {
-    // Don't hold both settings and game list lock.
-    const bool localized_titles = Core::GetBaseBoolSettingValue(
-      GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
-
     // Another load request cannot start because we have the lock held.
     auto lock = GameList::GetLock();
     if (!GameList::IsGameListLoaded())
@@ -1112,57 +1069,54 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
       }
       GameList::Refresh(lock, dirs, false, false, &progress);
     }
+  }
 
-    // This is still needed because a scan-in-progress will report loaded.
-    GameList::EnsureLoaded(lock);
-    auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, localized_titles);
-    if (matches.size() > 1)
-    {
-      ChoiceDialogOptions options;
-      options.reserve(matches.size() + 1);
-      options.emplace_back(FSUI_STR("From File..."), false);
+  // Don't hold both settings and game list lock.
+  const bool localized_titles = Core::GetBaseBoolSettingValue(
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
 
-      std::vector<std::string> paths;
-      paths.reserve(matches.size());
+  // A scan-in-progress will report loaded, the list is ensured to be loaded in here.
+  std::vector<MediaChangeEntry> entries = System::GetMediaChangeList(localized_titles);
+  if (entries.size() > 1)
+  {
+    ChoiceDialogOptions options;
+    options.reserve(entries.size() + 1);
+    options.emplace_back(FSUI_STR("From File..."), false);
+    for (MediaChangeEntry& entry : entries)
+      options.emplace_back(std::move(entry.title), entry.is_current);
 
-      const std::string& current_path = System::GetGamePath();
-      for (auto& [title, glentry] : matches)
-      {
-        options.emplace_back(std::move(title), current_path == glentry->path);
-        paths.push_back(glentry->path);
-      }
+    VideoThread::RunOnThread([options = std::move(options), entries = std::move(entries), return_to_game]() mutable {
+      Initialize();
+      OpenChoiceDialog(
+        FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
+        [entries = std::move(entries), return_to_game](s32 index, const std::string& title, bool checked) mutable {
+          if (index == 0)
+          {
+            StartChangeDiscFromFile(return_to_game);
+          }
+          else if (index > 0)
+          {
+            ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [entry = std::move(entries[index - 1])](bool result) {
+              if (result)
+              {
+                Host::RunOnCoreThread([path = entry.path, subimage_index = entry.subimage_index]() {
+                  System::InsertMedia(path.c_str(), subimage_index);
+                });
+                ClosePauseMenuImmediately();
+              }
+            });
+          }
+          else
+          {
+            if (return_to_game)
+              UnpauseForMenuClose();
+          }
+        });
+      UpdateRunIdleState();
+      FixStateIfPaused();
+    });
 
-      VideoThread::RunOnThread([options = std::move(options), paths = std::move(paths), return_to_game]() mutable {
-        Initialize();
-        OpenChoiceDialog(
-          FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
-          [paths = std::move(paths), return_to_game](s32 index, const std::string& title, bool checked) mutable {
-            if (index == 0)
-            {
-              StartChangeDiscFromFile(return_to_game);
-            }
-            else if (index > 0)
-            {
-              ConfirmWithSafetyCheck(FSUI_STR("change disc"), false, [paths = std::move(paths), index](bool result) {
-                if (result)
-                {
-                  Host::RunOnCoreThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
-                  ClosePauseMenu();
-                }
-              });
-            }
-            else
-            {
-              if (return_to_game)
-                UnpauseForMenuClose();
-            }
-          });
-        UpdateRunIdleState();
-        FixStateIfPaused();
-      });
-
-      return;
-    }
+    return;
   }
 
   VideoThread::RunOnThread([return_to_game]() { StartChangeDiscFromFile(return_to_game); });
