@@ -2117,10 +2117,14 @@ void CPU::Recompiler::Recompiler::Compile_divu_const(CompileFlags cf)
 
 void CPU::Recompiler::Recompiler::Compile_add_const(CompileFlags cf)
 {
-  // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
-  if (MipsD() != Reg::zero)
-    SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) + GetConstantRegU32(cf.MipsT()));
+  const u32 rs = GetConstantRegU32(cf.MipsS());
+  const u32 rt = GetConstantRegU32(cf.MipsT());
+  const u32 result = rs + rt;
+  if (g_settings.cpu_recompiler_memory_exceptions && ((result ^ rs) & (result ^ rt) & 0x80000000u) != 0)
+    Compile_Fallback();
+  else if (MipsD() != Reg::zero)
+    SetConstantReg(MipsD(), result);
 }
 
 void CPU::Recompiler::Recompiler::Compile_addu_const(CompileFlags cf)
@@ -2131,10 +2135,14 @@ void CPU::Recompiler::Recompiler::Compile_addu_const(CompileFlags cf)
 
 void CPU::Recompiler::Recompiler::Compile_sub_const(CompileFlags cf)
 {
-  // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
-  if (MipsD() != Reg::zero)
-    SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) - GetConstantRegU32(cf.MipsT()));
+  const u32 rs = GetConstantRegU32(cf.MipsS());
+  const u32 rt = GetConstantRegU32(cf.MipsT());
+  const u32 result = rs - rt;
+  if (g_settings.cpu_recompiler_memory_exceptions && ((result ^ rs) & (rs ^ rt) & 0x80000000u) != 0)
+    Compile_Fallback();
+  else if (MipsD() != Reg::zero)
+    SetConstantReg(MipsD(), result);
 }
 
 void CPU::Recompiler::Recompiler::Compile_subu_const(CompileFlags cf)
@@ -2145,10 +2153,14 @@ void CPU::Recompiler::Recompiler::Compile_subu_const(CompileFlags cf)
 
 void CPU::Recompiler::Recompiler::Compile_addi_const(CompileFlags cf)
 {
-  // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()));
-  if (cf.MipsT() != Reg::zero)
-    SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) + inst->i.imm_sext32());
+  const u32 rs = GetConstantRegU32(cf.MipsS());
+  const u32 imm = inst->i.imm_sext32();
+  const u32 result = rs + imm;
+  if (g_settings.cpu_recompiler_memory_exceptions && ((result ^ rs) & (result ^ imm) & 0x80000000u) != 0)
+    Compile_Fallback();
+  else if (cf.MipsT() != Reg::zero)
+    SetConstantReg(cf.MipsT(), result);
 }
 
 void CPU::Recompiler::Recompiler::Compile_addiu_const(CompileFlags cf)
