@@ -1049,7 +1049,26 @@ void CPU::LoongArch64Recompiler::Compile_Fallback()
 
   Flush(FLUSH_FOR_INTERPRETER);
 
-  Panic("Fixme");
+  EmitCall(reinterpret_cast<const void*>(&CPU::RecompilerThunks::InterpretInstruction));
+
+  SwitchToFarCode(true, LaBranchCondition::NE, RRET, LA_ZERO);
+  BackupHostState();
+  m_dirty_pc = false;
+  EndBlock(std::nullopt, true);
+  RestoreHostState();
+  SwitchToNearCode(false);
+
+  lagoon_label_t no_load_delay = {};
+  la_ld_bu(laAsm, RARG1, RSTATE, OFFS(&g_state.next_load_delay_reg));
+  EmitMov(RSCRATCH, static_cast<u32>(Reg::count));
+  la_beq(laAsm, RARG1, RSCRATCH, la_label(laAsm, &no_load_delay));
+  la_ld_w(laAsm, RARG2, RSTATE, OFFS(&g_state.next_load_delay_value));
+  la_st_b(laAsm, RARG1, RSTATE, OFFS(&g_state.load_delay_reg));
+  la_st_w(laAsm, RARG2, RSTATE, OFFS(&g_state.load_delay_value));
+  la_st_b(laAsm, RSCRATCH, RSTATE, OFFS(&g_state.next_load_delay_reg));
+  la_bind(laAsm, &no_load_delay);
+  la_label_free(laAsm, &no_load_delay);
+  m_load_delay_dirty = EMULATE_LOAD_DELAYS;
 }
 
 void CPU::LoongArch64Recompiler::CheckBranchTarget(la_gpr_t pcreg)
