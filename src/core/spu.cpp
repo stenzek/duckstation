@@ -2279,7 +2279,7 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
   //
   // Zeros have been removed since the result is always zero, therefore the multiply is redundant.
 
-  alignas(VECTOR_ALIGNMENT) static constexpr std::array<s32, 20> resample_coeff = {
+  alignas(VECTOR_ALIGNMENT) static constexpr std::array<s16, 20> resample_coeff = {
     -0x0001, 0x0002,  -0x000A, 0x0023,  -0x0067, 0x010A,  -0x0268, 0x0534,  -0x0B90, 0x2806,
     0x2806,  -0x0B90, 0x0534,  -0x0268, 0x010A,  -0x0067, 0x0023,  -0x000A, 0x0002,  -0x0001};
 
@@ -2310,16 +2310,21 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
     {
       const s16* src =
         &s_state.reverb_downsample_buffer[channel][(s_state.reverb_resample_buffer_position - 38) & 0x3F];
-      GSVector4i acc =
-        GSVector4i::load<true>(&resample_coeff[0]).mul32l(GSVector4i::load<false>(&src[0]).sll32(16).sra32(16));
-      acc = acc.add32(
-        GSVector4i::load<true>(&resample_coeff[4]).mul32l(GSVector4i::load<false>(&src[8]).sll32(16).sra32(16)));
-      acc = acc.add32(
-        GSVector4i::load<true>(&resample_coeff[8]).mul32l(GSVector4i::load<false>(&src[16]).sll32(16).sra32(16)));
-      acc = acc.add32(
-        GSVector4i::load<true>(&resample_coeff[12]).mul32l(GSVector4i::load<false>(&src[24]).sll32(16).sra32(16)));
-      acc = acc.add32(
-        GSVector4i::load<true>(&resample_coeff[16]).mul32l(GSVector4i::load<false>(&src[32]).sll32(16).sra32(16)));
+      GSVector4i acc = GSVector4i::loadl<true>(&resample_coeff[0])
+                         .s16to32()
+                         .mul32l(GSVector4i::load<false>(&src[0]).sll32(16).sra32(16));
+      acc = acc.add32(GSVector4i::loadl<true>(&resample_coeff[4])
+                        .s16to32()
+                        .mul32l(GSVector4i::load<false>(&src[8]).sll32(16).sra32(16)));
+      acc = acc.add32(GSVector4i::loadl<true>(&resample_coeff[8])
+                        .s16to32()
+                        .mul32l(GSVector4i::load<false>(&src[16]).sll32(16).sra32(16)));
+      acc = acc.add32(GSVector4i::loadl<true>(&resample_coeff[12])
+                        .s16to32()
+                        .mul32l(GSVector4i::load<false>(&src[24]).sll32(16).sra32(16)));
+      acc = acc.add32(GSVector4i::loadl<true>(&resample_coeff[16])
+                        .s16to32()
+                        .mul32l(GSVector4i::load<false>(&src[32]).sll32(16).sra32(16)));
 
       // Horizontal reduction, middle 0x4000. Moved here so we don't need another 4 elements above.
       downsampled[channel] = Clamp16((acc.addv_s32() + (0x4000 * src[19])) >> 15);
@@ -2398,14 +2403,10 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
       const s16* src =
         &s_state.reverb_upsample_buffer[channel][((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F];
 
-      GSVector4i srcs = GSVector4i::load<false>(&src[0]);
-      GSVector4i acc = GSVector4i::load<true>(&resample_coeff[0]).mul32l(srcs.s16to32());
-      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[4]).mul32l(srcs.uph64().s16to32()));
-      srcs = GSVector4i::load<false>(&src[8]);
-      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[8]).mul32l(srcs.s16to32()));
-      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[12]).mul32l(srcs.uph64().s16to32()));
-      srcs = GSVector4i::loadl<false>(&src[16]);
-      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[16]).mul32l(srcs.s16to32()));
+      // The absolute coefficient sum is 31142, so s32 accumulation cannot overflow.
+      GSVector4i acc = GSVector4i::load<false>(&src[0]).madd_s16(GSVector4i::load<true>(&resample_coeff[0]));
+      acc = acc.add32(GSVector4i::load<false>(&src[8]).madd_s16(GSVector4i::load<true>(&resample_coeff[8])));
+      acc = acc.add32(GSVector4i::loadl<false>(&src[16]).madd_s16(GSVector4i::loadl<true>(&resample_coeff[16])));
 
       out[channel] = std::clamp<s32>(acc.addv_s32() >> 14, -32768, 32767);
     }
