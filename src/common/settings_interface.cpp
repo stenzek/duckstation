@@ -306,6 +306,9 @@ void SettingsInterface::SetOptionalStringValue(const char* section, const char* 
 
 void SettingsInterface::CopyBoolValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   bool value;
   if (si.FindBoolValue(section, key, &value))
     SetBoolValue(section, key, value);
@@ -315,6 +318,9 @@ void SettingsInterface::CopyBoolValue(const SettingsInterface& si, const char* s
 
 void SettingsInterface::CopyIntValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   s32 value;
   if (si.FindIntValue(section, key, &value))
     SetIntValue(section, key, value);
@@ -324,6 +330,9 @@ void SettingsInterface::CopyIntValue(const SettingsInterface& si, const char* se
 
 void SettingsInterface::CopyUIntValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   u32 value;
   if (si.FindUIntValue(section, key, &value))
     SetUIntValue(section, key, value);
@@ -333,6 +342,9 @@ void SettingsInterface::CopyUIntValue(const SettingsInterface& si, const char* s
 
 void SettingsInterface::CopyFloatValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   float value;
   if (si.FindFloatValue(section, key, &value))
     SetFloatValue(section, key, value);
@@ -342,6 +354,9 @@ void SettingsInterface::CopyFloatValue(const SettingsInterface& si, const char* 
 
 void SettingsInterface::CopyDoubleValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   double value;
   if (si.FindDoubleValue(section, key, &value))
     SetDoubleValue(section, key, value);
@@ -351,6 +366,9 @@ void SettingsInterface::CopyDoubleValue(const SettingsInterface& si, const char*
 
 void SettingsInterface::CopyStringValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   std::string_view value;
   if (si.FindStringValue(section, key, &value))
     SetStringValue(section, key, value);
@@ -360,6 +378,9 @@ void SettingsInterface::CopyStringValue(const SettingsInterface& si, const char*
 
 void SettingsInterface::CopyStringListValue(const SettingsInterface& si, const char* section, const char* key)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   std::vector<std::string> value(si.GetStringList(section, key));
   if (!value.empty())
     SetStringList(section, key, value);
@@ -369,6 +390,9 @@ void SettingsInterface::CopyStringListValue(const SettingsInterface& si, const c
 
 void SettingsInterface::CopySection(const SettingsInterface& si, const char* section)
 {
+  if (&si == this) [[unlikely]]
+    return;
+
   ClearSection(section);
 
   for (const auto& [key, value] : si.GetKeyValueList(section))
