@@ -1360,8 +1360,7 @@ FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* path, const
   return ManagedCFilePtr(OpenCFile(path, mode, error));
 }
 
-std::FILE* FileSystem::OpenTemporaryCFile(std::string_view base_path, std::string* out_path,
-                                          Error* error /*= nullptr*/)
+std::FILE* FileSystem::OpenTemporaryCFile(std::string_view base_path, std::string* out_path, Error* error /*= nullptr*/)
 {
   if (base_path.empty())
   {
@@ -1660,31 +1659,26 @@ void FileSystem::LockedFile::reset()
 
 std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* path, Error* error)
 {
-  std::optional<DynamicHeapArray<u8>> ret;
-
   ManagedCFilePtr fp = OpenManagedSharedCFile(path, "rb", FileShareMode::DenyWrite, error);
   if (!fp)
-    return ret;
+    return {};
 
-  ret = ReadBinaryFile(fp.get(), error);
-  return ret;
+  return ReadBinaryFile(fp.get(), error);
 }
 
 std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Error* error)
 {
-  std::optional<DynamicHeapArray<u8>> ret;
-
   if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
   {
     Error::SetErrno(error, "FSeek64() to end failed: ", errno);
-    return ret;
+    return {};
   }
 
   const s64 size = FTell64(fp);
   if (size < 0) [[unlikely]]
   {
     Error::SetErrno(error, "FTell64() for length failed: ", errno);
-    return ret;
+    return {};
   }
 
   if constexpr (sizeof(s64) != sizeof(size_t))
@@ -1692,21 +1686,21 @@ std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Er
     if (size > static_cast<s64>(std::numeric_limits<long>::max())) [[unlikely]]
     {
       Error::SetStringFmt(error, "File size of {} is too large to read on this platform.", size);
-      return ret;
+      return {};
     }
   }
 
   if (FSeek64(fp, 0, SEEK_SET) != 0) [[unlikely]]
   {
     Error::SetErrno(error, "FSeek64() to start failed: ", errno);
-    return ret;
+    return {};
   }
 
-  ret = DynamicHeapArray<u8>(static_cast<size_t>(size));
-  if (size > 0 && std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size)) [[unlikely]]
+  DynamicHeapArray<u8> ret(static_cast<size_t>(size));
+  if (size > 0 && std::fread(ret.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size)) [[unlikely]]
   {
     Error::SetErrno(error, "fread() failed: ", errno);
-    ret.reset();
+    return {};
   }
 
   return ret;
