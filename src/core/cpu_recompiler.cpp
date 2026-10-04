@@ -1752,13 +1752,14 @@ void CPU::Recompiler::Recompiler::FlushForLoadStore(const std::optional<VirtualM
 
 void CPU::Recompiler::Recompiler::CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_move)
 {
-  if (dst == src || dst == Reg::zero)
+  if (dst == Reg::zero)
     return;
 
   if (HasConstantReg(src))
   {
+    const u32 value = GetConstantRegU32(src);
     DeleteMIPSReg(dst, false);
-    SetConstantReg(dst, GetConstantRegU32(src));
+    SetConstantReg(dst, value);
   }
   else
   {
