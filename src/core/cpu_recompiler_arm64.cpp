@@ -2737,9 +2737,11 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
   if (cycles_to_add != 0)
   {
     // NOTE: we have to reload here, because memory writes can run DMA, which can screw with cycles
-    Assert(Assembler::IsImmAddSub(cycles_to_add));
+    const bool immediate = Assembler::IsImmAddSub(cycles_to_add);
+    if (!immediate)
+      armEmitMov(armAsm, RWARG3, cycles_to_add);
     armAsm->ldr(RWSCRATCH, PTR(&g_state.pending_ticks));
-    armAsm->add(RWSCRATCH, RWSCRATCH, cycles_to_add);
+    armAsm->add(RWSCRATCH, RWSCRATCH, immediate ? Operand(cycles_to_add) : Operand(RWARG3));
     armAsm->str(RWSCRATCH, PTR(&g_state.pending_ticks));
   }
 
@@ -2806,9 +2808,11 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
 
   if (cycles_to_remove != 0)
   {
-    Assert(Assembler::IsImmAddSub(cycles_to_remove));
+    const bool immediate = Assembler::IsImmAddSub(cycles_to_remove);
+    if (!immediate)
+      armEmitMov(armAsm, RWARG3, cycles_to_remove);
     armAsm->ldr(RWSCRATCH, PTR(&g_state.pending_ticks));
-    armAsm->sub(RWSCRATCH, RWSCRATCH, cycles_to_remove);
+    armAsm->sub(RWSCRATCH, RWSCRATCH, immediate ? Operand(cycles_to_remove) : Operand(RWARG3));
     armAsm->str(RWSCRATCH, PTR(&g_state.pending_ticks));
   }
 
