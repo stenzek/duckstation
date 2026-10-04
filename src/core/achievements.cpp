@@ -2118,7 +2118,7 @@ void Achievements::LoginAsync(const char* username, const char* password, LoginC
   // We need to use a temporary client if achievements aren't currently active.
   if (!s_state.client && !CreateClient(lock, true))
   {
-    callback(false, "Failed to create client.");
+    callback(false, "Failed to create client.", LoginResult{});
     return;
   }
 
@@ -2134,17 +2134,16 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   // NOTE: This runs with the achievements lock held.
   bool callback_result;
   std::string callback_error_message;
+  LoginResult data;
   if (result == RC_OK)
   {
     // Grab the token from the client, and save it to the config.
     const rc_client_user_t* user = rc_client_get_user_info(client);
     if (user && user->username && user->token)
     {
-      // Store configuration.
-      Core::SetBaseStringSettingValue("Cheevos", "Username", user->username);
-      Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, user->username));
-      Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
-      Host::CommitBaseSettingChanges();
+      data.username = user->username;
+      data.encrypted_token = EncryptLoginToken(user->token, user->username).view();
+      data.timestamp = static_cast<s64>(std::time(nullptr));
       s_state.has_saved_credentials = true;
       callback_result = true;
     }
@@ -2188,7 +2187,21 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
   LoginCompletionCallback* const callback = static_cast<LoginCompletionCallback*>(userdata);
   if (*callback)
-    (*callback)(callback_result, std::move(callback_error_message));
+    (*callback)(callback_result, std::move(callback_error_message), std::move(data));
+}
+
+void Achievements::SaveLoginSettings(SettingsInterface& si, const LoginResult& result)
+{
+  si.SetStringValue("Cheevos", "Username", result.username.c_str());
+  si.SetStringValue("Cheevos", "Token", result.encrypted_token.c_str());
+  si.SetStringValue("Cheevos", "LoginTimestamp", fmt::format("{}", result.timestamp).c_str());
+}
+
+void Achievements::ClearLoginSettings(SettingsInterface& si)
+{
+  si.DeleteValue("Cheevos", "Username");
+  si.DeleteValue("Cheevos", "Token");
+  si.DeleteValue("Cheevos", "LoginTimestamp");
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
