@@ -53,15 +53,21 @@ void AchievementLoginDialog::loginClicked()
 
   // Use QPointer<> to safely check if the dialog still exists when the login finishes, since the callback
   // runs on the core thread and we need to queue it back to the UI thread.
-  Achievements::LoginAsync(username.toUtf8().constData(), password.toUtf8().constData(),
-                           [dialog = QPointer(this)](bool result, std::string&& error_message) mutable {
-                             DebugAssert(Host::IsOnCoreThread());
-                             Host::RunOnUIThread(
-                               [dialog = std::move(dialog), error_message = std::move(error_message), result]() {
-                                 if (dialog)
-                                   dialog->processLoginResult(result, QString::fromStdString(error_message));
-                               });
-                           });
+  Achievements::LoginAsync(
+    username.toUtf8().constData(), password.toUtf8().constData(),
+    [dialog = QPointer(this)](bool result, std::string&& error_message, Achievements::LoginResult&& ldata) mutable {
+      DebugAssert(Host::IsOnCoreThread());
+      if (result)
+      {
+        const auto settings_lock = Core::GetSettingsLock();
+        Achievements::SaveLoginSettings(*Core::GetBaseSettingsLayer(), ldata);
+        Host::CommitBaseSettingChanges();
+      }
+      Host::RunOnUIThread([dialog = std::move(dialog), error_message = std::move(error_message), result]() {
+        if (dialog)
+          dialog->processLoginResult(result, QString::fromStdString(error_message));
+      });
+    });
 }
 
 void AchievementLoginDialog::cancelClicked()
