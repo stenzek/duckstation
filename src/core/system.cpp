@@ -1250,8 +1250,6 @@ void System::ReloadSettingsForPath(std::string_view path)
 
   auto lock = Core::GetSettingsLock();
 
-  // NOTE: android needs base settings checked too
-
   // protected by settings lock if called off-thread
   if (s_state.game_settings_interface.GetPath() == path)
   {
@@ -1892,7 +1890,8 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   if (g_settings.enable_gdb_server)
     GDBServer::Initialize(g_settings.gdb_server_port);
 
-  Host::OnSystemStarted();
+  Host::OnSystemStarted(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                        s_state.running_game_hash);
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
@@ -2089,9 +2088,6 @@ void System::ClearRunningGame()
   s_state.running_game_title.clear();
   s_state.running_game_entry = nullptr;
   s_state.running_game_hash = 0;
-
-  Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
-                            s_state.running_game_hash);
 
   DiscordPresence::Update(true);
 }
@@ -4264,10 +4260,10 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   {
     VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
                                 s_state.running_game_hash);
-  }
 
-  Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
-                            s_state.running_game_hash);
+    Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                              s_state.running_game_hash);
+  }
 }
 
 bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error)
