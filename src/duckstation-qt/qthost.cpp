@@ -449,7 +449,7 @@ void QtHost::WarnAboutLDLibraryPath()
 
 bool QtHost::ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path)
 {
-  std::optional<std::string> contents = FileSystem::ReadFileToString(desktop_file_path.c_str(), nullptr);
+  std::optional<std::string> contents = FileSystem::ReadFileToString(desktop_file_path.c_str(), static_cast<Error*>(nullptr));
   if (!contents.has_value())
     return false;
 

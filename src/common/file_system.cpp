@@ -1708,31 +1708,44 @@ std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Er
 
 std::optional<std::string> FileSystem::ReadFileToString(const char* path, Error* error)
 {
-  std::optional<std::string> ret;
-
   ManagedCFilePtr fp = OpenManagedSharedCFile(path, "rb", FileShareMode::DenyWrite, error);
   if (!fp)
-    return ret;
+    return {};
 
-  ret = ReadFileToString(fp.get());
-  return ret;
+  return ReadFileToString(fp.get(), error);
 }
 
 std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* error)
 {
-  std::optional<std::string> ret;
+  std::string ret;
+  if (!ReadFileToString(fp, &ret, error))
+    return {};
 
+  return ret;
+}
+
+bool FileSystem::ReadFileToString(const char* path, std::string* str, Error* error /*= nullptr*/)
+{
+  ManagedCFilePtr fp = OpenManagedSharedCFile(path, "rb", FileShareMode::DenyWrite, error);
+  if (!fp)
+    return false;
+
+  return ReadFileToString(fp.get(), str, error);
+}
+
+bool FileSystem::ReadFileToString(std::FILE* fp, std::string* str, Error* error /*= nullptr*/)
+{
   if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
   {
     Error::SetErrno(error, "FSeek64() to end failed: ", errno);
-    return ret;
+    return false;
   }
 
   const s64 size = FTell64(fp);
   if (size < 0) [[unlikely]]
   {
     Error::SetErrno(error, "FTell64() for length failed: ", errno);
-    return ret;
+    return false;
   }
 
   if constexpr (sizeof(s64) != sizeof(size_t))
@@ -1740,25 +1753,24 @@ std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* er
     if (size > static_cast<s64>(std::numeric_limits<long>::max())) [[unlikely]]
     {
       Error::SetStringFmt(error, "File size of {} is too large to read on this platform.", size);
-      return ret;
+      return false;
     }
   }
 
   if (FSeek64(fp, 0, SEEK_SET) != 0) [[unlikely]]
   {
     Error::SetErrno(error, "FSeek64() to start failed: ", errno);
-    return ret;
+    return false;
   }
 
-  ret = std::string();
-  ret->resize(static_cast<size_t>(size));
+  str->resize(static_cast<size_t>(size));
   // NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
   if (size > 0)
   {
-    if (std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
+    if (std::fread(str->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
     {
       Error::SetErrno(error, "fread() failed: ", errno);
-      ret.reset();
+      return false;
     }
     else
     {
@@ -1766,28 +1778,28 @@ std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* er
       static constexpr const u8 UTF16_LE_BOM[] = {0xFF, 0xFE};
       static constexpr const u8 UTF8_BOM[] = {0xEF, 0xBB, 0xBF};
 
-      if (ret->size() >= sizeof(UTF8_BOM) && std::memcmp(ret->data(), UTF8_BOM, sizeof(UTF8_BOM)) == 0)
+      if (str->size() >= sizeof(UTF8_BOM) && std::memcmp(str->data(), UTF8_BOM, sizeof(UTF8_BOM)) == 0)
       {
         // Remove UTF-8 BOM.
-        ret->erase(0, sizeof(UTF8_BOM));
+        str->erase(0, sizeof(UTF8_BOM));
       }
-      else if (ret->size() >= sizeof(UTF16_LE_BOM) && (ret->size() % 2) == 0)
+      else if (str->size() >= sizeof(UTF16_LE_BOM) && (str->size() % 2) == 0)
       {
-        const bool le = (std::memcmp(ret->data(), UTF16_LE_BOM, sizeof(UTF16_LE_BOM)) == 0);
-        const bool be = (std::memcmp(ret->data(), UTF16_BE_BOM, sizeof(UTF16_BE_BOM)) == 0);
+        const bool le = (std::memcmp(str->data(), UTF16_LE_BOM, sizeof(UTF16_LE_BOM)) == 0);
+        const bool be = (std::memcmp(str->data(), UTF16_BE_BOM, sizeof(UTF16_BE_BOM)) == 0);
         if (le || be)
         {
-          const std::string utf16 = std::move(ret.value());
+          const std::string utf16 = std::move(*str);
           const std::string_view no_bom = std::string_view(utf16).substr(sizeof(UTF16_LE_BOM));
-          ret = no_bom.empty() ? std::string() :
-                                 (be ? StringUtil::DecodeUTF16BEString(no_bom.data(), no_bom.size()) :
-                                       StringUtil::DecodeUTF16String(no_bom.data(), no_bom.size()));
+          *str = no_bom.empty() ? std::string() :
+                                  (be ? StringUtil::DecodeUTF16BEString(no_bom.data(), no_bom.size()) :
+                                        StringUtil::DecodeUTF16String(no_bom.data(), no_bom.size()));
         }
       }
     }
   }
 
-  return ret;
+  return true;
 }
 
 bool FileSystem::WriteBinaryFile(const char* path, const void* data, size_t data_length, Error* error)
