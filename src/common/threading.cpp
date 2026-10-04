@@ -760,8 +760,21 @@ Threading::ConditionVariable::ConditionVariable()
 {
   static_assert(sizeof(m_data) == sizeof(pthread_cond_t));
   static_assert(alignof(ConditionVariable) >= alignof(pthread_cond_t));
+#ifdef __APPLE__
+  // No pthread_condattr_setclock() on macOS, WaitFor() uses pthread_cond_timedwait_relative_np() instead.
   [[maybe_unused]] const int result = pthread_cond_init(NATIVE_CONDITION_VARIABLE_PTR(m_data), nullptr);
   DebugAssert(result == 0);
+#else
+  // Use the monotonic clock for timed waits, so that we're not affected by wall clock changes.
+  pthread_condattr_t attr;
+  [[maybe_unused]] int result = pthread_condattr_init(&attr);
+  DebugAssert(result == 0);
+  result = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+  DebugAssert(result == 0);
+  result = pthread_cond_init(NATIVE_CONDITION_VARIABLE_PTR(m_data), &attr);
+  DebugAssert(result == 0);
+  pthread_condattr_destroy(&attr);
+#endif
 }
 
 Threading::ConditionVariable::~ConditionVariable()
@@ -818,6 +831,46 @@ void Threading::ConditionVariable::Wait(Mutex& mutex)
   [[maybe_unused]] const int result =
     pthread_cond_wait(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data));
   DebugAssert(result == 0);
+#endif
+
+#ifdef THREADING_DEBUG_CHECKS
+  mutex.m_owner_thread_id.store(GetCurrentThreadIdentifier(), std::memory_order_relaxed);
+#endif
+}
+
+void Threading::ConditionVariable::WaitFor(Mutex& mutex, u32 milliseconds)
+{
+#ifdef THREADING_DEBUG_CHECKS
+  DebugAssert(mutex.m_owner_thread_id.load(std::memory_order_relaxed) == GetCurrentThreadIdentifier());
+  mutex.m_owner_thread_id.store(0, std::memory_order_relaxed);
+#endif
+
+#ifdef _WIN32
+  [[maybe_unused]] const BOOL result =
+    SleepConditionVariableSRW(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data), milliseconds, 0);
+  DebugAssert(result);
+#elif defined(__APPLE__)
+  struct timespec ts;
+  ts.tv_sec = static_cast<time_t>(milliseconds / 1000);
+  ts.tv_nsec = static_cast<long>(milliseconds % 1000) * 1000000;
+  [[maybe_unused]] const int result =
+    pthread_cond_timedwait_relative_np(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data), &ts);
+  DebugAssert(result == 0 || result == ETIMEDOUT);
+#else
+  // Absolute deadline, the condition variable is created with CLOCK_MONOTONIC.
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  ts.tv_sec += static_cast<time_t>(milliseconds / 1000);
+  ts.tv_nsec += static_cast<long>(milliseconds % 1000) * 1000000;
+  if (ts.tv_nsec >= 1000000000)
+  {
+    ts.tv_sec++;
+    ts.tv_nsec -= 1000000000;
+  }
+
+  [[maybe_unused]] const int result =
+    pthread_cond_timedwait(NATIVE_CONDITION_VARIABLE_PTR(m_data), NATIVE_MUTEX_PTR(mutex.m_data), &ts);
+  DebugAssert(result == 0 || result == ETIMEDOUT);
 #endif
 
 #ifdef THREADING_DEBUG_CHECKS
