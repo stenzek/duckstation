@@ -2808,7 +2808,13 @@ void GameListRefreshThread::cancel()
 
 void GameListRefreshThread::run()
 {
-  GameList::Refresh(m_invalidate_cache, false, this);
+  GameList::ScanDirectoryList dirs;
+  {
+    const auto settings_lock = Core::GetSettingsLock();
+    dirs = GameList::GetScanDirectoryList(*Core::GetBaseSettingsLayer());
+  }
+
+  GameList::Refresh(dirs, m_invalidate_cache, false, this);
   emit refreshComplete();
 }
 

@@ -17,6 +17,7 @@
 #include <string>
 
 class ProgressCallback;
+class SettingsInterface;
 
 namespace GameList {
 enum class EntryType : u8
@@ -123,12 +124,20 @@ bool ShouldShowLocalizedTitles();
 /// Returns true if the specified path should not have game properties saved.
 bool CanEditGameSettingsForPath(const std::string_view path, const std::string_view serial);
 
+struct ScanDirectoryList
+{
+  std::vector<std::pair<std::string, bool>> directories;
+  std::vector<std::string> excluded_paths;
+};
+ScanDirectoryList GetScanDirectoryList(const SettingsInterface& si);
+
 /// Populates the game list with files in the configured directories.
 /// If invalidate_cache is set, all files will be re-scanned.
 /// If only_cache is set, no new files will be scanned, only those present in the cache.
-void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
-void Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invalidate_cache, bool only_cache,
-             ProgressCallback* progress);
+void Refresh(const ScanDirectoryList& dirs, bool invalidate_cache, bool only_cache = false,
+             ProgressCallback* progress = nullptr);
+void Refresh(std::unique_lock<std::recursive_mutex>& lock, const ScanDirectoryList& dirs, bool invalidate_cache,
+             bool only_cache, ProgressCallback* progress);
 
 /// Ensures that the list is loaded.
 void EnsureLoaded(std::unique_lock<std::recursive_mutex>& lock);

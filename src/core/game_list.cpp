@@ -32,6 +32,7 @@
 #include "common/string_pool.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/threading.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
 
@@ -1076,14 +1077,40 @@ size_t GameList::GetEntryCount()
   return s_state.entries.size();
 }
 
-void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback* progress /* = nullptr */)
+GameList::ScanDirectoryList GameList::GetScanDirectoryList(const SettingsInterface& si)
 {
-  std::unique_lock lock(s_state.mutex);
-  Refresh(lock, invalidate_cache, only_cache, progress);
+  ScanDirectoryList settings;
+
+  {
+    std::vector<std::string> dirs = si.GetStringList("GameList", "Paths");
+    std::vector<std::string> recursive_dirs = si.GetStringList("GameList", "RecursivePaths");
+    settings.directories.reserve(dirs.size() + recursive_dirs.size());
+    for (std::string& dir : dirs)
+      settings.directories.emplace_back(std::move(dir), false);
+    for (std::string& dir : recursive_dirs)
+    {
+      auto it = std::ranges::find_if(settings.directories, [&dir](const auto& entry) { return entry.first == dir; });
+      if (it != settings.directories.end())
+        it->second = true; // mark as recursive
+      else
+        settings.directories.emplace_back(std::move(dir), true);
+    }
+  }
+
+  settings.excluded_paths = si.GetStringList("GameList", "ExcludedPaths");
+
+  return settings;
 }
 
-void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invalidate_cache, bool only_cache,
-                       ProgressCallback* progress)
+void GameList::Refresh(const ScanDirectoryList& dirs, bool invalidate_cache, bool only_cache,
+                       ProgressCallback* progress /* = nullptr */)
+{
+  std::unique_lock lock(s_state.mutex);
+  Refresh(lock, dirs, invalidate_cache, only_cache, progress);
+}
+
+void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, const ScanDirectoryList& dirs,
+                       bool invalidate_cache, bool only_cache, ProgressCallback* progress)
 {
   if (s_state.game_list_loaded == ListState::Loading)
   {
@@ -1123,9 +1150,6 @@ void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invali
   // don't hold mutex while loading stuff
   lock.unlock();
 
-  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
-  std::vector<std::string> dirs(Core::GetBaseStringListSetting("GameList", "Paths"));
-  std::vector<std::string> recursive_dirs(Core::GetBaseStringListSetting("GameList", "RecursivePaths"));
   const PlayedTimeMap played_time = LoadPlayedTimeMap();
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
@@ -1134,28 +1158,19 @@ void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invali
   if (!achievements_progress.Load(&error))
     WARNING_LOG("Failed to load achievements progress: {}", error.GetDescription());
 
-  if (!dirs.empty() || !recursive_dirs.empty())
+  if (!dirs.directories.empty())
   {
-    progress->SetState(0, static_cast<u32>(dirs.size() + recursive_dirs.size()));
+    progress->SetState(0, static_cast<u32>(dirs.directories.size()));
 
     // we manually count it here, because otherwise pop state updates it itself
     int directory_counter = 0;
-    for (const std::string& dir : dirs)
+    for (const auto& [dir, recursive] : dirs.directories)
     {
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(lock, dir, false, only_cache, excluded_paths, cache_map, played_time, custom_attributes_ini,
-                    achievements_progress, cache_writer, progress);
-      progress->SetProgressValue(++directory_counter);
-    }
-    for (const std::string& dir : recursive_dirs)
-    {
-      if (progress->IsCancelled())
-        break;
-
-      ScanDirectory(lock, dir, true, only_cache, excluded_paths, cache_map, played_time, custom_attributes_ini,
-                    achievements_progress, cache_writer, progress);
+      ScanDirectory(lock, dir, recursive, only_cache, dirs.excluded_paths, cache_map, played_time,
+                    custom_attributes_ini, achievements_progress, cache_writer, progress);
       progress->SetProgressValue(++directory_counter);
     }
   }
@@ -1163,7 +1178,7 @@ void GameList::Refresh(std::unique_lock<std::recursive_mutex>& lock, bool invali
   lock.lock();
 
   // merge multi-disc games
-  CreateDiscSetEntries(lock, excluded_paths, played_time, custom_attributes_ini);
+  CreateDiscSetEntries(lock, dirs.excluded_paths, played_time, custom_attributes_ini);
 
   // all done
   s_state.game_list_loaded = ListState::Loaded;
@@ -1176,7 +1191,20 @@ void GameList::EnsureLoaded(std::unique_lock<std::recursive_mutex>& lock)
   if (s_state.game_list_loaded == ListState::Loaded)
     return;
 
-  Refresh(lock, false, false, ProgressCallback::NullProgressCallback);
+  // note: uses the base settings interface
+  ScanDirectoryList dirs;
+  {
+    lock.unlock();
+    const auto settings_lock = Core::GetSettingsLock();
+    dirs = GetScanDirectoryList(*Core::GetBaseSettingsLayer());
+    lock.lock();
+
+    // list could get loaded in the meantime
+    if (s_state.game_list_loaded == ListState::Loaded)
+      return;
+  }
+
+  Refresh(lock, dirs, false, false, ProgressCallback::NullProgressCallback);
 }
 
 void GameList::RefreshDiscSetEntries()
