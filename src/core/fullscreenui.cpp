@@ -1080,6 +1080,10 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
+    // Don't hold both settings and game list lock.
+    const bool localized_titles = Core::GetBaseBoolSettingValue(
+      GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
+
     // Another load request cannot start because we have the lock held.
     auto lock = GameList::GetLock();
     if (!GameList::IsGameListLoaded())
@@ -1108,7 +1112,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
 
     // This is still needed because a scan-in-progress will report loaded.
     GameList::EnsureLoaded(lock);
-    auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, GameList::ShouldShowLocalizedTitles());
+    auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, localized_titles);
     if (matches.size() > 1)
     {
       ChoiceDialogOptions options;

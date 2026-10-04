@@ -99,6 +99,7 @@ FileSelectorFilters GetImageFilters();
 
 void ClearGameListState();
 void SwitchToGameList();
+void ReloadGameListSettings();
 void DrawGameListWindow();
 
 void DoStartPath(std::string path, std::string state = std::string(), std::optional<bool> fast_boot = std::nullopt);
