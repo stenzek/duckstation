@@ -1770,7 +1770,7 @@ vixl::aarch32::Register CPU::ARM32Recompiler::GenerateLoad(const vixl::aarch32::
 
     // Need to stash this in a temp because of the flush.
     const Register temp = Register(AllocateTempHostReg(HR_CALLEE_SAVED));
-    armAsm->rsb(temp, RRETHI, 0);
+    armAsm->rsb(temp, RRET, 0);
     armAsm->lsl(temp, temp, 2);
 
     Flush(FLUSH_FOR_C_CALL | FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_FOR_EXCEPTION);
