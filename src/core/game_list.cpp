@@ -165,6 +165,87 @@ ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace GameList
 
+const char* const GameList::UI_SETTING_SECTION = "UI";
+constexpr const char* const GameList::SETTING_KEY_LOCALIZED_TITLES = "GameListShowLocalizedTitles";
+constexpr const char* const GameList::SETTING_KEY_SORT_COLUMN = "GameListSortColumn";
+constexpr const char* const GameList::SETTING_KEY_SORT_REVERSED = "GameListSortReversed";
+constexpr const char* const GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS =
+  "GameListPreferAchievementContentIcons";
+constexpr const char* const GameList::SETTING_KEY_MERGE_DISC_SETS = "GameListMergeDiscSets";
+constexpr const char* const GameList::SETTING_KEY_GRID_VIEW = "GameListGridView";
+constexpr const char* const GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW = "GameListFullscreenUIGridView";
+constexpr const char* const GameList::SETTING_KEY_COVER_TITLES = "GameListCoverTitles";
+
+GameList::Entry::Entry() = default;
+
+GameList::Entry::~Entry() = default;
+
+std::string_view GameList::Entry::GetDisplayTitle(bool localized) const
+{
+  // if custom title is present, use that for display too
+  return !title.empty() ? std::string_view(title) :
+                          (IsDiscSet() ? dbentry->disc_set->GetDisplayTitle(localized) :
+                                         (dbentry ? dbentry->GetDisplayTitle(localized) : std::string_view()));
+}
+
+std::string_view GameList::Entry::GetSortTitle() const
+{
+  // if custom title is present, use that for sorting too
+  return !title.empty() ?
+           std::string_view(title) :
+           (IsDiscSet() ? dbentry->disc_set->GetSortTitle() : (dbentry ? dbentry->GetSortTitle() : std::string_view()));
+}
+
+std::string_view GameList::Entry::GetSaveTitle() const
+{
+  // if custom title is present, use that for save folder too
+  return !title.empty() ?
+           std::string_view(title) :
+           (IsDiscSet() ? dbentry->disc_set->GetSaveTitle() : (dbentry ? dbentry->GetSaveTitle() : std::string_view()));
+}
+
+std::string_view GameList::Entry::GetLanguageIcon() const
+{
+  std::string_view ret;
+  if (custom_language != GameDatabase::Language::MaxCount)
+    ret = GameDatabase::GetLanguageName(custom_language);
+  else if (dbentry)
+    ret = dbentry->GetLanguageFlagName(region);
+  else
+    ret = Settings::GetDiscRegionName(region);
+
+  return ret;
+}
+
+TinyString GameList::Entry::GetLanguageIconName() const
+{
+  return GameDatabase::GetLanguageFlagResourceName(GetLanguageIcon());
+}
+
+TinyString GameList::Entry::GetCompatibilityIconFileName() const
+{
+  return TinyString::from_format(
+    "images/star-{}.svg",
+    static_cast<u32>(dbentry ? dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown));
+}
+
+std::string GameList::Entry::GetReleaseDateString() const
+{
+  std::string ret;
+
+  if (!dbentry || dbentry->release_date == 0)
+    ret = TRANSLATE_STR("GameList", "Unknown");
+  else
+    ret = Host::FormatDate(static_cast<std::time_t>(dbentry->release_date), false);
+
+  return ret;
+}
+
+bool GameList::Entry::IsGame() const
+{
+  return (type != EntryType::PSF && type != EntryType::AudioCD && !serial.empty());
+}
+
 const char* GameList::GetEntryTypeName(EntryType type)
 {
   static std::array<const char*, static_cast<int>(EntryType::MaxCount)> names = {{
@@ -191,20 +272,221 @@ const char* GameList::GetEntryTypeDisplayName(EntryType type)
   return Host::TranslateToCString("GameList", names[static_cast<size_t>(type)], "EntryType");
 }
 
+static constexpr std::array<const char*, static_cast<size_t>(GameList::Column::MaxCount)> s_column_names = {{
+  "Type",
+  "Serial",
+  "Title",
+  "FileTitle",
+  "Developer",
+  "Publisher",
+  "Genre",
+  "Year",
+  "Players",
+  "TimePlayed",
+  "LastPlayed",
+  "Size",
+  "DataSize",
+  "Region",
+  "Achievements",
+  "Compatibility",
+}};
+
+static constexpr std::array<const char*, static_cast<size_t>(GameList::Column::MaxCount)> s_column_display_names = {{
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Type", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Serial", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Title", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "File Title", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Developer", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Publisher", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Genre", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Year", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Players", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Time Played", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Last Played", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Size", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Data Size", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Region", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Achievements", "Column"),
+  TRANSLATE_DISAMBIG_NOOP("GameList", "Compatibility", "Column"),
+}};
+
+const char* GameList::GetColumnName(Column column)
+{
+  return (static_cast<size_t>(column) < s_column_names.size()) ? s_column_names[static_cast<size_t>(column)] : "";
+}
+
+const char* GameList::GetColumnDisplayName(Column column)
+{
+  return (static_cast<size_t>(column) < s_column_display_names.size()) ?
+           Host::TranslateToCString("GameList", s_column_display_names[static_cast<size_t>(column)], "Column") :
+           "";
+}
+
+std::optional<GameList::Column> GameList::ParseColumnName(std::string_view name)
+{
+  for (size_t i = 0; i < s_column_names.size(); i++)
+  {
+    if (name == s_column_names[i])
+      return static_cast<Column>(i);
+  }
+
+  return std::nullopt;
+}
+
+bool GameList::CompareEntryLessThan(const Entry* left, const Entry* right, Column column)
+{
+  switch (column)
+  {
+    case Column::Type:
+    {
+      const GameList::EntryType lst = left->GetSortType();
+      const GameList::EntryType rst = right->GetSortType();
+      if (lst == rst)
+        return CompareEntryTitlesLessThan(left, right);
+
+      return (static_cast<int>(lst) < static_cast<int>(rst));
+    }
+
+    case Column::Serial:
+    {
+      const int res = StringUtil::CompareNoCase(left->serial, right->serial);
+      return (res == 0) ? CompareEntryTitlesLessThan(left, right) : (res < 0);
+    }
+
+    case Column::Title:
+    {
+      return CompareEntryTitlesLessThan(left, right);
+    }
+
+    case Column::FileTitle:
+    {
+      const std::string_view file_title_left = Path::GetFileTitle(left->path);
+      const std::string_view file_title_right = Path::GetFileTitle(right->path);
+      const int res = StringUtil::CompareNoCase(file_title_left, file_title_right);
+      return (res == 0) ? CompareEntryTitlesLessThan(left, right) : (res < 0);
+    }
+
+    case Column::Developer:
+    {
+      const int res = StringUtil::CompareNoCase(left->dbentry ? left->dbentry->developer : std::string_view(),
+                                                right->dbentry ? right->dbentry->developer : std::string_view());
+      return (res == 0) ? CompareEntryTitlesLessThan(left, right) : (res < 0);
+    }
+
+    case Column::Publisher:
+    {
+      const int res = StringUtil::CompareNoCase(left->dbentry ? left->dbentry->publisher : std::string_view(),
+                                                right->dbentry ? right->dbentry->publisher : std::string_view());
+      return (res == 0) ? CompareEntryTitlesLessThan(left, right) : (res < 0);
+    }
+
+    case Column::Genre:
+    {
+      const int res = StringUtil::CompareNoCase(left->dbentry ? left->dbentry->genre : std::string_view(),
+                                                right->dbentry ? right->dbentry->genre : std::string_view());
+      return (res == 0) ? CompareEntryTitlesLessThan(left, right) : (res < 0);
+    }
+
+    case Column::Year:
+    {
+      const u64 ldate = left->dbentry ? left->dbentry->release_date : 0;
+      const u64 rdate = right->dbentry ? right->dbentry->release_date : 0;
+      return (ldate == rdate) ? CompareEntryTitlesLessThan(left, right) : (ldate < rdate);
+    }
+
+    case Column::Players:
+    {
+      const u8 left_players = left->dbentry ? ((left->dbentry->min_players << 4) + left->dbentry->max_players) : 0;
+      const u8 right_players = right->dbentry ? ((right->dbentry->min_players << 4) + right->dbentry->max_players) : 0;
+      return (left_players == right_players) ? CompareEntryTitlesLessThan(left, right) : (left_players < right_players);
+    }
+
+    case Column::TimePlayed:
+    {
+      return (left->total_played_time == right->total_played_time) ?
+               CompareEntryTitlesLessThan(left, right) :
+               (left->total_played_time < right->total_played_time);
+    }
+
+    case Column::LastPlayed:
+    {
+      return (left->last_played_time == right->last_played_time) ? CompareEntryTitlesLessThan(left, right) :
+                                                                   (left->last_played_time < right->last_played_time);
+    }
+
+    case Column::FileSize:
+    {
+      return (left->file_size == right->file_size) ? CompareEntryTitlesLessThan(left, right) :
+                                                     (left->file_size < right->file_size);
+    }
+
+    case Column::DataSize:
+    {
+      return (left->uncompressed_size == right->uncompressed_size) ?
+               CompareEntryTitlesLessThan(left, right) :
+               (left->uncompressed_size < right->uncompressed_size);
+    }
+
+    case Column::Region:
+    {
+      return (left->region == right->region) ? CompareEntryTitlesLessThan(left, right) :
+                                               (static_cast<int>(left->region) < static_cast<int>(right->region));
+    }
+
+    case Column::Achievements:
+    {
+      // sort by unlock percentage
+      const float unlock_left =
+        (left->num_achievements > 0) ?
+          (static_cast<float>(std::max(left->unlocked_achievements, left->unlocked_achievements_hc)) /
+           static_cast<float>(left->num_achievements)) :
+          0;
+      const float unlock_right =
+        (right->num_achievements > 0) ?
+          (static_cast<float>(std::max(right->unlocked_achievements, right->unlocked_achievements_hc)) /
+           static_cast<float>(right->num_achievements)) :
+          0;
+      if (std::abs(unlock_left - unlock_right) < 0.0001f)
+      {
+        // order by achievement count
+        if (left->num_achievements == right->num_achievements)
+          return CompareEntryTitlesLessThan(left, right);
+
+        return (left->num_achievements < right->num_achievements);
+      }
+
+      return (unlock_left < unlock_right);
+    }
+
+    case Column::Compatibilty:
+    {
+      const GameDatabase::CompatibilityRating left_compatibility =
+        left->dbentry ? left->dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown;
+      const GameDatabase::CompatibilityRating right_compatibility =
+        right->dbentry ? right->dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown;
+      return (left_compatibility == right_compatibility) ? CompareEntryTitlesLessThan(left, right) :
+                                                           (left_compatibility < right_compatibility);
+    }
+
+    default:
+      return false;
+  }
+}
+
+bool GameList::CompareEntryTitlesLessThan(const Entry* left, const Entry* right)
+{
+  const s32 res = StringUtil::CompareNoCase(left->GetSortTitle(), right->GetSortTitle());
+  if (res != 0)
+    return (res < 0);
+
+  // Fallback to path compare if titles are the same.
+  return (left->path < right->path);
+}
+
 bool GameList::IsGameListLoaded()
 {
   const std::unique_lock lock(s_state.mutex);
   return (s_state.game_list_loaded != ListState::Unloaded);
-}
-
-bool GameList::ShouldShowLocalizedTitles()
-{
-  return Core::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
-}
-
-bool GameList::PreferAchievementGameBadgesForIcons()
-{
-  return Core::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false);
 }
 
 bool GameList::IsScannableFilename(std::string_view path)
@@ -1424,72 +1706,6 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(filename));
 }
 
-std::string_view GameList::Entry::GetDisplayTitle(bool localized) const
-{
-  // if custom title is present, use that for display too
-  return !title.empty() ? std::string_view(title) :
-                          (IsDiscSet() ? dbentry->disc_set->GetDisplayTitle(localized) :
-                                         (dbentry ? dbentry->GetDisplayTitle(localized) : std::string_view()));
-}
-
-std::string_view GameList::Entry::GetSortTitle() const
-{
-  // if custom title is present, use that for sorting too
-  return !title.empty() ?
-           std::string_view(title) :
-           (IsDiscSet() ? dbentry->disc_set->GetSortTitle() : (dbentry ? dbentry->GetSortTitle() : std::string_view()));
-}
-
-std::string_view GameList::Entry::GetSaveTitle() const
-{
-  // if custom title is present, use that for save folder too
-  return !title.empty() ?
-           std::string_view(title) :
-           (IsDiscSet() ? dbentry->disc_set->GetSaveTitle() : (dbentry ? dbentry->GetSaveTitle() : std::string_view()));
-}
-
-std::string_view GameList::Entry::GetLanguageIcon() const
-{
-  std::string_view ret;
-  if (custom_language != GameDatabase::Language::MaxCount)
-    ret = GameDatabase::GetLanguageName(custom_language);
-  else if (dbentry)
-    ret = dbentry->GetLanguageFlagName(region);
-  else
-    ret = Settings::GetDiscRegionName(region);
-
-  return ret;
-}
-
-TinyString GameList::Entry::GetLanguageIconName() const
-{
-  return GameDatabase::GetLanguageFlagResourceName(GetLanguageIcon());
-}
-
-TinyString GameList::Entry::GetCompatibilityIconFileName() const
-{
-  return TinyString::from_format(
-    "images/star-{}.svg",
-    static_cast<u32>(dbentry ? dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown));
-}
-
-std::string GameList::Entry::GetReleaseDateString() const
-{
-  std::string ret;
-
-  if (!dbentry || dbentry->release_date == 0)
-    ret = TRANSLATE_STR("GameList", "Unknown");
-  else
-    ret = Host::FormatDate(static_cast<std::time_t>(dbentry->release_date), false);
-
-  return ret;
-}
-
-bool GameList::Entry::IsGame() const
-{
-  return (type != EntryType::PSF && type != EntryType::AudioCD && !serial.empty());
-}
-
 std::string GameList::GetPlayedTimePath()
 {
   return Path::Combine(EmuFolders::DataRoot, "playtime.dat");
@@ -2140,8 +2356,12 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   if (achievements_game_id != 0)
   {
     fallback_path = Achievements::GetGameBadgeURL(achievements_game_id);
-    if (!fallback_path.empty() && PreferAchievementGameBadgesForIcons())
+    if (!fallback_path.empty() &&
+        Core::GetBaseBoolSettingValue(UI_SETTING_SECTION, SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
+                                      DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS))
+    {
       return (ret = std::move(fallback_path));
+    }
   }
 
   if (serial.empty())

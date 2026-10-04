@@ -63,11 +63,13 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
   if (const QIcon icon = g_main_window->getIconForGame(QString::fromStdString(entry->path)); !icon.isNull())
     setWindowIcon(icon);
 
-  setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
+  const bool show_localized_titles = Core::GetBaseBoolSettingValue(
+    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
+  setGameTitle(entry->GetDisplayTitle(show_localized_titles));
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  addWidget(m_game_summary = new GameSummaryWidget(entry, this, m_ui.settingsContainer), tr("Summary"),
-            u":/icons/monochrome/svg/file-list-line.svg"_s,
+  addWidget(m_game_summary = new GameSummaryWidget(entry, show_localized_titles, this, m_ui.settingsContainer),
+            tr("Summary"), u":/icons/monochrome/svg/file-list-line.svg"_s,
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
   addPages();

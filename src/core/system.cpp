@@ -4175,8 +4175,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
           s_state.running_game_entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
           if (s_state.running_game_entry && s_state.running_game_title.empty())
           {
-            s_state.running_game_title =
-              s_state.running_game_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(
+              Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES,
+                                            GameList::DEFAULT_LOCALIZED_TITLES));
           }
           else if (s_state.running_game_title.empty())
           {
@@ -4204,8 +4205,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
           if (s_state.running_game_title.empty())
           {
-            s_state.running_game_title =
-              s_state.running_game_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(
+              Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES,
+                                            GameList::DEFAULT_LOCALIZED_TITLES));
           }
         }
         else
