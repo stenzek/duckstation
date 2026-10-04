@@ -349,6 +349,10 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
   if constexpr (!SWAP_BRANCH_DELAY_SLOTS)
     return false;
 
+  // Branch-and-link has an implicit destination register.
+  if (inst->op == InstructionOp::b && (static_cast<u8>(inst->i.rt.GetValue()) & 0x1E) == 0x10)
+    rd = Reg::ra;
+
   const Instruction* next_instruction = inst + 1;
   DebugAssert(next_instruction < (m_block->Instructions() + m_block->size));
 
@@ -410,8 +414,14 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
     case InstructionOp::swl:
     case InstructionOp::sw:
     case InstructionOp::swr:
+      if (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt))
+        goto is_unsafe;
+      break;
+
     case InstructionOp::lwc2:
     case InstructionOp::swc2:
+      if (rd != Reg::zero && rd == opcode_rs)
+        goto is_unsafe;
       break;
 
     case InstructionOp::funct: // SPECIAL
@@ -436,7 +446,7 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
         case InstructionFunct::sltu:
         {
           if ((rs != Reg::zero && rs == opcode_rd) || (rt != Reg::zero && rt == opcode_rd) ||
-              (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt)))
+              (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt || rd == opcode_rd)))
           {
             goto is_unsafe;
           }
@@ -447,6 +457,8 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
         case InstructionFunct::multu:
         case InstructionFunct::div:
         case InstructionFunct::divu:
+          if (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt))
+            goto is_unsafe;
           break;
 
         default:
@@ -477,6 +489,8 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
 
           case CopCommonInstruction::mtcn: // MTC0
           case CopCommonInstruction::ctcn: // CTC0
+            if (rd != Reg::zero && rd == opcode_rt)
+              goto is_unsafe;
             break;
         }
       }
