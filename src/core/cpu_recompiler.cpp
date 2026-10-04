@@ -366,17 +366,17 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
   const u32 backup_instruction_pc = m_current_instruction_pc;
   const bool backup_instruction_delay_slot = m_current_instruction_branch_delay_slot;
 
-  if (next_instruction->bits == 0)
-  {
-    // nop
-    goto is_safe;
-  }
-
   // can't swap when the branch is the first instruction because of bloody load delays
   if ((EMULATE_LOAD_DELAYS && m_block->pc == m_current_instruction_pc) || m_load_delay_dirty ||
       (HasLoadDelay() && (m_load_delay_register == rs || m_load_delay_register == rt || m_load_delay_register == rd)))
   {
     goto is_unsafe;
+  }
+
+  if (next_instruction->bits == 0)
+  {
+    // nop
+    goto is_safe;
   }
 
   switch (next_instruction->op)
