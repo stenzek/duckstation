@@ -1081,7 +1081,8 @@ void CPU::LoongArch64Recompiler::CheckBranchTarget(la_gpr_t pcreg)
   SwitchToFarCode(true, LaBranchCondition::NE, RSCRATCH, LA_ZERO);
 
   BackupHostState();
-  EndBlockWithException(Exception::AdEL);
+  StoreHostRegToCPUPointer(pcreg, &g_state.cop0_regs.BadVaddr);
+  EndBlockWithBranchTargetException();
 
   RestoreHostState();
   SwitchToNearCode(false);
