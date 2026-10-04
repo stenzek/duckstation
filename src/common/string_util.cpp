@@ -823,18 +823,18 @@ size_t StringUtil::GetEncodedUTF8Length(char32_t ch)
 
 size_t StringUtil::EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char32_t ch)
 {
+  if (pos >= size) [[unlikely]]
+    return 0;
+
   u8* utf8_bytes = static_cast<u8*>(utf8) + pos;
   if (ch <= 0x7F) [[likely]]
   {
-    if (pos == size) [[unlikely]]
-      return 0;
-
     utf8_bytes[0] = static_cast<u8>(ch);
     return 1;
   }
   else if (ch <= 0x07FF)
   {
-    if ((pos + 1) >= size) [[unlikely]]
+    if ((size - pos) < 2) [[unlikely]]
       return 0;
 
     utf8_bytes[0] = static_cast<u8>(0xc0 | static_cast<u8>((ch >> 6) & 0x1f));
@@ -843,7 +843,7 @@ size_t StringUtil::EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char
   }
   else if (ch <= 0xFFFF)
   {
-    if ((pos + 3) >= size) [[unlikely]]
+    if ((size - pos) < 3) [[unlikely]]
       return 0;
 
     utf8_bytes[0] = static_cast<u8>(0xe0 | static_cast<u8>(((ch >> 12) & 0x0f)));
@@ -853,7 +853,7 @@ size_t StringUtil::EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char
   }
   else if (ch <= 0x10FFFF)
   {
-    if ((pos + 4) >= size) [[unlikely]]
+    if ((size - pos) < 4) [[unlikely]]
       return 0;
 
     utf8_bytes[0] = static_cast<u8>(0xf0 | static_cast<u8>(((ch >> 18) & 0x07)));
@@ -864,7 +864,7 @@ size_t StringUtil::EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char
   }
   else
   {
-    if ((pos + 3) >= size) [[unlikely]]
+    if ((size - pos) < 3) [[unlikely]]
       return 0;
 
     utf8_bytes[0] = 0xefu;
