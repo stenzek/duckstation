@@ -663,6 +663,7 @@ extern std::string GameIcons;
 extern std::string GameSettings;
 extern std::string InputProfiles;
 extern std::string MemoryCards;
+extern std::string Overlays;
 extern std::string Patches;
 extern std::string Resources;
 extern std::string SaveStates;

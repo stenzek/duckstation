@@ -1922,10 +1922,10 @@ std::vector<std::string> VideoPresenter::EnumerateBorderOverlayPresets()
   std::vector<std::string> ret;
 
   FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(EmuFolders::Overlays.c_str(), pattern,
+                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
   FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "overlays").c_str(), pattern,
                         FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES, &files);
-  FileSystem::FindFiles(Path::Combine(EmuFolders::UserResources, "overlays").c_str(), pattern,
-                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
 
   ret.reserve(files.size());
   for (FILESYSTEM_FIND_DATA& fd : files)
@@ -1943,13 +1943,24 @@ std::vector<std::string> VideoPresenter::EnumerateBorderOverlayPresets()
 
 bool VideoPresenter::LoadOverlayPreset(Error* error, Image* image)
 {
-  SmallString path = SmallString::from_format("overlays/{}.yml", s_locals.border_overlay_image_path);
-  std::optional<std::string> yaml_data = Host::ReadResourceFileToString(path, true, error);
+  SmallString filename = SmallString::from_format("{}.yml", s_locals.border_overlay_image_path);
+
+  std::optional<std::string> yaml_data;
+  bool is_disk_path;
+  if (const std::string full_path = Path::Combine(EmuFolders::Overlays, filename);
+      (is_disk_path = FileSystem::FileExists(full_path.c_str())))
+  {
+    yaml_data = FileSystem::ReadFileToString(full_path.c_str(), error);
+  }
+  else
+  {
+    yaml_data = Host::ReadResourceFileToString(fmt::format("overlays/{}", filename), false, error);
+  }
   if (!yaml_data.has_value())
     return false;
 
-  const ryml::Tree yaml =
-    ryml::parse_in_place(to_csubstr(path), c4::substr(reinterpret_cast<char*>(yaml_data->data()), yaml_data->size()));
+  const ryml::Tree yaml = ryml::parse_in_place(
+    to_csubstr(filename), c4::substr(reinterpret_cast<char*>(yaml_data->data()), yaml_data->size()));
   const ryml::ConstNodeRef root = yaml.rootref();
   if (root.empty())
   {
@@ -1972,8 +1983,9 @@ bool VideoPresenter::LoadOverlayPreset(Error* error, Image* image)
     return false;
   }
 
-  path.format("overlays/{}", image_filename);
-  std::optional<DynamicHeapArray<u8>> image_data = Host::ReadResourceFile(path, true, error);
+  std::optional<DynamicHeapArray<u8>> image_data =
+    is_disk_path ? FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Overlays, image_filename).c_str(), error) :
+                   Host::ReadResourceFile(fmt::format("overlays/{}", image_filename), false, error);
   if (!image_data.has_value() || !image->LoadFromBuffer(image_filename, image_data.value(), error))
     return false;
 

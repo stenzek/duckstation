@@ -2818,6 +2818,7 @@ std::string GameIcons;
 std::string GameSettings;
 std::string InputProfiles;
 std::string MemoryCards;
+std::string Overlays;
 std::string Patches;
 std::string Resources;
 std::string SaveStates;
@@ -2842,6 +2843,7 @@ std::string EmuFolders::GetDefaultPath(const std::string* ref_folder)
   else if (ref_folder == &GameSettings) subdir = "gamesettings";
   else if (ref_folder == &InputProfiles) subdir = "inputprofiles";
   else if (ref_folder == &MemoryCards) subdir = "memcards";
+  else if (ref_folder == &Overlays) subdir = "resources" FS_OSPATH_SEPARATOR_STR "overlays";
   else if (ref_folder == &Patches) subdir = "patches";
   else if (ref_folder == &SaveStates) subdir = "savestates";
   else if (ref_folder == &Screenshots) subdir = "screenshots";
@@ -2865,6 +2867,7 @@ void EmuFolders::SetDefaults()
   GameSettings = Path::Combine(DataRoot, "gamesettings");
   InputProfiles = Path::Combine(DataRoot, "inputprofiles");
   MemoryCards = Path::Combine(DataRoot, "memcards");
+  Overlays = Path::Combine(DataRoot, "resources" FS_OSPATH_SEPARATOR_STR "overlays");
   Patches = Path::Combine(DataRoot, "patches");
   SaveStates = Path::Combine(DataRoot, "savestates");
   Screenshots = Path::Combine(DataRoot, "screenshots");
@@ -2897,6 +2900,7 @@ void EmuFolders::LoadConfig(const SettingsInterface& si)
   GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
+  Overlays = LoadPathFromSettings(si, DataRoot, "Folders", "Overlays", "resources" FS_OSPATH_SEPARATOR_STR "overlays");
   Patches = LoadPathFromSettings(si, DataRoot, "Folders", "Patches", "patches");
   SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
   Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
@@ -2914,6 +2918,7 @@ void EmuFolders::LoadConfig(const SettingsInterface& si)
   DEV_LOG("Game Settings Directory: {}", GameSettings);
   DEV_LOG("Input Profile Directory: {}", InputProfiles);
   DEV_LOG("MemoryCards Directory: {}", MemoryCards);
+  DEV_LOG("Overlays Directory: {}", Overlays);
   DEV_LOG("Patches Directory: {}", Patches);
   DEV_LOG("Resources Directory: {}", Resources);
   DEV_LOG("SaveStates Directory: {}", SaveStates);
@@ -2936,6 +2941,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
+  si.SetStringValue("Folders", "Overlays", Path::MakeRelative(Overlays, DataRoot).c_str());
   si.SetStringValue("Folders", "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
   si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
@@ -2974,7 +2980,7 @@ void EmuFolders::EnsureFoldersExist()
   EnsureFolderExists(Subchannels);
   EnsureFolderExists(Textures);
   EnsureFolderExists(UserResources);
-  EnsureFolderExists(Path::Combine(UserResources, "overlays"));
+  EnsureFolderExists(Overlays); // Must come after UserResources because it is under it.
   EnsureFolderExists(Videos);
 }
 
