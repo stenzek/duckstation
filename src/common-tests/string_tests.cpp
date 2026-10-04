@@ -844,6 +844,32 @@ TEST(StringUtil, GetEncodedUTF8Length)
   ASSERT_EQ(StringUtil::GetEncodedUTF8Length(0x110000), 3u); // Invalid -> replacement
 }
 
+TEST(StringUtil, EncodeUTF8ExactFitAndBounds)
+{
+  for (const char32_t ch : {U'A', U'\u00E9', U'\u4E2D', U'\U0001F496', char32_t(0x110000)})
+  {
+    std::string expected;
+    StringUtil::EncodeAndAppendUTF8(expected, ch);
+    const size_t length = expected.size();
+    std::array<u8, 8> buffer;
+    buffer.fill(0xAA);
+
+    ASSERT_EQ(StringUtil::EncodeAndAppendUTF8(buffer.data(), 1, length + 1, ch), length);
+    EXPECT_EQ(std::memcmp(buffer.data() + 1, expected.data(), length), 0);
+    EXPECT_EQ(buffer[0], 0xAA);
+    EXPECT_EQ(buffer[length + 1], 0xAA);
+
+    buffer.fill(0xAA);
+    EXPECT_EQ(StringUtil::EncodeAndAppendUTF8(buffer.data(), 1, length, ch), 0u);
+    for (const u8 byte : buffer)
+      EXPECT_EQ(byte, 0xAA);
+  }
+
+  EXPECT_EQ(StringUtil::EncodeAndAppendUTF8(nullptr, 0, 0, U'A'), 0u);
+  EXPECT_EQ(StringUtil::EncodeAndAppendUTF8(nullptr, 2, 1, U'A'), 0u);
+  EXPECT_EQ(StringUtil::EncodeAndAppendUTF8(nullptr, SIZE_MAX, SIZE_MAX, U'\u4E2D'), 0u);
+}
+
 TEST(StringUtil, DecodeUTF8)
 {
   // Test ASCII
