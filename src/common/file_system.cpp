@@ -1662,7 +1662,7 @@ std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* path,
 {
   std::optional<DynamicHeapArray<u8>> ret;
 
-  ManagedCFilePtr fp = OpenManagedCFile(path, "rb", error);
+  ManagedCFilePtr fp = OpenManagedSharedCFile(path, "rb", FileShareMode::DenyWrite, error);
   if (!fp)
     return ret;
 
@@ -1716,7 +1716,7 @@ std::optional<std::string> FileSystem::ReadFileToString(const char* path, Error*
 {
   std::optional<std::string> ret;
 
-  ManagedCFilePtr fp = OpenManagedCFile(path, "rb", error);
+  ManagedCFilePtr fp = OpenManagedSharedCFile(path, "rb", FileShareMode::DenyWrite, error);
   if (!fp)
     return ret;
 
