@@ -2305,19 +2305,19 @@ void FullscreenUI::DrawAchievementsWindow()
                             "achievements", background, 0.0f,
                             ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING), 0, true))
   {
-    static constexpr std::pair<const char*, const char*> bucket_names[] = {
-      {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unknown")},
-      {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
-      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
-      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsupported")},
-      {ICON_FA_FLASK_VIAL, TRANSLATE_NOOP("Achievements", "Unofficial")},
-      {ICON_FA_LOCK_OPEN, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
-      {ICON_FA_HAND_FIST, TRANSLATE_NOOP("Achievements", "Active Challenges")},
-      {ICON_FA_FLAG_CHECKERED, TRANSLATE_NOOP("Achievements", "Almost There")},
-      {ICON_EMOJI_WARNING, TRANSLATE_NOOP("Achievements", "Not Confirmed")},
-      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked in Casual")},
+    static constexpr const char* bucket_icons[] = {
+      ICON_FA_CIRCLE_QUESTION,      // Unknown
+      ICON_FA_LOCK,                 // Locked
+      ICON_FA_UNLOCK,               // Unlocked
+      ICON_FA_TRIANGLE_EXCLAMATION, // Unsupported
+      ICON_FA_FLASK_VIAL,           // Unofficial
+      ICON_FA_LOCK_OPEN,            // Recently Unlocked
+      ICON_FA_HAND_FIST,            // Active Challenges
+      ICON_FA_FLAG_CHECKERED,       // Almost There
+      ICON_EMOJI_WARNING,           // Not Confirmed
+      ICON_FA_UNLOCK,               // Unlocked in Casual
     };
-    static_assert(std::size(bucket_names) == NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
+    static_assert(std::size(bucket_icons) == NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
     ResetFocusHere();
     BeginMenuButtons();
@@ -2344,13 +2344,12 @@ void FullscreenUI::DrawAchievementsWindow()
 
         DebugAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
-        if (MenuHeadingButton(TinyString::from_format(
-                                "{} {}", bucket_names[bucket.bucket_type].first,
-                                Host::TranslateToStringView("Achievements", bucket_names[bucket.bucket_type].second)),
-                              s_achievements_locals.achievement_buckets_collapsed[bucket.bucket_type] ?
-                                ICON_FA_CHEVRON_DOWN :
-                                ICON_FA_CHEVRON_UP,
-                              UIStyle.MediumLargeFontSize))
+        if (MenuHeadingButton(
+              TinyString::from_format("{} {}", bucket_icons[bucket.bucket_type],
+                                      Achievements::GetAchievementBucketDisplayName(bucket.bucket_type)),
+              s_achievements_locals.achievement_buckets_collapsed[bucket.bucket_type] ? ICON_FA_CHEVRON_DOWN :
+                                                                                        ICON_FA_CHEVRON_UP,
+              UIStyle.MediumLargeFontSize))
         {
           s_achievements_locals.achievement_buckets_collapsed.flip(bucket.bucket_type);
         }

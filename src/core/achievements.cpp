@@ -2079,6 +2079,28 @@ std::string Achievements::GetSubsetBadgeURL(const rc_client_subset_t* subset)
     return subset->badge_url;
 }
 
+std::string_view Achievements::GetAchievementBucketDisplayName(u32 bucket_id)
+{
+  static constexpr const char* bucket_names[] = {
+    // clang-format off
+    TRANSLATE_NOOP("Achievements", "Unknown"),
+    TRANSLATE_NOOP("Achievements", "Locked"),
+    TRANSLATE_NOOP("Achievements", "Unlocked"),
+    TRANSLATE_NOOP("Achievements", "Unsupported"),
+    TRANSLATE_NOOP("Achievements", "Unofficial"),
+    TRANSLATE_NOOP("Achievements", "Recently Unlocked"),
+    TRANSLATE_NOOP("Achievements", "Active Challenges"),
+    TRANSLATE_NOOP("Achievements", "Almost There"),
+    TRANSLATE_NOOP("Achievements", "Not Confirmed"),
+    TRANSLATE_NOOP("Achievements", "Unlocked in Casual"),
+    // clang-format on
+  };
+  static_assert(std::size(bucket_names) == NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
+  return (bucket_id < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS) ?
+           Host::TranslateToStringView("Achievements", bucket_names[bucket_id]) :
+           "Unknown";
+}
+
 bool Achievements::IsLoggedIn()
 {
   return (rc_client_get_user_info(s_state.client) != nullptr);
