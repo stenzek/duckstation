@@ -162,7 +162,6 @@ std::span<const char* const> Settings::GetSectionSaveOrder()
     "Cheats",
     "Main",
     "UI",
-    "GameListTableView",
     "AutoUpdater",
     "Folders",
     "GameList",

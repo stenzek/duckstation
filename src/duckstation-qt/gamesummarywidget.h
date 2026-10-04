@@ -29,13 +29,13 @@ class GameSummaryWidget : public QWidget
   Q_OBJECT
 
 public:
-  GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent);
+  GameSummaryWidget(const GameList::Entry* entry, bool localized_titles, SettingsWindow* dialog, QWidget* parent);
   ~GameSummaryWidget();
 
   void reloadGameSettings();
 
 private:
-  void populateUi(const GameList::Entry* entry);
+  void populateUi(const GameList::Entry* entry, bool localized_titles);
   void setCustomTitle(const std::string& text);
   void setCustomDiscSetTitle(const std::string& text);
   void setCustomRegion(int region);

@@ -695,7 +695,8 @@ void SetupWizardDialog::onAchievementsViewProfilePressed()
 
 void SetupWizardDialog::setupGameListViewPage()
 {
-  const bool use_grid = Core::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+  const bool use_grid = Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_GRID_VIEW,
+                                                      GameList::DEFAULT_GRID_VIEW);
   m_ui.listView->setChecked(!use_grid);
   m_ui.gridView->setChecked(use_grid);
 
@@ -717,8 +718,9 @@ void SetupWizardDialog::onGridViewChanged(bool checked)
     return;
 
   // NOTE: No settings apply here, we explicitly change the layout.
-  Core::SetBaseBoolSettingValue("UI", "GameListGridView", setting_value);
-  Core::SetBaseUIntSettingValue("Main", "DefaultFullscreenUIGameView", setting_value ? 0 : 1);
+  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_GRID_VIEW, setting_value);
+  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
+                                setting_value);
   Host::CommitBaseSettingChanges();
   g_main_window->getGameListWidget()->reloadViewModeFromSettings();
 }

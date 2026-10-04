@@ -64,9 +64,6 @@ public:
     Column_LastVisible = Column_Compatibility,
   };
 
-  static std::optional<Column> getColumnIdForName(std::string_view name);
-  static const char* getColumnName(Column col);
-
   explicit GameListModel(GameListWidget* parent);
   ~GameListModel();
 
@@ -89,9 +86,9 @@ public:
   void refresh();
   void reloadThemeSpecificImages();
 
-  bool titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const;
-  bool lessThan(const GameList::Entry* left, const GameList::Entry* right, int column) const;
   bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
+
+  void reloadSettings();
 
   bool getShowLocalizedTitles() const;
   void setShowLocalizedTitles(bool enabled);
@@ -142,9 +139,9 @@ private:
 
   void rowsChanged(const QList<int>& rows);
 
+  void loadSettings();
   void loadCommonImages();
   void loadSizeDependentPixmaps();
-  void updateCoverScale();
   void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
@@ -192,13 +189,14 @@ class GameListListView final : public QTableView
   Q_OBJECT
 
 public:
-  GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
+  GameListListView(GameListWidget* widget, GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
 
   QFontMetrics fontMetricsForHorizontalHeader() const;
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
   void updateFixedColumnWidths();
+  void loadColumnSortSettings();
 
   void adjustIconSize(int delta);
 
@@ -212,11 +210,11 @@ protected:
 
 private:
   void loadColumnVisibilitySettings();
-  void loadColumnSortSettings();
 
   void onHeaderContextMenuRequested(const QPoint& point);
   void saveColumnSortSettings();
 
+  GameListWidget* m_widget = nullptr;
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
 
@@ -229,7 +227,7 @@ class GameListGridView final : public QListView
   Q_OBJECT
 
 public:
-  GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
+  GameListGridView(GameListWidget* widget, GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;
 
   ALWAYS_INLINE bool isLayoutUpdatedDeferred() const { return m_layout_update_deferred; }
@@ -246,6 +244,7 @@ protected:
   void resizeEvent(QResizeEvent* e) override;
 
 private:
+  GameListWidget* m_widget = nullptr;
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
   int m_horizontal_offset = 0;
@@ -268,6 +267,7 @@ public:
   ALWAYS_INLINE GameListListView* getListView() const { return m_list_view; }
   ALWAYS_INLINE GameListGridView* getGridView() const { return m_grid_view; }
 
+  void reloadSettings();
   void refresh(bool invalidate_cache);
   void cancelRefresh();
   void setBackgroundPath(const std::string_view path);
@@ -290,6 +290,8 @@ public:
   void setAnimateGameIcons(bool enabled);
   void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
+  void setCoverScale(float scale);
+  void setIconSize(int size);
   void focusSearchWidget();
 
   // Returns translated supported formats string. Formats are separated by newlines.

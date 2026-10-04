@@ -99,7 +99,7 @@ static void StartImageVerification();
 static void ProcessImageVerificationResults(std::string path, GameDatabase::TrackVerificationResult verification,
                                             bool result, bool cancelled, Error error);
 
-static void DrawSummarySettingsPage(bool show_localized_titles);
+static void DrawSummarySettingsPage();
 static void DrawSummarySettingsTrackList();
 static void OpenGameTitleActions(const std::string_view& path, const std::string_view& title, bool has_custom_title,
                                  bool is_disc_set_title);
@@ -196,7 +196,7 @@ static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std:
                             std::optional<DataType> (*from_string_function)(std::string_view str),
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                            bool enabled = true, bool use_dropdown = true);
+                            bool enabled = true, bool use_dropdown = true, void (*changed_callback)() = nullptr);
 static void DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                      const char* section, const char* key, float default_value, bool enabled = true);
 static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section, const char* key,
@@ -1528,7 +1528,8 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                                    std::optional<DataType> (*from_string_function)(std::string_view str),
                                    const char* (*to_string_function)(DataType value),
                                    const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                                   bool enabled /* = true */, bool use_dropdown /* = true */)
+                                   bool enabled /* = true */, bool use_dropdown /* = true */,
+                                   void (*changed_callback)() /* = nullptr*/)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -1577,17 +1578,21 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
     if (use_dropdown)
     {
       OpenDropdownDialog(title, std::move(cd_options),
-                         [section = TinyString(section), key = TinyString(key), to_string_function,
+                         [section = TinyString(section), key = TinyString(key), to_string_function, changed_callback,
                           game_settings](s32 index, const std::string& title) {
                            apply_option(section, key, to_string_function, game_settings, index);
+                           if (changed_callback)
+                             changed_callback();
                          });
     }
     else
     {
       OpenChoiceDialog(title, false, std::move(cd_options),
-                       [section = TinyString(section), key = TinyString(key), to_string_function,
+                       [section = TinyString(section), key = TinyString(key), to_string_function, changed_callback,
                         game_settings](s32 index, const std::string& title, bool checked) {
                          apply_option(section, key, to_string_function, game_settings, index);
+                         if (changed_callback)
+                           changed_callback();
                        });
     }
   }
@@ -1918,7 +1923,6 @@ void FullscreenUI::DrawSettingsWindow()
 
   const float bg_alpha = GetBackgroundAlpha();
   const bool blur_background = CanBlurBackground() && s_settings_locals.settings_page != SettingsPage::PostProcessing;
-  const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
   static constexpr const SettingsPage global_pages[] = {
     SettingsPage::Interface, SettingsPage::GameList,     SettingsPage::BIOS,       SettingsPage::Console,
@@ -1968,9 +1972,11 @@ void FullscreenUI::DrawSettingsWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow(TransitionEffect::ZoomOut);
 
-    NavTitle(s_settings_locals.game_settings_entry ?
-               s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles) :
-               Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
+    NavTitle(
+      s_settings_locals.game_settings_entry ?
+        s_settings_locals.game_settings_entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
+          GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES)) :
+        Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count);
 
@@ -2029,7 +2035,7 @@ void FullscreenUI::DrawSettingsWindow()
     switch (s_settings_locals.settings_page)
     {
       case SettingsPage::Summary:
-        DrawSummarySettingsPage(show_localized_titles);
+        DrawSummarySettingsPage();
         break;
 
       case SettingsPage::Interface:
@@ -2188,7 +2194,7 @@ void FullscreenUI::DrawSettingsWindow()
   }
 }
 
-void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
+void FullscreenUI::DrawSummarySettingsPage()
 {
   BeginMenuButtons();
   ResetFocusHere();
@@ -2206,6 +2212,8 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
   {
     const float title_width = LayoutScale(200.0f);
     const bool allow_customization = !s_settings_locals.game_settings_entry->is_runtime_populated;
+    const bool show_localized_titles = Core::GetBaseBoolSettingValue(
+      GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
     const std::string_view title = s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles);
     if (MenuButtonWithInlineValue(s_settings_locals.game_settings_entry->has_custom_title ?
                                     FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title (*)") :
@@ -2891,48 +2899,48 @@ void FullscreenUI::DrawGameListSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface(false);
 
   BeginMenuButtons();
-  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("List Settings"));
   {
-    static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
-    static constexpr const char* sort_types[] = {
-      FSUI_NSTR("Type"),
-      FSUI_NSTR("Serial"),
-      FSUI_NSTR("Title"),
-      FSUI_NSTR("File Title"),
-      FSUI_NSTR("Time Played"),
-      FSUI_NSTR("Last Played"),
-      FSUI_NSTR("File Size"),
-      FSUI_NSTR("Uncompressed Size"),
-      FSUI_NSTR("Achievement Unlock/Count"),
-    };
+    ResetFocusHere();
 
-    DrawIntListSetting(bsi, FSUI_ICONVSTR(ICON_FA_TABLE_CELLS_LARGE, "Default View"),
-                       FSUI_VSTR("Selects the view that the game list will open to."), "Main",
-                       "DefaultFullscreenUIGameView", 0, view_types);
-    DrawIntListSetting(bsi, FSUI_ICONVSTR(ICON_FA_SORT, "Sort By"),
-                       FSUI_VSTR("Determines that field that the game list will be sorted by."), "Main",
-                       "FullscreenUIGameSort", 0, sort_types);
-    DrawToggleSetting(
+    bool settings_changed = DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_TABLE_CELLS_LARGE, "Grid View"),
+      FSUI_VSTR("Shows the game list as a grid instead of a vertical list."), GameList::UI_SETTING_SECTION,
+      GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW, GameList::DEFAULT_FULLSCREENUI_GRID_VIEW);
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SORT, "Sort By"),
+                    FSUI_VSTR("Determines that field that the game list will be sorted by."),
+                    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_COLUMN, GameList::DEFAULT_SORT_COLUMN,
+                    &GameList::ParseColumnName, &GameList::GetColumnName, &GameList::GetColumnDisplayName,
+                    GameList::Column::MaxCount, false, true, &FullscreenUI::ReloadGameListSettings);
+    settings_changed |= DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_ARROW_DOWN_Z_A, "Sort Reversed"),
-      FSUI_VSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "Main",
-      "FullscreenUIGameSortReverse", false);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RECTANGLE_LIST, "Merge Multi-Disc Games"),
-                      FSUI_VSTR("Merges multi-disc games into one item in the game list."), "Main",
-                      "FullscreenUIMergeDiscSets", true);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Show Localized Titles"),
-                      FSUI_VSTR("Uses localized (native language) titles in the game list."), "UI",
-                      "GameListShowLocalizedTitles", true);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
-                      FSUI_VSTR("Shows trophy icons in game grid when games have achievements or have been mastered."),
-                      "Main", "FullscreenUIShowTrophyIcons", true);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TAGS, "Show Grid View Titles"),
-                      FSUI_VSTR("Shows titles underneath the images in the game grid view."), "Main",
-                      "FullscreenUIShowGridTitles", true);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TEXT_SLASH, "List Compact Mode"),
-                      FSUI_VSTR("Displays only the game title in the list, instead of the title and serial/file name."),
-                      "Main", "FullscreenUIGameListCompactMode", true);
+      FSUI_VSTR("Reverses the game list sort order from the default (usually ascending to descending)."),
+      GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_REVERSED, GameList::DEFAULT_SORT_REVERSED);
+    settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RECTANGLE_LIST, "Merge Multi-Disc Games"),
+                                          FSUI_VSTR("Merges multi-disc games into one item in the game list."),
+                                          GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_MERGE_DISC_SETS,
+                                          GameList::DEFAULT_MERGE_DISC_SETS);
+    settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Show Localized Titles"),
+                                          FSUI_VSTR("Uses localized (native language) titles in the game list."),
+                                          GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES,
+                                          GameList::DEFAULT_LOCALIZED_TITLES);
+    settings_changed |= DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
+      FSUI_VSTR("Shows trophy icons in game grid when games have achievements or have been mastered."),
+      GameList::UI_SETTING_SECTION, "GameListGridTrophyIcons", true);
+    settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TAGS, "Show Grid View Titles"),
+                                          FSUI_VSTR("Shows titles underneath the images in the game grid view."),
+                                          GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_COVER_TITLES,
+                                          GameList::DEFAULT_COVER_TITLES);
+    settings_changed |= DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_TEXT_SLASH, "List Compact Mode"),
+      FSUI_VSTR("Displays only the game title in the list, instead of the title and serial/file name."),
+      GameList::UI_SETTING_SECTION, "GameListCompactMode", true);
+
+    // Need to queue because we have the settings lock...
+    if (settings_changed)
+      Host::RunOnCoreThread([]() { VideoThread::RunOnThread(&FullscreenUI::ReloadGameListSettings); });
   }
 
   MenuHeading(FSUI_VSTR("Search Directories"));

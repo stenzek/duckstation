@@ -36,7 +36,8 @@
 
 using namespace Qt::StringLiterals;
 
-GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, bool localized_titles, SettingsWindow* dialog,
+                                     QWidget* parent)
   : m_dialog(dialog)
 {
   m_ui.setupUi(this);
@@ -70,7 +71,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
     m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(language_name), QString::fromUtf8(language_name));
   }
 
-  populateUi(entry);
+  populateUi(entry, localized_titles);
 
   connect(m_ui.compatibilityComments, &QAbstractButton::clicked, this,
           &GameSummaryWidget::onCompatibilityCommentsClicked);
@@ -134,7 +135,7 @@ void GameSummaryWidget::reloadGameSettings()
   m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
 }
 
-void GameSummaryWidget::populateUi(const GameList::Entry* entry)
+void GameSummaryWidget::populateUi(const GameList::Entry* entry, bool localized_titles)
 {
   m_path = entry->path;
 
@@ -151,7 +152,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   {
     m_ui.hashes->setText(tr("N/A"));
   }
-  m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+  m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(localized_titles)));
   m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
   m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
 
@@ -169,8 +170,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
     entry->disc_set_member ? GameList::GetEntryForPath(entry->GetDiscSetEntry()->GetSaveTitle()) : nullptr;
   if (disc_set_entry)
   {
-    m_ui.discSetTitle->setText(
-      QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+    m_ui.discSetTitle->setText(QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(localized_titles)));
     m_ui.restoreDiscSetTitle->setEnabled(disc_set_entry->has_custom_title);
   }
   else
@@ -410,7 +410,8 @@ void GameSummaryWidget::setCustomTitle(const std::string& text)
     const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
     if (entry)
     {
-      const std::string_view title = entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+      const std::string_view title = entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
+        GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
       m_dialog->setGameTitle(title);
 
       {
@@ -440,8 +441,8 @@ void GameSummaryWidget::setCustomDiscSetTitle(const std::string& text)
   GameList::SaveCustomTitleForPath(disc_set_entry->path, text);
 
   const QSignalBlocker sb(m_ui.discSetTitle);
-  m_ui.discSetTitle->setText(
-    QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+  m_ui.discSetTitle->setText(QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
+    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES))));
 
   m_ui.restoreDiscSetTitle->setEnabled(disc_set_entry->has_custom_title);
 

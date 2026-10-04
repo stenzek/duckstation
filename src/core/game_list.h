@@ -31,8 +31,33 @@ enum class EntryType : u8
   MaxCount
 };
 
+enum class Column : u8
+{
+  Type,
+  Serial,
+  Title,
+  FileTitle,
+  Developer,
+  Publisher,
+  Genre,
+  Year,
+  Players,
+  TimePlayed,
+  LastPlayed,
+  FileSize,
+  DataSize,
+  Region,
+  Achievements,
+  Compatibilty,
+
+  MaxCount,
+};
+
 struct Entry
 {
+  Entry();
+  ~Entry();
+
   EntryType type = EntryType::MaxCount;
   DiscRegion region = DiscRegion::Other;
 
@@ -102,6 +127,12 @@ using EntryList = std::vector<Entry>;
 const char* GetEntryTypeName(EntryType type);
 const char* GetEntryTypeDisplayName(EntryType type);
 
+const char* GetColumnName(Column column);
+const char* GetColumnDisplayName(Column column);
+std::optional<Column> ParseColumnName(std::string_view name);
+bool CompareEntryLessThan(const Entry* left, const Entry* right, Column column);
+bool CompareEntryTitlesLessThan(const Entry* left, const Entry* right);
+
 bool IsScannableFilename(std::string_view path);
 
 /// Populates a game list entry struct with information from the specified path.
@@ -119,7 +150,6 @@ const Entry* GetFirstDiscSetMember(const GameDatabase::DiscSetEntry* dsentry);
 size_t GetEntryCount();
 
 bool IsGameListLoaded();
-bool ShouldShowLocalizedTitles();
 
 /// Returns true if the specified path should not have game properties saved.
 bool CanEditGameSettingsForPath(const std::string_view path, const std::string_view serial);
@@ -193,8 +223,24 @@ void UpdateAchievementData(std::span<const u8, 16> hash, u32 game_id, u32 num_ac
                            u32 num_unlocked_hardcore);
 void UpdateAllAchievementData();
 
-/// Accesses achievement game badges. Assumes the lock is held.
-bool PreferAchievementGameBadgesForIcons();
+// Setting keys
+extern const char* const UI_SETTING_SECTION;
+extern const char* const SETTING_KEY_LOCALIZED_TITLES;
+extern const char* const SETTING_KEY_SORT_COLUMN;
+extern const char* const SETTING_KEY_SORT_REVERSED;
+extern const char* const SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS;
+extern const char* const SETTING_KEY_MERGE_DISC_SETS;
+extern const char* const SETTING_KEY_GRID_VIEW;
+extern const char* const SETTING_KEY_FULLSCREENUI_GRID_VIEW;
+extern const char* const SETTING_KEY_COVER_TITLES;
+inline constexpr bool DEFAULT_LOCALIZED_TITLES = true;
+inline constexpr Column DEFAULT_SORT_COLUMN = Column::Title;
+inline constexpr bool DEFAULT_SORT_REVERSED = false;
+inline constexpr bool DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS = false;
+inline constexpr bool DEFAULT_MERGE_DISC_SETS = true;
+inline constexpr bool DEFAULT_GRID_VIEW = false;
+inline constexpr bool DEFAULT_FULLSCREENUI_GRID_VIEW = true;
+inline constexpr bool DEFAULT_COVER_TITLES = true;
 
 } // namespace GameList
 
