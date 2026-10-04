@@ -1547,6 +1547,7 @@ void CPU::ARM64Recompiler::Compile_mult(CompileFlags cf, bool sign)
 
   (sign) ? armAsm->smull(lo.X(), rs, rt) : armAsm->umull(lo.X(), rs, rt);
   armAsm->lsr(hi.X(), lo.X(), 32);
+  armAsm->mov(lo, lo); // Clear upper product bits before LO can be renamed to a GPR.
 }
 
 void CPU::ARM64Recompiler::Compile_mult(CompileFlags cf)
