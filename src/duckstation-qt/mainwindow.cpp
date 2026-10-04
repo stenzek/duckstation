@@ -1462,6 +1462,10 @@ void MainWindow::onFullscreenUIStartedOrStopped(bool running)
   s_locals.fullscreen_ui_started = running;
   m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
   m_ui.actionToolbarStartFullscreenUI->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
+
+  // If big picture was exited, then we should refresh the game list settings because they may have changed.
+  if (!running && !m_is_closing && !QtHost::InBatchMode())
+    m_game_list_widget->reloadSettings();
 }
 
 void MainWindow::onCloseGameActionTriggered()
@@ -3344,9 +3348,9 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
 
   // Automatically show the achievements column after first login. If the user has manually hidden it,
   // it will not be automatically shown again.
-  if (!Core::GetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", false))
+  if (!Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "TriedShowingAchievementsColumn", false))
   {
-    Core::SetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", true);
+    Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "TriedShowingAchievementsColumn", true);
     m_game_list_widget->getListView()->setAndSaveColumnHidden(GameListModel::Column_Achievements, false);
   }
 }
