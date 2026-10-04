@@ -105,6 +105,9 @@ std::string GetUserBadgeURL(const char* username);
 /// Returns the URL for the badge of the specified subset, using the subset ID.
 std::string GetSubsetBadgeURL(const rc_client_subset_t* subset);
 
+/// Returns a list of achievement bucket names.
+std::string_view GetAchievementBucketDisplayName(u32 bucket_id);
+
 } // namespace Achievements
 
 namespace FullscreenUI {
