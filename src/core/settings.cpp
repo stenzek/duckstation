@@ -857,8 +857,11 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
-                      Controller::GetControllerInfo(controller_types[i]).name);
+    if (!for_copy)
+    {
+      si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                        Controller::GetControllerInfo(controller_types[i]).name);
+    }
 
     skey.format("Card{}Type", i + 1);
     si.SetStringValue("MemoryCards", skey, GetMemoryCardTypeName(memory_card_types[i]));
@@ -873,7 +876,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
   si.SetBoolValue("MemoryCards", "FastForwardAccess", memory_card_fast_forward_access);
 
-  si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
+  if (!for_copy)
+    si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
 
   si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
   si.SetBoolValue("Cheevos", "ChallengeMode", achievements_hardcore_mode);
