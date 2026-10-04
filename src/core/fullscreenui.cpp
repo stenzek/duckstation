@@ -1094,7 +1094,16 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
       FullscreenUI::LoadingScreenProgressCallback progress(std::move(image_path));
       progress.SetTitle(FSUI_VSTR("Loading Game List..."));
       progress.SetOpenDelay(0.0f);
-      GameList::Refresh(lock, false, false, &progress);
+
+      // note: uses the base settings interface
+      GameList::ScanDirectoryList dirs;
+      {
+        lock.unlock();
+        const auto settings_lock = Core::GetSettingsLock();
+        dirs = GameList::GetScanDirectoryList(*Core::GetBaseSettingsLayer());
+        lock.lock();
+      }
+      GameList::Refresh(lock, dirs, false, false, &progress);
     }
 
     // This is still needed because a scan-in-progress will report loaded.
