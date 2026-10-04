@@ -2542,6 +2542,10 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
       save_regs.Combine(RegisterList(Register(i)));
   }
 
+  const bool pad_stack = ((save_regs.GetCount() & 1) != 0);
+  if (pad_stack)
+    armAsm->sub(sp, sp, 4);
+
   if (!save_regs.IsEmpty())
     armAsm->push(save_regs);
 
@@ -2641,6 +2645,9 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
   // restore regs
   if (!save_regs.IsEmpty())
     armAsm->pop(save_regs);
+
+  if (pad_stack)
+    armAsm->add(sp, sp, 4);
 
   armEmitJmp(armAsm, static_cast<const u8*>(code_address) + code_size, true);
   armAsm->FinalizeCode();
