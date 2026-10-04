@@ -9,6 +9,27 @@
 
 // ---- Parsing / Loading ----
 
+TEST(INISettingsInterface, CopySectionPreservesRepeatedBindings)
+{
+  INISettingsInterface source;
+  INISettingsInterface destination;
+  const SettingsInterface::KeyValueList bindings = {
+    {"Button", "Android/0/Button1"}, {"Button", "Android/0/Button2"}, {"Unicode", "\xC3\xA9\xE4\xB8\xAD"}};
+  source.SetKeyValueList("InputSources", bindings);
+  destination.SetStringValue("InputSources", "Stale", "value");
+
+  destination.CopySection(source, "InputSources");
+  EXPECT_EQ(destination.GetKeyValueList("InputSources"), source.GetKeyValueList("InputSources"));
+  EXPECT_EQ(destination.GetStringList("InputSources", "Button"),
+            (std::vector<std::string>{"Android/0/Button1", "Android/0/Button2"}));
+  EXPECT_FALSE(destination.ContainsValue("InputSources", "Stale"));
+
+  source.CopySection(source, "InputSources");
+  EXPECT_EQ(source.GetKeyValueList("InputSources"), destination.GetKeyValueList("InputSources"));
+  destination.CopySection(source, "Missing");
+  EXPECT_TRUE(destination.GetKeyValueList("Missing").empty());
+}
+
 TEST(INISettingsInterface, LoadEmptyString)
 {
   INISettingsInterface si;
