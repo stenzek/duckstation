@@ -128,6 +128,7 @@ struct MainWindowLocals
   QString current_game_serial;
   QString current_game_path;
   QIcon current_game_icon;
+  GameHash current_game_hash;
   std::optional<std::time_t> undo_state_timestamp;
   std::atomic_uint32_t system_locked{false};
   bool system_starting = false;
@@ -177,6 +178,11 @@ const QString& QtHost::GetCurrentGameSerial()
 const QString& QtHost::GetCurrentGamePath()
 {
   return s_locals.current_game_path;
+}
+
+GameHash QtHost::GetCurrentGameHash()
+{
+  return s_locals.current_game_hash;
 }
 
 #ifdef _WIN32
@@ -597,11 +603,18 @@ void MainWindow::onSystemStarting()
   updateDisplayRelatedActions();
 }
 
-void MainWindow::onSystemStarted()
+void MainWindow::onSystemStarted(const QString& path, const QString& game_serial, const QString& game_title,
+                                 GameHash hash)
 {
   m_was_disc_change_request = false;
   s_locals.system_starting = false;
   s_locals.system_valid = true;
+
+  s_locals.current_game_path = path;
+  s_locals.current_game_title = game_title;
+  s_locals.current_game_serial = game_serial;
+  s_locals.current_game_icon = getIconForGame(path);
+  s_locals.current_game_hash = hash;
 
   updateEmulationActions();
   updateDisplayRelatedActions();
@@ -647,6 +660,13 @@ void MainWindow::onSystemStopping()
 void MainWindow::onSystemDestroyed()
 {
   Assert(!QtHost::IsSystemValidOrStarting());
+
+  s_locals.current_game_path = {};
+  s_locals.current_game_title = {};
+  s_locals.current_game_serial = {};
+  s_locals.current_game_icon = {};
+  s_locals.current_game_hash = 0;
+
   updateLogWidget();
 
   // If we're closing or in batch mode, quit the whole application now.
@@ -663,12 +683,14 @@ void MainWindow::onSystemDestroyed()
     switchToGameListView();
 }
 
-void MainWindow::onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title)
+void MainWindow::onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title,
+                                     GameHash hash)
 {
   s_locals.current_game_path = path;
   s_locals.current_game_title = game_title;
   s_locals.current_game_serial = game_serial;
   s_locals.current_game_icon = getIconForGame(path);
+  s_locals.current_game_hash = hash;
 
   updateWindowTitle();
   updateEmulationActions();
