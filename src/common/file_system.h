@@ -223,6 +223,8 @@ std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* path, Error* erro
 std::optional<DynamicHeapArray<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(const char* path, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp, Error* error = nullptr);
+bool ReadFileToString(const char* path, std::string* str, Error* error = nullptr);
+bool ReadFileToString(std::FILE* fp, std::string* str, Error* error = nullptr);
 bool WriteBinaryFile(const char* path, const void* data, size_t data_length, Error* error = nullptr);
 bool WriteBinaryFile(const char* path, const std::span<const u8> data, Error* error = nullptr);
 bool WriteStringToFile(const char* path, std::string_view sv, Error* error = nullptr);
