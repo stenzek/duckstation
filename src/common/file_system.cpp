@@ -1132,10 +1132,7 @@ std::FILE* FileSystem::OpenSharedCFile(const char* path, const char* mode, FileS
   Error::SetErrno(error, errno);
   return nullptr;
 #else
-  std::FILE* fp = std::fopen(path, mode);
-  if (!fp)
-    Error::SetErrno(error, errno);
-  return fp;
+  return OpenCFile(path, mode, error);
 #endif
 }
 
