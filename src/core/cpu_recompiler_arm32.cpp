@@ -20,6 +20,7 @@
 
 #include "vixl/aarch32/constants-aarch32.h"
 #include "vixl/aarch32/instructions-aarch32.h"
+#include "vixl/code-generation-scopes-vixl.h"
 
 #ifdef ENABLE_HOST_DISASSEMBLY
 #include "vixl/aarch32/disasm-aarch32.h"
@@ -207,8 +208,13 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   // A32 jumps are silly.
   {
     Assembler emit(static_cast<vixl::byte*>(code), kA32InstructionSizeInBytes, A32);
+#ifdef VIXL_DEBUG
+    vixl::CodeBufferCheckScope asm_check(&emit, kA32InstructionSizeInBytes,
+                                        vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+#endif
     Label label(disp);
     emit.b(&label);
+    emit.FinalizeCode();
   }
 
   if (flush_icache)
@@ -235,8 +241,13 @@ u8* armGetJumpTrampoline(const void* target)
 
   u8* start = s_trampoline_start_ptr + offset;
   vixl::aarch32::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+#ifdef VIXL_DEBUG
+  vixl::CodeBufferCheckScope asm_check(&armAsm, TRAMPOLINE_AREA_SIZE - offset,
+                                      vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+#endif
   armMoveAddressToReg(&armAsm, RSCRATCH, target);
   armAsm.bx(RSCRATCH);
+  armAsm.FinalizeCode();
 
   const u32 size = static_cast<u32>(armAsm.GetSizeOfCodeGenerated());
   DebugAssert(size < 20);
@@ -362,10 +373,10 @@ void CPU::ARM32Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 c
   armAsm = &m_emitter;
 
 #ifdef VIXL_DEBUG
-  m_emitter_check = std::make_unique<vixl::CodeBufferCheckScope>(m_emitter.get(), code_buffer_space,
+  m_emitter_check = std::make_unique<vixl::CodeBufferCheckScope>(&m_emitter, code_buffer_space,
                                                                  vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
   m_far_emitter_check = std::make_unique<vixl::CodeBufferCheckScope>(
-    m_far_emitter.get(), far_code_space, vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+    &m_far_emitter, far_code_space, vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
 #endif
 
   // Need to wipe it out so it's correct when toggling fastmem.
