@@ -1339,12 +1339,14 @@ void Host::OnSystemStarting()
   emit g_core_thread->systemStarting();
 }
 
-void Host::OnSystemStarted()
+void Host::OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                           GameHash hash)
 {
   g_core_thread->stopIdleUpdateTimer();
   g_core_thread->wakeThread();
 
-  emit g_core_thread->systemStarted();
+  emit g_core_thread->systemStarted(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
+                                    QString::fromStdString(game_name), hash);
 }
 
 void Host::OnSystemPaused()
@@ -3165,7 +3167,7 @@ void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& 
                                const std::string& game_name, GameHash hash)
 {
   emit g_core_thread->systemGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
-                                        QString::fromStdString(game_name));
+                                        QString::fromStdString(game_name), hash);
 }
 
 void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
