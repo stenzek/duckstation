@@ -1048,26 +1048,25 @@ void CPU::RISCV64Recompiler::Compile_Fallback()
 
   Flush(FLUSH_FOR_INTERPRETER);
 
-#if 0
-  cg->call(&CPU::RecompilerThunks::InterpretInstruction);
+  EmitCall(reinterpret_cast<const void*>(&CPU::RecompilerThunks::InterpretInstruction));
 
-  // TODO: make me less garbage
-  // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
-  // but nothing should be going through here..
+  SwitchToFarCode(true, &Assembler::BEQ, RRET, zero);
+  BackupHostState();
+  m_dirty_pc = false;
+  EndBlock(std::nullopt, true);
+  RestoreHostState();
+  SwitchToNearCode(false);
+
   Label no_load_delay;
-  cg->movzx(RWARG1, cg->byte[PTR(&g_state.next_load_delay_reg)]);
-  cg->cmp(RWARG1, static_cast<u8>(Reg::count));
-  cg->je(no_load_delay, CodeGenerator::T_SHORT);
-  cg->mov(RWARG2, cg->dword[PTR(&g_state.next_load_delay_value)]);
-  cg->mov(cg->byte[PTR(&g_state.load_delay_reg)], RWARG1);
-  cg->mov(cg->dword[PTR(&g_state.load_delay_value)], RWARG2);
-  cg->mov(cg->byte[PTR(&g_state.next_load_delay_reg)], static_cast<u32>(Reg::count));
-  cg->L(no_load_delay);
-
+  rvAsm->LBU(RARG1, PTR(&g_state.next_load_delay_reg));
+  EmitMov(RSCRATCH, static_cast<u32>(Reg::count));
+  rvAsm->BEQ(RARG1, RSCRATCH, &no_load_delay);
+  rvAsm->LW(RARG2, PTR(&g_state.next_load_delay_value));
+  rvAsm->SB(RARG1, PTR(&g_state.load_delay_reg));
+  rvAsm->SW(RARG2, PTR(&g_state.load_delay_value));
+  rvAsm->SB(RSCRATCH, PTR(&g_state.next_load_delay_reg));
+  rvAsm->Bind(&no_load_delay);
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
-#else
-  Panic("Fixme");
-#endif
 }
 
 void CPU::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& pcreg)

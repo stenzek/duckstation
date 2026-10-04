@@ -1062,6 +1062,13 @@ void CPU::ARM32Recompiler::Compile_Fallback()
 
   EmitCall(reinterpret_cast<const void*>(&CPU::RecompilerThunks::InterpretInstruction));
 
+  SwitchToFarCodeIfRegZeroOrNonZero(RRET, true);
+  BackupHostState();
+  m_dirty_pc = false;
+  EndBlock(std::nullopt, true);
+  RestoreHostState();
+  SwitchToNearCode(false);
+
   // TODO: make me less garbage
   // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
   // but nothing should be going through here..
