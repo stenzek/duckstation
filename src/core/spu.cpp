@@ -2388,6 +2388,13 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
 
     for (size_t channel = 0; channel < 2; channel++)
     {
+      // Skip the output FIR at zero volume; history is already updated above.
+      if ((channel == 0 ? s_state.reverb_registers.vLOUT : s_state.reverb_registers.vROUT) == 0)
+      {
+        out[channel] = 0;
+        continue;
+      }
+
       const s16* src =
         &s_state.reverb_upsample_buffer[channel][((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F];
 
