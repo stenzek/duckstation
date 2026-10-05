@@ -431,10 +431,12 @@ std::string GetGameMemoryCardPath(std::string_view save_title, std::string_view 
 u8 GetAudioOutputVolume();
 void UpdateVolume();
 
+/// Callback for when a screenshot has finished saving. May execute on a worker thread.
+using ScreenshotSavedCallback = void (*)(void* callback_data, bool success, const std::string& path,
+                                         const Error& error);
+
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
-void SaveScreenshot(const char* path = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
-                    DisplayScreenshotFormat format = g_settings.display_screenshot_format,
-                    u8 quality = g_settings.display_screenshot_quality);
+void SaveScreenshot(std::string path = {}, ScreenshotSavedCallback callback = nullptr, void* callback_data = nullptr);
 
 /// Starts/stops GPU dump/trace recording.
 bool StartRecordingGPUDump(const char* path = nullptr, u32 num_frames = 1);

@@ -5594,21 +5594,21 @@ std::string System::GetConfiguredMediaCaptureContainerForMode(MediaCaptureMode m
   }
 }
 
-void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality)
+void System::SaveScreenshot(std::string path /* =  */, ScreenshotSavedCallback callback /* = nullptr */,
+                            void* callback_data /* = nullptr */)
 {
   if (!IsValid())
     return;
 
-  std::string auto_path;
-  if (!path || path[0] == '\0')
+  if (path.empty())
   {
-    path = (auto_path = GetNewCapturePath(EmuFolders::Screenshots, s_state.running_game_title,
-                                          g_settings.display_screenshot_filename_format,
-                                          Settings::GetDisplayScreenshotFormatExtension(format)))
-             .c_str();
+    path = GetNewCapturePath(EmuFolders::Screenshots, s_state.running_game_title,
+                             g_settings.display_screenshot_filename_format,
+                             Settings::GetDisplayScreenshotFormatExtension(g_settings.display_screenshot_format));
   }
 
-  GPUBackend::RenderScreenshotToFile(path, mode, quality, true);
+  GPUBackend::RenderScreenshotToFile(path, g_settings.display_screenshot_mode, g_settings.display_screenshot_quality,
+                                     true, callback, callback_data);
 }
 
 bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frames /*= 0*/)
