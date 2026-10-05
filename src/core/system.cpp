@@ -182,8 +182,8 @@ static void UpdateDisplayVSync();
 static void InhibitScreensaver(bool inhibit);
 
 static void ClearSettingsLayers();
-static bool UpdateGameSettingsLayer();
-static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<Threading::Mutex>& lock);
+static bool UpdateGameSettingsLayer(std::unique_lock<Threading::Mutex> lock);
+static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<Threading::Mutex> lock);
 static void UpdateRunningGame(const std::string& path, CDImage* image, bool booting);
 static bool CheckForRequiredSubQ(Error* error);
 static bool SwitchDiscFromSet(s32 direction, bool show_osd_message);
@@ -1198,7 +1198,7 @@ void System::ApplySettings(bool display_osd_messages)
   // If we've disabled/enabled game settings, we need to reload without it.
   if (g_settings.apply_game_settings != old_settings.apply_game_settings)
   {
-    UpdateGameSettingsLayer();
+    UpdateGameSettingsLayer(Core::GetSettingsLock());
     LoadSettings(display_osd_messages);
   }
   else if (g_settings.achievements_hardcore_mode != old_settings.achievements_hardcore_mode)
@@ -1250,8 +1250,7 @@ void System::ReloadSettingsForPath(std::string_view path)
   {
     if (Host::IsOnCoreThread())
     {
-      lock.unlock();
-      if (IsValid() && UpdateGameSettingsLayer())
+      if (IsValid() && UpdateGameSettingsLayer(std::move(lock)))
       {
         if (!IsReplayingGPUDump())
           Cheats::ReloadCheats(false, true, false, true, true);
@@ -1262,7 +1261,7 @@ void System::ReloadSettingsForPath(std::string_view path)
     else
     {
       Host::RunOnCoreThread([]() {
-        if (IsValid() && UpdateGameSettingsLayer())
+        if (IsValid() && UpdateGameSettingsLayer(Core::GetSettingsLock()))
         {
           if (!IsReplayingGPUDump())
             Cheats::ReloadCheats(false, true, false, true, true);
@@ -1281,8 +1280,7 @@ void System::ReloadSettingsForPath(std::string_view path)
     {
       if (IsValid())
       {
-        UpdateInputSettingsLayer(s_state.input_profile_name, lock);
-        lock.unlock();
+        UpdateInputSettingsLayer(s_state.input_profile_name, std::move(lock));
         ApplySettings(false);
       }
     }
@@ -1291,9 +1289,7 @@ void System::ReloadSettingsForPath(std::string_view path)
       Host::RunOnCoreThread([]() {
         if (IsValid())
         {
-          auto lock = Core::GetSettingsLock();
-          UpdateInputSettingsLayer(s_state.input_profile_name, lock);
-          lock.unlock();
+          UpdateInputSettingsLayer(s_state.input_profile_name, Core::GetSettingsLock());
           ApplySettings(false);
         }
       });
@@ -1328,7 +1324,7 @@ void System::UpdateFolderPaths()
 
   if (IsValid())
   {
-    if (old_gamesettings != EmuFolders::GameSettings && UpdateGameSettingsLayer())
+    if (old_gamesettings != EmuFolders::GameSettings && UpdateGameSettingsLayer(Core::GetSettingsLock()))
     {
       if (!IsReplayingGPUDump())
         Cheats::ReloadCheats(old_cheats != EmuFolders::Cheats, true, false, true, false);
@@ -1343,11 +1339,7 @@ void System::UpdateFolderPaths()
 
     if (!s_state.input_profile_name.empty() && old_inputprofiles != EmuFolders::InputProfiles)
     {
-      {
-        auto lock = Core::GetSettingsLock();
-        UpdateInputSettingsLayer(s_state.input_profile_name, lock);
-      }
-
+      UpdateInputSettingsLayer(s_state.input_profile_name, Core::GetSettingsLock());
       ApplySettings(false);
     }
 
@@ -1471,9 +1463,8 @@ std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const Gam
   return ini;
 }
 
-bool System::UpdateGameSettingsLayer()
+bool System::UpdateGameSettingsLayer(std::unique_lock<Threading::Mutex> lock)
 {
-  auto lock = Core::GetSettingsLock();
   const bool was_valid = (Core::GetGameSettingsLayer() == &s_state.game_settings_interface);
 
   bool valid;
@@ -1504,11 +1495,11 @@ bool System::UpdateGameSettingsLayer()
     VERBOSE_LOG("Game settings layer is now {}", valid ? "active" : "inactive");
 
   Core::SetGameSettingsLayer(valid ? &s_state.game_settings_interface : nullptr, lock);
-  UpdateInputSettingsLayer(std::move(input_profile_name), lock);
+  UpdateInputSettingsLayer(std::move(input_profile_name), std::move(lock));
   return true;
 }
 
-void System::UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<Threading::Mutex>& lock)
+void System::UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<Threading::Mutex> lock)
 {
   if (!input_profile_name.empty())
   {
@@ -4220,7 +4211,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     }
   }
 
-  UpdateGameSettingsLayer();
+  UpdateGameSettingsLayer(Core::GetSettingsLock());
   ApplySettings(true);
 
   if (!IsReplayingGPUDump())
