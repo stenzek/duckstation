@@ -30,6 +30,9 @@ struct MemorySaveState;
 class GPUBackend
 {
 public:
+  using ScreenshotSavedCallback = void (*)(void* callback_data, bool success, const std::string& path,
+                                           const Error& error);
+
   static VideoThreadCommand* NewClearVRAMCommand();
   static VideoThreadCommand* NewClearDisplayCommand();
   static GPUBackendUpdateDisplayCommand* NewUpdateDisplayCommand();
@@ -59,8 +62,8 @@ public:
 
   static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
                                        Error* error);
-  static void RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
-                                     bool show_osd_message);
+  static void RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u8 quality, bool show_osd_message,
+                                     ScreenshotSavedCallback callback, void* callback_data);
 
   static bool BeginQueueFrame();
   static void WaitForOneQueuedFrame();

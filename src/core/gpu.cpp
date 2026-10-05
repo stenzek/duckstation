@@ -3976,7 +3976,7 @@ bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
 
   // save screenshot to same location to identify it
   GPUBackend::RenderScreenshotToFile(Path::ReplaceExtension(path, "png"), DisplayScreenshotMode::ScreenResolution, 85,
-                                     false);
+                                     false, nullptr, nullptr);
   return true;
 }
 
