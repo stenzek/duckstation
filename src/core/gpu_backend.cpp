@@ -735,10 +735,11 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
   return result;
 }
 
-void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
-                                        bool show_osd_message)
+void GPUBackend::RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u8 quality, bool show_osd_message,
+                                        ScreenshotSavedCallback callback, void* callback_data)
 {
-  VideoThread::RunOnThread([path = std::string(path), mode, quality, show_osd_message]() mutable {
+  VideoThread::RunOnThread([path = std::move(path), mode, quality, show_osd_message, callback,
+                            callback_data]() mutable {
     GPUBackend* const backend = VideoThread::GetGPUBackend();
     if (!backend) [[unlikely]]
       return;
@@ -766,6 +767,9 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
           fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
       }
 
+      if (callback)
+        callback(callback_data, false, path, error);
+
       backend->RestoreDeviceContext();
       return;
     }
@@ -784,6 +788,9 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
           fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
       }
 
+      if (callback)
+        callback(callback_data, false, path, error);
+
       return;
     }
 
@@ -795,7 +802,7 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
 
     Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
                           flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                          osd_key = std::move(osd_key)]() mutable {
+                          osd_key = std::move(osd_key), callback, callback_data]() mutable {
       Error error;
 
       if (flip_y)
@@ -836,6 +843,10 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       }
 
       std::fclose(fp);
+
+      if (callback)
+        callback(callback_data, true, path, error);
+
       return result;
     });
   });
