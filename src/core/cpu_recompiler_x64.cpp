@@ -944,7 +944,10 @@ void CPU::X64Recompiler::Flush(u32 flags)
       (m_cycles == 1) ? cg->inc(RWARG1) : cg->add(RWARG1, m_cycles);
       m_cycles = 0;
     }
+
+    // pending_ticks = (gte_completion_tick > pending_ticks) ? (gte_completion_tick + 1) : pending_ticks
     cg->cmp(RWARG2, RWARG1);
+    cg->lea(RWARG2, cg->dword[RXARG2 + 1]);
     cg->cmova(RWARG1, RWARG2);
     cg->mov(cg->dword[PTR(&g_state.pending_ticks)], RWARG1);
     m_dirty_gte_done_cycle = false;

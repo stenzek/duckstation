@@ -134,13 +134,14 @@ void* GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize
 
 ALWAYS_INLINE void AddGTETicks(TickCount ticks)
 {
-  g_state.gte_completion_tick = g_state.pending_ticks + ticks + 1;
+  g_state.gte_completion_tick = g_state.pending_ticks + ticks;
 }
 
 ALWAYS_INLINE void StallUntilGTEComplete()
 {
+  // The CPU does not stall when there is only a single cycle remaining, i.e. the command completes in this cycle.
   g_state.pending_ticks =
-    (g_state.gte_completion_tick > g_state.pending_ticks) ? g_state.gte_completion_tick : g_state.pending_ticks;
+    (g_state.gte_completion_tick > g_state.pending_ticks) ? (g_state.gte_completion_tick + 1) : g_state.pending_ticks;
 }
 
 ALWAYS_INLINE void AddMulDivTicks(TickCount ticks)

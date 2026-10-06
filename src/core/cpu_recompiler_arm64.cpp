@@ -1194,8 +1194,10 @@ void CPU::ARM64Recompiler::Flush(u32 flags)
       armAsm->add(RWARG1, RWARG1, armCheckAddSubConstant(m_cycles));
       m_cycles = 0;
     }
+
+    // pending_ticks = (gte_completion_tick > pending_ticks) ? (gte_completion_tick + 1) : pending_ticks
     armAsm->cmp(RWARG2, RWARG1);
-    armAsm->csel(RWARG1, RWARG2, RWARG1, hs);
+    armAsm->csinc(RWARG1, RWARG1, RWARG2, ls);
     armAsm->str(RWARG1, PTR(&g_state.pending_ticks));
     m_dirty_gte_done_cycle = false;
   }

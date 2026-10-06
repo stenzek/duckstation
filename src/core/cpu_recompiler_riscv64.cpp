@@ -1004,9 +1004,11 @@ void CPU::RISCV64Recompiler::Flush(u32 flags)
       SafeADDIW(RARG1, RARG1, m_cycles);
       m_cycles = 0;
     }
+
+    // pending_ticks = (gte_completion_tick > pending_ticks) ? (gte_completion_tick + 1) : pending_ticks
     Label no_stall;
     rvAsm->BGE(RARG1, RARG2, &no_stall);
-    rvAsm->MV(RARG1, RARG2);
+    rvAsm->ADDIW(RARG1, RARG2, 1);
     rvAsm->Bind(&no_stall);
     rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
     m_dirty_gte_done_cycle = false;
