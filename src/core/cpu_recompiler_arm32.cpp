@@ -1029,8 +1029,10 @@ void CPU::ARM32Recompiler::Flush(u32 flags)
       armAsm->add(RARG1, RARG1, armCheckAddSubConstant(m_cycles));
       m_cycles = 0;
     }
+
+    // pending_ticks = (gte_completion_tick > pending_ticks) ? (gte_completion_tick + 1) : pending_ticks
     armAsm->cmp(RARG2, RARG1);
-    armAsm->mov(hs, RARG1, RARG2);
+    armAsm->add(hi, RARG1, RARG2, 1);
     armAsm->str(RARG1, PTR(&g_state.pending_ticks));
     m_dirty_gte_done_cycle = false;
   }

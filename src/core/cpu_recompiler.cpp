@@ -2342,25 +2342,23 @@ CPU::Recompiler::Recompiler::GetGTERegisterPointer(u32 index, bool writing)
 
 void CPU::Recompiler::Recompiler::AddGTETicks(TickCount ticks)
 {
-  // TODO: check, int has +1 here
   m_gte_done_cycle = m_cycles + ticks;
   DEBUG_LOG("Adding {} GTE ticks", ticks);
 }
 
 void CPU::Recompiler::Recompiler::StallUntilGTEComplete()
 {
-  // TODO: hack to match old rec.. this may or may not be correct behavior
-  // it's the difference between stalling before and after the current instruction's cycle
+  // m_cycles includes the current instruction here. There is no stall when there is only a single cycle remaining,
+  // i.e. the command completes in this cycle, otherwise the instruction executes in the cycle after it completes.
   DebugAssert(m_cycles > 0);
-  m_cycles--;
 
   if (!m_dirty_gte_done_cycle)
   {
     // simple case - in block scheduling
     if (m_gte_done_cycle > m_cycles)
     {
-      DEBUG_LOG("Stalling for {} ticks from GTE", m_gte_done_cycle - m_cycles);
-      m_cycles += (m_gte_done_cycle - m_cycles);
+      DEBUG_LOG("Stalling for {} ticks from GTE", m_gte_done_cycle + 1 - m_cycles);
+      m_cycles = m_gte_done_cycle + 1;
     }
   }
   else
@@ -2369,8 +2367,6 @@ void CPU::Recompiler::Recompiler::StallUntilGTEComplete()
     DEBUG_LOG("Flushing GTE stall from state");
     Flush(FLUSH_GTE_STALL_FROM_STATE);
   }
-
-  m_cycles++;
 }
 
 void CPU::Recompiler::BackpatchLoadStore(void* exception_pc, const CodeCache::LoadstoreBackpatchInfo& info)
