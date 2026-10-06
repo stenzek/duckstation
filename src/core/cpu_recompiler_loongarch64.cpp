@@ -1004,9 +1004,10 @@ void CPU::LoongArch64Recompiler::Flush(u32 flags)
       m_cycles = 0;
     }
 
+    // pending_ticks = (gte_completion_tick > pending_ticks) ? (gte_completion_tick + 1) : pending_ticks
     lagoon_label_t no_stall = {};
     la_bge(laAsm, RARG1, RARG2, la_label(laAsm, &no_stall));
-    la_or(laAsm, RARG1, RARG2, LA_ZERO);
+    la_addi_w(laAsm, RARG1, RARG2, 1);
     la_bind(laAsm, &no_stall);
     la_label_free(laAsm, &no_stall);
     la_st_w(laAsm, RARG1, RSTATE, OFFS(&g_state.pending_ticks));
