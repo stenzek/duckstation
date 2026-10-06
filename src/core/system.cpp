@@ -3464,8 +3464,8 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
   SAVE_STATE_HEADER header = {};
   header.magic = SAVE_STATE_MAGIC;
   header.version = SAVE_STATE_VERSION;
-  StringUtil::Strlcpy(header.title, s_state.running_game_title.c_str(), sizeof(header.title));
-  StringUtil::Strlcpy(header.serial, s_state.running_game_serial.c_str(), sizeof(header.serial));
+  StringUtil::Strlcpy(header.title, buffer.title, sizeof(header.title));
+  StringUtil::Strlcpy(header.serial, buffer.serial, sizeof(header.serial));
 
   u32 file_position = 0;
   DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
