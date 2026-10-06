@@ -267,23 +267,26 @@ for lib in "${QTLIBS[@]}"; do
 done
 
 echo "Copying Qt plugins..."
-mkdir -p $OUTDIR/usr/lib/plugins
+mkdir -p $OUTDIR/usr/plugins
 for plugin in "${QTPLUGINS[@]}"; do
-	mkdir -p "$OUTDIR/usr/lib/$plugin"
-	cp -avL "$DEPSDIR/$plugin/"*.so "$OUTDIR/usr/lib/$plugin/"
+	mkdir -p "$OUTDIR/usr/$plugin"
+	cp -avL "$DEPSDIR/$plugin/"*.so "$OUTDIR/usr/$plugin/"
 done
 
-for so in $(find $OUTDIR/usr/lib/plugins -iname '*.so'); do
+for so in $(find $OUTDIR/usr/plugins -iname '*.so'); do
 	# This is ../../ because it's usually plugins/group/name.so
 	echo "Patching RPATH in ${so}..."
-	patchelf --set-rpath '$ORIGIN/../..' "$so"
+	patchelf --set-rpath '$ORIGIN/../../lib' "$so"
 	"$STRIP" "$so"
 done
 
 echo "Creating qt.conf..."
 cat > "$OUTDIR/usr/bin/qt.conf" << EOF
 [Paths]
-Plugins = ../lib/plugins
+Prefix = ../
+Plugins = plugins
+Imports = qml
+Qml2Imports = qml
 EOF
 
 
