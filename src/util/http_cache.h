@@ -41,6 +41,10 @@ bool IsHTTPURL(std::string_view url);
 /// Returns the filename portion of @p url, stripping any query string or fragment.
 std::string_view GetURLFilename(std::string_view url);
 
+/// Ensures the cache is open and ready for requests. If the cache could not be loaded, this function
+/// will continue to return false.
+bool EnsureCacheArchiveOpen();
+
 /// Shuts down the HTTP cache, releasing the cache archive.
 void Shutdown();
 

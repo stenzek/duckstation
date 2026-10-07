@@ -1308,10 +1308,14 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   DiscordPresence::UpdateDetails(s_state.game_badge_url, s_state.rich_presence_string);
 
-  if (g_settings.achievements_prefetch_badges)
-    Achievements::PrefetchAllAchievementBadges();
-  else
-    PrefetchNextAchievementBadge();
+  // Don't try to prefetch if we don't have a HTTP cache, since we won't be able to display anything anyway.
+  if (HTTPCache::EnsureCacheArchiveOpen())
+  {
+    if (g_settings.achievements_prefetch_badges)
+      Achievements::PrefetchAllAchievementBadges();
+    else
+      PrefetchNextAchievementBadge();
+  }
 
   // needed for notifications
   SoundEffectManager::EnsureInitialized();

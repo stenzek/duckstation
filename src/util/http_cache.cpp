@@ -75,6 +75,11 @@ std::string_view HTTPCache::GetURLFilename(std::string_view url)
   return (pos != std::string_view::npos) ? url.substr(pos + 1) : url;
 }
 
+bool HTTPCache::EnsureCacheArchiveOpen()
+{
+  return GetCacheArchive().IsOpen();
+}
+
 void HTTPCache::Shutdown()
 {
   // awkward situation where a request callback could create another downloader...
