@@ -460,8 +460,10 @@ void Achievements::PrefetchAllAchievementBadges()
       {
         s_state.pending_badge_downloads++;
 
+        // Not necessary to take the lock here, because it will either execute the callback immediately in case of
+        // error, or in the HTTP downloader callback, which also runs on the core thread.
         HTTPCache::Prefetch(url, [](bool) {
-          const auto lock = GetLock();
+          DebugAssert(Host::IsOnCoreThread());
           if (s_state.pending_badge_downloads > 0)
           {
             s_state.pending_badge_downloads--;
