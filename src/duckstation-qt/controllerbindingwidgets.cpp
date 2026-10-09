@@ -25,6 +25,7 @@
 
 #include "util/input_manager.h"
 
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/threading.h"
@@ -455,14 +456,12 @@ void ControllerBindingWidget::onMacrosClicked()
 
 void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
 {
-  std::vector<std::pair<GenericInputBinding, std::string>> mapping =
-    InputManager::GetGenericBindingMapping(device.toStdString());
-  if (mapping.empty())
+  Error error;
+  GenericInputBindingMapping mapping;
+  if (!InputManager::GetGenericBindingMapping(device.toStdString(), &mapping, &error))
   {
-    QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, tr("Automatic Mapping Failed"),
-      tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.")
-        .arg(device));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Automatic Mapping Failed"),
+                             QString::fromStdString(error.GetDescription()));
     return;
   }
 
@@ -478,6 +477,13 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   {
     result = InputManager::MapController(*m_dialog->getEditingSettingsInterface(), m_port_number, mapping, true);
     QtHost::SaveSettingsInterface(m_dialog->getEditingSettingsInterface(), false, true);
+  }
+
+  if (!result)
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Automatic Mapping Failed"),
+                             QString::fromStdString(error.GetDescription()));
+    return;
   }
 
   // force a refresh after mapping
@@ -1173,17 +1179,12 @@ void MultipleDeviceAutobindDialog::doAutomaticBinding()
 
     tried_any = true;
 
-    const QString identifier = item->data(Qt::UserRole).toString();
-    std::vector<std::pair<GenericInputBinding, std::string>> mapping =
-      InputManager::GetGenericBindingMapping(identifier.toStdString());
-    if (mapping.empty())
+    GenericInputBindingMapping mapping;
+    if (Error error;
+        !InputManager::GetGenericBindingMapping(item->data(Qt::UserRole).toString().toStdString(), &mapping, &error))
     {
       lock.unlock();
-      QtUtils::MessageBoxCritical(
-        this, tr("Automatic Mapping Failed"),
-        tr("No generic bindings were generated for device '%1'. The controller/source may not "
-           "support automatic mapping.")
-          .arg(identifier));
+      QtUtils::MessageBoxCritical(this, tr("Automatic Mapping Failed"), QString::fromStdString(error.GetDescription()));
       lock.lock();
       continue;
     }

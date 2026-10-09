@@ -1782,9 +1782,8 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
   }
 }
 
-bool InputManager::MapController(SettingsInterface& si, u32 controller,
-                                 const std::vector<std::pair<GenericInputBinding, std::string>>& mapping,
-                                 bool clear_existing_mappings)
+bool InputManager::MapController(SettingsInterface& si, u32 controller, const GenericInputBindingMapping& mapping,
+                                 bool clear_existing_mappings, Error* error)
 {
   // Threading: No shared state access.
   const std::string section = Controller::GetSettingsSection(controller);
@@ -1792,7 +1791,10 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
     section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(controller)).name);
   const Controller::ControllerInfo* info = Controller::GetControllerInfo(type);
   if (!info)
+  {
+    Error::SetStringFmt(error, "Invalid controller type {}", type);
     return false;
+  }
 
   u32 num_mappings = 0;
   for (const Controller::ControllerBindingInfo& bi : info->bindings)
@@ -1813,7 +1815,18 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
     num_mappings += mappings_added;
   }
 
-  return (num_mappings > 0);
+  if (num_mappings == 0)
+  {
+    Error::SetStringFmt(
+      error,
+      TRANSLATE_FS(
+        "InputManager",
+        "No mappings were added. {} may not support automatic binding, or no matches were found for your controller."),
+      info->GetDisplayName());
+    return false;
+  }
+
+  return true;
 }
 
 std::string InputManager::GetPhysicalDeviceForController(SettingsInterface& si, u32 controller)
@@ -2555,23 +2568,33 @@ static bool GetInternalGenericBindingMapping(std::string_view device, GenericInp
   return false;
 }
 
-GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_view device)
+bool InputManager::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping, Error* error)
 {
   // Threading: Either no shared state access if keyboard, otherwise acquires read lock.
-  GenericInputBindingMapping mapping;
 
-  if (!GetInternalGenericBindingMapping(device, &mapping))
+  if (!GetInternalGenericBindingMapping(device, mapping))
   {
     const auto lock = GetSourcesReadLock();
 
     for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
     {
-      if (s_state.input_sources[i] && s_state.input_sources[i]->GetGenericBindingMapping(device, &mapping))
+      if (s_state.input_sources[i] && s_state.input_sources[i]->GetGenericBindingMapping(device, mapping))
         break;
     }
   }
 
-  return mapping;
+  if (mapping->empty())
+  {
+    Error::SetStringFmt(
+      error,
+      TRANSLATE_FS(
+        "InputManager",
+        "No generic bindings were generated for device '{}'. The controller/source may not support automatic mapping."),
+      device);
+    return false;
+  }
+
+  return true;
 }
 
 bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type)
