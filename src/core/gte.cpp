@@ -99,39 +99,43 @@ ALWAYS_INLINE u32 CountLeadingBits(u32 value)
 }
 
 template<u32 index>
-ALWAYS_INLINE void CheckMACOverflow(s64 value)
+ALWAYS_INLINE bool IsMACOutOfRange(s64 value)
 {
   constexpr s64 MIN_VALUE = (index == 0) ? MAC0_MIN_VALUE : MAC123_MIN_VALUE;
   constexpr s64 MAX_VALUE = (index == 0) ? MAC0_MAX_VALUE : MAC123_MAX_VALUE;
-  if (value < MIN_VALUE)
-  {
-    if constexpr (index == 0)
-      REGS.FLAG.mac0_underflow = true;
-    else if constexpr (index == 1)
-      REGS.FLAG.mac1_underflow = true;
-    else if constexpr (index == 2)
-      REGS.FLAG.mac2_underflow = true;
-    else if constexpr (index == 3)
-      REGS.FLAG.mac3_underflow = true;
-  }
-  else if (value > MAX_VALUE)
-  {
-    if constexpr (index == 0)
-      REGS.FLAG.mac0_overflow = true;
-    else if constexpr (index == 1)
-      REGS.FLAG.mac1_overflow = true;
-    else if constexpr (index == 2)
-      REGS.FLAG.mac2_overflow = true;
-    else if constexpr (index == 3)
-      REGS.FLAG.mac3_overflow = true;
-  }
+
+  // Biasing by the minimum value wraps anything below it around to a large unsigned value, which allows both bounds
+  // to be tested with a single comparison.
+  return (static_cast<u64>(value) - static_cast<u64>(MIN_VALUE)) > static_cast<u64>(MAX_VALUE - MIN_VALUE);
+}
+
+template<u32 index>
+ALWAYS_INLINE void SetMACOverflowFlag(s64 value)
+{
+  // FLAG.mac0_overflow/underflow are bits 16/15, FLAG.mac[1-3]_overflow are bits 30..28, underflow are bits 27..25.
+  constexpr u32 OVERFLOW_FLAG = UINT32_C(1) << ((index == 0) ? 16 : (31 - index));
+  constexpr u32 UNDERFLOW_FLAG = UINT32_C(1) << ((index == 0) ? 15 : (28 - index));
+  REGS.FLAG.bits |= (value < 0) ? UNDERFLOW_FLAG : OVERFLOW_FLAG;
+}
+
+template<u32 index>
+ALWAYS_INLINE void CheckMACOverflow(s64 value)
+{
+  if (IsMACOutOfRange<index>(value)) [[unlikely]]
+    SetMACOverflowFlag<index>(value);
 }
 
 template<u32 index>
 ALWAYS_INLINE s64 SignExtendMACResult(s64 value)
 {
-  CheckMACOverflow<index>(value);
-  return SignExtendN < index == 0 ? 31 : 44 > (value);
+  // Sign extension is a no-op for values which are in range, so it only needs to happen when overflowing.
+  if (IsMACOutOfRange<index>(value)) [[unlikely]]
+  {
+    SetMACOverflowFlag<index>(value);
+    value = SignExtendN < index == 0 ? 31 : 44 > (value);
+  }
+
+  return value;
 }
 
 template<u32 index>
