@@ -171,6 +171,7 @@
     <ClInclude Include="controller_helpers.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cdrom.inl" />
     <None Include="gpu_sw_rasterizer.inl" />
   </ItemGroup>
 </Project>
