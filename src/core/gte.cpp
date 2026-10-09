@@ -132,7 +132,7 @@ ALWAYS_INLINE s64 SignExtendMACResult(s64 value)
   if (IsMACOutOfRange<index>(value)) [[unlikely]]
   {
     SetMACOverflowFlag<index>(value);
-    value = SignExtendN < index == 0 ? 31 : 44 > (value);
+    value = SignExtendN<index == 0 ? 31 : 44>(value);
   }
 
   return value;
@@ -230,6 +230,7 @@ static void MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 Vx, const s1
 
 static void InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, u8 shift, bool lm);
 static void RTPS(const s16 V[3], u8 shift, bool lm, bool last);
+static void RTPS_PGXP(const s16 V[3], u8 shift, bool lm, s64 x, s64 y, s64 z);
 static void NCS(const s16 V[3], u8 shift, bool lm);
 static void NCCS(const s16 V[3], u8 shift, bool lm);
 static void NCDS(const s16 V[3], u8 shift, bool lm);
@@ -565,7 +566,7 @@ ALWAYS_INLINE u32 GTE::UNRDivide(u32 lhs, u32 rhs)
   return std::min<u32>(0x1FFFF, result);
 }
 
-void GTE::MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+ALWAYS_INLINE void GTE::MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
 #define M(i, j) M_[((i) * 3) + (j)]
 #define dot3(i)                                                                                                        \
@@ -581,7 +582,8 @@ void GTE::MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 
 #undef M
 }
 
-void GTE::MulMatVec(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+ALWAYS_INLINE void GTE::MulMatVec(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift,
+                                  bool lm)
 {
 #define M(i, j) M_[((i) * 3) + (j)]
 #define dot3(i)                                                                                                        \
@@ -599,7 +601,8 @@ void GTE::MulMatVec(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, c
 #undef M
 }
 
-void GTE::MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
+ALWAYS_INLINE void GTE::MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz,
+                                       u8 shift, bool lm)
 {
 #define M(i, j) M_[((i) * 3) + (j)]
 #define dot3(i)                                                                                                        \
@@ -707,7 +710,7 @@ void GTE::Execute_OP(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
+ALWAYS_INLINE void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 {
 #define dot3(i)                                                                                                        \
   SignExtendMACResult<i + 1>(SignExtendMACResult<i + 1>((s64(REGS.TR[i]) << 12) + (s64(REGS.RT[i][0]) * s64(V[0]))) +  \
@@ -777,99 +780,7 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   PushSXY(s32(Sx >> 16), s32(Sy >> 16));
 
   if (g_settings.gpu_pgxp_enable)
-  {
-    float precise_sz3, precise_ir1, precise_ir2;
-
-    if (g_settings.gpu_pgxp_preserve_proj_fp)
-    {
-      float precise_x, precise_y, precise_z;
-      if (shift > 0)
-      {
-        // TODO: This isn't handling the sign extended cases.
-        constexpr GSVector4 unscale = GSVector4::cxpr(1.0f / 4096.0f);
-        const GSVector4 FV = GSVector4(GSVector4i::loadl<false>(V).s16to32()).insert32<3>(0.0f);
-        const GSVector4 RT0 = GSVector4(GSVector4i::loadl<false>(REGS.RT[0]).s16to32()) * unscale;
-        const GSVector4 RT1 = GSVector4(GSVector4i::loadl<false>(REGS.RT[1]).s16to32()) * unscale;
-        const GSVector4 RT2 = GSVector4(GSVector4i::loadl<false>(REGS.RT[2]).s16to32()) * unscale;
-
-        precise_x = RT0.dot(FV) + static_cast<float>(REGS.TR[0]);
-        precise_y = RT1.dot(FV) + static_cast<float>(REGS.TR[1]);
-        precise_z = RT2.dot(FV) + static_cast<float>(REGS.TR[2]);
-
-        if (s_config.freecam_active)
-        {
-          const GSVector4 offset_pos = s_config.freecam_matrix * GSVector4(precise_x, precise_y, precise_z, 1.0f);
-          precise_x = offset_pos.extract32<0>();
-          precise_y = offset_pos.extract32<1>();
-          precise_z = offset_pos.extract32<2>();
-        }
-      }
-      else
-      {
-        precise_x = static_cast<float>(x) / (static_cast<float>(1 << shift));
-        precise_y = static_cast<float>(y) / (static_cast<float>(1 << shift));
-        precise_z = static_cast<float>(z) / 4096.0f;
-      }
-
-      precise_sz3 = precise_z;
-      precise_ir1 = precise_x;
-      precise_ir2 = precise_y;
-      if (lm)
-      {
-        precise_ir1 = std::clamp(precise_ir1, float(IR123_MIN_VALUE), float(IR123_MAX_VALUE));
-        precise_ir2 = std::clamp(precise_ir2, float(IR123_MIN_VALUE), float(IR123_MAX_VALUE));
-      }
-      else
-      {
-        precise_ir1 = std::min(precise_ir1, float(IR123_MAX_VALUE));
-        precise_ir2 = std::min(precise_ir2, float(IR123_MAX_VALUE));
-      }
-    }
-    else
-    {
-      precise_sz3 = float(REGS.SZ3);
-      precise_ir1 = float(REGS.IR1);
-      precise_ir2 = float(REGS.IR2);
-    }
-
-    // this can potentially use increased precision on Z
-    const float precise_z = std::max<float>(float(REGS.H) / 2.0f, precise_sz3);
-    const float precise_h_div_sz = float(REGS.H) / precise_z;
-    const float fofx = float(REGS.OFX) / float(1 << 16);
-    const float fofy = float(REGS.OFY) / float(1 << 16);
-    float precise_x = precise_ir1 * precise_h_div_sz;
-
-    switch (s_config.aspect_ratio)
-    {
-      case GTEAspectRatio::Custom:
-        precise_x = precise_x * s_config.custom_aspect_ratio_f;
-        break;
-
-      case GTEAspectRatio::R16_9:
-        precise_x = (precise_x * 3.0f) / 4.0f;
-        break;
-
-      case GTEAspectRatio::R19_9:
-        precise_x = (precise_x * 12.0f) / 19.0f;
-        break;
-
-      case GTEAspectRatio::R20_9:
-        precise_x = (precise_x * 3.0f) / 5.0f;
-        break;
-
-      case GTEAspectRatio::None:
-      default:
-        break;
-    }
-
-    precise_x += fofx;
-
-    float precise_y = fofy + (precise_ir2 * precise_h_div_sz);
-
-    precise_x = std::clamp<float>(precise_x, -1024.0f, 1023.0f);
-    precise_y = std::clamp<float>(precise_y, -1024.0f, 1023.0f);
-    CPU::PGXP::GTE_RTPS(precise_x, precise_y, precise_z, REGS.dr32[14]);
-  }
+    RTPS_PGXP(V, shift, lm, x, y, z);
 
   if (last)
   {
@@ -878,6 +789,101 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
     TruncateAndSetMAC<0>(Sz, 0);
     TruncateAndSetIR<0>(s32(Sz >> 12), true);
   }
+}
+
+NEVER_INLINE void GTE::RTPS_PGXP(const s16 V[3], u8 shift, bool lm, s64 x, s64 y, s64 z)
+{
+  float precise_sz3, precise_ir1, precise_ir2;
+
+  if (g_settings.gpu_pgxp_preserve_proj_fp)
+  {
+    float precise_x, precise_y, precise_z;
+    if (shift > 0)
+    {
+      // TODO: This isn't handling the sign extended cases.
+      constexpr GSVector4 unscale = GSVector4::cxpr(1.0f / 4096.0f);
+      const GSVector4 FV = GSVector4(GSVector4i::loadl<false>(V).s16to32()).insert32<3>(0.0f);
+      const GSVector4 RT0 = GSVector4(GSVector4i::loadl<false>(REGS.RT[0]).s16to32()) * unscale;
+      const GSVector4 RT1 = GSVector4(GSVector4i::loadl<false>(REGS.RT[1]).s16to32()) * unscale;
+      const GSVector4 RT2 = GSVector4(GSVector4i::loadl<false>(REGS.RT[2]).s16to32()) * unscale;
+
+      precise_x = RT0.dot(FV) + static_cast<float>(REGS.TR[0]);
+      precise_y = RT1.dot(FV) + static_cast<float>(REGS.TR[1]);
+      precise_z = RT2.dot(FV) + static_cast<float>(REGS.TR[2]);
+
+      if (s_config.freecam_active)
+      {
+        const GSVector4 offset_pos = s_config.freecam_matrix * GSVector4(precise_x, precise_y, precise_z, 1.0f);
+        precise_x = offset_pos.extract32<0>();
+        precise_y = offset_pos.extract32<1>();
+        precise_z = offset_pos.extract32<2>();
+      }
+    }
+    else
+    {
+      precise_x = static_cast<float>(x) / (static_cast<float>(1 << shift));
+      precise_y = static_cast<float>(y) / (static_cast<float>(1 << shift));
+      precise_z = static_cast<float>(z) / 4096.0f;
+    }
+
+    precise_sz3 = precise_z;
+    precise_ir1 = precise_x;
+    precise_ir2 = precise_y;
+    if (lm)
+    {
+      precise_ir1 = std::clamp(precise_ir1, float(IR123_MIN_VALUE), float(IR123_MAX_VALUE));
+      precise_ir2 = std::clamp(precise_ir2, float(IR123_MIN_VALUE), float(IR123_MAX_VALUE));
+    }
+    else
+    {
+      precise_ir1 = std::min(precise_ir1, float(IR123_MAX_VALUE));
+      precise_ir2 = std::min(precise_ir2, float(IR123_MAX_VALUE));
+    }
+  }
+  else
+  {
+    precise_sz3 = float(REGS.SZ3);
+    precise_ir1 = float(REGS.IR1);
+    precise_ir2 = float(REGS.IR2);
+  }
+
+  // this can potentially use increased precision on Z
+  const float precise_z = std::max<float>(float(REGS.H) / 2.0f, precise_sz3);
+  const float precise_h_div_sz = float(REGS.H) / precise_z;
+  const float fofx = float(REGS.OFX) / float(1 << 16);
+  const float fofy = float(REGS.OFY) / float(1 << 16);
+  float precise_x = precise_ir1 * precise_h_div_sz;
+
+  switch (s_config.aspect_ratio)
+  {
+    case GTEAspectRatio::Custom:
+      precise_x = precise_x * s_config.custom_aspect_ratio_f;
+      break;
+
+    case GTEAspectRatio::R16_9:
+      precise_x = (precise_x * 3.0f) / 4.0f;
+      break;
+
+    case GTEAspectRatio::R19_9:
+      precise_x = (precise_x * 12.0f) / 19.0f;
+      break;
+
+    case GTEAspectRatio::R20_9:
+      precise_x = (precise_x * 3.0f) / 5.0f;
+      break;
+
+    case GTEAspectRatio::None:
+    default:
+      break;
+  }
+
+  precise_x += fofx;
+
+  float precise_y = fofy + (precise_ir2 * precise_h_div_sz);
+
+  precise_x = std::clamp<float>(precise_x, -1024.0f, 1023.0f);
+  precise_y = std::clamp<float>(precise_y, -1024.0f, 1023.0f);
+  CPU::PGXP::GTE_RTPS(precise_x, precise_y, precise_z, REGS.dr32[14]);
 }
 
 void GTE::Execute_RTPS(Instruction inst)
@@ -964,7 +970,7 @@ ALWAYS_INLINE void GTE::InterpolateColor(s64 in_MAC1, s64 in_MAC2, s64 in_MAC3, 
   TruncateAndSetMACAndIR<3>(s64(s32(REGS.IR3) * s32(REGS.IR0)) + in_MAC3, shift, lm);
 }
 
-void GTE::NCS(const s16 V[3], u8 shift, bool lm)
+ALWAYS_INLINE void GTE::NCS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
   MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
@@ -999,7 +1005,7 @@ void GTE::Execute_NCT(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::NCCS(const s16 V[3], u8 shift, bool lm)
+ALWAYS_INLINE void GTE::NCCS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
   MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
@@ -1040,7 +1046,7 @@ void GTE::Execute_NCCT(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::NCDS(const s16 V[3], u8 shift, bool lm)
+ALWAYS_INLINE void GTE::NCDS(const s16 V[3], u8 shift, bool lm)
 {
   // [IR1,IR2,IR3] = [MAC1,MAC2,MAC3] = (LLM*V0) SAR (sf*12)
   MulMatVec(&REGS.LLM[0][0], V[0], V[1], V[2], shift, lm);
@@ -1132,7 +1138,7 @@ void GTE::Execute_CDP(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::DPCS(const u8 color[3], u8 shift, bool lm)
+ALWAYS_INLINE void GTE::DPCS(const u8 color[3], u8 shift, bool lm)
 {
   // In: [IR1,IR2,IR3]=Vector, FC=Far Color, IR0=Interpolation value, CODE=MSB of RGBC
   // [MAC1,MAC2,MAC3] = [R,G,B] SHL 16                     ;<--- for DPCS/DPCT
