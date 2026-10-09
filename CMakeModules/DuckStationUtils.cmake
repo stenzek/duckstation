@@ -412,14 +412,23 @@ function(add_runtime_libraries TARGET)
       )
     else()
       # Linux, and macOS when using the Xcode generator/not using bundles.
+      if(LINUX)
+        get_origin_relative_path(dyn_lib_dir "${dyn_lib_dir}")
+      endif()
       list(APPEND LIBRARY_RPATHS "${dyn_lib_dir}")
     endif()
   endforeach()
 
   # Add the required library directories to the target's existing
   # build RPATH, without adding duplicate entries.
+  # Linux is built with the install RPATH, see the top-level CMakeLists.txt.
+  if(LINUX)
+    set(rpath_property INSTALL_RPATH)
+  else()
+    set(rpath_property BUILD_RPATH)
+  endif()
   if(LIBRARY_RPATHS)
-    get_target_property(existing_rpath ${TARGET} BUILD_RPATH)
+    get_target_property(existing_rpath ${TARGET} ${rpath_property})
     if(NOT existing_rpath)
       set(existing_rpath "")
     endif()
@@ -428,7 +437,58 @@ function(add_runtime_libraries TARGET)
     list(REMOVE_DUPLICATES existing_rpath)
     set_target_properties(
       ${TARGET}
-      PROPERTIES BUILD_RPATH "${existing_rpath}"
+      PROPERTIES ${rpath_property} "${existing_rpath}"
     )
   endif()
+endfunction()
+
+# Returns an RPATH entry for DIR that is relative to the directory binaries are written to.
+function(get_origin_relative_path OUTVAR DIR)
+  # $ORIGIN is the real location of the binary, so symlinks have to be resolved first.
+  file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+  file(REAL_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" binary_dir)
+  file(REAL_PATH "${DIR}" real_dir)
+  file(RELATIVE_PATH relative_dir "${binary_dir}" "${real_dir}")
+  set(${OUTVAR} "$ORIGIN/${relative_dir}" PARENT_SCOPE)
+endfunction()
+
+# Compiles a .qrc file to a binary .rcc file, without embedding file modification times.
+function(add_binary_resources TARGET QRC_FILE OUTPUT_FILE)
+  get_filename_component(qrc_path "${QRC_FILE}" ABSOLUTE)
+  get_filename_component(qrc_dir "${qrc_path}" DIRECTORY)
+
+  # Pick up the files listed in the .qrc as dependencies, re-running CMake if the list changes.
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${qrc_path}")
+  file(READ "${qrc_path}" qrc_contents)
+  string(REGEX MATCHALL "<file[^>]*>[^<]+</file>" qrc_entries "${qrc_contents}")
+  set(qrc_depends)
+  foreach(entry IN LISTS qrc_entries)
+    string(REGEX REPLACE "<file[^>]*>([^<]+)</file>" "\\1" entry "${entry}")
+    list(APPEND qrc_depends "${qrc_dir}/${entry}")
+  endforeach()
+
+  # rcc stamps every entry with the mtime of its source file, i.e. the checkout time.
+  # Pin it to the commit date instead, unless the caller has already provided a date.
+  set(source_date "$ENV{SOURCE_DATE_EPOCH}")
+  if(NOT source_date)
+    find_package(Git)
+    if(EXISTS "${PROJECT_SOURCE_DIR}/.git" AND GIT_FOUND)
+      execute_process(
+        COMMAND ${GIT_EXECUTABLE} log -1 --format=%ct
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+        OUTPUT_VARIABLE source_date
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+    endif()
+  endif()
+  set(rcc_env)
+  if(source_date)
+    set(rcc_env "${CMAKE_COMMAND}" -E env "SOURCE_DATE_EPOCH=${source_date}")
+  endif()
+
+  add_custom_command(OUTPUT "${OUTPUT_FILE}"
+    COMMAND ${rcc_env} "$<TARGET_FILE:Qt6::rcc>" -no-compress --binary --name ${TARGET} --output "${OUTPUT_FILE}" "${qrc_path}"
+    DEPENDS Qt6::rcc "${qrc_path}" ${qrc_depends}
+    VERBATIM)
+  add_custom_target(${TARGET} ALL DEPENDS "${OUTPUT_FILE}")
 endfunction()
