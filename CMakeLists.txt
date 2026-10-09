@@ -65,19 +65,26 @@ endif()
 # We don't need exceptions, disable them to save a bit of code size.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 
-# Rewrite paths in macros to be relative to the source directory.
-# Helpful for reproducible builds.
+# Rewrite paths in macros and debug info to fixed names, so that the output does not depend
+# on where the source and build directories are located. Helpful for reproducible builds.
+# The build directory is mapped last, so it takes precedence when it is inside the source directory.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT CMAKE_GENERATOR MATCHES "Xcode" AND
    (COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC))
-  file(RELATIVE_PATH source_dir_remap "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}")
-  string(REGEX REPLACE "\/+$" "" source_dir_remap "${source_dir_remap}")
-  set(source_dir_remap_str "\"${CMAKE_SOURCE_DIR}\"=\"${source_dir_remap}\"")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
+  set(dir_remap_str "-ffile-prefix-map=\"${CMAKE_SOURCE_DIR}\"=. -ffile-prefix-map=\"${CMAKE_BINARY_DIR}\"=build")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${dir_remap_str}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${dir_remap_str}")
 endif()
 
 # Write binaries to a seperate directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+
+# Locate the prebuilt dependencies relative to the binary, instead of using the absolute
+# paths that CMake adds to the RUNPATH by default, which leak the source directory.
+if(LINUX)
+  get_origin_relative_path(deps_rpath "${DEPS_PATH}/lib")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_INSTALL_RPATH "${deps_rpath}")
+endif()
 
 # Enable large file support on Linux 32-bit platforms.
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
