@@ -624,7 +624,7 @@ ALWAYS_INLINE void GTE::MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 
 #undef M
 }
 
-void GTE::Execute_MVMVA(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_MVMVA(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -669,7 +669,7 @@ void GTE::Execute_MVMVA(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_SQR(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_SQR(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -687,7 +687,7 @@ void GTE::Execute_SQR(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_OP(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_OP(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -886,14 +886,14 @@ NEVER_INLINE void GTE::RTPS_PGXP(const s16 V[3], u8 shift, bool lm, s64 x, s64 y
   CPU::PGXP::GTE_RTPS(precise_x, precise_y, precise_z, REGS.dr32[14]);
 }
 
-void GTE::Execute_RTPS(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_RTPS(Instruction inst)
 {
   REGS.FLAG.Clear();
   RTPS(REGS.V0, inst.GetShift(), inst.lm, true);
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_RTPT(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_RTPT(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -982,7 +982,7 @@ ALWAYS_INLINE void GTE::NCS(const s16 V[3], u8 shift, bool lm)
   PushRGBFromMAC();
 }
 
-void GTE::Execute_NCS(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCS(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -991,7 +991,7 @@ void GTE::Execute_NCS(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_NCT(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCT(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1023,7 +1023,7 @@ ALWAYS_INLINE void GTE::NCCS(const s16 V[3], u8 shift, bool lm)
   PushRGBFromMAC();
 }
 
-void GTE::Execute_NCCS(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCCS(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1032,7 +1032,7 @@ void GTE::Execute_NCCS(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_NCCT(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCCT(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1067,7 +1067,7 @@ ALWAYS_INLINE void GTE::NCDS(const s16 V[3], u8 shift, bool lm)
   PushRGBFromMAC();
 }
 
-void GTE::Execute_NCDS(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCDS(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1076,7 +1076,7 @@ void GTE::Execute_NCDS(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_NCDT(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_NCDT(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1090,7 +1090,7 @@ void GTE::Execute_NCDT(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_CC(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_CC(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1112,7 +1112,7 @@ void GTE::Execute_CC(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_CDP(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_CDP(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1153,7 +1153,7 @@ ALWAYS_INLINE void GTE::DPCS(const u8 color[3], u8 shift, bool lm)
   PushRGBFromMAC();
 }
 
-void GTE::Execute_DPCS(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_DPCS(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1162,7 +1162,7 @@ void GTE::Execute_DPCS(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_DPCT(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_DPCT(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1175,7 +1175,7 @@ void GTE::Execute_DPCT(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_DCPL(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_DCPL(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1197,7 +1197,7 @@ void GTE::Execute_DCPL(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_INTPL(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_INTPL(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1215,7 +1215,7 @@ void GTE::Execute_INTPL(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_GPL(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_GPL(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1234,7 +1234,7 @@ void GTE::Execute_GPL(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
-void GTE::Execute_GPF(Instruction inst)
+ALWAYS_INLINE void GTE::Execute_GPF(Instruction inst)
 {
   REGS.FLAG.Clear();
 
@@ -1253,6 +1253,34 @@ void GTE::Execute_GPF(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
+namespace GTE {
+namespace {
+
+/// Wraps an instruction handler, fixing the sf/lm bits at compile time. Once the handler is inlined, the shift amounts
+/// and saturation limits become constants, instead of being decoded and selected on each execution.
+template<void (*handler)(Instruction), bool sf, bool lm>
+void SpecializedHandler(Instruction inst)
+{
+  inst.sf = BoolToUInt8(sf);
+  inst.lm = lm;
+  handler(inst);
+}
+
+/// Returns the specialization of the handler which matches the sf/lm bits in the instruction.
+template<void (*handler)(Instruction)>
+ALWAYS_INLINE InstructionImpl GetSpecializedHandler(Instruction inst)
+{
+  static constexpr InstructionImpl handlers[2][2] = {
+    {&SpecializedHandler<handler, false, false>, &SpecializedHandler<handler, false, true>},
+    {&SpecializedHandler<handler, true, false>, &SpecializedHandler<handler, true, true>},
+  };
+
+  return handlers[inst.sf][BoolToUInt8(inst.lm)];
+}
+
+} // namespace
+} // namespace GTE
+
 void GTE::ExecuteInstruction(u32 inst_bits)
 {
   const Instruction inst{inst_bits};
@@ -1260,7 +1288,7 @@ void GTE::ExecuteInstruction(u32 inst_bits)
   {
     case 0x01:
       CPU::AddGTETicks(15);
-      Execute_RTPS(inst);
+      GetSpecializedHandler<&Execute_RTPS>(inst)(inst);
       break;
 
     case 0x06:
@@ -1275,72 +1303,72 @@ void GTE::ExecuteInstruction(u32 inst_bits)
 
     case 0x0C:
       CPU::AddGTETicks(6);
-      Execute_OP(inst);
+      GetSpecializedHandler<&Execute_OP>(inst)(inst);
       break;
 
     case 0x10:
       CPU::AddGTETicks(8);
-      Execute_DPCS(inst);
+      GetSpecializedHandler<&Execute_DPCS>(inst)(inst);
       break;
 
     case 0x11:
       CPU::AddGTETicks(8);
-      Execute_INTPL(inst);
+      GetSpecializedHandler<&Execute_INTPL>(inst)(inst);
       break;
 
     case 0x12:
       CPU::AddGTETicks(8);
-      Execute_MVMVA(inst);
+      GetSpecializedHandler<&Execute_MVMVA>(inst)(inst);
       break;
 
     case 0x13:
       CPU::AddGTETicks(19);
-      Execute_NCDS(inst);
+      GetSpecializedHandler<&Execute_NCDS>(inst)(inst);
       break;
 
     case 0x14:
       CPU::AddGTETicks(13);
-      Execute_CDP(inst);
+      GetSpecializedHandler<&Execute_CDP>(inst)(inst);
       break;
 
     case 0x16:
       CPU::AddGTETicks(44);
-      Execute_NCDT(inst);
+      GetSpecializedHandler<&Execute_NCDT>(inst)(inst);
       break;
 
     case 0x1B:
       CPU::AddGTETicks(17);
-      Execute_NCCS(inst);
+      GetSpecializedHandler<&Execute_NCCS>(inst)(inst);
       break;
 
     case 0x1C:
       CPU::AddGTETicks(11);
-      Execute_CC(inst);
+      GetSpecializedHandler<&Execute_CC>(inst)(inst);
       break;
 
     case 0x1E:
       CPU::AddGTETicks(14);
-      Execute_NCS(inst);
+      GetSpecializedHandler<&Execute_NCS>(inst)(inst);
       break;
 
     case 0x20:
       CPU::AddGTETicks(30);
-      Execute_NCT(inst);
+      GetSpecializedHandler<&Execute_NCT>(inst)(inst);
       break;
 
     case 0x28:
       CPU::AddGTETicks(5);
-      Execute_SQR(inst);
+      GetSpecializedHandler<&Execute_SQR>(inst)(inst);
       break;
 
     case 0x29:
       CPU::AddGTETicks(8);
-      Execute_DCPL(inst);
+      GetSpecializedHandler<&Execute_DCPL>(inst)(inst);
       break;
 
     case 0x2A:
       CPU::AddGTETicks(17);
-      Execute_DPCT(inst);
+      GetSpecializedHandler<&Execute_DPCT>(inst)(inst);
       break;
 
     case 0x2D:
@@ -1355,22 +1383,22 @@ void GTE::ExecuteInstruction(u32 inst_bits)
 
     case 0x30:
       CPU::AddGTETicks(23);
-      Execute_RTPT(inst);
+      GetSpecializedHandler<&Execute_RTPT>(inst)(inst);
       break;
 
     case 0x3D:
       CPU::AddGTETicks(5);
-      Execute_GPF(inst);
+      GetSpecializedHandler<&Execute_GPF>(inst)(inst);
       break;
 
     case 0x3E:
       CPU::AddGTETicks(5);
-      Execute_GPL(inst);
+      GetSpecializedHandler<&Execute_GPL>(inst)(inst);
       break;
 
     case 0x3F:
       CPU::AddGTETicks(39);
-      Execute_NCCT(inst);
+      GetSpecializedHandler<&Execute_NCCT>(inst)(inst);
       break;
 
       // clang-format off
@@ -1400,7 +1428,7 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
   {
     case 0x01:
       *ticks = 15;
-      return &Execute_RTPS;
+      return GetSpecializedHandler<&Execute_RTPS>(inst);
 
     case 0x06:
     {
@@ -1413,59 +1441,59 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 
     case 0x0C:
       *ticks = 6;
-      return &Execute_OP;
+      return GetSpecializedHandler<&Execute_OP>(inst);
 
     case 0x10:
       *ticks = 8;
-      return &Execute_DPCS;
+      return GetSpecializedHandler<&Execute_DPCS>(inst);
 
     case 0x11:
       *ticks = 8;
-      return &Execute_INTPL;
+      return GetSpecializedHandler<&Execute_INTPL>(inst);
 
     case 0x12:
       *ticks = 8;
-      return &Execute_MVMVA;
+      return GetSpecializedHandler<&Execute_MVMVA>(inst);
 
     case 0x13:
       *ticks = 19;
-      return &Execute_NCDS;
+      return GetSpecializedHandler<&Execute_NCDS>(inst);
 
     case 0x14:
       *ticks = 13;
-      return &Execute_CDP;
+      return GetSpecializedHandler<&Execute_CDP>(inst);
 
     case 0x16:
       *ticks = 44;
-      return &Execute_NCDT;
+      return GetSpecializedHandler<&Execute_NCDT>(inst);
 
     case 0x1B:
       *ticks = 17;
-      return &Execute_NCCS;
+      return GetSpecializedHandler<&Execute_NCCS>(inst);
 
     case 0x1C:
       *ticks = 11;
-      return &Execute_CC;
+      return GetSpecializedHandler<&Execute_CC>(inst);
 
     case 0x1E:
       *ticks = 14;
-      return &Execute_NCS;
+      return GetSpecializedHandler<&Execute_NCS>(inst);
 
     case 0x20:
       *ticks = 30;
-      return &Execute_NCT;
+      return GetSpecializedHandler<&Execute_NCT>(inst);
 
     case 0x28:
       *ticks = 5;
-      return &Execute_SQR;
+      return GetSpecializedHandler<&Execute_SQR>(inst);
 
     case 0x29:
       *ticks = 8;
-      return &Execute_DCPL;
+      return GetSpecializedHandler<&Execute_DCPL>(inst);
 
     case 0x2A:
       *ticks = 17;
-      return &Execute_DPCT;
+      return GetSpecializedHandler<&Execute_DPCT>(inst);
 
     case 0x2D:
       *ticks = 5;
@@ -1477,19 +1505,19 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 
     case 0x30:
       *ticks = 23;
-      return &Execute_RTPT;
+      return GetSpecializedHandler<&Execute_RTPT>(inst);
 
     case 0x3D:
       *ticks = 5;
-      return &Execute_GPF;
+      return GetSpecializedHandler<&Execute_GPF>(inst);
 
     case 0x3E:
       *ticks = 5;
-      return &Execute_GPL;
+      return GetSpecializedHandler<&Execute_GPL>(inst);
 
     case 0x3F:
       *ticks = 39;
-      return &Execute_NCCT;
+      return GetSpecializedHandler<&Execute_NCCT>(inst);
 
     default:
       Panic("Missing handler");
