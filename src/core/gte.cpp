@@ -155,7 +155,10 @@ ALWAYS_INLINE void TruncateAndSetIR(s32 value, bool lm)
   constexpr s32 MIN_VALUE = (index == 0) ? IR0_MIN_VALUE : IR123_MIN_VALUE;
   constexpr s32 MAX_VALUE = (index == 0) ? IR0_MAX_VALUE : IR123_MAX_VALUE;
   const s32 actual_min_value = lm ? 0 : MIN_VALUE;
-  if (value < actual_min_value)
+
+  // Saturation is rare outside of lighting, the hints stop the compiler from turning these into conditional moves,
+  // which costs more than a correctly predicted branch.
+  if (value < actual_min_value) [[unlikely]]
   {
     value = actual_min_value;
     if constexpr (index == 0)
@@ -167,7 +170,7 @@ ALWAYS_INLINE void TruncateAndSetIR(s32 value, bool lm)
     else if constexpr (index == 3)
       REGS.FLAG.ir3_saturated = true;
   }
-  else if (value > MAX_VALUE)
+  else if (value > MAX_VALUE) [[unlikely]]
   {
     value = MAX_VALUE;
     if constexpr (index == 0)
@@ -203,7 +206,7 @@ ALWAYS_INLINE void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
 template<u32 index>
 ALWAYS_INLINE u32 TruncateRGB(s32 value)
 {
-  if (value < 0 || value > 0xFF)
+  if (value < 0 || value > 0xFF) [[unlikely]]
   {
     if constexpr (index == 0)
       REGS.FLAG.color_r_saturated = true;
