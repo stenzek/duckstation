@@ -1387,7 +1387,8 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
   }
 
   // Use the automapper to set this up.
-  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"), true);
+  if (GenericInputBindingMapping mapping; InputManager::GetGenericBindingMapping("Keyboard", &mapping, nullptr))
+    InputManager::MapController(si, 0, mapping, true);
 }
 
 static constexpr const std::array s_log_level_names = {
