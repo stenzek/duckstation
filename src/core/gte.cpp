@@ -334,9 +334,10 @@ u32 GTE::ReadRegister(u32 index)
     case 29: // ORGB
     {
       // ORGB register, convert 16-bit to 555
-      const u8 r = static_cast<u8>(std::clamp(REGS.IR1 / 0x80, 0x00, 0x1F));
-      const u8 g = static_cast<u8>(std::clamp(REGS.IR2 / 0x80, 0x00, 0x1F));
-      const u8 b = static_cast<u8>(std::clamp(REGS.IR3 / 0x80, 0x00, 0x1F));
+      // Shifting rounds negative values down instead of towards zero, but they get clamped to zero either way.
+      const u8 r = static_cast<u8>(std::clamp(REGS.IR1 >> 7, 0x00, 0x1F));
+      const u8 g = static_cast<u8>(std::clamp(REGS.IR2 >> 7, 0x00, 0x1F));
+      const u8 b = static_cast<u8>(std::clamp(REGS.IR3 >> 7, 0x00, 0x1F));
       return ZeroExtend32(r) | (ZeroExtend32(g) << 5) | (ZeroExtend32(b) << 10);
     }
 
