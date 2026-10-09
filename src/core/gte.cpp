@@ -203,6 +203,26 @@ ALWAYS_INLINE void TruncateAndSetMACAndIR(s64 value, u8 shift, bool lm)
   TruncateAndSetIR<index>(value32, lm);
 }
 
+// Variant for when saturation depends on the data, and the branches above would be frequently mispredicted, i.e. the
+// light matrix multiply with lm set, where every normal which faces away from a light is clamped to zero. Costs more
+// than the above when saturation is predictable, so should not be used elsewhere.
+template<u32 index>
+ALWAYS_INLINE void TruncateAndSetMACAndIRBranchless(s64 value, u8 shift, bool lm)
+{
+  // FLAG.ir[1-3]_saturated are bits 24..22.
+  static_assert(index >= 1 && index <= 3);
+  constexpr u32 FLAG_SHIFT = 25 - index;
+
+  CheckMACOverflow<index>(value);
+
+  const s32 value32 = static_cast<s32>(value >> shift);
+  REGS.dr32[24 + index] = value32;
+
+  const s32 clamped_value = std::clamp(value32, lm ? 0 : IR123_MIN_VALUE, IR123_MAX_VALUE);
+  REGS.FLAG.bits |= static_cast<u32>(clamped_value != value32) << FLAG_SHIFT;
+  REGS.dr32[8 + index] = clamped_value;
+}
+
 template<u32 index>
 ALWAYS_INLINE u32 TruncateRGB(s32 value)
 {
@@ -573,10 +593,11 @@ ALWAYS_INLINE u32 GTE::UNRDivide(u32 lhs, u32 rhs)
 ALWAYS_INLINE void GTE::MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm)
 {
 #define M(i, j) M_[((i) * 3) + (j)]
+  // Only used for the light matrix, see TruncateAndSetMACAndIRBranchless().
 #define dot3(i)                                                                                                        \
-  TruncateAndSetMACAndIR<i + 1>(SignExtendMACResult<i + 1>((s64(M(i, 0)) * s64(Vx)) + (s64(M(i, 1)) * s64(Vy))) +      \
-                                  (s64(M(i, 2)) * s64(Vz)),                                                            \
-                                shift, lm)
+  TruncateAndSetMACAndIRBranchless<i + 1>(                                                                             \
+    SignExtendMACResult<i + 1>((s64(M(i, 0)) * s64(Vx)) + (s64(M(i, 1)) * s64(Vy))) + (s64(M(i, 2)) * s64(Vz)), shift, \
+    lm)
 
   dot3(0);
   dot3(1);
