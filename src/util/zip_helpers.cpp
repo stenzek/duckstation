@@ -143,7 +143,7 @@ ZipHelpers::ManagedZipT ZipHelpers::OpenManagedZipCFile(std::FILE* fp, int flags
   zip_source_t* zs = g_dyn_libzip.zip_source_function_create(&CFileSourceCallback, fp, &ze);
   if (!zs)
   {
-    SetErrorObject(error, "zip_source_filep_create() failed: ", &ze);
+    SetErrorObject(error, "zip_source_function_create() failed: ", &ze);
     std::fclose(fp);
     zip = nullptr;
   }
