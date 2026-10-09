@@ -912,10 +912,13 @@ void GTE::Execute_NCLIP(Instruction inst)
   // MAC0 =   SX0*SY1 + SX1*SY2 + SX2*SY0 - SX0*SY2 - SX1*SY0 - SX2*SY1
   REGS.FLAG.Clear();
 
-  TruncateAndSetMAC<0>(s64(REGS.SXY0[0]) * s64(REGS.SXY1[1]) + s64(REGS.SXY1[0]) * s64(REGS.SXY2[1]) +
-                         s64(REGS.SXY2[0]) * s64(REGS.SXY0[1]) - s64(REGS.SXY0[0]) * s64(REGS.SXY2[1]) -
-                         s64(REGS.SXY1[0]) * s64(REGS.SXY0[1]) - s64(REGS.SXY2[0]) * s64(REGS.SXY1[1]),
-                       0);
+  // Factorized to halve the number of multiplies. The intermediates cannot overflow 64 bits, and only the sum is
+  // checked for overflow, so the result and flags are the same as the expanded form above.
+  const s64 SY0 = s64(REGS.SXY0[1]);
+  const s64 SY1 = s64(REGS.SXY1[1]);
+  const s64 SY2 = s64(REGS.SXY2[1]);
+  TruncateAndSetMAC<0>(
+    s64(REGS.SXY0[0]) * (SY1 - SY2) + s64(REGS.SXY1[0]) * (SY2 - SY0) + s64(REGS.SXY2[0]) * (SY0 - SY1), 0);
 
   REGS.FLAG.UpdateError();
 }
