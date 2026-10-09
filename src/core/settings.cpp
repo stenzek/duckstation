@@ -1545,7 +1545,7 @@ static constexpr const std::array s_cpu_fastmem_mode_names = {
 };
 static constexpr const std::array s_cpu_fastmem_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled (Slowest)", "CPUFastmemMode"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "MMap (Hardware, Fastest, 64-Bit Only)", "CPUFastmemMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "MMap (Fastest)", "CPUFastmemMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "LUT (Faster)", "CPUFastmemMode"),
 };
 
