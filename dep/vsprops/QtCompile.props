@@ -100,7 +100,26 @@
       <Output TaskParameter="OutOfDateSources" ItemName="_QtResourceOutOfDate" />
     </GetOutOfDateItems>
     <Message Condition="'@(_QtResourceOutOfDate)'!=''" Text="rcc %(_QtResourceOutOfDate.Filename)" Importance="High" />
-    <Exec Condition="'@(_QtResourceOutOfDate)'!=''" Command="%(_QtResourceOutOfDate.Command)" />
+    <!-- rcc stamps every entry with the mtime of its source file, i.e. the checkout time. Pin it to the commit date instead. -->
+    <Exec
+      Condition="'@(_QtResourceOutOfDate)'!='' And '$(SOURCE_DATE_EPOCH)'==''"
+      Command="git -C &quot;$(SolutionDir).&quot; log -1 --format=%25%25ct"
+      ConsoleToMSBuild="true"
+      IgnoreExitCode="true"
+      IgnoreStandardErrorWarningFormat="true"
+      StandardOutputImportance="Low"
+      StandardErrorImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_QtResourceCommitDate" />
+      <Output TaskParameter="ExitCode" PropertyName="_QtResourceCommitDateExitCode" />
+    </Exec>
+    <PropertyGroup>
+      <_QtResourceSourceDate>$(SOURCE_DATE_EPOCH)</_QtResourceSourceDate>
+      <_QtResourceSourceDate Condition="'$(_QtResourceSourceDate)'=='' And '$(_QtResourceCommitDateExitCode)'=='0'">$(_QtResourceCommitDate)</_QtResourceSourceDate>
+    </PropertyGroup>
+    <Exec
+      Condition="'@(_QtResourceOutOfDate)'!=''"
+      Command="%(_QtResourceOutOfDate.Command)"
+      EnvironmentVariables="SOURCE_DATE_EPOCH=$(_QtResourceSourceDate)" />
     <ItemGroup>
       <_QtResourceOutOfDate Remove="@(_QtResourceOutOfDate)" />
       <_QtResourceDependency Remove="@(_QtResourceDependency)" />
