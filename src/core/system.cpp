@@ -2348,9 +2348,17 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
   // If we are running the GDB server and have clients, then use it to sleep instead.
   // That way in a query->response->query->response chain, we don't process only one message per frame.
   if (GDBServer::HasAnyClients())
+  {
     GDBServer::PollUntil(sleep_until);
+  }
   else
-    Timer::SleepUntil(sleep_until, g_settings.display_optimal_frame_pacing);
+  {
+    // Only need an exact sleep for pre-frame sleep, since the frame is scheduled to finish just in time.
+    // Otherwise waking slightly late is harmless, the video thread handles the presentation timing.
+    // In the worst case, input would get polled up to 0.5ms later than originally expected which isn't
+    // going to hurt anything. If you have that little frame budget, disable optimal frame pacing.
+    Timer::SleepUntil(sleep_until, s_state.pre_frame_sleep);
+  }
 
 #if 0
   const Timer::Value time_after_sleep = Timer::GetCurrentValue();
