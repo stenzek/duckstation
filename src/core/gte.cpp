@@ -1282,12 +1282,11 @@ ALWAYS_INLINE void GTE::Execute_GPF(Instruction inst)
 }
 
 namespace GTE {
-namespace {
 
 /// Wraps an instruction handler, fixing the sf/lm bits at compile time. Once the handler is inlined, the shift amounts
 /// and saturation limits become constants, instead of being decoded and selected on each execution.
 template<void (*handler)(Instruction), bool sf, bool lm>
-void SpecializedHandler(Instruction inst)
+static void SpecializedHandler(Instruction inst)
 {
   inst.sf = BoolToUInt8(sf);
   inst.lm = lm;
@@ -1306,7 +1305,6 @@ ALWAYS_INLINE InstructionImpl GetSpecializedHandler(Instruction inst)
   return handlers[inst.sf][BoolToUInt8(inst.lm)];
 }
 
-} // namespace
 } // namespace GTE
 
 void GTE::ExecuteInstruction(u32 inst_bits)

@@ -19,6 +19,7 @@ add_library(core
   bus.h
   cdrom.cpp
   cdrom.h
+  cdrom.inl
   cdrom_async_reader.cpp
   cdrom_async_reader.h
   cdrom_subq_replacement.cpp
