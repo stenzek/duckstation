@@ -41,7 +41,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang))">/clang:-fno-rtti %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="!$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/d1trimfile:&quot;$(SolutionDir)\&quot; %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="!$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/d1trimfile:&quot;$(SolutionDir)\&quot; /Brepro %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/clang:-ffile-prefix-map=&quot;$(SolutionDir)\&quot;= %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -49,6 +49,9 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(DepsLibDir)</AdditionalLibraryDirectories>
       <AdditionalOptions Condition="$(Configuration.Contains(ReleaseLTCG))">/PDBALTPATH:%_PDB% /Brepro %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <Lib>
+      <AdditionalOptions Condition="!$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/Brepro %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup Condition="$(Configuration.Contains(Debug))">
