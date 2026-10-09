@@ -44,8 +44,11 @@ union FLAGS
 
   ALWAYS_INLINE void Clear() { bits = 0; }
 
-  // Bits 30..23, 18..13 OR'ed
-  ALWAYS_INLINE void UpdateError() { error = (bits & UINT32_C(0x7F87E000)) != UINT32_C(0); }
+  // Bits 30..23, 18..13 OR'ed. The error bit must not be set beforehand, i.e. after Clear(), or masking guest writes.
+  ALWAYS_INLINE void UpdateError()
+  {
+    bits |= ((bits & UINT32_C(0x7F87E000)) != UINT32_C(0)) ? UINT32_C(0x80000000) : UINT32_C(0);
+  }
 };
 
 union Regs
