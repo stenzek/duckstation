@@ -1647,17 +1647,32 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
                          if (index < 0)
                            return;
 
-                         const std::string& name = names[index];
-                         const auto lock = Core::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface();
-                         const bool result =
-                           InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name), true);
-                         SetSettingsChanged(bsi);
+                         Error error;
+                         GenericInputBindingMapping mapping;
+                         if (!InputManager::GetGenericBindingMapping(names[index], &mapping, &error))
+                         {
+                           FullscreenUI::OpenInfoMessageDialog(
+                             ICON_EMOJI_NO_ENTRY_SIGN, FSUI_VSTR("Automatic Mapping Failed"), error.TakeDescription());
+                           return;
+                         }
 
-                         // and the toast needs to happen on the UI thread.
-                         ShowToast(result ? OSDMessageType::Quick : OSDMessageType::Info, {},
-                                   result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
-                                            fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
+                         bool result;
+                         {
+                           const auto lock = Core::GetSettingsLock();
+                           SettingsInterface* bsi = GetEditingSettingsInterface();
+                           result = InputManager::MapController(*bsi, port, mapping, true);
+                           SetSettingsChanged(bsi);
+                         }
+                         if (result)
+                         {
+                           ShowToast(OSDMessageType::Quick, {},
+                                     fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), names[index]));
+                         }
+                         else
+                         {
+                           FullscreenUI::OpenInfoMessageDialog(
+                             ICON_EMOJI_NO_ENTRY_SIGN, FSUI_VSTR("Automatic Mapping Failed"), error.TakeDescription());
+                         }
                        });
     });
   });

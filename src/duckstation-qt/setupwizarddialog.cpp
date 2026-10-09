@@ -23,6 +23,7 @@
 #include "util/input_manager.h"
 #include "util/translation.h"
 
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/string_util.h"
 #include "common/threading.h"
@@ -446,25 +447,26 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
 
 void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device)
 {
-  std::vector<std::pair<GenericInputBinding, std::string>> mapping =
-    InputManager::GetGenericBindingMapping(device.toStdString());
-  if (mapping.empty())
+  Error error;
+  GenericInputBindingMapping mapping;
+  if (!InputManager::GetGenericBindingMapping(device.toStdString(), &mapping, &error))
   {
-    QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, tr("Automatic Binding Failed"),
-      tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic "
-         "mapping.")
-        .arg(device));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Automatic Mapping Failed"),
+                             QString::fromStdString(error.GetDescription()));
     return;
   }
 
   bool result;
   {
     const auto lock = Core::GetSettingsLock();
-    result = InputManager::MapController(*Core::GetBaseSettingsLayer(), port, mapping, true);
+    result = InputManager::MapController(*Core::GetBaseSettingsLayer(), port, mapping, true, &error);
   }
   if (!result)
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Automatic Mapping Failed"),
+                             QString::fromStdString(error.GetDescription()));
     return;
+  }
 
   Host::CommitBaseSettingChanges();
 
