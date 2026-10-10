@@ -1222,14 +1222,14 @@ static std::optional<DynamicHeapArray<u32>> CompileToSPV(shaderc_shader_kind sta
   if (!g_dyn_shaderc.Open(error))
     return ret;
 
-  const bool generate_debug_info = (g_gpu_device && g_gpu_device->IsDebugDevice());
   const shaderc_compile_options_t options = g_dyn_shaderc.shaderc_compile_options_initialize();
   AssertMsg(options, "shaderc_compile_options_initialize() failed");
 
   g_dyn_shaderc.shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
   g_dyn_shaderc.shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
-  g_dyn_shaderc.shaderc_compile_options_set_generate_debug_info(options, generate_debug_info, false);
   g_dyn_shaderc.shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_zero);
+  if (g_gpu_device && g_gpu_device->IsDebugDevice())
+    g_dyn_shaderc.shaderc_compile_options_set_generate_debug_info(options);
 
   const shaderc_compilation_result_t result = g_dyn_shaderc.shaderc_compile_into_spv(
     g_dyn_shaderc.compiler, code.data(), code.length(), stage, "source", "main", options);

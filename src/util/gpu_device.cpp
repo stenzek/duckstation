@@ -1583,8 +1583,15 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
 
   g_dyn_shaderc.shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
   g_dyn_shaderc.shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
-  g_dyn_shaderc.shaderc_compile_options_set_generate_debug_info(options, m_debug_device,
-                                                                m_debug_device && nonsemantic_debug_info);
+  if (m_debug_device)
+  {
+    g_dyn_shaderc.shaderc_compile_options_set_generate_debug_info(options);
+    if (nonsemantic_debug_info)
+    {
+      g_dyn_shaderc.shaderc_compile_options_set_generate_nonsemantic_debug_info(options);
+      g_dyn_shaderc.shaderc_compile_options_set_generate_nonsemantic_debug_source(options);
+    }
+  }
   g_dyn_shaderc.shaderc_compile_options_set_optimization_level(
     options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
