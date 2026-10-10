@@ -11,6 +11,7 @@
 #include "core/core.h"
 #include "core/fullscreenui.h"
 #include "core/host.h"
+#include "core/settings.h"
 #include "core/system.h"
 #include "core/system_private.h"
 #include "core/video_thread.h"
@@ -47,6 +48,8 @@
 #endif
 
 LOG_CHANNEL(InputManager);
+
+const char* const InputManager::SOURCES_CONFIG_SECTION = "InputSources";
 
 namespace InputManager {
 
@@ -892,7 +895,7 @@ void InputManager::AddHotkeyBindings(const SettingsInterface& si)
   // Threading: Only called by internal functions.
   for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
-    const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey.name));
+    const std::vector<std::string> bindings(si.GetStringList(Settings::HOTKEYS_SECTION_NAME, hotkey.name));
     if (bindings.empty())
       continue;
 
@@ -1645,12 +1648,12 @@ void InputManager::UpdateInputIgnoreState()
 void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
 {
   // Threading: No shared state access.
-  si.ClearSection("InputSources");
-  si.SetBoolValue("InputSources", "SDL", true);
-  si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-  si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
-  si.SetBoolValue("InputSources", "XInput", false);
-  si.SetBoolValue("InputSources", "RawInput", false);
+  si.ClearSection(SOURCES_CONFIG_SECTION);
+  si.SetBoolValue(SOURCES_CONFIG_SECTION, "SDL", true);
+  si.SetBoolValue(SOURCES_CONFIG_SECTION, "SDLControllerEnhancedMode", false);
+  si.SetBoolValue(SOURCES_CONFIG_SECTION, "SDLPS5PlayerLED", false);
+  si.SetBoolValue(SOURCES_CONFIG_SECTION, "XInput", false);
+  si.SetBoolValue(SOURCES_CONFIG_SECTION, "RawInput", false);
 }
 
 void InputManager::ClearPortBindings(SettingsInterface& si, u32 port)
@@ -1674,24 +1677,24 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 {
   // Threading: No shared state access.
   if (copy_pad_config)
-    dest_si->CopyStringValue(src_si, "ControllerPorts", "MultitapMode");
+    dest_si->CopyStringValue(src_si, Settings::CONTROLLER_PORTS_SECTION_NAME, "MultitapMode");
 
   if (copy_source_config)
   {
     for (u32 type = 0; type < static_cast<u32>(InputSourceType::Count); type++)
     {
-      dest_si->CopyBoolValue(src_si, "InputSources",
+      dest_si->CopyBoolValue(src_si, SOURCES_CONFIG_SECTION,
                              InputManager::InputSourceToString(static_cast<InputSourceType>(type)));
     }
 
     // I hate this, but there isn't a better location for it...
-    if (dest_si->GetBoolValue("InputSources", "SDL"))
+    if (dest_si->GetBoolValue(SOURCES_CONFIG_SECTION, "SDL"))
       InputSource::CopySDLSourceSettings(dest_si, src_si);
   }
 
   const MultitapMode mtap_mode =
-    Settings::ParseMultitapModeName(
-      (copy_pad_config ? &src_si : dest_si)->GetStringViewValue("ControllerPorts", "MultitapMode"))
+    Settings::ParseMultitapModeName((copy_pad_config ? &src_si : dest_si)
+                                      ->GetStringViewValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "MultitapMode"))
       .value_or(g_settings.multitap_mode);
   const auto mtap_enabled = Controller::GetMultitapEnabledPorts(mtap_mode);
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
@@ -1743,7 +1746,7 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
   if (copy_hotkey_bindings)
   {
     for (const HotkeyInfo& hk : Core::GetHotkeyList())
-      dest_si->CopyStringListValue(src_si, "Hotkeys", hk.name);
+      dest_si->CopyStringListValue(src_si, Settings::HOTKEYS_SECTION_NAME, hk.name);
   }
 }
 
@@ -2324,7 +2327,7 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
     const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
     s_state.pointer_axis_scale[axis] =
       1.0f / std::max(binding_si.GetFloatValue(
-                        "ControllerPorts",
+                        Settings::CONTROLLER_PORTS_SECTION_NAME,
                         TinyString::from_format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale),
                       1.0f);
   }
@@ -2600,7 +2603,7 @@ bool InputManager::GetGenericBindingMapping(std::string_view device, GenericInpu
 bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type)
 {
   // Threading: No shared state access.
-  return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
+  return si.GetBoolValue(SOURCES_CONFIG_SECTION, InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
 bool InputManager::UpdateInputSourceState(const SettingsInterface& si,

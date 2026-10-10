@@ -647,6 +647,30 @@ struct Settings : public GPUSettings
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr u16 DEFAULT_GDB_SERVER_PORT = 2345;
   static constexpr bool DEFAULT_ACHIEVEMENT_BADGE_PREFETCH = true;
+
+  static const char* const INTERFACE_SECTION_NAME;
+  static const char* const UI_SECTION_NAME;
+  static const char* const GPU_SECTION_NAME;
+  static const char* const DISPLAY_SECTION_NAME;
+  static const char* const CONSOLE_SECTION_NAME;
+  static const char* const CPU_SECTION_NAME;
+  static const char* const CDROM_SECTION_NAME;
+  static const char* const AUDIO_SECTION_NAME;
+  static const char* const BIOS_SECTION_NAME;
+  static const char* const MEMORY_CARDS_SECTION_NAME;
+  static const char* const ACHIEVEMENTS_SECTION_NAME;
+  static const char* const HACKS_SECTION_NAME;
+  static const char* const DEBUG_SECTION_NAME;
+  static const char* const SIO_SECTION_NAME;
+  static const char* const PCDRV_SECTION_NAME;
+  static const char* const PIO_SECTION_NAME;
+  static const char* const TEXTURE_REPLACEMENTS_SECTION_NAME;
+  static const char* const LOGGING_SECTION_NAME;
+  static const char* const CONTROLLER_PORTS_SECTION_NAME;
+  static const char* const HOTKEYS_SECTION_NAME;
+  static const char* const BORDER_OVERLAY_SECTION_NAME;
+  static const char* const FOLDERS_SECTION_NAME;
+  static const char* const DEBUG_WINDOWS_SECTION_NAME;
 };
 
 ALIGN_TO_CACHE_LINE extern Settings g_settings;        // CPU thread copy.

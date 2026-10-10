@@ -181,82 +181,89 @@ void DebuggingSettingsWidget::addTweakOptions()
 {
   if (!m_dialog->isPerGameSettings())
   {
-    addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Game Settings"), "Main", "ApplyGameSettings",
-                          true);
+    addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Game Settings"), Settings::INTERFACE_SECTION_NAME,
+                          "ApplyGameSettings", true);
   }
 
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
-                        "ApplyCompatibilitySettings", true);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
-                        "LoadDevicesFromSaveStates", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Pause On Start"), "Main", "StartPaused", false);
-  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), "Main", "SaveStateCompression",
-                       &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
-                       &Settings::GetSaveStateCompressionModeDisplayName,
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"),
+                        Settings::INTERFACE_SECTION_NAME, "ApplyCompatibilitySettings", true);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"),
+                        Settings::INTERFACE_SECTION_NAME, "LoadDevicesFromSaveStates", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Pause On Start"), Settings::INTERFACE_SECTION_NAME,
+                        "StartPaused", false);
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), Settings::INTERFACE_SECTION_NAME,
+                       "SaveStateCompression", &Settings::ParseSaveStateCompressionModeName,
+                       &Settings::GetSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeDisplayName,
                        static_cast<u32>(SaveStateCompressionMode::Count),
                        Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
   if (m_dialog->isPerGameSettings())
   {
-    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"), "Display",
-                           "ActiveStartOffset", -5000, 5000, 0);
-    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active End Offset"), "Display",
-                           "ActiveEndOffset", -5000, 5000, 0);
-    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line Start Offset"), "Display",
-                           "LineStartOffset", -128, 127, 0);
-    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line End Offset"), "Display", "LineEndOffset",
-                           -128, 127, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"),
+                           Settings::DISPLAY_SECTION_NAME, "ActiveStartOffset", -5000, 5000, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active End Offset"),
+                           Settings::DISPLAY_SECTION_NAME, "ActiveEndOffset", -5000, 5000, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line Start Offset"),
+                           Settings::DISPLAY_SECTION_NAME, "LineStartOffset", -128, 127, 0);
+    addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Line End Offset"),
+                           Settings::DISPLAY_SECTION_NAME, "LineEndOffset", -128, 127, 0);
   }
 
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 1,
-                         10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS, tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 1, 10000,
-                         Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
-                         Settings::DEFAULT_GPU_FIFO_SIZE, tr(" words"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
-                         Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), Settings::HACKS_SECTION_NAME,
+                         "DMAMaxSliceTicks", 1, 10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), Settings::HACKS_SECTION_NAME,
+                         "DMAHaltTicks", 1, 10000, Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), Settings::HACKS_SECTION_NAME,
+                         "GPUFIFOSize", 16, 4096, Settings::DEFAULT_GPU_FIFO_SIZE, tr(" words"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead"), Settings::HACKS_SECTION_NAME,
+                         "GPUMaxRunAhead", 0, 1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
 
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
-                        "RecompilerMemoryExceptions", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Block Linking"), "CPU",
-                        "RecompilerBlockLinking", true);
-  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"), "CPU",
-                       "FastmemMode", Settings::ParseCPUFastmemMode, Settings::GetCPUFastmemModeName,
-                       Settings::GetCPUFastmemModeDisplayName, static_cast<u32>(CPUFastmemMode::Count),
-                       Settings::DEFAULT_CPU_FASTMEM_MODE);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"),
+                        Settings::CPU_SECTION_NAME, "RecompilerMemoryExceptions", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Block Linking"),
+                        Settings::CPU_SECTION_NAME, "RecompilerBlockLinking", true);
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Fast Memory Access"),
+                       Settings::CPU_SECTION_NAME, "FastmemMode", Settings::ParseCPUFastmemMode,
+                       Settings::GetCPUFastmemModeName, Settings::GetCPUFastmemModeDisplayName,
+                       static_cast<u32>(CPUFastmemMode::Count), Settings::DEFAULT_CPU_FASTMEM_MODE);
 
-  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Mechacon Version"), "CDROM", "MechaconVersion",
-                       Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Mechacon Version"), Settings::CDROM_SECTION_NAME,
+                       "MechaconVersion", Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), "CDROM", "ReadaheadSectors",
-                         0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Read Speedup Cycles"), "CDROM",
-                         "MaxReadSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES,
-                         tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Seek Speedup Cycles"), "CDROM",
-                         "MaxSeekSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES,
-                         tr(" cycles"));
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Disable Speedup on MDEC"), "CDROM",
-                        "DisableSpeedupOnMDEC", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
-                        "AllowBootingWithoutSBIFile", false);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), Settings::CDROM_SECTION_NAME,
+                         "ReadaheadSectors", 0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Read Speedup Cycles"),
+                         Settings::CDROM_SECTION_NAME, "MaxReadSpeedupCycles", 1, 1000000,
+                         Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Seek Speedup Cycles"),
+                         Settings::CDROM_SECTION_NAME, "MaxSeekSpeedupCycles", 1, 1000000,
+                         Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES, tr(" cycles"));
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Disable Speedup on MDEC"),
+                        Settings::CDROM_SECTION_NAME, "DisableSpeedupOnMDEC", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), Settings::CDROM_SECTION_NAME,
+                        "RegionCheck", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), Settings::CDROM_SECTION_NAME,
+                        "SubQSkew", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"),
+                        Settings::CDROM_SECTION_NAME, "AllowBootingWithoutSBIFile", false);
 
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable GDB Server"), "Debug", "EnableGDBServer", false);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GDB Server Port"), "Debug", "GDBServerPort", 1, 65535,
-                         Settings::DEFAULT_GDB_SERVER_PORT);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable GDB Server"), Settings::DEBUG_SECTION_NAME,
+                        "EnableGDBServer", false);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GDB Server Port"), Settings::DEBUG_SECTION_NAME,
+                         "GDBServerPort", 1, 65535, Settings::DEFAULT_GDB_SERVER_PORT);
 
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCSX Expansion Region"), "Debug",
-                        "PCSXExpansionRegion", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), "Hacks", "ExportSharedMemory",
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCSX Expansion Region"),
+                        Settings::DEBUG_SECTION_NAME, "PCSXExpansionRegion", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), Settings::HACKS_SECTION_NAME,
+                        "ExportSharedMemory", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Redirect SIO to TTY"), Settings::SIO_SECTION_NAME,
+                        "RedirectToTTY", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), Settings::PCDRV_SECTION_NAME, "Enabled",
                         false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Redirect SIO to TTY"), "SIO", "RedirectToTTY", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), "PCDrv", "Enabled", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv Writes"), "PCDrv", "EnableWrites", false);
-  addDirectoryOption(m_dialog, m_ui.tweakOptionTable, tr("PCDrv Root Directory"), "PCDrv", "Root");
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv Writes"), Settings::PCDRV_SECTION_NAME,
+                        "EnableWrites", false);
+  addDirectoryOption(m_dialog, m_ui.tweakOptionTable, tr("PCDrv Root Directory"), Settings::PCDRV_SECTION_NAME, "Root");
 }
 
 void DebuggingSettingsWidget::onResetToDefaultClicked()
@@ -309,37 +316,37 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
 
   // for per-game it's easier to just clear and recreate
   INISettingsInterface* sif = m_dialog->getSettingsInterface();
-  sif->DeleteValue("Main", "ApplyCompatibilitySettings");
-  sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
-  sif->DeleteValue("Main", "StartPaused");
-  sif->DeleteValue("Main", "SaveStateCompression");
-  sif->DeleteValue("Display", "ActiveStartOffset");
-  sif->DeleteValue("Display", "ActiveEndOffset");
-  sif->DeleteValue("Display", "LineStartOffset");
-  sif->DeleteValue("Display", "LineEndOffset");
-  sif->DeleteValue("Hacks", "DMAMaxSliceTicks");
-  sif->DeleteValue("Hacks", "DMAHaltTicks");
-  sif->DeleteValue("Hacks", "GPUFIFOSize");
-  sif->DeleteValue("Hacks", "GPUMaxRunAhead");
-  sif->DeleteValue("Hacks", "ExportSharedMemory");
-  sif->DeleteValue("CPU", "RecompilerMemoryExceptions");
-  sif->DeleteValue("CPU", "RecompilerBlockLinking");
-  sif->DeleteValue("CPU", "FastmemMode");
-  sif->DeleteValue("CDROM", "MechaconVersion");
-  sif->DeleteValue("CDROM", "ReadaheadSectors");
-  sif->DeleteValue("CDROM", "MaxReadSpeedupCycles");
-  sif->DeleteValue("CDROM", "MaxSeekSpeedupCycles");
-  sif->DeleteValue("CDROM", "DisableSpeedupOnMDEC");
-  sif->DeleteValue("CDROM", "RegionCheck");
-  sif->DeleteValue("CDROM", "SubQSkew");
-  sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
-  sif->DeleteValue("Debug", "EnableGDBServer");
-  sif->DeleteValue("Debug", "GDBServerPort");
-  sif->DeleteValue("Debug", "PCSXExpansionRegion");
-  sif->DeleteValue("SIO", "RedirectToTTY");
-  sif->DeleteValue("PCDrv", "Enabled");
-  sif->DeleteValue("PCDrv", "EnableWrites");
-  sif->DeleteValue("PCDrv", "Root");
+  sif->DeleteValue(Settings::INTERFACE_SECTION_NAME, "ApplyCompatibilitySettings");
+  sif->DeleteValue(Settings::INTERFACE_SECTION_NAME, "LoadDevicesFromSaveStates");
+  sif->DeleteValue(Settings::INTERFACE_SECTION_NAME, "StartPaused");
+  sif->DeleteValue(Settings::INTERFACE_SECTION_NAME, "SaveStateCompression");
+  sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "ActiveStartOffset");
+  sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "ActiveEndOffset");
+  sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "LineStartOffset");
+  sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "LineEndOffset");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAMaxSliceTicks");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAHaltTicks");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUFIFOSize");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUMaxRunAhead");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "ExportSharedMemory");
+  sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerMemoryExceptions");
+  sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerBlockLinking");
+  sif->DeleteValue(Settings::CPU_SECTION_NAME, "FastmemMode");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MechaconVersion");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "ReadaheadSectors");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MaxReadSpeedupCycles");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MaxSeekSpeedupCycles");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "DisableSpeedupOnMDEC");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "RegionCheck");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "SubQSkew");
+  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "AllowBootingWithoutSBIFile");
+  sif->DeleteValue(Settings::DEBUG_SECTION_NAME, "EnableGDBServer");
+  sif->DeleteValue(Settings::DEBUG_SECTION_NAME, "GDBServerPort");
+  sif->DeleteValue(Settings::DEBUG_SECTION_NAME, "PCSXExpansionRegion");
+  sif->DeleteValue(Settings::SIO_SECTION_NAME, "RedirectToTTY");
+  sif->DeleteValue(Settings::PCDRV_SECTION_NAME, "Enabled");
+  sif->DeleteValue(Settings::PCDRV_SECTION_NAME, "EnableWrites");
+  sif->DeleteValue(Settings::PCDRV_SECTION_NAME, "Root");
   QtHost::SaveSettingsInterface(sif, true, true);
   while (m_ui.tweakOptionTable->rowCount() > 0)
     m_ui.tweakOptionTable->removeRow(m_ui.tweakOptionTable->rowCount() - 1);

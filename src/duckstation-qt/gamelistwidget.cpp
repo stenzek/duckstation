@@ -238,25 +238,25 @@ GameListModel::~GameListModel() = default;
 void GameListModel::loadSettings()
 {
   m_cover_scale =
-    Core::GetBaseFloatSettingValue(GameList::UI_SETTING_SECTION, "GameListCoverArtScale", DEFAULT_COVER_SCALE);
-  m_icon_size = Core::GetBaseIntSettingValue(GameList::UI_SETTING_SECTION, "GameListIconSize", GAME_ICON_DEFAULT_SIZE);
+    Core::GetBaseFloatSettingValue(GameList::UI_SECTION_NAME, "GameListCoverArtScale", DEFAULT_COVER_SCALE);
+  m_icon_size = Core::GetBaseIntSettingValue(GameList::UI_SECTION_NAME, "GameListIconSize", GAME_ICON_DEFAULT_SIZE);
   m_show_localized_titles = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
   m_show_titles_for_covers = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
-  m_show_game_icons = Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListShowGameIcons", true);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
+  m_show_game_icons = Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", true);
 }
 
 void GameListModel::reloadSettings()
 {
   setCoverScale(
-    Core::GetBaseFloatSettingValue(GameList::UI_SETTING_SECTION, "GameListCoverArtScale", DEFAULT_COVER_SCALE));
-  setIconSize(Core::GetBaseIntSettingValue(GameList::UI_SETTING_SECTION, "GameListIconSize", GAME_ICON_DEFAULT_SIZE));
+    Core::GetBaseFloatSettingValue(GameList::UI_SECTION_NAME, "GameListCoverArtScale", DEFAULT_COVER_SCALE));
+  setIconSize(Core::GetBaseIntSettingValue(GameList::UI_SECTION_NAME, "GameListIconSize", GAME_ICON_DEFAULT_SIZE));
   setShowLocalizedTitles(Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
-  setShowCoverTitles(Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_COVER_TITLES,
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
+  setShowCoverTitles(Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES,
                                                    GameList::DEFAULT_COVER_TITLES));
-  setShowGameIcons(Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListShowGameIcons", true));
+  setShowGameIcons(Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", true));
 }
 
 bool GameListModel::getShowLocalizedTitles() const
@@ -1221,7 +1221,7 @@ public:
 
   void reloadSettings()
   {
-    setMergeDiscSets(Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_MERGE_DISC_SETS,
+    setMergeDiscSets(Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_MERGE_DISC_SETS,
                                                    GameList::DEFAULT_MERGE_DISC_SETS));
   }
 
@@ -1680,7 +1680,8 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   }
 
   m_list_view = new GameListListView(this, m_model, m_sort_model, m_ui.stack);
-  m_list_view->setAnimateGameIcons(Core::GetBaseBoolSettingValue("UI", "GameListAnimateGameIcons", false));
+  m_list_view->setAnimateGameIcons(
+    Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "GameListAnimateGameIcons", false));
   m_ui.stack->insertWidget(0, m_list_view);
 
   m_grid_view = new GameListGridView(this, m_model, m_sort_model, m_ui.stack);
@@ -1735,7 +1736,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   action_show_list_icons->setChecked(m_model->getShowGameIcons());
   action_animate_list_icons->setChecked(m_list_view->isAnimatingGameIcons());
   action_prefer_achievement_game_icons->setChecked(
-    Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
+    Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
                                   GameList::DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS));
   action_show_grid_titles->setChecked(m_model->getShowCoverTitles());
   onIconSizeChanged(m_model->getIconSize());
@@ -1831,12 +1832,12 @@ void GameListWidget::setBackgroundPath(const std::string_view path)
 {
   if (!path.empty())
   {
-    Core::SetBaseStringSettingValue("UI", "GameListBackgroundPath",
+    Core::SetBaseStringSettingValue(Settings::UI_SECTION_NAME, "GameListBackgroundPath",
                                     Path::MakeRelative(path, EmuFolders::DataRoot).c_str());
   }
   else
   {
-    Core::DeleteBaseSettingValue("UI", "GameListBackgroundPath");
+    Core::DeleteBaseSettingValue(Settings::UI_SECTION_NAME, "GameListBackgroundPath");
   }
 
   Host::CommitBaseSettingChanges();
@@ -1850,7 +1851,8 @@ void GameListWidget::updateBackground(bool reload_image)
   {
     m_background_image = QImage();
 
-    if (std::string path = Core::GetBaseStringSettingValue("UI", "GameListBackgroundPath"); !path.empty())
+    if (std::string path = Core::GetBaseStringSettingValue(Settings::UI_SECTION_NAME, "GameListBackgroundPath");
+        !path.empty())
     {
       if (!Path::IsAbsolute(path))
         path = Path::Combine(EmuFolders::DataRoot, path);
@@ -1922,7 +1924,8 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
 
   // switch away from the placeholder while we scan, in case we find anything
   if (m_ui.stack->currentIndex() == VIEW_MODE_NO_GAMES)
-    setViewMode(Core::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? VIEW_MODE_GRID : VIEW_MODE_LIST);
+    setViewMode(Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "GameListGridView", false) ? VIEW_MODE_GRID :
+                                                                                                      VIEW_MODE_LIST);
 
   if (!m_model->hasTakenGameList() || time >= SHORT_REFRESH_TIME)
     emit refreshProgress(status, current, total);
@@ -2022,7 +2025,7 @@ void GameListWidget::showGameList()
   if (isShowingGameList() || m_model->rowCount() == 0)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListGridView", false);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListGridView", false);
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_LIST);
@@ -2034,7 +2037,7 @@ void GameListWidget::showGameGrid()
   if (isShowingGameGrid() || m_model->rowCount() == 0)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListGridView", true);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListGridView", true);
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_GRID);
@@ -2042,7 +2045,7 @@ void GameListWidget::showGameGrid()
 
 void GameListWidget::reloadViewModeFromSettings()
 {
-  const bool grid_view = Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_GRID_VIEW,
+  const bool grid_view = Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_GRID_VIEW,
                                                        GameList::DEFAULT_GRID_VIEW);
   m_ui.viewGameList->defaultAction()->setChecked(!grid_view);
   m_ui.viewGameGrid->defaultAction()->setChecked(grid_view);
@@ -2056,7 +2059,7 @@ void GameListWidget::setMergeDiscSets(bool enabled)
   if (m_sort_model->isMergingDiscSets() == enabled)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_MERGE_DISC_SETS, enabled);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_MERGE_DISC_SETS, enabled);
   Host::CommitBaseSettingChanges();
   m_sort_model->setMergeDiscSets(enabled);
 }
@@ -2066,7 +2069,7 @@ void GameListWidget::setShowLocalizedTitles(bool enabled)
   if (m_model->getShowLocalizedTitles() == enabled)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, enabled);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowLocalizedTitles(enabled);
 }
@@ -2076,7 +2079,7 @@ void GameListWidget::setShowGameIcons(bool enabled)
   if (m_model->getShowGameIcons() == enabled)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListShowGameIcons", enabled);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowGameIcons(enabled);
   if (isShowingGameList() && m_list_view->isAnimatingGameIcons())
@@ -2093,7 +2096,7 @@ void GameListWidget::setAnimateGameIcons(bool enabled)
   if (m_list_view->isAnimatingGameIcons() == enabled)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListAnimateGameIcons", enabled);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListAnimateGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_list_view->setAnimateGameIcons(enabled);
   if (isShowingGameList())
@@ -2102,7 +2105,7 @@ void GameListWidget::setAnimateGameIcons(bool enabled)
 
 void GameListWidget::setPreferAchievementGameIcons(bool enabled)
 {
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
                                 enabled);
   Host::CommitBaseSettingChanges();
 
@@ -2117,7 +2120,7 @@ void GameListWidget::setShowCoverTitles(bool enabled)
   if (m_model->getShowCoverTitles() == enabled)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_COVER_TITLES, enabled);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES, enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowCoverTitles(enabled);
   m_grid_view->updateLayout(false);
@@ -2128,7 +2131,7 @@ void GameListWidget::setCoverScale(float scale)
   if (m_model->getCoverScale() == scale)
     return;
 
-  Core::SetBaseFloatSettingValue(GameList::UI_SETTING_SECTION, "GameListCoverArtScale", scale);
+  Core::SetBaseFloatSettingValue(GameList::UI_SECTION_NAME, "GameListCoverArtScale", scale);
   Host::CommitBaseSettingChanges();
 
   m_model->setCoverScale(scale);
@@ -2139,7 +2142,7 @@ void GameListWidget::setIconSize(int size)
   if (m_model->getIconSize() == size)
     return;
 
-  Core::SetBaseIntSettingValue(GameList::UI_SETTING_SECTION, "GameListIconSize", size);
+  Core::SetBaseIntSettingValue(GameList::UI_SECTION_NAME, "GameListIconSize", size);
   Host::CommitBaseSettingChanges();
 
   m_model->setIconSize(size);
@@ -2425,7 +2428,7 @@ void GameListListView::loadColumnVisibilitySettings()
   for (int column = 0; column <= GameListModel::Column_LastVisible; column++)
   {
     const bool visible = Core::GetBaseBoolSettingValue(
-      GameList::UI_SETTING_SECTION, getColumnVisibilitySettingsKeyName(column), DEFAULT_VISIBILITY[column]);
+      GameList::UI_SECTION_NAME, getColumnVisibilitySettingsKeyName(column), DEFAULT_VISIBILITY[column]);
     setColumnHidden(column, !visible);
   }
   setColumnHidden(GameListModel::Column_Cover, true);
@@ -2435,10 +2438,10 @@ void GameListListView::loadColumnSortSettings()
 {
   const GameList::Column sort_column =
     GameList::ParseColumnName(
-      Core::GetBaseStringSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_COLUMN))
+      Core::GetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_COLUMN))
       .value_or(GameList::DEFAULT_SORT_COLUMN);
   const bool sort_descending = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_REVERSED, GameList::DEFAULT_SORT_REVERSED);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_REVERSED, GameList::DEFAULT_SORT_REVERSED);
   const int sort_column_index = static_cast<int>(sort_column);
   const Qt::SortOrder sort_order = sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder;
   m_sort_model->sort(sort_column_index, sort_order);
@@ -2456,11 +2459,11 @@ void GameListListView::saveColumnSortSettings()
 
   if (sort_column >= 0 && sort_column <= GameListModel::Column_LastVisible)
   {
-    Core::SetBaseStringSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_COLUMN,
+    Core::SetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_COLUMN,
                                     GameList::GetColumnName(static_cast<GameList::Column>(sort_column)));
   }
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_REVERSED, sort_descending);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_REVERSED, sort_descending);
   Host::CommitBaseSettingChanges();
 }
 
@@ -2471,7 +2474,7 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
     return;
 
   setColumnHidden(column, hidden);
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, getColumnVisibilitySettingsKeyName(column), !hidden);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, getColumnVisibilitySettingsKeyName(column), !hidden);
   Host::CommitBaseSettingChanges();
 }
 

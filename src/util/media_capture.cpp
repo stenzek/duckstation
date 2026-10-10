@@ -71,6 +71,8 @@ extern "C" {
 
 LOG_CHANNEL(MediaCapture);
 
+const char* const MediaCapture::CONFIG_SECTION_NAME = "MediaCapture";
+
 namespace {
 struct Locals
 {

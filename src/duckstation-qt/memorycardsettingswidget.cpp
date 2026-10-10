@@ -95,9 +95,9 @@ void MemoryCardSettingsWidget::createUi()
       hbox->addWidget(reset);
       box_layout->addLayout(hbox, 0, 1);
 
-      SettingWidgetBinder::BindWidgetToFolderSetting(m_dialog->getSettingsInterface(), directory, browse,
-                                                     tr("Select Memory Card Directory"), open, reset, "MemoryCards",
-                                                     "Directory", Path::Combine(EmuFolders::DataRoot, "memcards"));
+      SettingWidgetBinder::BindWidgetToFolderSetting(
+        m_dialog->getSettingsInterface(), directory, browse, tr("Select Memory Card Directory"), open, reset,
+        Settings::MEMORY_CARDS_SECTION_NAME, "Directory", Path::Combine(EmuFolders::DataRoot, "memcards"));
 
       m_dialog->registerWidgetHelp(directory, tr("Memory Cards Location"), tr("Default"),
                                    tr("Specifies the directory where memory cards will be saved."));
@@ -123,9 +123,9 @@ void MemoryCardSettingsWidget::createUi()
       hbox->addWidget(reset);
       box_layout->addLayout(hbox, 1, 1);
 
-      SettingWidgetBinder::BindWidgetToFolderSetting(m_dialog->getSettingsInterface(), directory, browse,
-                                                     tr("Select Save States Directory"), open, reset, "Folders",
-                                                     "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
+      SettingWidgetBinder::BindWidgetToFolderSetting(
+        m_dialog->getSettingsInterface(), directory, browse, tr("Select Save States Directory"), open, reset,
+        Settings::FOLDERS_SECTION_NAME, "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
 
       m_dialog->registerWidgetHelp(directory, tr("Save States Location"), tr("Default"),
                                    tr("Specifies the directory where save states will be saved."));
@@ -138,16 +138,17 @@ void MemoryCardSettingsWidget::createUi()
     layout->addWidget(box);
 
     QCheckBox* const create_save_state_backups = new QCheckBox(tr("Create Save State Backups"), box);
-    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), create_save_state_backups, "Main",
-                                                 "CreateSaveStateBackups", Settings::DEFAULT_SAVE_STATE_BACKUPS);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), create_save_state_backups,
+                                                 Settings::INTERFACE_SECTION_NAME, "CreateSaveStateBackups",
+                                                 Settings::DEFAULT_SAVE_STATE_BACKUPS);
     grid_layout->addWidget(create_save_state_backups, 0, 0);
     m_dialog->registerWidgetHelp(
       create_save_state_backups, tr("Create Save State Backups"), tr("Checked"),
       tr("Backs up any previous save state when creating a new save state, with a .bak extension."));
 
     QCheckBox* const enable_global_states = new QCheckBox(tr("Enable Global Save States"), box);
-    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), enable_global_states, "Main",
-                                                 "EnableGlobalStates", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), enable_global_states,
+                                                 Settings::INTERFACE_SECTION_NAME, "EnableGlobalStates", false);
     grid_layout->addWidget(enable_global_states, 0, 1);
     m_dialog->registerWidgetHelp(enable_global_states, tr("Enable Global Save States"), tr("Unchecked"),
                                  tr("When enabled, the legacy global save state slots will be available. These slots "
@@ -155,7 +156,7 @@ void MemoryCardSettingsWidget::createUi()
 
     QCheckBox* playlist_title_as_game_title = new QCheckBox(tr("Use Single Card For Multi-Disc Games"), box);
     SettingWidgetBinder::BindWidgetToBoolSetting(m_dialog->getSettingsInterface(), playlist_title_as_game_title,
-                                                 "MemoryCards", "UsePlaylistTitle", true);
+                                                 Settings::MEMORY_CARDS_SECTION_NAME, "UsePlaylistTitle", true);
     grid_layout->addWidget(playlist_title_as_game_title, 1, 0);
     m_dialog->registerWidgetHelp(
       playlist_title_as_game_title, tr("Use Single Card For Multi-Disc Games"), tr("Checked"),
@@ -230,7 +231,8 @@ void MemoryCardSettingsWidget::createPortSettingsUi(u32 index, PortSettingsUI* u
   }
 
   const MemoryCardType default_value = (index == 0) ? MemoryCardType::PerGameTitle : MemoryCardType::None;
-  SettingWidgetBinder::BindWidgetToEnumSetting(m_dialog->getSettingsInterface(), ui->memory_card_type, "MemoryCards",
+  SettingWidgetBinder::BindWidgetToEnumSetting(m_dialog->getSettingsInterface(), ui->memory_card_type,
+                                               Settings::MEMORY_CARDS_SECTION_NAME,
                                                fmt::format("Card{}Type", index + 1), &Settings::ParseMemoryCardTypeName,
                                                &Settings::GetMemoryCardTypeName, default_value);
   connect(ui->memory_card_type, &QComboBox::currentIndexChanged, this,
@@ -274,10 +276,10 @@ void MemoryCardSettingsWidget::onMemoryCardTypeChanged(u32 index)
 {
   const MemoryCardType default_type =
     (index == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
-  const MemoryCardType type =
-    Settings::ParseMemoryCardTypeName(
-      m_dialog->getEffectiveStringValue("MemoryCards", TinyString::from_format("Card{}Type", index + 1)))
-      .value_or(default_type);
+  const MemoryCardType type = Settings::ParseMemoryCardTypeName(
+                                m_dialog->getEffectiveStringValue(Settings::MEMORY_CARDS_SECTION_NAME,
+                                                                  TinyString::from_format("Card{}Type", index + 1)))
+                                .value_or(default_type);
   const bool shared_enabled = (type == MemoryCardType::Shared);
   m_port_ui[index].memory_card_path_label->setEnabled(shared_enabled);
   m_port_ui[index].memory_card_path->setEnabled(shared_enabled);
@@ -300,16 +302,17 @@ void MemoryCardSettingsWidget::onMemoryCardPathChanged(u32 index)
   const auto key = TinyString::from_format("Card{}Path", index + 1);
   std::string relative_path(
     Path::MakeRelative(m_port_ui[index].memory_card_path->text().toStdString(), EmuFolders::MemoryCards));
-  m_dialog->setStringSettingValue("MemoryCards", key, relative_path.c_str());
+  m_dialog->setStringSettingValue(Settings::MEMORY_CARDS_SECTION_NAME, key, relative_path.c_str());
 }
 
 void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(u32 index)
 {
   const auto key = TinyString::from_format("Card{}Path", index + 1);
   if (m_dialog->isPerGameSettings())
-    m_dialog->removeSettingValue("MemoryCards", key);
+    m_dialog->removeSettingValue(Settings::MEMORY_CARDS_SECTION_NAME, key);
   else
-    m_dialog->setStringSettingValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index));
+    m_dialog->setStringSettingValue(Settings::MEMORY_CARDS_SECTION_NAME, key,
+                                    Settings::GetDefaultSharedMemoryCardName(index));
 
   updateMemoryCardPath(index);
 }
@@ -317,8 +320,8 @@ void MemoryCardSettingsWidget::onResetMemoryCardPathClicked(u32 index)
 void MemoryCardSettingsWidget::updateMemoryCardPath(u32 index)
 {
   const auto key = TinyString::from_format("Card{}Path", index + 1);
-  std::string path(
-    m_dialog->getEffectiveStringValue("MemoryCards", key, Settings::GetDefaultSharedMemoryCardName(index)));
+  std::string path(m_dialog->getEffectiveStringValue(Settings::MEMORY_CARDS_SECTION_NAME, key,
+                                                     Settings::GetDefaultSharedMemoryCardName(index)));
   if (!Path::IsAbsolute(path))
     path = Path::Canonicalize(Path::Combine(EmuFolders::MemoryCards, path));
 

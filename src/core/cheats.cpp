@@ -814,14 +814,14 @@ bool Cheats::AreCheatsEnabled()
 
   // Only in the gameini.
   const SettingsInterface* sif = Core::GetGameSettingsLayer();
-  return (sif && sif->GetBoolValue("Cheats", "EnableCheats", false));
+  return (sif && sif->GetBoolValue(CHEATS_CONFIG_SECTION, "EnableCheats", false));
 }
 
 bool Cheats::ShouldLoadDatabaseCheats()
 {
   // Only in the gameini.
   const SettingsInterface* sif = Core::GetGameSettingsLayer();
-  return (sif && sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
+  return (sif && sif->GetBoolValue(CHEATS_CONFIG_SECTION, "LoadCheatsFromDatabase", true));
 }
 
 std::optional<DisplayAspectRatio> Cheats::GetWantedAspectRatio()
@@ -844,7 +844,7 @@ bool Cheats::AreAnyPatchesEnabled()
 
   // Only in the gameini.
   const SettingsInterface* sif = Core::GetGameSettingsLayer();
-  return (sif && sif->ContainsValue("Patches", "Enable"));
+  return (sif && sif->ContainsValue(PATCHES_CONFIG_SECTION, "Enable"));
 }
 
 void Cheats::ReloadEnabledLists()
@@ -1078,9 +1078,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     s_locals.has_widescreen_patch =
       wanted_ar.has_value() && EnableWidescreenPatch(s_locals.patch_codes, hc_mode_active, wanted_ar.value());
     s_locals.active_patch_count =
-      EnablePatches(s_locals.patch_codes, s_locals.enabled_patches, "Patches", hc_mode_active);
-    s_locals.active_cheat_count =
-      AreCheatsEnabled() ? EnablePatches(s_locals.cheat_codes, s_locals.enabled_cheats, "Cheats", hc_mode_active) : 0;
+      EnablePatches(s_locals.patch_codes, s_locals.enabled_patches, PATCHES_CONFIG_SECTION, hc_mode_active);
+    s_locals.active_cheat_count = AreCheatsEnabled() ? EnablePatches(s_locals.cheat_codes, s_locals.enabled_cheats,
+                                                                     CHEATS_CONFIG_SECTION, hc_mode_active) :
+                                                       0;
   }
 
   // Display message on first boot when we load patches.
@@ -1114,10 +1115,11 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   if (show_disabled_codes && (hc_mode_active || g_settings.disable_all_enhancements))
   {
     const SettingsInterface* sif = Core::GetGameSettingsLayer();
-    const u32 requested_cheat_count = (sif && sif->GetBoolValue("Cheats", "EnableCheats", false)) ?
-                                        static_cast<u32>(sif->GetStringList("Cheats", "Enable").size()) :
+    const u32 requested_cheat_count = (sif && sif->GetBoolValue(CHEATS_CONFIG_SECTION, "EnableCheats", false)) ?
+                                        static_cast<u32>(sif->GetStringList(CHEATS_CONFIG_SECTION, "Enable").size()) :
                                         0;
-    const u32 requested_patches_count = sif ? static_cast<u32>(sif->GetStringList("Patches", "Enable").size()) : 0;
+    const u32 requested_patches_count =
+      sif ? static_cast<u32>(sif->GetStringList(PATCHES_CONFIG_SECTION, "Enable").size()) : 0;
     const u32 blocked_cheats =
       (s_locals.active_cheat_count < requested_cheat_count) ? requested_cheat_count - s_locals.active_cheat_count : 0;
     const u32 blocked_patches = (s_locals.active_patch_count < requested_patches_count) ?

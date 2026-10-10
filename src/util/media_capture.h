@@ -34,6 +34,8 @@ enum class MediaCaptureMode : u8
 class MediaCapture
 {
 public:
+  static const char* const CONFIG_SECTION_NAME;
+
   virtual ~MediaCapture();
 
   using ContainerName = std::pair<std::string, std::string>; // configname,longname

@@ -27,9 +27,10 @@ struct SpeedControl
 
 static void UpdateSpeedControlState(const SpeedControl& control)
 {
-  const std::optional<float> value = control.dialog->getFloatValue("Main", control.setting_name, std::nullopt);
-  const float effective_value =
-    control.dialog->getEffectiveFloatValue("Main", control.setting_name, control.default_value);
+  const std::optional<float> value =
+    control.dialog->getFloatValue(Settings::INTERFACE_SECTION_NAME, control.setting_name, std::nullopt);
+  const float effective_value = control.dialog->getEffectiveFloatValue(Settings::INTERFACE_SECTION_NAME,
+                                                                       control.setting_name, control.default_value);
   const bool inherited = (control.dialog->isPerGameSettings() && !value.has_value());
 
   QSignalBlocker spinbox_blocker(control.spinbox);
@@ -79,18 +80,18 @@ static void UpdateSpeedControlState(const SpeedControl& control)
 static void OnSpeedControlValueChanged(const SpeedControl& control)
 {
   const float value = static_cast<float>(control.spinbox->value()) / 100.0f;
-  control.dialog->setFloatSettingValue("Main", control.setting_name, value);
+  control.dialog->setFloatSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name, value);
   UpdateSpeedControlState(control);
 }
 
 static void OnSpeedControlUnlimitedStateChanged(const SpeedControl& control, Qt::CheckState state)
 {
   if (state == Qt::PartiallyChecked)
-    control.dialog->removeSettingValue("Main", control.setting_name);
+    control.dialog->removeSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name);
   else if (state == Qt::Checked)
-    control.dialog->setFloatSettingValue("Main", control.setting_name, 0.0f);
+    control.dialog->setFloatSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name, 0.0f);
   else
-    control.dialog->setFloatSettingValue("Main", control.setting_name, 1.0f);
+    control.dialog->setFloatSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name, 1.0f);
 
   UpdateSpeedControlState(control);
 }
@@ -98,9 +99,9 @@ static void OnSpeedControlUnlimitedStateChanged(const SpeedControl& control, Qt:
 static void ResetSpeedControlState(const SpeedControl& control)
 {
   if (control.dialog->isPerGameSettings())
-    control.dialog->removeSettingValue("Main", control.setting_name);
+    control.dialog->removeSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name);
   else
-    control.dialog->setFloatSettingValue("Main", control.setting_name, control.default_value);
+    control.dialog->setFloatSettingValue(Settings::INTERFACE_SECTION_NAME, control.setting_name, control.default_value);
 
   UpdateSpeedControlState(control);
 }
@@ -123,23 +124,30 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, "Display", "VSync", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "Main", "SyncToHostRefreshRate", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.optimalFramePacing, "Display", "OptimalFramePacing",
-                                               Settings::DEFAULT_OPTIMAL_FRAME_PACING);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preFrameSleep, "Display", "PreFrameSleep", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "Display",
-                                               "SkipPresentingDuplicateFrames", false);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.preFrameSleepBuffer, "Display", "PreFrameSleepBuffer",
-                                                Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, "Main", "RewindEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForMemoryStates, "GPU",
-                                               "UseSoftwareRendererForMemoryStates", false);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, "Main", "RewindFrequency", 10.0f);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.runaheadFrames, "Main", "RunaheadFrameCount", 0);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.runaheadForAnalogInput, "Main", "RunaheadForAnalogInput",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, Settings::DISPLAY_SECTION_NAME, "VSync", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, Settings::INTERFACE_SECTION_NAME,
+                                               "SyncToHostRefreshRate", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.optimalFramePacing, Settings::DISPLAY_SECTION_NAME,
+                                               "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preFrameSleep, Settings::DISPLAY_SECTION_NAME, "PreFrameSleep",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, Settings::DISPLAY_SECTION_NAME,
+                                               "SkipPresentingDuplicateFrames", false);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.preFrameSleepBuffer, Settings::DISPLAY_SECTION_NAME,
+                                                "PreFrameSleepBuffer",
+                                                Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, Settings::INTERFACE_SECTION_NAME, "RewindEnable",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForMemoryStates, Settings::GPU_SECTION_NAME,
+                                               "UseSoftwareRendererForMemoryStates", false);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, Settings::INTERFACE_SECTION_NAME,
+                                                "RewindFrequency", 10.0f);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, Settings::INTERFACE_SECTION_NAME,
+                                              "RewindSaveSlots", 10);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.runaheadFrames, Settings::INTERFACE_SECTION_NAME,
+                                              "RunaheadFrameCount", 0);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.runaheadForAnalogInput, Settings::INTERFACE_SECTION_NAME,
+                                               "RunaheadForAnalogInput", false);
 
   InitializeSpeedControl(dialog, m_ui.normalSpeed, m_ui.normalSpeedUnlimited, m_ui.resetNormalSpeed, "EmulationSpeed",
                          1.0f);
@@ -233,14 +241,16 @@ EmulationSettingsWidget::~EmulationSettingsWidget() = default;
 
 void EmulationSettingsWidget::onOptimalFramePacingChanged()
 {
-  const bool optimal_frame_pacing_enabled = m_dialog->getEffectiveBoolValue("Display", "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
+  const bool optimal_frame_pacing_enabled = m_dialog->getEffectiveBoolValue(
+    Settings::DISPLAY_SECTION_NAME, "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
   m_ui.preFrameSleep->setEnabled(optimal_frame_pacing_enabled);
   onPreFrameSleepChanged();
 }
 
 void EmulationSettingsWidget::onPreFrameSleepChanged()
 {
-  const bool pre_frame_sleep_enabled = m_dialog->getEffectiveBoolValue("Display", "PreFrameSleep", false);
+  const bool pre_frame_sleep_enabled =
+    m_dialog->getEffectiveBoolValue(Settings::DISPLAY_SECTION_NAME, "PreFrameSleep", false);
   const bool show_buffer_size = (m_ui.preFrameSleep->isEnabled() && pre_frame_sleep_enabled);
   m_ui.preFrameSleepBuffer->setVisible(show_buffer_size);
   m_ui.preFrameSleepBufferLabel->setVisible(show_buffer_size);
@@ -248,15 +258,16 @@ void EmulationSettingsWidget::onPreFrameSleepChanged()
 
 void EmulationSettingsWidget::updateSkipDuplicateFramesEnabled()
 {
-  const bool vsync = m_dialog->getEffectiveBoolValue("Display", "VSync", false);
-  const bool sync_to_host = m_dialog->getEffectiveBoolValue("Main", "SyncToHostRefreshRate", false) && vsync;
+  const bool vsync = m_dialog->getEffectiveBoolValue(Settings::DISPLAY_SECTION_NAME, "VSync", false);
+  const bool sync_to_host =
+    m_dialog->getEffectiveBoolValue(Settings::INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", false) && vsync;
   m_ui.skipPresentingDuplicateFrames->setEnabled(!sync_to_host);
 }
 
 void EmulationSettingsWidget::updateRewind()
 {
-  const bool rewind_enabled = m_dialog->getEffectiveBoolValue("Main", "RewindEnable", false);
-  const bool runahead_enabled = m_dialog->getIntValue("Main", "RunaheadFrameCount", 0) > 0;
+  const bool rewind_enabled = m_dialog->getEffectiveBoolValue(Settings::INTERFACE_SECTION_NAME, "RewindEnable", false);
+  const bool runahead_enabled = m_dialog->getIntValue(Settings::INTERFACE_SECTION_NAME, "RunaheadFrameCount", 0) > 0;
   const bool rewind_active = (!runahead_enabled && rewind_enabled);
   m_ui.rewindEnable->setEnabled(!runahead_enabled);
   m_ui.runaheadForAnalogInput->setEnabled(runahead_enabled);
@@ -264,12 +275,14 @@ void EmulationSettingsWidget::updateRewind()
 
   if (rewind_active)
   {
-    const u32 resolution_scale = static_cast<u32>(m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1));
-    const u32 multisamples = m_dialog->getEffectiveIntValue("GPU", "Multisamples", 1);
+    const u32 resolution_scale =
+      static_cast<u32>(m_dialog->getEffectiveIntValue(Settings::GPU_SECTION_NAME, "ResolutionScale", 1));
+    const u32 multisamples = m_dialog->getEffectiveIntValue(Settings::GPU_SECTION_NAME, "Multisamples", 1);
     const bool use_software_renderer =
-      m_dialog->getEffectiveBoolValue("GPU", "UseSoftwareRendererForMemoryStates", false);
-    const bool enable_8mb_ram = m_dialog->getEffectiveBoolValue("Console", "Enable8MBRAM", false);
-    const bool enable_texture_cache = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
+      m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", false);
+    const bool enable_8mb_ram = m_dialog->getEffectiveBoolValue(Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
+    const bool enable_texture_cache =
+      m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
     const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
     const float duration =

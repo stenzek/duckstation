@@ -33,9 +33,9 @@ using namespace Qt::StringLiterals;
 
 PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QTabWidget(parent)
 {
-  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::DISPLAY_CHAIN_SECTION),
+  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME),
          tr("Display"));
-  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::INTERNAL_CHAIN_SECTION),
+  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME),
          tr("Internal"));
   addTab(new PostProcessingOverlayConfigWidget(dialog, this), tr("Border Overlay"));
   setDocumentMode(true);
@@ -79,8 +79,8 @@ void PostProcessingChainConfigWidget::commitSettingsUpdate()
 
 void PostProcessingChainConfigWidget::triggerSettingsReload()
 {
-  g_core_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
-                                              m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
+  g_core_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME,
+                                              m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME, false);
 }
 
 void PostProcessingChainConfigWidget::connectUi()
@@ -544,13 +544,19 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, "BorderOverlay", "ImagePath");
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, "BorderOverlay", "DisplayStartX", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartY, "BorderOverlay", "DisplayStartY", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndX, "BorderOverlay", "DisplayEndX", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndY, "BorderOverlay", "DisplayEndY", 0);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alphaBlend, "BorderOverlay", "AlphaBlend", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.destinationAlphaBlend, "BorderOverlay",
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                                 "ImagePath");
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                              "DisplayStartX", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartY, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                              "DisplayStartY", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndX, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                              "DisplayEndX", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndY, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                              "DisplayEndY", 0);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alphaBlend, Settings::BORDER_OVERLAY_SECTION_NAME,
+                                               "AlphaBlend", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.destinationAlphaBlend, Settings::BORDER_OVERLAY_SECTION_NAME,
                                                "DestinationAlphaBlend", false);
 
   connect(m_ui.refreshOverlayList, &QPushButton::clicked, this, &PostProcessingOverlayConfigWidget::refreshOverlayList);
@@ -613,8 +619,8 @@ void PostProcessingOverlayConfigWidget::refreshOverlayList()
     m_ui.overlayName->addItem(qname, qname);
   }
 
-  SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.overlayName, "BorderOverlay",
-                                                 "PresetName");
+  SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.overlayName,
+                                                 Settings::BORDER_OVERLAY_SECTION_NAME, "PresetName");
   connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
           &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
   connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,

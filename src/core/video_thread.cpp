@@ -706,8 +706,8 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
   if (fullscreen && g_gpu_device && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
-    fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+    fullscreen_mode = GPUDevice::ExclusiveFullscreenMode::Parse(
+      Core::GetTinyStringSettingValue(Settings::GPU_SECTION_NAME, "FullscreenMode", ""));
   }
   std::optional<bool> exclusive_fullscreen_control;
   if (g_gpu_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
@@ -746,8 +746,8 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
   std::optional<WindowInfo> wi;
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
-      !g_gpu_device->Create(Core::GetStringSettingValue("GPU", "Adapter"), create_flags, SHADER_CACHE_VERSION,
-                            wi.value(), s_state.requested_vsync,
+      !g_gpu_device->Create(Core::GetStringSettingValue(Settings::GPU_SECTION_NAME, "Adapter"), create_flags,
+                            SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync,
                             fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
                             exclusive_fullscreen_control, &create_error))
   {
@@ -1475,8 +1475,8 @@ void VideoThread::RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclu
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
   if (allow_exclusive_fullscreen && fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
-    fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+    fullscreen_mode = GPUDevice::ExclusiveFullscreenMode::Parse(
+      Core::GetTinyStringSettingValue(Settings::GPU_SECTION_NAME, "FullscreenMode", ""));
     exclusive_fullscreen_requested = fullscreen_mode.has_value();
   }
   std::optional<bool> exclusive_fullscreen_control;

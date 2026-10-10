@@ -253,7 +253,7 @@ void FullscreenUI::DrawGameListWindow()
       {
         BeginTransition([grid]() {
           s_game_list_locals.grid_view = ConvertToBoolUnchecked(grid);
-          Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
+          Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
                                         s_game_list_locals.grid_view);
           Host::CommitBaseSettingChanges();
           QueueResetFocus(FocusResetType::ViewChanged);
@@ -280,7 +280,7 @@ void FullscreenUI::DrawGameListWindow()
       EnqueueSoundEffect(SFX_NAV_MOVE);
       BeginTransition([]() {
         s_game_list_locals.grid_view = !s_game_list_locals.grid_view;
-        Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
+        Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
                                       s_game_list_locals.grid_view);
         Host::CommitBaseSettingChanges();
         QueueResetFocus(FocusResetType::ViewChanged);
@@ -1052,23 +1052,22 @@ void FullscreenUI::ReloadGameListSettings()
 {
   s_game_list_locals.sort_column =
     GameList::ParseColumnName(
-      Core::GetBaseStringSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_COLUMN))
+      Core::GetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_COLUMN))
       .value_or(GameList::DEFAULT_SORT_COLUMN);
   s_game_list_locals.sort_reversed =
-    Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_SORT_REVERSED, false);
+    Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_REVERSED, false);
   s_game_list_locals.localized_titles = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
   s_game_list_locals.merge_disc_sets = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_MERGE_DISC_SETS, GameList::DEFAULT_MERGE_DISC_SETS);
-  s_game_list_locals.grid_view =
-    Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                  GameList::DEFAULT_FULLSCREENUI_GRID_VIEW);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_MERGE_DISC_SETS, GameList::DEFAULT_MERGE_DISC_SETS);
+  s_game_list_locals.grid_view = Core::GetBaseBoolSettingValue(
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW, GameList::DEFAULT_FULLSCREENUI_GRID_VIEW);
   s_game_list_locals.cover_titles = Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
   s_game_list_locals.compact_mode =
-    Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListCompactMode", true);
+    Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListCompactMode", true);
   s_game_list_locals.show_trophy_icons =
-    Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, "GameListGridTrophyIcons", true);
+    Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListGridTrophyIcons", true);
 }
 
 GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,

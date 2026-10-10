@@ -47,9 +47,9 @@ void GamePatchDetailsWidget::onEnabledStateChanged(Qt::CheckState state)
 {
   INISettingsInterface* si = m_dialog->getSettingsInterface();
   if (state == Qt::Checked)
-    si->AddToStringList("Patches", "Enable", m_name.c_str());
+    si->AddToStringList(Cheats::PATCHES_CONFIG_SECTION, "Enable", m_name.c_str());
   else
-    si->RemoveFromStringList("Patches", "Enable", m_name.c_str());
+    si->RemoveFromStringList(Cheats::PATCHES_CONFIG_SECTION, "Enable", m_name.c_str());
 
   QtHost::SaveSettingsInterface(si, true, true);
 }

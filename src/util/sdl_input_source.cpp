@@ -34,6 +34,9 @@
 
 LOG_CHANNEL(SDL);
 
+const char* const SDLInputSource::EXTRA_CONFIG_SECTION = "SDLExtra";
+const char* const SDLInputSource::HINTS_CONFIG_SECTION = "SDLHints";
+
 static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
 static constexpr u32 MOTOR_INDEX_LARGE = 0;
 static constexpr u32 MOTOR_INDEX_SMALL = 1;
@@ -415,52 +418,57 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
   // We need to hold the write lock when changing the persistent-device-identifiers setting, because
   // changing the value changes what gets returned by ConvertKeyToString().
   if (const bool use_persistent_device_identifiers =
-        si.GetBoolValue("InputSources", "SDLUsePersistentDeviceIdentifiers", true);
+        si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLUsePersistentDeviceIdentifiers", true);
       use_persistent_device_identifiers != m_use_persistent_device_identifiers)
   {
     const auto lock = InputManager::GetSourcesWriteLock();
     m_use_persistent_device_identifiers = use_persistent_device_identifiers;
   }
-  m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-  m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
-  m_controller_touchpad_as_pointer = si.GetBoolValue("InputSources", "SDLTouchpadAsPointer", false);
-  m_sdl_hints = si.GetKeyValueList("SDLHints");
+  m_controller_enhanced_mode =
+    si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLControllerEnhancedMode", false);
+  m_controller_ps5_player_led = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLPS5PlayerLED", false);
+  m_controller_touchpad_as_pointer =
+    si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLTouchpadAsPointer", false);
+  m_sdl_hints = si.GetKeyValueList(HINTS_CONFIG_SECTION);
 
-  m_joystick_xbox_hidapi = si.GetBoolValue("InputSources", "SDLJoystickXboxHIDAPI", SDL_DEFAULT_XBOX_HIDAPI);
+  m_joystick_xbox_hidapi =
+    si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickXboxHIDAPI", SDL_DEFAULT_XBOX_HIDAPI);
 #if defined(_WIN32)
-  m_joystick_rawinput = si.GetBoolValue("InputSources", "SDLJoystickRawInput", false);
-  m_joystick_directinput = si.GetBoolValue("InputSources", "SDLJoystickDirectInput", true);
-  m_joystick_xinput = si.GetBoolValue("InputSources", "SDLJoystickXInput", true);
-  m_joystick_wgi = si.GetBoolValue("InputSources", "SDLJoystickWGI", false);
-  m_joystick_gameinput = si.GetBoolValue("InputSources", "SDLJoystickGameInput", false);
+  m_joystick_rawinput = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickRawInput", false);
+  m_joystick_directinput = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickDirectInput", true);
+  m_joystick_xinput = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickXInput", true);
+  m_joystick_wgi = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickWGI", false);
+  m_joystick_gameinput = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickGameInput", false);
 #elif defined(__APPLE__)
-  m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
-  m_enable_mfi_driver = si.GetBoolValue("InputSources", "SDLMFIDriver", true);
+  m_enable_iokit_driver = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLIOKitDriver", true);
+  m_enable_mfi_driver = si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLMFIDriver", true);
 #else
-  m_joystick_force_hat_input = si.GetBoolValue("InputSources", "SDLJoystickLinuxDigitalHats", false);
+  m_joystick_force_hat_input =
+    si.GetBoolValue(InputManager::SOURCES_CONFIG_SECTION, "SDLJoystickLinuxDigitalHats", false);
 #endif
 }
 
 void InputSource::CopySDLSourceSettings(SettingsInterface* dest_si, const SettingsInterface& src_si)
 {
   for (u32 i = 0; i < SDLInputSource::MAX_LED_COLORS; i++)
-    dest_si->CopyStringValue(src_si, "SDLExtra", TinyString::from_format("Player{}LED", i).c_str());
+    dest_si->CopyStringValue(src_si, SDLInputSource::EXTRA_CONFIG_SECTION,
+                             TinyString::from_format("Player{}LED", i).c_str());
 
-  dest_si->CopyBoolValue(src_si, "InputSources", "SDLUsePersistentDeviceIdentifiers");
-  dest_si->CopyBoolValue(src_si, "InputSources", "SDLControllerEnhancedMode");
-  dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5PlayerLED");
-  dest_si->CopyBoolValue(src_si, "InputSources", "SDLTouchpadAsPointer");
-  dest_si->CopySection(src_si, "SDLHints");
+  dest_si->CopyBoolValue(src_si, InputManager::SOURCES_CONFIG_SECTION, "SDLUsePersistentDeviceIdentifiers");
+  dest_si->CopyBoolValue(src_si, InputManager::SOURCES_CONFIG_SECTION, "SDLControllerEnhancedMode");
+  dest_si->CopyBoolValue(src_si, InputManager::SOURCES_CONFIG_SECTION, "SDLPS5PlayerLED");
+  dest_si->CopyBoolValue(src_si, InputManager::SOURCES_CONFIG_SECTION, "SDLTouchpadAsPointer");
+  dest_si->CopySection(src_si, SDLInputSource::HINTS_CONFIG_SECTION);
 
   for (const SettingInfo& si : s_sdl_advanced_settings_info)
-    si.CopyValue(dest_si, src_si, "InputSources");
+    si.CopyValue(dest_si, src_si, InputManager::SOURCES_CONFIG_SECTION);
 }
 
 u32 SDLInputSource::GetRGBForPlayerId(const SettingsInterface& si, u32 player_id, bool active)
 {
-  return ParseRGBForPlayerId(
-    si.GetStringValue("SDLExtra", TinyString::from_format("Player{}{}LED", player_id, active ? "Active" : "")),
-    player_id, active);
+  return ParseRGBForPlayerId(si.GetStringValue(EXTRA_CONFIG_SECTION, TinyString::from_format("Player{}{}LED", player_id,
+                                                                                             active ? "Active" : "")),
+                             player_id, active);
 }
 
 u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id, bool active)
