@@ -444,7 +444,10 @@ void QtHost::WarnAboutLDLibraryPath()
   msgbox->exec();
 
   if (ignore_cb->isChecked())
+  {
     Core::SetBaseBoolSettingValue(ACK_CONFIG_SECTION, ACK_CONFIG_KEY, true);
+    QtHost::SaveSettings();
+  }
 }
 
 bool QtHost::ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path)
@@ -3194,7 +3197,7 @@ void Host::PumpMessagesOnCoreThread()
 
 void QtHost::SaveSettings()
 {
-  AssertMsg(!g_core_thread->isCurrentThread(), "Saving should happen on the UI thread.");
+  AssertMsg(!g_core_thread || !g_core_thread->isCurrentThread(), "Saving should happen on the UI thread.");
 
   {
     Error error;
