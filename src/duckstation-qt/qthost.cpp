@@ -932,7 +932,7 @@ void CoreThread::setDefaultSettings(bool host, bool system, bool controller)
   Core::SetDefaultSettings(host, system, controller, true);
 }
 
-void Host::SetDefaultSettings(SettingsInterface& si)
+void Host::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 {
 #if defined(_WIN32)
   si.SetBoolValue("Main", "DisableWindowRoundedCorners", false);
@@ -944,6 +944,11 @@ void Host::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "HideCursorInFullscreen", true);
   si.SetBoolValue("Main", "RenderToSeparateWindow", false);
   si.SetBoolValue("Main", "HideMainWindowWhenRunning", false);
+  si.SetBoolValue("Main", "DoubleClickTogglesFullscreen", true);
+  si.SetBoolValue("Main", "DisplayLogInMainWindow", false);
+
+  if (!ignore_user_prefs)
+    si.SetBoolValue("AutoUpdater", "CheckAtStartup", true);
 
   // TODO: We could include stuff like game list here, but meh...
 }
