@@ -56,7 +56,7 @@ find_package(zstd 1.5.7 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/zstd")
 find_package(WebP 1.6.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/WebP/cmake")
-find_package(PNG 1.6.58 REQUIRED
+find_package(PNG 1.6.59 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/PNG")
 find_package(libjpeg-turbo 3.2.0 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libjpeg-turbo")
@@ -76,11 +76,11 @@ find_package(SoundTouch 2.3.3 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SoundTouch")
 find_package(libzip 1.11.4 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/libzip")
-find_package(Shaderc 2026.3 REQUIRED
+find_package(Shaderc 2026.4 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/Shaderc")
 find_package(spirv_cross_c_shared REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/share/spirv_cross_c_shared/cmake")
-find_package(SDL3 3.4.16 REQUIRED
+find_package(SDL3 3.4.18 REQUIRED
              NO_DEFAULT_PATH PATHS "${DEPS_PATH}/lib/cmake/SDL3")
 
 # All our builds include Qt, so this is not a problem.
