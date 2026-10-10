@@ -1155,11 +1155,25 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
+  si.SetBoolValue("Main", "EnableGlobalStates", false);
 
   if (!ignore_user_prefs)
+  {
     si.SetBoolValue("Main", "StartFullscreenUI", false);
+    si.SetBoolValue("Main", "ShowDebugMenu", false);
+  }
 
   Settings::SetDefaultLogConfig(si);
+
+  si.SetBoolValue("CDROM", "IgnoreHostSubcode", false);
+  si.SetBoolValue("CDROM", "AllowBootingWithoutSBIFile", false);
+  si.SetStringValue("GPU", "DumpCompressionMode",
+                    Settings::GetGPUDumpCompressionModeName(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE));
+  si.SetStringValue("GPU", "FullscreenMode", "");
+
+#ifdef _WIN32
+  si.SetBoolValue("Display", "UseBlitSwapChain", false);
+#endif
 
   si.SetBoolValue(PostProcessing::Config::DISPLAY_CHAIN_SECTION, "Enabled", false);
   PostProcessing::Config::ClearStages(si, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
@@ -1168,7 +1182,7 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   si.ClearSection("BorderOverlay");
 
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
-  si.SetStringValue("MediaCapture", "FileNameFormat",
+  si.SetStringValue("MediaCapture", "FilenameFormat",
                     Settings::GetCaptureFileNameFormatName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT));
   si.SetStringValue("MediaCapture", "VideoContainer", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
   si.SetUIntValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);

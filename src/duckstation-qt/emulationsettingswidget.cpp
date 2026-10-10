@@ -233,7 +233,7 @@ EmulationSettingsWidget::~EmulationSettingsWidget() = default;
 
 void EmulationSettingsWidget::onOptimalFramePacingChanged()
 {
-  const bool optimal_frame_pacing_enabled = m_dialog->getEffectiveBoolValue("Display", "OptimalFramePacing", false);
+  const bool optimal_frame_pacing_enabled = m_dialog->getEffectiveBoolValue("Display", "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
   m_ui.preFrameSleep->setEnabled(optimal_frame_pacing_enabled);
   onPreFrameSleepChanged();
 }
