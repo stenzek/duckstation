@@ -171,6 +171,7 @@ static constexpr const std::array s_sdl_gamepad_type_names = {
   "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT",
   "SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR",
   "SDL_GAMEPAD_TYPE_GAMECUBE",
+  "SDL_GAMEPAD_TYPE_STEAM",
 };
 static_assert(s_sdl_gamepad_type_names.size() == SDL_GAMEPAD_TYPE_COUNT);
 

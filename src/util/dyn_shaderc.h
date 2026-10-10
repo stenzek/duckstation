@@ -12,6 +12,8 @@
   X(shaderc_compile_options_release)                                                                                   \
   X(shaderc_compile_options_set_source_language)                                                                       \
   X(shaderc_compile_options_set_generate_debug_info)                                                                   \
+  X(shaderc_compile_options_set_generate_nonsemantic_debug_info)                                                       \
+  X(shaderc_compile_options_set_generate_nonsemantic_debug_source)                                                     \
   X(shaderc_compile_options_set_optimization_level)                                                                    \
   X(shaderc_compile_options_set_target_env)                                                                            \
   X(shaderc_compilation_status_to_string)                                                                              \
