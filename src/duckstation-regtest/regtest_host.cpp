@@ -391,7 +391,7 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
   //
 }
 
-void Host::SetDefaultSettings(SettingsInterface& si)
+void Host::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 {
   //
 }

@@ -538,7 +538,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
   achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
-  achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", true);
+  achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", DEFAULT_ACHIEVEMENT_BADGE_PREFETCH);
   achievements_rich_presence_monitor = si.GetBoolValue("Cheevos", "RichPresenceMonitor", false);
   achievements_notification_location =
     ParseNotificationLocation(si.GetStringViewValue("Cheevos", "NotificationLocation"))
@@ -679,6 +679,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
     si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
+    si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);
+    si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
     si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   }
 
@@ -839,8 +841,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
     si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
     si.SetBoolValue("CDROM", "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
-    si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_seek_speedup_cycles);
-    si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_read_speedup_cycles);
+    si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_seek_speedup_cycles);
+    si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_read_speedup_cycles);
   }
 
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(audio_backend));
@@ -957,7 +959,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", texture_replacements.config.max_vram_write_splits);
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth",
                   texture_replacements.config.max_vram_write_coalesce_width);
-  si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight",
+  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight",
                   texture_replacements.config.max_vram_write_coalesce_height);
 
   si.SetUIntValue("TextureReplacements", "DumpTextureWidthThreshold",
