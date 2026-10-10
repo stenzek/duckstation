@@ -93,6 +93,12 @@ public:
   bool RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, bool maintain_aspect_ratio = false,
                     Error* error = nullptr);
 
+  // Renders an SVG into caller-owned RGBA8 storage. pixels_out_pitch may include row padding.
+  // current_color is an AARRGGBB color used when the SVG references CSS currentColor.
+  static bool RasterizeSVGToRGBA8(void* pixels_out, u32 pixels_out_pitch, std::span<const u8> data, u32 width,
+                                  u32 height, bool maintain_aspect_ratio = false, u32 current_color = 0xFFFFFFFF,
+                                  Error* error = nullptr);
+
   bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY, Error* error = nullptr) const;
   bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY,
                   Error* error = nullptr) const;
@@ -101,10 +107,12 @@ public:
 
   std::optional<Image> ConvertToRGBA8(Error* error = nullptr) const;
 
+  bool FlipY();
+
   static bool ConvertToRGBA8(void* RESTRICT pixels_out, u32 pixels_out_pitch, const void* RESTRICT pixels_in,
                              u32 pixels_in_pitch, u32 width, u32 height, ImageFormat format, Error* error = nullptr);
 
-  void FlipY();
+  static bool FlipY(void* RESTRICT pixels, u32 pitch, u32 width, u32 height, ImageFormat format);
 
 protected:
   u32 m_width = 0;

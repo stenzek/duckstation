@@ -505,6 +505,10 @@ TEST_F(ImageTest, FlipY)
   EXPECT_EQ(*top_right, 0xFFFF0000u);    // Blue
   EXPECT_EQ(*bottom_left, 0xFF0000FFu);  // Red
   EXPECT_EQ(*bottom_right, 0xFF0000FFu); // Red
+
+  // Compressed formats are rejected
+  Image bc1_image(4, 4, ImageFormat::BC1);
+  EXPECT_FALSE(bc1_image.FlipY());
 }
 
 // Test edge cases

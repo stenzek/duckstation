@@ -432,6 +432,27 @@ bool Image::LoadFromBuffer(std::string_view filename, std::span<const u8> data, 
 bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
                          bool maintain_aspect_ratio /* = false */, Error* error /* = nullptr */)
 {
+  // Keep this operation transactional: failed rendering must not replace an existing image.
+  Image rendered(width, height, ImageFormat::RGBA8);
+  if (!rendered.IsValid())
+  {
+    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", width, height);
+    return false;
+  }
+  else if (!RasterizeSVGToRGBA8(rendered.GetPixels(), rendered.GetPitch(), data, width, height, maintain_aspect_ratio,
+                                0xFFFFFFFF, error))
+  {
+    return false;
+  }
+
+  *this = std::move(rendered);
+  return true;
+}
+
+bool Image::RasterizeSVGToRGBA8(void* pixels_out, u32 pixels_out_pitch, const std::span<const u8> data, u32 width,
+                                u32 height, bool maintain_aspect_ratio /* = false */, u32 current_color,
+                                Error* error /* = nullptr */)
+{
   if (width == 0 || height == 0)
   {
     Error::SetStringFmt(error, "Invalid dimensions: {}x{}", width, height);
@@ -440,6 +461,22 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
 
   if (!g_dyn_plutosvg.Open(error)) [[unlikely]]
     return false;
+
+  if (!pixels_out || width > (std::numeric_limits<u32>::max() / sizeof(u32)) ||
+      pixels_out_pitch < (width * sizeof(u32)))
+  {
+    Error::SetStringFmt(error, "Invalid output buffer for dimensions {}x{} with pitch {}", width, height,
+                        pixels_out_pitch);
+    return false;
+  }
+
+  if (data.empty() || data.size_bytes() > static_cast<size_t>(std::numeric_limits<int>::max()) ||
+      width > static_cast<u32>(std::numeric_limits<int>::max()) ||
+      height > static_cast<u32>(std::numeric_limits<int>::max()))
+  {
+    Error::SetStringView(error, "SVG data or dimensions are too large");
+    return false;
+  }
 
   std::unique_ptr<plutosvg_document, void (*)(plutosvg_document*)> doc(
     g_dyn_plutosvg.plutosvg_document_load_from_data(reinterpret_cast<const char*>(data.data()),
@@ -452,7 +489,12 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
     return false;
   }
 
-  const plutovg_color_t current_color = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+  const plutovg_color_t svg_current_color = {
+    .r = static_cast<float>((current_color >> 16) & 0xFF) / 255.0f,
+    .g = static_cast<float>((current_color >> 8) & 0xFF) / 255.0f,
+    .b = static_cast<float>(current_color & 0xFF) / 255.0f,
+    .a = static_cast<float>((current_color >> 24) & 0xFF) / 255.0f,
+  };
   u32 canvas_width = width;
   u32 canvas_height = height;
   u32 canvas_offset_x = 0;
@@ -492,7 +534,7 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
 
   std::unique_ptr<plutovg_surface, void (*)(plutovg_surface*)> bitmap(
     g_dyn_plutosvg.plutosvg_document_render_to_surface(doc.get(), nullptr, static_cast<int>(width),
-                                                       static_cast<int>(height), &current_color, nullptr, nullptr),
+                                                       static_cast<int>(height), &svg_current_color, nullptr, nullptr),
     g_dyn_plutosvg.plutovg_surface_destroy);
   if (!bitmap)
   {
@@ -500,21 +542,17 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height,
     return false;
   }
 
-  // pad out canvas if we're positioning it
-  Resize(canvas_width, canvas_height, ImageFormat::RGBA8, false);
-  if (!IsValid())
+  // Pad the full caller-owned canvas when centering an aspect-ratio-preserved SVG.
+  if (canvas_width != width || canvas_height != height)
   {
-    Error::SetStringFmt(error, "Image dimensions are too large: {}x{}", canvas_width, canvas_height);
-    return false;
-  }
-  else if (canvas_width != width || canvas_height != height)
-  {
-    Clear();
+    u8* const output = static_cast<u8*>(pixels_out);
+    for (u32 y = 0; y < canvas_height; y++)
+      std::memset(output + (y * pixels_out_pitch), 0, canvas_width * sizeof(u32));
   }
 
   // lunasvg works in BGRA, swap to RGBA
-  SwapBGRAToRGBA(m_pixels.get() + (canvas_offset_y * m_pitch) + (canvas_offset_x * sizeof(u32)), m_pitch,
-                 g_dyn_plutosvg.plutovg_surface_get_data(bitmap.get()),
+  SwapBGRAToRGBA(static_cast<u8*>(pixels_out) + (canvas_offset_y * pixels_out_pitch) + (canvas_offset_x * sizeof(u32)),
+                 pixels_out_pitch, g_dyn_plutosvg.plutovg_surface_get_data(bitmap.get()),
                  g_dyn_plutosvg.plutovg_surface_get_stride(bitmap.get()), width, height);
   return true;
 }
@@ -936,21 +974,45 @@ bool Image::ConvertToRGBA8(void* RESTRICT pixels_out, u32 pixels_out_pitch, cons
   }
 }
 
-void Image::FlipY()
+bool Image::FlipY()
 {
   if (!IsValid())
-    return;
+    return false;
 
-  PixelStorage temp = Common::make_unique_aligned_for_overwrite<u8[]>(VECTOR_ALIGNMENT, m_pitch);
-  const u32 half_height = m_height / 2;
-  for (u32 flip_row = 0; flip_row < half_height; flip_row++)
+  return FlipY(m_pixels.get(), m_pitch, m_width, m_height, m_format);
+}
+
+bool Image::FlipY(void* RESTRICT pixels, u32 pitch, u32 width, u32 height, ImageFormat format)
+{
+  DebugAssert(pixels && pitch >= CalculatePitch(width, height, format));
+
+  // Flipping compressed formats would require flipping the pixels within each block.
+  if (IsCompressedFormat(format))
+    return false;
+
+  const u32 vector_bytes = Common::AlignDownPow2(pitch, static_cast<u32>(sizeof(GSVector4i)));
+  u8* const pixel_bytes = static_cast<u8*>(pixels);
+
+  for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
   {
-    u8* top_ptr = &m_pixels[flip_row * m_pitch];
-    u8* bottom_ptr = &m_pixels[((m_height - 1) - flip_row) * m_pitch];
-    std::memcpy(temp.get(), top_ptr, m_pitch);
-    std::memcpy(top_ptr, bottom_ptr, m_pitch);
-    std::memcpy(bottom_ptr, temp.get(), m_pitch);
+    u8* const top_ptr = pixel_bytes + (flip_row * pitch);
+    u8* const bottom_ptr = pixel_bytes + ((height - 1 - flip_row) * pitch);
+
+    // Rows are not guaranteed to begin on a vector boundary when the pitch is not 16-byte aligned.
+    u32 offset = 0;
+    for (; offset < vector_bytes; offset += sizeof(GSVector4i))
+    {
+      const GSVector4i top = GSVector4i::load<false>(top_ptr + offset);
+      const GSVector4i bottom = GSVector4i::load<false>(bottom_ptr + offset);
+      GSVector4i::store<false>(top_ptr + offset, bottom);
+      GSVector4i::store<false>(bottom_ptr + offset, top);
+    }
+
+    for (; offset < pitch; offset++)
+      std::swap(top_ptr[offset], bottom_ptr[offset]);
   }
+
+  return true;
 }
 
 static void PNGSetErrorFunction(png_structp png_ptr, Error* error)
