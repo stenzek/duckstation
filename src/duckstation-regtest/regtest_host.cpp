@@ -92,24 +92,30 @@ bool RegTestHost::InitializeFoldersAndConfig(Error* error)
   // default settings for runner
   const auto lock = Core::GetSettingsLock();
   SettingsInterface& si = *Core::GetBaseSettingsLayer();
-  si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
-  si.SetBoolValue("GPU", "DisableShaderCache", true);
-  si.SetStringValue("Pad1", "Type", Controller::GetControllerInfo(ControllerType::AnalogController).name);
-  si.SetStringValue("Pad2", "Type", Controller::GetControllerInfo(ControllerType::None).name);
-  si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
-  si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
-  si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(MultitapMode::Disabled));
-  si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(AudioBackend::Null));
-  si.SetBoolValue("Logging", "LogToConsole", false);
-  si.SetBoolValue("Logging", "LogToFile", false);
-  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Info));
-  si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
-  si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
-  si.SetFloatValue("Main", "EmulationSpeed", 0.0f);
+  si.SetStringValue(Settings::GPU_SECTION_NAME, "Renderer", Settings::GetRendererName(GPURenderer::Software));
+  si.SetBoolValue(Settings::GPU_SECTION_NAME, "DisableShaderCache", true);
+  si.SetStringValue(Controller::GetSettingsSection(0).c_str(), "Type",
+                    Controller::GetControllerInfo(ControllerType::AnalogController).name);
+  si.SetStringValue(Controller::GetSettingsSection(1).c_str(), "Type",
+                    Controller::GetControllerInfo(ControllerType::None).name);
+  si.SetStringValue(Settings::MEMORY_CARDS_SECTION_NAME, "Card1Type",
+                    Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
+  si.SetStringValue(Settings::MEMORY_CARDS_SECTION_NAME, "Card2Type",
+                    Settings::GetMemoryCardTypeName(MemoryCardType::None));
+  si.SetStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
+                    Settings::GetMultitapModeName(MultitapMode::Disabled));
+  si.SetStringValue(Settings::AUDIO_SECTION_NAME, "Backend", AudioStream::GetBackendName(AudioBackend::Null));
+  si.SetBoolValue(Settings::LOGGING_SECTION_NAME, "LogToConsole", false);
+  si.SetBoolValue(Settings::LOGGING_SECTION_NAME, "LogToFile", false);
+  si.SetStringValue(Settings::LOGGING_SECTION_NAME, "LogLevel", Settings::GetLogLevelName(Log::Level::Info));
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "ApplyGameSettings", false); // don't want game settings interfering
+  si.SetBoolValue(Settings::BIOS_SECTION_NAME, "PatchFastBoot", true);           // no point validating the bios intro..
+  si.SetFloatValue(Settings::INTERFACE_SECTION_NAME, "EmulationSpeed", 0.0f);
 
   // disable all sources
   for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
-    si.SetBoolValue("InputSources", InputManager::InputSourceToString(static_cast<InputSourceType>(i)), false);
+    si.SetBoolValue(InputManager::SOURCES_CONFIG_SECTION,
+                    InputManager::InputSourceToString(static_cast<InputSourceType>(i)), false);
 
   return true;
 }
@@ -812,13 +818,14 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         Log::SetLogLevel(level.value());
-        Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
+        Core::SetBaseStringSettingValue(Settings::LOGGING_SECTION_NAME, "LogLevel",
+                                        Settings::GetLogLevelName(level.value()));
         continue;
       }
       else if (CHECK_ARG("-console"))
       {
         Log::SetConsoleOutputParams(true);
-        Core::SetBaseBoolSettingValue("Logging", "LogToConsole", true);
+        Core::SetBaseBoolSettingValue(Settings::LOGGING_SECTION_NAME, "LogToConsole", true);
         continue;
       }
       else if (CHECK_ARG_PARAM("-renderer"))
@@ -830,7 +837,8 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
-        Core::SetBaseStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
+        Core::SetBaseStringSettingValue(Settings::GPU_SECTION_NAME, "Renderer",
+                                        Settings::GetRendererName(renderer.value()));
         continue;
       }
       else if (CHECK_ARG_PARAM("-upscale"))
@@ -843,7 +851,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting upscale to {}.", upscale);
-        Core::SetBaseIntSettingValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
+        Core::SetBaseIntSettingValue(Settings::GPU_SECTION_NAME, "ResolutionScale", static_cast<s32>(upscale));
         continue;
       }
       else if (CHECK_ARG_PARAM("-cpu"))
@@ -856,20 +864,21 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
-        Core::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(cpu.value()));
+        Core::SetBaseStringSettingValue(Settings::CPU_SECTION_NAME, "ExecutionMode",
+                                        Settings::GetCPUExecutionModeName(cpu.value()));
         continue;
       }
       else if (CHECK_ARG("-pgxp"))
       {
         INFO_LOG("Enabling PGXP.");
-        Core::SetBaseBoolSettingValue("GPU", "PGXPEnable", true);
+        Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPEnable", true);
         continue;
       }
       else if (CHECK_ARG("-pgxp-cpu"))
       {
         INFO_LOG("Enabling PGXP CPU mode.");
-        Core::SetBaseBoolSettingValue("GPU", "PGXPEnable", true);
-        Core::SetBaseBoolSettingValue("GPU", "PGXPCPU", true);
+        Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPEnable", true);
+        Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPCPU", true);
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -916,8 +925,8 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     const auto lock = Core::GetSettingsLock();
     EmuFolders::DataRoot = std::move(dump_directory);
     SettingsInterface& si = *Core::GetBaseSettingsLayer();
-    si.SetBoolValue("Logging", "LogToFile", true);
-    si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
+    si.SetBoolValue(Settings::LOGGING_SECTION_NAME, "LogToFile", true);
+    si.SetStringValue(Settings::LOGGING_SECTION_NAME, "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
     Settings::UpdateLogConfig(si);
   }
 

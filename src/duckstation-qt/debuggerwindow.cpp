@@ -46,7 +46,6 @@ LOG_CHANNEL(Host);
 
 static constexpr int TIMER_REFRESH_INTERVAL_MS = 100;
 static constexpr const char* BREAKPOINTS_SECTION = "Breakpoints";
-static constexpr const char* WINDOW_STATE_SECTION = "UI";
 static constexpr const char* WINDOW_STATE_KEY = "DebuggerWindowState";
 
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
@@ -691,14 +690,14 @@ void DebuggerWindow::saveWindowState()
   QtUtils::SaveWindowGeometry(this, false);
 
   const QByteArray state = QMainWindow::saveState().toBase64();
-  Core::SetBaseStringSettingValue(WINDOW_STATE_SECTION, WINDOW_STATE_KEY, state.constData());
+  Core::SetBaseStringSettingValue(Settings::UI_SECTION_NAME, WINDOW_STATE_KEY, state.constData());
   Host::CommitBaseSettingChanges();
 }
 
 void DebuggerWindow::restoreWindowState()
 {
   // NOTE: Geometry restored in QtUtils::ShowOrRaiseWindow().
-  const std::string state = Core::GetBaseStringSettingValue(WINDOW_STATE_SECTION, WINDOW_STATE_KEY);
+  const std::string state = Core::GetBaseStringSettingValue(Settings::UI_SECTION_NAME, WINDOW_STATE_KEY);
   if (!state.empty())
     QMainWindow::restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state)));
 }

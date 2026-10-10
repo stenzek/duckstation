@@ -30,45 +30,53 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, "Cheevos", "Enabled", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, "Cheevos", "EncoreMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, "Cheevos", "SpectatorMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Cheevos", "UnofficialTestMode",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hardcoreMode, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "ChallengeMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.encoreMode, Settings::ACHIEVEMENTS_SECTION_NAME, "EncoreMode",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, "Cheevos", "Notifications", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "SpectatorMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "UnofficialTestMode", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "Notifications", true);
   SettingWidgetBinder::BindSliderAndLabelToIntSetting(
     sif, m_ui.achievementNotificationsDuration, m_ui.achievementNotificationsDurationLabel,
-    m_ui.resetAchievementNotificationsDuration, "Cheevos", "NotificationsDuration",
+    m_ui.resetAchievementNotificationsDuration, Settings::ACHIEVEMENTS_SECTION_NAME, "NotificationsDuration",
     Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME, tr(" seconds"));
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardNotifications, "Cheevos",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardNotifications, Settings::ACHIEVEMENTS_SECTION_NAME,
                                                "LeaderboardNotifications", true);
   SettingWidgetBinder::BindSliderAndLabelToIntSetting(
     sif, m_ui.leaderboardNotificationsDuration, m_ui.leaderboardNotificationsDurationLabel,
-    m_ui.resetLeaderboardNotificationsDuration, "Cheevos", "LeaderboardsDuration",
+    m_ui.resetLeaderboardNotificationsDuration, Settings::ACHIEVEMENTS_SECTION_NAME, "LeaderboardsDuration",
     Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME, tr(" seconds"));
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.notificationLocation, "Cheevos", "NotificationLocation", &Settings::ParseNotificationLocation,
-    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
-    Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION, NotificationLocation::MaxCount);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardTrackers, "Cheevos", "LeaderboardTrackers", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.prefetchBadges, "Cheevos", "PrefetchBadges",
-                                               Settings::DEFAULT_ACHIEVEMENT_BADGE_PREFETCH);
+    sif, m_ui.notificationLocation, Settings::ACHIEVEMENTS_SECTION_NAME, "NotificationLocation",
+    &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
+    &Settings::GetNotificationLocationDisplayName, Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION,
+    NotificationLocation::MaxCount);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardTrackers, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "LeaderboardTrackers", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "SoundEffects", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.prefetchBadges, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "PrefetchBadges", Settings::DEFAULT_ACHIEVEMENT_BADGE_PREFETCH);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.challengeIndicatorMode, "Cheevos", "ChallengeIndicatorMode",
+    sif, m_ui.challengeIndicatorMode, Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeIndicatorMode",
     &Settings::ParseAchievementChallengeIndicatorMode, &Settings::GetAchievementChallengeIndicatorModeName,
     &Settings::GetAchievementChallengeIndicatorModeDisplayName, Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
     AchievementChallengeIndicatorMode::MaxCount);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.progressIndicatorMode, "Cheevos", "ProgressIndicatorMode",
+    sif, m_ui.progressIndicatorMode, Settings::ACHIEVEMENTS_SECTION_NAME, "ProgressIndicatorMode",
     &Settings::ParseAchievementProgressIndicatorMode, &Settings::GetAchievementProgressIndicatorModeName,
     &Settings::GetAchievementProgressIndicatorModeDisplayName, Settings::DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE,
     AchievementProgressIndicatorMode::MaxCount);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.indicatorLocation, "Cheevos", "IndicatorLocation", &Settings::ParseNotificationLocation,
-    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
-    Settings::DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION, NotificationLocation::MaxCount);
+    sif, m_ui.indicatorLocation, Settings::ACHIEVEMENTS_SECTION_NAME, "IndicatorLocation",
+    &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
+    &Settings::GetNotificationLocationDisplayName, Settings::DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION,
+    NotificationLocation::MaxCount);
 
   m_ui.changeSoundsLink->setText(
     QStringLiteral("<a href=\"https://github.com/stenzek/duckstation/wiki/Resource-Overrides\"><span "
@@ -167,7 +175,8 @@ void AchievementSettingsWidget::setupAdditionalUi()
   const auto setup_scale_option = [this](const char* key, QComboBox* cb, QSpinBox* sb) {
     if (m_dialog->isPerGameSettings())
     {
-      const int global_value = Core::GetIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+      const int global_value = Core::GetIntSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key,
+                                                        Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
       cb->addItem(
         QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
           .arg((global_value < 0) ? tr("Use OSD Scale") : ((global_value == 0) ? tr("Automatic") : tr("Custom"))));
@@ -179,7 +188,7 @@ void AchievementSettingsWidget::setupAdditionalUi()
 
     const int option_offset = static_cast<int>(BoolToUInt32(m_dialog->isPerGameSettings()));
     if (const std::optional<int> custom_scale = m_dialog->getIntValue(
-          "Cheevos", key,
+          Settings::ACHIEVEMENTS_SECTION_NAME, key,
           m_dialog->isPerGameSettings() ? std::nullopt :
                                           std::optional<int>(Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO));
         custom_scale.has_value())
@@ -207,28 +216,30 @@ void AchievementSettingsWidget::setupAdditionalUi()
     connect(cb, &QComboBox::currentIndexChanged, this, [this, key, sb, option_offset](int index) {
       if (index == option_offset + 0)
       {
-        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+        m_dialog->setIntSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key,
+                                     Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
         sb->setVisible(false);
       }
       else if (index == option_offset + 1)
       {
-        m_dialog->setIntSettingValue("Cheevos", key, Settings::ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE);
+        m_dialog->setIntSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key,
+                                     Settings::ACHIEVEMENT_NOTIFICATION_SCALE_OSD_SCALE);
         sb->setVisible(false);
       }
       else if (index == option_offset + 2)
       {
-        m_dialog->setIntSettingValue("Cheevos", key, sb->value());
+        m_dialog->setIntSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key, sb->value());
         sb->setVisible(true);
       }
       else
       {
-        m_dialog->removeSettingValue("Cheevos", key);
+        m_dialog->removeSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key);
         sb->setVisible(false);
       }
     });
 
     connect(sb, &QSpinBox::valueChanged, this,
-            [this, key](int value) { m_dialog->setIntSettingValue("Cheevos", key, value); });
+            [this, key](int value) { m_dialog->setIntSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, key, value); });
   };
 
   setup_scale_option("NotificationScale", m_ui.notificationScale, m_ui.notificationScaleCustom);
@@ -237,8 +248,9 @@ void AchievementSettingsWidget::setupAdditionalUi()
 
 void AchievementSettingsWidget::updateEnableState()
 {
-  const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
-  const bool spectator_enabled = m_dialog->getEffectiveBoolValue("Cheevos", "SpectatorMode", false);
+  const bool enabled = m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false);
+  const bool spectator_enabled =
+    m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", false);
   m_ui.hardcoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.encoreMode->setEnabled(enabled && !spectator_enabled);
@@ -247,8 +259,10 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.notificationsGroup->setEnabled(enabled);
   m_ui.progressTrackingGroup->setEnabled(enabled);
 
-  const bool notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "Notifications", true);
-  const bool lb_notifications = enabled && m_dialog->getEffectiveBoolValue("Cheevos", "LeaderboardNotifications", true);
+  const bool notifications =
+    enabled && m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Notifications", true);
+  const bool lb_notifications =
+    enabled && m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LeaderboardNotifications", true);
   m_ui.achievementNotificationsDuration->setEnabled(notifications);
   m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
   m_ui.resetAchievementNotificationsDuration->setEnabled(notifications);
@@ -262,8 +276,8 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
   if (!QtHost::IsSystemValid())
     return;
 
-  const bool enabled = m_dialog->getEffectiveBoolValue("Cheevos", "Enabled", false);
-  const bool challenge = m_dialog->getEffectiveBoolValue("Cheevos", "ChallengeMode", false);
+  const bool enabled = m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false);
+  const bool challenge = m_dialog->getEffectiveBoolValue(Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false);
   if (!enabled || !challenge)
     return;
 
@@ -297,7 +311,7 @@ void AchievementSettingsWidget::updateLoginState()
     }
     else
     {
-      username = Core::GetBaseStringSettingValue("Cheevos", "Username");
+      username = Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
     }
   }
 
@@ -306,7 +320,9 @@ void AchievementSettingsWidget::updateLoginState()
   if (logged_in)
   {
     const u64 login_unix_timestamp =
-      StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
+      StringUtil::FromChars<u64>(
+        Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp", "0"))
+        .value_or(0);
     const TinyString login_timestamp =
       Host::FormatRelativeDateTime(static_cast<std::time_t>(login_unix_timestamp), false, false);
     m_ui.loginStatus->setText(tr("Logged in as %1\nToken generated %2")
@@ -337,7 +353,7 @@ void AchievementSettingsWidget::onLoginPressed()
 
 void AchievementSettingsWidget::onLogoutPressed()
 {
-  if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
+  if (Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username").empty())
     return;
 
   Host::RunOnCoreThread([widget = QPointer<AchievementSettingsWidget>(this)]() mutable {
@@ -354,12 +370,13 @@ void AchievementSettingsWidget::onLoginCompleted()
   updateLoginState();
 
   // Login can enable achievements/hardcore.
-  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false))
   {
     m_ui.enable->setChecked(true);
     updateEnableState();
   }
-  if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  if (!m_ui.hardcoreMode->isChecked() &&
+      Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
 }
 
@@ -370,7 +387,7 @@ void AchievementSettingsWidget::onRegisterUserPressed()
 
 void AchievementSettingsWidget::onViewProfilePressed()
 {
-  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username"));
   if (username.empty())
     return;
 

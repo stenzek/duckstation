@@ -110,7 +110,6 @@ static void DrawInputsOverlay();
 static void UpdateInputOverlay(void* buffer);
 
 static constexpr size_t NUM_DEBUG_WINDOWS = 7;
-static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
   {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 510, 500},
   {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 820, 950},
@@ -133,11 +132,21 @@ u8 ImGuiManager::LoadDebugWindowVisibility(const SettingsInterface& si)
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
     const DebugWindowInfo& info = s_debug_window_info[i];
-    if (si.GetBoolValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false))
+    if (si.GetBoolValue(Settings::DEBUG_WINDOWS_SECTION_NAME, info.name, false))
       visible |= (1u << i);
   }
 
   return visible;
+}
+
+void ImGuiManager::SaveDebugWindowVisibility(SettingsInterface& si, u8 debug_window_visibility)
+{
+  for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
+  {
+    const DebugWindowInfo& info = s_debug_window_info[i];
+    const bool enabled = ((debug_window_visibility & (1u << i)) != 0);
+    si.SetBoolValue(Settings::DEBUG_WINDOWS_SECTION_NAME, info.name, enabled);
+  }
 }
 
 bool ImGuiManager::IsSPUDebugWindowVisible(u8 debug_window_visibility)
@@ -161,12 +170,12 @@ bool ImGuiManager::UpdateDebugWindowConfig(u8 debug_window_visibility)
 
     if (!enabled)
     {
-      DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, info.name);
+      DestroyAuxiliaryRenderWindow(&state, Settings::DEBUG_WINDOWS_SECTION_NAME, info.name);
     }
     else
     {
       Error error;
-      if (!CreateAuxiliaryRenderWindow(&state, info.window_title, info.icon_name, DEBUG_WINDOW_CONFIG_SECTION,
+      if (!CreateAuxiliaryRenderWindow(&state, info.window_title, info.icon_name, Settings::DEBUG_WINDOWS_SECTION_NAME,
                                        info.name, info.default_width, info.default_height, &error))
       {
         ERROR_LOG("Failed to create aux render window for {}: {}", info.name, error.GetDescription());
@@ -193,8 +202,8 @@ void ImGuiManager::RenderDebugWindows()
     {
       // window was closed, destroy it and update the configuration
       const DebugWindowInfo& info = s_debug_window_info[i];
-      DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, info.name);
-      Core::SetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false);
+      DestroyAuxiliaryRenderWindow(&state, Settings::DEBUG_WINDOWS_SECTION_NAME, info.name);
+      Core::SetBaseBoolSettingValue(Settings::DEBUG_WINDOWS_SECTION_NAME, info.name, false);
       Host::CommitBaseSettingChanges();
     }
   }
@@ -208,7 +217,8 @@ void ImGuiManager::DestroyAllDebugWindows()
     if (!state.window_handle)
       continue;
 
-    ImGuiManager::DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, s_debug_window_info[i].name);
+    ImGuiManager::DestroyAuxiliaryRenderWindow(&state, Settings::DEBUG_WINDOWS_SECTION_NAME,
+                                               s_debug_window_info[i].name);
   }
 }
 
@@ -1117,14 +1127,18 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
     return fmt::format("{} {}", binding, caption);
   };
 
-  s_state.load_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
-                                            TRANSLATE_SV("SaveStateSelectorUI", "Load"));
-  s_state.save_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
-                                            TRANSLATE_SV("SaveStateSelectorUI", "Save"));
-  s_state.prev_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
-                                            TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
-  s_state.next_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
-                                            TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
+  s_state.load_legend =
+    format_legend_entry(Core::GetSmallStringSettingValue(Settings::HOTKEYS_SECTION_NAME, "LoadSelectedSaveState"),
+                        TRANSLATE_SV("SaveStateSelectorUI", "Load"));
+  s_state.save_legend =
+    format_legend_entry(Core::GetSmallStringSettingValue(Settings::HOTKEYS_SECTION_NAME, "SaveSelectedSaveState"),
+                        TRANSLATE_SV("SaveStateSelectorUI", "Save"));
+  s_state.prev_legend =
+    format_legend_entry(Core::GetSmallStringSettingValue(Settings::HOTKEYS_SECTION_NAME, "SelectPreviousSaveStateSlot"),
+                        TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
+  s_state.next_legend =
+    format_legend_entry(Core::GetSmallStringSettingValue(Settings::HOTKEYS_SECTION_NAME, "SelectNextSaveStateSlot"),
+                        TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
 }
 
 void SaveStateSelectorUI::SelectNextSlot(bool open_selector)

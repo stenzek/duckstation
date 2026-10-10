@@ -7,6 +7,7 @@
 
 #include "core/core.h"
 #include "core/game_list.h"
+#include "core/settings.h"
 #include "core/system.h"
 
 #include "util/input_manager.h"
@@ -59,7 +60,7 @@ static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view win
 static void SetMessageBoxStyle(QMessageBox* const dlg);
 static void SetIsMaskForMonochromeMenuBarActionIcons(QMenu* const menu);
 
-static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
+static const char* const WINDOW_GEOMETRY_CONFIG_SECTION = Settings::UI_SECTION_NAME;
 
 } // namespace QtUtils
 

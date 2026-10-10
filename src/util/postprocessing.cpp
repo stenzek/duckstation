@@ -35,6 +35,9 @@
 
 LOG_CHANNEL(PostProcessing);
 
+const char* const PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME = "PostProcessing";
+const char* const PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME = "InternalPostProcessing";
+
 namespace PostProcessing {
 
 template<typename T>

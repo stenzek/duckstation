@@ -165,7 +165,8 @@ ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace GameList
 
-const char* const GameList::UI_SETTING_SECTION = "UI";
+const char* const GameList::CONFIG_SECTION_NAME = "GameList";
+const char* const GameList::UI_SECTION_NAME = "UI";
 constexpr const char* const GameList::SETTING_KEY_LOCALIZED_TITLES = "GameListShowLocalizedTitles";
 constexpr const char* const GameList::SETTING_KEY_SORT_COLUMN = "GameListSortColumn";
 constexpr const char* const GameList::SETTING_KEY_SORT_REVERSED = "GameListSortReversed";
@@ -1003,7 +1004,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
 
   {
     // cancel if excluded
-    const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+    const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting(CONFIG_SECTION_NAME, "ExcludedPaths"));
     if (IsPathExcluded(excluded_paths, path))
       return false;
   }
@@ -1364,8 +1365,8 @@ GameList::ScanDirectoryList GameList::GetScanDirectoryList(const SettingsInterfa
   ScanDirectoryList settings;
 
   {
-    std::vector<std::string> dirs = si.GetStringList("GameList", "Paths");
-    std::vector<std::string> recursive_dirs = si.GetStringList("GameList", "RecursivePaths");
+    std::vector<std::string> dirs = si.GetStringList(CONFIG_SECTION_NAME, "Paths");
+    std::vector<std::string> recursive_dirs = si.GetStringList(CONFIG_SECTION_NAME, "RecursivePaths");
     settings.directories.reserve(dirs.size() + recursive_dirs.size());
     for (std::string& dir : dirs)
       settings.directories.emplace_back(std::move(dir), false);
@@ -1379,7 +1380,7 @@ GameList::ScanDirectoryList GameList::GetScanDirectoryList(const SettingsInterfa
     }
   }
 
-  settings.excluded_paths = si.GetStringList("GameList", "ExcludedPaths");
+  settings.excluded_paths = si.GetStringList(CONFIG_SECTION_NAME, "ExcludedPaths");
 
   return settings;
 }
@@ -1511,7 +1512,7 @@ void GameList::RefreshDiscSetEntries()
     }
   }
 
-  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting(CONFIG_SECTION_NAME, "ExcludedPaths"));
   const PlayedTimeMap played_time = LoadPlayedTimeMap();
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
@@ -2357,7 +2358,7 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   {
     fallback_path = Achievements::GetGameBadgeURL(achievements_game_id);
     if (!fallback_path.empty() &&
-        Core::GetBaseBoolSettingValue(UI_SETTING_SECTION, SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
+        Core::GetBaseBoolSettingValue(UI_SECTION_NAME, SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
                                       DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS))
     {
       return (ret = std::move(fallback_path));

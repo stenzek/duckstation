@@ -19,6 +19,8 @@ struct SettingInfo;
 class SDLInputSource final : public InputSource
 {
 public:
+  static const char* const EXTRA_CONFIG_SECTION;
+  static const char* const HINTS_CONFIG_SECTION;
   static constexpr u32 MAX_LED_COLORS = 4;
 
   SDLInputSource();

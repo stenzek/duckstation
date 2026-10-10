@@ -147,8 +147,8 @@ void HotkeySettingsWidget::createButtons()
     row_layout->addWidget(new QLabel(display_name, row));
 
     InputBindingWidget* const bind =
-      new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(), InputBindingInfo::Type::Button, "Hotkeys",
-                             hotkey.name, display_name);
+      new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(), InputBindingInfo::Type::Button,
+                             Settings::HOTKEYS_SECTION_NAME, hotkey.name, display_name);
     bind->setFixedWidth(300);
     row_layout->addWidget(bind);
   }
