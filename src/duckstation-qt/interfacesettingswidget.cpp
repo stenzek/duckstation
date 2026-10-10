@@ -183,7 +183,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
                              tr("Switches between full screen and windowed when the window is double-clicked."));
   dialog->registerWidgetHelp(
-    m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Checked"),
+    m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Unchecked"),
     tr("Renders the display of the simulated console to the main window of the application, over "
        "the game list. If checked, the display will render in a separate window."));
   dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Checked"),

@@ -941,7 +941,7 @@ void Host::SetDefaultSettings(SettingsInterface& si)
 #endif
 
   si.SetBoolValue("Main", "DisableWindowResize", false);
-  si.SetBoolValue("Main", "HideCursorInFullscreen", false);
+  si.SetBoolValue("Main", "HideCursorInFullscreen", true);
   si.SetBoolValue("Main", "RenderToSeparateWindow", false);
   si.SetBoolValue("Main", "HideMainWindowWhenRunning", false);
 
