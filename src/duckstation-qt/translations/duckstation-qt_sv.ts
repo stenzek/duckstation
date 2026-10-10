@@ -2613,8 +2613,8 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
         <source>%n cheats are enabled.</source>
         <comment>OSD Message</comment>
         <translation>
+            <numerusform>%n fusk är aktiverat.</numerusform>
             <numerusform>%n fusk är aktiverade.</numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -2976,10 +2976,6 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>Buttons</source>
         <translation>Knappar</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Inga generiska bindningar genererades för enheten &apos;%1&apos;. Handkontrollern/källan kanske inte har stöd för automatisk mappning.</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -5545,10 +5541,6 @@ Vill du {1} ändå?</translation>
         <translation>Titel</translation>
     </message>
     <message>
-        <source>Last Played</source>
-        <translation>Senast spelat</translation>
-    </message>
-    <message>
         <source>Select Disc Image</source>
         <translation>Välj skivavbild</translation>
     </message>
@@ -5875,10 +5867,6 @@ Vill du {1} ändå?</translation>
     <message>
         <source>Achievement Notifications</source>
         <translation>Aviseringar om prestationer</translation>
-    </message>
-    <message>
-        <source>Achievement Unlock/Count</source>
-        <translation>Prestation upplåsning/antal</translation>
     </message>
     <message>
         <source>Add Shader</source>
@@ -6227,10 +6215,6 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Default Boot</source>
         <translation>Standarduppstart</translation>
-    </message>
-    <message>
-        <source>Default View</source>
-        <translation>Standardvy</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -6611,14 +6595,6 @@ Felet var:</translation>
         <translation>Snabbspolar igenom den tidiga inläsningsprocessen vid snabb uppstart, vilket sparar tid. Resultaten kan variera mellan spel.</translation>
     </message>
     <message>
-        <source>File Size</source>
-        <translation>Filstorlek</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Filtitel</translation>
-    </message>
-    <message>
         <source>Filter Framebuffer Uploads</source>
         <translation>Filtrera överföringar till framebufferten</translation>
     </message>
@@ -6729,6 +6705,10 @@ Felet var:</translation>
     <message>
         <source>Graphics Settings</source>
         <translation>Grafikinställningar</translation>
+    </message>
+    <message>
+        <source>Grid View</source>
+        <translation>Rutnätsvy</translation>
     </message>
     <message>
         <source>Hardcore Mode</source>
@@ -7471,10 +7451,6 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Väljer typ av emulerad kontroller för den här porten.</translation>
     </message>
     <message>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>Väljer vyn som spellistan ska öppnas med.</translation>
-    </message>
-    <message>
         <source>Session: {}</source>
         <translation>Session: {}</translation>
     </message>
@@ -7727,10 +7703,6 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation>Trådad rendering</translation>
     </message>
     <message>
-        <source>Time Played</source>
-        <translation>Tid spelat</translation>
-    </message>
-    <message>
         <source>Timing out in {:.0f} seconds...</source>
         <translation>Tidsgräns går ut om {:.0f} sekunder...</translation>
     </message>
@@ -7761,10 +7733,6 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <source>Turbo Speed</source>
         <translation>Turbohastighet</translation>
-    </message>
-    <message>
-        <source>Uncompressed Size</source>
-        <translation>Okomprimerad storlek</translation>
     </message>
     <message>
         <source>Undo Load State</source>
@@ -9028,6 +8996,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <translation>Visar en timer på den valda platsen när utmaningar för ledartavlan är aktiva.</translation>
     </message>
     <message>
+        <source>Shows the game list as a grid instead of a vertical list.</source>
+        <translation>Visar spellistan i ett rutnät i stället för som en lodrät lista.</translation>
+    </message>
+    <message>
         <source>Start In Big Picture Mode</source>
         <translation>Starta i storbildsläge</translation>
     </message>
@@ -10043,6 +10015,86 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <translation>PSF</translation>
     </message>
     <message>
+        <source>Type</source>
+        <comment>Column</comment>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>Column</comment>
+        <translation>Serienummer</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>Column</comment>
+        <translation>Titel</translation>
+    </message>
+    <message>
+        <source>File Title</source>
+        <comment>Column</comment>
+        <translation>Filtitel</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>Column</comment>
+        <translation>Utvecklare</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>Column</comment>
+        <translation>Utgivare</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>Column</comment>
+        <translation>Genre</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <comment>Column</comment>
+        <translation>År</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>Column</comment>
+        <translation>Spelare</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>Column</comment>
+        <translation>Speltid</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>Column</comment>
+        <translation>Senast spelat</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <comment>Column</comment>
+        <translation>Storlek</translation>
+    </message>
+    <message>
+        <source>Data Size</source>
+        <comment>Column</comment>
+        <translation>Datastorlek</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>Column</comment>
+        <translation>Region</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>Column</comment>
+        <translation>Prestationer</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>Column</comment>
+        <translation>Kompatibilitet</translation>
+    </message>
+    <message>
         <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>URL-mallen måste innehålla minst ett av följande: ${title}, ${localizedtitle}, ${savetitle}, ${filetitle} eller ${serial}.</translation>
     </message>
@@ -10066,66 +10118,6 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
 <context>
     <name>GameListModel</name>
     <message>
-        <source>Title</source>
-        <translation>Titel</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Filtitel</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Tid spelat</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Senast spelat</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation>Storlek</translation>
-    </message>
-    <message>
-        <source>Region</source>
-        <translation>Region</translation>
-    </message>
-    <message>
-        <source>Compatibility</source>
-        <translation>Kompatibilitet</translation>
-    </message>
-    <message>
-        <source>Icon</source>
-        <translation>Ikon</translation>
-    </message>
-    <message>
-        <source>Serial</source>
-        <translation>Serienummer</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation>Utvecklare</translation>
-    </message>
-    <message>
-        <source>Publisher</source>
-        <translation>Utgivare</translation>
-    </message>
-    <message>
-        <source>Genre</source>
-        <translation>Genre</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>År</translation>
-    </message>
-    <message>
-        <source>Players</source>
-        <translation>Spelare</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation>Prestationer</translation>
-    </message>
-    <message>
         <source>No Achievements</source>
         <translation>Inga prestationer</translation>
     </message>
@@ -10136,10 +10128,6 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 upplåst i hardcore-läget</translation>
-    </message>
-    <message>
-        <source>Data Size</source>
-        <translation>Datastorlek</translation>
     </message>
 </context>
 <context>
@@ -12348,8 +12336,16 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <translation>Pekare-{0}/{1}</translation>
     </message>
     <message>
+        <source>No mappings were added. {} may not support automatic binding, or no matches were found for your controller.</source>
+        <translation>Inga mappningar lades till. {} kanske inte har stöd för automatisk mappning eller så hittades ingen matchning för din handkontroll.</translation>
+    </message>
+    <message>
         <source>System paused because controller {} was disconnected.</source>
         <translation>Systemet pausade därför att kontroller {} kopplades från.</translation>
+    </message>
+    <message>
+        <source>No generic bindings were generated for device &apos;{}&apos;. The controller/source may not support automatic mapping.</source>
+        <translation>Inga generella mappningar skapades för enheten '{}'. Handkontrollen eller källan kanske inte har stöd för automatisk mappning.</translation>
     </message>
 </context>
 <context>
@@ -14088,7 +14084,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Open Data Directory...</source>
-        <translation>&amp;Öppna datakatalog...</translation>
+        <translation>Ö&amp;ppna datakatalog...</translation>
     </message>
     <message>
         <source>Opens the directory containing application data in your file browser.</source>
@@ -15290,10 +15286,6 @@ Fel: {1}</translation>
         <translation>Automatisk mappning misslyckades</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Inga generiska bindningar genererades för enheten &apos;%1&apos;. Handkontrollern/källan kanske inte har stöd för automatisk mappning.</translation>
-    </message>
-    <message>
         <source>No devices were selected.</source>
         <translation>Inga enheter valdes.</translation>
     </message>
@@ -16492,7 +16484,11 @@ Vill du uppdatera genvägen så att den pekar på den aktuella platsen?</transla
 %1
 
 This will likely prevent DuckStation from working correctly. You should modify your environment to leave LD_LIBRARY_PATH unset.</source>
-        <translation>Miljövariabeln LD_LIBRARY_PATH är satt till:\n%1\n\nDetta kommer sannolikt att hindra DuckStation från att fungera korrekt. Ändra din miljö så att LD_LIBRARY_PATH inte är satt.</translation>
+        <translation>Miljövariabeln LD_LIBRARY_PATH är satt till följande värde:
+
+%1
+
+Detta hindrar sannolikt DuckStation från att fungera korrekt. Ändra miljön så att LD_LIBRARY_PATH inte är satt.</translation>
     </message>
     <message>
         <source>Don&apos;t show again</source>
@@ -17066,11 +17062,6 @@ Vill du skapa denna katalog?</translation>
         <source>Disabled (Slowest)</source>
         <comment>CPUFastmemMode</comment>
         <translation>Inaktiverad (långsammast)</translation>
-    </message>
-    <message>
-        <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <comment>CPUFastmemMode</comment>
-        <translation>MMap (hårdvara, snabbast, endast 64 bitar)</translation>
     </message>
     <message>
         <source>LUT (Faster)</source>
@@ -17661,6 +17652,11 @@ Vill du skapa denna katalog?</translation>
         <source>PAL</source>
         <comment>DiscRegion</comment>
         <translation>PAL</translation>
+    </message>
+    <message>
+        <source>MMap (Fastest)</source>
+        <comment>CPUFastmemMode</comment>
+        <translation>MMap (snabbast)</translation>
     </message>
     <message>
         <source>Scale3x (Slow)</source>
@@ -18274,6 +18270,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Inga enheter tillgängliga</translation>
     </message>
     <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Automatisk mappning misslyckades</translation>
+    </message>
+    <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
         <translation>PGXP är inte aktiverat. Om upplösningen höjs utan att PGXP aktiveras uppstår synliga polygonfel.</translation>
     </message>
@@ -18282,10 +18282,6 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
 Token generated %2</source>
         <translation>Inloggad som: %1
 Token genererades %2</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Inga generiska bindningar genererades för enheten &apos;%1&apos;. Handkontrollen/källan kanske inte har stöd för automatisk mappning.</translation>
     </message>
     <message>
         <source>DuckStation Setup Wizard</source>
@@ -18435,10 +18431,6 @@ Token genererades %2</translation>
     <message>
         <source>No Game Directories Selected</source>
         <translation>Inga spelkataloger valda</translation>
-    </message>
-    <message>
-        <source>Automatic Binding Failed</source>
-        <translation>Automatisk bindning misslyckades</translation>
     </message>
 </context>
 <context>
