@@ -354,16 +354,16 @@ std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, bool* using_
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      bios_name = Core::GetStringSettingValue("BIOS", "PathNTSCJ", "");
+      bios_name = Core::GetStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCJ", "");
       break;
 
     case ConsoleRegion::PAL:
-      bios_name = Core::GetStringSettingValue("BIOS", "PathPAL", "");
+      bios_name = Core::GetStringSettingValue(Settings::BIOS_SECTION_NAME, "PathPAL", "");
       break;
 
     case ConsoleRegion::NTSC_U:
     default:
-      bios_name = Core::GetStringSettingValue("BIOS", "PathNTSCU", "");
+      bios_name = Core::GetStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCU", "");
       break;
   }
 

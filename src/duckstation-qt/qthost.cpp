@@ -417,7 +417,6 @@ void QtHost::ApplyWaylandWorkarounds()
 
 void QtHost::WarnAboutLDLibraryPath()
 {
-  static constexpr const char* ACK_CONFIG_SECTION = "Main";
   static constexpr const char* ACK_CONFIG_KEY = "IgnoreLDLibraryPath";
 
   const char* raw_path = std::getenv("LD_LIBRARY_PATH");
@@ -426,7 +425,7 @@ void QtHost::WarnAboutLDLibraryPath()
     return;
 
   WARNING_LOG("LD_LIBRARY_PATH is set to '{}'", path);
-  const bool acknowledged = Core::GetBaseBoolSettingValue(ACK_CONFIG_SECTION, ACK_CONFIG_KEY, false);
+  const bool acknowledged = Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, ACK_CONFIG_KEY, false);
   if (acknowledged)
     return;
 
@@ -444,12 +443,13 @@ void QtHost::WarnAboutLDLibraryPath()
   msgbox->exec();
 
   if (ignore_cb->isChecked())
-    Core::SetBaseBoolSettingValue(ACK_CONFIG_SECTION, ACK_CONFIG_KEY, true);
+    Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, ACK_CONFIG_KEY, true);
 }
 
 bool QtHost::ParseDesktopFileExecPath(const std::string& desktop_file_path, std::string* out_exec_path)
 {
-  std::optional<std::string> contents = FileSystem::ReadFileToString(desktop_file_path.c_str(), static_cast<Error*>(nullptr));
+  std::optional<std::string> contents =
+    FileSystem::ReadFileToString(desktop_file_path.c_str(), static_cast<Error*>(nullptr));
   if (!contents.has_value())
     return false;
 
@@ -545,7 +545,6 @@ StartupWMClass=duckstation-qt
 void QtHost::CheckDesktopFile()
 {
   static constexpr const char* DESKTOP_FILE_NAME = "applications/org.duckstation.DuckStation.desktop";
-  static constexpr const char* CONFIG_SECTION = "Main";
   static constexpr const char* CONFIG_KEY = "NoDesktopFile";
 
   // AppImage sets the APPIMAGE environment variable to the actual executable path.
@@ -581,7 +580,7 @@ void QtHost::CheckDesktopFile()
   {
     // Desktop file doesn't exist - ask if user wants to create it.
     // Only prompt once per installation by storing a flag in settings.
-    if (Core::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+    if (Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, CONFIG_KEY, false))
       return;
 
     bool accepted, ignore_future;
@@ -607,7 +606,7 @@ void QtHost::CheckDesktopFile()
     {
       if (ignore_future)
       {
-        Core::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+        Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, CONFIG_KEY, true);
         QtHost::SaveSettings();
       }
 
@@ -884,16 +883,16 @@ bool QtHost::InitializeFoldersAndConfig(Error* error)
 
   // Very old installations pre-setup-wizard won't have the "SetupWizardIncomplete" key.
   // Instead, we rely on "SettingsVersion" there as a signal that setup has been completed.
-  if (!Core::ContainsBaseSettingValue("Main", "SetupWizardIncomplete") &&
-      !Core::ContainsBaseSettingValue("Main", "SettingsVersion"))
+  if (!Core::ContainsBaseSettingValue(Settings::INTERFACE_SECTION_NAME, "SetupWizardIncomplete") &&
+      !Core::ContainsBaseSettingValue(Settings::INTERFACE_SECTION_NAME, "SettingsVersion"))
   {
     // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
-    Core::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", true);
+    Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "SetupWizardIncomplete", true);
   }
 
   // Setup wizard was incomplete last time?
-  s_state.run_setup_wizard =
-    s_state.run_setup_wizard || Core::GetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
+  s_state.run_setup_wizard = s_state.run_setup_wizard || Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME,
+                                                                                       "SetupWizardIncomplete", false);
 
   UpdateApplicationLanguage(nullptr);
   return true;
@@ -935,20 +934,19 @@ void CoreThread::setDefaultSettings(bool host, bool system, bool controller)
 void Host::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
 {
 #if defined(_WIN32)
-  si.SetBoolValue("Main", "DisableWindowRoundedCorners", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "DisableWindowRoundedCorners", false);
 #elif defined(__APPLE__)
-  si.SetBoolValue("Main", "UseFractionalWindowScale", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "UseFractionalWindowScale", false);
 #endif
 
-  si.SetBoolValue("Main", "DisableWindowResize", false);
-  si.SetBoolValue("Main", "HideCursorInFullscreen", true);
-  si.SetBoolValue("Main", "RenderToSeparateWindow", false);
-  si.SetBoolValue("Main", "HideMainWindowWhenRunning", false);
-  si.SetBoolValue("Main", "DoubleClickTogglesFullscreen", true);
-  si.SetBoolValue("Main", "DisplayLogInMainWindow", false);
-
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "DisableWindowResize", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "HideCursorInFullscreen", true);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "RenderToSeparateWindow", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "HideMainWindowWhenRunning", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "DoubleClickTogglesFullscreen", true);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "DisplayLogInMainWindow", false);
   if (!ignore_user_prefs)
-    si.SetBoolValue("AutoUpdater", "CheckAtStartup", true);
+    si.SetBoolValue(AutoUpdaterDialog::CONFIG_SECTION_NAME, "CheckAtStartup", true);
 
   // TODO: We could include stuff like game list here, but meh...
 }
@@ -1021,7 +1019,8 @@ void CoreThread::startFullscreenUI()
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
-    (QtHost::s_state.start_fullscreen_ui_fullscreen || Core::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
+    (QtHost::s_state.start_fullscreen_ui_fullscreen ||
+     Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreen", false));
 
   m_is_fullscreen_ui_started = true;
   emit fullscreenUIStartedOrStopped(true);
@@ -2469,7 +2468,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   s_state.translators.clear();
 
   // Fixup automatic language.
-  std::string language = Core::GetBaseStringSettingValue("Main", "Language", "");
+  std::string language = Core::GetBaseStringSettingValue(Settings::INTERFACE_SECTION_NAME, "Language", "");
   if (language.empty())
     language = GetSystemLanguage();
   QString qlanguage = QString::fromStdString(language);
@@ -2666,7 +2665,7 @@ std::string_view QtHost::GetSystemLanguage()
 bool Host::ChangeLanguage(const char* new_language)
 {
   Host::RunOnUIThread([new_language = std::string(new_language)]() {
-    Core::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
+    Core::SetBaseStringSettingValue(Settings::INTERFACE_SECTION_NAME, "Language", new_language.c_str());
     Host::CommitBaseSettingChanges();
     QtHost::UpdateApplicationLanguage(g_main_window);
     g_main_window->recreate();
@@ -3241,7 +3240,7 @@ void QtHost::QueueSettingsSave()
 
 bool QtHost::ShouldShowDebugOptions()
 {
-  return Core::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+  return Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "ShowDebugMenu", false);
 }
 
 void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check_memcard_busy)
@@ -3580,18 +3579,18 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
 bool QtHost::RunSetupWizard()
 {
-  const std::string previous_language = Core::GetBaseStringSettingValue("Main", "Language");
+  const std::string previous_language = Core::GetBaseStringSettingValue(Settings::INTERFACE_SECTION_NAME, "Language");
 
   SetupWizardDialog dialog;
   if (dialog.exec() == QDialog::Rejected)
     return false;
 
   // Remove the flag.
-  Core::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
+  Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "SetupWizardIncomplete", false);
   Host::CommitBaseSettingChanges();
 
   // Recreate main window if language changes to update its text.
-  if (Core::GetBaseStringSettingValue("Main", "Language") != previous_language)
+  if (Core::GetBaseStringSettingValue(Settings::INTERFACE_SECTION_NAME, "Language") != previous_language)
     g_main_window->recreate();
 
   return true;
@@ -3692,7 +3691,8 @@ int main(int argc, char* argv[])
     QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
-  if (s_state.start_fullscreen_ui || Core::GetBaseBoolSettingValue("Main", "StartFullscreenUI", false))
+  if (s_state.start_fullscreen_ui ||
+      Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreenUI", false))
     g_core_thread->startFullscreenUI();
   else
     s_state.start_fullscreen_ui_fullscreen = false;

@@ -74,7 +74,7 @@ void QtHost::UpdateApplicationTheme()
 
 #ifdef __linux__
   // Fonts on Linux are ugly and too large. Override it by default.
-  const bool use_system_font = Core::GetBoolSettingValue("Main", "UseSystemFont", false);
+  const bool use_system_font = Core::GetBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "UseSystemFont", false);
   bool update_font = (use_system_font != s_themes_locals.use_system_font);
   s_themes_locals.use_system_font = use_system_font;
   if (!s_themes_locals.system_font_set)
@@ -105,7 +105,7 @@ void QtHost::UpdateApplicationTheme()
 
 bool QtHost::ShouldDisableStyleSheet()
 {
-  return Core::GetBaseBoolSettingValue("Main", "DisableStylesheet", false);
+  return Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "DisableStylesheet", false);
 }
 
 void QtHost::SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme)
@@ -263,7 +263,8 @@ bool QtHost::IsStylesheetTheme(std::string_view theme_name)
 
 void QtHost::SetStyleFromSettings()
 {
-  const TinyString theme = Core::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
+  const TinyString theme =
+    Core::GetBaseTinyStringSettingValue(Settings::UI_SECTION_NAME, "Theme", QtHost::GetDefaultThemeName());
 
   // Clear any existing stylesheet before applying new. Avoids half-painted windows when changing themes.
   if (s_themes_locals.is_stylesheet_theme)
@@ -367,7 +368,8 @@ const char* Host::GetDefaultFullscreenUITheme()
     {"darkruby", "DarkRuby"},   {"AMOLED", "AMOLED"},
   };
 
-  const TinyString theme = Core::GetBaseTinyStringSettingValue("UI", "Theme", GetDefaultThemeName());
+  const TinyString theme =
+    Core::GetBaseTinyStringSettingValue(Settings::UI_SECTION_NAME, "Theme", GetDefaultThemeName());
   const auto iter = std::ranges::find_if(theme_mapping, [theme](const auto& pair) { return (theme == pair.first); });
   if (iter != std::end(theme_mapping))
     return iter->second;

@@ -106,8 +106,8 @@ struct ShaderOption
 };
 
 namespace Config {
-inline constexpr const char* DISPLAY_CHAIN_SECTION = "PostProcessing";
-inline constexpr const char* INTERNAL_CHAIN_SECTION = "InternalPostProcessing";
+extern const char* const DISPLAY_CHAIN_SECTION_NAME;
+extern const char* const INTERNAL_CHAIN_SECTION_NAME;
 
 bool IsEnabled(const SettingsInterface& si, const char* section);
 bool IsStageEnabled(const SettingsInterface& si, const char* section, u32 index);

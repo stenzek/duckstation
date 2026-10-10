@@ -37,18 +37,18 @@
 
 void Settings::SetDefaultHotkeyConfig(SettingsInterface& si)
 {
-  si.ClearSection("Hotkeys");
+  si.ClearSection(Settings::HOTKEYS_SECTION_NAME);
 
-  si.SetStringValue("Hotkeys", "FastForward", "Keyboard/Tab");
-  si.SetStringValue("Hotkeys", "TogglePause", "Keyboard/Space");
-  si.SetStringValue("Hotkeys", "Screenshot", "Keyboard/F10");
-  si.SetStringValue("Hotkeys", "ToggleFullscreen", "Keyboard/F11");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "FastForward", "Keyboard/Tab");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "TogglePause", "Keyboard/Space");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "Screenshot", "Keyboard/F10");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "ToggleFullscreen", "Keyboard/F11");
 
-  si.SetStringValue("Hotkeys", "OpenPauseMenu", "Keyboard/Escape");
-  si.SetStringValue("Hotkeys", "LoadSelectedSaveState", "Keyboard/F1");
-  si.SetStringValue("Hotkeys", "SaveSelectedSaveState", "Keyboard/F2");
-  si.SetStringValue("Hotkeys", "SelectPreviousSaveStateSlot", "Keyboard/F3");
-  si.SetStringValue("Hotkeys", "SelectNextSaveStateSlot", "Keyboard/F4");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "OpenPauseMenu", "Keyboard/Escape");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "LoadSelectedSaveState", "Keyboard/F1");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "SaveSelectedSaveState", "Keyboard/F2");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "SelectPreviousSaveStateSlot", "Keyboard/F3");
+  si.SetStringValue(Settings::HOTKEYS_SECTION_NAME, "SelectNextSaveStateSlot", "Keyboard/F4");
 }
 
 static void HotkeyModifyResolutionScale(s32 increment)
@@ -70,17 +70,23 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
 static void HotkeyToggleOSD()
 {
-  g_settings.display_show_fps ^= Core::GetBoolSettingValue("Display", "ShowFPS", false);
-  g_settings.display_show_speed ^= Core::GetBoolSettingValue("Display", "ShowSpeed", false);
-  g_settings.display_show_gpu_stats ^= Core::GetBoolSettingValue("Display", "ShowGPUStatistics", false);
-  g_settings.display_show_resolution ^= Core::GetBoolSettingValue("Display", "ShowResolution", false);
-  g_settings.display_show_latency_stats ^= Core::GetBoolSettingValue("Display", "ShowLatencyStatistics", false);
-  g_settings.display_show_cpu_usage ^= Core::GetBoolSettingValue("Display", "ShowCPU", false);
-  g_settings.display_show_gpu_usage ^= Core::GetBoolSettingValue("Display", "ShowGPU", false);
-  g_settings.display_show_frame_times ^= Core::GetBoolSettingValue("Display", "ShowFrameTimes", false);
-  g_settings.display_show_status_indicators ^= Core::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
-  g_settings.display_show_inputs ^= Core::GetBoolSettingValue("Display", "ShowInputs", false);
-  g_settings.display_show_enhancements ^= Core::GetBoolSettingValue("Display", "ShowEnhancements", false);
+  g_settings.display_show_fps ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowFPS", false);
+  g_settings.display_show_speed ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowSpeed", false);
+  g_settings.display_show_gpu_stats ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowGPUStatistics", false);
+  g_settings.display_show_resolution ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowResolution", false);
+  g_settings.display_show_latency_stats ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowLatencyStatistics", false);
+  g_settings.display_show_cpu_usage ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowCPU", false);
+  g_settings.display_show_gpu_usage ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowGPU", false);
+  g_settings.display_show_frame_times ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowFrameTimes", false);
+  g_settings.display_show_status_indicators ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowStatusIndicators", true);
+  g_settings.display_show_inputs ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowInputs", false);
+  g_settings.display_show_enhancements ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowEnhancements", false);
 
   VideoThread::UpdateSettings(true, false, false);
 }
@@ -96,7 +102,8 @@ static bool HotkeyCheckRewindAvailability(bool enabled)
 
   // figure out why it's disabled...
   std::string summary;
-  const bool rewind_actually_enabled = Core::GetBoolSettingValue("Main", "RewindEnable", false);
+  const bool rewind_actually_enabled =
+    Core::GetBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "RewindEnable", false);
   if (rewind_actually_enabled)
   {
     if (g_settings.IsRunaheadEnabled())
@@ -337,8 +344,9 @@ static constexpr const HotkeyInfo s_hotkey_list[] = {
    [](InputButtonEvent event) {
      if (event == InputButtonEvent::Released && System::IsValid())
      {
-       g_settings.emulation_speed = std::max(Core::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
-                                             Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
+       g_settings.emulation_speed =
+         std::max(Core::GetFloatSettingValue(Settings::INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f),
+                  Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
        System::UpdateSpeedLimiterState();
        Host::AddIconOSDMessage(OSDMessageType::Quick, "EmulationSpeedChange", ICON_FA_GAUGE,
                                fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),

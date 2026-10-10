@@ -300,8 +300,8 @@ bool Core::InitializeBaseSettingsLayer(std::string settings_path, Error* error)
   EmuFolders::EnsureFoldersExist();
 
   // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() && si.GetBoolValue("Logging", "LogToConsole", false))
-    Log::SetConsoleOutputParams(true, si.GetBoolValue("Logging", "LogTimestamps", true));
+  if (!Log::IsConsoleOutputEnabled() && si.GetBoolValue(Settings::LOGGING_SECTION_NAME, "LogToConsole", false))
+    Log::SetConsoleOutputParams(true, si.GetBoolValue(Settings::LOGGING_SECTION_NAME, "LogTimestamps", true));
 
   return true;
 }

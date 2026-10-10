@@ -224,7 +224,8 @@ void UpdateAchievementData(std::span<const u8, 16> hash, u32 game_id, u32 num_ac
 void UpdateAllAchievementData();
 
 // Setting keys
-extern const char* const UI_SETTING_SECTION;
+extern const char* const CONFIG_SECTION_NAME;
+extern const char* const UI_SECTION_NAME;
 extern const char* const SETTING_KEY_LOCALIZED_TITLES;
 extern const char* const SETTING_KEY_SORT_COLUMN;
 extern const char* const SETTING_KEY_SORT_REVERSED;

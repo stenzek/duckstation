@@ -111,17 +111,20 @@ void GameSummaryWidget::reloadGameSettings()
   if (m_ui.separateDiscSettings->isVisible() && m_ui.separateDiscSettings->isEnabled())
   {
     m_ui.separateDiscSettings->setCheckState(
-      m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
-                                                                                                    Qt::Unchecked);
+      m_dialog->getBoolValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet", std::nullopt)
+          .value_or(false) ?
+        Qt::Checked :
+        Qt::Unchecked);
   }
 
-  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
+  if (m_dialog->getBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", std::nullopt)
+        .value_or(false))
   {
     const QSignalBlocker sb(m_ui.inputProfile);
     m_ui.inputProfile->setCurrentIndex(1);
   }
   else if (const std::optional<std::string> profile_name =
-             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
+             m_dialog->getStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName", std::nullopt);
            profile_name.has_value() && !profile_name->empty())
   {
     const QSignalBlocker sb(m_ui.inputProfile);
@@ -278,8 +281,10 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry, bool localized_
     if (entry->dbentry->IsFirstDiscInSet())
     {
       m_ui.separateDiscSettings->setCheckState(
-        m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
-                                                                                                      Qt::Unchecked);
+        m_dialog->getBoolValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet", std::nullopt)
+            .value_or(false) ?
+          Qt::Checked :
+          Qt::Unchecked);
       connect(m_ui.separateDiscSettings, &QCheckBox::checkStateChanged, this,
               &GameSummaryWidget::onSeparateDiscSettingsChanged);
     }
@@ -331,9 +336,9 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry, bool localized_
 void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
 {
   if (state == Qt::Checked)
-    m_dialog->setBoolSettingValue("Main", "UseSeparateConfigForDiscSet", true);
+    m_dialog->setBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet", true);
   else
-    m_dialog->removeSettingValue("Main", "UseSeparateConfigForDiscSet");
+    m_dialog->removeSettingValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet");
 
   // Need to update for all discs when clearing separate-disc-settings.
   if (state == Qt::Unchecked)
@@ -411,7 +416,7 @@ void GameSummaryWidget::setCustomTitle(const std::string& text)
     if (entry)
     {
       const std::string_view title = entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
-        GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
+        GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
       m_dialog->setGameTitle(title);
 
       {
@@ -442,7 +447,7 @@ void GameSummaryWidget::setCustomDiscSetTitle(const std::string& text)
 
   const QSignalBlocker sb(m_ui.discSetTitle);
   m_ui.discSetTitle->setText(QtUtils::StringViewToQString(disc_set_entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
-    GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES))));
+    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES))));
 
   m_ui.restoreDiscSetTitle->setEnabled(disc_set_entry->has_custom_title);
 
@@ -564,18 +569,18 @@ void GameSummaryWidget::onInputProfileChanged(int index)
   if (index == 0)
   {
     // Use global settings.
-    sif->DeleteValue("ControllerPorts", "InputProfileName");
-    sif->DeleteValue("ControllerPorts", "UseGameSettingsForController");
+    sif->DeleteValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName");
+    sif->DeleteValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController");
   }
   else if (index == 1)
   {
     // Per-game configuration.
-    sif->DeleteValue("ControllerPorts", "InputProfileName");
-    sif->SetBoolValue("ControllerPorts", "UseGameSettingsForController", true);
+    sif->DeleteValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName");
+    sif->SetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", true);
 
-    if (!sif->GetBoolValue("ControllerPorts", "GameSettingsInitialized", false))
+    if (!sif->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "GameSettingsInitialized", false))
     {
-      sif->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
+      sif->SetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "GameSettingsInitialized", true);
 
       {
         const auto lock = Core::GetSettingsLock();
@@ -590,8 +595,9 @@ void GameSummaryWidget::onInputProfileChanged(int index)
   else
   {
     // Input profile.
-    sif->SetStringValue("ControllerPorts", "InputProfileName", m_ui.inputProfile->itemText(index).toUtf8());
-    sif->DeleteValue("ControllerPorts", "UseGameSettingsForController");
+    sif->SetStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName",
+                        m_ui.inputProfile->itemText(index).toUtf8());
+    sif->DeleteValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController");
   }
 
   m_dialog->saveGameSettings();
@@ -601,7 +607,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
 
 void GameSummaryWidget::onEditInputProfileClicked()
 {
-  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
+  if (m_dialog->getBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", std::nullopt)
+        .value_or(false))
   {
     // Edit game configuration.
     ControllerSettingsWindow* window =
@@ -609,7 +616,7 @@ void GameSummaryWidget::onEditInputProfileClicked()
     connect(window, &ControllerSettingsWindow::multitapModeChanged, m_dialog, &SettingsWindow::onMultitapModeChanged);
   }
   else if (const std::optional<std::string> profile_name =
-             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
+             m_dialog->getStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName", std::nullopt);
            profile_name.has_value() && !profile_name->empty())
   {
     // Edit input profile.

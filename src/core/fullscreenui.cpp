@@ -1082,7 +1082,7 @@ void FullscreenUI::BeginChangeDiscOnCoreThread(bool return_to_game)
   {
     // Don't hold both settings and game list lock.
     const bool localized_titles = Core::GetBaseBoolSettingValue(
-      GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
+      GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
 
     // Another load request cannot start because we have the lock held.
     auto lock = GameList::GetLock();
@@ -1221,8 +1221,8 @@ void FullscreenUI::UpdateBackground()
   s_locals.app_background_shader.reset();
   s_locals.background_loaded = true;
 
-  const TinyString background_name =
-    Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+  const TinyString background_name = Core::GetBaseTinyStringSettingValue(
+    Settings::INTERFACE_SECTION_NAME, "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
   if (background_name.empty() || background_name == "None")
     return;
 
@@ -1422,7 +1422,7 @@ ImVec4 FullscreenUI::GetTransparentBackgroundColor(const ImVec4& no_background_c
 
 bool FullscreenUI::ShouldOpenToGameList()
 {
-  return Core::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
+  return Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIOpenToGameList", false);
 }
 
 void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
