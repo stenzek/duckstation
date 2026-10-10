@@ -210,7 +210,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
       const bool copy_hotkey_bindings = (hkres == QMessageBox::Yes);
       if (copy_hotkey_bindings)
-        temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", true);
+        temp_si.SetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", true);
 
       // from global
       const auto lock = Core::GetSettingsLock();
@@ -219,12 +219,12 @@ void ControllerSettingsWindow::onNewProfileClicked()
     else
     {
       // from profile
-      const bool copy_hotkey_bindings =
-        m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-      const bool copy_sources =
-        m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileInputSources", false);
-      temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", copy_hotkey_bindings);
-      temp_si.SetBoolValue("ControllerPorts", "UseProfileInputSources", copy_sources);
+      const bool copy_hotkey_bindings = m_editing_settings_interface->GetBoolValue(
+        Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false);
+      const bool copy_sources = m_editing_settings_interface->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME,
+                                                                           "UseProfileInputSources", false);
+      temp_si.SetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", copy_hotkey_bindings);
+      temp_si.SetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileInputSources", copy_sources);
       InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, true, copy_sources, true,
                                       copy_hotkey_bindings);
     }
@@ -256,10 +256,10 @@ void ControllerSettingsWindow::onApplyProfileClicked()
   }
 
   {
-    const bool copy_hotkey_bindings =
-      m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-    const bool copy_sources =
-      m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileInputSources", false);
+    const bool copy_hotkey_bindings = m_editing_settings_interface->GetBoolValue(
+      Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false);
+    const bool copy_sources = m_editing_settings_interface->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME,
+                                                                         "UseProfileInputSources", false);
     const auto lock = Core::GetSettingsLock();
     InputManager::CopyConfiguration(Core::GetBaseSettingsLayer(), *m_editing_settings_interface, true, copy_sources,
                                     true, copy_hotkey_bindings);
@@ -471,8 +471,8 @@ void ControllerSettingsWindow::createWidgets()
   }
 
   // only add hotkeys if we're editing global settings
-  if (!m_editing_settings_interface ||
-      m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
+  if (!m_editing_settings_interface || m_editing_settings_interface->GetBoolValue(
+                                         Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false))
   {
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(tr("Hotkeys"));
@@ -525,9 +525,9 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
 std::array<bool, 2> ControllerSettingsWindow::getEnabledMultitaps() const
 {
   const MultitapMode mtap_mode =
-    Settings::ParseMultitapModeName(
-      getStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
-        .c_str())
+    Settings::ParseMultitapModeName(getStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
+                                                   Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
+                                      .c_str())
       .value_or(Settings::DEFAULT_MULTITAP_MODE);
   return Controller::GetMultitapEnabledPorts(mtap_mode);
 }

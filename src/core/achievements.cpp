@@ -559,8 +559,9 @@ void Achievements::ProcessStartup()
     const auto lock = Core::GetSettingsLock();
     const SettingsInterface* si = Core::GetBaseSettingsLayer();
     std::string_view username, token;
-    s_state.has_saved_credentials = (si->LookupValue("Cheevos", "Username", &username) && !username.empty() &&
-                                     si->LookupValue("Cheevos", "Token", &token) && !token.empty());
+    s_state.has_saved_credentials =
+      (si->LookupValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username", &username) && !username.empty() &&
+       si->LookupValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token", &token) && !token.empty());
   }
 }
 
@@ -600,7 +601,7 @@ bool Achievements::CreateClient(std::unique_lock<Threading::Mutex>& lock, bool i
   VERBOSE_LOG(s_state.http_user_agent_header);
 
   // Allow custom host to be overridden through config.
-  if (std::string host = Core::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
+  if (std::string host = Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Host"); !host.empty())
   {
     // drop trailing slash, rc_client appends its own
     while (!host.empty() && host.back() == '/')
@@ -695,8 +696,8 @@ bool Achievements::HasSavedCredentials()
 
 bool Achievements::TryLoggingInWithToken()
 {
-  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
+  const TinyString username = Core::GetTinyStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
+  const TinyString api_token = Core::GetTinyStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token");
   if (username.empty() || api_token.empty())
     return false;
 
@@ -2192,16 +2193,16 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
 void Achievements::SaveLoginSettings(SettingsInterface& si, const LoginResult& result)
 {
-  si.SetStringValue("Cheevos", "Username", result.username.c_str());
-  si.SetStringValue("Cheevos", "Token", result.encrypted_token.c_str());
-  si.SetStringValue("Cheevos", "LoginTimestamp", fmt::format("{}", result.timestamp).c_str());
+  si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username", result.username.c_str());
+  si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token", result.encrypted_token.c_str());
+  si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp", fmt::format("{}", result.timestamp).c_str());
 }
 
 void Achievements::ClearLoginSettings(SettingsInterface& si)
 {
-  si.DeleteValue("Cheevos", "Username");
-  si.DeleteValue("Cheevos", "Token");
-  si.DeleteValue("Cheevos", "LoginTimestamp");
+  si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
+  si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token");
+  si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp");
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
@@ -2348,9 +2349,9 @@ void Achievements::Logout()
 
   INFO_LOG("Clearing credentials...");
   s_state.has_saved_credentials = false;
-  Core::DeleteBaseSettingValue("Cheevos", "Username");
-  Core::DeleteBaseSettingValue("Cheevos", "Token");
-  Core::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
+  Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
+  Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token");
+  Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp");
   Host::CommitBaseSettingChanges();
 
   ClearProgressDatabase();

@@ -470,7 +470,7 @@ bool DisplayWidget::event(QEvent* event)
       if (static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
           ((!QtHost::IsSystemPaused() && !m_relative_mouse_active && !m_ignore_double_click) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
-          Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
+          Core::GetBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "DoubleClickTogglesFullscreen", true))
       {
         g_core_thread->toggleFullscreen();
 

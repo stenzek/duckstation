@@ -4702,7 +4702,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, const GSVector4i
 
 void GPU_HW::LoadInternalPostProcessing()
 {
-  static constexpr const char* section = PostProcessing::Config::INTERNAL_CHAIN_SECTION;
+  const char* const section = PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME;
 
   auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = VideoPresenter::GetPostProcessingSettingsInterface(section);
@@ -4716,7 +4716,7 @@ void GPU_HW::LoadInternalPostProcessing()
 
 void GPU_HW::UpdatePostProcessingSettings(bool force_reload)
 {
-  static constexpr const char* section = PostProcessing::Config::INTERNAL_CHAIN_SECTION;
+  const char* const section = PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME;
 
   auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = *Core::GetSettingsInterface();

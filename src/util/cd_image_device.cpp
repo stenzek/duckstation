@@ -6,6 +6,7 @@
 
 // TODO: Remove me..
 #include "core/core.h"
+#include "core/settings.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -178,7 +179,7 @@ enum class SCSIReadMode : u8
 
 [[maybe_unused]] static bool ShouldTryReadingSubcode()
 {
-  return !Core::GetBaseBoolSettingValue("CDROM", "IgnoreHostSubcode", false);
+  return !Core::GetBaseBoolSettingValue(Settings::CDROM_SECTION_NAME, "IgnoreHostSubcode", false);
 }
 
 #if defined(_WIN32)

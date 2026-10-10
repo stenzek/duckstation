@@ -327,7 +327,8 @@ bool System::AllocatePersistentMemory(Error* error)
     return false;
 
   // g_settings is not valid at this point, query global config directly.
-  const bool export_shared_memory = Core::GetBoolSettingValue("Hacks", "ExportSharedMemory", false);
+  const bool export_shared_memory =
+    Core::GetBoolSettingValue(Settings::HACKS_SECTION_NAME, "ExportSharedMemory", false);
 
   // Fastmem alloc *must* come after JIT alloc, otherwise it tends to eat the 4GB region after the executable on MacOS.
   if (!Bus::AllocateMemory(export_shared_memory, error))
@@ -1046,7 +1047,7 @@ void System::LoadSettings(bool display_osd_messages)
   // Global safe mode overrides game settings.
   g_settings.disable_all_enhancements =
     (g_settings.disable_all_enhancements ||
-     Core::GetBaseSettingsLayer()->GetBoolValue("Main", "DisableAllEnhancements", false));
+     Core::GetBaseSettingsLayer()->GetBoolValue(Settings::INTERFACE_SECTION_NAME, "DisableAllEnhancements", false));
 
   // Fix up automatic resolution scale, yuck.
   if (g_settings.gpu_automatic_resolution_scale && IsValid())
@@ -1094,13 +1095,13 @@ const SettingsInterface& System::GetInputSourceSettingsLayer(std::unique_lock<Th
 {
   // Select input profile _or_ game settings, not both.
   if (const SettingsInterface* isi = Core::GetInputSettingsLayer();
-      isi && isi->GetBoolValue("ControllerPorts", "UseProfileInputSources", false))
+      isi && isi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileInputSources", false))
   {
     return *isi;
   }
   else if (const SettingsInterface* gsi = Core::GetGameSettingsLayer();
-           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
-           gsi->GetBoolValue("ControllerPorts", "UseProfileInputSources", false))
+           gsi && gsi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", false) &&
+           gsi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileInputSources", false))
   {
     return *gsi;
   }
@@ -1118,7 +1119,7 @@ const SettingsInterface& System::GetControllerSettingsLayer(std::unique_lock<Thr
     return *isi;
   }
   else if (const SettingsInterface* gsi = Core::GetGameSettingsLayer();
-           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+           gsi && gsi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", false))
   {
     return *gsi;
   }
@@ -1132,13 +1133,13 @@ const SettingsInterface& System::GetHotkeySettingsLayer(std::unique_lock<Threadi
 {
   // Only add input profile layer if the option is enabled.
   if (const SettingsInterface* isi = Core::GetInputSettingsLayer();
-      isi && isi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
+      isi && isi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false))
   {
     return *isi;
   }
   else if (const SettingsInterface* gsi = Core::GetGameSettingsLayer();
-           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
-           gsi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
+           gsi && gsi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseGameSettingsForController", false) &&
+           gsi->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false))
   {
     return *gsi;
   }
@@ -1153,50 +1154,52 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   Settings temp;
   temp.Save(si, false);
 
-  si.SetBoolValue("Main", "StartPaused", false);
-  si.SetBoolValue("Main", "StartFullscreen", false);
-  si.SetBoolValue("Main", "EnableGlobalStates", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "StartPaused", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreen", false);
+  si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "EnableGlobalStates", false);
 
   if (!ignore_user_prefs)
   {
-    si.SetBoolValue("Main", "StartFullscreenUI", false);
-    si.SetBoolValue("Main", "ShowDebugMenu", false);
+    si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreenUI", false);
+    si.SetBoolValue(Settings::INTERFACE_SECTION_NAME, "ShowDebugMenu", false);
   }
 
   Settings::SetDefaultLogConfig(si);
 
-  si.SetBoolValue("CDROM", "IgnoreHostSubcode", false);
-  si.SetBoolValue("CDROM", "AllowBootingWithoutSBIFile", false);
-  si.SetStringValue("GPU", "DumpCompressionMode",
+  si.SetBoolValue(Settings::CDROM_SECTION_NAME, "IgnoreHostSubcode", false);
+  si.SetBoolValue(Settings::CDROM_SECTION_NAME, "AllowBootingWithoutSBIFile", false);
+  si.SetStringValue(Settings::GPU_SECTION_NAME, "DumpCompressionMode",
                     Settings::GetGPUDumpCompressionModeName(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE));
-  si.SetStringValue("GPU", "FullscreenMode", "");
-
+  si.SetStringValue(Settings::GPU_SECTION_NAME, "FullscreenMode", {});
 #ifdef _WIN32
-  si.SetBoolValue("Display", "UseBlitSwapChain", false);
+  si.SetBoolValue(Settings::DISPLAY_SECTION_NAME, "UseBlitSwapChain", false);
 #endif
 
-  si.SetBoolValue(PostProcessing::Config::DISPLAY_CHAIN_SECTION, "Enabled", false);
-  PostProcessing::Config::ClearStages(si, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
-  si.SetBoolValue(PostProcessing::Config::INTERNAL_CHAIN_SECTION, "Enabled", false);
-  PostProcessing::Config::ClearStages(si, PostProcessing::Config::INTERNAL_CHAIN_SECTION);
-  si.ClearSection("BorderOverlay");
+  si.SetBoolValue(PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME, "Enabled", false);
+  PostProcessing::Config::ClearStages(si, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME);
+  si.SetBoolValue(PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME, "Enabled", false);
+  PostProcessing::Config::ClearStages(si, PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME);
+  si.ClearSection(Settings::BORDER_OVERLAY_SECTION_NAME);
 
-  si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
-  si.SetStringValue("MediaCapture", "FilenameFormat",
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "Backend",
+                    MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "FilenameFormat",
                     Settings::GetCaptureFileNameFormatName(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT));
-  si.SetStringValue("MediaCapture", "VideoContainer", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
-  si.SetUIntValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
-  si.SetUIntValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
-  si.SetBoolValue("MediaCapture", "VideoAutoSize", false);
-  si.SetUIntValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE);
-  si.SetStringValue("MediaCapture", "VideoCodec", "");
-  si.SetBoolValue("MediaCapture", "VideoCodecUseArgs", false);
-  si.SetStringValue("MediaCapture", "VideoCodecArgs", "");
-  si.SetStringValue("MediaCapture", "AudioContainer", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
-  si.SetUIntValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
-  si.SetStringValue("MediaCapture", "AudioCodec", "");
-  si.SetBoolValue("MediaCapture", "AudioCodecUseArgs", false);
-  si.SetStringValue("MediaCapture", "AudioCodecArgs", "");
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "VideoContainer",
+                    Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
+  si.SetUIntValue(MediaCapture::CONFIG_SECTION_NAME, "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
+  si.SetUIntValue(MediaCapture::CONFIG_SECTION_NAME, "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
+  si.SetBoolValue(MediaCapture::CONFIG_SECTION_NAME, "VideoAutoSize", false);
+  si.SetUIntValue(MediaCapture::CONFIG_SECTION_NAME, "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE);
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodec", "");
+  si.SetBoolValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodecUseArgs", false);
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodecArgs", "");
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "AudioContainer",
+                    Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
+  si.SetUIntValue(MediaCapture::CONFIG_SECTION_NAME, "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodec", "");
+  si.SetBoolValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodecUseArgs", false);
+  si.SetStringValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodecArgs", "");
 }
 
 void System::ApplySettings(bool display_osd_messages)
@@ -1393,7 +1396,7 @@ bool System::ShouldUseSeparateDiscSettingsForSerial(std::string_view game_serial
   const std::string path = GetGameSettingsPath(game_serial, false);
   INISettingsInterface ini(path);
   ini.Load();
-  return ini.GetBoolValue("Main", "UseSeparateConfigForDiscSet", false);
+  return ini.GetBoolValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet", false);
 }
 
 bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatabase::Entry* dbentry,
@@ -1413,7 +1416,7 @@ bool System::GetGameSettingsInterface(INISettingsInterface* sif, const GameDatab
       // Check for separate disc configuration.
       if (dbentry && !dbentry->IsFirstDiscInSet())
       {
-        if (sif->GetBoolValue("Main", "UseSeparateConfigForDiscSet", false))
+        if (sif->GetBoolValue(Settings::INTERFACE_SECTION_NAME, "UseSeparateConfigForDiscSet", false))
         {
           if (!quiet)
           {
@@ -1498,8 +1501,10 @@ bool System::UpdateGameSettingsLayer(std::unique_lock<Threading::Mutex> lock)
   std::string input_profile_name;
   if (valid)
   {
-    if (!s_state.game_settings_interface.GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
-      input_profile_name = s_state.game_settings_interface.GetStringValue("ControllerPorts", "InputProfileName");
+    if (!s_state.game_settings_interface.GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME,
+                                                      "UseGameSettingsForController", false))
+      input_profile_name =
+        s_state.game_settings_interface.GetStringValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "InputProfileName");
   }
 
   if (!valid && !was_valid && s_state.input_profile_name == input_profile_name)
@@ -1825,7 +1830,7 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   if (!parameters.ignore_missing_subchannel && !CheckForRequiredSubQ(error))
   {
     BootResult result = BootResult::Failure;
-    if (Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
+    if (Core::GetBoolSettingValue(Settings::CDROM_SECTION_NAME, "AllowBootingWithoutSBIFile", false))
     {
       Host::ConfirmMessageAsync(
         "images/warning.svg", "Confirm Unsupported Configuration",
@@ -3458,7 +3463,7 @@ bool System::SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error*
 
 bool System::AreGlobalSaveStatesEnabled()
 {
-  return Core::GetBaseBoolSettingValue("Main", "EnableGlobalStates", false);
+  return Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "EnableGlobalStates", false);
 }
 
 bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
@@ -4179,9 +4184,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
           s_state.running_game_entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
           if (s_state.running_game_entry && s_state.running_game_title.empty())
           {
-            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(
-              Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES,
-                                            GameList::DEFAULT_LOCALIZED_TITLES));
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
+              GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
           }
           else if (s_state.running_game_title.empty())
           {
@@ -4209,9 +4213,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
           if (s_state.running_game_title.empty())
           {
-            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(
-              Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_LOCALIZED_TITLES,
-                                            GameList::DEFAULT_LOCALIZED_TITLES));
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle(Core::GetBaseBoolSettingValue(
+              GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
           }
         }
         else
@@ -4492,12 +4495,12 @@ bool System::SwitchToNextDisc(bool display_osd_message)
 
 bool System::ShouldStartFullscreen()
 {
-  return Core::GetBoolSettingValue("Main", "StartFullscreen", false);
+  return Core::GetBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreen", false);
 }
 
 bool System::ShouldStartPaused()
 {
-  return Core::GetBoolSettingValue("Main", "StartPaused", false);
+  return Core::GetBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartPaused", false);
 }
 
 void System::CheckForSettingsChanges(const Settings& old_settings)
@@ -5581,7 +5584,8 @@ std::string System::GetNewCapturePath(const std::string& directory, const std::s
 std::string System::GetNewMediaCapturePath(const std::string_view title, const std::string_view container)
 {
   const CaptureFileNameFormat format =
-    Settings::ParseCaptureFileNameFormat(Core::GetBaseTinyStringSettingValue("MediaCapture", "FilenameFormat"))
+    Settings::ParseCaptureFileNameFormat(
+      Core::GetBaseTinyStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "FilenameFormat"))
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT);
 
   return GetNewCapturePath(EmuFolders::Videos, title, format, container);
@@ -5589,7 +5593,8 @@ std::string System::GetNewMediaCapturePath(const std::string_view title, const s
 
 MediaCaptureBackend System::GetConfiguredMediaCaptureBackend()
 {
-  return MediaCapture::ParseBackendName(Core::GetStringSettingValue("MediaCapture", "Backend").c_str())
+  return MediaCapture::ParseBackendName(
+           Core::GetStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "Backend").c_str())
     .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
 }
 
@@ -5597,12 +5602,12 @@ std::string System::GetConfiguredMediaCaptureContainerForMode(MediaCaptureMode m
 {
   if (mode == MediaCaptureMode::AudioOnly)
   {
-    return Core::GetStringSettingValue("MediaCapture", "AudioContainer",
+    return Core::GetStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "AudioContainer",
                                        Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
   }
   else
   {
-    return Core::GetStringSettingValue("MediaCapture", "VideoContainer",
+    return Core::GetStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoContainer",
                                        Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
   }
 }
@@ -5664,7 +5669,7 @@ bool System::StartMediaCapture(MediaCaptureMode mode, std::string path)
 {
   // Auto size is more complex.
   const bool capture_video = (mode == MediaCaptureMode::AudioAndVideo || mode == MediaCaptureMode::VideoOnly);
-  if (capture_video && Core::GetBoolSettingValue("MediaCapture", "VideoAutoSize", false))
+  if (capture_video && Core::GetBoolSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoAutoSize", false))
   {
     // need to query this on the GPU thread
     VideoThread::RunOnThread(
@@ -5687,10 +5692,10 @@ bool System::StartMediaCapture(MediaCaptureMode mode, std::string path)
     return true;
   }
 
-  u32 video_width =
-    Core::GetUIntSettingValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
-  u32 video_height =
-    Core::GetUIntSettingValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
+  u32 video_width = Core::GetUIntSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoWidth",
+                                              Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
+  u32 video_height = Core::GetUIntSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoHeight",
+                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
   return StartMediaCapture(mode, std::move(path), video_width, video_height);
@@ -5721,15 +5726,17 @@ bool System::StartMediaCapture(MediaCaptureMode mode, std::string path, u32 vide
   if (!s_state.media_capture ||
       !s_state.media_capture->BeginCapture(
         mode, s_state.video_frame_rate, aspect, video_width, video_height, capture_format, SPU::SAMPLE_RATE,
-        std::move(path), Core::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
-        Core::GetUIntSettingValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
-        Core::GetBoolSettingValue("MediaCapture", "VideoCodecUseArgs", false) ?
-          Core::GetStringSettingValue("MediaCapture", "VideoCodecArgs") :
+        std::move(path), Core::GetSmallStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodec"),
+        Core::GetUIntSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoBitrate",
+                                  Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
+        Core::GetBoolSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodecUseArgs", false) ?
+          Core::GetStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "VideoCodecArgs") :
           std::string(),
-        Core::GetSmallStringSettingValue("MediaCapture", "AudioCodec"),
-        Core::GetUIntSettingValue("MediaCapture", "AudioBitrate", Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
-        Core::GetBoolSettingValue("MediaCapture", "AudioCodecUseArgs", false) ?
-          Core::GetStringSettingValue("MediaCapture", "AudioCodecArgs") :
+        Core::GetSmallStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodec"),
+        Core::GetUIntSettingValue(MediaCapture::CONFIG_SECTION_NAME, "AudioBitrate",
+                                  Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE),
+        Core::GetBoolSettingValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodecUseArgs", false) ?
+          Core::GetStringSettingValue(MediaCapture::CONFIG_SECTION_NAME, "AudioCodecArgs") :
           std::string(),
         &error))
   {
@@ -5902,7 +5909,7 @@ void System::DeleteSaveStates(std::string_view serial, bool resume)
 std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::string_view serial, std::string_view path,
                                           u32 slot, MemoryCardType* out_type /* = nullptr */)
 {
-  const char* section = "MemoryCards";
+  const char* section = Settings::MEMORY_CARDS_SECTION_NAME;
   const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
   const MemoryCardType default_type =
     (slot == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
@@ -6140,7 +6147,7 @@ void System::ToggleWidescreen()
   g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
 
   const DisplayAspectRatio user_ratio =
-    Settings::ParseDisplayAspectRatio(Core::GetStringSettingValue("Display", "AspectRatio"))
+    Settings::ParseDisplayAspectRatio(Core::GetStringSettingValue(Settings::DISPLAY_SECTION_NAME, "AspectRatio"))
       .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
 
   if (user_ratio == DisplayAspectRatio::Auto() || user_ratio == DisplayAspectRatio::PAR1_1() ||
@@ -6222,7 +6229,8 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
 
 DisplayAspectRatio System::GetConfigurationAspectRatio()
 {
-  return Settings::ParseDisplayAspectRatio(Core::GetTinyStringSettingValue("Display", "AspectRatio"))
+  return Settings::ParseDisplayAspectRatio(
+           Core::GetTinyStringSettingValue(Settings::DISPLAY_SECTION_NAME, "AspectRatio"))
     .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
 }
 

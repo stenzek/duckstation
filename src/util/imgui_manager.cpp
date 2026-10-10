@@ -296,7 +296,8 @@ const char* ImGuiManager::GetDefaultTextFontName()
 
 u32 ImGuiManager::GetTextFontIndex()
 {
-  const TinyString name = Core::GetBaseTinyStringSettingValue("Main", "ImGuiTextFont", DEFAULT_TEXT_FONT_NAME);
+  const TinyString name =
+    Core::GetBaseTinyStringSettingValue(Settings::INTERFACE_SECTION_NAME, "ImGuiTextFont", DEFAULT_TEXT_FONT_NAME);
 
   // must be a valid name
   const auto it = std::ranges::find_if(TEXT_FONT_NAMES, [&name](const char* n) { return (name == n); });
@@ -343,7 +344,8 @@ const char* ImGuiManager::GetDefaultFixedFontName()
 
 u32 ImGuiManager::GetFixedFontIndex()
 {
-  const TinyString name = Core::GetBaseTinyStringSettingValue("Main", "ImGuiFixedFont", DEFAULT_FIXED_FONT_NAME);
+  const TinyString name =
+    Core::GetBaseTinyStringSettingValue(Settings::INTERFACE_SECTION_NAME, "ImGuiFixedFont", DEFAULT_FIXED_FONT_NAME);
 
   // must be a valid name
   const auto it = std::ranges::find_if(FIXED_FONT_NAMES, [&name](const char* n) { return (name == n); });

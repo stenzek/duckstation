@@ -114,8 +114,9 @@ bool GameListSearchDirectoriesModel::setData(const QModelIndex& index, const QVa
 
 void GameListSearchDirectoriesModel::reload()
 {
-  std::vector<std::string> paths = Core::GetBaseStringListSetting("GameList", "Paths");
-  std::vector<std::string> recursive_paths = Core::GetBaseStringListSetting("GameList", "RecursivePaths");
+  std::vector<std::string> paths = Core::GetBaseStringListSetting(GameList::CONFIG_SECTION_NAME, "Paths");
+  std::vector<std::string> recursive_paths =
+    Core::GetBaseStringListSetting(GameList::CONFIG_SECTION_NAME, "RecursivePaths");
 
   beginResetModel();
   m_rows.clear();
@@ -197,8 +198,8 @@ void GameListSearchDirectoriesModel::save()
   for (const Row& row : m_rows)
     (row.recursive ? recursive_paths : paths).push_back(row.path);
 
-  Core::SetBaseStringListSettingValue("GameList", "Paths", paths);
-  Core::SetBaseStringListSettingValue("GameList", "RecursivePaths", recursive_paths);
+  Core::SetBaseStringListSettingValue(GameList::CONFIG_SECTION_NAME, "Paths", paths);
+  Core::SetBaseStringListSettingValue(GameList::CONFIG_SECTION_NAME, "RecursivePaths", recursive_paths);
   Host::CommitBaseSettingChanges();
   emit settingsChanged();
 }
@@ -241,7 +242,8 @@ GameListSettingsWidget::~GameListSettingsWidget() = default;
 
 bool GameListSettingsWidget::addExcludedPath(const QString& path)
 {
-  if (!Core::AddValueToBaseStringListSetting("GameList", "ExcludedPaths", path.toStdString().c_str()))
+  if (!Core::AddValueToBaseStringListSetting(GameList::CONFIG_SECTION_NAME, "ExcludedPaths",
+                                             path.toStdString().c_str()))
     return false;
 
   Host::CommitBaseSettingChanges();
@@ -258,7 +260,7 @@ void GameListSettingsWidget::refreshExclusionList()
 {
   m_ui.excludedPaths->clear();
 
-  const std::vector<std::string> paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  const std::vector<std::string> paths(Core::GetBaseStringListSetting(GameList::CONFIG_SECTION_NAME, "ExcludedPaths"));
   for (const std::string& path : paths)
   {
     QListWidgetItem* const it = new QListWidgetItem(QString::fromStdString(path));
@@ -365,8 +367,8 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
   bool changed = false;
   for (QListWidgetItem* const item : items)
   {
-    changed |=
-      Core::RemoveValueFromBaseStringListSetting("GameList", "ExcludedPaths", item->text().toUtf8().constData());
+    changed |= Core::RemoveValueFromBaseStringListSetting(GameList::CONFIG_SECTION_NAME, "ExcludedPaths",
+                                                          item->text().toUtf8().constData());
     delete item;
   }
 

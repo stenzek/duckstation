@@ -3,6 +3,7 @@
 
 #include "setupwizarddialog.h"
 #include "achievementlogindialog.h"
+#include "autoupdaterdialog.h"
 #include "biossettingswidget.h"
 #include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
@@ -201,8 +202,8 @@ void SetupWizardDialog::setupLanguagePage(bool initial)
 
   if (initial)
   {
-    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup",
-                                                 true);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.autoUpdateEnabled,
+                                                 AutoUpdaterDialog::CONFIG_SECTION_NAME, "CheckAtStartup", true);
   }
 }
 
@@ -223,8 +224,8 @@ void SetupWizardDialog::setupBIOSPage()
 {
   SettingWidgetBinder::BindWidgetToFolderSetting(nullptr, m_ui.biosSearchDirectory, m_ui.browseBiosSearchDirectory,
                                                  tr("Select BIOS Directory"), m_ui.openBiosSearchDirectory,
-                                                 m_ui.resetBiosSearchDirectory, "BIOS", "SearchDirectory",
-                                                 Path::Combine(EmuFolders::DataRoot, "bios"));
+                                                 m_ui.resetBiosSearchDirectory, Settings::BIOS_SECTION_NAME,
+                                                 "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
 
   refreshBIOSList();
 
@@ -243,9 +244,12 @@ void SetupWizardDialog::refreshBIOSList()
   BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion::NTSC_J, m_ui.imageNTSCJ, list, false);
   BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, list, false);
 
-  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCU, Core::GetBaseStringSettingValue("BIOS", "PathNTSCU"), false);
-  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCJ, Core::GetBaseStringSettingValue("BIOS", "PathNTSCJ"), false);
-  BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL, Core::GetBaseStringSettingValue("BIOS", "PathPAL"), false);
+  BIOSSettingsWidget::setDropDownValue(
+    m_ui.imageNTSCU, Core::GetBaseStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCU"), false);
+  BIOSSettingsWidget::setDropDownValue(
+    m_ui.imageNTSCJ, Core::GetBaseStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCJ"), false);
+  BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL,
+                                       Core::GetBaseStringSettingValue(Settings::BIOS_SECTION_NAME, "PathPAL"), false);
 
   updateBIOSSummary();
 }
@@ -404,8 +408,8 @@ void SetupWizardDialog::setupControllerPage(bool initial)
       w.type_combo->blockSignals(false);
   }
 
-  m_ui.pauseMenuHotkey->initialize(nullptr, InputBindingInfo::Type::Button, "Hotkeys", "OpenPauseMenu",
-                                   tr("Open Pause Menu"));
+  m_ui.pauseMenuHotkey->initialize(nullptr, InputBindingInfo::Type::Button, Settings::HOTKEYS_SECTION_NAME,
+                                   "OpenPauseMenu", tr("Open Pause Menu"));
 }
 
 void SetupWizardDialog::updateStylesheets()
@@ -496,7 +500,8 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
   m_ui.resolutionScale->clear();
   GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale);
-  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, Settings::GPU_SECTION_NAME,
+                                              "ResolutionScale", 1);
   connect(m_ui.resolutionScale, &QComboBox::currentIndexChanged, this,
           &SetupWizardDialog::updateResolutionScaleWarning);
 
@@ -505,22 +510,22 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.spriteTextureFiltering);
   m_ui.spriteTextureFiltering->clear();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.textureFiltering, "GPU", "TextureFilter",
-                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               &Settings::GetTextureFilterDisplayName,
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.textureFiltering, Settings::GPU_SECTION_NAME,
+                                               "TextureFilter", &Settings::ParseTextureFilterName,
+                                               &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
-                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               &Settings::GetTextureFilterDisplayName,
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.spriteTextureFiltering, Settings::GPU_SECTION_NAME,
+                                               "SpriteTextureFilter", &Settings::ParseTextureFilterName,
+                                               &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.gpuDitheringMode);
   m_ui.gpuDitheringMode->clear();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
-                                               &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
-                                               &Settings::GetGPUDitheringModeDisplayName,
-                                               Settings::DEFAULT_GPU_DITHERING_MODE, GPUDitheringMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    nullptr, m_ui.gpuDitheringMode, Settings::GPU_SECTION_NAME, "DitheringMode", &Settings::ParseGPUDitheringModeName,
+    &Settings::GetGPUDitheringModeName, &Settings::GetGPUDitheringModeDisplayName, Settings::DEFAULT_GPU_DITHERING_MODE,
+    GPUDitheringMode::MaxCount);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayAspectRatio);
   m_ui.displayAspectRatio->clear();
@@ -532,30 +537,32 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.displayCropMode);
   m_ui.displayCropMode->clear();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayCropMode, "Display", "CropMode",
-                                               &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
-                                               &Settings::GetDisplayCropModeDisplayName,
-                                               Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    nullptr, m_ui.displayCropMode, Settings::DISPLAY_SECTION_NAME, "CropMode", &Settings::ParseDisplayCropMode,
+    &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, Settings::DEFAULT_DISPLAY_CROP_MODE,
+    DisplayCropMode::MaxCount);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayScaling);
   m_ui.displayScaling->clear();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling, "Display", "Scaling",
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling, Settings::DISPLAY_SECTION_NAME, "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                &Settings::GetDisplayScalingDisplayName,
                                                Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayScaling24Bit);
   m_ui.displayScaling24Bit->clear();
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling24Bit, "Display", "Scaling24Bit",
-                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
-                                               &Settings::GetDisplayScalingDisplayName,
-                                               Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    nullptr, m_ui.displayScaling24Bit, Settings::DISPLAY_SECTION_NAME, "Scaling24Bit", &Settings::ParseDisplayScaling,
+    &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, Settings::DEFAULT_DISPLAY_SCALING,
+    DisplayScalingMode::Count);
 
   if (initial)
   {
-    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
-    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, Settings::GPU_SECTION_NAME, "PGXPEnable",
+                                                 false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.widescreenHack, Settings::GPU_SECTION_NAME,
+                                                 "WidescreenHack", false);
     connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &SetupWizardDialog::updateResolutionScaleWarning);
   }
 
@@ -578,8 +585,10 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
     title_font.setPixelSize(20);
     m_ui.achievementsTitleLabel->setFont(title_font);
 
-    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enable, "Cheevos", "Enabled", false);
-    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enable, Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled",
+                                                 false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.hardcoreMode, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                                 "ChallengeMode", false);
     connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &SetupWizardDialog::updateAchievementsEnableState);
     connect(m_ui.achievementsLoginButton, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsLoginPressed);
     connect(m_ui.achievementsLogoutButton, &QPushButton::clicked, this,
@@ -596,7 +605,7 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
 
 void SetupWizardDialog::updateAchievementsEnableState()
 {
-  const bool enabled = Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false);
+  const bool enabled = Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false);
   m_ui.hardcoreMode->setEnabled(enabled);
 }
 
@@ -615,7 +624,7 @@ void SetupWizardDialog::updateAchievementsLoginState()
     }
     else
     {
-      username = Core::GetBaseStringSettingValue("Cheevos", "Username");
+      username = Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
     }
   }
 
@@ -624,7 +633,9 @@ void SetupWizardDialog::updateAchievementsLoginState()
   if (logged_in)
   {
     const u64 login_unix_timestamp =
-      StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
+      StringUtil::FromChars<u64>(
+        Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp", "0"))
+        .value_or(0);
     const TinyString login_timestamp =
       Host::FormatRelativeDateTime(static_cast<std::time_t>(login_unix_timestamp), false, false);
     m_ui.achievementsLoginStatus->setText(tr("Logged in as %1\nToken generated %2")
@@ -655,7 +666,7 @@ void SetupWizardDialog::onAchievementsLoginPressed()
 
 void SetupWizardDialog::onAchievementsLogoutPressed()
 {
-  if (Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
+  if (Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username").empty())
     return;
 
   Host::RunOnCoreThread([widget = QPointer(this)]() mutable {
@@ -672,12 +683,13 @@ void SetupWizardDialog::onAchievementsLoginCompleted()
   updateAchievementsLoginState();
 
   // Login can enable achievements/hardcore.
-  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false))
   {
     m_ui.enable->setChecked(true);
     updateAchievementsEnableState();
   }
-  if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  if (!m_ui.hardcoreMode->isChecked() &&
+      Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
 }
 
@@ -688,7 +700,7 @@ void SetupWizardDialog::onAchievementsRegisterUserPressed()
 
 void SetupWizardDialog::onAchievementsViewProfilePressed()
 {
-  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username"));
   if (username.empty())
     return;
 
@@ -697,7 +709,7 @@ void SetupWizardDialog::onAchievementsViewProfilePressed()
 
 void SetupWizardDialog::setupGameListViewPage()
 {
-  const bool use_grid = Core::GetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_GRID_VIEW,
+  const bool use_grid = Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_GRID_VIEW,
                                                       GameList::DEFAULT_GRID_VIEW);
   m_ui.listView->setChecked(!use_grid);
   m_ui.gridView->setChecked(use_grid);
@@ -720,16 +732,16 @@ void SetupWizardDialog::onGridViewChanged(bool checked)
     return;
 
   // NOTE: No settings apply here, we explicitly change the layout.
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_GRID_VIEW, setting_value);
-  Core::SetBaseBoolSettingValue(GameList::UI_SETTING_SECTION, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                setting_value);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_GRID_VIEW, setting_value);
+  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW, setting_value);
   Host::CommitBaseSettingChanges();
   g_main_window->getGameListWidget()->reloadViewModeFromSettings();
 }
 
 void SetupWizardDialog::setupInterfacePage()
 {
-  const bool use_big_picture = Core::GetBaseBoolSettingValue("Main", "StartFullscreenUI", false);
+  const bool use_big_picture =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreenUI", false);
   m_ui.desktopMode->setChecked(!use_big_picture);
   m_ui.bigPictureMode->setChecked(use_big_picture);
 
@@ -751,6 +763,6 @@ void SetupWizardDialog::onStartFullscreenUIChanged(bool checked)
     return;
 
   // NOTE: No settings apply here, this is queried after the wizard completes.
-  Core::SetBaseBoolSettingValue("Main", "StartFullscreenUI", setting_value);
+  Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "StartFullscreenUI", setting_value);
   Host::CommitBaseSettingChanges();
 }

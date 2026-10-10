@@ -21,6 +21,8 @@ class AutoUpdaterDialog final : public QDialog
   Q_OBJECT
 
 public:
+  static const char* const CONFIG_SECTION_NAME;
+
   AutoUpdaterDialog(QWidget* const parent);
   ~AutoUpdaterDialog();
 

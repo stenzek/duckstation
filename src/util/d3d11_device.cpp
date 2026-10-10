@@ -7,6 +7,7 @@
 #include "d3d_common.h"
 
 #include "core/core.h"
+#include "core/settings.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -283,7 +284,7 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
   }
 
   m_using_flip_model_swap_chain =
-    !Core::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
+    !Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "UseBlitSwapChain", false) || IsExclusiveFullscreen();
 
   IDXGIFactory5* const dxgi_factory = D3D11Device::GetDXGIFactory();
   ID3D11Device1* const d3d_device = D3D11Device::GetD3DDevice();

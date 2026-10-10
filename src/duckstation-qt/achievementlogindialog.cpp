@@ -108,7 +108,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 
 void AchievementLoginDialog::askToEnableAchievementsAndAccept()
 {
-  if (Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  if (Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false))
   {
     askToEnableHardcoreModeAndAccept();
     return;
@@ -120,7 +120,7 @@ void AchievementLoginDialog::askToEnableAchievementsAndAccept()
                               "after tracking is enabled.\n\nDo you want to enable tracking now?"),
                            QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
-    Core::SetBaseBoolSettingValue("Cheevos", "Enabled", true);
+    Core::SetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", true);
     Host::CommitBaseSettingChanges();
     g_core_thread->applySettings();
     askToEnableHardcoreModeAndAccept();
@@ -131,7 +131,7 @@ void AchievementLoginDialog::askToEnableAchievementsAndAccept()
 
 void AchievementLoginDialog::askToEnableHardcoreModeAndAccept()
 {
-  if (Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  if (Core::GetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false))
   {
     askToResetGameAndAccept();
     return;
@@ -144,7 +144,7 @@ void AchievementLoginDialog::askToEnableHardcoreModeAndAccept()
        "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
-    Core::SetBaseBoolSettingValue("Cheevos", "ChallengeMode", true);
+    Core::SetBaseBoolSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", true);
     Host::CommitBaseSettingChanges();
     g_core_thread->applySettings();
     askToResetGameAndAccept();

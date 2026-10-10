@@ -667,17 +667,22 @@ void FullscreenUI::ShutdownWidgets()
 
 void FullscreenUI::UpdateWidgetsSettings()
 {
-  UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
-  UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
-  UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
-  UIStyle.BlurMenuBackground = Core::GetBaseBoolSettingValue("Main", "FullscreenUIBlurMenuBackground", true);
-  UIStyle.SoundEffects = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
+  UIStyle.Animations = Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIAnimations", true);
+  UIStyle.SmoothScrolling =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUISmoothScrolling", true);
+  UIStyle.MenuBorders =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIMenuBorders", false);
+  UIStyle.BlurMenuBackground =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIBlurMenuBackground", true);
+  UIStyle.SoundEffects =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUISoundEffects", true);
 
-  const bool swap_face_buttons = Core::GetBaseBoolSettingValue("Main", "FullscreenUISwapGamepadFaceButtons", false);
+  const bool swap_face_buttons =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUISwapGamepadFaceButtons", false);
 
   bool display_ps_icons = false;
   const TinyString gamepad_button_type =
-    Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIGamepadButtonType", "Automatic");
+    Core::GetBaseTinyStringSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIGamepadButtonType", "Automatic");
   if (gamepad_button_type == "Automatic")
     display_ps_icons = (InputManager::GetLastGamepadButtonType() == InputManager::GamepadButtonType::PlayStation);
   else if (gamepad_button_type == "PlayStation")
@@ -8310,8 +8315,8 @@ std::vector<std::string_view> FullscreenUI::GetLocalizedThemeDisplayNames()
 
 void FullscreenUI::UpdateTheme()
 {
-  TinyString theme =
-    Core::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
+  TinyString theme = Core::GetBaseTinyStringSettingValue(Settings::UI_SECTION_NAME, "FullscreenUITheme",
+                                                         Host::GetDefaultFullscreenUITheme());
   if (theme.empty())
     theme = Host::GetDefaultFullscreenUITheme();
 

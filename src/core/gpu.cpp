@@ -3996,7 +3996,8 @@ void GPU::StopRecordingGPUDump()
 
   // Are we compressing the dump?
   const GPUDumpCompressionMode compress_mode =
-    Settings::ParseGPUDumpCompressionMode(Core::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
+    Settings::ParseGPUDumpCompressionMode(
+      Core::GetTinyStringSettingValue(Settings::GPU_SECTION_NAME, "DumpCompressionMode"))
       .value_or(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE);
   std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(s_locals.gpu_dump->GetPath()));
   if (compress_mode == GPUDumpCompressionMode::Disabled)

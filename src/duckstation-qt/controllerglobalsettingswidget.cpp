@@ -34,14 +34,18 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   if (sif)
   {
     // Editing game profile or input profile.
-    m_ui.useProfileHotkeyBindings->setChecked(sif->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false));
+    m_ui.useProfileHotkeyBindings->setChecked(
+      sif->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings", false));
     connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
-      m_dialog->setBoolValue("ControllerPorts", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
+      m_dialog->setBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileHotkeyBindings",
+                             (new_state == Qt::Checked));
       emit bindingSetupChanged();
     });
-    m_ui.useProfileInputSources->setChecked(sif->GetBoolValue("ControllerPorts", "UseProfileInputSources", false));
+    m_ui.useProfileInputSources->setChecked(
+      sif->GetBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileInputSources", false));
     connect(m_ui.useProfileInputSources, &QCheckBox::checkStateChanged, this, [this](int new_state) {
-      m_dialog->setBoolValue("ControllerPorts", "UseProfileInputSources", (new_state == Qt::Checked));
+      m_dialog->setBoolValue(Settings::CONTROLLER_PORTS_SECTION_NAME, "UseProfileInputSources",
+                             (new_state == Qt::Checked));
       emit bindingSetupChanged();
     });
     remove_sources = !m_ui.useProfileInputSources->isChecked();
@@ -59,25 +63,27 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   if (!remove_sources)
   {
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource,
+                                                                InputManager::SOURCES_CONFIG_SECTION, "SDL", true);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.useSDLPersistentDeviceIdentifiers,
+                                                                InputManager::SOURCES_CONFIG_SECTION,
+                                                                "SDLUsePersistentDeviceIdentifiers", true);
     ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(
-      sif, m_ui.useSDLPersistentDeviceIdentifiers, "InputSources", "SDLUsePersistentDeviceIdentifiers", true);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
-                                                                "SDLControllerEnhancedMode", false);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableTouchPadAsPointer, "InputSources",
-                                                                "SDLTouchpadAsPointer", false);
+      sif, m_ui.enableSDLEnhancedMode, InputManager::SOURCES_CONFIG_SECTION, "SDLControllerEnhancedMode", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(
+      sif, m_ui.enableTouchPadAsPointer, InputManager::SOURCES_CONFIG_SECTION, "SDLTouchpadAsPointer", false);
     connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
             &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
     connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
     connect(m_ui.sdlHelpText, &QLabel::linkActivated, this, &ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked);
 
 #ifdef _WIN32
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput",
-                                                                false);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput",
-                                                                false);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput",
-                                                                false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource,
+                                                                InputManager::SOURCES_CONFIG_SECTION, "DInput", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource,
+                                                                InputManager::SOURCES_CONFIG_SECTION, "XInput", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(
+      sif, m_ui.enableRawInput, InputManager::SOURCES_CONFIG_SECTION, "RawInput", false);
 #else
     m_ui.groupsLayout->removeWidget(m_ui.xinputGroup);
     QtUtils::SafeDeleteWidget(m_ui.xinputGroup);
@@ -95,10 +101,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     QtUtils::SafeDeleteWidget(m_ui.rawInputDescription);
 #endif
 
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXScale, "ControllerPorts",
-                                                                 "PointerXScale", 8.0f);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYScale, "ControllerPorts",
-                                                                 "PointerYScale", 8.0f);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(
+      sif, m_ui.pointerXScale, Settings::CONTROLLER_PORTS_SECTION_NAME, "PointerXScale", 8.0f);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(
+      sif, m_ui.pointerYScale, Settings::CONTROLLER_PORTS_SECTION_NAME, "PointerYScale", 8.0f);
 
     connect(m_ui.pointerXScale, &QSlider::valueChanged, this,
             [this](int value) { m_ui.pointerXScaleLabel->setText(QStringLiteral("%1").arg(value)); });
@@ -148,10 +154,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   // Mapping options are only shown in global settings.
   if (m_dialog->isEditingGlobalSettings())
   {
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI",
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, Settings::UI_SECTION_NAME,
                                                                 "EnableMouseMapping", false);
-    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSensorMapping, "UI",
-                                                                "EnableSensorMapping", false);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(
+      sif, m_ui.enableSensorMapping, Settings::UI_SECTION_NAME, "EnableSensorMapping", false);
   }
   else
   {
@@ -165,7 +171,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   m_ui.deviceList->setModel(g_core_thread->getInputDeviceListModel());
 
   ControllerSettingWidgetBinder::BindWidgetToInputProfileEnumSetting(
-    sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode", &Settings::ParseMultitapModeName,
+    sif, m_ui.multitapMode, Settings::CONTROLLER_PORTS_SECTION_NAME, "MultitapMode", &Settings::ParseMultitapModeName,
     &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, Settings::DEFAULT_MULTITAP_MODE,
     MultitapMode::Count);
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() {
@@ -180,9 +186,9 @@ void ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked(const QString& link)
 {
   if (link == "ADVANCED_SDL_OPTIONS"_L1)
   {
-    QDialog* const dlg = new ControllerCustomSettingsDialog(m_dialog, m_dialog->getEditingSettingsInterface(),
-                                                            "InputSources", SDLInputSource::GetAdvancedSettingsInfo(),
-                                                            "SDLInputSource", tr("Advanced SDL Options"));
+    QDialog* const dlg = new ControllerCustomSettingsDialog(
+      m_dialog, m_dialog->getEditingSettingsInterface(), InputManager::SOURCES_CONFIG_SECTION,
+      SDLInputSource::GetAdvancedSettingsInfo(), "SDLInputSource", tr("Advanced SDL Options"));
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->open();
   }
@@ -259,13 +265,14 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
                              static_cast<int>(active), 0);
 
       ColorPickerButton* const button = new ColorPickerButton(gbox);
-      button->setColor(SDLInputSource::ParseRGBForPlayerId(
-        m_dialog->getStringValue("SDLExtra", config_key(dev.key.source_index, active != 0), ""), dev.key.source_index,
-        active != 0));
+      button->setColor(
+        SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue(SDLInputSource::EXTRA_CONFIG_SECTION,
+                                                                     config_key(dev.key.source_index, active != 0), ""),
+                                            dev.key.source_index, active != 0));
       gbox_layout->addWidget(button, static_cast<int>(active), 1);
       connect(button, &ColorPickerButton::colorChanged, this,
               [this, player_id = dev.key.source_index, active](u32 new_rgb) {
-                m_dialog->setStringValue("SDLExtra", config_key(player_id, active),
+                m_dialog->setStringValue(SDLInputSource::EXTRA_CONFIG_SECTION, config_key(player_id, active),
                                          TinyString::from_format("{:06X}", new_rgb));
               });
     }
@@ -277,7 +284,8 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
   QCheckBox* const player_led = new QCheckBox(tr("Enable DualSense Player LED"), dlg);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(m_dialog->getEditingSettingsInterface(), player_led,
-                                                              "InputSources", "SDLPS5PlayerLED", false);
+                                                              InputManager::SOURCES_CONFIG_SECTION, "SDLPS5PlayerLED",
+                                                              false);
   player_led->setToolTip(tr("Enables the player LED on DualSense controllers."));
   main_layout->addWidget(player_led);
 

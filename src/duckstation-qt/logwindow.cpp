@@ -309,8 +309,9 @@ LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings(bool defer_show)
 {
-  const bool new_enabled = Core::GetBoolSettingValue("Logging", "LogToWindow", false);
-  const bool attach_to_main = Core::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
+  const bool new_enabled = Core::GetBoolSettingValue(Settings::LOGGING_SECTION_NAME, "LogToWindow", false);
+  const bool attach_to_main =
+    Core::GetBoolSettingValue(Settings::LOGGING_SECTION_NAME, "AttachLogWindowToMainWindow", true);
   const bool curr_enabled = (g_log_window != nullptr);
   if (new_enabled == curr_enabled)
   {
@@ -424,25 +425,26 @@ void LogWindow::createUi()
 
   action = settings_menu->addAction(tr("Log To &System Console"));
   action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToConsole", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToConsole", false);
 
   action = settings_menu->addAction(tr("Log To &Debug Console"));
   action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToDebug", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToDebug", false);
 
   action = settings_menu->addAction(tr("Log To &File"));
   action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToFile", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToFile", false);
 
   settings_menu->addSeparator();
 
   action = settings_menu->addAction(tr("Attach To &Main Window"));
   action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "AttachLogWindowToMainWindow", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME,
+                                               "AttachLogWindowToMainWindow", true);
 
   action = settings_menu->addAction(tr("Show &Timestamps"));
   action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogTimestamps", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogTimestamps", true);
 
   settings_menu->addSeparator();
 
@@ -467,7 +469,7 @@ void LogWindow::createUi()
 void LogWindow::updateLogLevelUi()
 {
   const Log::Level level =
-    Settings::ParseLogLevelName(Core::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
+    Settings::ParseLogLevelName(Core::GetBaseStringSettingValue(Settings::LOGGING_SECTION_NAME, "LogLevel", "").c_str())
       .value_or(Log::DEFAULT_LOG_LEVEL);
 
   const QList<QAction*> actions = m_level_menu->actions();
@@ -477,7 +479,7 @@ void LogWindow::updateLogLevelUi()
 
 void LogWindow::setLogLevel(Log::Level level)
 {
-  Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
+  Core::SetBaseStringSettingValue(Settings::LOGGING_SECTION_NAME, "LogLevel", Settings::GetLogLevelName(level));
   Host::CommitBaseSettingChanges();
   g_core_thread->applySettings(false);
 }
@@ -486,9 +488,9 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
 {
   for (const char* channel_name : Log::GetChannelNames())
   {
-    const bool enabled = Core::GetBaseBoolSettingValue("Logging", channel_name, true);
+    const bool enabled = Core::GetBaseBoolSettingValue(Settings::LOGGING_SECTION_NAME, channel_name, true);
     QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
-      Core::SetBaseBoolSettingValue("Logging", channel_name, checked);
+      Core::SetBaseBoolSettingValue(Settings::LOGGING_SECTION_NAME, channel_name, checked);
       Host::CommitBaseSettingChanges();
       g_core_thread->applySettings(false);
     });
@@ -533,19 +535,19 @@ void LogWindow::closeEvent(QCloseEvent* event)
 
 void LogWindow::saveSize()
 {
-  const int current_width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int current_height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int current_width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", DEFAULT_WIDTH);
+  const int current_height = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", DEFAULT_HEIGHT);
   const QSize wsize = size();
 
   bool changed = false;
   if (current_width != wsize.width())
   {
-    Core::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
+    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", wsize.width());
     changed = true;
   }
   if (current_height != wsize.height())
   {
-    Core::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
+    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", wsize.height());
     changed = true;
   }
 
@@ -555,7 +557,7 @@ void LogWindow::saveSize()
 
 void LogWindow::restoreSize()
 {
-  const int width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", DEFAULT_WIDTH);
+  const int height = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", DEFAULT_HEIGHT);
   resize(width, height);
 }

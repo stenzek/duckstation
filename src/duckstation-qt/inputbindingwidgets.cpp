@@ -55,12 +55,13 @@ InputBindingWidget::~InputBindingWidget()
 
 bool InputBindingWidget::isMouseMappingEnabled()
 {
-  return Core::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false) && !InputManager::IsUsingRawInput();
+  return Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableMouseMapping", false) &&
+         !InputManager::IsUsingRawInput();
 }
 
 bool InputBindingWidget::isSensorMappingEnabled()
 {
-  return Core::GetBaseBoolSettingValue("UI", "EnableSensorMapping", false);
+  return Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableSensorMapping", false);
 }
 
 bool InputBindingWidget::isSensorBinding(InputBindingKey key)

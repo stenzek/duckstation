@@ -11,6 +11,7 @@
 #include "unzip.h"
 
 #include "core/core.h"
+#include "core/settings.h"
 
 #include "util/http_downloader.h"
 #include "util/translation.h"
@@ -112,6 +113,8 @@ static constexpr const std::pair<const char*, const char*> s_update_channels[] =
 
 LOG_CHANNEL(Host);
 
+const char* const AutoUpdaterDialog::CONFIG_SECTION_NAME = "AutoUpdater";
+
 AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
@@ -156,13 +159,12 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   //
 
 #if !__has_include("scmversion/tag.h") || !UPDATER_RELEASE_IS_OFFICIAL
-  constexpr const char* CONFIG_SECTION = "UI";
   constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
   if (
 #if !defined(_WIN32) && !defined(__APPLE__)
     EmuFolders::AppRoot.starts_with("/home") && // Devbuilds should be in home directory.
 #endif
-    Core::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+    Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, CONFIG_KEY, false))
   {
     return;
   }
@@ -247,7 +249,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   }
 
   if (cb->isChecked())
-    Core::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+    Core::SetBaseBoolSettingValue(Settings::UI_SECTION_NAME, CONFIG_KEY, true);
 #endif
 }
 
@@ -278,7 +280,7 @@ QString AutoUpdaterDialog::getTagDisplayName(const std::string_view tag)
 
 std::string AutoUpdaterDialog::getCurrentUpdateTag()
 {
-  return Core::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
+  return Core::GetBaseStringSettingValue(AutoUpdaterDialog::CONFIG_SECTION_NAME, "UpdateTag", UPDATER_RELEASE_CHANNEL);
 }
 
 void AutoUpdaterDialog::setDownloadSectionVisibility(bool visible)
@@ -331,7 +333,7 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_errors, bool ignore_skippe
   if (ignore_skipped_updates)
   {
     // Wipe out the last version, that way it displays the update if we've previously skipped it.
-    Core::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
+    Core::DeleteBaseSettingValue(AutoUpdaterDialog::CONFIG_SECTION_NAME, "LastVersion");
     Host::CommitBaseSettingChanges();
   }
 
@@ -638,7 +640,8 @@ void AutoUpdaterDialog::downloadUpdateComplete(s32 status_code, const std::strin
 
 bool AutoUpdaterDialog::updateNeeded() const
 {
-  QString last_checked_sha = QString::fromStdString(Core::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
+  QString last_checked_sha =
+    QString::fromStdString(Core::GetBaseStringSettingValue(AutoUpdaterDialog::CONFIG_SECTION_NAME, "LastVersion"));
 
   INFO_LOG("Current SHA: {}", g_scm_hash_str);
   INFO_LOG("Latest SHA: {}", m_latest_sha.toUtf8().constData());
@@ -655,7 +658,8 @@ bool AutoUpdaterDialog::updateNeeded() const
 
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
-  Core::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
+  Core::SetBaseStringSettingValue(AutoUpdaterDialog::CONFIG_SECTION_NAME, "LastVersion",
+                                  m_latest_sha.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   close();
 }
@@ -1033,9 +1037,8 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   }
 
   // Launch from outside the AppImage after this process has exited.
-  static constexpr char relaunch_script[] =
-    "while kill -0 \"$1\" 2>/dev/null; do sleep 0.1; done\n"
-    "exec \"$2\" -updatecleanup\n";
+  static constexpr char relaunch_script[] = "while kill -0 \"$1\" 2>/dev/null; do sleep 0.1; done\n"
+                                            "exec \"$2\" -updatecleanup\n";
 
   posix_spawn_file_actions_t file_actions;
   int spawn_error = posix_spawn_file_actions_init(&file_actions);
@@ -1056,9 +1059,13 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
     if (spawn_error == 0)
     {
       const std::string parent_pid = fmt::format("{}", QCoreApplication::applicationPid());
-      char* const arguments[] = {const_cast<char*>("sh"), const_cast<char*>("-c"),
-                                 const_cast<char*>(relaunch_script), const_cast<char*>("--"),
-                                 const_cast<char*>(parent_pid.c_str()), const_cast<char*>(appimage_path), nullptr};
+      char* const arguments[] = {const_cast<char*>("sh"),
+                                 const_cast<char*>("-c"),
+                                 const_cast<char*>(relaunch_script),
+                                 const_cast<char*>("--"),
+                                 const_cast<char*>(parent_pid.c_str()),
+                                 const_cast<char*>(appimage_path),
+                                 nullptr};
       pid_t helper_pid;
       spawn_error = posix_spawn(&helper_pid, "/bin/sh", &file_actions, &attributes, arguments, environ);
     }

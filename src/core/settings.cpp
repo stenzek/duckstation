@@ -3,8 +3,10 @@
 
 #include "settings.h"
 #include "achievements.h"
+#include "cheats.h"
 #include "controller.h"
 #include "core.h"
+#include "game_list.h"
 #include "gpu_types.h"
 #include "gte_types.h"
 #include "host.h"
@@ -15,6 +17,7 @@
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"
+#include "util/postprocessing.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
@@ -154,35 +157,59 @@ const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCapture
 const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFmpeg;
 #endif
 
+const char* const Settings::INTERFACE_SECTION_NAME = "Main";
+const char* const Settings::UI_SECTION_NAME = "UI";
+const char* const Settings::GPU_SECTION_NAME = "GPU";
+const char* const Settings::DISPLAY_SECTION_NAME = "Display";
+const char* const Settings::CONSOLE_SECTION_NAME = "Console";
+const char* const Settings::CPU_SECTION_NAME = "CPU";
+const char* const Settings::CDROM_SECTION_NAME = "CDROM";
+const char* const Settings::AUDIO_SECTION_NAME = "Audio";
+const char* const Settings::BIOS_SECTION_NAME = "BIOS";
+const char* const Settings::MEMORY_CARDS_SECTION_NAME = "MemoryCards";
+const char* const Settings::ACHIEVEMENTS_SECTION_NAME = "Cheevos";
+const char* const Settings::HACKS_SECTION_NAME = "Hacks";
+const char* const Settings::DEBUG_SECTION_NAME = "Debug";
+const char* const Settings::SIO_SECTION_NAME = "SIO";
+const char* const Settings::PCDRV_SECTION_NAME = "PCDrv";
+const char* const Settings::PIO_SECTION_NAME = "PIO";
+const char* const Settings::TEXTURE_REPLACEMENTS_SECTION_NAME = "TextureReplacements";
+const char* const Settings::LOGGING_SECTION_NAME = "Logging";
+const char* const Settings::CONTROLLER_PORTS_SECTION_NAME = "ControllerPorts";
+const char* const Settings::HOTKEYS_SECTION_NAME = "Hotkeys";
+const char* const Settings::BORDER_OVERLAY_SECTION_NAME = "BorderOverlay";
+const char* const Settings::FOLDERS_SECTION_NAME = "Folders";
+const char* const Settings::DEBUG_WINDOWS_SECTION_NAME = "DebugWindows";
+
 std::span<const char* const> Settings::GetSectionSaveOrder()
 {
-  static constexpr std::array order = {
+  static const std::array order = {
     // clang-format off
-    "Patches",
-    "Cheats",
-    "Main",
-    "UI",
+    Cheats::PATCHES_CONFIG_SECTION,
+    Cheats::CHEATS_CONFIG_SECTION,
+    INTERFACE_SECTION_NAME,
+    UI_SECTION_NAME,
     "AutoUpdater",
-    "Folders",
-    "GameList",
-    "Cheevos",
-    "Logging",
-    "BIOS",
-    "Console",
-    "CPU",
-    "GPU",
-    "Display",
-    "CDROM",
-    "Audio",
-    "MemoryCards",
-    "TextureReplacements",
-    "MediaCapture",
-    "InternalPostProcessing",
-    "PostProcessing",
-    "BorderOverlay",
-    "InputSources",
+    FOLDERS_SECTION_NAME,
+    GameList::CONFIG_SECTION_NAME,
+    ACHIEVEMENTS_SECTION_NAME,
+    LOGGING_SECTION_NAME,
+    BIOS_SECTION_NAME,
+    CONSOLE_SECTION_NAME,
+    CPU_SECTION_NAME,
+    GPU_SECTION_NAME,
+    DISPLAY_SECTION_NAME,
+    CDROM_SECTION_NAME,
+    AUDIO_SECTION_NAME,
+    MEMORY_CARDS_SECTION_NAME,
+    TEXTURE_REPLACEMENTS_SECTION_NAME,
+    MediaCapture::CONFIG_SECTION_NAME,
+    PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME,
+    PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME,
+    BORDER_OVERLAY_SECTION_NAME,
+    InputManager::SOURCES_CONFIG_SECTION,
     "SDLExtra",
-    "ControllerPorts",
+    CONTROLLER_PORTS_SECTION_NAME,
     "Pad1",
     "Pad2",
     "Pad3",
@@ -191,13 +218,13 @@ std::span<const char* const> Settings::GetSectionSaveOrder()
     "Pad6",
     "Pad7",
     "Pad8",
-    "Hotkeys",
-    "PIO",
-    "SIO",
-    "PCDrv",
-    "Debug",
-    "DebugWindows",
-    "Hacks",
+    HOTKEYS_SECTION_NAME,
+    PIO_SECTION_NAME,
+    SIO_SECTION_NAME,
+    PCDRV_SECTION_NAME,
+    DEBUG_SECTION_NAME,
+    DEBUG_WINDOWS_SECTION_NAME,
+    HACKS_SECTION_NAME,
     // clang-format on
   };
 
@@ -255,245 +282,256 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   TinyString skey;
 
   region =
-    ParseConsoleRegionName(
-      si.GetStringViewValue("Console", "Region", Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)))
+    ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region",
+                                                 Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)))
       .value_or(DEFAULT_CONSOLE_REGION);
-  cpu_enable_8mb_ram = si.GetBoolValue("Console", "Enable8MBRAM", false);
+  cpu_enable_8mb_ram = si.GetBoolValue(CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
 
-  emulation_speed = si.GetFloatValue("Main", "EmulationSpeed", 1.0f);
-  fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
-  turbo_speed = si.GetFloatValue("Main", "TurboSpeed", 0.0f);
-  sync_to_host_refresh_rate = si.GetBoolValue("Main", "SyncToHostRefreshRate", false);
-  inhibit_screensaver = si.GetBoolValue("Main", "InhibitScreensaver", true);
-  pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
-  pause_on_controller_disconnection = si.GetBoolValue("Main", "PauseOnControllerDisconnection", false);
-  disable_background_input = si.GetBoolValue("Main", "DisableBackgroundInput", false);
-  save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
-  create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
-  confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
-  load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
-  apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
-  apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
-  disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
-  enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
-  rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
-  rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
-  rewind_save_slots = static_cast<u16>(std::min(si.GetUIntValue("Main", "RewindSaveSlots", 10u), 65535u));
-  runahead_frames = static_cast<u8>(std::min(si.GetUIntValue("Main", "RunaheadFrameCount", 0u), 255u));
-  runahead_for_analog_input = si.GetBoolValue("Main", "RunaheadForAnalogInput", false);
+  emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
+  fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
+  turbo_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "TurboSpeed", 0.0f);
+  sync_to_host_refresh_rate = si.GetBoolValue(INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", false);
+  inhibit_screensaver = si.GetBoolValue(INTERFACE_SECTION_NAME, "InhibitScreensaver", true);
+  pause_on_focus_loss = si.GetBoolValue(INTERFACE_SECTION_NAME, "PauseOnFocusLoss", false);
+  pause_on_controller_disconnection = si.GetBoolValue(INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection", false);
+  disable_background_input = si.GetBoolValue(INTERFACE_SECTION_NAME, "DisableBackgroundInput", false);
+  save_state_on_exit = si.GetBoolValue(INTERFACE_SECTION_NAME, "SaveStateOnExit", true);
+  create_save_state_backups =
+    si.GetBoolValue(INTERFACE_SECTION_NAME, "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
+  confim_power_off = si.GetBoolValue(INTERFACE_SECTION_NAME, "ConfirmPowerOff", true);
+  load_devices_from_save_states = si.GetBoolValue(INTERFACE_SECTION_NAME, "LoadDevicesFromSaveStates", false);
+  apply_compatibility_settings = si.GetBoolValue(INTERFACE_SECTION_NAME, "ApplyCompatibilitySettings", true);
+  apply_game_settings = si.GetBoolValue(INTERFACE_SECTION_NAME, "ApplyGameSettings", true);
+  disable_all_enhancements = si.GetBoolValue(INTERFACE_SECTION_NAME, "DisableAllEnhancements", false);
+  enable_discord_presence = si.GetBoolValue(INTERFACE_SECTION_NAME, "EnableDiscordPresence", false);
+  rewind_enable = si.GetBoolValue(INTERFACE_SECTION_NAME, "RewindEnable", false);
+  rewind_save_frequency = si.GetFloatValue(INTERFACE_SECTION_NAME, "RewindFrequency", 10.0f);
+  rewind_save_slots =
+    static_cast<u16>(std::min(si.GetUIntValue(INTERFACE_SECTION_NAME, "RewindSaveSlots", 10u), 65535u));
+  runahead_frames = static_cast<u8>(std::min(si.GetUIntValue(INTERFACE_SECTION_NAME, "RunaheadFrameCount", 0u), 255u));
+  runahead_for_analog_input = si.GetBoolValue(INTERFACE_SECTION_NAME, "RunaheadForAnalogInput", false);
 
-  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringViewValue("CPU", "ExecutionMode",
+  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringViewValue(CPU_SECTION_NAME, "ExecutionMode",
                                                                    GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)))
                          .value_or(DEFAULT_CPU_EXECUTION_MODE);
-  cpu_overclock_numerator = std::max(si.GetUIntValue("CPU", "OverclockNumerator", 1u), 1u);
-  cpu_overclock_denominator = std::max(si.GetUIntValue("CPU", "OverclockDenominator", 1u), 1u);
-  cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
+  cpu_overclock_numerator = std::max(si.GetUIntValue(CPU_SECTION_NAME, "OverclockNumerator", 1u), 1u);
+  cpu_overclock_denominator = std::max(si.GetUIntValue(CPU_SECTION_NAME, "OverclockDenominator", 1u), 1u);
+  cpu_overclock_enable = si.GetBoolValue(CPU_SECTION_NAME, "OverclockEnable", false);
   UpdateOverclockActive();
-  cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
-  cpu_recompiler_block_linking = si.GetBoolValue("CPU", "RecompilerBlockLinking", true);
-  cpu_recompiler_icache = si.GetBoolValue("CPU", "RecompilerICache", false);
-  cpu_fastmem_mode =
-    ParseCPUFastmemMode(si.GetStringViewValue("CPU", "FastmemMode", GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)))
-      .value_or(DEFAULT_CPU_FASTMEM_MODE);
+  cpu_recompiler_memory_exceptions = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", false);
+  cpu_recompiler_block_linking = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerBlockLinking", true);
+  cpu_recompiler_icache = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerICache", false);
+  cpu_fastmem_mode = ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode",
+                                                               GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)))
+                       .value_or(DEFAULT_CPU_FASTMEM_MODE);
 
-  gpu_renderer = ParseRendererName(si.GetStringViewValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)))
-                   .value_or(DEFAULT_GPU_RENDERER);
-  gpu_adapter = si.GetStringViewValue("GPU", "Adapter", "");
-  gpu_resolution_scale = static_cast<u8>(si.GetUIntValue("GPU", "ResolutionScale", 1u));
+  gpu_renderer =
+    ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)))
+      .value_or(DEFAULT_GPU_RENDERER);
+  gpu_adapter = si.GetStringViewValue(GPU_SECTION_NAME, "Adapter", "");
+  gpu_resolution_scale = static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "ResolutionScale", 1u));
   gpu_automatic_resolution_scale = (gpu_resolution_scale == 0);
-  gpu_multisamples = static_cast<u8>(si.GetUIntValue("GPU", "Multisamples", 1u));
-  gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
-  gpu_use_debug_device_gpu_validation = si.GetBoolValue("GPU", "UseGPUBasedValidation", false);
-  gpu_prefer_gles_context = si.GetBoolValue("GPU", "PreferGLESContext", DEFAULT_GPU_PREFER_GLES_CONTEXT);
-  gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
-  gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);
-  gpu_disable_framebuffer_fetch = si.GetBoolValue("GPU", "DisableFramebufferFetch", false);
-  gpu_disable_texture_buffers = si.GetBoolValue("GPU", "DisableTextureBuffers", false);
-  gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
-  gpu_disable_memory_import = si.GetBoolValue("GPU", "DisableMemoryImport", false);
-  gpu_disable_raster_order_views = si.GetBoolValue("GPU", "DisableRasterOrderViews", false);
-  gpu_disable_compute_shaders = si.GetBoolValue("GPU", "DisableComputeShaders", false);
-  gpu_disable_compressed_textures = si.GetBoolValue("GPU", "DisableCompressedTextures", false);
-  gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
-  gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
-  gpu_max_queued_frames = static_cast<u8>(si.GetUIntValue("GPU", "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
-  gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
-  gpu_use_software_renderer_for_memory_states = si.GetBoolValue("GPU", "UseSoftwareRendererForMemoryStates", false);
-  gpu_scaled_interlacing = si.GetBoolValue("GPU", "ScaledInterlacing", true);
-  gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
-  gpu_disable_upscaled_direct_textures = si.GetBoolValue("GPU", "DisableUpscaledDirectTextures", false);
-  gpu_filter_framebuffer_uploads = si.GetBoolValue("GPU", "FilterFramebufferUploads", false);
-  gpu_filter_framebuffer_uploads_minimum_width = std::clamp<u16>(
-    si.GetSaturatedIntValue<u16>("GPU", "FilterFramebufferUploadsMinimumWidth", 1), 1, static_cast<u16>(VRAM_WIDTH));
-  gpu_filter_framebuffer_uploads_minimum_height = std::clamp<u16>(
-    si.GetSaturatedIntValue<u16>("GPU", "FilterFramebufferUploadsMinimumHeight", 1), 1, static_cast<u16>(VRAM_HEIGHT));
-  gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue("GPU", "TextureFilter",
+  gpu_multisamples = static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "Multisamples", 1u));
+  gpu_use_debug_device = si.GetBoolValue(GPU_SECTION_NAME, "UseDebugDevice", false);
+  gpu_use_debug_device_gpu_validation = si.GetBoolValue(GPU_SECTION_NAME, "UseGPUBasedValidation", false);
+  gpu_prefer_gles_context = si.GetBoolValue(GPU_SECTION_NAME, "PreferGLESContext", DEFAULT_GPU_PREFER_GLES_CONTEXT);
+  gpu_disable_shader_cache = si.GetBoolValue(GPU_SECTION_NAME, "DisableShaderCache", false);
+  gpu_disable_dual_source_blend = si.GetBoolValue(GPU_SECTION_NAME, "DisableDualSourceBlend", false);
+  gpu_disable_framebuffer_fetch = si.GetBoolValue(GPU_SECTION_NAME, "DisableFramebufferFetch", false);
+  gpu_disable_texture_buffers = si.GetBoolValue(GPU_SECTION_NAME, "DisableTextureBuffers", false);
+  gpu_disable_texture_copy_to_self = si.GetBoolValue(GPU_SECTION_NAME, "DisableTextureCopyToSelf", false);
+  gpu_disable_memory_import = si.GetBoolValue(GPU_SECTION_NAME, "DisableMemoryImport", false);
+  gpu_disable_raster_order_views = si.GetBoolValue(GPU_SECTION_NAME, "DisableRasterOrderViews", false);
+  gpu_disable_compute_shaders = si.GetBoolValue(GPU_SECTION_NAME, "DisableComputeShaders", false);
+  gpu_disable_compressed_textures = si.GetBoolValue(GPU_SECTION_NAME, "DisableCompressedTextures", false);
+  gpu_per_sample_shading = si.GetBoolValue(GPU_SECTION_NAME, "PerSampleShading", false);
+  gpu_use_thread = si.GetBoolValue(GPU_SECTION_NAME, "UseThread", true);
+  gpu_max_queued_frames =
+    static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
+  gpu_use_software_renderer_for_readbacks = si.GetBoolValue(GPU_SECTION_NAME, "UseSoftwareRendererForReadbacks", false);
+  gpu_use_software_renderer_for_memory_states =
+    si.GetBoolValue(GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", false);
+  gpu_scaled_interlacing = si.GetBoolValue(GPU_SECTION_NAME, "ScaledInterlacing", true);
+  gpu_force_round_texcoords = si.GetBoolValue(GPU_SECTION_NAME, "ForceRoundTextureCoordinates", false);
+  gpu_disable_upscaled_direct_textures = si.GetBoolValue(GPU_SECTION_NAME, "DisableUpscaledDirectTextures", false);
+  gpu_filter_framebuffer_uploads = si.GetBoolValue(GPU_SECTION_NAME, "FilterFramebufferUploads", false);
+  gpu_filter_framebuffer_uploads_minimum_width =
+    std::clamp<u16>(si.GetSaturatedIntValue<u16>(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumWidth", 1), 1,
+                    static_cast<u16>(VRAM_WIDTH));
+  gpu_filter_framebuffer_uploads_minimum_height =
+    std::clamp<u16>(si.GetSaturatedIntValue<u16>(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1), 1,
+                    static_cast<u16>(VRAM_HEIGHT));
+  gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "TextureFilter",
                                                                     GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
                          .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_sprite_texture_filter =
     ParseTextureFilterName(
-      si.GetStringViewValue("GPU", "SpriteTextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
+      si.GetStringViewValue(GPU_SECTION_NAME, "SpriteTextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_dithering_mode =
     ParseGPUDitheringModeName(
-      si.GetStringViewValue("GPU", "DitheringMode", GetGPUDitheringModeName(DEFAULT_GPU_DITHERING_MODE)))
+      si.GetStringViewValue(GPU_SECTION_NAME, "DitheringMode", GetGPUDitheringModeName(DEFAULT_GPU_DITHERING_MODE)))
       .value_or(DEFAULT_GPU_DITHERING_MODE);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
-      si.GetStringViewValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)))
+      si.GetStringViewValue(GPU_SECTION_NAME, "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)))
       .value_or(DEFAULT_GPU_LINE_DETECT_MODE);
   gpu_downsample_mode =
     ParseDownsampleModeName(
-      si.GetStringViewValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)))
+      si.GetStringViewValue(GPU_SECTION_NAME, "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)))
       .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
-  gpu_downsample_scale = static_cast<u8>(si.GetUIntValue("GPU", "DownsampleScale", 1));
-  gpu_wireframe_mode = ParseGPUWireframeMode(si.GetStringViewValue("GPU", "WireframeMode",
+  gpu_downsample_scale = static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "DownsampleScale", 1));
+  gpu_wireframe_mode = ParseGPUWireframeMode(si.GetStringViewValue(GPU_SECTION_NAME, "WireframeMode",
                                                                    GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)))
                          .value_or(DEFAULT_GPU_WIREFRAME_MODE);
   gpu_force_video_timing =
-    ParseForceVideoTimingName(
-      si.GetStringViewValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)))
+    ParseForceVideoTimingName(si.GetStringViewValue(GPU_SECTION_NAME, "ForceVideoTiming",
+                                                    GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)))
       .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
-  gpu_disable_textures = si.GetBoolValue("GPU", "DisableTextures", false);
-  gpu_disable_vertex_lighting = si.GetBoolValue("GPU", "DisableVertexLighting", false);
-  gpu_widescreen_rendering = gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
-  gpu_modulation_crop = si.GetBoolValue("GPU", "EnableModulationCrop", false);
-  gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
-  display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
-  gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
+  gpu_disable_textures = si.GetBoolValue(GPU_SECTION_NAME, "DisableTextures", false);
+  gpu_disable_vertex_lighting = si.GetBoolValue(GPU_SECTION_NAME, "DisableVertexLighting", false);
+  gpu_widescreen_rendering = gpu_widescreen_hack = si.GetBoolValue(GPU_SECTION_NAME, "WidescreenHack", false);
+  gpu_modulation_crop = si.GetBoolValue(GPU_SECTION_NAME, "EnableModulationCrop", false);
+  gpu_texture_cache = si.GetBoolValue(GPU_SECTION_NAME, "EnableTextureCache", false);
+  display_24bit_chroma_smoothing = si.GetBoolValue(GPU_SECTION_NAME, "ChromaSmoothing24Bit", false);
+  gpu_pgxp_enable = si.GetBoolValue(GPU_SECTION_NAME, "PGXPEnable", false);
   LoadPGXPSettings(si);
-  gpu_dump_fast_replay_mode = si.GetBoolValue("GPU", "DumpFastReplayMode", false);
+  gpu_dump_fast_replay_mode = si.GetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", false);
   display_deinterlacing_mode =
     ParseDisplayDeinterlacingMode(
-      si.GetStringViewValue("GPU", "DeinterlacingMode",
+      si.GetStringViewValue(GPU_SECTION_NAME, "DeinterlacingMode",
                             GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE)))
       .value_or(DEFAULT_DISPLAY_DEINTERLACING_MODE);
 
-  display_crop_mode = ParseDisplayCropMode(
-                        si.GetStringViewValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)))
+  display_crop_mode = ParseDisplayCropMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "CropMode",
+                                                                 GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)))
                         .value_or(DEFAULT_DISPLAY_CROP_MODE);
-  display_aspect_ratio =
-    ParseDisplayAspectRatio(si.GetStringViewValue("Display", "AspectRatio")).value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
-  display_fine_crop_mode =
-    ParseDisplayFineCropMode(si.GetStringViewValue("Display", "FineCropMode")).value_or(DEFAULT_DISPLAY_FINE_CROP_MODE);
-  display_fine_crop_amount[0] = si.GetSaturatedIntValue<s16>("Display", "FineCropLeft", 0);
-  display_fine_crop_amount[1] = si.GetSaturatedIntValue<s16>("Display", "FineCropTop", 0);
-  display_fine_crop_amount[2] = si.GetSaturatedIntValue<s16>("Display", "FineCropRight", 0);
-  display_fine_crop_amount[3] = si.GetSaturatedIntValue<s16>("Display", "FineCropBottom", 0);
-  display_alignment = ParseDisplayAlignment(si.GetStringViewValue("Display", "Alignment",
+  display_aspect_ratio = ParseDisplayAspectRatio(si.GetStringViewValue(DISPLAY_SECTION_NAME, "AspectRatio"))
+                           .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_fine_crop_mode = ParseDisplayFineCropMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "FineCropMode"))
+                             .value_or(DEFAULT_DISPLAY_FINE_CROP_MODE);
+  display_fine_crop_amount[0] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropLeft", 0);
+  display_fine_crop_amount[1] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropTop", 0);
+  display_fine_crop_amount[2] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropRight", 0);
+  display_fine_crop_amount[3] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropBottom", 0);
+  display_alignment = ParseDisplayAlignment(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Alignment",
                                                                   GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)))
                         .value_or(DEFAULT_DISPLAY_ALIGNMENT);
-  display_rotation =
-    ParseDisplayRotation(si.GetStringViewValue("Display", "Rotation", GetDisplayRotationName(DEFAULT_DISPLAY_ROTATION)))
-      .value_or(DEFAULT_DISPLAY_ROTATION);
-  display_scaling =
-    ParseDisplayScaling(si.GetStringViewValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)))
-      .value_or(DEFAULT_DISPLAY_SCALING);
-  display_scaling_24bit = ParseDisplayScaling(si.GetStringViewValue("Display", "Scaling24Bit",
+  display_rotation = ParseDisplayRotation(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Rotation",
+                                                                GetDisplayRotationName(DEFAULT_DISPLAY_ROTATION)))
+                       .value_or(DEFAULT_DISPLAY_ROTATION);
+  display_scaling = ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling",
+                                                              GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)))
+                      .value_or(DEFAULT_DISPLAY_SCALING);
+  display_scaling_24bit = ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling24Bit",
                                                                     GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)))
                             .value_or(DEFAULT_DISPLAY_SCALING);
   display_exclusive_fullscreen_control =
     ParseDisplayExclusiveFullscreenControl(
-      si.GetStringViewValue("Display", "ExclusiveFullscreenControl",
+      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ExclusiveFullscreenControl",
                             GetDisplayExclusiveFullscreenControlName(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL)))
       .value_or(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
   display_screenshot_mode =
-    ParseDisplayScreenshotMode(
-      si.GetStringViewValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(DEFAULT_DISPLAY_SCREENSHOT_MODE)))
+    ParseDisplayScreenshotMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotMode",
+                                                     GetDisplayScreenshotModeName(DEFAULT_DISPLAY_SCREENSHOT_MODE)))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_MODE);
   display_screenshot_format =
     ParseDisplayScreenshotFormat(
-      si.GetStringViewValue("Display", "ScreenshotFormat",
+      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFormat",
                             GetDisplayScreenshotFormatName(DEFAULT_DISPLAY_SCREENSHOT_FORMAT)))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
   display_screenshot_filename_format =
     ParseCaptureFileNameFormat(
-      si.GetStringViewValue("Display", "ScreenshotFileNameFormat",
+      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFileNameFormat",
                             GetCaptureFileNameFormatName(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT)))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT);
-  display_screenshot_quality = static_cast<u8>(
-    std::clamp<u32>(si.GetUIntValue("Display", "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
-  display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", DEFAULT_OPTIMAL_FRAME_PACING);
-  display_pre_frame_sleep = si.GetBoolValue("Display", "PreFrameSleep", false);
+  display_screenshot_quality = static_cast<u8>(std::clamp<u32>(
+    si.GetUIntValue(DISPLAY_SECTION_NAME, "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
+  display_optimal_frame_pacing =
+    si.GetBoolValue(DISPLAY_SECTION_NAME, "OptimalFramePacing", DEFAULT_OPTIMAL_FRAME_PACING);
+  display_pre_frame_sleep = si.GetBoolValue(DISPLAY_SECTION_NAME, "PreFrameSleep", false);
   display_pre_frame_sleep_buffer =
-    si.GetFloatValue("Display", "PreFrameSleepBuffer", DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
-  display_skip_presenting_duplicate_frames = si.GetBoolValue("Display", "SkipPresentingDuplicateFrames", false);
-  display_vsync = si.GetBoolValue("Display", "VSync", false);
-  display_disable_mailbox_presentation = si.GetBoolValue("Display", "DisableMailboxPresentation", false);
-  display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
-  display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
-  display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
-  display_line_start_offset = static_cast<s8>(si.GetIntValue("Display", "LineStartOffset", 0));
-  display_line_end_offset = static_cast<s8>(si.GetIntValue("Display", "LineEndOffset", 0));
-  display_show_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
-  display_animate_messages = si.GetBoolValue("Display", "AnimateOSDMessages", true);
-  display_blur_message_backgrounds = si.GetBoolValue("Display", "BlurOSDMessageBackgrounds", true);
-  display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
-  display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
-  display_show_gpu_stats = si.GetBoolValue("Display", "ShowGPUStatistics", false);
-  display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
-  display_show_latency_stats = si.GetBoolValue("Display", "ShowLatencyStatistics", false);
-  display_show_cpu_usage = si.GetBoolValue("Display", "ShowCPU", false);
-  display_show_gpu_usage = si.GetBoolValue("Display", "ShowGPU", false);
-  display_show_frame_times = si.GetBoolValue("Display", "ShowFrameTimes", false);
-  display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
-  display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
-  display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
-  display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
-  display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
-  display_osd_margin = std::max(si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN), 0.0f);
+    si.GetFloatValue(DISPLAY_SECTION_NAME, "PreFrameSleepBuffer", DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
+  display_skip_presenting_duplicate_frames =
+    si.GetBoolValue(DISPLAY_SECTION_NAME, "SkipPresentingDuplicateFrames", false);
+  display_vsync = si.GetBoolValue(DISPLAY_SECTION_NAME, "VSync", false);
+  display_disable_mailbox_presentation = si.GetBoolValue(DISPLAY_SECTION_NAME, "DisableMailboxPresentation", false);
+  display_force_4_3_for_24bit = si.GetBoolValue(DISPLAY_SECTION_NAME, "Force4_3For24Bit", false);
+  display_active_start_offset = static_cast<s16>(si.GetIntValue(DISPLAY_SECTION_NAME, "ActiveStartOffset", 0));
+  display_active_end_offset = static_cast<s16>(si.GetIntValue(DISPLAY_SECTION_NAME, "ActiveEndOffset", 0));
+  display_line_start_offset = static_cast<s8>(si.GetIntValue(DISPLAY_SECTION_NAME, "LineStartOffset", 0));
+  display_line_end_offset = static_cast<s8>(si.GetIntValue(DISPLAY_SECTION_NAME, "LineEndOffset", 0));
+  display_show_messages = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowOSDMessages", true);
+  display_animate_messages = si.GetBoolValue(DISPLAY_SECTION_NAME, "AnimateOSDMessages", true);
+  display_blur_message_backgrounds = si.GetBoolValue(DISPLAY_SECTION_NAME, "BlurOSDMessageBackgrounds", true);
+  display_show_fps = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowFPS", false);
+  display_show_speed = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowSpeed", false);
+  display_show_gpu_stats = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowGPUStatistics", false);
+  display_show_resolution = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowResolution", false);
+  display_show_latency_stats = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowLatencyStatistics", false);
+  display_show_cpu_usage = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowCPU", false);
+  display_show_gpu_usage = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowGPU", false);
+  display_show_frame_times = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameTimes", false);
+  display_show_status_indicators = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowStatusIndicators", true);
+  display_show_inputs = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowInputs", false);
+  display_show_enhancements = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowEnhancements", false);
+  display_auto_resize_window = si.GetBoolValue(DISPLAY_SECTION_NAME, "AutoResizeWindow", false);
+  display_osd_scale = si.GetFloatValue(DISPLAY_SECTION_NAME, "OSDScale", DEFAULT_OSD_SCALE);
+  display_osd_margin =
+    std::max(si.GetFloatValue(DISPLAY_SECTION_NAME, "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN), 0.0f);
 
   for (size_t i = 0; i < display_osd_message_duration.size(); i++)
   {
     skey.format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i)));
     display_osd_message_duration[i] =
-      si.GetFloatValue("Display", skey.c_str(), DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[i]);
+      si.GetFloatValue(DISPLAY_SECTION_NAME, skey.c_str(), DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[i]);
   }
-  display_osd_message_location = ParseNotificationLocation(si.GetStringViewValue("Display", "OSDMessageLocation"))
-                                   .value_or(DEFAULT_OSD_MESSAGE_LOCATION);
+  display_osd_message_location =
+    ParseNotificationLocation(si.GetStringViewValue(DISPLAY_SECTION_NAME, "OSDMessageLocation"))
+      .value_or(DEFAULT_OSD_MESSAGE_LOCATION);
 
   save_state_compression =
     ParseSaveStateCompressionModeName(
-      si.GetStringViewValue("Main", "SaveStateCompression",
+      si.GetStringViewValue(INTERFACE_SECTION_NAME, "SaveStateCompression",
                             GetSaveStateCompressionModeName(DEFAULT_SAVE_STATE_COMPRESSION_MODE)))
       .value_or(DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
   cdrom_readahead_sectors =
-    static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
+    static_cast<u8>(si.GetIntValue(CDROM_SECTION_NAME, "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_mechacon_version =
-    ParseCDROMMechVersionName(
-      si.GetStringViewValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(DEFAULT_CDROM_MECHACON_VERSION)))
+    ParseCDROMMechVersionName(si.GetStringViewValue(CDROM_SECTION_NAME, "MechaconVersion",
+                                                    GetCDROMMechVersionName(DEFAULT_CDROM_MECHACON_VERSION)))
       .value_or(DEFAULT_CDROM_MECHACON_VERSION);
-  cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
-  cdrom_subq_skew = si.GetBoolValue("CDROM", "SubQSkew", false);
-  cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
-  cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
-  cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
-  cdrom_auto_disc_change = si.GetBoolValue("CDROM", "AutoDiscChange", false);
-  cdrom_read_speedup = si.GetSaturatedIntValue<u8>("CDROM", "ReadSpeedup", 1);
-  cdrom_seek_speedup = si.GetSaturatedIntValue<u8>("CDROM", "SeekSpeedup", 1);
+  cdrom_region_check = si.GetBoolValue(CDROM_SECTION_NAME, "RegionCheck", false);
+  cdrom_subq_skew = si.GetBoolValue(CDROM_SECTION_NAME, "SubQSkew", false);
+  cdrom_load_image_to_ram = si.GetBoolValue(CDROM_SECTION_NAME, "LoadImageToRAM", false);
+  cdrom_load_image_patches = si.GetBoolValue(CDROM_SECTION_NAME, "LoadImagePatches", false);
+  cdrom_mute_cd_audio = si.GetBoolValue(CDROM_SECTION_NAME, "MuteCDAudio", false);
+  cdrom_auto_disc_change = si.GetBoolValue(CDROM_SECTION_NAME, "AutoDiscChange", false);
+  cdrom_read_speedup = si.GetSaturatedIntValue<u8>(CDROM_SECTION_NAME, "ReadSpeedup", 1);
+  cdrom_seek_speedup = si.GetSaturatedIntValue<u8>(CDROM_SECTION_NAME, "SeekSpeedup", 1);
   cdrom_max_seek_speedup_cycles =
-    std::max(si.GetUIntValue("CDROM", "MaxSeekSpeedupCycles", DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES), 1u);
+    std::max(si.GetUIntValue(CDROM_SECTION_NAME, "MaxSeekSpeedupCycles", DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES), 1u);
   cdrom_max_read_speedup_cycles =
-    std::max(si.GetUIntValue("CDROM", "MaxReadSpeedupCycles", DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES), 1u);
-  mdec_disable_cdrom_speedup = si.GetBoolValue("CDROM", "DisableSpeedupOnMDEC", false);
+    std::max(si.GetUIntValue(CDROM_SECTION_NAME, "MaxReadSpeedupCycles", DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES), 1u);
+  mdec_disable_cdrom_speedup = si.GetBoolValue(CDROM_SECTION_NAME, "DisableSpeedupOnMDEC", false);
 
   audio_backend =
     AudioStream::ParseBackendName(
-      si.GetStringViewValue("Audio", "Backend", AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)))
+      si.GetStringViewValue(AUDIO_SECTION_NAME, "Backend", AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)))
       .value_or(AudioStream::DEFAULT_BACKEND);
-  audio_driver = si.GetStringViewValue("Audio", "Driver");
-  audio_output_device = si.GetStringViewValue("Audio", "OutputDevice");
-  audio_stream_parameters.Load(si, "Audio");
-  audio_output_volume = si.GetSaturatedIntValue<u8>("Audio", "OutputVolume", 100);
-  audio_fast_forward_volume = si.GetSaturatedIntValue<u8>("Audio", "FastForwardVolume", 100);
-  audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
+  audio_driver = si.GetStringViewValue(AUDIO_SECTION_NAME, "Driver");
+  audio_output_device = si.GetStringViewValue(AUDIO_SECTION_NAME, "OutputDevice");
+  audio_stream_parameters.Load(si, AUDIO_SECTION_NAME);
+  audio_output_volume = si.GetSaturatedIntValue<u8>(AUDIO_SECTION_NAME, "OutputVolume", 100);
+  audio_fast_forward_volume = si.GetSaturatedIntValue<u8>(AUDIO_SECTION_NAME, "FastForwardVolume", 100);
+  audio_output_muted = si.GetBoolValue(AUDIO_SECTION_NAME, "OutputMuted", false);
 
-  bios_tty_logging = si.GetBoolValue("BIOS", "TTYLogging", false);
-  bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
-  bios_fast_forward_boot = si.GetBoolValue("BIOS", "FastForwardBoot", false);
+  bios_tty_logging = si.GetBoolValue(BIOS_SECTION_NAME, "TTYLogging", false);
+  bios_patch_fast_boot = si.GetBoolValue(BIOS_SECTION_NAME, "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
+  bios_fast_forward_boot = si.GetBoolValue(BIOS_SECTION_NAME, "FastForwardBoot", false);
 
-  multitap_mode = ParseMultitapModeName(controller_si.GetStringViewValue("ControllerPorts", "MultitapMode",
+  multitap_mode = ParseMultitapModeName(controller_si.GetStringViewValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
                                                                          GetMultitapModeName(DEFAULT_MULTITAP_MODE)))
                     .value_or(DEFAULT_MULTITAP_MODE);
 
@@ -519,343 +557,356 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
     const MemoryCardType default_card_type = (pad == 0) ? DEFAULT_MEMORY_CARD_1_TYPE : DEFAULT_MEMORY_CARD_2_TYPE;
     skey.format("Card{}Type", pad + 1);
-    memory_card_types[pad] =
-      ParseMemoryCardTypeName(si.GetStringViewValue("MemoryCards", skey.c_str())).value_or(default_card_type);
+    memory_card_types[pad] = ParseMemoryCardTypeName(si.GetStringViewValue(MEMORY_CARDS_SECTION_NAME, skey.c_str()))
+                               .value_or(default_card_type);
     skey.format("Card{}Path", pad + 1);
-    memory_card_paths[pad] = si.GetStringViewValue("MemoryCards", skey.c_str());
+    memory_card_paths[pad] = si.GetStringViewValue(MEMORY_CARDS_SECTION_NAME, skey.c_str());
   }
 
-  memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
-  memory_card_fast_forward_access = si.GetBoolValue("MemoryCards", "FastForwardAccess", false);
+  memory_card_use_playlist_title = si.GetBoolValue(MEMORY_CARDS_SECTION_NAME, "UsePlaylistTitle", true);
+  memory_card_fast_forward_access = si.GetBoolValue(MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
 
-  achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
-  achievements_hardcore_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
-  achievements_encore_mode = si.GetBoolValue("Cheevos", "EncoreMode", false);
-  achievements_spectator_mode = si.GetBoolValue("Cheevos", "SpectatorMode", false);
-  achievements_track_unofficial = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
-  achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
-  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
-  achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
-  achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
-  achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
-  achievements_prefetch_badges = si.GetBoolValue("Cheevos", "PrefetchBadges", DEFAULT_ACHIEVEMENT_BADGE_PREFETCH);
-  achievements_rich_presence_monitor = si.GetBoolValue("Cheevos", "RichPresenceMonitor", false);
+  achievements_enabled = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Enabled", false);
+  achievements_hardcore_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false);
+  achievements_encore_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "EncoreMode", false);
+  achievements_spectator_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", false);
+  achievements_track_unofficial = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", false);
+  achievements_use_raintegration = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UseRAIntegration", false);
+  achievements_notifications = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Notifications", true);
+  achievements_leaderboard_notifications = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardNotifications", true);
+  achievements_leaderboard_trackers = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardTrackers", true);
+  achievements_sound_effects = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SoundEffects", true);
+  achievements_prefetch_badges =
+    si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "PrefetchBadges", DEFAULT_ACHIEVEMENT_BADGE_PREFETCH);
+  achievements_rich_presence_monitor = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "RichPresenceMonitor", false);
   achievements_notification_location =
-    ParseNotificationLocation(si.GetStringViewValue("Cheevos", "NotificationLocation"))
+    ParseNotificationLocation(si.GetStringViewValue(ACHIEVEMENTS_SECTION_NAME, "NotificationLocation"))
       .value_or(DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION);
-  achievements_indicator_location = ParseNotificationLocation(si.GetStringViewValue("Cheevos", "IndicatorLocation"))
-                                      .value_or(DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION);
+  achievements_indicator_location =
+    ParseNotificationLocation(si.GetStringViewValue(ACHIEVEMENTS_SECTION_NAME, "IndicatorLocation"))
+      .value_or(DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION);
   achievements_challenge_indicator_mode =
-    ParseAchievementChallengeIndicatorMode(si.GetStringViewValue("Cheevos", "ChallengeIndicatorMode"))
+    ParseAchievementChallengeIndicatorMode(si.GetStringViewValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeIndicatorMode"))
       .value_or(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE);
   achievements_progress_indicator_mode =
-    ParseAchievementProgressIndicatorMode(si.GetStringViewValue("Cheevos", "ProgressIndicatorMode"))
+    ParseAchievementProgressIndicatorMode(si.GetStringViewValue(ACHIEVEMENTS_SECTION_NAME, "ProgressIndicatorMode"))
       .value_or(DEFAULT_ACHIEVEMENT_PROGRESS_INDICATOR_MODE);
-  achievements_notification_duration =
-    si.GetSaturatedIntValue<u8>("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
-  achievements_leaderboard_duration =
-    si.GetSaturatedIntValue<u8>("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+  achievements_notification_duration = si.GetSaturatedIntValue<u8>(ACHIEVEMENTS_SECTION_NAME, "NotificationsDuration",
+                                                                   DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+  achievements_leaderboard_duration = si.GetSaturatedIntValue<u8>(ACHIEVEMENTS_SECTION_NAME, "LeaderboardsDuration",
+                                                                  DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
   achievements_notification_scale =
-    si.GetSaturatedIntValue<s16>("Cheevos", "NotificationScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+    si.GetSaturatedIntValue<s16>(ACHIEVEMENTS_SECTION_NAME, "NotificationScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
   achievements_indicator_scale =
-    si.GetSaturatedIntValue<s16>("Cheevos", "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
+    si.GetSaturatedIntValue<s16>(ACHIEVEMENTS_SECTION_NAME, "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
 
-  dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
-  dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
-  gpu_fifo_size = si.GetUIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
-  gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
-  mdec_use_old_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
-  export_shared_memory = si.GetBoolValue("Hacks", "ExportSharedMemory", false);
+  dma_max_slice_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
+  dma_halt_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
+  gpu_fifo_size = si.GetUIntValue(HACKS_SECTION_NAME, "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
+  gpu_max_run_ahead = si.GetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
+  mdec_use_old_routines = si.GetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", false);
+  export_shared_memory = si.GetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", false);
 
-  pcsx_expansion_region_enable = si.GetBoolValue("Debug", "PCSXExpansionRegion", false);
-  gpu_show_vram = si.GetBoolValue("Debug", "ShowVRAM");
-  gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
-  gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
+  pcsx_expansion_region_enable = si.GetBoolValue(DEBUG_SECTION_NAME, "PCSXExpansionRegion", false);
+  gpu_show_vram = si.GetBoolValue(DEBUG_SECTION_NAME, "ShowVRAM");
+  gpu_dump_cpu_to_vram_copies = si.GetBoolValue(DEBUG_SECTION_NAME, "DumpCPUToVRAMCopies");
+  gpu_dump_vram_to_cpu_copies = si.GetBoolValue(DEBUG_SECTION_NAME, "DumpVRAMToCPUCopies");
 
-  enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
-  gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
+  enable_gdb_server = si.GetBoolValue(DEBUG_SECTION_NAME, "EnableGDBServer");
+  gdb_server_port = static_cast<u16>(si.GetUIntValue(DEBUG_SECTION_NAME, "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
 
-  sio_redirect_to_tty = si.GetBoolValue("SIO", "RedirectToTTY", false);
+  sio_redirect_to_tty = si.GetBoolValue(SIO_SECTION_NAME, "RedirectToTTY", false);
 
-  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
-  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
-  pcdrv_root = Path::ToNativePath(si.GetStringViewValue("PCDrv", "Root"));
+  pcdrv_enable = si.GetBoolValue(PCDRV_SECTION_NAME, "Enabled", false);
+  pcdrv_enable_writes = si.GetBoolValue(PCDRV_SECTION_NAME, "EnableWrites", false);
+  pcdrv_root = Path::ToNativePath(si.GetStringViewValue(PCDRV_SECTION_NAME, "Root"));
 
   debug_window_visibility = ImGuiManager::LoadDebugWindowVisibility(si);
 
   texture_replacements.enable_texture_replacements =
-    si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
-    si.GetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
-  texture_replacements.always_track_uploads = si.GetBoolValue("TextureReplacements", "AlwaysTrackUploads", false);
-  texture_replacements.preload_textures = si.GetBoolValue("TextureReplacements", "PreloadTextures", false);
-  texture_replacements.dump_textures = si.GetBoolValue("TextureReplacements", "DumpTextures", false);
-  texture_replacements.dump_replaced_textures = si.GetBoolValue("TextureReplacements", "DumpReplacedTextures", true);
-  texture_replacements.dump_vram_writes = si.GetBoolValue("TextureReplacements", "DumpVRAMWrites", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableVRAMWriteReplacements", false);
+  texture_replacements.always_track_uploads =
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "AlwaysTrackUploads", false);
+  texture_replacements.preload_textures = si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "PreloadTextures", false);
+  texture_replacements.dump_textures = si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextures", false);
+  texture_replacements.dump_replaced_textures =
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpReplacedTextures", true);
+  texture_replacements.dump_vram_writes = si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWrites", false);
 
-  texture_replacements.config.dump_texture_pages = si.GetBoolValue("TextureReplacements", "DumpTexturePages", false);
+  texture_replacements.config.dump_texture_pages =
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTexturePages", false);
   texture_replacements.config.dump_full_texture_pages =
-    si.GetBoolValue("TextureReplacements", "DumpFullTexturePages", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpFullTexturePages", false);
   texture_replacements.config.dump_texture_force_alpha_channel =
-    si.GetBoolValue("TextureReplacements", "DumpTextureForceAlphaChannel", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureForceAlphaChannel", false);
   texture_replacements.config.dump_vram_write_force_alpha_channel =
-    si.GetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
-  texture_replacements.config.dump_c16_textures = si.GetBoolValue("TextureReplacements", "DumpC16Textures", false);
-  texture_replacements.config.reduce_palette_range = si.GetBoolValue("TextureReplacements", "ReducePaletteRange", true);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteForceAlphaChannel", true);
+  texture_replacements.config.dump_c16_textures =
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpC16Textures", false);
+  texture_replacements.config.reduce_palette_range =
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ReducePaletteRange", true);
   texture_replacements.config.convert_copies_to_writes =
-    si.GetBoolValue("TextureReplacements", "ConvertCopiesToWrites", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ConvertCopiesToWrites", false);
   texture_replacements.config.replacement_scale_linear_filter =
-    si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", false);
+    si.GetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ReplacementScaleLinearFilter", false);
 
   texture_replacements.config.max_hash_cache_entries =
-    si.GetUIntValue("TextureReplacements", "MaxHashCacheEntries",
+    si.GetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxHashCacheEntries",
                     TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_ENTRIES);
   texture_replacements.config.max_hash_cache_vram_usage_mb =
-    si.GetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+    si.GetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxHashCacheVRAMUsageMB",
                     TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB);
   texture_replacements.config.max_replacement_cache_vram_usage_mb =
-    si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+    si.GetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxReplacementCacheVRAMUsage",
                     TextureReplacementSettings::Configuration::DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB);
 
   texture_replacements.config.max_vram_write_splits =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteSplits", 0);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteSplits", 0);
   texture_replacements.config.max_vram_write_coalesce_width =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceWidth", 0);
   texture_replacements.config.max_vram_write_coalesce_height =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceHeight", 0);
 
   texture_replacements.config.texture_dump_width_threshold =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpTextureWidthThreshold", 16);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureWidthThreshold", 16);
   texture_replacements.config.texture_dump_height_threshold =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpTextureHeightThreshold", 16);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureHeightThreshold", 16);
   texture_replacements.config.vram_write_dump_width_threshold =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteWidthThreshold", 128);
   texture_replacements.config.vram_write_dump_height_threshold =
-    si.GetSaturatedIntValue<u16>("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
+    si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteHeightThreshold", 128);
 
-  pio_device_type = ParsePIODeviceTypeName(
-                      si.GetStringViewValue("PIO", "DeviceType", GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))
+  pio_device_type = ParsePIODeviceTypeName(si.GetStringViewValue(PIO_SECTION_NAME, "DeviceType",
+                                                                 GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))
                       .value_or(DEFAULT_PIO_DEVICE_TYPE);
-  pio_flash_image_path = si.GetStringViewValue("PIO", "FlashImagePath");
-  pio_flash_write_enable = si.GetBoolValue("PIO", "FlashImageWriteEnable", false);
-  pio_switch_active = si.GetBoolValue("PIO", "SwitchActive", true);
+  pio_flash_image_path = si.GetStringViewValue(PIO_SECTION_NAME, "FlashImagePath");
+  pio_flash_write_enable = si.GetBoolValue(PIO_SECTION_NAME, "FlashImageWriteEnable", false);
+  pio_switch_active = si.GetBoolValue(PIO_SECTION_NAME, "SwitchActive", true);
 }
 
 void Settings::LoadPGXPSettings(const SettingsInterface& si)
 {
-  gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
-  gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
-  gpu_pgxp_color_correction = si.GetBoolValue("GPU", "PGXPColorCorrection", false);
-  gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
-  gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
-  gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
-  gpu_pgxp_tolerance = si.GetFloatValue("GPU", "PGXPTolerance", -1.0f);
-  gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
-  gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
-  gpu_pgxp_transparent_depth = si.GetBoolValue("GPU", "PGXPTransparentDepthTest", false);
-  SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
+  gpu_pgxp_culling = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCulling", true);
+  gpu_pgxp_texture_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", true);
+  gpu_pgxp_color_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", false);
+  gpu_pgxp_vertex_cache = si.GetBoolValue(GPU_SECTION_NAME, "PGXPVertexCache", false);
+  gpu_pgxp_cpu = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCPU", false);
+  gpu_pgxp_preserve_proj_fp = si.GetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", false);
+  gpu_pgxp_tolerance = si.GetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", -1.0f);
+  gpu_pgxp_depth_buffer = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", false);
+  gpu_pgxp_disable_2d = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", false);
+  gpu_pgxp_transparent_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", false);
+  SetPGXPDepthClearThreshold(
+    si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 }
 
 void Settings::Save(SettingsInterface& si, bool for_copy) const
 {
   TinyString skey;
 
-  si.SetStringValue("Console", "Region", GetConsoleRegionName(region));
-  si.SetBoolValue("Console", "Enable8MBRAM", cpu_enable_8mb_ram);
+  si.SetStringValue(CONSOLE_SECTION_NAME, "Region", GetConsoleRegionName(region));
+  si.SetBoolValue(CONSOLE_SECTION_NAME, "Enable8MBRAM", cpu_enable_8mb_ram);
 
-  si.SetFloatValue("Main", "EmulationSpeed", emulation_speed);
-  si.SetFloatValue("Main", "FastForwardSpeed", fast_forward_speed);
-  si.SetFloatValue("Main", "TurboSpeed", turbo_speed);
-
-  if (!for_copy)
-  {
-    si.SetBoolValue("Main", "SyncToHostRefreshRate", sync_to_host_refresh_rate);
-    si.SetBoolValue("Main", "InhibitScreensaver", inhibit_screensaver);
-    si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
-    si.SetBoolValue("Main", "PauseOnControllerDisconnection", pause_on_controller_disconnection);
-    si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
-    si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
-    si.SetStringValue("Main", "SaveStateCompression", GetSaveStateCompressionModeName(save_state_compression));
-    si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
-    si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
-    si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
-    si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);
-    si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
-    si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
-  }
-
-  si.SetBoolValue("Main", "DisableBackgroundInput", disable_background_input);
-
-  si.SetBoolValue("Main", "RewindEnable", rewind_enable);
-  si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
-  si.SetUIntValue("Main", "RewindSaveSlots", rewind_save_slots);
-  si.SetUIntValue("Main", "RunaheadFrameCount", runahead_frames);
-  si.SetBoolValue("Main", "RunaheadForAnalogInput", runahead_for_analog_input);
-
-  si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
-  si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
-  si.SetIntValue("CPU", "OverclockNumerator", cpu_overclock_numerator);
-  si.SetIntValue("CPU", "OverclockDenominator", cpu_overclock_denominator);
-  if (!for_copy)
-  {
-    si.SetBoolValue("CPU", "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
-    si.SetBoolValue("CPU", "RecompilerBlockLinking", cpu_recompiler_block_linking);
-    si.SetBoolValue("CPU", "RecompilerICache", cpu_recompiler_icache);
-    si.SetStringValue("CPU", "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
-  }
-
-  si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
-  si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
-  si.SetUIntValue("GPU", "ResolutionScale", gpu_resolution_scale);
-  si.SetUIntValue("GPU", "Multisamples", gpu_multisamples);
+  si.SetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", emulation_speed);
+  si.SetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", fast_forward_speed);
+  si.SetFloatValue(INTERFACE_SECTION_NAME, "TurboSpeed", turbo_speed);
 
   if (!for_copy)
   {
-    si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
-    si.SetBoolValue("GPU", "UseGPUBasedValidation", gpu_use_debug_device_gpu_validation);
-    si.SetBoolValue("GPU", "PreferGLESContext", gpu_prefer_gles_context);
-    si.SetBoolValue("GPU", "DisableShaderCache", gpu_disable_shader_cache);
-    si.SetBoolValue("GPU", "DisableDualSourceBlend", gpu_disable_dual_source_blend);
-    si.SetBoolValue("GPU", "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
-    si.SetBoolValue("GPU", "DisableTextureBuffers", gpu_disable_texture_buffers);
-    si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
-    si.SetBoolValue("GPU", "DisableMemoryImport", gpu_disable_memory_import);
-    si.SetBoolValue("GPU", "DisableRasterOrderViews", gpu_disable_raster_order_views);
-    si.SetBoolValue("GPU", "DisableComputeShaders", gpu_disable_compute_shaders);
-    si.SetBoolValue("GPU", "DisableCompressedTextures", gpu_disable_compressed_textures);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", sync_to_host_refresh_rate);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "InhibitScreensaver", inhibit_screensaver);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "PauseOnFocusLoss", pause_on_focus_loss);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection", pause_on_controller_disconnection);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "SaveStateOnExit", save_state_on_exit);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "CreateSaveStateBackups", create_save_state_backups);
+    si.SetStringValue(INTERFACE_SECTION_NAME, "SaveStateCompression",
+                      GetSaveStateCompressionModeName(save_state_compression));
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "ConfirmPowerOff", confim_power_off);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "EnableDiscordPresence", enable_discord_presence);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "LoadDevicesFromSaveStates", load_devices_from_save_states);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "ApplyCompatibilitySettings", apply_compatibility_settings);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "ApplyGameSettings", apply_game_settings);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "DisableAllEnhancements", disable_all_enhancements);
   }
 
-  si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
-  si.SetUIntValue("GPU", "MaxQueuedFrames", gpu_max_queued_frames);
-  si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
-  si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
-  si.SetBoolValue("GPU", "UseSoftwareRendererForMemoryStates", gpu_use_software_renderer_for_memory_states);
-  si.SetBoolValue("GPU", "ScaledInterlacing", gpu_scaled_interlacing);
-  si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
-  si.SetBoolValue("GPU", "DisableUpscaledDirectTextures", gpu_disable_upscaled_direct_textures);
-  si.SetBoolValue("GPU", "FilterFramebufferUploads", gpu_filter_framebuffer_uploads);
-  si.SetUIntValue("GPU", "FilterFramebufferUploadsMinimumWidth", gpu_filter_framebuffer_uploads_minimum_width);
-  si.SetUIntValue("GPU", "FilterFramebufferUploadsMinimumHeight", gpu_filter_framebuffer_uploads_minimum_height);
-  si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
-  si.SetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_sprite_texture_filter));
-  si.SetStringValue("GPU", "DitheringMode", GetGPUDitheringModeName(gpu_dithering_mode));
-  si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
-  si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
-  si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
-  si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
-  si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
-  si.SetBoolValue("GPU", "DisableTextures", gpu_disable_textures);
-  si.SetBoolValue("GPU", "DisableVertexLighting", gpu_disable_vertex_lighting);
-  si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_rendering);
-  si.SetBoolValue("GPU", "EnableModulationCrop", gpu_modulation_crop);
-  si.SetBoolValue("GPU", "EnableTextureCache", gpu_texture_cache);
-  si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
-  si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
-  si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
-  si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
-  si.SetBoolValue("GPU", "PGXPColorCorrection", gpu_pgxp_color_correction);
-  si.SetBoolValue("GPU", "PGXPVertexCache", gpu_pgxp_vertex_cache);
-  si.SetBoolValue("GPU", "PGXPCPU", gpu_pgxp_cpu);
-  si.SetBoolValue("GPU", "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
-  si.SetFloatValue("GPU", "PGXPTolerance", gpu_pgxp_tolerance);
-  si.SetBoolValue("GPU", "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
-  si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
-  si.SetBoolValue("GPU", "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
-  si.SetFloatValue("GPU", "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
-  si.SetBoolValue("GPU", "DumpFastReplayMode", gpu_dump_fast_replay_mode);
-  si.SetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
+  si.SetBoolValue(INTERFACE_SECTION_NAME, "DisableBackgroundInput", disable_background_input);
 
-  si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
-  si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
-  si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
-  si.SetStringValue("Display", "FineCropMode", GetDisplayFineCropModeName(display_fine_crop_mode));
-  si.SetIntValue("Display", "FineCropLeft", display_fine_crop_amount[0]);
-  si.SetIntValue("Display", "FineCropTop", display_fine_crop_amount[1]);
-  si.SetIntValue("Display", "FineCropRight", display_fine_crop_amount[2]);
-  si.SetIntValue("Display", "FineCropBottom", display_fine_crop_amount[3]);
-  si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
-  si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
-  si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
-  si.SetStringValue("Display", "Scaling24Bit", GetDisplayScalingName(display_scaling_24bit));
-  si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
-  si.SetBoolValue("Display", "PreFrameSleep", display_pre_frame_sleep);
-  si.SetBoolValue("Display", "SkipPresentingDuplicateFrames", display_skip_presenting_duplicate_frames);
-  si.SetFloatValue("Display", "PreFrameSleepBuffer", display_pre_frame_sleep_buffer);
-  si.SetBoolValue("Display", "VSync", display_vsync);
-  si.SetBoolValue("Display", "DisableMailboxPresentation", display_disable_mailbox_presentation);
-  si.SetStringValue("Display", "ExclusiveFullscreenControl",
+  si.SetBoolValue(INTERFACE_SECTION_NAME, "RewindEnable", rewind_enable);
+  si.SetFloatValue(INTERFACE_SECTION_NAME, "RewindFrequency", rewind_save_frequency);
+  si.SetUIntValue(INTERFACE_SECTION_NAME, "RewindSaveSlots", rewind_save_slots);
+  si.SetUIntValue(INTERFACE_SECTION_NAME, "RunaheadFrameCount", runahead_frames);
+  si.SetBoolValue(INTERFACE_SECTION_NAME, "RunaheadForAnalogInput", runahead_for_analog_input);
+
+  si.SetStringValue(CPU_SECTION_NAME, "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
+  si.SetBoolValue(CPU_SECTION_NAME, "OverclockEnable", cpu_overclock_enable);
+  si.SetIntValue(CPU_SECTION_NAME, "OverclockNumerator", cpu_overclock_numerator);
+  si.SetIntValue(CPU_SECTION_NAME, "OverclockDenominator", cpu_overclock_denominator);
+  if (!for_copy)
+  {
+    si.SetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
+    si.SetBoolValue(CPU_SECTION_NAME, "RecompilerBlockLinking", cpu_recompiler_block_linking);
+    si.SetBoolValue(CPU_SECTION_NAME, "RecompilerICache", cpu_recompiler_icache);
+    si.SetStringValue(CPU_SECTION_NAME, "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
+  }
+
+  si.SetStringValue(GPU_SECTION_NAME, "Renderer", GetRendererName(gpu_renderer));
+  si.SetStringValue(GPU_SECTION_NAME, "Adapter", gpu_adapter.c_str());
+  si.SetUIntValue(GPU_SECTION_NAME, "ResolutionScale", gpu_resolution_scale);
+  si.SetUIntValue(GPU_SECTION_NAME, "Multisamples", gpu_multisamples);
+
+  if (!for_copy)
+  {
+    si.SetBoolValue(GPU_SECTION_NAME, "UseDebugDevice", gpu_use_debug_device);
+    si.SetBoolValue(GPU_SECTION_NAME, "UseGPUBasedValidation", gpu_use_debug_device_gpu_validation);
+    si.SetBoolValue(GPU_SECTION_NAME, "PreferGLESContext", gpu_prefer_gles_context);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableShaderCache", gpu_disable_shader_cache);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableDualSourceBlend", gpu_disable_dual_source_blend);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableTextureBuffers", gpu_disable_texture_buffers);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableMemoryImport", gpu_disable_memory_import);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableRasterOrderViews", gpu_disable_raster_order_views);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableComputeShaders", gpu_disable_compute_shaders);
+    si.SetBoolValue(GPU_SECTION_NAME, "DisableCompressedTextures", gpu_disable_compressed_textures);
+  }
+
+  si.SetBoolValue(GPU_SECTION_NAME, "PerSampleShading", gpu_per_sample_shading);
+  si.SetUIntValue(GPU_SECTION_NAME, "MaxQueuedFrames", gpu_max_queued_frames);
+  si.SetBoolValue(GPU_SECTION_NAME, "UseThread", gpu_use_thread);
+  si.SetBoolValue(GPU_SECTION_NAME, "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
+  si.SetBoolValue(GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", gpu_use_software_renderer_for_memory_states);
+  si.SetBoolValue(GPU_SECTION_NAME, "ScaledInterlacing", gpu_scaled_interlacing);
+  si.SetBoolValue(GPU_SECTION_NAME, "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
+  si.SetBoolValue(GPU_SECTION_NAME, "DisableUpscaledDirectTextures", gpu_disable_upscaled_direct_textures);
+  si.SetBoolValue(GPU_SECTION_NAME, "FilterFramebufferUploads", gpu_filter_framebuffer_uploads);
+  si.SetUIntValue(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumWidth",
+                  gpu_filter_framebuffer_uploads_minimum_width);
+  si.SetUIntValue(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight",
+                  gpu_filter_framebuffer_uploads_minimum_height);
+  si.SetStringValue(GPU_SECTION_NAME, "TextureFilter", GetTextureFilterName(gpu_texture_filter));
+  si.SetStringValue(GPU_SECTION_NAME, "SpriteTextureFilter", GetTextureFilterName(gpu_sprite_texture_filter));
+  si.SetStringValue(GPU_SECTION_NAME, "DitheringMode", GetGPUDitheringModeName(gpu_dithering_mode));
+  si.SetStringValue(GPU_SECTION_NAME, "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
+  si.SetStringValue(GPU_SECTION_NAME, "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
+  si.SetUIntValue(GPU_SECTION_NAME, "DownsampleScale", gpu_downsample_scale);
+  si.SetStringValue(GPU_SECTION_NAME, "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
+  si.SetStringValue(GPU_SECTION_NAME, "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
+  si.SetBoolValue(GPU_SECTION_NAME, "DisableTextures", gpu_disable_textures);
+  si.SetBoolValue(GPU_SECTION_NAME, "DisableVertexLighting", gpu_disable_vertex_lighting);
+  si.SetBoolValue(GPU_SECTION_NAME, "WidescreenHack", gpu_widescreen_rendering);
+  si.SetBoolValue(GPU_SECTION_NAME, "EnableModulationCrop", gpu_modulation_crop);
+  si.SetBoolValue(GPU_SECTION_NAME, "EnableTextureCache", gpu_texture_cache);
+  si.SetBoolValue(GPU_SECTION_NAME, "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPEnable", gpu_pgxp_enable);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPCulling", gpu_pgxp_culling);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", gpu_pgxp_texture_correction);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", gpu_pgxp_color_correction);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPVertexCache", gpu_pgxp_vertex_cache);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPCPU", gpu_pgxp_cpu);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
+  si.SetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", gpu_pgxp_tolerance);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
+  si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
+  si.SetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", gpu_dump_fast_replay_mode);
+  si.SetStringValue(GPU_SECTION_NAME, "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
+
+  si.SetStringValue(DISPLAY_SECTION_NAME, "CropMode", GetDisplayCropModeName(display_crop_mode));
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "Force4_3For24Bit", display_force_4_3_for_24bit);
+  si.SetStringValue(DISPLAY_SECTION_NAME, "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
+  si.SetStringValue(DISPLAY_SECTION_NAME, "FineCropMode", GetDisplayFineCropModeName(display_fine_crop_mode));
+  si.SetIntValue(DISPLAY_SECTION_NAME, "FineCropLeft", display_fine_crop_amount[0]);
+  si.SetIntValue(DISPLAY_SECTION_NAME, "FineCropTop", display_fine_crop_amount[1]);
+  si.SetIntValue(DISPLAY_SECTION_NAME, "FineCropRight", display_fine_crop_amount[2]);
+  si.SetIntValue(DISPLAY_SECTION_NAME, "FineCropBottom", display_fine_crop_amount[3]);
+  si.SetStringValue(DISPLAY_SECTION_NAME, "Alignment", GetDisplayAlignmentName(display_alignment));
+  si.SetStringValue(DISPLAY_SECTION_NAME, "Rotation", GetDisplayRotationName(display_rotation));
+  si.SetStringValue(DISPLAY_SECTION_NAME, "Scaling", GetDisplayScalingName(display_scaling));
+  si.SetStringValue(DISPLAY_SECTION_NAME, "Scaling24Bit", GetDisplayScalingName(display_scaling_24bit));
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "OptimalFramePacing", display_optimal_frame_pacing);
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "PreFrameSleep", display_pre_frame_sleep);
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "SkipPresentingDuplicateFrames", display_skip_presenting_duplicate_frames);
+  si.SetFloatValue(DISPLAY_SECTION_NAME, "PreFrameSleepBuffer", display_pre_frame_sleep_buffer);
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "VSync", display_vsync);
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "DisableMailboxPresentation", display_disable_mailbox_presentation);
+  si.SetStringValue(DISPLAY_SECTION_NAME, "ExclusiveFullscreenControl",
                     GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
-  si.SetStringValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
-  si.SetStringValue("Display", "ScreenshotFormat", GetDisplayScreenshotFormatName(display_screenshot_format));
-  si.SetStringValue("Display", "ScreenshotFileNameFormat",
+  si.SetStringValue(DISPLAY_SECTION_NAME, "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
+  si.SetStringValue(DISPLAY_SECTION_NAME, "ScreenshotFormat",
+                    GetDisplayScreenshotFormatName(display_screenshot_format));
+  si.SetStringValue(DISPLAY_SECTION_NAME, "ScreenshotFileNameFormat",
                     GetCaptureFileNameFormatName(display_screenshot_filename_format));
-  si.SetUIntValue("Display", "ScreenshotQuality", display_screenshot_quality);
+  si.SetUIntValue(DISPLAY_SECTION_NAME, "ScreenshotQuality", display_screenshot_quality);
   if (!for_copy)
   {
-    si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
-    si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
-    si.SetIntValue("Display", "LineStartOffset", display_line_start_offset);
-    si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
+    si.SetIntValue(DISPLAY_SECTION_NAME, "ActiveStartOffset", display_active_start_offset);
+    si.SetIntValue(DISPLAY_SECTION_NAME, "ActiveEndOffset", display_active_end_offset);
+    si.SetIntValue(DISPLAY_SECTION_NAME, "LineStartOffset", display_line_start_offset);
+    si.SetIntValue(DISPLAY_SECTION_NAME, "LineEndOffset", display_line_end_offset);
   }
 
   if (!for_copy)
   {
-    si.SetBoolValue("Display", "ShowOSDMessages", display_show_messages);
-    si.SetBoolValue("Display", "AnimateOSDMessages", display_animate_messages);
-    si.SetBoolValue("Display", "BlurOSDMessageBackgrounds", display_blur_message_backgrounds);
-    si.SetBoolValue("Display", "ShowFPS", display_show_fps);
-    si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
-    si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
-    si.SetBoolValue("Display", "ShowLatencyStatistics", display_show_latency_stats);
-    si.SetBoolValue("Display", "ShowGPUStatistics", display_show_gpu_stats);
-    si.SetBoolValue("Display", "ShowCPU", display_show_cpu_usage);
-    si.SetBoolValue("Display", "ShowGPU", display_show_gpu_usage);
-    si.SetBoolValue("Display", "ShowFrameTimes", display_show_frame_times);
-    si.SetBoolValue("Display", "ShowStatusIndicators", display_show_status_indicators);
-    si.SetBoolValue("Display", "ShowInputs", display_show_inputs);
-    si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
-    si.SetFloatValue("Display", "OSDScale", display_osd_scale);
-    si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowOSDMessages", display_show_messages);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "AnimateOSDMessages", display_animate_messages);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "BlurOSDMessageBackgrounds", display_blur_message_backgrounds);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowFPS", display_show_fps);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowSpeed", display_show_speed);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowResolution", display_show_resolution);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowLatencyStatistics", display_show_latency_stats);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowGPUStatistics", display_show_gpu_stats);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowCPU", display_show_cpu_usage);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowGPU", display_show_gpu_usage);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameTimes", display_show_frame_times);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowStatusIndicators", display_show_status_indicators);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowInputs", display_show_inputs);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowEnhancements", display_show_enhancements);
+    si.SetFloatValue(DISPLAY_SECTION_NAME, "OSDScale", display_osd_scale);
+    si.SetFloatValue(DISPLAY_SECTION_NAME, "OSDMargin", display_osd_margin);
 
     for (size_t i = 0; i < display_osd_message_duration.size(); i++)
     {
       skey.format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i)));
-      si.SetFloatValue("Display", skey.c_str(), display_osd_message_duration[i]);
+      si.SetFloatValue(DISPLAY_SECTION_NAME, skey.c_str(), display_osd_message_duration[i]);
     }
 
-    si.SetStringValue("Display", "OSDMessageLocation", GetNotificationLocationName(display_osd_message_location));
+    si.SetStringValue(DISPLAY_SECTION_NAME, "OSDMessageLocation",
+                      GetNotificationLocationName(display_osd_message_location));
   }
 
-  si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
+  si.SetBoolValue(DISPLAY_SECTION_NAME, "AutoResizeWindow", display_auto_resize_window);
 
-  si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
-  si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
-  si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
-  si.SetBoolValue("CDROM", "AutoDiscChange", cdrom_auto_disc_change);
-  si.SetUIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
-  si.SetUIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
+  si.SetBoolValue(CDROM_SECTION_NAME, "LoadImageToRAM", cdrom_load_image_to_ram);
+  si.SetBoolValue(CDROM_SECTION_NAME, "LoadImagePatches", cdrom_load_image_patches);
+  si.SetBoolValue(CDROM_SECTION_NAME, "MuteCDAudio", cdrom_mute_cd_audio);
+  si.SetBoolValue(CDROM_SECTION_NAME, "AutoDiscChange", cdrom_auto_disc_change);
+  si.SetUIntValue(CDROM_SECTION_NAME, "ReadSpeedup", cdrom_read_speedup);
+  si.SetUIntValue(CDROM_SECTION_NAME, "SeekSpeedup", cdrom_seek_speedup);
   if (!for_copy)
   {
-    si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
-    si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
-    si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
-    si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
-    si.SetBoolValue("CDROM", "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
-    si.SetUIntValue("CDROM", "MaxSeekSpeedupCycles", cdrom_max_seek_speedup_cycles);
-    si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_read_speedup_cycles);
+    si.SetStringValue(CDROM_SECTION_NAME, "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
+    si.SetIntValue(CDROM_SECTION_NAME, "ReadaheadSectors", cdrom_readahead_sectors);
+    si.SetBoolValue(CDROM_SECTION_NAME, "RegionCheck", cdrom_region_check);
+    si.SetBoolValue(CDROM_SECTION_NAME, "SubQSkew", cdrom_subq_skew);
+    si.SetBoolValue(CDROM_SECTION_NAME, "DisableSpeedupOnMDEC", mdec_disable_cdrom_speedup);
+    si.SetUIntValue(CDROM_SECTION_NAME, "MaxSeekSpeedupCycles", cdrom_max_seek_speedup_cycles);
+    si.SetUIntValue(CDROM_SECTION_NAME, "MaxReadSpeedupCycles", cdrom_max_read_speedup_cycles);
   }
 
-  si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(audio_backend));
-  si.SetStringValue("Audio", "Driver", audio_driver.c_str());
-  si.SetStringValue("Audio", "OutputDevice", audio_output_device.c_str());
-  audio_stream_parameters.Save(si, "Audio");
-  si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
-  si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
-  si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
+  si.SetStringValue(AUDIO_SECTION_NAME, "Backend", AudioStream::GetBackendName(audio_backend));
+  si.SetStringValue(AUDIO_SECTION_NAME, "Driver", audio_driver.c_str());
+  si.SetStringValue(AUDIO_SECTION_NAME, "OutputDevice", audio_output_device.c_str());
+  audio_stream_parameters.Save(si, AUDIO_SECTION_NAME);
+  si.SetUIntValue(AUDIO_SECTION_NAME, "OutputVolume", audio_output_volume);
+  si.SetUIntValue(AUDIO_SECTION_NAME, "FastForwardVolume", audio_fast_forward_volume);
+  si.SetBoolValue(AUDIO_SECTION_NAME, "OutputMuted", audio_output_muted);
 
-  si.SetBoolValue("BIOS", "TTYLogging", bios_tty_logging);
-  si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
-  si.SetBoolValue("BIOS", "FastForwardBoot", bios_fast_forward_boot);
+  si.SetBoolValue(BIOS_SECTION_NAME, "TTYLogging", bios_tty_logging);
+  si.SetBoolValue(BIOS_SECTION_NAME, "PatchFastBoot", bios_patch_fast_boot);
+  si.SetBoolValue(BIOS_SECTION_NAME, "FastForwardBoot", bios_fast_forward_boot);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -866,115 +917,127 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     }
 
     skey.format("Card{}Type", i + 1);
-    si.SetStringValue("MemoryCards", skey, GetMemoryCardTypeName(memory_card_types[i]));
+    si.SetStringValue(MEMORY_CARDS_SECTION_NAME, skey, GetMemoryCardTypeName(memory_card_types[i]));
 
     skey.format("Card{}Path", i + 1);
     if (!memory_card_paths[i].empty())
-      si.SetStringValue("MemoryCards", skey, memory_card_paths[i].c_str());
+      si.SetStringValue(MEMORY_CARDS_SECTION_NAME, skey, memory_card_paths[i].c_str());
     else
-      si.DeleteValue("MemoryCards", skey);
+      si.DeleteValue(MEMORY_CARDS_SECTION_NAME, skey);
   }
 
-  si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
-  si.SetBoolValue("MemoryCards", "FastForwardAccess", memory_card_fast_forward_access);
+  si.SetBoolValue(MEMORY_CARDS_SECTION_NAME, "UsePlaylistTitle", memory_card_use_playlist_title);
+  si.SetBoolValue(MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", memory_card_fast_forward_access);
 
   if (!for_copy)
-    si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
+    si.SetStringValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode", GetMultitapModeName(multitap_mode));
 
-  si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
-  si.SetBoolValue("Cheevos", "ChallengeMode", achievements_hardcore_mode);
-  si.SetBoolValue("Cheevos", "EncoreMode", achievements_encore_mode);
-  si.SetBoolValue("Cheevos", "SpectatorMode", achievements_spectator_mode);
-  si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_track_unofficial);
-  si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
-  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
-  si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);
-  si.SetBoolValue("Cheevos", "LeaderboardTrackers", achievements_leaderboard_trackers);
-  si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
-  si.SetBoolValue("Cheevos", "PrefetchBadges", achievements_prefetch_badges);
-  si.SetBoolValue("Cheevos", "RichPresenceMonitor", achievements_rich_presence_monitor);
-  si.SetStringValue("Cheevos", "NotificationLocation", GetNotificationLocationName(achievements_notification_location));
-  si.SetStringValue("Cheevos", "IndicatorLocation", GetNotificationLocationName(achievements_indicator_location));
-  si.SetStringValue("Cheevos", "ChallengeIndicatorMode",
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Enabled", achievements_enabled);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", achievements_hardcore_mode);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "EncoreMode", achievements_encore_mode);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", achievements_spectator_mode);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", achievements_track_unofficial);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UseRAIntegration", achievements_use_raintegration);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Notifications", achievements_notifications);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardNotifications", achievements_leaderboard_notifications);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardTrackers", achievements_leaderboard_trackers);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SoundEffects", achievements_sound_effects);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "PrefetchBadges", achievements_prefetch_badges);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "RichPresenceMonitor", achievements_rich_presence_monitor);
+  si.SetStringValue(ACHIEVEMENTS_SECTION_NAME, "NotificationLocation",
+                    GetNotificationLocationName(achievements_notification_location));
+  si.SetStringValue(ACHIEVEMENTS_SECTION_NAME, "IndicatorLocation",
+                    GetNotificationLocationName(achievements_indicator_location));
+  si.SetStringValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeIndicatorMode",
                     GetAchievementChallengeIndicatorModeName(achievements_challenge_indicator_mode));
-  si.SetStringValue("Cheevos", "ProgressIndicatorMode",
+  si.SetStringValue(ACHIEVEMENTS_SECTION_NAME, "ProgressIndicatorMode",
                     GetAchievementProgressIndicatorModeName(achievements_progress_indicator_mode));
-  si.SetUIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
-  si.SetUIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
-  si.SetIntValue("Cheevos", "NotificationScale", achievements_notification_scale);
-  si.SetIntValue("Cheevos", "IndicatorScale", achievements_indicator_scale);
+  si.SetUIntValue(ACHIEVEMENTS_SECTION_NAME, "NotificationsDuration", achievements_notification_duration);
+  si.SetUIntValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardsDuration", achievements_leaderboard_duration);
+  si.SetIntValue(ACHIEVEMENTS_SECTION_NAME, "NotificationScale", achievements_notification_scale);
+  si.SetIntValue(ACHIEVEMENTS_SECTION_NAME, "IndicatorScale", achievements_indicator_scale);
 
   if (!for_copy)
   {
-    si.SetIntValue("Hacks", "DMAMaxSliceTicks", dma_max_slice_ticks);
-    si.SetIntValue("Hacks", "DMAHaltTicks", dma_halt_ticks);
-    si.SetIntValue("Hacks", "GPUFIFOSize", gpu_fifo_size);
-    si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
-    si.SetBoolValue("Hacks", "UseOldMDECRoutines", mdec_use_old_routines);
-    si.SetBoolValue("Hacks", "ExportSharedMemory", export_shared_memory);
+    si.SetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", dma_max_slice_ticks);
+    si.SetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", dma_halt_ticks);
+    si.SetIntValue(HACKS_SECTION_NAME, "GPUFIFOSize", gpu_fifo_size);
+    si.SetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", gpu_max_run_ahead);
+    si.SetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", mdec_use_old_routines);
+    si.SetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", export_shared_memory);
 
-    si.SetBoolValue("Debug", "PCSXExpansionRegion", pcsx_expansion_region_enable);
-    si.SetBoolValue("Debug", "ShowVRAM", gpu_show_vram);
-    si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
-    si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
+    si.SetBoolValue(DEBUG_SECTION_NAME, "PCSXExpansionRegion", pcsx_expansion_region_enable);
+    si.SetBoolValue(DEBUG_SECTION_NAME, "ShowVRAM", gpu_show_vram);
+    si.SetBoolValue(DEBUG_SECTION_NAME, "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
+    si.SetBoolValue(DEBUG_SECTION_NAME, "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
 
-    si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
-    si.SetUIntValue("Debug", "GDBServerPort", gdb_server_port);
+    si.SetBoolValue(DEBUG_SECTION_NAME, "EnableGDBServer", enable_gdb_server);
+    si.SetUIntValue(DEBUG_SECTION_NAME, "GDBServerPort", gdb_server_port);
 
-    si.SetBoolValue("SIO", "RedirectToTTY", sio_redirect_to_tty);
+    si.SetBoolValue(SIO_SECTION_NAME, "RedirectToTTY", sio_redirect_to_tty);
 
-    si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
-    si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
-    si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
+    si.SetBoolValue(PCDRV_SECTION_NAME, "Enabled", pcdrv_enable);
+    si.SetBoolValue(PCDRV_SECTION_NAME, "EnableWrites", pcdrv_enable_writes);
+    si.SetStringValue(PCDRV_SECTION_NAME, "Root", pcdrv_root.c_str());
+
+    ImGuiManager::SaveDebugWindowVisibility(si, debug_window_visibility);
   }
 
-  si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
-  si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableTextureReplacements",
+                  texture_replacements.enable_texture_replacements);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableVRAMWriteReplacements",
                   texture_replacements.enable_vram_write_replacements);
-  si.SetBoolValue("TextureReplacements", "AlwaysTrackUploads", texture_replacements.always_track_uploads);
-  si.SetBoolValue("TextureReplacements", "PreloadTextures", texture_replacements.preload_textures);
-  si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", texture_replacements.dump_vram_writes);
-  si.SetBoolValue("TextureReplacements", "DumpTextures", texture_replacements.dump_textures);
-  si.SetBoolValue("TextureReplacements", "DumpReplacedTextures", texture_replacements.dump_replaced_textures);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "AlwaysTrackUploads", texture_replacements.always_track_uploads);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "PreloadTextures", texture_replacements.preload_textures);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWrites", texture_replacements.dump_vram_writes);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextures", texture_replacements.dump_textures);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpReplacedTextures",
+                  texture_replacements.dump_replaced_textures);
 
-  si.SetBoolValue("TextureReplacements", "DumpTexturePages", texture_replacements.config.dump_texture_pages);
-  si.SetBoolValue("TextureReplacements", "DumpFullTexturePages", texture_replacements.config.dump_full_texture_pages);
-  si.SetBoolValue("TextureReplacements", "DumpTextureForceAlphaChannel",
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTexturePages",
+                  texture_replacements.config.dump_texture_pages);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpFullTexturePages",
+                  texture_replacements.config.dump_full_texture_pages);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureForceAlphaChannel",
                   texture_replacements.config.dump_texture_force_alpha_channel);
 
-  si.SetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel",
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteForceAlphaChannel",
                   texture_replacements.config.dump_vram_write_force_alpha_channel);
-  si.SetBoolValue("TextureReplacements", "DumpC16Textures", texture_replacements.config.dump_c16_textures);
-  si.SetBoolValue("TextureReplacements", "ReducePaletteRange", texture_replacements.config.reduce_palette_range);
-  si.SetBoolValue("TextureReplacements", "ConvertCopiesToWrites", texture_replacements.config.convert_copies_to_writes);
-  si.SetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter",
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpC16Textures", texture_replacements.config.dump_c16_textures);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ReducePaletteRange",
+                  texture_replacements.config.reduce_palette_range);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ConvertCopiesToWrites",
+                  texture_replacements.config.convert_copies_to_writes);
+  si.SetBoolValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "ReplacementScaleLinearFilter",
                   texture_replacements.config.replacement_scale_linear_filter);
 
-  si.SetUIntValue("TextureReplacements", "MaxHashCacheEntries", texture_replacements.config.max_hash_cache_entries);
-  si.SetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxHashCacheEntries",
+                  texture_replacements.config.max_hash_cache_entries);
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxHashCacheVRAMUsageMB",
                   texture_replacements.config.max_hash_cache_vram_usage_mb);
-  si.SetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxReplacementCacheVRAMUsage",
                   texture_replacements.config.max_replacement_cache_vram_usage_mb);
 
-  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", texture_replacements.config.max_vram_write_splits);
-  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteSplits",
+                  texture_replacements.config.max_vram_write_splits);
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceWidth",
                   texture_replacements.config.max_vram_write_coalesce_width);
-  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceHeight",
                   texture_replacements.config.max_vram_write_coalesce_height);
 
-  si.SetUIntValue("TextureReplacements", "DumpTextureWidthThreshold",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureWidthThreshold",
                   texture_replacements.config.texture_dump_width_threshold);
-  si.SetUIntValue("TextureReplacements", "DumpTextureHeightThreshold",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureHeightThreshold",
                   texture_replacements.config.texture_dump_height_threshold);
-  si.SetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteWidthThreshold",
                   texture_replacements.config.vram_write_dump_width_threshold);
-  si.SetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
+  si.SetUIntValue(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteHeightThreshold",
                   texture_replacements.config.vram_write_dump_height_threshold);
 
-  si.SetStringValue("PIO", "DeviceType", GetPIODeviceTypeModeName(pio_device_type));
-  si.SetStringValue("PIO", "FlashImagePath", pio_flash_image_path.c_str());
-  si.SetBoolValue("PIO", "FlashImageWriteEnable", pio_flash_write_enable);
-  si.SetBoolValue("PIO", "SwitchActive", pio_switch_active);
+  si.SetStringValue(PIO_SECTION_NAME, "DeviceType", GetPIODeviceTypeModeName(pio_device_type));
+  si.SetStringValue(PIO_SECTION_NAME, "FlashImagePath", pio_flash_image_path.c_str());
+  si.SetBoolValue(PIO_SECTION_NAME, "FlashImageWriteEnable", pio_flash_write_enable);
+  si.SetBoolValue(PIO_SECTION_NAME, "SwitchActive", pio_switch_active);
 }
 
 bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
@@ -1322,35 +1385,35 @@ bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
 
 void Settings::SetDefaultLogConfig(SettingsInterface& si)
 {
-  si.SetStringValue("Logging", "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL));
-  si.SetBoolValue("Logging", "LogTimestamps", true);
+  si.SetStringValue(LOGGING_SECTION_NAME, "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL));
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogTimestamps", true);
 
 #ifndef _WIN32
   // On Linux, default the console to whether standard input is currently available.
-  si.SetBoolValue("Logging", "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
 #else
-  si.SetBoolValue("Logging", "LogToConsole", false);
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogToConsole", false);
 #endif
 
-  si.SetBoolValue("Logging", "LogToDebug", false);
-  si.SetBoolValue("Logging", "LogToWindow", false);
-  si.SetBoolValue("Logging", "LogToFile", false);
-  si.SetBoolValue("Logging", "LogFileTimestamps", false);
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogToDebug", false);
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogToWindow", false);
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogToFile", false);
+  si.SetBoolValue(LOGGING_SECTION_NAME, "LogFileTimestamps", false);
 
   for (const char* channel_name : Log::GetChannelNames())
-    si.SetBoolValue("Logging", channel_name, true);
+    si.SetBoolValue(LOGGING_SECTION_NAME, channel_name, true);
 }
 
 void Settings::UpdateLogConfig(const SettingsInterface& si)
 {
   const Log::Level log_level =
-    ParseLogLevelName(si.GetStringViewValue("Logging", "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL)))
+    ParseLogLevelName(si.GetStringViewValue(LOGGING_SECTION_NAME, "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL)))
       .value_or(Log::DEFAULT_LOG_LEVEL);
-  const bool log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
-  const bool log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
-  const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
-  const bool log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
-  const bool log_file_timestamps = si.GetBoolValue("Logging", "LogFileTimestamps", false);
+  const bool log_timestamps = si.GetBoolValue(LOGGING_SECTION_NAME, "LogTimestamps", true);
+  const bool log_to_console = si.GetBoolValue(LOGGING_SECTION_NAME, "LogToConsole", false);
+  const bool log_to_debug = si.GetBoolValue(LOGGING_SECTION_NAME, "LogToDebug", false);
+  const bool log_to_file = si.GetBoolValue(LOGGING_SECTION_NAME, "LogToFile", false);
+  const bool log_file_timestamps = si.GetBoolValue(LOGGING_SECTION_NAME, "LogFileTimestamps", false);
 
   Log::SetLogLevel(log_level);
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
@@ -1368,17 +1431,19 @@ void Settings::UpdateLogConfig(const SettingsInterface& si)
 
   const auto channel_names = Log::GetChannelNames();
   for (size_t i = 0; i < channel_names.size(); i++)
-    Log::SetLogChannelEnabled(static_cast<Log::Channel>(i), si.GetBoolValue("Logging", channel_names[i], true));
+    Log::SetLogChannelEnabled(static_cast<Log::Channel>(i),
+                              si.GetBoolValue(LOGGING_SECTION_NAME, channel_names[i], true));
 }
 
 void Settings::SetDefaultControllerConfig(SettingsInterface& si)
 {
   // Global Settings
-  si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
-  si.SetFloatValue("ControllerPorts", "PointerXScale", 8.0f);
-  si.SetFloatValue("ControllerPorts", "PointerYScale", 8.0f);
-  si.SetBoolValue("ControllerPorts", "PointerXInvert", false);
-  si.SetBoolValue("ControllerPorts", "PointerYInvert", false);
+  si.SetStringValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
+                    GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE));
+  si.SetFloatValue(CONTROLLER_PORTS_SECTION_NAME, "PointerXScale", 8.0f);
+  si.SetFloatValue(CONTROLLER_PORTS_SECTION_NAME, "PointerYScale", 8.0f);
+  si.SetBoolValue(CONTROLLER_PORTS_SECTION_NAME, "PointerXInvert", false);
+  si.SetBoolValue(CONTROLLER_PORTS_SECTION_NAME, "PointerYInvert", false);
 
   // Default pad types and parameters.
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -2899,23 +2964,24 @@ std::string EmuFolders::LoadPathFromSettings(const SettingsInterface& si, const 
 
 void EmuFolders::LoadConfig(const SettingsInterface& si)
 {
-  Bios = LoadPathFromSettings(si, DataRoot, "BIOS", "SearchDirectory", "bios");
-  Cache = LoadPathFromSettings(si, DataRoot, "Folders", "Cache", "cache");
-  Cheats = LoadPathFromSettings(si, DataRoot, "Folders", "Cheats", "cheats");
-  Covers = LoadPathFromSettings(si, DataRoot, "Folders", "Covers", "covers");
-  GameIcons = LoadPathFromSettings(si, DataRoot, "Folders", "GameIcons", "gameicons");
-  GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
-  InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
-  MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
-  Overlays = LoadPathFromSettings(si, DataRoot, "Folders", "Overlays", "resources" FS_OSPATH_SEPARATOR_STR "overlays");
-  Patches = LoadPathFromSettings(si, DataRoot, "Folders", "Patches", "patches");
-  SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
-  Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
-  Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
-  Subchannels = LoadPathFromSettings(si, DataRoot, "Folders", "Subchannels", "subchannels");
-  Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
-  UserResources = LoadPathFromSettings(si, DataRoot, "Folders", "UserResources", "resources");
-  Videos = LoadPathFromSettings(si, DataRoot, "Folders", "Videos", "videos");
+  Bios = LoadPathFromSettings(si, DataRoot, Settings::BIOS_SECTION_NAME, "SearchDirectory", "bios");
+  Cache = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Cache", "cache");
+  Cheats = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Cheats", "cheats");
+  Covers = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Covers", "covers");
+  GameIcons = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "GameIcons", "gameicons");
+  GameSettings = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "GameSettings", "gamesettings");
+  InputProfiles = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "InputProfiles", "inputprofiles");
+  MemoryCards = LoadPathFromSettings(si, DataRoot, Settings::MEMORY_CARDS_SECTION_NAME, "Directory", "memcards");
+  Overlays = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Overlays",
+                                  "resources" FS_OSPATH_SEPARATOR_STR "overlays");
+  Patches = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Patches", "patches");
+  SaveStates = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "SaveStates", "savestates");
+  Screenshots = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Screenshots", "screenshots");
+  Shaders = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Shaders", "shaders");
+  Subchannels = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Subchannels", "subchannels");
+  Textures = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Textures", "textures");
+  UserResources = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "UserResources", "resources");
+  Videos = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Videos", "videos");
 
   DEV_LOG("BIOS Directory: {}", Bios);
   DEV_LOG("Cache Directory: {}", Cache);
@@ -2940,23 +3006,26 @@ void EmuFolders::LoadConfig(const SettingsInterface& si)
 void EmuFolders::Save(SettingsInterface& si)
 {
   // convert back to relative
-  si.SetStringValue("BIOS", "SearchDirectory", Path::MakeRelative(Bios, DataRoot).c_str());
-  si.SetStringValue("Folders", "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
-  si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
-  si.SetStringValue("Folders", "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
-  si.SetStringValue("Folders", "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
-  si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
-  si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
-  si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
-  si.SetStringValue("Folders", "Overlays", Path::MakeRelative(Overlays, DataRoot).c_str());
-  si.SetStringValue("Folders", "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
-  si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
-  si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
-  si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
-  si.SetStringValue("Folders", "Subchannels", Path::MakeRelative(Subchannels, DataRoot).c_str());
-  si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
-  si.SetStringValue("Folders", "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
-  si.SetStringValue("Folders", "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
+  si.SetStringValue(Settings::BIOS_SECTION_NAME, "SearchDirectory", Path::MakeRelative(Bios, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "InputProfiles",
+                    Path::MakeRelative(InputProfiles, DataRoot).c_str());
+  si.SetStringValue(Settings::MEMORY_CARDS_SECTION_NAME, "Directory",
+                    Path::MakeRelative(MemoryCards, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Overlays", Path::MakeRelative(Overlays, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Subchannels", Path::MakeRelative(Subchannels, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "UserResources",
+                    Path::MakeRelative(UserResources, DataRoot).c_str());
+  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
 }
 
 void EmuFolders::EnsureFolderExists(const std::string& path)

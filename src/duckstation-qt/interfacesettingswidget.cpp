@@ -45,27 +45,37 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "Main", "InhibitScreensaver", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "Main", "PauseOnFocusLoss", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "Main",
-                                               "PauseOnControllerDisconnection", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableBackgroundInput, "Main", "DisableBackgroundInput",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, Settings::INTERFACE_SECTION_NAME,
+                                               "InhibitScreensaver", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, Settings::INTERFACE_SECTION_NAME,
+                                               "PauseOnFocusLoss", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection,
+                                               Settings::INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnGameClose, "Main", "SaveStateOnExit", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmGameClose, "Main", "ConfirmPowerOff", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "Main",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableBackgroundInput, Settings::INTERFACE_SECTION_NAME,
+                                               "DisableBackgroundInput", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnGameClose, Settings::INTERFACE_SECTION_NAME,
+                                               "SaveStateOnExit", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmGameClose, Settings::INTERFACE_SECTION_NAME,
+                                               "ConfirmPowerOff", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, Settings::INTERFACE_SECTION_NAME,
+                                               "StartFullscreen", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, Settings::INTERFACE_SECTION_NAME,
                                                "DoubleClickTogglesFullscreen", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.renderToSeparateWindow, "Main", "RenderToSeparateWindow",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMainWindow, "Main", "HideMainWindowWhenRunning", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, "Main", "DisableWindowResize", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "Main", "HideCursorInFullscreen", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLogInMainWindow, "Main", "DisplayLogInMainWindow",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.renderToSeparateWindow, Settings::INTERFACE_SECTION_NAME,
+                                               "RenderToSeparateWindow", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMainWindow, Settings::INTERFACE_SECTION_NAME,
+                                               "HideMainWindowWhenRunning", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, Settings::INTERFACE_SECTION_NAME,
+                                               "DisableWindowResize", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, Settings::INTERFACE_SECTION_NAME,
+                                               "HideCursorInFullscreen", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLogInMainWindow, Settings::INTERFACE_SECTION_NAME,
+                                               "DisplayLogInMainWindow", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, Settings::INTERFACE_SECTION_NAME,
+                                               "EnableDiscordPresence", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, Settings::DISPLAY_SECTION_NAME,
+                                               "AutoResizeWindow", false);
   connect(m_ui.renderToSeparateWindow, &QCheckBox::checkStateChanged, this,
           &InterfaceSettingsWidget::updateRenderToSeparateWindowOptions);
   connect(m_ui.hideMainWindow, &QCheckBox::checkStateChanged, this,
@@ -77,20 +87,21 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 #if defined(_WIN32)
   QCheckBox* const disable_window_rounded_corners =
     new QCheckBox(tr("Disable Window Rounded Corners"), m_ui.appearanceGroup);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_window_rounded_corners, "Main",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, disable_window_rounded_corners, Settings::INTERFACE_SECTION_NAME,
                                                "DisableWindowRoundedCorners", false);
   m_ui.appearanceLayout->addWidget(disable_window_rounded_corners, next_appearance_row, next_appearance_col++ * 2, 1,
                                    2);
 #elif defined(__APPLE__)
   QCheckBox* const use_fractional_window_scale = new QCheckBox(tr("Use Fractional Window Scale"), m_ui.appearanceGroup);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_fractional_window_scale, "Main", "UseFractionalWindowScale",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_fractional_window_scale, Settings::INTERFACE_SECTION_NAME,
+                                               "UseFractionalWindowScale", false);
   m_ui.appearanceLayout->addWidget(use_fractional_window_scale, next_appearance_row, next_appearance_col++ * 2, 1, 2);
 #endif
 
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreenUI, "Main", "StartFullscreenUI", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreenUI, Settings::INTERFACE_SECTION_NAME,
+                                                 "StartFullscreenUI", false);
 
     setupThemeCombo(m_ui.theme);
     setupLanguageCombo(m_ui.language);
@@ -102,7 +113,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
 #ifdef __linux__
     QCheckBox* const use_system_font = new QCheckBox(tr("Use System Font"), m_ui.appearanceGroup);
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, "Main", "UseSystemFont", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, use_system_font, Settings::INTERFACE_SECTION_NAME,
+                                                 "UseSystemFont", false);
     m_ui.appearanceLayout->addWidget(use_system_font, next_appearance_row, next_appearance_col++ * 2, 1, 2);
     connect(use_system_font, &QCheckBox::checkStateChanged, &QtHost::UpdateApplicationTheme);
     dialog->registerWidgetHelp(
@@ -112,7 +124,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 #endif
 
     m_disable_style_sheets = new QCheckBox(tr("Disable Style Sheets"), m_ui.appearanceGroup);
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_disable_style_sheets, "Main", "DisableStylesheet", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_disable_style_sheets, Settings::INTERFACE_SECTION_NAME,
+                                                 "DisableStylesheet", false);
     connect(m_disable_style_sheets, &QCheckBox::checkStateChanged, &QtHost::UpdateApplicationTheme);
     m_ui.appearanceLayout->addWidget(m_disable_style_sheets, next_appearance_row, next_appearance_col++ * 2, 1, 2);
     dialog->registerWidgetHelp(m_disable_style_sheets, tr("Disable Style Sheets"), tr("Unchecked"),
@@ -122,11 +135,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
             &InterfaceSettingsWidget::updateDisableStyleSheetsEnabled);
     updateDisableStyleSheetsEnabled();
 
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, AutoUpdaterDialog::CONFIG_SECTION_NAME,
+                                                 "CheckAtStartup", true);
     for (const auto& [name, desc] : AutoUpdaterDialog::getChannelList())
       m_ui.autoUpdateTag->addItem(desc, name);
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
-                                                   AutoUpdaterDialog::getDefaultTag());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, AutoUpdaterDialog::CONFIG_SECTION_NAME,
+                                                   "UpdateTag", AutoUpdaterDialog::getDefaultTag());
     connect(m_ui.checkForUpdates, &QPushButton::clicked, this, &InterfaceSettingsWidget::checkForUpdates);
 
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str, g_scm_date_str));
@@ -264,7 +278,7 @@ void InterfaceSettingsWidget::setupLanguageCombo(QComboBox* const cb)
                 QString::fromLatin1(code));
   }
 
-  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, "Main", "Language", {});
+  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, Settings::INTERFACE_SECTION_NAME, "Language", {});
 }
 
 void InterfaceSettingsWidget::setupThemeCombo(QComboBox* const cb)
@@ -277,14 +291,17 @@ void InterfaceSettingsWidget::setupThemeCombo(QComboBox* const cb)
       cb->addItem(name, name);
   }
 
-  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, "UI", "Theme", QtHost::GetDefaultThemeName());
+  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, cb, Settings::UI_SECTION_NAME, "Theme",
+                                                 QtHost::GetDefaultThemeName());
   connect(cb, &QComboBox::currentIndexChanged, &QtHost::UpdateApplicationTheme);
 }
 
 void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()
 {
-  const bool render_to_separate_window = m_dialog->getEffectiveBoolValue("Main", "RenderToSeparateWindow", false);
-  const bool hide_main_window = m_dialog->getEffectiveBoolValue("Main", "HideMainWindowWhenRunning", false);
+  const bool render_to_separate_window =
+    m_dialog->getEffectiveBoolValue(Settings::INTERFACE_SECTION_NAME, "RenderToSeparateWindow", false);
+  const bool hide_main_window =
+    m_dialog->getEffectiveBoolValue(Settings::INTERFACE_SECTION_NAME, "HideMainWindowWhenRunning", false);
   m_ui.hideMainWindow->setEnabled(render_to_separate_window);
   m_ui.displayLogInMainWindow->setEnabled(render_to_separate_window && !hide_main_window);
 }

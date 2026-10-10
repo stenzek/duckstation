@@ -184,6 +184,9 @@ public:
 
 namespace InputManager {
 
+/// Section that input source configuration is stored in.
+extern const char* const SOURCES_CONFIG_SECTION;
+
 /// Used to determine the icons for controller buttons.
 enum class GamepadButtonType : u8
 {

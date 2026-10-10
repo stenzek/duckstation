@@ -182,7 +182,7 @@ void CheatListOptionDelegate::paint(QPainter* painter, const QStyleOptionViewIte
 GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent) : m_dialog(dialog)
 {
   SettingsInterface* sif = m_dialog->getSettingsInterface();
-  const bool sorting_enabled = sif->GetBoolValue("Cheats", "SortList", false);
+  const bool sorting_enabled = sif->GetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "SortList", false);
 
   m_ui.setupUi(this);
 
@@ -198,8 +198,8 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   reloadList();
 
   // We don't use the binder here, because they're binary - either enabled, or not in the file.
-  m_ui.enableCheats->setChecked(sif->GetBoolValue("Cheats", "EnableCheats", false));
-  m_ui.loadDatabaseCheats->setChecked(sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
+  m_ui.enableCheats->setChecked(sif->GetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "EnableCheats", false));
+  m_ui.loadDatabaseCheats->setChecked(sif->GetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "LoadCheatsFromDatabase", true));
   m_ui.sortCheats->setChecked(sorting_enabled);
 
   connect(m_ui.enableCheats, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::onEnableCheatsChanged);
@@ -233,7 +233,7 @@ void GameCheatSettingsWidget::setCodeOption(const std::string_view name, u32 val
   if (!info)
     return;
 
-  m_dialog->getSettingsInterface()->SetUIntValue("Cheats", info->name.c_str(), value);
+  m_dialog->getSettingsInterface()->SetUIntValue(Cheats::CHEATS_CONFIG_SECTION, info->name.c_str(), value);
   m_dialog->saveGameSettings();
 }
 
@@ -268,9 +268,9 @@ bool GameCheatSettingsWidget::hasCodeWithName(const std::string_view name) const
 void GameCheatSettingsWidget::onEnableCheatsChanged(Qt::CheckState state)
 {
   if (state == Qt::Checked)
-    m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "EnableCheats", true);
+    m_dialog->getSettingsInterface()->SetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "EnableCheats", true);
   else
-    m_dialog->getSettingsInterface()->DeleteValue("Cheats", "EnableCheats");
+    m_dialog->getSettingsInterface()->DeleteValue(Cheats::CHEATS_CONFIG_SECTION, "EnableCheats");
   m_dialog->saveGameSettings();
 }
 
@@ -279,9 +279,9 @@ void GameCheatSettingsWidget::onSortCheatsClicked(bool checked)
   m_sort_model->sort(checked ? 0 : -1, Qt::AscendingOrder);
 
   if (checked)
-    m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "SortList", true);
+    m_dialog->getSettingsInterface()->SetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "SortList", true);
   else
-    m_dialog->getSettingsInterface()->DeleteValue("Cheats", "SortList");
+    m_dialog->getSettingsInterface()->DeleteValue(Cheats::CHEATS_CONFIG_SECTION, "SortList");
 
   m_dialog->saveGameSettings();
 }
@@ -299,9 +299,9 @@ void GameCheatSettingsWidget::onLoadDatabaseCheatsChanged(Qt::CheckState state)
 {
   // Default is enabled.
   if (state == Qt::Checked)
-    m_dialog->getSettingsInterface()->DeleteValue("Cheats", "LoadCheatsFromDatabase");
+    m_dialog->getSettingsInterface()->DeleteValue(Cheats::CHEATS_CONFIG_SECTION, "LoadCheatsFromDatabase");
   else
-    m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "LoadCheatsFromDatabase", false);
+    m_dialog->getSettingsInterface()->SetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "LoadCheatsFromDatabase", false);
   m_dialog->saveGameSettings();
   reloadList();
 }
@@ -387,13 +387,15 @@ void GameCheatSettingsWidget::onReloadClicked()
 
 bool GameCheatSettingsWidget::shouldLoadFromDatabase() const
 {
-  return m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true);
+  return m_dialog->getSettingsInterface()->GetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "LoadCheatsFromDatabase", true);
 }
 
 void GameCheatSettingsWidget::checkForMasterDisable()
 {
-  const bool game_settings_enabled = Core::GetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
-  const bool cheats_enabled = m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "EnableCheats", false);
+  const bool game_settings_enabled =
+    Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "ApplyGameSettings", true);
+  const bool cheats_enabled =
+    m_dialog->getSettingsInterface()->GetBoolValue(Cheats::CHEATS_CONFIG_SECTION, "EnableCheats", false);
   if (m_master_enable_ignored || (game_settings_enabled && cheats_enabled))
     return;
 
@@ -409,7 +411,7 @@ void GameCheatSettingsWidget::checkForMasterDisable()
     mbox->setCheckBox(cb);
 
     connect(mbox, &QMessageBox::accepted, this, []() {
-      Core::SetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
+      Core::SetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "ApplyGameSettings", true);
       Host::CommitBaseSettingChanges();
       g_core_thread->applySettings(false);
     });
@@ -781,14 +783,14 @@ void GameCheatSettingsWidget::populateTreeWidgetItem(QStandardItem* parent, cons
     if (pi.HasOptionChoices())
     {
       // need to resolve the value back to a name
-      const std::string_view option_name =
-        pi.MapOptionValueToName(m_dialog->getSettingsInterface()->GetTinyStringValue("Cheats", pi.name.c_str()));
+      const std::string_view option_name = pi.MapOptionValueToName(
+        m_dialog->getSettingsInterface()->GetTinyStringValue(Cheats::CHEATS_CONFIG_SECTION, pi.name.c_str()));
       value_col->setData(QtUtils::StringViewToQString(option_name), Qt::UserRole);
     }
     else if (pi.HasOptionRange())
     {
-      const u32 value =
-        m_dialog->getSettingsInterface()->GetUIntValue("Cheats", pi.name.c_str(), pi.option_range_start);
+      const u32 value = m_dialog->getSettingsInterface()->GetUIntValue(Cheats::CHEATS_CONFIG_SECTION, pi.name.c_str(),
+                                                                       pi.option_range_start);
       value_col->setData(static_cast<uint>(value), Qt::UserRole);
     }
 

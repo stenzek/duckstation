@@ -30,14 +30,20 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
     m_ui.logLevel->addItem(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.logLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
-                                               &Settings::GetLogLevelName, Log::DEFAULT_LOG_LEVEL);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToConsole, "Logging", "LogToConsole", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToDebug, "Logging", "LogToDebug", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToWindow, "Logging", "LogToWindow", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToFile, "Logging", "LogToFile", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logTimestamps, "Logging", "LogTimestamps", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logFileTimestamps, "Logging", "LogFileTimestamps", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.logLevel, Settings::LOGGING_SECTION_NAME, "LogLevel",
+                                               &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
+                                               Log::DEFAULT_LOG_LEVEL);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToConsole, Settings::LOGGING_SECTION_NAME, "LogToConsole",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToDebug, Settings::LOGGING_SECTION_NAME, "LogToDebug",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToWindow, Settings::LOGGING_SECTION_NAME, "LogToWindow",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToFile, Settings::LOGGING_SECTION_NAME, "LogToFile", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logTimestamps, Settings::LOGGING_SECTION_NAME, "LogTimestamps",
+                                               true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logFileTimestamps, Settings::LOGGING_SECTION_NAME,
+                                               "LogFileTimestamps", false);
   connect(m_ui.logToConsole, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   connect(m_ui.logToWindow, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   connect(m_ui.logToFile, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
@@ -45,17 +51,19 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   connect(m_ui.logChannels, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, Settings::INTERFACE_SECTION_NAME,
+                                               "ShowDebugMenu", false);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this,
           &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresenceMonitor, "Cheevos", "RichPresenceMonitor", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresenceMonitor, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                               "RichPresenceMonitor", false);
 
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
-    m_ui.cacheDirectoryReset, "Folders", "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
+    m_ui.cacheDirectoryReset, Settings::FOLDERS_SECTION_NAME, "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse, tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
-    m_ui.coversDirectoryReset, "Folders", "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
+    m_ui.coversDirectoryReset, Settings::FOLDERS_SECTION_NAME, "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
 
   connect(m_ui.refreshWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::refreshWebCacheSize);
   connect(m_ui.clearWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onClearWebCacheClicked);
@@ -91,7 +99,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   // RAIntegration is not available on non-win32/x64.
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   if (Achievements::IsRAIntegrationAvailable())
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useRAIntegration, "Cheevos", "UseRAIntegration", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useRAIntegration, Settings::ACHIEVEMENTS_SECTION_NAME,
+                                                 "UseRAIntegration", false);
   else
     m_ui.useRAIntegration->setEnabled(false);
 
@@ -117,9 +126,9 @@ void AdvancedSettingsWidget::onLogChannelsButtonClicked()
 
 void AdvancedSettingsWidget::onAnyLogSinksChanged()
 {
-  const bool log_to_console = m_dialog->getEffectiveBoolValue("Logging", "LogToConsole", false);
-  const bool log_to_window = m_dialog->getEffectiveBoolValue("Logging", "LogToWindow", false);
-  const bool log_to_file = m_dialog->getEffectiveBoolValue("Logging", "LogToFile", false);
+  const bool log_to_console = m_dialog->getEffectiveBoolValue(Settings::LOGGING_SECTION_NAME, "LogToConsole", false);
+  const bool log_to_window = m_dialog->getEffectiveBoolValue(Settings::LOGGING_SECTION_NAME, "LogToWindow", false);
+  const bool log_to_file = m_dialog->getEffectiveBoolValue(Settings::LOGGING_SECTION_NAME, "LogToFile", false);
 
   m_ui.logTimestamps->setEnabled(log_to_console || log_to_window);
   m_ui.logFileTimestamps->setEnabled(log_to_file);

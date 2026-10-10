@@ -27,11 +27,12 @@ CoverDownloadWindow::CoverDownloadWindow() : QWidget()
   connect(m_ui.close, &QPushButton::clicked, this, &CoverDownloadWindow::close);
   connect(m_ui.urls, &QPlainTextEdit::textChanged, this, &CoverDownloadWindow::updateEnabled);
 
-  const std::vector<std::string> urls = Core::GetBaseStringListSetting("UI", "CoverDownloaderURL");
+  const std::vector<std::string> urls = Core::GetBaseStringListSetting(Settings::UI_SECTION_NAME, "CoverDownloaderURL");
   if (!urls.empty())
     m_ui.urls->setPlainText(QString::fromStdString(StringUtil::JoinString(urls, "\n")));
 
-  m_ui.useSerialFileNames->setChecked(Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false));
+  m_ui.useSerialFileNames->setChecked(
+    Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "CoverDownloaderUseSerialFileNames", false));
 }
 
 CoverDownloadWindow::~CoverDownloadWindow() = default;
@@ -47,13 +48,14 @@ void CoverDownloadWindow::closeEvent(QCloseEvent* ev)
       urls.push_back(std::move(url));
   }
 
-  bool changed = (urls != Core::GetBaseStringListSetting("UI", "CoverDownloaderURL"));
+  bool changed = (urls != Core::GetBaseStringListSetting(Settings::UI_SECTION_NAME, "CoverDownloaderURL"));
   if (changed)
-    Core::SetBaseStringListSettingValue("UI", "CoverDownloaderURL", urls);
+    Core::SetBaseStringListSettingValue(Settings::UI_SECTION_NAME, "CoverDownloaderURL", urls);
   if (const bool use_serial_filenames = m_ui.useSerialFileNames->isChecked();
-      use_serial_filenames != Core::GetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", false))
+      use_serial_filenames !=
+      Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "CoverDownloaderUseSerialFileNames", false))
   {
-    Core::SetBaseBoolSettingValue("UI", "CoverDownloaderUseSerialFileNames", use_serial_filenames);
+    Core::SetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "CoverDownloaderUseSerialFileNames", use_serial_filenames);
     changed = true;
   }
   if (changed)

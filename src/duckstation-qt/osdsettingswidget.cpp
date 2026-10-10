@@ -23,17 +23,18 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
   m_ui.setupUi(this);
   setupAdditionalUi();
 
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, "Display", "OSDScale",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, Settings::DISPLAY_SECTION_NAME, "OSDScale",
                                               static_cast<int>(GPUSettings::DEFAULT_OSD_SCALE));
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, Settings::DISPLAY_SECTION_NAME, "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFont, "Main", "ImGuiTextFont",
-                                                   ImGuiManager::GetDefaultTextFontName());
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFixedFont, "Main", "ImGuiFixedFont",
-                                                   ImGuiManager::GetDefaultFixedFontName());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, Settings::UI_SECTION_NAME,
+                                                   "FullscreenUITheme");
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFont, Settings::INTERFACE_SECTION_NAME,
+                                                   "ImGuiTextFont", ImGuiManager::GetDefaultTextFontName());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imguiFixedFont, Settings::INTERFACE_SECTION_NAME,
+                                                   "ImGuiFixedFont", ImGuiManager::GetDefaultFixedFontName());
     connect(m_ui.fullscreenUITheme, &QComboBox::currentIndexChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
     connect(m_ui.imguiFont, &QComboBox::currentIndexChanged, g_core_thread, []() {
       // don't bother if nothing is running
@@ -56,38 +57,47 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
     QtUtils::SafeDeleteWidget(m_ui.imguiFixedFontLabel);
   }
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.osdMessageLocation, "Display", "OSDMessageLocation", &Settings::ParseNotificationLocation,
-    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
-    Settings::DEFAULT_OSD_MESSAGE_LOCATION, NotificationLocation::MaxCount);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, "Display", "ShowOSDMessages", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "Display", "ShowStatusIndicators", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.animateMessages, "Display", "AnimateOSDMessages", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blurMessageBackgrounds, "Display", "BlurOSDMessageBackgrounds",
-                                               true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showResolution, "Display", "ShowResolution", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showCPU, "Display", "ShowCPU", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPU, "Display", "ShowGPU", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInput, "Display", "ShowInputs", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUStatistics, "Display", "ShowGPUStatistics", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showLatencyStatistics, "Display", "ShowLatencyStatistics",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.osdMessageLocation, Settings::DISPLAY_SECTION_NAME,
+                                               "OSDMessageLocation", &Settings::ParseNotificationLocation,
+                                               &Settings::GetNotificationLocationName,
+                                               &Settings::GetNotificationLocationDisplayName,
+                                               Settings::DEFAULT_OSD_MESSAGE_LOCATION, NotificationLocation::MaxCount);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowStatusIndicators", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.animateMessages, Settings::DISPLAY_SECTION_NAME,
+                                               "AnimateOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blurMessageBackgrounds, Settings::DISPLAY_SECTION_NAME,
+                                               "BlurOSDMessageBackgrounds", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, Settings::DISPLAY_SECTION_NAME, "ShowFPS", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, Settings::DISPLAY_SECTION_NAME, "ShowSpeed", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showResolution, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowResolution", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showCPU, Settings::DISPLAY_SECTION_NAME, "ShowCPU", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPU, Settings::DISPLAY_SECTION_NAME, "ShowGPU", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInput, Settings::DISPLAY_SECTION_NAME, "ShowInputs",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "Display", "ShowEnhancements", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUStatistics, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowGPUStatistics", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showLatencyStatistics, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowLatencyStatistics", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowFrameTimes", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowEnhancements", false);
 
   SettingWidgetBinder::BindWidgetToFloatSetting(
-    sif, m_ui.osdErrorDuration, "Display", "OSDErrorDuration",
+    sif, m_ui.osdErrorDuration, Settings::DISPLAY_SECTION_NAME, "OSDErrorDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Error)]);
   SettingWidgetBinder::BindWidgetToFloatSetting(
-    sif, m_ui.osdWarningDuration, "Display", "OSDWarningDuration",
+    sif, m_ui.osdWarningDuration, Settings::DISPLAY_SECTION_NAME, "OSDWarningDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Warning)]);
   SettingWidgetBinder::BindWidgetToFloatSetting(
-    sif, m_ui.osdInformationDuration, "Display", "OSDInfoDuration",
+    sif, m_ui.osdInformationDuration, Settings::DISPLAY_SECTION_NAME, "OSDInfoDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Info)]);
   SettingWidgetBinder::BindWidgetToFloatSetting(
-    sif, m_ui.osdQuickDuration, "Display", "OSDQuickDuration",
+    sif, m_ui.osdQuickDuration, Settings::DISPLAY_SECTION_NAME, "OSDQuickDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)]);
 
   connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &OSDSettingsWidget::onOSDShowMessagesChanged);
@@ -174,7 +184,7 @@ void OSDSettingsWidget::setupAdditionalUi()
 
 void OSDSettingsWidget::onOSDShowMessagesChanged()
 {
-  const bool enabled = m_dialog->getEffectiveBoolValue("Display", "ShowOSDMessages", true);
+  const bool enabled = m_dialog->getEffectiveBoolValue(Settings::DISPLAY_SECTION_NAME, "ShowOSDMessages", true);
 
   // Errors/warnings are always shown.
 

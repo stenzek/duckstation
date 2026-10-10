@@ -25,12 +25,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
-                                               &Settings::GetConsoleRegionName, &Settings::GetConsoleRegionDisplayName,
-                                               Settings::DEFAULT_CONSOLE_REGION, ConsoleRegion::Count,
-                                               &QtUtils::GetIconForRegion);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, Settings::CONSOLE_SECTION_NAME, "Region",
+                                               &Settings::ParseConsoleRegionName, &Settings::GetConsoleRegionName,
+                                               &Settings::GetConsoleRegionDisplayName, Settings::DEFAULT_CONSOLE_REGION,
+                                               ConsoleRegion::Count, &QtUtils::GetIconForRegion);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.forceVideoTiming, "GPU", "ForceVideoTiming", &Settings::ParseForceVideoTimingName,
+    sif, m_ui.forceVideoTiming, Settings::GPU_SECTION_NAME, "ForceVideoTiming", &Settings::ParseForceVideoTimingName,
     &Settings::GetForceVideoTimingName, &Settings::GetForceVideoTimingDisplayName,
     Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE, ForceVideoTimingMode::Count, +[](ForceVideoTimingMode mode) {
       return QtUtils::GetIconForRegion(
@@ -38,28 +38,36 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
           ConsoleRegion::Auto :
           ((mode == ForceVideoTimingMode::NTSC) ? ConsoleRegion::NTSC_U : ConsoleRegion::PAL));
     });
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess, "MemoryCards",
-                                               "FastForwardAccess", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, Settings::BIOS_SECTION_NAME, "PatchFastBoot",
+                                               Settings::DEFAULT_FAST_BOOT_VALUE);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, Settings::BIOS_SECTION_NAME,
+                                               "FastForwardBoot", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
+                                               Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
   onFastBootChanged();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, Settings::CPU_SECTION_NAME, "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                &Settings::GetCPUExecutionModeDisplayName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE, CPUExecutionMode::Count);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, "CPU", "OverclockEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, "CPU", "RecompilerICache", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromAutoDiscChange, "CDROM", "AutoDiscChange", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, Settings::CPU_SECTION_NAME,
+                                               "OverclockEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, Settings::CPU_SECTION_NAME,
+                                               "RecompilerICache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImageToRAM, Settings::CDROM_SECTION_NAME,
+                                               "LoadImageToRAM", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromAutoDiscChange, Settings::CDROM_SECTION_NAME,
+                                               "AutoDiscChange", false);
 
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImagePatches, "CDROM", "LoadImagePatches", false);
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromIgnoreDriveSubcode, "CDROM", "IgnoreHostSubcode",
-                                                 false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImagePatches, Settings::CDROM_SECTION_NAME,
+                                                 "LoadImagePatches", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromIgnoreDriveSubcode, Settings::CDROM_SECTION_NAME,
+                                                 "IgnoreHostSubcode", false);
   }
   else
   {
@@ -71,10 +79,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
     m_ui.cdromLoadImagePatches = nullptr;
   }
 
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromSeekSpeedup, "CDROM", "SeekSpeedup", 1,
-                                              CDROM_SPEEDUP_VALUES);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadSpeedup, "CDROM", "ReadSpeedup", 1,
-                                              CDROM_SPEEDUP_VALUES);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromSeekSpeedup, Settings::CDROM_SECTION_NAME, "SeekSpeedup",
+                                              1, CDROM_SPEEDUP_VALUES);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadSpeedup, Settings::CDROM_SECTION_NAME, "ReadSpeedup",
+                                              1, CDROM_SPEEDUP_VALUES);
 
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
@@ -135,7 +143,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
     tr("Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel "
        "data. Won't work with libcrypt games, but can improve read reliability on some drives."));
 
-  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
+  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue(Settings::CPU_SECTION_NAME, "OverclockEnable", false));
 
   connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::checkStateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
@@ -165,7 +173,7 @@ ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
 void ConsoleSettingsWidget::onFastBootChanged()
 {
   const bool fast_boot_enabled =
-    m_dialog->getEffectiveBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
+    m_dialog->getEffectiveBoolValue(Settings::BIOS_SECTION_NAME, "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
   m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
 }
 
@@ -174,7 +182,7 @@ void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
   const CPUExecutionMode mode =
     Settings::ParseCPUExecutionMode(
       m_dialog
-        ->getEffectiveStringValue("CPU", "ExecutionMode",
+        ->getEffectiveStringValue(Settings::CPU_SECTION_NAME, "ExecutionMode",
                                   Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE))
         .c_str())
       .value_or(Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -185,8 +193,9 @@ void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 {
   if (state == Qt::Checked &&
-      (!m_dialog->isPerGameSettings() || !Core::GetBaseBoolSettingValue("CPU", "OverclockEnable", false)) &&
-      !Core::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
+      (!m_dialog->isPerGameSettings() ||
+       !Core::GetBaseBoolSettingValue(Settings::CPU_SECTION_NAME, "OverclockEnable", false)) &&
+      !Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "CPUOverclockingWarningShown", false))
   {
     const QString message =
       tr("Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase "
@@ -203,25 +212,26 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
       if (m_dialog->isPerGameSettings())
       {
         m_ui.enableCPUClockSpeedControl->setCheckState(Qt::PartiallyChecked);
-        m_dialog->removeSettingValue("CPU", "OverclockEnable");
+        m_dialog->removeSettingValue(Settings::CPU_SECTION_NAME, "OverclockEnable");
       }
       else
       {
         m_ui.enableCPUClockSpeedControl->setCheckState(Qt::Unchecked);
-        m_dialog->setBoolSettingValue("CPU", "OverclockEnable", false);
+        m_dialog->setBoolSettingValue(Settings::CPU_SECTION_NAME, "OverclockEnable", false);
       }
 
-      m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
+      m_ui.cpuClockSpeed->setEnabled(
+        m_dialog->getEffectiveBoolValue(Settings::CPU_SECTION_NAME, "OverclockEnable", false));
       updateCPUClockSpeedLabel();
     });
     connect(yes_button, &QPushButton::clicked, this, []() {
-      Core::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
+      Core::SetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "CPUOverclockingWarningShown", true);
       Host::CommitBaseSettingChanges();
     });
     mb->open();
   }
 
-  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
+  m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue(Settings::CPU_SECTION_NAME, "OverclockEnable", false));
   updateCPUClockSpeedLabel();
 }
 
@@ -230,8 +240,8 @@ void ConsoleSettingsWidget::onCPUClockSpeedValueChanged(int value)
   const u32 percent = static_cast<u32>(m_ui.cpuClockSpeed->value());
   u32 numerator, denominator;
   Settings::CPUOverclockPercentToFraction(percent, &numerator, &denominator);
-  m_dialog->setIntSettingValue("CPU", "OverclockNumerator", static_cast<int>(numerator));
-  m_dialog->setIntSettingValue("CPU", "OverclockDenominator", static_cast<int>(denominator));
+  m_dialog->setIntSettingValue(Settings::CPU_SECTION_NAME, "OverclockNumerator", static_cast<int>(numerator));
+  m_dialog->setIntSettingValue(Settings::CPU_SECTION_NAME, "OverclockDenominator", static_cast<int>(denominator));
   updateCPUClockSpeedLabel();
 }
 
@@ -244,8 +254,10 @@ void ConsoleSettingsWidget::updateCPUClockSpeedLabel()
 
 void ConsoleSettingsWidget::calculateCPUClockValue()
 {
-  const u32 numerator = static_cast<u32>(m_dialog->getEffectiveIntValue("CPU", "OverclockNumerator", 1));
-  const u32 denominator = static_cast<u32>(m_dialog->getEffectiveIntValue("CPU", "OverclockDenominator", 1));
+  const u32 numerator =
+    static_cast<u32>(m_dialog->getEffectiveIntValue(Settings::CPU_SECTION_NAME, "OverclockNumerator", 1));
+  const u32 denominator =
+    static_cast<u32>(m_dialog->getEffectiveIntValue(Settings::CPU_SECTION_NAME, "OverclockDenominator", 1));
   const u32 percent = Settings::CPUOverclockFractionToPercent(numerator, denominator);
   QSignalBlocker sb(m_ui.cpuClockSpeed);
   m_ui.cpuClockSpeed->setValue(static_cast<int>(percent));

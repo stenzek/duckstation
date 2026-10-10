@@ -69,52 +69,59 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   if (!m_dialog->isPerGameSettings())
     connect(m_ui.renderer, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::warnAboutRendererChange);
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
-                                               &Settings::GetRendererName, &Settings::GetRendererDisplayName,
-                                               Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.renderer, Settings::GPU_SECTION_NAME, "Renderer", &Settings::ParseRendererName,
+    &Settings::GetRendererName, &Settings::GetRendererDisplayName, Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
   if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
     populateAndConnectUpscalingModes();
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, Settings::GPU_SECTION_NAME, "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                &Settings::GetTextureFilterDisplayName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
-                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               &Settings::GetTextureFilterDisplayName,
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.spriteTextureFiltering, Settings::GPU_SECTION_NAME,
+                                               "SpriteTextureFilter", &Settings::ParseTextureFilterName,
+                                               &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDitheringMode, Settings::GPU_SECTION_NAME, "DitheringMode",
                                                &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
                                                &Settings::GetGPUDitheringModeDisplayName,
                                                Settings::DEFAULT_GPU_DITHERING_MODE, GPUDitheringMode::MaxCount);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
-                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
-                                               &Settings::GetDownsampleModeDisplayName,
-                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, GPUDownsampleMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.gpuDownsampleMode, Settings::GPU_SECTION_NAME, "DownsampleMode", &Settings::ParseDownsampleModeName,
+    &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, Settings::DEFAULT_GPU_DOWNSAMPLE_MODE,
+    GPUDownsampleMode::Count);
   createAspectRatioSetting(m_ui.displayAspectRatio, m_ui.customAspectRatioNumerator, m_ui.customAspectRatioSeparator,
                            m_ui.customAspectRatioDenominator, sif);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, Settings::GPU_SECTION_NAME, "WidescreenHack",
+                                               false);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.displayDeinterlacing, "GPU", "DeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode,
-    &Settings::GetDisplayDeinterlacingModeName, &Settings::GetDisplayDeinterlacingModeDisplayName,
-    Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE, DisplayDeinterlacingMode::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayCropMode, "Display", "CropMode",
+    sif, m_ui.displayDeinterlacing, Settings::GPU_SECTION_NAME, "DeinterlacingMode",
+    &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
+    &Settings::GetDisplayDeinterlacingModeDisplayName, Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
+    DisplayDeinterlacingMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayCropMode, Settings::DISPLAY_SECTION_NAME, "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                &Settings::GetDisplayCropModeDisplayName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::MaxCount);
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.displayScaling, "Display", "Scaling", &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
-    &Settings::GetDisplayScalingDisplayName, Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling24Bit, "Display", "Scaling24Bit",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, Settings::DISPLAY_SECTION_NAME, "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                &Settings::GetDisplayScalingDisplayName,
                                                Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chromaSmoothingFor24Bit, "GPU", "ChromaSmoothing24Bit", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.displayScaling24Bit, Settings::DISPLAY_SECTION_NAME, "Scaling24Bit", &Settings::ParseDisplayScaling,
+    &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, Settings::DEFAULT_DISPLAY_SCALING,
+    DisplayScalingMode::Count);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, Settings::GPU_SECTION_NAME,
+                                              "DownsampleScale", 1);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, Settings::GPU_SECTION_NAME, "PGXPEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, Settings::GPU_SECTION_NAME, "PGXPDepthBuffer",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, Settings::DISPLAY_SECTION_NAME,
+                                               "Force4_3For24Bit", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chromaSmoothingFor24Bit, Settings::GPU_SECTION_NAME,
+                                               "ChromaSmoothing24Bit", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, Settings::GPU_SECTION_NAME,
+                                               "ForceRoundTextureCoordinates", false);
 
   connect(m_ui.renderer, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateRendererDependentOptions);
@@ -144,51 +151,58 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // Advanced Tab
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.exclusiveFullscreenControl, "Display", "ExclusiveFullscreenControl",
+    sif, m_ui.exclusiveFullscreenControl, Settings::DISPLAY_SECTION_NAME, "ExclusiveFullscreenControl",
     &Settings::ParseDisplayExclusiveFullscreenControl, &Settings::GetDisplayExclusiveFullscreenControlName,
     &Settings::GetDisplayExclusiveFullscreenControlDisplayName, Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL,
     DisplayExclusiveFullscreenControl::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, Settings::DISPLAY_SECTION_NAME, "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                &Settings::GetDisplayAlignmentDisplayName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT, DisplayAlignment::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayRotation, "Display", "Rotation",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayRotation, Settings::DISPLAY_SECTION_NAME, "Rotation",
                                                &Settings::ParseDisplayRotation, &Settings::GetDisplayRotationName,
                                                &Settings::GetDisplayRotationDisplayName,
                                                Settings::DEFAULT_DISPLAY_ROTATION, DisplayRotation::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.displayFineCropMode, "Display", "FineCropMode", &Settings::ParseDisplayFineCropMode,
+    sif, m_ui.displayFineCropMode, Settings::DISPLAY_SECTION_NAME, "FineCropMode", &Settings::ParseDisplayFineCropMode,
     &Settings::GetDisplayFineCropModeName, &Settings::GetDisplayFineCropModeDisplayName,
     Settings::DEFAULT_DISPLAY_FINE_CROP_MODE, DisplayFineCropMode::MaxCount);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropLeft, "Display", "FineCropLeft", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropTop, "Display", "FineCropTop", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropRight, "Display", "FineCropRight", 0);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropBottom, "Display", "FineCropBottom", 0);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropLeft, Settings::DISPLAY_SECTION_NAME,
+                                              "FineCropLeft", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropTop, Settings::DISPLAY_SECTION_NAME,
+                                              "FineCropTop", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropRight, Settings::DISPLAY_SECTION_NAME,
+                                              "FineCropRight", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropBottom, Settings::DISPLAY_SECTION_NAME,
+                                              "FineCropBottom", 0);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, Settings::DISPLAY_SECTION_NAME,
                                                "DisableMailboxPresentation", false);
 #ifdef _WIN32
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blitSwapChain, "Display", "UseBlitSwapChain", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.blitSwapChain, Settings::DISPLAY_SECTION_NAME,
+                                               "UseBlitSwapChain", false);
 #endif
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuLineDetectMode, "GPU", "LineDetectMode",
-                                               &Settings::ParseLineDetectModeName, &Settings::GetLineDetectModeName,
-                                               &Settings::GetLineDetectModeDisplayName,
-                                               Settings::DEFAULT_GPU_LINE_DETECT_MODE, GPULineDetectMode::Count);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.gpuLineDetectMode, Settings::GPU_SECTION_NAME, "LineDetectMode", &Settings::ParseLineDetectModeName,
+    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, Settings::DEFAULT_GPU_LINE_DETECT_MODE,
+    GPULineDetectMode::Count);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, Settings::GPU_SECTION_NAME, "UseThread", true);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, Settings::GPU_SECTION_NAME, "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, "GPU", "EnableModulationCrop", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableUpscaledDirectTextures, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, Settings::GPU_SECTION_NAME,
+                                               "EnableModulationCrop", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, Settings::GPU_SECTION_NAME,
+                                               "ScaledInterlacing", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableUpscaledDirectTextures, Settings::GPU_SECTION_NAME,
                                                "DisableUpscaledDirectTextures", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.filterFramebufferUploads, "GPU", "FilterFramebufferUploads",
-                                               false);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumWidth, "GPU",
-                                              "FilterFramebufferUploadsMinimumWidth", 1);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumHeight, "GPU",
-                                              "FilterFramebufferUploadsMinimumHeight", 1);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.filterFramebufferUploads, Settings::GPU_SECTION_NAME,
+                                               "FilterFramebufferUploads", false);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumWidth,
+                                              Settings::GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumWidth", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.filterFramebufferUploadsMinimumHeight,
+                                              Settings::GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1);
   connect(m_ui.filterFramebufferUploads, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, Settings::GPU_SECTION_NAME,
                                                "UseSoftwareRendererForReadbacks", false);
 
   connect(m_ui.displayFineCropMode, &QComboBox::currentIndexChanged, this,
@@ -209,19 +223,24 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // PGXP Tab
 
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpGeometryTolerance, "GPU", "PGXPTolerance", -1.0f);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpDepthClearThreshold, "GPU", "PGXPDepthThreshold",
-                                                Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTextureCorrection, "GPU", "PGXPTextureCorrection", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpColorCorrection, "GPU", "PGXPColorCorrection", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCulling, "GPU", "PGXPCulling", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpPreserveProjPrecision, "GPU", "PGXPPreserveProjFP", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDisableOn2DPolygons, "GPU", "PGXPDisableOn2DPolygons",
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpGeometryTolerance, Settings::GPU_SECTION_NAME,
+                                                "PGXPTolerance", -1.0f);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpDepthClearThreshold, Settings::GPU_SECTION_NAME,
+                                                "PGXPDepthThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTextureCorrection, Settings::GPU_SECTION_NAME,
+                                               "PGXPTextureCorrection", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpColorCorrection, Settings::GPU_SECTION_NAME,
+                                               "PGXPColorCorrection", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCulling, Settings::GPU_SECTION_NAME, "PGXPCulling", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpPreserveProjPrecision, Settings::GPU_SECTION_NAME,
+                                               "PGXPPreserveProjFP", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, Settings::GPU_SECTION_NAME, "PGXPCPU", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpVertexCache, Settings::GPU_SECTION_NAME, "PGXPVertexCache",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, "GPU", "PGXPTransparentDepthTest",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDisableOn2DPolygons, Settings::GPU_SECTION_NAME,
+                                               "PGXPDisableOn2DPolygons", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, Settings::GPU_SECTION_NAME,
+                                               "PGXPTransparentDepthTest", false);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -254,30 +273,33 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Texture Replacements Tab
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureCache, "GPU", "EnableTextureCache", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadTextureReplacements, "TextureReplacements",
-                                               "PreloadTextures", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureCache, Settings::GPU_SECTION_NAME,
+                                               "EnableTextureCache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preloadTextureReplacements,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "PreloadTextures", false);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureReplacements, "TextureReplacements",
-                                               "EnableTextureReplacements", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alwaysTrackUploads, "TextureReplacements",
-                                               "AlwaysTrackUploads", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureDumping, "TextureReplacements", "DumpTextures",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureReplacements,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableTextureReplacements",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpReplacedTextures, "TextureReplacements",
-                                               "DumpReplacedTextures", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vramWriteReplacement, "TextureReplacements",
-                                               "EnableVRAMWriteReplacements", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vramWriteDumping, "TextureReplacements", "DumpVRAMWrites",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useOldMDECRoutines, "Hacks", "UseOldMDECRoutines", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.alwaysTrackUploads, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "AlwaysTrackUploads", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureDumping,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextures", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.dumpReplacedTextures, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpReplacedTextures", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.vramWriteReplacement, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableVRAMWriteReplacements", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vramWriteDumping, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME,
+                                               "DumpVRAMWrites", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useOldMDECRoutines, Settings::HACKS_SECTION_NAME,
+                                               "UseOldMDECRoutines", false);
 
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesDirectoryBrowse,
                                                    tr("Select Textures Directory"), m_ui.texturesDirectoryOpen,
-                                                   m_ui.texturesDirectoryReset, "Folders", "Textures",
-                                                   Path::Combine(EmuFolders::DataRoot, "textures"));
+                                                   m_ui.texturesDirectoryReset, Settings::FOLDERS_SECTION_NAME,
+                                                   "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
   }
   else
   {
@@ -306,37 +328,47 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Debugging Tab
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, "GPU", "WireframeMode",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, Settings::GPU_SECTION_NAME, "WireframeMode",
                                                Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
                                                &Settings::GetGPUWireframeModeDisplayName,
                                                Settings::DEFAULT_GPU_WIREFRAME_MODE, GPUWireframeMode::Count);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableTextures, "GPU", "DisableTextures", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableVertexLighting, "GPU", "DisableVertexLighting",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableTextures, Settings::GPU_SECTION_NAME,
+                                               "DisableTextures", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableVertexLighting, Settings::GPU_SECTION_NAME,
+                                               "DisableVertexLighting", false);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.gpuDumpCompressionMode, "GPU", "DumpCompressionMode", &Settings::ParseGPUDumpCompressionMode,
-    &Settings::GetGPUDumpCompressionModeName, &Settings::GetGPUDumpCompressionModeDisplayName,
-    Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE, GPUDumpCompressionMode::MaxCount);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDumpFastReplayMode, "GPU", "DumpFastReplayMode", false);
+    sif, m_ui.gpuDumpCompressionMode, Settings::GPU_SECTION_NAME, "DumpCompressionMode",
+    &Settings::ParseGPUDumpCompressionMode, &Settings::GetGPUDumpCompressionModeName,
+    &Settings::GetGPUDumpCompressionModeDisplayName, Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE,
+    GPUDumpCompressionMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDumpFastReplayMode, Settings::GPU_SECTION_NAME,
+                                               "DumpFastReplayMode", false);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "GPU", "UseDebugDevice", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useGPUBasedValidation, "GPU", "UseGPUBasedValidation", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferGLESContext, "GPU", "PreferGLESContext",
-                                               Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "GPU", "DisableShaderCache", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "GPU", "DisableDualSourceBlend", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "GPU", "DisableFramebufferFetch",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, Settings::GPU_SECTION_NAME, "UseDebugDevice",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureBuffers, "GPU", "DisableTextureBuffers", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureCopyToSelf, "GPU", "DisableTextureCopyToSelf",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMemoryImport, "GPU", "DisableMemoryImport", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableRasterOrderViews, "GPU", "DisableRasterOrderViews",
-                                               false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableComputeShaders, "GPU", "DisableComputeShaders", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableCompressedTextures, "GPU", "DisableCompressedTextures",
-                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useGPUBasedValidation, Settings::GPU_SECTION_NAME,
+                                               "UseGPUBasedValidation", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferGLESContext, Settings::GPU_SECTION_NAME,
+                                               "PreferGLESContext", Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, Settings::GPU_SECTION_NAME,
+                                               "DisableShaderCache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, Settings::GPU_SECTION_NAME,
+                                               "DisableDualSourceBlend", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, Settings::GPU_SECTION_NAME,
+                                               "DisableFramebufferFetch", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureBuffers, Settings::GPU_SECTION_NAME,
+                                               "DisableTextureBuffers", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureCopyToSelf, Settings::GPU_SECTION_NAME,
+                                               "DisableTextureCopyToSelf", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMemoryImport, Settings::GPU_SECTION_NAME,
+                                               "DisableMemoryImport", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableRasterOrderViews, Settings::GPU_SECTION_NAME,
+                                               "DisableRasterOrderViews", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableComputeShaders, Settings::GPU_SECTION_NAME,
+                                               "DisableComputeShaders", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableCompressedTextures, Settings::GPU_SECTION_NAME,
+                                               "DisableCompressedTextures", false);
 
   // Init all dependent options.
   updateRendererDependentOptions();
@@ -627,7 +659,8 @@ GPURenderer GraphicsSettingsWidget::getEffectiveRenderer() const
 {
   return Settings::ParseRendererName(
            m_dialog
-             ->getEffectiveStringValue("GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
+             ->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "Renderer",
+                                       Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
              .c_str())
     .value_or(Settings::DEFAULT_GPU_RENDERER);
 }
@@ -727,7 +760,8 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.adapter->clear();
     m_ui.adapter->addItem(tr("Default"), QVariant(QString()));
 
-    const std::string current_adapter_name = m_dialog->getEffectiveStringValue("GPU", "Adapter", "");
+    const std::string current_adapter_name =
+      m_dialog->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "Adapter", "");
     for (const GPUDevice::AdapterInfo& adapter : m_adapters)
     {
       if (adapter.name.empty())
@@ -757,7 +791,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     // disable it if we don't have a choice
     m_ui.adapter->setEnabled(!m_adapters.empty());
     m_ui.adapterLabel->setEnabled(!m_adapters.empty());
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, "GPU", "Adapter");
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, Settings::GPU_SECTION_NAME, "Adapter");
     connect(m_ui.adapter, &QComboBox::currentIndexChanged, this,
             &GraphicsSettingsWidget::updateRendererDependentOptions);
   }
@@ -768,7 +802,8 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
 
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
 
-    const std::string current_fullscreen_mode = m_dialog->getEffectiveStringValue("GPU", "FullscreenMode", "");
+    const std::string current_fullscreen_mode =
+      m_dialog->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "FullscreenMode", "");
     bool current_fullscreen_mode_found = false;
     if (current_adapter)
     {
@@ -794,7 +829,8 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     const bool has_exclusive_fullscreen_control = (render_api == RenderAPI::Vulkan);
     m_ui.fullscreenMode->setVisible(has_fullscreen_modes);
     if (has_fullscreen_modes)
-      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
+      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, Settings::GPU_SECTION_NAME,
+                                                     "FullscreenMode");
     m_ui.exclusiveFullscreenControl->setVisible(has_exclusive_fullscreen_control);
     m_ui.exclusiveFullscreenLabel->setVisible(has_fullscreen_modes || has_exclusive_fullscreen_control);
   }
@@ -820,19 +856,20 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     if (m_dialog->isPerGameSettings())
     {
       const QVariant global_msaa_mode(
-        GetMSAAModeValue(static_cast<uint>(Core::GetBaseIntSettingValue("GPU", "Multisamples", 1)),
-                         Core::GetBaseBoolSettingValue("GPU", "PerSampleShading", false)));
+        GetMSAAModeValue(static_cast<uint>(Core::GetBaseIntSettingValue(Settings::GPU_SECTION_NAME, "Multisamples", 1)),
+                         Core::GetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PerSampleShading", false)));
       const QString global_msaa_string = m_ui.msaaMode->itemText(m_ui.msaaMode->findData(global_msaa_mode));
       m_ui.msaaMode->insertItem(0, QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
                                      .arg(global_msaa_string));
     }
 
-    if (!m_dialog->isPerGameSettings() || (m_dialog->containsSettingValue("GPU", "Multisamples") ||
-                                           m_dialog->containsSettingValue("GPU", "PerSampleShading")))
+    if (!m_dialog->isPerGameSettings() ||
+        (m_dialog->containsSettingValue(Settings::GPU_SECTION_NAME, "Multisamples") ||
+         m_dialog->containsSettingValue(Settings::GPU_SECTION_NAME, "PerSampleShading")))
     {
-      const QVariant current_msaa_mode(
-        GetMSAAModeValue(static_cast<uint>(m_dialog->getEffectiveIntValue("GPU", "Multisamples", 1)),
-                         m_dialog->getEffectiveBoolValue("GPU", "PerSampleShading", false)));
+      const QVariant current_msaa_mode(GetMSAAModeValue(
+        static_cast<uint>(m_dialog->getEffectiveIntValue(Settings::GPU_SECTION_NAME, "Multisamples", 1)),
+        m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "PerSampleShading", false)));
       const int current_msaa_index = m_ui.msaaMode->findData(current_msaa_mode);
       if (current_msaa_index >= 0)
         m_ui.msaaMode->setCurrentIndex(current_msaa_index);
@@ -845,16 +882,16 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
       const int index = m_ui.msaaMode->currentIndex();
       if (m_dialog->isPerGameSettings() && index == 0)
       {
-        m_dialog->removeSettingValue("GPU", "Multisamples");
-        m_dialog->removeSettingValue("GPU", "PerSampleShading");
+        m_dialog->removeSettingValue(Settings::GPU_SECTION_NAME, "Multisamples");
+        m_dialog->removeSettingValue(Settings::GPU_SECTION_NAME, "PerSampleShading");
       }
       else
       {
         uint multisamples;
         bool ssaa;
         DecodeMSAAModeValue(m_ui.msaaMode->itemData(index), &multisamples, &ssaa);
-        m_dialog->setIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
-        m_dialog->setBoolSettingValue("GPU", "PerSampleShading", ssaa);
+        m_dialog->setIntSettingValue(Settings::GPU_SECTION_NAME, "Multisamples", static_cast<int>(multisamples));
+        m_dialog->setBoolSettingValue(Settings::GPU_SECTION_NAME, "PerSampleShading", ssaa);
       }
     });
   }
@@ -867,8 +904,8 @@ void GraphicsSettingsWidget::populateAndConnectUpscalingModes(int max_scale)
 
   populateUpscalingModes(m_ui.resolutionScale, max_scale);
 
-  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.resolutionScale, "GPU",
-                                              "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.resolutionScale,
+                                              Settings::GPU_SECTION_NAME, "ResolutionScale", 1);
   connect(m_ui.resolutionScale, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
 
@@ -914,16 +951,16 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
                                                       QLabel* const separator, QSpinBox* const denominator,
                                                       SettingsInterface* const sif)
 {
-  static constexpr const char* CONFIG_SECTION = "Display";
   static constexpr const char* CONFIG_KEY = "AspectRatio";
 
   // AR requires special handling because of the custom option.
   if (sif)
   {
-    cb->addItem(QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
-                  .arg(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(
-                    Settings::ParseDisplayAspectRatio(Core::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
-                      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)))));
+    cb->addItem(
+      QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
+        .arg(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(
+          Settings::ParseDisplayAspectRatio(Core::GetBaseStringSettingValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY))
+            .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)))));
   }
   for (const DisplayAspectRatio& ratio : Settings::GetPredefinedDisplayAspectRatios())
   {
@@ -933,16 +970,16 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   cb->addItem(tr("Custom"));
 
   bool is_custom_ar = false;
-  if (sif && !sif->ContainsValue(CONFIG_SECTION, CONFIG_KEY))
+  if (sif && !sif->ContainsValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY))
   {
     cb->setCurrentIndex(0);
   }
   else
   {
-    const DisplayAspectRatio ar =
-      Settings::ParseDisplayAspectRatio(sif ? sif->GetStringValue(CONFIG_SECTION, CONFIG_KEY) :
-                                              Core::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
-        .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+    const DisplayAspectRatio ar = Settings::ParseDisplayAspectRatio(
+                                    sif ? sif->GetStringValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY) :
+                                          Core::GetBaseStringSettingValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY))
+                                    .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
     if ((is_custom_ar = std::ranges::none_of(Settings::GetPredefinedDisplayAspectRatios(),
                                              [&ar](const auto& it) { return (it == ar); })))
     {
@@ -984,12 +1021,12 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
     {
       if (value_to_save.has_value())
       {
-        sif->SetStringValue(CONFIG_SECTION, CONFIG_KEY,
+        sif->SetStringValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY,
                             Settings::GetDisplayAspectRatioName(value_to_save.value()).c_str());
       }
       else
       {
-        sif->DeleteValue(CONFIG_SECTION, CONFIG_KEY);
+        sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY);
       }
 
       QtHost::SaveSettingsInterface(sif, true, true);
@@ -998,12 +1035,12 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
     {
       if (value_to_save.has_value())
       {
-        Core::SetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY,
+        Core::SetBaseStringSettingValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY,
                                         Settings::GetDisplayAspectRatioName(value_to_save.value()).c_str());
       }
       else
       {
-        Core::DeleteBaseSettingValue(CONFIG_SECTION, CONFIG_KEY);
+        Core::DeleteBaseSettingValue(Settings::DISPLAY_SECTION_NAME, CONFIG_KEY);
       }
 
       Host::CommitBaseSettingChanges();
@@ -1018,10 +1055,13 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
 
 void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
 {
-  const bool enabled = (effectiveRendererIsHardware() && m_dialog->getEffectiveBoolValue("GPU", "PGXPEnable", false) &&
+  const bool enabled = (effectiveRendererIsHardware() &&
+                        m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "PGXPEnable", false) &&
                         !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
-  const bool tc_enabled = (enabled && m_dialog->getEffectiveBoolValue("GPU", "PGXPTextureCorrection", true));
-  const bool depth_enabled = (enabled && m_dialog->getEffectiveBoolValue("GPU", "PGXPDepthBuffer", false));
+  const bool tc_enabled =
+    (enabled && m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "PGXPTextureCorrection", true));
+  const bool depth_enabled =
+    (enabled && m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "PGXPDepthBuffer", false));
   m_ui.tabs->setTabEnabled(TAB_INDEX_PGXP, enabled);
   m_ui.pgxpTab->setEnabled(enabled);
   m_ui.pgxpCulling->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
@@ -1049,14 +1089,17 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
 void GraphicsSettingsWidget::updateResolutionDependentOptions()
 {
   const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
-  const int scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
-  const bool pgxp_enabled = (is_hardware && m_dialog->getEffectiveBoolValue("GPU", "PGXPEnable", false) &&
-                             !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
+  const int scale = m_dialog->getEffectiveIntValue(Settings::GPU_SECTION_NAME, "ResolutionScale", 1);
+  const bool pgxp_enabled =
+    (is_hardware && m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "PGXPEnable", false) &&
+     !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   const GPUTextureFilter texture_filtering =
-    Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "TextureFilter").c_str())
+    Settings::ParseTextureFilterName(
+      m_dialog->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "TextureFilter").c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
   const GPUTextureFilter sprite_texture_filtering =
-    Settings::ParseTextureFilterName(m_dialog->getEffectiveStringValue("GPU", "SpriteTextureFilter").c_str())
+    Settings::ParseTextureFilterName(
+      m_dialog->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "SpriteTextureFilter").c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
   m_ui.forceRoundedTexcoords->setEnabled(
     is_hardware && scale != 1 && texture_filtering == GPUTextureFilter::Nearest &&
@@ -1078,8 +1121,8 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
 
 void GraphicsSettingsWidget::warnAboutRendererChange()
 {
-  if (m_ui.renderer->currentIndex() == 0 || Core::GetBaseBoolSettingValue("UI", "RendererWarningShown", false) ||
-      !isVisible())
+  if (m_ui.renderer->currentIndex() == 0 ||
+      Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "RendererWarningShown", false) || !isVisible())
   {
     updateResolutionDependentOptions();
     return;
@@ -1102,7 +1145,7 @@ void GraphicsSettingsWidget::warnAboutRendererChange()
     QMessageBox::Yes | QMessageBox::No);
   msgbox->setDefaultButton(QMessageBox::No);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this, user_selected_index]() {
-    Core::SetBaseBoolSettingValue("UI", "RendererWarningShown", true);
+    Core::SetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "RendererWarningShown", true);
     m_ui.renderer->setCurrentIndex(user_selected_index);
   });
   msgbox->open();
@@ -1113,7 +1156,7 @@ void GraphicsSettingsWidget::onDownsampleModeChanged()
   const GPUDownsampleMode mode =
     Settings::ParseDownsampleModeName(
       m_dialog
-        ->getEffectiveStringValue("GPU", "DownsampleMode",
+        ->getEffectiveStringValue(Settings::GPU_SECTION_NAME, "DownsampleMode",
                                   Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
         .c_str())
       .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
@@ -1134,7 +1177,8 @@ void GraphicsSettingsWidget::onDownsampleModeChanged()
 void GraphicsSettingsWidget::onFineCropModeChanged()
 {
   const DisplayFineCropMode mode =
-    Settings::ParseDisplayFineCropMode(m_dialog->getEffectiveStringValue("Display", "FineCropMode", "").c_str())
+    Settings::ParseDisplayFineCropMode(
+      m_dialog->getEffectiveStringValue(Settings::DISPLAY_SECTION_NAME, "FineCropMode", "").c_str())
       .value_or(Settings::DEFAULT_DISPLAY_FINE_CROP_MODE);
   const bool enabled = (mode != DisplayFineCropMode::None);
   m_ui.displayFineCropLabel->setEnabled(enabled);
@@ -1160,7 +1204,7 @@ void GraphicsSettingsWidget::onFineCropResetClicked()
       else
         SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(widget, std::nullopt);
 
-      m_dialog->removeSettingValue("Display", key);
+      m_dialog->removeSettingValue(Settings::DISPLAY_SECTION_NAME, key);
     };
 
     reset(m_ui.displayFineCropMode, "FineCropMode");
@@ -1181,26 +1225,27 @@ void GraphicsSettingsWidget::onFineCropResetClicked()
 
 void GraphicsSettingsWidget::onResetPGXPGeometryToleranceClicked()
 {
-  m_dialog->setFloatSettingValue("GPU", "PGXPTolerance",
+  m_dialog->setFloatSettingValue(Settings::GPU_SECTION_NAME, "PGXPTolerance",
                                  m_dialog->isPerGameSettings() ? std::nullopt : std::make_optional(-1.0f));
   SettingWidgetBinder::DisconnectWidget(m_ui.pgxpGeometryTolerance);
-  SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpGeometryTolerance, "GPU",
-                                                "PGXPTolerance", -1.0f);
+  SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpGeometryTolerance,
+                                                Settings::GPU_SECTION_NAME, "PGXPTolerance", -1.0f);
 }
 
 void GraphicsSettingsWidget::onResetPGXPDepthClearThresholdClicked()
 {
   m_dialog->setFloatSettingValue(
-    "GPU", "PGXPDepthThreshold",
+    Settings::GPU_SECTION_NAME, "PGXPDepthThreshold",
     m_dialog->isPerGameSettings() ? std::nullopt : std::make_optional(Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
   SettingWidgetBinder::DisconnectWidget(m_ui.pgxpDepthClearThreshold);
-  SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpDepthClearThreshold, "GPU",
-                                                "PGXPDepthThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+  SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpDepthClearThreshold,
+                                                Settings::GPU_SECTION_NAME, "PGXPDepthThreshold",
+                                                Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
 }
 
 void GraphicsSettingsWidget::onEnableTextureCacheChanged()
 {
-  const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
+  const bool tc_enabled = m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
   m_ui.enableTextureReplacements->setEnabled(tc_enabled);
   m_ui.enableTextureDumping->setEnabled(tc_enabled);
   m_ui.alwaysTrackUploads->setEnabled(tc_enabled);
@@ -1210,11 +1255,11 @@ void GraphicsSettingsWidget::onEnableTextureCacheChanged()
 
 void GraphicsSettingsWidget::onEnableAnyTextureDumpingChanged()
 {
-  const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
+  const bool tc_enabled = m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
   const bool dumping_enabled =
-    (tc_enabled && m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpTextures", false));
+    (tc_enabled && m_dialog->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextures", false));
   const bool background_dumping_enabled =
-    m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpVRAMWrites", false);
+    m_dialog->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWrites", false);
   const bool any_dumping_enabled = (dumping_enabled || background_dumping_enabled);
   m_ui.dumpReplacedTextures->setEnabled(any_dumping_enabled);
 }
@@ -1222,15 +1267,17 @@ void GraphicsSettingsWidget::onEnableAnyTextureDumpingChanged()
 void GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged()
 {
   const bool any_replacements_enabled =
-    (m_dialog->getEffectiveBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false) ||
-     (m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false) &&
-      m_dialog->getEffectiveBoolValue("TextureReplacements", "EnableTextureReplacements", false)));
+    (m_dialog->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableVRAMWriteReplacements",
+                                     false) ||
+     (m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false) &&
+      m_dialog->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "EnableTextureReplacements",
+                                      false)));
   m_ui.preloadTextureReplacements->setEnabled(any_replacements_enabled);
 }
 
 void GraphicsSettingsWidget::onGPUThreadChanged()
 {
-  const bool enabled = m_dialog->getEffectiveBoolValue("GPU", "UseThread", true);
+  const bool enabled = m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "UseThread", true);
   m_ui.maxQueuedFrames->setEnabled(enabled);
   m_ui.maxQueuedFramesLabel->setEnabled(enabled);
 }
@@ -1244,54 +1291,55 @@ TextureReplacementSettingsDialog::TextureReplacementSettingsDialog(SettingsWindo
   constexpr Settings::TextureReplacementSettings::Configuration default_replacement_config;
   SettingsInterface* const sif = settings_window->getSettingsInterface();
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpTexturePages, "TextureReplacements", "DumpTexturePages",
-                                               default_replacement_config.dump_texture_pages);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpFullTexturePages, "TextureReplacements",
-                                               "DumpFullTexturePages",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpTexturePages, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME,
+                                               "DumpTexturePages", default_replacement_config.dump_texture_pages);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpFullTexturePages,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpFullTexturePages",
                                                default_replacement_config.dump_full_texture_pages);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpC16Textures, "TextureReplacements", "DumpC16Textures",
-                                               default_replacement_config.dump_c16_textures);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.reducePaletteRange, "TextureReplacements",
-                                               "ReducePaletteRange", default_replacement_config.reduce_palette_range);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.convertCopiesToWrites, "TextureReplacements",
-                                               "ConvertCopiesToWrites",
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.dumpC16Textures, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME,
+                                               "DumpC16Textures", default_replacement_config.dump_c16_textures);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.reducePaletteRange,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "ReducePaletteRange",
+                                               default_replacement_config.reduce_palette_range);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.convertCopiesToWrites,
+                                               Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "ConvertCopiesToWrites",
                                                default_replacement_config.convert_copies_to_writes);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.replacementScaleLinearFilter, "TextureReplacements",
-                                               "ReplacementScaleLinearFilter",
-                                               default_replacement_config.replacement_scale_linear_filter);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteSplits, "TextureReplacements", "MaxVRAMWriteSplits",
-                                              default_replacement_config.max_vram_write_splits);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteCoalesceWidth, "TextureReplacements",
-                                              "MaxVRAMWriteCoalesceWidth",
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.replacementScaleLinearFilter, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "ReplacementScaleLinearFilter",
+    default_replacement_config.replacement_scale_linear_filter);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteSplits, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME,
+                                              "MaxVRAMWriteSplits", default_replacement_config.max_vram_write_splits);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteCoalesceWidth,
+                                              Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceWidth",
                                               default_replacement_config.max_vram_write_coalesce_width);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteCoalesceHeight, "TextureReplacements",
-                                              "MaxVRAMWriteCoalesceHeight",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxVRAMWriteCoalesceHeight,
+                                              Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "MaxVRAMWriteCoalesceHeight",
                                               default_replacement_config.max_vram_write_coalesce_height);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedTextureWidth, "TextureReplacements",
-                                              "DumpTextureWidthThreshold",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedTextureWidth,
+                                              Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureWidthThreshold",
                                               default_replacement_config.texture_dump_width_threshold);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedTextureHeight, "TextureReplacements",
-                                              "DumpTextureHeightThreshold",
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedTextureHeight,
+                                              Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureHeightThreshold",
                                               default_replacement_config.texture_dump_height_threshold);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.setTextureDumpAlphaChannel, "TextureReplacements",
-                                               "DumpTextureForceAlphaChannel",
-                                               default_replacement_config.dump_texture_force_alpha_channel);
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.setTextureDumpAlphaChannel, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTextureForceAlphaChannel",
+    default_replacement_config.dump_texture_force_alpha_channel);
 
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedVRAMWriteWidth, "TextureReplacements",
-                                              "DumpVRAMWriteWidthThreshold",
-                                              default_replacement_config.vram_write_dump_width_threshold);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.minDumpedVRAMWriteHeight, "TextureReplacements",
-                                              "DumpVRAMWriteHeightThreshold",
-                                              default_replacement_config.vram_write_dump_height_threshold);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.setVRAMWriteAlphaChannel, "TextureReplacements",
-                                               "DumpVRAMWriteForceAlphaChannel",
-                                               default_replacement_config.dump_vram_write_force_alpha_channel);
+  SettingWidgetBinder::BindWidgetToIntSetting(
+    sif, m_ui.minDumpedVRAMWriteWidth, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteWidthThreshold",
+    default_replacement_config.vram_write_dump_width_threshold);
+  SettingWidgetBinder::BindWidgetToIntSetting(
+    sif, m_ui.minDumpedVRAMWriteHeight, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteHeightThreshold",
+    default_replacement_config.vram_write_dump_height_threshold);
+  SettingWidgetBinder::BindWidgetToBoolSetting(
+    sif, m_ui.setVRAMWriteAlphaChannel, Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteForceAlphaChannel",
+    default_replacement_config.dump_vram_write_force_alpha_channel);
 
   m_ui.dumpFullTexturePages->setEnabled(
-    settings_window->getEffectiveBoolValue("TextureReplacements", "DumpTexturePages", false));
+    settings_window->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTexturePages", false));
   connect(m_ui.dumpTexturePages, &QCheckBox::checkStateChanged, this, [this, settings_window] {
     m_ui.dumpFullTexturePages->setEnabled(
-      settings_window->getEffectiveBoolValue("TextureReplacements", "DumpTexturePages", false));
+      settings_window->getEffectiveBoolValue(Settings::TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpTexturePages", false));
   });
   connect(m_ui.closeButton, &QAbstractButton::clicked, this, &QDialog::accept);
   connect(m_ui.exportButton, &QAbstractButton::clicked, this, &TextureReplacementSettingsDialog::onExportClicked);

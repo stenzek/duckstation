@@ -29,15 +29,18 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, "BIOS", "TTYLogging", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, Settings::BIOS_SECTION_NAME, "TTYLogging",
+                                               false);
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pioDeviceType, "PIO", "DeviceType",
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pioDeviceType, Settings::PIO_SECTION_NAME, "DeviceType",
                                                &Settings::ParsePIODeviceTypeName, &Settings::GetPIODeviceTypeModeName,
                                                &Settings::GetPIODeviceTypeModeDisplayName,
                                                Settings::DEFAULT_PIO_DEVICE_TYPE, PIODeviceType::MaxCount);
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.pioImagePath, "PIO", "FlashImagePath");
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioSwitchActive, "PIO", "SwitchActive", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioImageWrites, "PIO", "FlashImageWriteEnable", false);
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.pioImagePath, Settings::PIO_SECTION_NAME, "FlashImagePath");
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioSwitchActive, Settings::PIO_SECTION_NAME, "SwitchActive",
+                                               true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioImageWrites, Settings::PIO_SECTION_NAME,
+                                               "FlashImageWriteEnable", false);
   connect(m_ui.pioDeviceType, &QComboBox::currentIndexChanged, this, &BIOSSettingsWidget::onPIODeviceTypeChanged);
   connect(m_ui.pioImagePathBrowse, &QPushButton::clicked, this, &BIOSSettingsWidget::onPIOImagePathBrowseClicked);
   onPIODeviceTypeChanged();
@@ -45,33 +48,33 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   connect(m_ui.imageNTSCJ, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
-      m_dialog->removeSettingValue("BIOS", "PathNTSCJ");
+      m_dialog->removeSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCJ");
     }
     else
     {
-      m_dialog->setStringSettingValue("BIOS", "PathNTSCJ",
+      m_dialog->setStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCJ",
                                       m_ui.imageNTSCJ->itemData(index).toString().toStdString().c_str());
     }
   });
   connect(m_ui.imageNTSCU, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
-      m_dialog->removeSettingValue("BIOS", "PathNTSCU");
+      m_dialog->removeSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCU");
     }
     else
     {
-      m_dialog->setStringSettingValue("BIOS", "PathNTSCU",
+      m_dialog->setStringSettingValue(Settings::BIOS_SECTION_NAME, "PathNTSCU",
                                       m_ui.imageNTSCU->itemData(index).toString().toStdString().c_str());
     }
   });
   connect(m_ui.imagePAL, &QComboBox::currentIndexChanged, [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
     {
-      m_dialog->removeSettingValue("BIOS", "PathPAL");
+      m_dialog->removeSettingValue(Settings::BIOS_SECTION_NAME, "PathPAL");
     }
     else
     {
-      m_dialog->setStringSettingValue("BIOS", "PathPAL",
+      m_dialog->setStringSettingValue(Settings::BIOS_SECTION_NAME, "PathPAL",
                                       m_ui.imagePAL->itemData(index).toString().toStdString().c_str());
     }
   });
@@ -84,9 +87,10 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToFolderSetting(
-      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.searchDirectoryOpen,
-      m_ui.searchDirectoryReset, "BIOS", "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
+    SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory,
+                                                   tr("Select BIOS Directory"), m_ui.searchDirectoryOpen,
+                                                   m_ui.searchDirectoryReset, Settings::BIOS_SECTION_NAME,
+                                                   "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
     connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
   }
   else
@@ -186,11 +190,11 @@ void BIOSSettingsWidget::refreshList()
   populateDropDownForRegion(ConsoleRegion::NTSC_U, m_ui.imageNTSCU, images, m_dialog->isPerGameSettings());
   populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, images, m_dialog->isPerGameSettings());
 
-  setDropDownValue(m_ui.imageNTSCJ, m_dialog->getStringValue("BIOS", "PathNTSCJ", std::nullopt),
+  setDropDownValue(m_ui.imageNTSCJ, m_dialog->getStringValue(Settings::BIOS_SECTION_NAME, "PathNTSCJ", std::nullopt),
                    m_dialog->isPerGameSettings());
-  setDropDownValue(m_ui.imageNTSCU, m_dialog->getStringValue("BIOS", "PathNTSCU", std::nullopt),
+  setDropDownValue(m_ui.imageNTSCU, m_dialog->getStringValue(Settings::BIOS_SECTION_NAME, "PathNTSCU", std::nullopt),
                    m_dialog->isPerGameSettings());
-  setDropDownValue(m_ui.imagePAL, m_dialog->getStringValue("BIOS", "PathPAL", std::nullopt),
+  setDropDownValue(m_ui.imagePAL, m_dialog->getStringValue(Settings::BIOS_SECTION_NAME, "PathPAL", std::nullopt),
                    m_dialog->isPerGameSettings());
 }
 
@@ -255,7 +259,7 @@ void BIOSSettingsWidget::onPIODeviceTypeChanged()
   const PIODeviceType type =
     Settings::ParsePIODeviceTypeName(
       m_dialog
-        ->getEffectiveStringValue("PIO", "DeviceType",
+        ->getEffectiveStringValue(Settings::PIO_SECTION_NAME, "DeviceType",
                                   Settings::GetPIODeviceTypeModeName(Settings::DEFAULT_PIO_DEVICE_TYPE))
         .c_str())
       .value_or(Settings::DEFAULT_PIO_DEVICE_TYPE);
