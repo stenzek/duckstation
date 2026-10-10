@@ -55,7 +55,7 @@ void IdleUpdate(u64 max_poll_time);
 namespace Host {
 
 /// Sets host-specific default settings.
-void SetDefaultSettings(SettingsInterface& si);
+void SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs);
 
 /// Called when settings have been reset.
 void OnSettingsResetToDefault(bool host, bool system, bool controller);

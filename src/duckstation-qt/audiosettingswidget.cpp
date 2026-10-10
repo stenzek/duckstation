@@ -315,7 +315,7 @@ void AudioSettingsWidget::updateMinimumLatencyLabel()
 
 void AudioSettingsWidget::onMinimalOutputLatencyToggled()
 {
-  const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", false);
+  const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
   m_ui.outputLatencyMS->setEnabled(!minimal);
   m_ui.outputLatencyLabel->setEnabled(!minimal);
   m_ui.resetOutputLatency->setEnabled(!minimal);

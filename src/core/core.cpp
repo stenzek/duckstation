@@ -329,7 +329,7 @@ void Core::SetDefaultSettings(bool host, bool system, bool controller, bool igno
 void Core::SetDefaultSettings(SettingsInterface& si, bool host, bool system, bool controller, bool ignore_user_prefs)
 {
   if (host)
-    Host::SetDefaultSettings(si);
+    Host::SetDefaultSettings(si, ignore_user_prefs);
 
   if (system)
     System::SetDefaultSettings(si, ignore_user_prefs);

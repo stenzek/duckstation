@@ -41,7 +41,7 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.mediaCaptureSaveName, "MediaCapture", "FilenameFormat", &Settings::ParseCaptureFileNameFormat,
     &Settings::GetCaptureFileNameFormatName, &Settings::GetCaptureFileNameFormatDisplayName,
-    Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT, CaptureFileNameFormat::Count);
+    Settings::DEFAULT_MEDIA_CAPTURE_FILENAME_FORMAT, CaptureFileNameFormat::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth",
                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureHeight, "MediaCapture", "VideoHeight",
@@ -240,7 +240,7 @@ void CaptureSettingsWidget::onMediaCaptureVideoContainerChanged()
         .c_str())
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
   const std::string container = m_dialog->getEffectiveStringValue("MediaCapture", "VideoContainer",
-                                                                  Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
+                                                                  Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.videoCaptureCodec);
   m_ui.videoCaptureCodec->clear();

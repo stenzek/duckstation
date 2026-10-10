@@ -3636,14 +3636,14 @@ void FullscreenUI::DrawEmulationSettingsPage()
     bsi, FSUI_ICONVSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Optimal Frame Pacing"),
     FSUI_VSTR("Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, "
               "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
-    "Display", "OptimalFramePacing", false);
+    "Display", "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
 
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_CHARGING_STATION, "Skip Duplicate Frame Display"),
     FSUI_VSTR("Skips the presentation/display of frames that are not unique. Can result in worse frame pacing."),
     "Display", "SkipPresentingDuplicateFrames", false);
 
-  const bool optimal_frame_pacing_active = GetEffectiveBoolSetting(bsi, "Display", "OptimalFramePacing", false);
+  const bool optimal_frame_pacing_active = GetEffectiveBoolSetting(bsi, "Display", "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_STOPWATCH_20, "Reduce Input Latency"),
     FSUI_VSTR("Reduces input latency by delaying the start of frame until closer to the presentation time."), "Display",
@@ -4467,7 +4467,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
                     FSUI_VSTR("Renames existing save states when saving to a backup file."), "Main",
-                    "CreateSaveStateBackups", false);
+                    "CreateSaveStateBackups", Settings::DEFAULT_SAVE_STATE_BACKUPS);
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GLOBE, "Enable Global Save States"),
                     FSUI_VSTR("When enabled, the legacy global save state slots will be available. These slots are "
@@ -4948,7 +4948,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_NODES, "Vertex Cache"),
                       FSUI_VSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."),
-                      "GPU", "PGXPVertexCache", pgxp_enabled);
+                      "GPU", "PGXPVertexCache", false, pgxp_enabled);
 
     DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_SQUARE_MINUS, "Disable on 2D Polygons"),
@@ -5022,7 +5022,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_FILE, "Dump Replaced Textures"),
     FSUI_VSTR("Dumps textures that have replacements already loaded."), "TextureReplacements", "DumpReplacedTextures",
-    false,
+    true,
     (texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false)) ||
       GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpVRAMWrites", false));
 
@@ -5784,7 +5784,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<Threading::Mute
                                                    std::string_view custom_title, std::string_view custom_summary) {
     const bool game_settings = IsEditingGameSettings(bsi);
     const std::optional<int> value =
-      bsi->GetOptionalIntValue("Cheevos", key, game_settings ? std::nullopt : std::optional<int>(-1));
+      bsi->GetOptionalIntValue("Cheevos", key, game_settings ? std::nullopt : std::optional<int>(Settings::ACHIEVEMENT_NOTIFICATION_SCALE_AUTO));
     const bool is_custom = (value.has_value() && value.value() > 0);
 
     std::string_view mode_text;

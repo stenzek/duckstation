@@ -551,7 +551,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.enableTextureDumping, tr("Enable Texture Dumping"), tr("Unchecked"),
     tr("Enables dumping of textures to image files, which can be replaced. Not compatible with all games."));
-  dialog->registerWidgetHelp(m_ui.dumpReplacedTextures, tr("Dump Replaced Textures"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.dumpReplacedTextures, tr("Dump Replaced Textures"), tr("Checked"),
                              tr("Dumps textures that have replacements already loaded."));
 
   dialog->registerWidgetHelp(m_ui.vramWriteReplacement, tr("Enable VRAM Write Replacement"), tr("Unchecked"),
