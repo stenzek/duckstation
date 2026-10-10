@@ -87629,6 +87629,8 @@ SLPS-02640:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Apparently breaks input.
   metadata:
     publisher: "Namco"
     developer: "TamTam / Alpha Unit"
