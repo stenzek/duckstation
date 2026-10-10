@@ -153,7 +153,9 @@ static void ClearDisplay();
 
 // Sets dots per scanline
 static void UpdateCRTCConfig();
+static void UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height);
 static void UpdateCRTCDisplayParameters();
+static void UpdateCRTCDisplayParameters(u16 old_vram_width, u16 old_vram_height);
 static void UpdateCRTCHBlankFlag();
 
 // Update ticks for this execution slice
@@ -581,6 +583,10 @@ bool GPU::DoState(StateWrapper& sw)
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
   }
 
+  // The display size is replaced when loading, so we need the previous size to detect resolution changes.
+  const u16 old_vram_width = s_locals.crtc_state.display_vram_width;
+  const u16 old_vram_height = s_locals.crtc_state.display_vram_height;
+
   sw.Do(&s_locals.GPUSTAT.bits);
 
   sw.Do(&s_locals.draw_mode_reg.bits);
@@ -716,7 +722,7 @@ bool GPU::DoState(StateWrapper& sw)
     s_locals.drawing_area_changed = true;
     SetClampedDrawingArea();
     UpdateDMARequest();
-    UpdateCRTCConfig();
+    UpdateCRTCConfig(old_vram_width, old_vram_height);
     UpdateCommandTickEvent();
   }
   else // if not memory state
@@ -1167,6 +1173,11 @@ GSVector2 GPU::CalculateRenderWindowSize(DisplayFineCropMode mode, std::span<con
 
 void GPU::UpdateCRTCConfig()
 {
+  UpdateCRTCConfig(s_locals.crtc_state.display_vram_width, s_locals.crtc_state.display_vram_height);
+}
+
+void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
+{
   static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = s_locals.crtc_state;
 
@@ -1239,11 +1250,16 @@ void GPU::UpdateCRTCConfig()
 
   System::SetVideoFrameRate(ComputeVerticalFrequency());
 
-  UpdateCRTCDisplayParameters();
+  UpdateCRTCDisplayParameters(old_vram_width, old_vram_height);
   UpdateCRTCTickEvent();
 }
 
 void GPU::UpdateCRTCDisplayParameters()
+{
+  UpdateCRTCDisplayParameters(s_locals.crtc_state.display_vram_width, s_locals.crtc_state.display_vram_height);
+}
+
+void GPU::UpdateCRTCDisplayParameters(u16 old_vram_width, u16 old_vram_height)
 {
   CRTCState& cs = s_locals.crtc_state;
   const DisplayCropMode crop_mode = g_settings.display_crop_mode;
@@ -1353,8 +1369,6 @@ void GPU::UpdateCRTCDisplayParameters()
   // won't be broken when displayed.
   const u8 y_shift = BoolToUInt8(s_locals.GPUSTAT.vertical_interlace && s_locals.GPUSTAT.vertical_resolution);
   const u8 height_shift = s_locals.force_progressive_scan ? y_shift : BoolToUInt8(s_locals.GPUSTAT.vertical_interlace);
-  const u16 old_vram_width = s_locals.crtc_state.display_vram_width;
-  const u16 old_vram_height = s_locals.crtc_state.display_vram_height;
 
   // Determine screen size.
   cs.display_width = (cs.horizontal_visible_end - cs.horizontal_visible_start) / cs.dot_clock_divider;
