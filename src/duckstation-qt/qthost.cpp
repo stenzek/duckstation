@@ -355,7 +355,7 @@ void QtHost::AdjustQtEnvironmentVariables()
   if (!desktop)
     desktop = std::getenv("XDG_SESSION_DESKTOP");
 
-  std::fprintf(stderr, "XDG_SESSION_DESKTOP=%s\n", desktop ? desktop : "null");
+  std::fprintf(stderr, "XDG_CURRENT_DESKTOP=%s\n", desktop ? desktop : "null");
 
   if (!desktop || std::strstr(desktop, "gamescope"))
   {
@@ -364,7 +364,7 @@ void QtHost::AdjustQtEnvironmentVariables()
     QtHost::DisableScreensaverInhibit();
   }
 
-  if (desktop && (std::strstr(desktop, "KDE") == 0 || std::strstr(desktop, "GNOME") == 0))
+  if (desktop && (std::strstr(desktop, "KDE") || std::strstr(desktop, "GNOME")))
   {
     const char* platform_theme = std::getenv("QT_QPA_PLATFORMTHEME");
     if (platform_theme)
@@ -393,7 +393,7 @@ void QtHost::ApplyWaylandWorkarounds()
     return;
   }
 
-  if (const char* desktop = std::getenv("XDG_SESSION_DESKTOP"); desktop && std::strcmp(desktop, "KDE") == 0)
+  if (const char* desktop = std::getenv("XDG_CURRENT_DESKTOP"); desktop && std::strstr(desktop, "KDE"))
   {
     std::fputs("Wayland with KDE detected, not applying Wayland workarounds.\n", stderr);
   }
