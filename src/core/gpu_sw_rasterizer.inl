@@ -1975,8 +1975,9 @@ static void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, 
   const u16 mask_and = check_mask ? 0x8000u : 0x0000u;
   const u16 mask_or = set_mask ? 0x8000u : 0x0000u;
 
-  // Copy in reverse when src_x < dst_x, this is verified on console.
-  if (src_x < dst_x || ((src_x + width - 1) % VRAM_WIDTH) < ((dst_x + width - 1) % VRAM_WIDTH))
+  // Copy in reverse when src_x < dst_x, this is verified on console. Rows are always copied from top to bottom, so
+  // the direction only makes a difference when the source and destination overlap within the same row.
+  if ((src_y % VRAM_HEIGHT) == (dst_y % VRAM_HEIGHT) && src_x < dst_x && dst_x < (src_x + width))
   {
     for (u32 row = 0; row < height; row++)
     {
