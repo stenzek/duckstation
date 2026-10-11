@@ -106,6 +106,7 @@ void Timers::Reset()
     cs.counter = 0;
     cs.target = 0;
     cs.gate = false;
+    cs.use_external_clock = false;
     cs.external_counting_enabled = false;
     cs.counting_enabled = true;
     cs.irq_done = false;
