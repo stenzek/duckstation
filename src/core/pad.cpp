@@ -555,7 +555,7 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x00: // JOY_DATA
     {
       if (IsTransmitting())
-        s_state.transfer_event.InvokeEarly();
+        s_state.transfer_event.InvokeEarlyNoReschedule();
 
       const u8 value = s_state.receive_buffer_full ? s_state.receive_buffer : 0xFF;
       DEBUG_LOG("JOY_DATA (R) -> 0x{:02X}{}", value, s_state.receive_buffer_full ? "" : "(EMPTY)");
@@ -569,7 +569,7 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x04: // JOY_STAT
     {
       if (IsTransmitting())
-        s_state.transfer_event.InvokeEarly();
+        s_state.transfer_event.InvokeEarlyNoReschedule();
 
       const u32 bits = s_state.JOY_STAT.bits;
       s_state.JOY_STAT.ACKINPUT = false;
