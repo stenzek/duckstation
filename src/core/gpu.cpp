@@ -864,7 +864,7 @@ u32 GPU::ReadRegister(u32 offset)
       if (IsCRTCScanlinePending())
         SynchronizeCRTC();
       if (IsCommandCompletionPending())
-        s_locals.command_tick_event.InvokeEarly();
+        s_locals.command_tick_event.InvokeEarlyNoReschedule();
 
       return s_locals.GPUSTAT.bits;
     }
@@ -888,7 +888,7 @@ void GPU::WriteRegister(u32 offset, u32 value)
       // there's no backpressure applied to the CPU. Instead force the GPU to run and catch up.
       if (s_locals.fifo.GetSize() >= s_locals.fifo_size) [[unlikely]]
       {
-        s_locals.command_tick_event.InvokeEarly();
+        s_locals.command_tick_event.InvokeEarlyNoReschedule();
 
         if (s_locals.fifo.GetSize() >= s_locals.fifo.GetCapacity()) [[unlikely]]
         {
@@ -1947,7 +1947,7 @@ void GPU::WriteGP1(u32 value)
     case static_cast<u8>(GP1Command::ResetGPU):
     {
       DEBUG_LOG("GP1 reset GPU");
-      s_locals.command_tick_event.InvokeEarly();
+      s_locals.command_tick_event.InvokeEarlyNoReschedule();
       SynchronizeCRTC();
       SoftReset();
     }
@@ -1956,7 +1956,7 @@ void GPU::WriteGP1(u32 value)
     case static_cast<u8>(GP1Command::ClearFIFO):
     {
       DEBUG_LOG("GP1 clear FIFO");
-      s_locals.command_tick_event.InvokeEarly();
+      s_locals.command_tick_event.InvokeEarlyNoReschedule();
       SynchronizeCRTC();
 
       // flush partial writes
@@ -2073,7 +2073,7 @@ void GPU::WriteGP1(u32 value)
       {
         // Have to be careful when setting this because Synchronize() can modify GPUSTAT.
         static constexpr u32 SET_MASK = UINT32_C(0b00000000011111110100000000000000);
-        s_locals.command_tick_event.InvokeEarly();
+        s_locals.command_tick_event.InvokeEarlyNoReschedule();
         SynchronizeCRTC();
         s_locals.GPUSTAT.bits = (s_locals.GPUSTAT.bits & ~SET_MASK) | (new_GPUSTAT.bits & SET_MASK);
         UpdateCRTCConfig();
