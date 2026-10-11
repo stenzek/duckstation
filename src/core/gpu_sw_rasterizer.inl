@@ -524,7 +524,6 @@ struct PixelVectors
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_and_y;
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_or_y;
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_x;
-  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_y;
 
 #ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
   // Low and high bytes of the 4-bit CLUT, so it can be looked up with shuffle8().
@@ -545,9 +544,9 @@ struct PixelVectors
       texture_window_and_x = GSVectorNi(cmd->window.and_x);
       texture_window_or_x = GSVectorNi(cmd->window.or_x);
       texture_window_and_y = GSVectorNi(cmd->window.and_y);
-      texture_window_or_y = GSVectorNi(cmd->window.or_y);
+      // The base of the page is either 0 or 256, and the texture coordinate is 8 bits, so it can be ORed in too.
+      texture_window_or_y = GSVectorNi(cmd->window.or_y | cmd->draw_mode.GetTexturePageBaseY());
       texture_base_x = GSVectorNi(cmd->draw_mode.GetTexturePageBaseX());
-      texture_base_y = GSVectorNi(cmd->draw_mode.GetTexturePageBaseY());
 
 #ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
       if (cmd->draw_mode.texture_mode == GPUTextureMode::Palette4Bit)
@@ -593,26 +592,23 @@ ALWAYS_INLINE_RELEASE static GSVectorNi SampleTexture(const PixelVectors<texture
                                                       GSVectorNi texcoord_y)
 {
   static constexpr GSVectorNi coord_mask_x = GSVectorNi::cxpr(VRAM_WIDTH_MASK);
-  static constexpr GSVectorNi coord_mask_y = GSVectorNi::cxpr(VRAM_HEIGHT_MASK);
 
   // Hopefully optimized out when not texturing...
   GSVectorNi texture_color = GSVectorNi::zero();
 
   if constexpr (texture_enable)
   {
-    // Apply texture window
+    // Apply texture window, this includes the base of the texture page for Y
     texcoord_x = (texcoord_x & pv.texture_window_and_x) | pv.texture_window_or_x;
     texcoord_y = (texcoord_y & pv.texture_window_and_y) | pv.texture_window_or_y;
-
-    texcoord_y = pv.texture_base_y.add32(texcoord_y) & coord_mask_y;
 
     switch (texture_mode)
     {
       case GPUTextureMode::Palette4Bit:
       {
+        // Can't go past the end of VRAM, the last page starts at 960, and is only 64 pixels wide here.
         GSVectorNi load_texcoord_x = texcoord_x.srl32<2>();
         load_texcoord_x = pv.texture_base_x.add32(load_texcoord_x);
-        load_texcoord_x = load_texcoord_x & coord_mask_x;
 
         const GSVectorNi palette_shift = (texcoord_x & GSVectorNi::cxpr(3)).sll32<2>();
         const GSVectorNi palette_indices = GatherVector(load_texcoord_x, texcoord_y);
@@ -736,15 +732,14 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
         transparent_mask = color.sra16<15>();
       }
 
-      // TODO: We don't need to OR color here with 0x8000 for textures.
-      // 0x8000 is added to match serial path.
+      // 0x8000 is added to match serial path. Textured pixels are only blended when it is already set.
 
       GSVectorNi blended_color;
       switch (transparency_mode)
       {
         case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
         {
-          const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi fg_bits = texture_enable ? color : (color | GSVectorNi::cxpr(0x8000u));
           const GSVectorNi bg_bits = bg_color | GSVectorNi::cxpr(0x8000u);
           const GSVectorNi res =
             fg_bits.add32(bg_bits).sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x0421u)).srl32<1>();
@@ -754,7 +749,7 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
 
         case GPUTransparencyMode::BackgroundPlusForeground:
         {
-          const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi fg_bits = texture_enable ? color : (color | GSVectorNi::cxpr(0x8000u));
           const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
           const GSVectorNi sum = fg_bits.add32(bg_bits);
           const GSVectorNi carry =
@@ -780,8 +775,7 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
         default:
         {
           const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
-          const GSVectorNi fg_bits =
-            ((color | GSVectorNi::cxpr(0x8000)).srl32<2>() & GSVectorNi::cxpr(0x1CE7u)) | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi fg_bits = (color.srl32<2>() & GSVectorNi::cxpr(0x1CE7u)) | GSVectorNi::cxpr(0x8000u);
           const GSVectorNi sum = fg_bits.add32(bg_bits);
           const GSVectorNi carry =
             sum.sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x8421u)) & GSVectorNi::cxpr(0x8420u);
@@ -802,9 +796,7 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
     mask_bits_set = mask_bits_set.sra16<15>();         // ffff if masked else 0000
     preserve_mask = preserve_mask | mask_bits_set;     // ffff if preserved else 0000
 
-    bg_color = bg_color & preserve_mask;
-    color = (color | pv.mask_or).andnot(preserve_mask);
-    color = color | bg_color;
+    color = (color | pv.mask_or).blend8(bg_color, preserve_mask);
   }
 
   StoreVector(start_x, y, color);
@@ -1383,7 +1375,7 @@ DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bo
     // R0G0 | R0G0 | R0G0 | R0G0
     const GSVectorNi r = shading_enable ? dr.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT>() : dr;
     const GSVectorNi g =
-      shading_enable ? dg.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT>().sll32<16>() : dg; // get G into the correct position
+      shading_enable ? dg.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT - 16>() : dg; // get G into the high word for blend
     const GSVectorNi b = shading_enable ? db.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT>() : db;
     const GSVectorNi u = du.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT>();
     const GSVectorNi v = dv.srl32<ATTRIB_SHIFT + ATTRIB_POST_SHIFT>();
