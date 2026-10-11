@@ -1375,7 +1375,6 @@ DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bo
                                 &VECTOR_DITHER_MATRIX[static_cast<u32>(y) & 3][(static_cast<u32>(current_x) & 3) * 2]) :
                               GSVectorNi::zero();
 
-  GSVectorNi xvec = GSVectorNi(current_x).add32(SPAN_OFFSET_VEC);
   GSVectorNi wvec = GSVectorNi(width).sub32(SPAN_WIDTH_VEC);
 
   const GPUTransparencyMode transparency_mode = cmd->draw_mode.transparency_mode;
@@ -1394,22 +1393,13 @@ DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bo
 
     const GSVectorNi rg = r.blend16<0xAA>(g);
 
-    // mask based on what's outside the span
-    GSVectorNi preserve_mask = wvec.lt32(GSVectorNi::zero());
-
-    // clip test, if all pixels are outside, skip
-    preserve_mask = preserve_mask | xvec.lt32(tv.clip_left);
-    preserve_mask = preserve_mask | xvec.gt32(tv.clip_right);
-    if (!preserve_mask.alltrue())
-    {
-      ShadePixel<modulation_mode, transparency_enable>(
-        tv, transparency_mode, mask_bit_test, static_cast<u32>(current_x), static_cast<u32>(y), rg, b,
-        SampleTexture(tv, cmd->draw_mode.texture_mode, u, v), preserve_mask, dither);
-    }
+    // mask based on what's outside the span, it was clipped to the drawing area above, and is never empty
+    const GSVectorNi preserve_mask = wvec.lt32(GSVectorNi::zero());
+    ShadePixel<modulation_mode, transparency_enable>(
+      tv, transparency_mode, mask_bit_test, static_cast<u32>(current_x), static_cast<u32>(y), rg, b,
+      SampleTexture(tv, cmd->draw_mode.texture_mode, u, v), preserve_mask, dither);
 
     current_x += PIXELS_PER_VEC;
-
-    xvec = xvec.add32(PIXELS_PER_VEC_VEC);
     wvec = wvec.sub32(PIXELS_PER_VEC_VEC);
 
     if constexpr (shading_enable)
