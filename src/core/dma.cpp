@@ -813,12 +813,22 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
       s_state.transfer_buffer.resize(word_count);
     src_pointer = s_state.transfer_buffer.data();
 
-    u8* ram_pointer = g_bus.ram;
-    u32 current_address = address;
-    for (u32 i = 0; i < word_count; i++)
+    const u8* ram_pointer = g_bus.ram;
+    if (static_cast<s32>(increment) < 0)
     {
-      std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[current_address], sizeof(u32));
-      current_address = (current_address + increment) & mask;
+      u32 current_address = address;
+      for (u32 i = 0; i < word_count; i++)
+      {
+        std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[current_address], sizeof(u32));
+        current_address = (current_address + increment) & mask;
+      }
+    }
+    else
+    {
+      const u32 first_word_count = (mask + 1 - address) / sizeof(u32);
+      std::memcpy(s_state.transfer_buffer.data(), &ram_pointer[address], first_word_count * sizeof(u32));
+      std::memcpy(s_state.transfer_buffer.data() + first_word_count, ram_pointer,
+                  (word_count - first_word_count) * sizeof(u32));
     }
   }
 
@@ -956,10 +966,20 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   if (dest_pointer == s_state.transfer_buffer.data()) [[unlikely]]
   {
     u8* ram_pointer = g_bus.ram;
-    for (u32 i = 0; i < word_count; i++)
+    if (static_cast<s32>(increment) < 0)
     {
-      std::memcpy(&ram_pointer[address], &s_state.transfer_buffer[i], sizeof(u32));
-      address = (address + increment) & mask;
+      for (u32 i = 0; i < word_count; i++)
+      {
+        std::memcpy(&ram_pointer[address], &s_state.transfer_buffer[i], sizeof(u32));
+        address = (address + increment) & mask;
+      }
+    }
+    else
+    {
+      const u32 first_word_count = (mask + 1 - address) / sizeof(u32);
+      const u32* src_pointer = s_state.transfer_buffer.data();
+      std::memcpy(&ram_pointer[address], src_pointer, first_word_count * sizeof(u32));
+      std::memcpy(ram_pointer, src_pointer + first_word_count, (word_count - first_word_count) * sizeof(u32));
     }
   }
 
