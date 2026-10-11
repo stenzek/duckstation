@@ -531,7 +531,7 @@ struct PixelVectors
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> clut_hi;
 #endif
 
-  PixelVectors(const GPUBackendDrawCommand* cmd)
+  ALWAYS_INLINE_RELEASE PixelVectors(const GPUBackendDrawCommand* cmd)
   {
     clip_left = GSVectorNi(g_drawing_area.left);
     clip_right = GSVectorNi(g_drawing_area.right);
@@ -1280,7 +1280,8 @@ struct TriangleVectors : PixelVectors<texture_enable>
   typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> dudx_0123;
   typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> dvdx_0123;
 
-  TriangleVectors(const GPUBackendDrawCommand* cmd, const UVSteps& uvstep, const RGBSteps& rgbstep)
+  ALWAYS_INLINE_RELEASE TriangleVectors(const GPUBackendDrawCommand* cmd, const UVSteps& uvstep,
+                                        const RGBSteps& rgbstep)
     : PixelVectors<texture_enable>(cmd)
   {
     if constexpr (shading_enable)
