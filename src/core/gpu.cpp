@@ -1016,7 +1016,8 @@ void GPU::AddCommandTicks(TickCount ticks)
 
 void GPU::SynchronizeCRTC()
 {
-  s_locals.crtc_tick_event.InvokeEarly();
+  // The event always gets rescheduled, except for when replaying a GPU dump, but then it's never active.
+  s_locals.crtc_tick_event.InvokeEarlyNoReschedule();
 }
 
 void GPU::RescheduleCRTC()
