@@ -342,3 +342,29 @@ TEST_F(TimersTest, ZeroTargetIRQNotAffectedByUpdates)
     ASSERT_EQ(TakeIRQ(2), (tick % 0x10000) == 0) << "at tick " << tick;
   }
 }
+
+// This is what the GPU schedules the CRTC event with, for the timers it clocks.
+TEST_F(TimersTest, GetTicksUntilIRQ)
+{
+  Timers::WriteRegister(TIMER1 + REG_TARGET, 100);
+  Timers::WriteRegister(TIMER1 + REG_MODE, MODE_CLOCK_SOURCE_1 | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+  EXPECT_EQ(Timers::GetTicksUntilIRQ(1), 100);
+  Timers::AddTicks(1, 100);
+  EXPECT_TRUE(TakeIRQ(1));
+
+  // When free-running, the counter has to wrap around to reach the target again.
+  EXPECT_EQ(Timers::GetTicksUntilIRQ(1), 0x10000);
+  Timers::AddTicks(1, 0xFFFF);
+  EXPECT_FALSE(TakeIRQ(1));
+  EXPECT_EQ(Timers::GetTicksUntilIRQ(1), 1);
+  Timers::AddTicks(1, 1);
+  EXPECT_TRUE(TakeIRQ(1));
+
+  // Resetting at the target doesn't stop the counter from overflowing if it's already past it.
+  Timers::WriteRegister(TIMER1 + REG_MODE,
+                        MODE_CLOCK_SOURCE_1 | MODE_RESET_AT_TARGET | MODE_IRQ_ON_OVERFLOW | MODE_IRQ_REPEAT);
+  Timers::WriteRegister(TIMER1 + REG_COUNTER, 200);
+  EXPECT_EQ(Timers::GetTicksUntilIRQ(1), 0x10000 - 200);
+  Timers::AddTicks(1, 0x10000 - 200);
+  EXPECT_TRUE(TakeIRQ(1));
+}

@@ -213,10 +213,15 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer)
   if (!cs.counting_enabled)
     return std::numeric_limits<TickCount>::max();
 
+  // If the counter isn't below the target, it has to wrap around to reach it. Which is also why it can still
+  // overflow when resetting at the target.
   TickCount ticks_until_irq = std::numeric_limits<TickCount>::max();
-  if (cs.mode.irq_at_target && cs.counter < cs.target)
-    ticks_until_irq = static_cast<TickCount>(cs.target - cs.counter);
-  if (cs.mode.irq_on_overflow && !cs.mode.reset_at_target)
+  if (cs.mode.irq_at_target)
+  {
+    ticks_until_irq = (cs.counter < cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
+                                                 static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target);
+  }
+  if (cs.mode.irq_on_overflow)
     ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(TIMER_OVERFLOW - cs.counter));
 
   return ticks_until_irq;
