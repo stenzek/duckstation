@@ -20,6 +20,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/bitfield.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -863,11 +864,45 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
     // clear ordering table
     u8* ram_pointer = g_bus.ram;
     const u32 word_count_less_1 = word_count - 1;
-    for (u32 i = 0; i < word_count_less_1; i++)
+    if (word_count_less_1 <= (address / sizeof(u32))) [[likely]]
     {
-      u32 next = ((address - 4) & mask);
-      std::memcpy(&ram_pointer[address], &next, sizeof(next));
-      address = next;
+      // Fill contiguous tables in ascending address order without masking each link.
+      const u32 last_address = address - word_count_less_1 * sizeof(u32);
+      u32* dest_pointer = reinterpret_cast<u32*>(&ram_pointer[last_address]);
+      u32 i = 0;
+#ifdef CPU_ARCH_SIMD
+      static constexpr GSVector4i START_INDICES = GSVector4i::cxpr(0, 1, 2, 3);
+      const u32 vector_word_count = word_count_less_1 & ~7u;
+      const GSVector4i base_address(static_cast<s32>(last_address));
+      const GSVector4i base_address_high = base_address.add32(GSVector4i::cxpr(16));
+      GSVector4i indices = START_INDICES;
+      u32* vector_pointer = dest_pointer + 1;
+      u32* const vector_end = vector_pointer + vector_word_count;
+#ifdef __clang__
+#pragma clang loop unroll(disable)
+#endif
+      for (; vector_pointer != vector_end; vector_pointer += 8)
+      {
+        const GSVector4i offsets = indices.sll32<2>();
+        GSVector4i::store<false>(vector_pointer, offsets.add32(base_address));
+        GSVector4i::store<false>(vector_pointer + 4, offsets.add32(base_address_high));
+        indices = indices.add32(GSVector4i::cxpr(8));
+      }
+      i = vector_word_count;
+      DONT_VECTORIZE_THIS_LOOP
+#endif
+      for (; i < word_count_less_1; i++)
+        dest_pointer[i + 1] = last_address + i * sizeof(u32);
+      address = last_address;
+    }
+    else
+    {
+      for (u32 i = 0; i < word_count_less_1; i++)
+      {
+        const u32 next = ((address - 4) & mask);
+        std::memcpy(&ram_pointer[address], &next, sizeof(next));
+        address = next;
+      }
     }
 
     const u32 terminator = UINT32_C(0xFFFFFF);
