@@ -523,6 +523,72 @@ TEST_F(TimersTest, DeferredReadsMatchUpdatedReads)
   }
 }
 
+// Ticks get added in one go when nothing is looking at the timer, and a few at a time when something is. Both have to
+// end up in the same place.
+TEST_F(TimersTest, AddTicksMatchesSingleTicks)
+{
+  static constexpr u32 targets[] = {0, 1, 100, 0xFFFF};
+  static constexpr u32 counters[] = {0, 100, 101, 0xFFFF};
+  static constexpr u32 counts[] = {1, 150, 0x10000 + 150};
+  static constexpr u32 irq_modes[] = {0, MODE_IRQ_AT_TARGET, MODE_IRQ_ON_OVERFLOW,
+                                      MODE_IRQ_AT_TARGET | MODE_IRQ_ON_OVERFLOW};
+
+  for (const u32 reset_mode : {0u, static_cast<u32>(MODE_RESET_AT_TARGET)})
+  {
+    for (const u32 toggle_mode : {0u, static_cast<u32>(MODE_IRQ_TOGGLE)})
+    {
+      for (const u32 irq_mode : irq_modes)
+      {
+        // Toggle mode only toggles once when it passes the target and overflows without resetting in between.
+        if (toggle_mode != 0 && irq_mode == (MODE_IRQ_AT_TARGET | MODE_IRQ_ON_OVERFLOW))
+          continue;
+
+        const u32 mode = reset_mode | toggle_mode | irq_mode | MODE_IRQ_REPEAT;
+        for (const u32 target : targets)
+        {
+          for (const u32 counter : counters)
+          {
+            for (const u32 count : counts)
+            {
+              u32 result_counter[2];
+              u32 result_mode[2];
+              bool result_irq[2];
+              for (u32 pass = 0; pass < 2; pass++)
+              {
+                Timers::WriteRegister(TIMER2 + REG_TARGET, target);
+                Timers::WriteRegister(TIMER2 + REG_MODE, mode);
+                Timers::WriteRegister(TIMER2 + REG_COUNTER, counter);
+                Timers::ReadRegister(TIMER2 + REG_MODE);
+                TakeIRQ(2);
+
+                if (pass == 0)
+                {
+                  Timers::AddTicks(2, static_cast<TickCount>(count));
+                }
+                else
+                {
+                  for (u32 i = 0; i < count; i++)
+                    Timers::AddTicks(2, 1);
+                }
+
+                result_counter[pass] = Timers::ReadRegister(TIMER2 + REG_COUNTER);
+                result_mode[pass] = Timers::ReadRegister(TIMER2 + REG_MODE);
+                result_irq[pass] = TakeIRQ(2);
+              }
+
+              ASSERT_TRUE(result_counter[0] == result_counter[1] && result_mode[0] == result_mode[1] &&
+                          result_irq[0] == result_irq[1])
+                << std::hex << "mode 0x" << mode << " target 0x" << target << " counter 0x" << counter << " count 0x"
+                << count << ": counter 0x" << result_counter[0] << "/0x" << result_counter[1] << " mode 0x"
+                << result_mode[0] << "/0x" << result_mode[1] << " irq " << result_irq[0] << "/" << result_irq[1];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 // The CPU can read a timer after it has gone past an event which hasn't run yet. A gate change from that event can't
 // be allowed to change how the counter counted up to the read, otherwise the counter goes backwards when paused.
 TEST_F(TimersTest, ReadAfterOverdueGateChange)

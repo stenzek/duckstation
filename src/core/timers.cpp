@@ -233,6 +233,14 @@ void Timers::AddTicks(u32 timer, TickCount count)
 {
   CounterState& cs = s_state.counters[timer];
 
+  // Nothing to check when the counter isn't reaching the target or overflowing, which is most of the time.
+  const u32 new_counter = cs.counter + static_cast<u32>(count);
+  if (new_counter < TIMER_OVERFLOW && (new_counter < cs.target || cs.counter >= cs.target))
+  {
+    cs.counter = new_counter;
+    return;
+  }
+
   // Needs slow path if using non-repeat mode, because unless it's resetting an even number of times
   // the IRQ might not actually trigger, and we need to stop in that middle state.
   if (cs.mode.irq_pulse_n)
