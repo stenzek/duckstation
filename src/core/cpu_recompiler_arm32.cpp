@@ -87,9 +87,17 @@ bool armIsPCDisplacementInImmediateRange(s32 displacement)
 
 void armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& rd, u32 imm)
 {
-  if (vixl::IsUintN(16, imm))
+  // Either a 16-bit immediate, or a rotated 8-bit immediate.
+  if (vixl::IsUintN(16, imm) || vixl::aarch32::ImmediateA32::IsImmediateA32(imm))
   {
-    armAsm->mov(vixl::aarch32::al, rd, imm & 0xffff);
+    armAsm->mov(vixl::aarch32::al, rd, imm);
+    return;
+  }
+
+  // Same, but inverted.
+  if (vixl::aarch32::ImmediateA32::IsImmediateA32(~imm))
+  {
+    armAsm->mvn(vixl::aarch32::al, rd, ~imm);
     return;
   }
 
