@@ -323,6 +323,22 @@ ALWAYS_INLINE_RELEASE static GSVector8i GatherCLUTVector(GSVector8i indices, GSV
   return pixels;
 }
 
+// Looks up 8-bit palette indices directly, coord_x is in bytes instead of pixels. Assumes little endian.
+ALWAYS_INLINE_RELEASE static GSVector8i GatherCLUT8Vector(GSVector8i coord_x, GSVector8i coord_y)
+{
+  const GSVector8i offsets = coord_y.sll32<11>().add32(coord_x); // y * 2048 + x
+  const u8* const vram = reinterpret_cast<const u8*>(g_vram);
+  GSVector8i pixels = GSVector8i::zext32(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<0>())]]);
+  pixels = pixels.insert16<2>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<1>())]]);
+  pixels = pixels.insert16<4>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<2>())]]);
+  pixels = pixels.insert16<6>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<3>())]]);
+  pixels = pixels.insert16<8>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<4>())]]);
+  pixels = pixels.insert16<10>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<5>())]]);
+  pixels = pixels.insert16<12>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<6>())]]);
+  pixels = pixels.insert16<14>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<7>())]]);
+  return pixels;
+}
+
 ALWAYS_INLINE_RELEASE static GSVector8i LoadVector(u32 x, u32 y)
 {
   // TODO: Split into high/low
@@ -410,6 +426,18 @@ ALWAYS_INLINE_RELEASE static GSVector4i GatherCLUTVector(GSVector4i indices, GSV
   pixels = pixels.insert16<6>(g_gpu_clut[((indices_array[3] >> shifts_array[3]) & mask)]);
   return pixels;
 #endif
+}
+
+// Looks up 8-bit palette indices directly, coord_x is in bytes instead of pixels. Assumes little endian.
+ALWAYS_INLINE_RELEASE static GSVector4i GatherCLUT8Vector(GSVector4i coord_x, GSVector4i coord_y)
+{
+  const GSVector4i offsets = coord_y.sll32<11>().add32(coord_x); // y * 2048 + x
+  const u8* const vram = reinterpret_cast<const u8*>(g_vram);
+  GSVector4i pixels = GSVector4i::zext32(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<0>())]]);
+  pixels = pixels.insert16<2>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<1>())]]);
+  pixels = pixels.insert16<4>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<2>())]]);
+  pixels = pixels.insert16<6>(g_gpu_clut[vram[static_cast<u32>(offsets.extract32<3>())]]);
+  return pixels;
 }
 
 ALWAYS_INLINE_RELEASE static GSVector4i LoadVector(u32 x, u32 y)
@@ -560,13 +588,11 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
 
       case GPUTextureMode::Palette8Bit:
       {
-        GSVectorNi load_texcoord_x = texcoord_x.srl32<1>();
-        load_texcoord_x = pv.texture_base_x.add32(load_texcoord_x);
-        load_texcoord_x = load_texcoord_x & coord_mask_x;
-
-        const GSVectorNi palette_shift = (texcoord_x & GSVectorNi::cxpr(1)).sll32<3>();
-        const GSVectorNi palette_indices = GatherVector(load_texcoord_x, texcoord_y);
-        texture_color = GatherCLUTVector<0xFF>(palette_indices, palette_shift);
+        // Each index is one byte, so they can be read out of VRAM as-is, rather than loading and shifting words.
+        // ((base_x + (x / 2)) & 1023) * 2 + (x & 1) == ((base_x * 2) + x) & 2047
+        GSVectorNi load_texcoord_x = pv.texture_base_x.add32(pv.texture_base_x);
+        load_texcoord_x = load_texcoord_x.add32(texcoord_x) & GSVectorNi::cxpr((VRAM_WIDTH * 2) - 1);
+        texture_color = GatherCLUT8Vector(load_texcoord_x, texcoord_y);
       }
       break;
 
