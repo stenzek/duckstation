@@ -818,18 +818,11 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks)
           GSVector4i rgb1 = GSVector4i::load<true>(&s_state.block_rgb[i + 4]);
 
           static constexpr auto rgb32_to_rgba5551 = [](const GSVector4i& rgb32, const GSVector4i& a) {
-            const GSVector4i r =
-              (rgb32 & GSVector4i::cxpr(0xff)).add32(GSVector4i::cxpr(4)).srl32(3).min_u32(GSVector4i::cxpr(0x1F));
-            const GSVector4i g = (rgb32.srl32<8>() & GSVector4i::cxpr(0xff))
-                                   .add32(GSVector4i::cxpr(4))
-                                   .srl32(3)
-                                   .min_u32(GSVector4i::cxpr(0x1F))
-                                   .sll32<5>();
-            const GSVector4i b = (rgb32.srl32<16>() & GSVector4i::cxpr(0xff))
-                                   .add32(GSVector4i::cxpr(4))
-                                   .srl32(3)
-                                   .min_u32(GSVector4i::cxpr(0x1F))
-                                   .sll32<10>();
+            // min((c + 4) >> 3, 0x1F) is the same as shifting a saturated add, which rounds all channels at once.
+            const GSVector4i rounded = rgb32.addus8(GSVector4i::cxpr(0x040404));
+            const GSVector4i r = rounded.srl32<3>() & GSVector4i::cxpr(0x1F);
+            const GSVector4i g = rounded.srl32<6>() & GSVector4i::cxpr(0x3E0);
+            const GSVector4i b = rounded.srl32<9>() & GSVector4i::cxpr(0x7C00);
             return (r | g | b | a);
           };
 
