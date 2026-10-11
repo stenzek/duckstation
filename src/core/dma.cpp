@@ -806,9 +806,9 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   address &= mask;
 
   const u32* src_pointer = reinterpret_cast<u32*>(g_bus.ram + address);
-  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
+  if (static_cast<s32>(increment) < 0 || word_count > ((mask + 1 - address) / sizeof(u32))) [[unlikely]]
   {
-    // Use temp buffer if it's wrapping around
+    // Use a temp buffer for reverse or wrapping transfers.
     if (s_state.transfer_buffer.size() < word_count)
       s_state.transfer_buffer.resize(word_count);
     src_pointer = s_state.transfer_buffer.data();
@@ -911,9 +911,9 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   }
 
   u32* dest_pointer = reinterpret_cast<u32*>(&g_bus.ram[address]);
-  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
+  if (static_cast<s32>(increment) < 0 || word_count > ((mask + 1 - address) / sizeof(u32))) [[unlikely]]
   {
-    // Use temp buffer if it's wrapping around
+    // Use a temp buffer for reverse or wrapping transfers.
     if (s_state.transfer_buffer.size() < word_count)
       s_state.transfer_buffer.resize(word_count);
     dest_pointer = s_state.transfer_buffer.data();
