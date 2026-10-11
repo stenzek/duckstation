@@ -1007,7 +1007,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA6 - SPU_BASE:
     {
       DEBUG_LOG("SPU transfer address register <- 0x{:04X}", value);
-      s_state.transfer_event.InvokeEarly();
+      s_state.transfer_event.InvokeEarlyNoReschedule();
       s_state.transfer_address_reg = value;
       s_state.transfer_address = ZeroExtend32(value) * 8;
       if (IsRAMIRQTriggerable() && CheckRAMIRQ(s_state.transfer_address))
@@ -1630,7 +1630,7 @@ void SPU::DMAWrite(const u32* words, u32 word_count)
 void SPU::GeneratePendingSamples()
 {
   if (s_state.transfer_event.IsActive())
-    s_state.transfer_event.InvokeEarly();
+    s_state.transfer_event.InvokeEarlyNoReschedule();
 
   InternalGeneratePendingSamples();
 }
