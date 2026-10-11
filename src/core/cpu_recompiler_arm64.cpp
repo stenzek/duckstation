@@ -1348,15 +1348,14 @@ void CPU::ARM64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
 
     case BranchCondition::GreaterEqualZero:
     {
-      armAsm->cmp(rs, 0);
-      armAsm->b(&taken, ge);
+      // only depends on the sign bit
+      armAsm->tbz(rs, 31, &taken);
     }
     break;
 
     case BranchCondition::LessThanZero:
     {
-      armAsm->cmp(rs, 0);
-      armAsm->b(&taken, lt);
+      armAsm->tbnz(rs, 31, &taken);
     }
     break;
 
