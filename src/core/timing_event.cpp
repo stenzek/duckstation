@@ -640,8 +640,7 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
     return;
 
   // Shouldn't be invoking early when we're the current event running.
-  // TODO: Make DebugAssert instead.
-  Assert(s_state.current_event != this);
+  DebugAssert(s_state.current_event != this);
 
   const TickCount ticks_to_execute = static_cast<TickCount>(ts - m_last_run_time);
   if (!force && ticks_to_execute < m_period)
