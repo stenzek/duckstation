@@ -410,12 +410,10 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
   CounterState& cs = s_state.counters[timer_index];
 
-  if (timer_index < 2 && cs.external_counting_enabled)
-  {
-    // timers 0/1 depend on the GPU
-    if (timer_index == 0 || GPU::IsCRTCScanlinePending())
-      GPU::SynchronizeCRTC();
-  }
+  // timers 0/1 depend on the GPU, which has to be up to date so that it can be rescheduled for the new IRQ/gate
+  const bool update_gpu = (timer_index < 2 && (cs.external_counting_enabled || port_offset == 0x04));
+  if (update_gpu)
+    GPU::SynchronizeCRTC();
 
   s_state.sysclk_event.InvokeEarly();
 
@@ -498,6 +496,9 @@ void Timers::WriteRegister(u32 offset, u32 value)
       ERROR_LOG("Write unknown register in timer {} (offset 0x{:02X}, value 0x{:X})", timer_index, offset, value);
       break;
   }
+
+  if (update_gpu)
+    GPU::RescheduleCRTC();
 }
 
 void Timers::UpdateCountingEnabled(u32 index, CounterState& cs)

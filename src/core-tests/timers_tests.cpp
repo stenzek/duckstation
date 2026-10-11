@@ -10,6 +10,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cstring>
 #include <vector>
 
 namespace {
@@ -367,4 +368,36 @@ TEST_F(TimersTest, GetTicksUntilIRQ)
   EXPECT_EQ(Timers::GetTicksUntilIRQ(1), 0x10000 - 200);
   Timers::AddTicks(1, 0x10000 - 200);
   EXPECT_TRUE(TakeIRQ(1));
+}
+
+// The CRTC event is only scheduled for the next IRQ of the timers it clocks, so it needs redoing when they change.
+TEST_F(TimersTest, GPUClockedTimerWriteReschedulesCRTC)
+{
+  // Brings back the CRTC event, at the end of the frame. It's fine as long as it doesn't get to run.
+  System::UpdateOverclock();
+
+  const TimingEvent* crtc_event = *TimingEvents::GetHeadEventPtr();
+  while (crtc_event && std::strcmp(crtc_event->GetName(), "GPU CRTC Tick") != 0)
+    crtc_event = crtc_event->next;
+  ASSERT_NE(crtc_event, nullptr);
+  const TickCount ticks_per_frame = crtc_event->GetTicksUntilNextExecution();
+
+  // Timer 1 counts scanlines.
+  Timers::WriteRegister(TIMER1 + REG_TARGET, 4);
+  Timers::WriteRegister(TIMER1 + REG_MODE,
+                        MODE_CLOCK_SOURCE_1 | MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+  const TickCount ticks_for_4_lines = crtc_event->GetTicksUntilNextExecution();
+  EXPECT_LT(ticks_for_4_lines, ticks_per_frame / 50);
+
+  Timers::WriteRegister(TIMER1 + REG_TARGET, 2);
+  EXPECT_NEAR(crtc_event->GetTicksUntilNextExecution(), ticks_for_4_lines / 2, 1);
+
+  Timers::WriteRegister(TIMER1 + REG_COUNTER, 1);
+  EXPECT_NEAR(crtc_event->GetTicksUntilNextExecution(), ticks_for_4_lines / 4, 1);
+
+  // Back to sysclk, the CRTC doesn't have to do anything for it.
+  Timers::WriteRegister(TIMER1 + REG_MODE, 0);
+  EXPECT_EQ(crtc_event->GetTicksUntilNextExecution(), ticks_per_frame);
+
+  DeactivateAllEvents();
 }

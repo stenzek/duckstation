@@ -1019,6 +1019,13 @@ void GPU::SynchronizeCRTC()
   s_locals.crtc_tick_event.InvokeEarly();
 }
 
+void GPU::RescheduleCRTC()
+{
+  // Timer IRQ or gate might be needed sooner than what we're currently scheduled for.
+  if (s_locals.crtc_tick_event.IsActive())
+    UpdateCRTCTickEvent();
+}
+
 float GPU::ComputeHorizontalFrequency()
 {
   const CRTCState& cs = s_locals.crtc_state;

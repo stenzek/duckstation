@@ -74,6 +74,9 @@ bool IsCRTCScanlinePending();
 /// Synchronizes the CRTC, updating the hblank timer.
 void SynchronizeCRTC();
 
+/// Reschedules the CRTC after changing a timer it updates. The CRTC must be synchronized before the change.
+void RescheduleCRTC();
+
 /// Recompile shaders/recreate framebuffers when needed.
 void UpdateSettings(const Settings& old_settings);
 
