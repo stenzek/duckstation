@@ -701,11 +701,8 @@ vixl::aarch64::Operand CPU::ARM64Recompiler::armCheckAddSubConstant(u32 val)
 
 vixl::aarch64::Operand CPU::ARM64Recompiler::armCheckCompareConstant(s32 val)
 {
-  if (Assembler::IsImmConditionalCompare(val))
-    return vixl::aarch64::Operand(static_cast<int64_t>(val));
-
-  EmitMov(RWSCRATCH, static_cast<u32>(val));
-  return vixl::aarch64::Operand(RWSCRATCH);
+  // cmp is an alias of subs, so takes a 12-bit immediate, not the 5-bit immediate of ccmp.
+  return armCheckAddSubConstant(val);
 }
 
 vixl::aarch64::Operand CPU::ARM64Recompiler::armCheckLogicalConstant(u32 val)
