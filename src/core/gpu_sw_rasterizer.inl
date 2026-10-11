@@ -1822,9 +1822,11 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTR
       for (; col < width;)
       {
         // TODO: Handle unaligned reads...
+        // The source pixel is consumed regardless of whether the destination is masked.
         u16* RESTRICT pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
+        const u16 src_pixel = *(src_ptr++);
         if (((*pixel_ptr) & mask_and) == 0)
-          *pixel_ptr = *(src_ptr++) | mask_or;
+          *pixel_ptr = src_pixel | mask_or;
       }
     }
   }
