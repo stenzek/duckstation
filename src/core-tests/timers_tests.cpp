@@ -3,11 +3,14 @@
 
 #include "core/cpu_core.h"
 #include "core/interrupt_controller.h"
+#include "core/settings.h"
 #include "core/system.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
 
 #include <gtest/gtest.h>
+
+#include <vector>
 
 namespace {
 
@@ -61,6 +64,18 @@ protected:
   {
     while (TimingEvent* event = *TimingEvents::GetHeadEventPtr())
       event->Deactivate();
+  }
+
+  static void SetOverclock(bool enabled)
+  {
+    g_settings.cpu_overclock_enable = enabled;
+    g_settings.SetCPUOverclockPercent(enabled ? 350 : 100);
+    g_settings.UpdateOverclockActive();
+
+    // This puts the other events back, and takes ours out with them.
+    System::UpdateOverclock();
+    DeactivateAllEvents();
+    Timers::Reset();
   }
 
   /// Runs the CPU for the specified number of ticks, without any register accesses.
@@ -251,4 +266,34 @@ TEST_F(TimersTest, SysClkDiv8IRQNotAffectedByUpdates)
 
     ASSERT_EQ(TakeIRQ(2), ((tick + 3) % PERIOD) == 0) << "at tick " << tick;
   }
+}
+
+// Same again, but for the partial tick which is left over when overclocking.
+TEST_F(TimersTest, OverclockedIRQNotAffectedByUpdates)
+{
+  SetOverclock(true);
+
+  std::vector<u32> irq_ticks[2];
+  for (u32 pass = 0; pass < 2; pass++)
+  {
+    Timers::Reset();
+    Timers::WriteRegister(TIMER2 + REG_TARGET, 1001);
+    Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+
+    for (u32 tick = 1; tick <= 20000; tick++)
+    {
+      Run(1);
+
+      if (pass == 1 && (tick % 61) == 0)
+        Timers::WriteRegister(TIMER0 + REG_TARGET, 0);
+      if (TakeIRQ(2))
+        irq_ticks[pass].push_back(tick);
+    }
+  }
+
+  SetOverclock(false);
+
+  // 1001 timer ticks is 3503.5 CPU ticks at 350%.
+  EXPECT_EQ(irq_ticks[0], (std::vector<u32>{3504, 7007, 10511, 14014, 17518}));
+  EXPECT_EQ(irq_ticks[1], irq_ticks[0]);
 }

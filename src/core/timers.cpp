@@ -563,7 +563,15 @@ TickCount Timers::GetTicksUntilNextInterrupt()
     }
   }
 
-  return System::ScaleTicksToOverclock(std::max<TickCount>(1, min_ticks));
+  min_ticks = std::max<TickCount>(1, min_ticks);
+  if (!g_settings.cpu_overclock_active)
+    return min_ticks;
+
+  // Same as ScaleTicksToOverclock(), except part of the next tick has already been counted.
+  return static_cast<TickCount>(((static_cast<u64>(static_cast<u32>(min_ticks)) * g_settings.cpu_overclock_numerator) -
+                                 static_cast<u32>(s_state.sysclk_ticks_carry) +
+                                 (g_settings.cpu_overclock_denominator - 1)) /
+                                g_settings.cpu_overclock_denominator);
 }
 
 void Timers::UpdateSysClkEvent()
