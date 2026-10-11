@@ -317,7 +317,7 @@ void MDEC::DMAWrite(const u32* words, u32 word_count)
     WARNING_LOG("Input FIFO overflow (writing {}, space {})", word_count * 2, s_state.data_in_fifo.GetSpace());
   }
 
-  const u32 halfwords_to_write = std::min(word_count * 2, s_state.data_in_fifo.GetSpace() & ~u32(2));
+  const u32 halfwords_to_write = std::min(word_count * 2, s_state.data_in_fifo.GetSpace() & ~u32(1));
   s_state.data_in_fifo.PushRange(reinterpret_cast<const u16*>(words), halfwords_to_write);
   Execute();
 }
