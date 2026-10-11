@@ -1277,10 +1277,12 @@ void CPU::ARM32Recompiler::Compile_slti(CompileFlags cf, bool sign)
 void CPU::ARM32Recompiler::Compile_andi(CompileFlags cf)
 {
   const Register rt = CFGetRegT(cf);
-  if (const u32 imm = inst->i.imm_zext32(); imm != 0)
-    armAsm->and_(rt, CFGetRegS(cf), armCheckLogicalConstant(imm));
-  else
+  if (const u32 imm = inst->i.imm_zext32(); imm == 0)
     EmitMov(rt, 0);
+  else if (!ImmediateA32::IsImmediateA32(imm) && (imm & (imm + 1)) == 0)
+    armAsm->ubfx(rt, CFGetRegS(cf), 0, CountTrailingZeros(imm + 1)); // low bit mask, e.g. 0xFFFF
+  else
+    armAsm->and_(rt, CFGetRegS(cf), armCheckLogicalConstant(imm));
 }
 
 void CPU::ARM32Recompiler::Compile_ori(CompileFlags cf)
