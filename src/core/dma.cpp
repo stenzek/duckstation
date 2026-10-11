@@ -813,10 +813,11 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
     src_pointer = s_state.transfer_buffer.data();
 
     u8* ram_pointer = g_bus.ram;
+    u32 current_address = address;
     for (u32 i = 0; i < word_count; i++)
     {
-      std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[address], sizeof(u32));
-      address = (address + increment) & mask;
+      std::memcpy(&s_state.transfer_buffer[i], &ram_pointer[current_address], sizeof(u32));
+      current_address = (current_address + increment) & mask;
     }
   }
 
