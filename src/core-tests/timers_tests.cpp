@@ -227,3 +227,28 @@ TEST_F(TimersTest, SysClkEventScheduledForIRQ)
   EXPECT_TRUE(TakeIRQ(2));
   EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
 }
+
+// The sysclk/8 prescaler keeps running regardless of when the counters get updated, so the IRQ shouldn't move either.
+TEST_F(TimersTest, SysClkDiv8IRQNotAffectedByUpdates)
+{
+  static constexpr u32 PERIOD = 1000 * 8;
+  static constexpr u32 MODE = MODE_CLOCK_SOURCE_2 | MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT;
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 1000);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE);
+
+  // Leave the prescaler part way through a tick, it doesn't get reset with the counter.
+  Run(3);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), static_cast<TickCount>(PERIOD - 3));
+
+  for (u32 tick = 1; tick <= PERIOD * 5; tick++)
+  {
+    Run(1);
+
+    // Writing to any of the timers updates all of them.
+    if ((tick % 61) == 0)
+      Timers::WriteRegister(TIMER0 + REG_TARGET, 0);
+
+    ASSERT_EQ(TakeIRQ(2), ((tick + 3) % PERIOD) == 0) << "at tick " << tick;
+  }
+}

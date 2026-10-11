@@ -549,7 +549,7 @@ TickCount Timers::GetTicksUntilNextInterrupt()
       TickCount ticks = (cs.counter < cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
                                                    static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target);
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
-        ticks *= 8;
+        ticks = (ticks * 8) - static_cast<TickCount>(s_state.sysclk_div_8_carry);
 
       min_ticks = std::min(min_ticks, ticks);
     }
@@ -557,7 +557,7 @@ TickCount Timers::GetTicksUntilNextInterrupt()
     {
       TickCount ticks = static_cast<TickCount>(TIMER_OVERFLOW - cs.counter);
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
-        ticks *= 8;
+        ticks = (ticks * 8) - static_cast<TickCount>(s_state.sysclk_div_8_carry);
 
       min_ticks = std::min(min_ticks, ticks);
     }
