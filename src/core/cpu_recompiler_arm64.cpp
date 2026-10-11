@@ -1659,9 +1659,11 @@ void CPU::ARM64Recompiler::Compile_dst_op(CompileFlags cf,
   }
   else if (cf.const_s)
   {
-    // TODO: Check where we can use wzr here
-    EmitMov(RWSCRATCH, GetConstantRegU32(cf.MipsS()));
-    (armAsm->*op)(rd, RWSCRATCH, CFGetRegT(cf));
+    // 0 - rt (i.e. negu) can use the zero register directly.
+    const bool zero = HasConstantRegValue(cf.MipsS(), 0);
+    if (!zero)
+      EmitMov(RWSCRATCH, GetConstantRegU32(cf.MipsS()));
+    (armAsm->*op)(rd, zero ? wzr : RWSCRATCH, CFGetRegT(cf));
   }
   else if (cf.const_t)
   {

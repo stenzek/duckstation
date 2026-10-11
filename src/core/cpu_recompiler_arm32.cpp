@@ -1487,8 +1487,16 @@ void CPU::ARM32Recompiler::Compile_dst_op(CompileFlags cf,
   }
   else if (cf.const_s)
   {
-    EmitMov(RSCRATCH, GetConstantRegU32(cf.MipsS()));
-    (armAsm->*op)(rd, RSCRATCH, CFGetRegT(cf));
+    // const - rt, reverse subtract can encode the constant as an immediate (0 - rt being negu).
+    if (const u32 cv = GetConstantRegU32(cf.MipsS()); ImmediateA32::IsImmediateA32(cv))
+    {
+      overflow ? armAsm->rsbs(rd, CFGetRegT(cf), cv) : armAsm->rsb(rd, CFGetRegT(cf), cv);
+    }
+    else
+    {
+      EmitMov(RSCRATCH, cv);
+      (armAsm->*op)(rd, RSCRATCH, CFGetRegT(cf));
+    }
   }
   else if (cf.const_t)
   {
