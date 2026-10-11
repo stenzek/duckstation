@@ -476,22 +476,20 @@ ALWAYS_INLINE_RELEASE static void StoreVector(u32 x, u32 y, GSVector4i color)
 
 #endif
 
+// Alpha is not unpacked, it doesn't get modulated.
 ALWAYS_INLINE_RELEASE static void RGB5A1ToRG_BA(GSVectorNi rgb5a1, GSVectorNi& rg, GSVectorNi& ba)
 {
-  rg = rgb5a1 & GSVectorNi::cxpr(0x1F);                     // R | R | R | R
-  rg = rg | (rgb5a1 & GSVectorNi::cxpr(0x3E0)).sll32<11>(); // R0G0 | R0G0 | R0G0 | R0G0
-  ba = rgb5a1.srl32<10>() & GSVectorNi::cxpr(0x1F);         // B | B | B | B
-  ba = ba | (rgb5a1 & GSVectorNi::cxpr(0x8000)).sll32<1>(); // B0A0 | B0A0 | B0A0 | B0A0
+  rg = (rgb5a1 | rgb5a1.sll32<11>()) & GSVectorNi::cxpr(0x1F001F); // R0G0 | R0G0 | R0G0 | R0G0
+  ba = rgb5a1.srl32<10>() & GSVectorNi::cxpr(0x1F);                // B000 | B000 | B000 | B000
 }
 
+// Expects the components to be clamped to 5 bits, and alpha to be zero.
 ALWAYS_INLINE_RELEASE static GSVectorNi RG_BAToRGB5A1(GSVectorNi rg, GSVectorNi ba)
 {
   GSVectorNi res;
 
-  res = rg & GSVectorNi::cxpr(0x1F);                       // R | R | R | R
-  res = res | (rg.srl32<11>() & GSVectorNi::cxpr(0x3E0));  // RG | RG | RG | RG
-  res = res | ((ba & GSVectorNi::cxpr(0x1F)).sll32<10>()); // RGB | RGB | RGB | RGB
-  res = res | ba.srl32<16>().sll32<15>();                  // RGBA | RGBA | RGBA | RGBA
+  res = (rg | rg.srl32<11>()) & GSVectorNi::cxpr(0x3FF); // RG | RG | RG | RG
+  res = res | ba.sll32<10>();                            // RGB | RGB | RGB | RGB
 
   return res;
 }
@@ -680,9 +678,10 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
         rg = trg.mul16l(vertex_color_rg);
         ba = tba.mul16l(vertex_color_ba);
 
-        // Convert to 5bit.
-        rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-        ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        // Convert to 5bit. Dither is shifted up to match the colour, rather than shifting the colour down first.
+        const GSVectorNi shifted_dither = dither.sll16<4>();
+        rg = rg.add16(shifted_dither).sra16<7>().max_s16(GSVectorNi::zero());
+        ba = ba.add16(shifted_dither).sra16<7>().max_s16(GSVectorNi::zero());
       }
       else
       {
@@ -690,21 +689,19 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
         rg = trg.mul16l(vertex_color_rg.sra16<3>());
         ba = tba.mul16l(vertex_color_ba.sra16<3>());
 
-        // Convert to 5bit.
-        rg = rg.sra16<1>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-        ba = ba.sra16<1>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        // Convert to 5bit. Dither is shifted up to match the colour, rather than shifting the colour down first.
+        const GSVectorNi shifted_dither = dither.sll16<1>();
+        rg = rg.add16(shifted_dither).sra16<4>().max_s16(GSVectorNi::zero());
+        ba = ba.add16(shifted_dither).sra16<4>().max_s16(GSVectorNi::zero());
       }
-
-      // Bit15 gets passed through as-is.
-      ba = ba.blend16<0xaa>(tba);
 
       // Clamp to 5bit.
       static constexpr GSVectorNi colclamp = GSVectorNi::cxpr16(0x1F);
       rg = rg.min_u16(colclamp);
       ba = ba.min_u16(colclamp);
 
-      // And interleave back to 16bpp.
-      color = RG_BAToRGB5A1(rg, ba);
+      // And interleave back to 16bpp. Bit15 gets passed through as-is.
+      color = RG_BAToRGB5A1(rg, ba) | (texture_color & GSVectorNi::cxpr(0x8000));
     }
   }
   else
