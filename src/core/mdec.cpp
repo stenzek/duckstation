@@ -123,8 +123,7 @@ static void YUVToRGB_Old(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const
 static bool DecodeRLE_New(s16* blk, const u8* qt);
 static GSVector4i IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix);
 static void IDCT_New(s16* blk);
-static void YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
-                         const std::array<s16, 64>& Yblk);
+static void YUVToRGB_New();
 
 static void YUVToMono(const std::array<s16, 64>& Yblk);
 
@@ -634,10 +633,7 @@ bool MDEC::DecodeColoredMacroblock()
     ResetDecoder();
     s_state.state = State::WritingMacroblock;
 
-    YUVToRGB_New(0, 0, s_state.blocks[0], s_state.blocks[1], s_state.blocks[2]);
-    YUVToRGB_New(8, 0, s_state.blocks[0], s_state.blocks[1], s_state.blocks[3]);
-    YUVToRGB_New(0, 8, s_state.blocks[0], s_state.blocks[1], s_state.blocks[4]);
-    YUVToRGB_New(8, 8, s_state.blocks[0], s_state.blocks[1], s_state.blocks[5]);
+    YUVToRGB_New();
   }
 
 #if defined(_DEBUG) || defined(_DEVEL)
@@ -1129,41 +1125,57 @@ void MDEC::IDCT_New(s16* blk)
   }
 }
 
-void MDEC::YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
-                        const std::array<s16, 64>& Yblk)
+void MDEC::YUVToRGB_New()
 {
   const GSVector4i addval = s_state.status.data_output_signed ? GSVector4i::cxpr(0) : GSVector4i::cxpr(0x80808080);
   for (u32 y = 0; y < 8; y++)
   {
-    const GSVector4i Cr = GSVector4i::loadl<false>(&Crblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
-    const GSVector4i Cb = GSVector4i::loadl<false>(&Cbblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
-    const GSVector4i Y = GSVector4i::load<true>(&Yblk[y * 8]);
+    const GSVector4i Cr = GSVector4i::load<true>(&s_state.blocks[0][y * 8]);
+    const GSVector4i Cb = GSVector4i::load<true>(&s_state.blocks[1][y * 8]);
 
     // BT.601 YUV->RGB coefficients, rounding formula from Mednafen.
     // r = clamp(sext9(Y + (((359 * Cr) + 0x80) >> 8)), -128, 127) + addval;
     // g = clamp(sext9(Y + ((((-88 * Cb) & ~0x1F) + ((-183 * Cr) & ~0x07) + 0x80) >> 8)), -128, 127) + addval
     // b = clamp(sext9<9, s32>(Y + (((454 * Cb) + 0x80) >> 8)), -128, 127) + addval
 
-    // Need to do the multiply as 32-bit, since 127 * 359 is greater than INT16_MAX.
-    // upl16(self) = interleave XYZW0000 -> XXYYZZWW.
-    const GSVector4i Crmul = Cr.mul32l(GSVector4i::cxpr(359)).add32(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
-    const GSVector4i Cbmul = Cb.mul32l(GSVector4i::cxpr(454)).add32(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
-    const GSVector4i CrCbmul = (Cb.mul32l(GSVector4i::cxpr(-88)) & GSVector4i::cxpr(~0x1F))
-                                 .add32(Cr.mul32l(GSVector4i::cxpr(-183)) & GSVector4i::cxpr(~0x07))
-                                 .add32(GSVector4i::cxpr(0x80))
-                                 .sra32<8>()
-                                 .ps32();
-    const GSVector4i r = Crmul.upl16(Crmul).add16(Y).sll16<7>().sra16<7>().ps16().add8(addval);
-    const GSVector4i g = CrCbmul.upl16(CrCbmul).add16(Y).sll16<7>().sra16<7>().ps16().add8(addval);
-    const GSVector4i b = Cbmul.upl16(Cbmul).add16(Y).sll16<7>().sra16<7>().ps16().add8(addval);
-    const GSVector4i rg = r.upl8(g);
-    const GSVector4i b0 = b.upl8();
-    const GSVector4i rgblow = rg.upl16(b0);
-    const GSVector4i rgbhigh = rg.uph16(b0);
+    // Cr/Cb are -128..127, but 127 * 359 is greater than INT16_MAX. Since 359 is 256 + 103, the multiply can be
+    // split into Cr + (((103 * Cr) + 0x80) >> 8), likewise for 454. For green, both terms and the rounding are
+    // multiples of 8, so they can be shifted down by 3 before the add without changing the result.
+    // The chroma is left shifted by 7, so that the sign extension is a single shift after adding the luma.
+    const GSVector4i Crmul =
+      Cr.add16(Cr.mul16l(GSVector4i::cxpr16(103)).add16(GSVector4i::cxpr16(0x80)).sra16<8>()).sll16<7>();
+    const GSVector4i Cbmul =
+      Cb.add16(Cb.mul16l(GSVector4i::cxpr16(198)).add16(GSVector4i::cxpr16(0x80)).sra16<8>()).sll16<7>();
+    const GSVector4i CrCbmul = (Cb.mul16l(GSVector4i::cxpr16(-88)).sra16<3>() & GSVector4i::cxpr16(~0x03))
+                                 .add16(Cr.mul16l(GSVector4i::cxpr16(-183)).sra16<3>())
+                                 .add16(GSVector4i::cxpr16(0x10))
+                                 .sra16<5>()
+                                 .sll16<7>();
 
-    u32* const out_row = &s_state.block_rgb[xx + ((y + yy) * 16)];
-    GSVector4i::store<false>(&out_row[0], rgblow);
-    GSVector4i::store<false>(&out_row[4], rgbhigh);
+    // Each row of chroma covers two rows of luma, with the left and right halves coming from different blocks.
+    for (u32 xx = 0; xx < 2; xx++)
+    {
+      // upl16(self) = interleave XYZW0000 -> XXYYZZWW.
+      const GSVector4i Crhalf = (xx == 0) ? Crmul.upl16(Crmul) : Crmul.uph16(Crmul);
+      const GSVector4i Cbhalf = (xx == 0) ? Cbmul.upl16(Cbmul) : Cbmul.uph16(Cbmul);
+      const GSVector4i CrCbhalf = (xx == 0) ? CrCbmul.upl16(CrCbmul) : CrCbmul.uph16(CrCbmul);
+      for (u32 yy = 0; yy < 2; yy++)
+      {
+        const u32 row = (y * 2) + yy;
+        const GSVector4i Y =
+          GSVector4i::load<true>(&s_state.blocks[2 + ((row / 8) * 2) + xx][(row % 8) * 8]).sll16<7>();
+        const GSVector4i rb = Crhalf.add16(Y).sra16<7>().ps16(Cbhalf.add16(Y).sra16<7>()).add8(addval);
+        const GSVector4i g = CrCbhalf.add16(Y).sra16<7>().ps16().add8(addval);
+        const GSVector4i rg = rb.upl8(g);
+        const GSVector4i b0 = rb.uph8();
+        const GSVector4i rgblow = rg.upl16(b0);
+        const GSVector4i rgbhigh = rg.uph16(b0);
+
+        u32* const out_row = &s_state.block_rgb[(xx * 8) + (row * 16)];
+        GSVector4i::store<true>(&out_row[0], rgblow);
+        GSVector4i::store<true>(&out_row[4], rgbhigh);
+      }
+    }
   }
 }
 
