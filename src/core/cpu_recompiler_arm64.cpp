@@ -2151,10 +2151,8 @@ void CPU::ARM64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, b
   }
 
   DebugAssert(value.GetCode() != RWARG2.GetCode() && value.GetCode() != RWARG3.GetCode());
-  armAsm->and_(RWARG2, addr, 3);
-  armAsm->lsl(RWARG2, RWARG2, 3); // *8
-  EmitMov(RWARG3, 24);
-  armAsm->sub(RWARG3, RWARG3, RWARG2);
+  armAsm->ubfiz(RWARG2, addr, 3, 2); // (addr & 3) * 8
+  armAsm->eor(RWARG3, RWARG2, 24);   // 24 - shift, shift only has bits 3/4 set
 
   if (inst->op == InstructionOp::lwl)
   {
@@ -2321,8 +2319,7 @@ void CPU::ARM64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, b
   armAsm->and_(RWARG1, addr, armCheckLogicalConstant(~0x3u));
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
-  armAsm->and_(RWSCRATCH, addr, 3);
-  armAsm->lsl(RWSCRATCH, RWSCRATCH, 3); // *8
+  armAsm->ubfiz(RWSCRATCH, addr, 3, 2); // (addr & 3) * 8
   armAsm->and_(addr, addr, armCheckLogicalConstant(~0x3u));
 
   MoveMIPSRegToReg(RWARG2, inst->r.rt);
@@ -2335,8 +2332,7 @@ void CPU::ARM64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, b
     armAsm->lslv(RWARG3, RWARG3, RWSCRATCH);
     armAsm->and_(RWRET, RWRET, RWARG3);
 
-    EmitMov(RWARG3, 24);
-    armAsm->sub(RWARG3, RWARG3, RWSCRATCH);
+    armAsm->eor(RWARG3, RWSCRATCH, 24); // 24 - shift, shift only has bits 3/4 set
     armAsm->lsrv(RWARG2, RWARG2, RWARG3);
     armAsm->orr(RWARG2, RWARG2, RWRET);
   }
@@ -2346,8 +2342,7 @@ void CPU::ARM64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, b
     // new_value = (RWRET & mem_mask) | (value << shift);
     armAsm->lslv(RWARG2, RWARG2, RWSCRATCH);
 
-    EmitMov(RWARG3, 24);
-    armAsm->sub(RWARG3, RWARG3, RWSCRATCH);
+    armAsm->eor(RWARG3, RWSCRATCH, 24); // 24 - shift, shift only has bits 3/4 set
     EmitMov(RWSCRATCH, 0x00FFFFFFu);
     armAsm->lsrv(RWSCRATCH, RWSCRATCH, RWARG3);
     armAsm->and_(RWRET, RWRET, RWSCRATCH);

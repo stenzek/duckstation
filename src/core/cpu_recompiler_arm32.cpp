@@ -1981,8 +1981,7 @@ void CPU::ARM32Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, b
   DebugAssert(value.GetCode() != RARG2.GetCode() && value.GetCode() != RARG3.GetCode());
   armAsm->and_(RARG2, addr, 3);
   armAsm->lsl(RARG2, RARG2, 3); // *8
-  EmitMov(RARG3, 24);
-  armAsm->sub(RARG3, RARG3, RARG2);
+  armAsm->rsb(RARG3, RARG2, 24);
 
   if (inst->op == InstructionOp::lwl)
   {
@@ -2163,8 +2162,7 @@ void CPU::ARM32Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, b
     armAsm->lsl(RARG3, RARG3, RSCRATCH);
     armAsm->and_(RRET, RRET, RARG3);
 
-    EmitMov(RARG3, 24);
-    armAsm->sub(RARG3, RARG3, RSCRATCH);
+    armAsm->rsb(RARG3, RSCRATCH, 24);
     armAsm->lsr(RARG2, RARG2, RARG3);
     armAsm->orr(RARG2, RARG2, RRET);
   }
@@ -2174,8 +2172,7 @@ void CPU::ARM32Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, b
     // new_value = (RWRET & mem_mask) | (value << shift);
     armAsm->lsl(RARG2, RARG2, RSCRATCH);
 
-    EmitMov(RARG3, 24);
-    armAsm->sub(RARG3, RARG3, RSCRATCH);
+    armAsm->rsb(RARG3, RSCRATCH, 24);
     EmitMov(RSCRATCH, 0x00FFFFFFu);
     armAsm->lsr(RSCRATCH, RSCRATCH, RARG3);
     armAsm->and_(RRET, RRET, RSCRATCH);
