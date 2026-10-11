@@ -1217,15 +1217,17 @@ void CPU::ARM32Recompiler::Compile_addi(CompileFlags cf, bool overflow)
 {
   const Register rs = CFGetRegS(cf);
   const Register rt = CFGetRegT(cf);
-  if (const u32 imm = inst->i.imm_sext32(); imm != 0)
+  if (const s32 imm = static_cast<s32>(inst->i.imm_sext32()); imm != 0)
   {
+    // Negative immediates can't be encoded, subtract the negated immediate instead.
     if (!overflow)
     {
-      armAsm->add(rt, rs, armCheckAddSubConstant(imm));
+      (imm < 0) ? armAsm->sub(rt, rs, armCheckAddSubConstant(-imm)) : armAsm->add(rt, rs, armCheckAddSubConstant(imm));
     }
     else
     {
-      armAsm->adds(rt, rs, armCheckAddSubConstant(imm));
+      (imm < 0) ? armAsm->subs(rt, rs, armCheckAddSubConstant(-imm)) :
+                  armAsm->adds(rt, rs, armCheckAddSubConstant(imm));
       TestOverflow(rt);
     }
   }
@@ -1660,15 +1662,14 @@ CPU::ARM32Recompiler::ComputeLoadStoreAddressArg(CompileFlags cf, const std::opt
   }
   else
   {
-    if (cf.valid_host_s)
-    {
-      armAsm->add(dst, CFGetRegS(cf), armCheckAddSubConstant(static_cast<s32>(inst->i.imm_sext32())));
-    }
-    else
-    {
+    const Register src = cf.valid_host_s ? CFGetRegS(cf) : dst;
+    if (!cf.valid_host_s)
       armAsm->ldr(dst, MipsPtr(cf.MipsS()));
-      armAsm->add(dst, dst, armCheckAddSubConstant(static_cast<s32>(inst->i.imm_sext32())));
-    }
+
+    // Negative offsets can't be encoded, subtract the negated offset instead.
+    const s32 simm = static_cast<s32>(imm);
+    (simm < 0) ? armAsm->sub(dst, src, armCheckAddSubConstant(-simm)) :
+                 armAsm->add(dst, src, armCheckAddSubConstant(simm));
   }
 
   return dst;
