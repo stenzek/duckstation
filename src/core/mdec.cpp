@@ -121,7 +121,7 @@ static void YUVToRGB_Old(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const
                          const std::array<s16, 64>& Yblk);
 
 static bool DecodeRLE_New(s16* blk, const u8* qt);
-static GSVector4i IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix);
+static GSVector4i IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix, bool low_only);
 static void IDCT_New(s16* blk);
 static void YUVToRGB_New();
 
@@ -157,6 +157,8 @@ struct MDECState
 
 #if defined(_DEBUG) || defined(_DEVEL)
   u32 total_blocks_decoded = 0;
+  u32 total_idct_blocks = 0;
+  u32 fast_idct_blocks = 0;
 #endif
 };
 } // namespace
@@ -168,6 +170,8 @@ void MDEC::Initialize()
 {
 #if defined(_DEBUG) || defined(_DEVEL)
   s_state.total_blocks_decoded = 0;
+  s_state.total_idct_blocks = 0;
+  s_state.fast_idct_blocks = 0;
 #endif
   s_state.active_frame_count = 0;
   Reset();
@@ -1044,7 +1048,7 @@ bool MDEC::DecodeRLE_New(s16* blk, const u8* qt)
   return false;
 }
 
-ALWAYS_INLINE_RELEASE GSVector4i MDEC::IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix)
+ALWAYS_INLINE_RELEASE GSVector4i MDEC::IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix, bool low_only)
 {
   // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow, so each half of the row
   // is summed separately. Adding the halves does not fit in 32 bits, but floor((lo + hi) / 2) does, in which case
@@ -1057,12 +1061,20 @@ ALWAYS_INLINE_RELEASE GSVector4i MDEC::IDCTRow(const GSVector4i& row, const GSVe
   // Each pair of elements in the row is multiplied with the same pair of elements from all 8 rows of the matrix.
   const GSVector4i row01 = row.xxxx();
   const GSVector4i row23 = row.yyyy();
-  const GSVector4i row45 = row.zzzz();
-  const GSVector4i row67 = row.wwww();
   const GSVector4i lo0 = row01.madd_s16(idct_matrix[0]).add32(row23.madd_s16(idct_matrix[1]));
-  const GSVector4i hi0 = row45.madd_s16(idct_matrix[2]).add32(row67.madd_s16(idct_matrix[3]));
   const GSVector4i lo1 = row01.madd_s16(idct_matrix[4]).add32(row23.madd_s16(idct_matrix[5]));
-  const GSVector4i hi1 = row45.madd_s16(idct_matrix[6]).add32(row67.madd_s16(idct_matrix[7]));
+
+  // The upper half of the row is zero for low_only.
+  GSVector4i hi0 = GSVector4i::zero();
+  GSVector4i hi1 = GSVector4i::zero();
+  if (!low_only)
+  {
+    const GSVector4i row45 = row.zzzz();
+    const GSVector4i row67 = row.wwww();
+    hi0 = row45.madd_s16(idct_matrix[2]).add32(row67.madd_s16(idct_matrix[3]));
+    hi1 = row45.madd_s16(idct_matrix[6]).add32(row67.madd_s16(idct_matrix[7]));
+  }
+
   return sum_halves(lo0, hi0).ps32(sum_halves(lo1, hi1));
 }
 
@@ -1088,7 +1100,26 @@ void MDEC::IDCT_New(s16* blk)
 
   GSVector4i rows[8];
   for (u32 x = 0; x < 8; x++)
-    rows[x] = IDCTRow(GSVector4i::load<true>(&blk[x * 8]), idct_matrix);
+    rows[x] = GSVector4i::load<true>(&blk[x * 8]);
+
+  // Most blocks only have coefficients in the top-left 4x4. The last 4 rows are zero for the first pass in this case,
+  // so they can be skipped, and the upper half of each row is zero for both passes.
+  const bool low_only =
+    ((rows[0] | rows[1] | rows[2] | rows[3]).uph64() | rows[4] | rows[5] | rows[6] | rows[7]).eq(GSVector4i::zero());
+#if defined(_DEBUG) || defined(_DEVEL)
+  s_state.total_idct_blocks++;
+  s_state.fast_idct_blocks += BoolToUInt32(low_only);
+#endif
+  if (low_only)
+  {
+    for (u32 x = 0; x < 4; x++)
+      rows[x] = IDCTRow(rows[x], idct_matrix, true);
+  }
+  else
+  {
+    for (u32 x = 0; x < 8; x++)
+      rows[x] = IDCTRow(rows[x], idct_matrix, false);
+  }
 
   // Transpose for the second pass.
   GSVector4i temp[8];
@@ -1112,9 +1143,11 @@ void MDEC::IDCT_New(s16* blk)
 
   for (u32 x = 0; x < 8; x++)
   {
+    const GSVector4i sum = low_only ? IDCTRow(temp[x], idct_matrix, true) : IDCTRow(temp[x], idct_matrix, false);
+
     // Sign extend from 9 bits, then clamp to 8 bits.
-    const GSVector4i sum = IDCTRow(temp[x], idct_matrix).sll16<7>().sra16<7>();
-    GSVector4i::store<true>(&blk[x * 8], sum.sat_s16(GSVector4i::cxpr16(-128), GSVector4i::cxpr16(127)));
+    GSVector4i::store<true>(&blk[x * 8],
+                            sum.sll16<7>().sra16<7>().sat_s16(GSVector4i::cxpr16(-128), GSVector4i::cxpr16(127)));
   }
 }
 
@@ -1227,6 +1260,10 @@ void MDEC::DrawDebugStateWindow(float scale)
 
 #if defined(_DEBUG) || defined(_DEVEL)
   ImGui::Text("Blocks Decoded: %u", s_state.total_blocks_decoded);
+  ImGui::Text("IDCT Fast Path: %u/%u (%.1f%%)", s_state.fast_idct_blocks, s_state.total_idct_blocks,
+              s_state.total_idct_blocks ? (static_cast<double>(s_state.fast_idct_blocks) * 100.0 /
+                                           static_cast<double>(s_state.total_idct_blocks)) :
+                                          0.0);
 #endif
   ImGui::Text("Data-In FIFO Size: %u (%u bytes)", s_state.data_in_fifo.GetSize(), s_state.data_in_fifo.GetSize() * 4);
   ImGui::Text("Data-Out FIFO Size: %u (%u bytes)", s_state.data_out_fifo.GetSize(),
