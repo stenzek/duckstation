@@ -210,7 +210,7 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
     Assembler emit(static_cast<vixl::byte*>(code), kA32InstructionSizeInBytes, A32);
 #ifdef VIXL_DEBUG
     vixl::CodeBufferCheckScope asm_check(&emit, kA32InstructionSizeInBytes,
-                                        vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+                                         vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
 #endif
     Label label(disp);
     emit.b(&label);
@@ -243,7 +243,7 @@ u8* armGetJumpTrampoline(const void* target)
   vixl::aarch32::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
 #ifdef VIXL_DEBUG
   vixl::CodeBufferCheckScope asm_check(&armAsm, TRAMPOLINE_AREA_SIZE - offset,
-                                      vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+                                       vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
 #endif
   armMoveAddressToReg(&armAsm, RSCRATCH, target);
   armAsm.bx(RSCRATCH);
@@ -1403,37 +1403,17 @@ void CPU::ARM32Recompiler::Compile_div(CompileFlags cf)
   const Register rlo = CFGetRegLO(cf);
   const Register rhi = CFGetRegHI(cf);
 
-  // TODO: This could be slightly more optimal
-  Label done;
-  Label not_divide_by_zero;
-  armAsm->cmp(rt, 0);
-  armAsm->b(ne, &not_divide_by_zero);
-  armAsm->mov(rhi, rs); // hi = num
-  EmitMov(rlo, 1);
-  EmitMov(RSCRATCH, static_cast<u32>(-1));
-  armAsm->cmp(rs, 0);
-  armAsm->mov(ge, rlo, RSCRATCH); // lo = s >= 0 ? -1 : 1
-  armAsm->b(&done);
-
-  armAsm->bind(&not_divide_by_zero);
-  Label not_unrepresentable;
-  armAsm->cmp(rs, armCheckCompareConstant(static_cast<s32>(0x80000000u)));
-  armAsm->b(ne, &not_unrepresentable);
-  armAsm->cmp(rt, armCheckCompareConstant(-1));
-  armAsm->b(ne, &not_unrepresentable);
-
-  EmitMov(rlo, 0x80000000u);
-  EmitMov(rhi, 0);
-  armAsm->b(&done);
-
-  armAsm->bind(&not_unrepresentable);
-
+  // sdiv never traps: 0x80000000 / -1 produces 0x80000000, and x / 0 produces 0. After the mls, that leaves
+  // lo = 0x80000000, hi = 0 for the former, and hi = num for the latter, same as MIPS.
   armAsm->sdiv(rlo, rs, rt);
 
   // TODO: skip when hi is dead
   armAsm->mls(rhi, rlo, rt, rs);
 
-  armAsm->bind(&done);
+  // Which only leaves lo for divide by zero.
+  armAsm->cmp(rt, 0);
+  armAsm->mvn(eq, rlo, Operand(rs, ASR, 31)); // lo = s >= 0 ? -1 : 0
+  armAsm->orr(eq, rlo, rlo, 1);               // lo = s >= 0 ? -1 : 1
 }
 
 void CPU::ARM32Recompiler::Compile_divu(CompileFlags cf)
@@ -1449,22 +1429,15 @@ void CPU::ARM32Recompiler::Compile_divu(CompileFlags cf)
   const Register rlo = CFGetRegLO(cf);
   const Register rhi = CFGetRegHI(cf);
 
-  Label done;
-  Label not_divide_by_zero;
-  armAsm->cmp(rt, 0);
-  armAsm->b(ne, &not_divide_by_zero);
-  EmitMov(rlo, static_cast<u32>(-1));
-  armAsm->mov(rhi, rs);
-  armAsm->b(&done);
-
-  armAsm->bind(&not_divide_by_zero);
-
+  // udiv produces 0 for x / 0 instead of trapping, which leaves hi = num after the mls, same as MIPS.
   armAsm->udiv(rlo, rs, rt);
 
   // TODO: skip when hi is dead
   armAsm->mls(rhi, rlo, rt, rs);
 
-  armAsm->bind(&done);
+  // Which only leaves lo = -1 for divide by zero.
+  armAsm->cmp(rt, 0);
+  armAsm->mvn(eq, rlo, 0);
 }
 
 void CPU::ARM32Recompiler::TestOverflow(const vixl::aarch32::Register& result)
