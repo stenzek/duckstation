@@ -926,8 +926,8 @@ struct UVStepper
 
   ALWAYS_INLINE void StepX(const UVSteps& steps, s32 count)
   {
-    u = u + static_cast<u32>(static_cast<s32>(steps.dudx) * count);
-    v = v + static_cast<u32>(static_cast<s32>(steps.dvdx) * count);
+    u = u + (steps.dudx * static_cast<u32>(count));
+    v = v + (steps.dvdx * static_cast<u32>(count));
   }
 
   template<bool upside_down>
@@ -939,8 +939,8 @@ struct UVStepper
 
   ALWAYS_INLINE void StepY(const UVSteps& steps, s32 count)
   {
-    u = u + static_cast<u32>(static_cast<s32>(steps.dudy) * count);
-    v = v + static_cast<u32>(static_cast<s32>(steps.dvdy) * count);
+    u = u + (steps.dudy * static_cast<u32>(count));
+    v = v + (steps.dvdy * static_cast<u32>(count));
   }
 };
 
@@ -981,9 +981,9 @@ struct RGBStepper
 
   ALWAYS_INLINE void StepX(const RGBSteps& steps, s32 count)
   {
-    r = r + static_cast<u32>(static_cast<s32>(steps.drdx) * count);
-    g = g + static_cast<u32>(static_cast<s32>(steps.dgdx) * count);
-    b = b + static_cast<u32>(static_cast<s32>(steps.dbdx) * count);
+    r = r + (steps.drdx * static_cast<u32>(count));
+    g = g + (steps.dgdx * static_cast<u32>(count));
+    b = b + (steps.dbdx * static_cast<u32>(count));
   }
 
   template<bool upside_down>
@@ -996,9 +996,9 @@ struct RGBStepper
 
   ALWAYS_INLINE void StepY(const RGBSteps& steps, s32 count)
   {
-    r = r + static_cast<u32>(static_cast<s32>(steps.drdy) * count);
-    g = g + static_cast<u32>(static_cast<s32>(steps.dgdy) * count);
-    b = b + static_cast<u32>(static_cast<s32>(steps.dbdy) * count);
+    r = r + (steps.drdy * static_cast<u32>(count));
+    g = g + (steps.dgdy * static_cast<u32>(count));
+    b = b + (steps.dbdy * static_cast<u32>(count));
   }
 };
 
