@@ -480,7 +480,7 @@ void DMA::SetRequest(Channel channel, bool request)
     return;
 
   cs.request = request;
-  if (CanTransferChannel(channel, false))
+  if (request && CanTransferChannel(channel, false))
     s_channel_transfer_functions[static_cast<u32>(channel)]();
 }
 
