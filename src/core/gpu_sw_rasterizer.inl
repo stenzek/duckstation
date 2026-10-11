@@ -589,19 +589,16 @@ ALWAYS_INLINE_RELEASE static GSVectorNi LookupCLUT4Vector(const PixelVectors<tru
 #endif
 }
 
-template<TextureModulationMode modulation_mode, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void
-ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled>& RESTRICT pv,
-           GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool mask_bit_test, u32 start_x, u32 y,
-           GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba, GSVectorNi texcoord_x, GSVectorNi texcoord_y,
-           GSVectorNi preserve_mask, GSVectorNi dither)
+template<bool texture_enable>
+ALWAYS_INLINE_RELEASE static GSVectorNi SampleTexture(const PixelVectors<texture_enable>& RESTRICT pv,
+                                                      GPUTextureMode texture_mode, GSVectorNi texcoord_x,
+                                                      GSVectorNi texcoord_y)
 {
-  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
-
   static constexpr GSVectorNi coord_mask_x = GSVectorNi::cxpr(VRAM_WIDTH_MASK);
   static constexpr GSVectorNi coord_mask_y = GSVectorNi::cxpr(VRAM_HEIGHT_MASK);
 
-  GSVectorNi color;
+  // Hopefully optimized out when not texturing...
+  GSVectorNi texture_color = GSVectorNi::zero();
 
   if constexpr (texture_enable)
   {
@@ -611,7 +608,6 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
 
     texcoord_y = pv.texture_base_y.add32(texcoord_y) & coord_mask_y;
 
-    GSVectorNi texture_color;
     switch (texture_mode)
     {
       case GPUTextureMode::Palette4Bit:
@@ -644,7 +640,23 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
       }
       break;
     }
+  }
 
+  return texture_color;
+}
+
+template<TextureModulationMode modulation_mode, bool transparency_enable>
+ALWAYS_INLINE_RELEASE static void
+ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled>& RESTRICT pv,
+           GPUTransparencyMode transparency_mode, bool mask_bit_test, u32 start_x, u32 y, GSVectorNi vertex_color_rg,
+           GSVectorNi vertex_color_ba, GSVectorNi texture_color, GSVectorNi preserve_mask, GSVectorNi dither)
+{
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
+  GSVectorNi color;
+
+  if constexpr (texture_enable)
+  {
     // check for zero texture colour across the 4 pixels, early out if so
     const GSVectorNi texture_transparent_mask = texture_color.eq32(GSVectorNi::zero());
     if (texture_transparent_mask.alltrue())
@@ -820,8 +832,22 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
 
   const PixelVectors<texture_enable> pv(cmd);
   const u32 width = cmd->width;
+  const GPUTextureMode texture_mode = cmd->draw_mode.texture_mode;
   const GPUTransparencyMode transparency_mode = cmd->draw_mode.transparency_mode;
   const bool mask_bit_test = cmd->check_mask_before_draw;
+
+  // Texture coordinates increase by one for each pixel, so unless the window is rearranging them, the texels for
+  // each vector are next to each other in VRAM, and can be loaded together instead of gathering them one by one.
+  // That stops being the case when the coordinates wrap around within the vector, or for 4-bit, when the load would
+  // run past the end of the row. 8-bit indices still have to be looked up one by one, so there is nothing to gain.
+  const u32 texture_base_x = cmd->draw_mode.GetTexturePageBaseX();
+  u32 sequential_texcoord_end = 0;
+  if (cmd->window.and_x == 0xFF && cmd->window.or_x == 0x00 && texture_mode != GPUTextureMode::Palette8Bit)
+  {
+    sequential_texcoord_end = (0x100u - PIXELS_PER_VEC) + 1;
+    if (texture_mode == GPUTextureMode::Palette4Bit)
+      sequential_texcoord_end = std::min(sequential_texcoord_end, ((VRAM_WIDTH - 4) + 1 - texture_base_x) * 4);
+  }
 
 #ifdef CHECK_VECTOR
   BACKUP_VRAM();
@@ -835,6 +861,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
          cmd->active_line_lsb != ConvertToBoolUnchecked(Truncate8(static_cast<u32>(y)) & 1u)))
     {
       const s32 draw_y = (y & VRAM_HEIGHT_MASK);
+      const u32 texture_y = cmd->draw_mode.GetTexturePageBaseY() +
+                            ((((cmd->texcoord >> 8) + offset_y) & cmd->window.and_y) | cmd->window.or_y);
 
       GSVectorNi row_texcoord_x = texcoord_x;
       GSVectorNi xvec = GSVectorNi(origin_x).add32(SPAN_OFFSET_VEC);
@@ -852,9 +880,31 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
         preserve_mask = preserve_mask | xvec.gt32(pv.clip_right);
         if (!preserve_mask.alltrue())
         {
-          ShadePixel<modulation_mode, transparency_enable>(pv, cmd->draw_mode.texture_mode, transparency_mode,
-                                                           mask_bit_test, x, draw_y, rg, ba, row_texcoord_x, texcoord_y,
-                                                           preserve_mask, GSVectorNi::zero());
+          GSVectorNi texture_color = GSVectorNi::zero();
+          if constexpr (texture_enable)
+          {
+            if (const u32 load_texcoord_x = (cmd->texcoord + offset_x) & 0xFFu;
+                load_texcoord_x >= sequential_texcoord_end)
+            {
+              texture_color = SampleTexture(pv, texture_mode, row_texcoord_x, texcoord_y);
+            }
+            else if (texture_mode >= GPUTextureMode::Direct16Bit)
+            {
+              texture_color = LoadVector((texture_base_x + load_texcoord_x) & VRAM_WIDTH_MASK, texture_y);
+            }
+            else
+            {
+              // The indices are packed into the next few words, starting at any of the four in the first.
+              u64 indices;
+              std::memcpy(&indices, &g_vram[(texture_y * VRAM_WIDTH) + texture_base_x + (load_texcoord_x / 4)],
+                          sizeof(indices));
+              texture_color = LookupCLUT4Vector(
+                pv, GSVectorNi(static_cast<s32>(indices >> ((load_texcoord_x % 4) * 4))), SPAN_OFFSET_VEC.sll32<2>());
+            }
+          }
+
+          ShadePixel<modulation_mode, transparency_enable>(pv, transparency_mode, mask_bit_test, x, draw_y, rg, ba,
+                                                           texture_color, preserve_mask, GSVectorNi::zero());
         }
 
         xvec = xvec.add32(PIXELS_PER_VEC_VEC);
@@ -1352,9 +1402,9 @@ DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bo
     preserve_mask = preserve_mask | xvec.gt32(tv.clip_right);
     if (!preserve_mask.alltrue())
     {
-      ShadePixel<modulation_mode, transparency_enable>(tv, cmd->draw_mode.texture_mode, transparency_mode,
-                                                       mask_bit_test, static_cast<u32>(current_x), static_cast<u32>(y),
-                                                       rg, b, u, v, preserve_mask, dither);
+      ShadePixel<modulation_mode, transparency_enable>(
+        tv, transparency_mode, mask_bit_test, static_cast<u32>(current_x), static_cast<u32>(y), rg, b,
+        SampleTexture(tv, cmd->draw_mode.texture_mode, u, v), preserve_mask, dither);
     }
 
     current_x += PIXELS_PER_VEC;
