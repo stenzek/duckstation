@@ -528,6 +528,12 @@ struct PixelVectors
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_x;
   NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_y;
 
+#ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
+  // Low and high bytes of the 4-bit CLUT, so it can be looked up with shuffle8().
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> clut_lo;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> clut_hi;
+#endif
+
   PixelVectors(const GPUBackendDrawCommand* cmd)
   {
     clip_left = GSVectorNi(g_drawing_area.left);
@@ -544,10 +550,44 @@ struct PixelVectors
       texture_window_or_y = GSVectorNi(cmd->window.or_y);
       texture_base_x = GSVectorNi(cmd->draw_mode.GetTexturePageBaseX());
       texture_base_y = GSVectorNi(cmd->draw_mode.GetTexturePageBaseY());
+
+#ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
+      if (cmd->draw_mode.texture_mode == GPUTextureMode::Palette4Bit)
+      {
+        const GSVector4i clut0 = GSVector4i::load<false>(&g_gpu_clut[0]);
+        const GSVector4i clut1 = GSVector4i::load<false>(&g_gpu_clut[8]);
+        const GSVector4i mask = GSVector4i::cxpr16(0xFF);
+        clut_lo = GSVectorNi::broadcast128((clut0 & mask).pu16(clut1 & mask));
+        clut_hi = GSVectorNi::broadcast128(clut0.srl16<8>().pu16(clut1.srl16<8>()));
+      }
+#endif
     }
   }
 };
 } // namespace
+
+// Looks up the colours for 4-bit palette indices, after shifting each one out of the word it was loaded from.
+ALWAYS_INLINE_RELEASE static GSVectorNi LookupCLUT4Vector(const PixelVectors<true>& RESTRICT pv, GSVectorNi indices,
+                                                          GSVectorNi shifts)
+{
+#ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
+  // The CLUT only has 16 entries in this mode, which fits in a pair of registers when split into bytes.
+  // That way the indices don't have to make another trip through scalar registers to get the colour.
+#ifdef GSVECTOR_HAS_SRLV
+  indices = indices.srlv32(shifts) & GSVectorNi::cxpr(0x0F);
+#else
+  // Without variable shifts, multiply to move the index to the top of the word instead.
+  static constexpr GSVectorNi multipliers = GSVectorNi::cxpr16(0x1000, 0, 0x100, 0, 0x10, 0, 0x1, 0);
+  indices =
+    indices.mul16l(multipliers.shuffle8(shifts | shifts.sll32<8>() | GSVectorNi::cxpr(static_cast<s32>(0x80800100u))))
+      .srl16<12>();
+#endif
+  return pv.clut_lo.shuffle8(indices | GSVectorNi::cxpr(static_cast<s32>(0x80808000u))) |
+         pv.clut_hi.shuffle8(indices.sll32<8>() | GSVectorNi::cxpr(static_cast<s32>(0x80800080u)));
+#else
+  return GatherCLUTVector<0x0F>(indices, shifts);
+#endif
+}
 
 template<TextureModulationMode modulation_mode, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void
@@ -582,7 +622,7 @@ ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled
 
         const GSVectorNi palette_shift = (texcoord_x & GSVectorNi::cxpr(3)).sll32<2>();
         const GSVectorNi palette_indices = GatherVector(load_texcoord_x, texcoord_y);
-        texture_color = GatherCLUTVector<0x0F>(palette_indices, palette_shift);
+        texture_color = LookupCLUT4Vector(pv, palette_indices, palette_shift);
       }
       break;
 
