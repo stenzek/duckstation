@@ -907,10 +907,12 @@ void CPU::ARM64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool
 
   // pending_ticks += cycles
   // if (pending_ticks >= downcount) { dispatch_event(); }
-  if (do_event_test || m_gte_done_cycle > cycles || cycles > 0)
-    armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
+  // downcount and pending_ticks are adjacent, so both can be loaded with a single instruction.
+  static_assert(OFFSETOF(State, pending_ticks) == (OFFSETOF(State, downcount) + sizeof(u32)));
   if (do_event_test)
-    armAsm->ldr(RWARG2, PTR(&g_state.downcount));
+    armAsm->ldp(RWARG2, RWARG1, PTR(&g_state.downcount));
+  else if (m_gte_done_cycle > cycles || cycles > 0)
+    armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
   if (cycles > 0)
     armAsm->add(RWARG1, RWARG1, armCheckAddSubConstant(cycles));
   if (m_gte_done_cycle > cycles)
