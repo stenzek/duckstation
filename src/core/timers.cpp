@@ -67,6 +67,7 @@ struct CounterState
 
 static void UpdateCountingEnabled(u32 index, CounterState& cs);
 static void CheckForIRQ(u32 index, u32 first_counter);
+static u32 UpdateForRead(u32 index, const CounterState& cs);
 
 static void AddSysClkTicks(void*, TickCount sysclk_ticks);
 
@@ -345,6 +346,28 @@ void Timers::AddSysClkTicks(void*, TickCount sysclk_ticks)
   UpdateSysClkEvent();
 }
 
+u32 Timers::UpdateForRead(u32 index, const CounterState& cs)
+{
+  // Updating the counters early only changes the counters themselves, unless one of them reaches its target or
+  // overflows. The event isn't due until the first IRQ, so before then we only need to look at the timer being read,
+  // and can work out its counter without updating anything. The remainder makes this harder when overclocking.
+  if (!g_settings.cpu_overclock_active && s_state.sysclk_event.GetTicksUntilNextExecution() > 0)
+  {
+    u32 counter = cs.counter;
+    if (cs.counting_enabled && (index == 2 || !cs.external_counting_enabled))
+    {
+      const u32 ticks = static_cast<u32>(s_state.sysclk_event.GetTicksSinceLastExecution());
+      counter += cs.external_counting_enabled ? ((ticks + s_state.sysclk_div_8_carry) / 8) : ticks; // sysclk/8
+    }
+
+    if (counter < TIMER_OVERFLOW && (counter < cs.target || cs.counter >= cs.target))
+      return counter;
+  }
+
+  s_state.sysclk_event.InvokeEarlyNoReschedule();
+  return cs.counter;
+}
+
 u32 Timers::ReadRegister(u32 offset)
 {
   const u32 timer_index = (offset >> 4) & u32(0x03);
@@ -368,9 +391,7 @@ u32 Timers::ReadRegister(u32 offset)
           GPU::SynchronizeCRTC();
       }
 
-      s_state.sysclk_event.InvokeEarlyNoReschedule();
-
-      return cs.counter;
+      return UpdateForRead(timer_index, cs);
     }
 
     case 0x04:
@@ -382,7 +403,7 @@ u32 Timers::ReadRegister(u32 offset)
           GPU::SynchronizeCRTC();
       }
 
-      s_state.sysclk_event.InvokeEarlyNoReschedule();
+      UpdateForRead(timer_index, cs);
 
       const u32 bits = cs.mode.bits;
       cs.mode.reached_overflow = false;

@@ -463,3 +463,62 @@ TEST_F(TimersTest, InvokeEarlyNoReschedule)
   a.event.Deactivate();
   b.event.Deactivate();
 }
+
+// Reading the counter or mode leaves the counters alone when updating them wouldn't change anything else. It has to
+// give the same result as when they are updated.
+TEST_F(TimersTest, DeferredReadsMatchUpdatedReads)
+{
+  Run(100);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 100u);
+  EXPECT_EQ((*TimingEvents::GetHeadEventPtr())->GetTicksSinceLastExecution(), 100);
+
+  struct Access
+  {
+    u32 tick;
+    u32 value;
+  };
+  std::vector<Access> accesses[2];
+  for (u32 pass = 0; pass < 2; pass++)
+  {
+    Timers::Reset();
+    Timers::WriteRegister(TIMER0 + REG_TARGET, 300);
+    Timers::WriteRegister(TIMER0 + REG_MODE, MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+    Timers::WriteRegister(TIMER1 + REG_TARGET, 0x7000);
+    Timers::WriteRegister(TIMER1 + REG_MODE, MODE_IRQ_ON_OVERFLOW | MODE_IRQ_REPEAT);
+    Timers::WriteRegister(TIMER2 + REG_TARGET, 1000);
+    Timers::WriteRegister(TIMER2 + REG_MODE,
+                          MODE_CLOCK_SOURCE_2 | MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+
+    u32 rng = 0x12345678u;
+    for (u32 tick = 1; tick <= 200000; tick++)
+    {
+      Run(1);
+
+      for (u32 timer = 0; timer < 3; timer++)
+      {
+        if (TakeIRQ(timer))
+          accesses[pass].push_back({tick, 0x80000000u | timer});
+      }
+
+      rng = (rng * 1664525u) + 1013904223u;
+      if ((rng >> 28) != 0)
+        continue;
+
+      // Writing a register always updates the counters, here without changing anything.
+      if (pass == 1)
+        Timers::WriteRegister(TIMER1 + REG_TARGET, 0x7000);
+
+      const u32 timer = ((rng >> 24) & 0xF) % 3;
+      const u32 reg = ((rng >> 20) & 1) ? REG_MODE : REG_COUNTER;
+      accesses[pass].push_back({tick, Timers::ReadRegister((timer << 4) + reg)});
+    }
+  }
+
+  ASSERT_GT(accesses[0].size(), 10000u);
+  ASSERT_EQ(accesses[0].size(), accesses[1].size());
+  for (size_t i = 0; i < accesses[0].size(); i++)
+  {
+    ASSERT_EQ(accesses[0][i].tick, accesses[1][i].tick) << "access " << i;
+    ASSERT_EQ(accesses[0][i].value, accesses[1][i].value) << "access " << i << " at tick " << accesses[0][i].tick;
+  }
+}
