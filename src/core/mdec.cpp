@@ -1097,8 +1097,8 @@ void MDEC::YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const 
 
     // Need to do the multiply as 32-bit, since 127 * 359 is greater than INT16_MAX.
     // upl16(self) = interleave XYZW0000 -> XXYYZZWW.
-    const GSVector4i Crmul = Cr.mul32l(GSVector4i::cxpr(359)).add16(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
-    const GSVector4i Cbmul = Cb.mul32l(GSVector4i::cxpr(454)).add16(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
+    const GSVector4i Crmul = Cr.mul32l(GSVector4i::cxpr(359)).add32(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
+    const GSVector4i Cbmul = Cb.mul32l(GSVector4i::cxpr(454)).add32(GSVector4i::cxpr(0x80)).sra32<8>().ps32();
     const GSVector4i CrCbmul = (Cb.mul32l(GSVector4i::cxpr(-88)) & GSVector4i::cxpr(~0x1F))
                                  .add32(Cr.mul32l(GSVector4i::cxpr(-183)) & GSVector4i::cxpr(~0x07))
                                  .add32(GSVector4i::cxpr(0x80))
