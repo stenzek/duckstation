@@ -1122,7 +1122,7 @@ void MDEC::YUVToMono(const std::array<s16, 64>& Yblk)
 {
   const s32 addval = s_state.status.data_output_signed ? 0 : 0x80;
   for (u32 i = 0; i < 64; i++)
-    s_state.block_rgb[i] = static_cast<u32>(std::clamp(SignExtendN<9, s32>(Yblk[i]), -128, 127) + addval);
+    s_state.block_rgb[i] = ZeroExtend32(static_cast<u8>(std::clamp(SignExtendN<9, s32>(Yblk[i]), -128, 127) + addval));
 }
 
 void MDEC::HandleSetQuantTableCommand()
