@@ -177,7 +177,7 @@ void Timers::SetGate(u32 timer, bool state)
   // For reset, we _can_ skip it, until the gate clears.
   const bool update_sysclk = (!cs.use_external_clock && (cs.mode.sync_mode != SyncMode::ResetOnGateEnd || !state));
   if (update_sysclk)
-    s_state.sysclk_event.InvokeEarly();
+    s_state.sysclk_event.InvokeEarlyNoReschedule();
 
   switch (cs.mode.sync_mode)
   {
@@ -368,7 +368,7 @@ u32 Timers::ReadRegister(u32 offset)
           GPU::SynchronizeCRTC();
       }
 
-      s_state.sysclk_event.InvokeEarly();
+      s_state.sysclk_event.InvokeEarlyNoReschedule();
 
       return cs.counter;
     }
@@ -382,7 +382,7 @@ u32 Timers::ReadRegister(u32 offset)
           GPU::SynchronizeCRTC();
       }
 
-      s_state.sysclk_event.InvokeEarly();
+      s_state.sysclk_event.InvokeEarlyNoReschedule();
 
       const u32 bits = cs.mode.bits;
       cs.mode.reached_overflow = false;
@@ -416,7 +416,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
   if (update_gpu)
     GPU::SynchronizeCRTC();
 
-  s_state.sysclk_event.InvokeEarly();
+  s_state.sysclk_event.InvokeEarlyNoReschedule();
 
   // Strictly speaking these IRQ checks should probably happen on the next tick.
   switch (port_offset)

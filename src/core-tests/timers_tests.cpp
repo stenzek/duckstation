@@ -401,3 +401,65 @@ TEST_F(TimersTest, GPUClockedTimerWriteReschedulesCRTC)
 
   DeactivateAllEvents();
 }
+
+// When the callback reschedules the event, it should end up the same as it does with InvokeEarly().
+TEST_F(TimersTest, InvokeEarlyNoReschedule)
+{
+  struct State
+  {
+    TimingEvent event;
+    TickCount ticks = 0;
+  };
+  static constexpr TimingEventCallback callback = [](void* param, TickCount ticks) {
+    State* state = static_cast<State*>(param);
+    state->ticks += ticks;
+    state->event.Schedule(500);
+  };
+  State a = {.event = TimingEvent("Test Event A", 1, 1, callback, &a)};
+  State b = {.event = TimingEvent("Test Event B", 1, 1, callback, &b)};
+  a.event.Schedule(1000);
+  b.event.Schedule(1000);
+
+  Run(300);
+  a.event.InvokeEarly();
+  b.event.InvokeEarlyNoReschedule();
+  EXPECT_EQ(a.ticks, 300);
+  EXPECT_EQ(b.ticks, 300);
+  EXPECT_EQ(b.event.GetTicksSinceLastExecution(), a.event.GetTicksSinceLastExecution());
+  EXPECT_EQ(b.event.GetTicksUntilNextExecution(), a.event.GetTicksUntilNextExecution());
+  EXPECT_EQ(b.event.GetTicksUntilNextExecution(), 500);
+  EXPECT_EQ(CPU::g_state.downcount, 800u);
+
+  // Nothing has happened since, so there's nothing to do.
+  b.event.InvokeEarlyNoReschedule();
+  EXPECT_EQ(b.ticks, 300);
+
+  // Both should run again from the event loop.
+  Run(500);
+  EXPECT_EQ(a.ticks, 800);
+  EXPECT_EQ(b.ticks, 800);
+
+  // The callback can deactivate the event instead of scheduling it, and it's still left alone until the period has
+  // passed.
+  static constexpr TimingEventCallback deactivate_callback = [](void* param, TickCount ticks) {
+    State* state = static_cast<State*>(param);
+    state->ticks += ticks;
+    state->event.Deactivate();
+  };
+  State c = {.event = TimingEvent("Test Event C", 200, 200, deactivate_callback, &c)};
+  c.event.Schedule(400);
+
+  Run(100);
+  c.event.InvokeEarlyNoReschedule();
+  EXPECT_EQ(c.ticks, 0);
+  EXPECT_EQ(c.event.GetTicksUntilNextExecution(), 300);
+
+  Run(150);
+  c.event.InvokeEarlyNoReschedule();
+  EXPECT_EQ(c.ticks, 250);
+  EXPECT_FALSE(c.event.IsActive());
+  EXPECT_EQ(CPU::g_state.downcount, 500u);
+
+  a.event.Deactivate();
+  b.event.Deactivate();
+}

@@ -657,6 +657,30 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
   m_callback(m_callback_param, ticks_to_execute);
 }
 
+void TimingEvent::InvokeEarlyNoReschedule()
+{
+  using namespace TimingEvents;
+
+  if (!m_active)
+    return;
+
+  // Might happen due to other InvokeEarly()'s mid event loop.
+  const GlobalTicks ts = GetTimestampForNewEvent();
+  if (ts <= m_last_run_time)
+    return;
+
+  // Shouldn't be invoking early when we're the current event running.
+  DebugAssert(s_state.current_event != this);
+
+  const TickCount ticks_to_execute = static_cast<TickCount>(ts - m_last_run_time);
+  if (ticks_to_execute < m_period)
+    return;
+
+  // The callback sets the next run time, so the event stays where it is until then.
+  m_last_run_time = ts;
+  m_callback(m_callback_param, ticks_to_execute);
+}
+
 void TimingEvent::Activate()
 {
   using namespace TimingEvents;

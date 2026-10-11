@@ -41,6 +41,10 @@ public:
   // simulate a single cycle, the callback will still be invoked, otherwise it won't be.
   void InvokeEarly(bool force = false);
 
+  // Same as InvokeEarly(), but the event isn't moved to the next interval before invoking the callback, which saves
+  // sorting it twice. Only for events where the callback always calls Schedule(), or deactivates the event.
+  void InvokeEarlyNoReschedule();
+
   // Deactivates the event, preventing it from firing again.
   // Do not call within a callback, return Deactivate instead.
   void Activate();
