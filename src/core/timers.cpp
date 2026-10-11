@@ -66,7 +66,7 @@ struct CounterState
 } // namespace
 
 static void UpdateCountingEnabled(u32 index, CounterState& cs);
-static void CheckForIRQ(u32 index, u32 old_counter);
+static void CheckForIRQ(u32 index, u32 first_counter);
 
 static void AddSysClkTicks(void*, TickCount sysclk_ticks);
 
@@ -237,36 +237,39 @@ void Timers::AddTicks(u32 timer, TickCount count)
       const u32 old_counter = cs.counter;
       cs.counter += add;
       count -= static_cast<TickCount>(add);
-      CheckForIRQ(timer, old_counter);
+      CheckForIRQ(timer, old_counter + 1);
     } while (count > 0);
   }
   else
   {
     const u32 old_counter = cs.counter;
     cs.counter += static_cast<u32>(count);
-    CheckForIRQ(timer, old_counter);
+    CheckForIRQ(timer, old_counter + 1);
   }
 }
 
-void Timers::CheckForIRQ(u32 timer, u32 old_counter)
+void Timers::CheckForIRQ(u32 timer, u32 first_counter)
 {
   CounterState& cs = s_state.counters[timer];
 
+  // first_counter is the first counter value which hasn't been compared to the target yet. When adding ticks, that's
+  // one past the old counter. When the counter is reset by a mode write, or wraps around, it's zero, which is the
+  // only time a zero target is reached.
   // The counter can be set above the target, in which case it _will_ wrap around and trigger an IRQ.
   bool wrapped_overflow = false;
   if (cs.counter >= TIMER_OVERFLOW)
   {
-    wrapped_overflow = (!cs.mode.reset_at_target || old_counter >= cs.target);
+    wrapped_overflow = (!cs.mode.reset_at_target || first_counter > cs.target);
 
     // If the target wasn't passed before wrapping, it has to be reached again afterwards.
-    if (old_counter >= cs.target)
+    if (first_counter > cs.target)
       cs.counter -= TIMER_OVERFLOW;
 
-    old_counter = 0;
+    first_counter = 0;
   }
 
   bool interrupt_request = false;
-  if (cs.counter >= cs.target && (old_counter < cs.target || cs.target == 0))
+  if (cs.counter >= cs.target && first_counter <= cs.target)
   {
     interrupt_request |= cs.mode.irq_at_target;
     cs.mode.reached_target = true;

@@ -297,3 +297,48 @@ TEST_F(TimersTest, OverclockedIRQNotAffectedByUpdates)
   EXPECT_EQ(irq_ticks[0], (std::vector<u32>{3504, 7007, 10511, 14014, 17518}));
   EXPECT_EQ(irq_ticks[1], irq_ticks[0]);
 }
+
+// A zero target is only reached when the counter is zero, that is when it's reset by the mode write, or wraps around.
+TEST_F(TimersTest, ZeroTarget)
+{
+  for (const u32 mode :
+       {MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT, MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT})
+  {
+    Timers::WriteRegister(TIMER2 + REG_TARGET, 0);
+    Timers::WriteRegister(TIMER2 + REG_MODE, mode);
+    EXPECT_TRUE(TakeIRQ(2));
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+              MODE_REACHED_TARGET);
+
+    // sysclk/8 adds zero ticks most of the time.
+    Timers::AddTicks(2, 0);
+    Timers::AddTicks(2, 100);
+    EXPECT_FALSE(TakeIRQ(2));
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW), 0u);
+
+    Timers::AddTicks(2, 0x10000 - 100);
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0u);
+    EXPECT_TRUE(TakeIRQ(2));
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+              MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW);
+  }
+}
+
+// It used to be reached every time the counters were updated, so accessing any timer register raised the IRQ.
+TEST_F(TimersTest, ZeroTargetIRQNotAffectedByUpdates)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 0);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
+
+  for (u32 tick = 1; tick <= 0x20000; tick++)
+  {
+    Run(1);
+
+    if ((tick % 37) == 0)
+      Timers::WriteRegister(TIMER0 + REG_TARGET, 0);
+
+    ASSERT_EQ(TakeIRQ(2), (tick % 0x10000) == 0) << "at tick " << tick;
+  }
+}
