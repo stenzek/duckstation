@@ -121,6 +121,7 @@ static void YUVToRGB_Old(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const
                          const std::array<s16, 64>& Yblk);
 
 static bool DecodeRLE_New(s16* blk, const u8* qt);
+static GSVector4i IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix);
 static void IDCT_New(s16* blk);
 static void YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const std::array<s16, 64>& Cbblk,
                          const std::array<s16, 64>& Yblk);
@@ -1054,29 +1055,77 @@ bool MDEC::DecodeRLE_New(s16* blk, const u8* qt)
   return false;
 }
 
-static s16 IDCTRow(const s16* blk, const s16* idct_matrix)
+ALWAYS_INLINE_RELEASE GSVector4i MDEC::IDCTRow(const GSVector4i& row, const GSVector4i* idct_matrix)
 {
-  // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow.
-  GSVector4i sum = GSVector4i::load<false>(blk).madd_s16(GSVector4i::load<true>(idct_matrix)).addp_s32();
-  return static_cast<s16>(((static_cast<s64>(sum.extract32<0>()) + static_cast<s64>(sum.extract32<1>())) + 0x20000) >>
-                          18);
+  // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow, so each half of the row
+  // is summed separately. Adding the halves does not fit in 32 bits, but floor((lo + hi) / 2) does, in which case
+  // (lo + hi + 0x20000) >> 18 is the same as ((avg >> 16) + 1) >> 1.
+  static constexpr auto sum_halves = [](const GSVector4i& lo, const GSVector4i& hi) {
+    const GSVector4i avg = (lo & hi).add32((lo ^ hi).sra32<1>());
+    return avg.sra32<16>().add32(GSVector4i::cxpr(1)).sra32<1>();
+  };
+
+  // Each pair of elements in the row is multiplied with the same pair of elements from all 8 rows of the matrix.
+  const GSVector4i row01 = row.xxxx();
+  const GSVector4i row23 = row.yyyy();
+  const GSVector4i row45 = row.zzzz();
+  const GSVector4i row67 = row.wwww();
+  const GSVector4i lo0 = row01.madd_s16(idct_matrix[0]).add32(row23.madd_s16(idct_matrix[1]));
+  const GSVector4i hi0 = row45.madd_s16(idct_matrix[2]).add32(row67.madd_s16(idct_matrix[3]));
+  const GSVector4i lo1 = row01.madd_s16(idct_matrix[4]).add32(row23.madd_s16(idct_matrix[5]));
+  const GSVector4i hi1 = row45.madd_s16(idct_matrix[6]).add32(row67.madd_s16(idct_matrix[7]));
+  return sum_halves(lo0, hi0).ps32(sum_halves(lo1, hi1));
 }
 
 void MDEC::IDCT_New(s16* blk)
 {
-  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> temp;
-  for (u32 x = 0; x < 8; x++)
+  // Rearrange the scale table so that each vector has the same pair of elements from 4 rows, see IDCTRow().
+  GSVector4i idct_matrix[8];
+  for (u32 i = 0; i < 2; i++)
   {
-    for (u32 y = 0; y < 8; y++)
-      temp[y * 8 + x] = IDCTRow(&blk[x * 8], &s_state.scale_table[y * 8]);
+    const GSVector4i row0 = GSVector4i::load<true>(&s_state.scale_table[i * 32 + 0]);
+    const GSVector4i row1 = GSVector4i::load<true>(&s_state.scale_table[i * 32 + 8]);
+    const GSVector4i row2 = GSVector4i::load<true>(&s_state.scale_table[i * 32 + 16]);
+    const GSVector4i row3 = GSVector4i::load<true>(&s_state.scale_table[i * 32 + 24]);
+    const GSVector4i row01l = row0.upl32(row1);
+    const GSVector4i row01h = row0.uph32(row1);
+    const GSVector4i row23l = row2.upl32(row3);
+    const GSVector4i row23h = row2.uph32(row3);
+    idct_matrix[i * 4 + 0] = row01l.upl64(row23l);
+    idct_matrix[i * 4 + 1] = row01l.uph64(row23l);
+    idct_matrix[i * 4 + 2] = row01h.upl64(row23h);
+    idct_matrix[i * 4 + 3] = row01h.uph64(row23h);
   }
+
+  GSVector4i rows[8];
+  for (u32 x = 0; x < 8; x++)
+    rows[x] = IDCTRow(GSVector4i::load<true>(&blk[x * 8]), idct_matrix);
+
+  // Transpose for the second pass.
+  GSVector4i temp[8];
+  for (u32 i = 0; i < 4; i++)
+  {
+    temp[i * 2 + 0] = rows[i * 2].upl16(rows[i * 2 + 1]);
+    temp[i * 2 + 1] = rows[i * 2].uph16(rows[i * 2 + 1]);
+  }
+  for (u32 i = 0; i < 2; i++)
+  {
+    rows[i * 4 + 0] = temp[i * 4 + 0].upl32(temp[i * 4 + 2]);
+    rows[i * 4 + 1] = temp[i * 4 + 0].uph32(temp[i * 4 + 2]);
+    rows[i * 4 + 2] = temp[i * 4 + 1].upl32(temp[i * 4 + 3]);
+    rows[i * 4 + 3] = temp[i * 4 + 1].uph32(temp[i * 4 + 3]);
+  }
+  for (u32 i = 0; i < 4; i++)
+  {
+    temp[i * 2 + 0] = rows[i].upl64(rows[i + 4]);
+    temp[i * 2 + 1] = rows[i].uph64(rows[i + 4]);
+  }
+
   for (u32 x = 0; x < 8; x++)
   {
-    for (u32 y = 0; y < 8; y++)
-    {
-      const s32 sum = IDCTRow(&temp[x * 8], &s_state.scale_table[y * 8]);
-      blk[x * 8 + y] = static_cast<s16>(std::clamp(SignExtendN<9, s32>(sum), -128, 127));
-    }
+    // Sign extend from 9 bits, then clamp to 8 bits.
+    const GSVector4i sum = IDCTRow(temp[x], idct_matrix).sll16<7>().sra16<7>();
+    GSVector4i::store<true>(&blk[x * 8], sum.sat_s16(GSVector4i::cxpr16(-128), GSVector4i::cxpr16(127)));
   }
 }
 
