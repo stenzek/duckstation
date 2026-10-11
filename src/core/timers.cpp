@@ -257,6 +257,11 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
   if (cs.counter >= TIMER_OVERFLOW)
   {
     wrapped_overflow = (!cs.mode.reset_at_target || old_counter >= cs.target);
+
+    // If the target wasn't passed before wrapping, it has to be reached again afterwards.
+    if (old_counter >= cs.target)
+      cs.counter -= TIMER_OVERFLOW;
+
     old_counter = 0;
   }
 

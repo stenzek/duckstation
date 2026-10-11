@@ -109,3 +109,89 @@ TEST_F(TimersTest, GateChangeDoesNotDelaySysClkIRQ)
     ASSERT_EQ(TakeIRQ(2), (tick % PERIOD) == 0) << "at tick " << tick;
   }
 }
+
+// The counter wrapping around isn't the same thing as reaching the target.
+TEST_F(TimersTest, OverflowDoesNotReachTarget)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 0x8000);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+
+  Timers::AddTicks(2, 0x8000);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET);
+
+  // Wraps, but is nowhere near the target.
+  Timers::AddTicks(2, 0x8040);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x40u);
+  EXPECT_FALSE(TakeIRQ(2));
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_OVERFLOW);
+
+  Timers::AddTicks(2, 0x7FC0);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x8000u);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET);
+
+  // Wraps, and gets to the target again.
+  Timers::AddTicks(2, 0x10000);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x8000u);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW);
+
+  // Passes the target, then wraps.
+  Timers::WriteRegister(TIMER2 + REG_COUNTER, 0x7000);
+  Timers::AddTicks(2, 0x9010);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x10u);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW);
+}
+
+// When the counter is set past a resetting target, it has to wrap around before the target applies again.
+TEST_F(TimersTest, OverflowWithCounterAboveResetTarget)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 100);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET);
+
+  Timers::WriteRegister(TIMER2 + REG_COUNTER, 200);
+  Timers::AddTicks(2, (0x10000 - 200) + 5);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 5u);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_OVERFLOW);
+
+  Timers::AddTicks(2, 100);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 5u);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET);
+
+  // Same thing, but getting to the target after wrapping in a single update.
+  Timers::WriteRegister(TIMER2 + REG_COUNTER, 200);
+  Timers::AddTicks(2, (0x10000 - 200) + 250);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 50u);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
+            MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW);
+}
+
+TEST_F(TimersTest, ToggleModeDoesNotToggleOnOverflow)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 0x100);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT | MODE_IRQ_TOGGLE);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, MODE_IRQ_N);
+
+  Timers::AddTicks(2, 0x100);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
+  EXPECT_TRUE(TakeIRQ(2));
+
+  // One trip around the counter is one toggle.
+  Timers::AddTicks(2, 0x10000);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x100u);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, MODE_IRQ_N);
+  EXPECT_FALSE(TakeIRQ(2));
+
+  Timers::AddTicks(2, 0x10000);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
+  EXPECT_TRUE(TakeIRQ(2));
+}
