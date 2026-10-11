@@ -13,6 +13,7 @@ add_executable(core-tests
   negcon_base_tests.cpp
   spu_tests.cpp
   stub_host.cpp
+  timers_tests.cpp
 )
 
 target_include_directories(core-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")

@@ -174,7 +174,8 @@ void Timers::SetGate(u32 timer, bool state)
 
   // Because the gate prevents counting in or outside of the gate, we need a correct counter.
   // For reset, we _can_ skip it, until the gate clears.
-  if (!cs.use_external_clock && (cs.mode.sync_mode != SyncMode::ResetOnGateEnd || !state))
+  const bool update_sysclk = (!cs.use_external_clock && (cs.mode.sync_mode != SyncMode::ResetOnGateEnd || !state));
+  if (update_sysclk)
     s_state.sysclk_event.InvokeEarly();
 
   switch (cs.mode.sync_mode)
@@ -200,7 +201,10 @@ void Timers::SetGate(u32 timer, bool state)
   }
 
   UpdateCountingEnabled(timer, cs);
-  UpdateSysClkEvent();
+
+  // Can't reschedule without updating the counters first, the IRQ would end up being late.
+  if (update_sysclk)
+    UpdateSysClkEvent();
 }
 
 TickCount Timers::GetTicksUntilIRQ(u32 timer)

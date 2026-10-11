@@ -14,6 +14,7 @@
     <ClCompile Include="negcon_base_tests.cpp" />
     <ClCompile Include="spu_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
+    <ClCompile Include="timers_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">

@@ -13,6 +13,7 @@
     <ClCompile Include="lightgun_controller_tests.cpp" />
     <ClCompile Include="negcon_base_tests.cpp" />
     <ClCompile Include="mdec_tests.cpp" />
+    <ClCompile Include="timers_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
