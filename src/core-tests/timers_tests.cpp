@@ -74,6 +74,12 @@ protected:
     }
   }
 
+  /// Returns the number of ticks until the sysclk event runs next, it is the only active event.
+  static TickCount GetTicksUntilSysClkEvent()
+  {
+    return (*TimingEvents::GetHeadEventPtr())->GetTicksUntilNextExecution();
+  }
+
   /// Returns true if the timer has raised an IRQ since the last call.
   static bool TakeIRQ(u32 timer)
   {
@@ -194,4 +200,30 @@ TEST_F(TimersTest, ToggleModeDoesNotToggleOnOverflow)
   Timers::AddTicks(2, 0x10000);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
   EXPECT_TRUE(TakeIRQ(2));
+}
+
+// The sysclk event should run when the IRQ happens, and not before then.
+TEST_F(TimersTest, SysClkEventScheduledForIRQ)
+{
+  // Overflow is one tick after reaching 0xFFFF.
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_ON_OVERFLOW | MODE_IRQ_REPEAT);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
+  Run(0xFFFF);
+  EXPECT_FALSE(TakeIRQ(2));
+  Run(1);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
+
+  // When free-running, the counter has to wrap around to reach the target again.
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 0x100);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x100);
+  Run(0x100);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
+  Run(0xFFFF);
+  EXPECT_FALSE(TakeIRQ(2));
+  Run(1);
+  EXPECT_TRUE(TakeIRQ(2));
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
 }

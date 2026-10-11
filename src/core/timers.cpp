@@ -546,8 +546,8 @@ TickCount Timers::GetTicksUntilNextInterrupt()
 
     if (cs.mode.irq_at_target)
     {
-      TickCount ticks = (cs.counter <= cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
-                                                    static_cast<TickCount>((0xFFFFu - cs.counter) + cs.target);
+      TickCount ticks = (cs.counter < cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
+                                                   static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target);
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
         ticks *= 8;
 
@@ -555,7 +555,7 @@ TickCount Timers::GetTicksUntilNextInterrupt()
     }
     if (cs.mode.irq_on_overflow)
     {
-      TickCount ticks = static_cast<TickCount>(0xFFFFu - cs.counter);
+      TickCount ticks = static_cast<TickCount>(TIMER_OVERFLOW - cs.counter);
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
         ticks *= 8;
 
