@@ -1623,11 +1623,14 @@ void CPU::ARM32Recompiler::Compile_slt(CompileFlags cf, bool sign)
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
 
-  // TODO: swap and reverse op for constants
+  // s < t is the same as t > s, so swap and reverse the condition when s is constant, as it can be an immediate.
+  const Register rd = CFGetRegD(cf);
   if (cf.const_s)
   {
-    EmitMov(RSCRATCH, GetConstantRegS32(cf.MipsS()));
-    armAsm->cmp(RSCRATCH, CFGetRegT(cf));
+    armAsm->cmp(CFGetRegT(cf), armCheckCompareConstant(GetConstantRegS32(cf.MipsS())));
+    armAsm->mov(sign ? le : ls, rd, 0);
+    armAsm->mov(sign ? gt : hi, rd, 1);
+    return;
   }
   else if (cf.const_t)
   {
@@ -1638,7 +1641,6 @@ void CPU::ARM32Recompiler::Compile_slt(CompileFlags cf, bool sign)
     armAsm->cmp(CFGetRegS(cf), CFGetRegT(cf));
   }
 
-  const Register rd = CFGetRegD(cf);
   armAsm->mov(sign ? ge : cs, rd, 0);
   armAsm->mov(sign ? lt : lo, rd, 1);
 }

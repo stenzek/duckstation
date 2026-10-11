@@ -1790,11 +1790,12 @@ void CPU::ARM64Recompiler::Compile_slt(CompileFlags cf, bool sign)
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
 
-  // TODO: swap and reverse op for constants
+  // s < t is the same as t > s, so swap and reverse the condition when s is constant, as it can be an immediate.
   if (cf.const_s)
   {
-    EmitMov(RWSCRATCH, GetConstantRegS32(cf.MipsS()));
-    armAsm->cmp(RWSCRATCH, CFGetRegT(cf));
+    armAsm->cmp(CFGetRegT(cf), armCheckCompareConstant(GetConstantRegS32(cf.MipsS())));
+    armAsm->cset(CFGetRegD(cf), sign ? gt : hi);
+    return;
   }
   else if (cf.const_t)
   {
