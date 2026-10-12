@@ -2194,7 +2194,8 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
   m_features.compute_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders);
 
   m_features.partial_msaa_resolve = true;
-  m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
+  m_features.memory_import =
+    !HasCreateFlag(create_flags, CreateFlags::DisableMemoryImport) && m_optional_extensions.vk_ext_external_memory_host;
   m_features.exclusive_fullscreen = false;
   m_features.explicit_present = true;
   m_features.timed_present = false;
