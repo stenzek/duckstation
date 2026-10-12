@@ -1605,9 +1605,10 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
       input_reference.layout = layout;
       input_reference_ptr = &input_reference;
 
-      if (!m_optional_extensions.vk_ext_rasterization_order_attachment_access)
+      if (!m_features.framebuffer_fetch)
       {
-        // don't need the framebuffer-local dependency when we have rasterization order attachment access
+        // don't need the framebuffer-local dependency when we have rasterization order attachment access,
+        // but if it's been disabled, barriers will still be used
         subpass_dependency.srcSubpass = 0;
         subpass_dependency.dstSubpass = 0;
         subpass_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
