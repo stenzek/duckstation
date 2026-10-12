@@ -40,7 +40,6 @@ bool CocoaProgressCallback::Create()
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
 
-    NSView* m_view;
     m_view = [[NSView alloc] init];
     [m_window setContentView:m_view];
 
@@ -95,8 +94,16 @@ void CocoaProgressCallback::Destroy()
 
   [m_window close];
 
+  [m_text release];
   m_text = nil;
+
+  [m_text_scroll release];
+  m_text_scroll = nil;
+
+  [m_progress release];
   m_progress = nil;
+
+  // Not owned by us, labelWithString returns an autoreleased object.
   m_status = nil;
 
   [m_view release];

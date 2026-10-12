@@ -191,6 +191,13 @@ bool Updater::ParseZip()
       return false;
     }
 
+    // minizip does not null-terminate the filename if it does not fit in the buffer.
+    if (file_info.size_filename >= sizeof(zip_filename_buffer))
+    {
+      m_progress->ModalError("Filename in update archive is too long");
+      return false;
+    }
+
     FileToUpdate entry;
     entry.original_zip_filename = zip_filename_buffer;
 
@@ -393,7 +400,7 @@ bool Updater::StageUpdate()
       if (res < 0)
       {
         m_progress->FormatModalError("Failed to set mode for file '{}' (fd {}) to {:o}: errno {}", destination_file, fd,
-                                     res, errno);
+                                     ftu.file_mode, errno);
         std::fclose(fp);
         FileSystem::DeleteFile(destination_file.c_str());
         unzCloseCurrentFile(m_zf);

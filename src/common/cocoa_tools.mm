@@ -30,22 +30,33 @@
 
 NSString* CocoaTools::StringViewToNSString(std::string_view str)
 {
+  // Never return nil, most callers pass the result straight to methods which throw on nil.
   if (str.empty())
-    return nil;
+    return @"";
 
-  return [[[NSString alloc] initWithBytes:str.data()
-                                   length:static_cast<NSUInteger>(str.length())
-                                 encoding:NSUTF8StringEncoding] autorelease];
+  NSString* ret = [[[NSString alloc] initWithBytes:str.data()
+                                            length:static_cast<NSUInteger>(str.length())
+                                          encoding:NSUTF8StringEncoding] autorelease];
+  if (!ret)
+  {
+    // Invalid UTF-8, fall back to an encoding which cannot fail.
+    ret = [[[NSString alloc] initWithBytes:str.data()
+                                    length:static_cast<NSUInteger>(str.length())
+                                  encoding:NSISOLatin1StringEncoding] autorelease];
+  }
+
+  return ret ? ret : @"";
 }
 
 std::string CocoaTools::NSErrorToString(NSError* error)
 {
-  return fmt::format("{}: {}", static_cast<u32>(error.code), [error.description UTF8String]);
+  // Error codes are signed, OSStatus/LaunchServices errors in particular are negative.
+  return fmt::format("{}: {}", static_cast<s64>(error.code), [error.description UTF8String]);
 }
 
 void CocoaTools::NSErrorToErrorObject(Error* errptr, std::string_view message, NSError* error)
 {
-  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<u32>(error.code),
+  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<s64>(error.code),
                       [error.description UTF8String]);
 }
 
@@ -53,10 +64,16 @@ bool CocoaTools::MoveFile(const char* source, const char* destination, Error* er
 {
   @autoreleasepool
   {
-    NSError* nserror;
-    const BOOL result = [[NSFileManager defaultManager] moveItemAtPath:[NSString stringWithUTF8String:source]
-                                                                toPath:[NSString stringWithUTF8String:destination]
-                                                                 error:&nserror];
+    NSString* const nssource = [NSString stringWithUTF8String:source];
+    NSString* const nsdestination = [NSString stringWithUTF8String:destination];
+    if (!nssource || !nsdestination)
+    {
+      Error::SetStringView(error, "Path is not valid UTF-8.");
+      return false;
+    }
+
+    NSError* nserror = nil;
+    const BOOL result = [[NSFileManager defaultManager] moveItemAtPath:nssource toPath:nsdestination error:&nserror];
     if (!result)
     {
       Error::SetString(error, NSErrorToString(nserror));
@@ -188,9 +205,8 @@ bool CocoaTools::LaunchApplication(std::string_view path, std::span<const std::s
     }
     [launch_error release];
 
-#if !OS_OBJECT_USE_OBJC
+    // ARC is disabled, so the semaphore must be released manually even when it is an Objective-C object.
     dispatch_release(completion_semaphore);
-#endif
 
     return launch_succeeded;
   }
@@ -295,7 +311,13 @@ void* CocoaTools::CreateMetalLayer(void* view, Error* error)
   NSView* nsview = (__bridge NSView*)view;
   [nsview setWantsLayer:TRUE];
   [nsview setLayer:layer];
-  [layer setContentsScale:[[[nsview window] screen] backingScaleFactor]];
+
+  // The view may not be in a window/on a screen yet, in which case the scale would be zero.
+  CGFloat scale = [[[nsview window] screen] backingScaleFactor];
+  if (scale <= 0.0)
+    scale = [[NSScreen mainScreen] backingScaleFactor];
+  if (scale > 0.0)
+    [layer setContentsScale:scale];
 
   return layer;
 }
