@@ -883,6 +883,7 @@ bool VulkanTextureBuffer::CreateBuffer(bool ssbo)
 void VulkanTextureBuffer::Destroy(bool defer)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
+  dev.UnbindTextureBuffer(this);
   if (m_buffer_view != VK_NULL_HANDLE)
   {
     if (defer)
