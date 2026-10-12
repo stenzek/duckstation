@@ -3561,7 +3561,9 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   {
     Vulkan::DescriptorSetUpdateBuilder dsub;
 
-    if (m_optional_extensions.vk_khr_push_descriptor)
+    // Leave the existing textures bound if they have not changed, e.g. only the UBO offset did.
+    const bool textures_dirty = ((dirty & DIRTY_FLAG_TEXTURES_OR_SAMPLERS) != 0);
+    if (textures_dirty && m_optional_extensions.vk_khr_push_descriptor)
     {
       for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
       {
@@ -3575,7 +3577,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
       // set 1 if we have UBO, otherwise the push (texture) set is the first
       dsub.PushUpdate(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, has_ubo ? 1 : 0);
     }
-    else
+    else if (textures_dirty)
     {
       VkDescriptorSet tds = AllocateDescriptorSet(m_multi_texture_ds_layout);
       if (tds == VK_NULL_HANDLE)
@@ -3621,7 +3623,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
       dsub.Update(m_device, false);
 
       // Images are the last set (2). Only needs its own bind when the UBO is being bound, and the textures between
-      // them are not, i.e. they were pushed instead.
+      // them are not, i.e. they were pushed instead, or have not changed.
       if (num_ds == 0)
         first_ds = 2;
       if ((first_ds + num_ds) == 2)
