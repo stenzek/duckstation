@@ -2228,7 +2228,7 @@ void FullscreenUI::DrawSummarySettingsPage()
   {
     const float title_width = LayoutScale(200.0f);
     const bool allow_customization = !s_settings_locals.game_settings_entry->is_runtime_populated;
-    const bool show_localized_titles = Core::GetBaseBoolSettingValue(
+    const bool show_localized_titles = Core::GetBaseSettingsLayer()->GetBoolValue(
       GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
     const std::string_view title = s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles);
     if (MenuButtonWithInlineValue(s_settings_locals.game_settings_entry->has_custom_title ?
