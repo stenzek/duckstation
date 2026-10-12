@@ -1174,11 +1174,15 @@ void OpenGLDevice::UnmapIndexBuffer(u32 used_index_count)
 void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
   DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
-  const auto res = m_push_constant_buffer->Map(m_uniform_buffer_alignment, data_size);
+
+  // std140 blocks are padded to a multiple of 16 bytes, and GLES drivers reject draws where the bound range is
+  // smaller than the block. So bind the padded size, but only copy what the caller provided.
+  const u32 bind_size = Common::AlignUpPow2(data_size, 16);
+  const auto res = m_push_constant_buffer->Map(m_uniform_buffer_alignment, bind_size);
   std::memcpy(res.pointer, data, data_size);
-  m_push_constant_buffer->Unmap(data_size);
+  m_push_constant_buffer->Unmap(bind_size);
   s_stats.buffer_streamed += data_size;
-  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_push_constant_buffer->GetGLBufferId(), res.buffer_offset, data_size);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_push_constant_buffer->GetGLBufferId(), res.buffer_offset, bind_size);
 }
 
 void* OpenGLDevice::MapUniformBuffer(u32 size)
