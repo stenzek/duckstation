@@ -1048,48 +1048,6 @@ VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTextureFormat format, VkAtt
   return CreateCachedRenderPass(key);
 }
 
-VkRenderPass VulkanDevice::GetRenderPassForRestarting(VkRenderPass pass)
-{
-  m_render_pass_cache_mutex.lock_shared();
-  for (const auto& it : m_render_pass_cache)
-  {
-    if (it.second != pass)
-      continue;
-
-    RenderPassCacheKey modified_key = it.first;
-    for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
-    {
-      if (modified_key.color[i].load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-        modified_key.color[i].load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-    }
-
-    if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-      modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-    if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-      modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-
-    if (modified_key == it.first)
-    {
-      m_render_pass_cache_mutex.unlock_shared();
-      return pass;
-    }
-
-    auto fit = m_render_pass_cache.find(modified_key);
-    if (fit != m_render_pass_cache.end())
-    {
-      const VkRenderPass ret = fit->second;
-      m_render_pass_cache_mutex.unlock_shared();
-      return ret;
-    }
-
-    m_render_pass_cache_mutex.unlock_shared();
-    return CreateCachedRenderPass(modified_key);
-  }
-
-  m_render_pass_cache_mutex.unlock_shared();
-  return pass;
-}
-
 VkCommandBuffer VulkanDevice::GetCurrentInitCommandBuffer()
 {
   CommandBuffer& res = m_frame_resources[m_current_frame];
