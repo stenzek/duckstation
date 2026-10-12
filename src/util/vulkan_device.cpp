@@ -1496,9 +1496,11 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const std::stri
 
 void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const std::string_view reason)
 {
+  const bool in_render_pass = InRenderPass();
   SubmitCommandBuffer(false, reason);
 
-  BeginRenderPass();
+  if (in_render_pass)
+    BeginRenderPass();
 }
 
 void VulkanDevice::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
