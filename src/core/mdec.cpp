@@ -443,28 +443,31 @@ void MDEC::Execute()
 
         u32 num_words;
         State new_state;
-        switch (cw.command)
+        switch (static_cast<u8>(cw.command.GetValue()))
         {
-          case Command::DecodeMacroblock:
+          case static_cast<u8>(Command::DecodeMacroblock):
             num_words = ZeroExtend32(cw.parameter_word_count.GetValue());
             new_state = State::DecodingMacroblock;
             break;
 
-          case Command::SetIqTab:
+          case static_cast<u8>(Command::SetIqTab):
             num_words = 16 + (((cw.bits & 1) != 0) ? 16 : 0);
             new_state = State::SetIqTable;
             break;
 
-          case Command::SetScale:
+          case static_cast<u8>(Command::SetScale):
             num_words = 32;
             new_state = State::SetScaleTable;
             break;
 
-          default:
-            [[unlikely]] DEV_LOG("Invalid MDEC command 0x{:08X}", cw.bits);
+            // clang-format off
+          case 0: case 4: case 5: case 6: case 7:
+            // clang-format on
             num_words = cw.parameter_word_count.GetValue();
             new_state = State::NoCommand;
             break;
+
+            DefaultCaseIsUnreachable();
         }
 
         DEBUG_LOG("MDEC command: 0x{:08X} ({}, {} words in parameter, {} expected)", cw.bits,
