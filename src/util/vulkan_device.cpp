@@ -196,6 +196,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_FALSE};
   VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT pipeline_cache_control_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT, nullptr, VK_FALSE};
+  VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR swapchain_maintenance1_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR, nullptr, VK_FALSE};
 
   // add in optional feature structs
   // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
@@ -247,6 +249,11 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     {
       m_optional_extensions.vk_ext_pipeline_creation_cache_control = true;
       Vulkan::AddPointerToChain(&features2, &pipeline_cache_control_features);
+    }
+    if (SupportsExtension(VK_KHR_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME) ||
+        SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME))
+    {
+      Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
     }
   }
 
@@ -306,7 +313,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   SetDriverType(VulkanLoader::GuessDriverType(m_device_properties, m_device_driver_properties));
 
   // check we actually support enough
-  m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
+  m_optional_extensions.vk_khr_push_descriptor &=
+    (push_descriptor_properties.maxPushDescriptors >= MAX_TEXTURE_SAMPLERS);
 
   // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
   m_optional_extensions.vk_ext_external_memory_host &=
@@ -404,6 +412,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     // Driver support for swapchain maintenance is a mess... try KHR first, then EXT.
     m_optional_extensions.vk_khr_swapchain_maintenance1 =
       enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_surface_maintenance1 &&
+      swapchain_maintenance1_feature.swapchainMaintenance1 == VK_TRUE &&
       (SupportsAndAddExtension(VK_KHR_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME) ||
        SupportsAndAddExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME));
   }
