@@ -987,13 +987,7 @@ void OpenGLDevice::UnbindTexture(GLuint id)
     {
       ss.first = 0;
 
-      const GLenum unit = GL_TEXTURE0 + slot;
-      if (m_last_texture_unit != unit)
-      {
-        m_last_texture_unit = unit;
-        glActiveTexture(unit);
-      }
-
+      SetActiveTexture(slot);
       glBindTexture(GL_TEXTURE_2D, 0);
     }
   }
@@ -1048,13 +1042,7 @@ void OpenGLDevice::UnbindTextureBuffer(OpenGLTextureBuffer* tex)
     {
       ss.first = 0;
 
-      constexpr GLenum unit = GL_TEXTURE0 + TEXTURE_BUFFER_SLOT;
-      if (m_last_texture_unit != unit)
-      {
-        m_last_texture_unit = unit;
-        glActiveTexture(unit);
-      }
-
+      SetActiveTexture(TEXTURE_BUFFER_SLOT);
       glBindTexture(GL_TEXTURE_BUFFER, 0);
     }
   }
