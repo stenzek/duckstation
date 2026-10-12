@@ -1099,7 +1099,8 @@ void VulkanDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
   if (old_layout == VulkanTexture::Layout::Undefined)
     vkTex->TransitionToLayout(cmdbuf, VulkanTexture::Layout::TransferSrc);
   else if (old_layout != VulkanTexture::Layout::TransferSrc)
-    vkTex->TransitionSubresourcesToLayout(cmdbuf, 0, 1, src_level, 1, old_layout, VulkanTexture::Layout::TransferSrc);
+    vkTex->TransitionSubresourcesToLayout(cmdbuf, src_layer, 1, src_level, 1, old_layout,
+                                          VulkanTexture::Layout::TransferSrc);
 
   VkBufferImageCopy image_copy = {};
   const VkImageAspectFlags aspect = vkTex->IsDepthStencil() ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1132,7 +1133,8 @@ void VulkanDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
                        &buffer_info, 0, nullptr);
 
   if (old_layout != VulkanTexture::Layout::TransferSrc && old_layout != VulkanTexture::Layout::Undefined)
-    vkTex->TransitionSubresourcesToLayout(cmdbuf, 0, 1, src_level, 1, VulkanTexture::Layout::TransferSrc, old_layout);
+    vkTex->TransitionSubresourcesToLayout(cmdbuf, src_layer, 1, src_level, 1, VulkanTexture::Layout::TransferSrc,
+                                          old_layout);
 
   m_copy_fence_counter = dev.GetCurrentFenceCounter();
   m_needs_cache_invalidate = true;
