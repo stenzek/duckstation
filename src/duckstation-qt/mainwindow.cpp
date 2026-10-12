@@ -255,8 +255,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   DEV_LOG("acquireRenderWindow() fullscreen={} exclusive_fullscreen={}, render_to_main={}", fullscreen,
           exclusive_fullscreen, render_to_main);
 
-  QWidget* container =
-    m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
+  QWidget* const container = getDisplayContainer();
   const bool is_fullscreen = isRenderingFullscreen();
   const bool is_rendering_to_main = isRenderingToMain();
 
@@ -306,8 +305,11 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   }
 
   destroyDisplayWidget();
-
   createDisplayWidget(fullscreen, render_to_main);
+
+  // Need to fix up the main window title if we were previously rendering to a separate window.
+  if (render_to_main != is_rendering_to_main)
+    updateWindowTitle();
 
   // We want to avoid nested event loops as much as possible because it's problematic on MacOS.
   // I removed the sync/processEvents() here for this reason, except of course fucking Linux throws
@@ -331,7 +333,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
 
   g_core_thread->connectRenderWindowSignals(m_display_widget);
 
-  updateWindowTitle();
   updateWindowState();
   updateLogWidget();
 
@@ -392,10 +393,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   }
 
   if (fullscreen || !render_to_main)
-  {
-    container->setWindowTitle(windowTitle());
-    container->setWindowIcon(windowIcon());
-  }
+    updateDisplayWindowTitle();
 
   if (fullscreen)
   {
@@ -454,7 +452,6 @@ void MainWindow::releaseRenderWindow()
 {
   // Now we can safely destroy the display window.
   destroyDisplayWidget();
-  updateWindowTitle();
   updateWindowState();
   updateLogWidget();
 }
@@ -669,6 +666,8 @@ void MainWindow::onSystemDestroyed()
   s_locals.current_game_serial = {};
   s_locals.current_game_icon = {};
   s_locals.current_game_hash = 0;
+  updateWindowTitle();
+  updateDisplayWindowTitle();
 
   updateLogWidget();
 
@@ -696,6 +695,7 @@ void MainWindow::onSystemGameChanged(const QString& path, const QString& game_se
   s_locals.current_game_hash = hash;
 
   updateWindowTitle();
+  updateDisplayWindowTitle();
   updateEmulationActions();
 }
 
@@ -2406,9 +2406,9 @@ void MainWindow::updateStatusBarWidgetVisibility()
 
 void MainWindow::updateWindowTitle()
 {
-  QString suffix(QtHost::GetAppConfigSuffix());
-  QString main_title(QtHost::GetAppNameAndVersion() + suffix);
-  QString display_title(s_locals.current_game_title + suffix);
+  const QString suffix = QtHost::GetAppConfigSuffix();
+  QString main_title = QtHost::GetAppNameAndVersion() + suffix;
+  QString display_title = s_locals.current_game_title + suffix;
 
   if (!s_locals.system_valid || s_locals.current_game_title.isEmpty())
     display_title = main_title;
@@ -2421,8 +2421,7 @@ void MainWindow::updateWindowTitle()
 
   if (m_display_widget && !isRenderingToMain())
   {
-    QWidget* container =
-      m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
+    QWidget* const container = getDisplayContainer();
     if (container->windowTitle() != display_title)
       container->setWindowTitle(display_title);
     container->setWindowIcon(s_locals.current_game_icon.isNull() ? QtHost::GetAppIcon() : s_locals.current_game_icon);
@@ -2430,6 +2429,24 @@ void MainWindow::updateWindowTitle()
 
   if (g_log_window)
     g_log_window->updateWindowTitle();
+}
+
+void MainWindow::updateDisplayWindowTitle()
+{
+  if (!m_display_widget || isRenderingToMain())
+    return;
+
+  const QString suffix = QtHost::GetAppConfigSuffix();
+  QString title;
+  if (!s_locals.system_valid || s_locals.current_game_title.isEmpty())
+    title = QtHost::GetAppNameAndVersion() + suffix;
+  else
+    title = s_locals.current_game_title + suffix;
+
+  QWidget* const container = getDisplayContainer();
+  if (container->windowTitle() != title)
+    container->setWindowTitle(title);
+  container->setWindowIcon(s_locals.current_game_icon.isNull() ? QtHost::GetAppIcon() : s_locals.current_game_icon);
 }
 
 void MainWindow::updateWindowState()

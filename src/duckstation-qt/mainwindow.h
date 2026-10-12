@@ -168,6 +168,7 @@ private:
   void updateShortcutActions();
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
+  void updateDisplayWindowTitle();
   void updateWindowState();
 
   void setProgressBar(int current, int total);
