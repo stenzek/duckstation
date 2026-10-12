@@ -816,8 +816,7 @@ bool VulkanDevice::CreateCommandBuffers()
                                  MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME};
     }
     pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
-    if (m_optional_extensions.vk_ext_fragment_shader_interlock)
-      pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
+    pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
 
     VkDescriptorPoolCreateInfo pool_create_info = {
       VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, MAX_DESCRIPTOR_SETS_PER_FRAME, num_pools, pool_sizes};
