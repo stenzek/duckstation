@@ -450,6 +450,7 @@ private:
   VkDescriptorSetLayout m_feedback_loop_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_image_ds_layout = VK_NULL_HANDLE;
   std::array<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount)> m_pipeline_layouts = {};
+  std::unique_ptr<VulkanTexture> m_null_image_texture;
 
   // Cold variables.
   VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;

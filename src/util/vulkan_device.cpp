@@ -1829,6 +1829,12 @@ void VulkanDevice::DestroyDevice()
   if (m_device != VK_NULL_HANDLE)
     vkDeviceWaitIdle(m_device);
 
+  if (m_null_image_texture)
+  {
+    m_null_image_texture->Destroy(false);
+    m_null_image_texture.reset();
+  }
+
   if (m_main_swap_chain)
   {
     // Explicit swap chain destroy, we don't want to execute the current cmdbuffer.
@@ -2541,9 +2547,12 @@ void VulkanDevice::UnmapUniformBuffer(u32 size)
 bool VulkanDevice::CreateNullTexture(Error* error)
 {
   std::unique_ptr<VulkanTexture> null_texture =
-    VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8,
+    VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8, GPUTexture::Flags::None,
+                          VK_FORMAT_R8G8B8A8_UNORM, error);
+  std::unique_ptr<VulkanTexture> null_image_texture =
+    VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::RenderTarget, GPUTextureFormat::RGBA8,
                           GPUTexture::Flags::AllowBindAsImage, VK_FORMAT_R8G8B8A8_UNORM, error);
-  if (!null_texture)
+  if (!null_texture || !null_image_texture)
   {
     Error::AddPrefix(error, "Failed to create null texture: ");
     return false;
@@ -2554,10 +2563,17 @@ bool VulkanDevice::CreateNullTexture(Error* error)
   const VkClearColorValue ccv{};
   null_texture->TransitionToLayout(cmdbuf, VulkanTexture::Layout::ClearDst);
   vkCmdClearColorImage(cmdbuf, null_texture->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &ccv, 1, &srr);
-  null_texture->TransitionToLayout(cmdbuf, VulkanTexture::Layout::General);
+  null_texture->TransitionToLayout(cmdbuf, VulkanTexture::Layout::ShaderReadOnly);
   Vulkan::SetObjectName(m_device, null_texture->GetImage(), "Null texture");
   Vulkan::SetObjectName(m_device, null_texture->GetView(), "Null texture view");
   m_empty_texture = std::move(null_texture);
+
+  null_image_texture->TransitionToLayout(cmdbuf, VulkanTexture::Layout::ClearDst);
+  vkCmdClearColorImage(cmdbuf, null_image_texture->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &ccv, 1, &srr);
+  null_image_texture->TransitionToLayout(cmdbuf, VulkanTexture::Layout::General);
+  Vulkan::SetObjectName(m_device, null_image_texture->GetImage(), "Null image texture");
+  Vulkan::SetObjectName(m_device, null_image_texture->GetView(), "Null image texture view");
+  m_null_image_texture = std::move(null_image_texture);
 
   // Bind null texture and point sampler state to all.
   GPUSampler* point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
@@ -3626,11 +3642,9 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
                                             m_current_render_targets[i]->GetVkLayout());
       }
 
-      // Annoyingly, have to update all slots...
-      const VkImageView null_view = static_cast<VulkanTexture*>(m_empty_texture.get())->GetView();
-      const VkImageLayout null_layout = static_cast<VulkanTexture*>(m_empty_texture.get())->GetVkLayout();
+      const VkImageView null_image_view = m_null_image_texture->GetView();
       for (u32 i = m_num_current_render_targets; i < MAX_IMAGE_RENDER_TARGETS; i++)
-        dsub.AddStorageImageDescriptorWrite(ids, i, null_view, null_layout);
+        dsub.AddStorageImageDescriptorWrite(ids, i, null_image_view, VK_IMAGE_LAYOUT_GENERAL);
 
       dsub.Update(m_device, false);
 
@@ -3727,11 +3741,9 @@ bool VulkanDevice::UpdateDescriptorSetsForHWBatch(u32 dirty)
                                               m_current_render_targets[i]->GetVkLayout());
         }
 
-        const VulkanTexture* const empty_tex = static_cast<VulkanTexture*>(m_empty_texture.get());
+        const VkImageView null_image_view = m_null_image_texture->GetView();
         for (u32 i = m_num_current_render_targets; i < MAX_IMAGE_RENDER_TARGETS; i++)
-        {
-          dsub.AddStorageImageDescriptorWrite(rt_ds, i, empty_tex->GetView(), empty_tex->GetVkLayout());
-        }
+          dsub.AddStorageImageDescriptorWrite(rt_ds, i, null_image_view, VK_IMAGE_LAYOUT_GENERAL);
 
         dsub.Update(m_device, false);
       }

@@ -683,6 +683,8 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
 
 VkDescriptorSet VulkanTexture::GetDescriptorSetWithSampler(VkSampler sampler)
 {
+  DebugAssert(m_layout == Layout::ShaderReadOnly);
+
   for (const auto& it : m_descriptor_sets)
   {
     if (it.first == sampler)

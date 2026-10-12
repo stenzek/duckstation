@@ -743,9 +743,10 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 bool GPUDevice::CreateResources(Error* error)
 {
   // Backend may initialize null texture itself if it needs it.
-  if (!m_empty_texture &&
-      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8,
-                                        GPUTexture::Flags::None, nullptr, 0, error)))
+  if (const u32 empty_texture_data = 0;
+      !m_empty_texture && !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture,
+                                                            GPUTextureFormat::RGBA8, GPUTexture::Flags::None,
+                                                            &empty_texture_data, sizeof(empty_texture_data), error)))
   {
     Error::AddPrefix(error, "Failed to create null texture: ");
     return false;
