@@ -892,6 +892,7 @@ void VulkanTextureBuffer::Destroy(bool defer)
       dev.DeferBufferViewDestruction(m_buffer_view);
     else
       vkDestroyBufferView(dev.GetVulkanDevice(), m_buffer_view, nullptr);
+    m_buffer_view = VK_NULL_HANDLE;
   }
   if (m_descriptor_set != VK_NULL_HANDLE)
   {
@@ -899,6 +900,7 @@ void VulkanTextureBuffer::Destroy(bool defer)
       dev.DeferPersistentDescriptorSetDestruction(m_descriptor_set);
     else
       dev.FreePersistentDescriptorSet(m_descriptor_set);
+    m_descriptor_set = VK_NULL_HANDLE;
   }
 }
 
