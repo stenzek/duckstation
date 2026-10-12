@@ -2349,7 +2349,7 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
 void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (InRenderPass() && !(m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))
+  if (InRenderPass())
   {
     const s32 idx = IsRenderTargetBoundIndex(t);
     if (idx >= 0)
