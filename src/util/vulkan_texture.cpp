@@ -279,7 +279,7 @@ void VulkanTexture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 x, u32 y, u32 w
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
                                  row_length,
-                                 height,
+                                 0u,
                                  {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), layer, 1u},
                                  {static_cast<s32>(x), static_cast<s32>(y), 0},
                                  {width, height, 1u}};
