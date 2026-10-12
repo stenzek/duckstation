@@ -672,11 +672,10 @@ VkResult VulkanSwapChain::AcquireNextImage(bool handle_errors)
 {
   if (m_image_acquire_result.has_value())
   {
-    if (m_image_acquire_result.value() == VK_SUCCESS || !handle_errors ||
-        !HandleAcquireOrPresentError(m_image_acquire_result.value()))
-    {
-      return m_image_acquire_result.value();
-    }
+    // Take a copy, the result is reset when the swap chain is recreated.
+    VkResult res = m_image_acquire_result.value();
+    if (res == VK_SUCCESS || !handle_errors || !HandleAcquireOrPresentError(res))
+      return res;
   }
 
   if (!m_swap_chain)
