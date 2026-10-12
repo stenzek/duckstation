@@ -2084,8 +2084,9 @@ void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
 
   DebugAssert(present_time == 0);
-  DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
-  EndRenderPass();
+  DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
+  if (InRenderPass())
+    EndRenderPass();
 
   DebugAssert(SC == m_current_swap_chain);
   m_current_swap_chain = nullptr;
@@ -3107,7 +3108,7 @@ void VulkanDevice::BeginRenderPass()
 
       ri.colorAttachmentCount = 1;
       ri.pColorAttachments = attachments.data();
-      ri.renderArea = {{}, {m_current_swap_chain->GetWidth(), m_current_swap_chain->GetHeight()}};
+      ri.renderArea = {{}, {m_current_swap_chain->GetPostRotatedWidth(), m_current_swap_chain->GetPostRotatedHeight()}};
     }
 
     m_current_render_pass = DYNAMIC_RENDERING_RENDER_PASS;
@@ -3172,7 +3173,8 @@ void VulkanDevice::BeginRenderPass()
       bi.framebuffer = m_current_swap_chain->GetCurrentFramebuffer();
       bi.renderPass = m_current_render_pass =
         GetSwapChainRenderPass(m_current_swap_chain->GetFormat(), VK_ATTACHMENT_LOAD_OP_LOAD);
-      bi.renderArea.extent = {m_current_swap_chain->GetWidth(), m_current_swap_chain->GetHeight()};
+      bi.renderArea.extent = {m_current_swap_chain->GetPostRotatedWidth(),
+                              m_current_swap_chain->GetPostRotatedHeight()};
     }
 
     DebugAssert(m_current_render_pass);
