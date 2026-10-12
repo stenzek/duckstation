@@ -1294,15 +1294,20 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
   u32 wait_bits;
   std::array<VkSemaphore, 2> signal_semaphores;
   std::array<u64, 2> signal_values = {};
-  if (present_swap_chain)
+
+  // Submitting mid-present still has to wait for the image. The acquire semaphore is signaled again in this case,
+  // so that the final submission can wait on it too.
+  VulkanSwapChain* const wait_swap_chain = present_swap_chain ? present_swap_chain : m_current_swap_chain;
+  if (wait_swap_chain)
   {
     wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-    submit_info.pWaitSemaphores = present_swap_chain->GetImageAcquireSemaphorePtr();
+    submit_info.pWaitSemaphores = wait_swap_chain->GetImageAcquireSemaphorePtr();
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitDstStageMask = &wait_bits;
 
-    signal_semaphores[submit_info.signalSemaphoreCount++] = present_swap_chain->GetPresentSemaphore();
+    signal_semaphores[submit_info.signalSemaphoreCount++] =
+      present_swap_chain ? present_swap_chain->GetPresentSemaphore() : wait_swap_chain->GetImageAcquireSemaphore();
   }
 
   std::array<u64, 1> wait_values = {};
