@@ -289,7 +289,7 @@ private:
     u8 depth_store_op : 1;
     u8 stencil_load_op : 2;
     u8 stencil_store_op : 1;
-    u8 feedback_loop : 2;
+    u8 feedback_loop : 4;
     u8 samples;
 
     bool operator==(const RenderPassCacheKey& rhs) const;
