@@ -1779,13 +1779,20 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
   // Attempt to create the device.
   if (!CreateDevice(physical_device, swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, create_flags, error))
   {
+    if (swap_chain)
+      swap_chain->Destroy(*this, false);
     VulkanLoader::ReleaseVulkanInstance();
     return false;
   }
 
   // And critical resources.
   if (!CreateAllocator() || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() || !CreatePipelineLayouts())
+  {
+    // Swap chain destructor would otherwise submit a command buffer we may not have.
+    if (swap_chain)
+      swap_chain->Destroy(*this, false);
     return false;
+  }
 
   m_exclusive_fullscreen_control = exclusive_fullscreen_control;
 
