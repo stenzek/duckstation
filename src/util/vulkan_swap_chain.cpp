@@ -406,6 +406,10 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
     // If we only support pre-multiplied/post-multiplied... :/
     if (surface_caps.surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
       alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    else if (surface_caps.surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+      alpha = VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+    else
+      alpha = VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
   }
 
   // Select swap chain flags, we only need a colour attachment
