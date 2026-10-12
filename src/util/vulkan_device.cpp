@@ -285,13 +285,14 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     Vulkan::AddPointerToChain(&properties2, &m_device_driver_properties);
   }
 
-  if (SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME))
+  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1 && SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME))
   {
     m_optional_extensions.vk_khr_push_descriptor = true;
     Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
   }
 
-  if (SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME))
+  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1 &&
+      SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME))
   {
     m_optional_extensions.vk_ext_external_memory_host = true;
     Vulkan::AddPointerToChain(&properties2, &external_memory_host_properties);
