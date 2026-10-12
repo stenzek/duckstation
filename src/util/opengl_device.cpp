@@ -1121,13 +1121,6 @@ void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 gro
   Panic("Compute shaders are not supported");
 }
 
-void OpenGLDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
-                                             u32 group_size_y, u32 group_size_z, const void* push_constants,
-                                             u32 push_constants_size)
-{
-  Panic("Compute shaders are not supported");
-}
-
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                                    u32* map_base_vertex)
 {

@@ -112,8 +112,6 @@ public:
                                     u32 push_constants_size) override;
   void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                 u32 group_size_z) override;
-  void DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
-                                 u32 group_size_z, const void* push_constants, u32 push_constants_size) override;
 
   GPUPresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
   void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;

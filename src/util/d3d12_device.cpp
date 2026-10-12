@@ -2818,19 +2818,3 @@ void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   const u32 groups_z = threads_z / group_size_z;
   GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
 }
-
-void D3D12Device::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
-                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
-                                            u32 push_constants_size)
-{
-  PreDispatchCheck();
-  s_stats.num_draws++;
-
-  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
-  PushUniformBuffer(cmdlist, true, push_constants, push_constants_size);
-
-  const u32 groups_x = threads_x / group_size_x;
-  const u32 groups_y = threads_y / group_size_y;
-  const u32 groups_z = threads_z / group_size_z;
-  cmdlist->Dispatch(groups_x, groups_y, groups_z);
-}

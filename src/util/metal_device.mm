@@ -2410,26 +2410,6 @@ void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
                threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
 }
 
-void MetalDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
-                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
-                                            u32 push_constants_size)
-{
-  if (!InComputePass())
-  {
-    if (InRenderPass())
-      EndRenderPass();
-
-    BeginComputePass();
-  }
-
-  DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
-  [m_compute_encoder setBytes:push_constants length:push_constants_size atIndex:2];
-
-  // TODO: We could remap to the optimal group size..
-  [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
-               threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
-}
-
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
 {
   @autoreleasepool

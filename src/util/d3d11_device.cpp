@@ -1291,11 +1291,3 @@ void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
     GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   m_context->Dispatch(groups_x, groups_y, groups_z);
 }
-
-void D3D11Device::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
-                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
-                                            u32 push_constants_size)
-{
-  PushUniformBuffer(push_constants, push_constants_size);
-  Dispatch(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
-}
