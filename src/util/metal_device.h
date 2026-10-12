@@ -96,6 +96,7 @@ public:
   ALWAYS_INLINE id<MTLDepthStencilState> GetDepthState() const { return m_depth; }
   ALWAYS_INLINE MTLCullMode GetCullMode() const { return static_cast<MTLCullMode>(m_cull_mode); }
   ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return static_cast<MTLPrimitiveType>(m_primitive); }
+  ALWAYS_INLINE u32 GetBlendConstants() const { return m_blend_constants; }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
@@ -103,13 +104,14 @@ public:
 
 private:
   MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, MTLCullMode cull_mode,
-                MTLPrimitiveType primitive);
+                MTLPrimitiveType primitive, u32 blend_constants);
 
   id m_pipeline;
   id<MTLDepthStencilState> m_depth;
   bool m_compute;
   u8 m_cull_mode;
   u8 m_primitive;
+  u32 m_blend_constants;
 };
 
 class MetalTexture final : public GPUTexture
@@ -351,6 +353,9 @@ private:
   static constexpr u32 FRAGMENT_BINDING_UBO = 0;
   static constexpr u32 FRAGMENT_BINDING_SSBO = 1;
   static constexpr u32 FRAGMENT_BINDING_PUSH_CONSTANTS = 2;
+  static constexpr u32 COMPUTE_BINDING_UBO = 0;
+  static constexpr u32 COMPUTE_BINDING_SSBO = 1;
+  static constexpr u32 COMPUTE_BINDING_PUSH_CONSTANTS = 2;
 
   using DepthStateMap = std::unordered_map<u8, id<MTLDepthStencilState>>;
 
@@ -373,6 +378,7 @@ private:
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                  std::string_view entry_point, Error* error);
   std::unique_ptr<GPUPipeline> CreateComputePipeline(id<MTLFunction> function, Error* error);
+  std::unique_ptr<GPUPipeline> CreateDepthResolvePipeline(GPUTextureFormat dst_format, Error* error);
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
   ClearPipelineConfig GetCurrentClearPipelineConfig() const;
   id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);
@@ -398,6 +404,7 @@ private:
   void PushRenderUniformBuffer(const void* data, u32 data_size);
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
+  void SetBlendConstantsInRenderEncoder();
   void CommitRenderTargetClears();
   void BindRenderTargetsAsComputeImages();
 
@@ -416,6 +423,8 @@ private:
   std::atomic<u64> m_completed_fence_counter{0};
   std::deque<std::pair<u64, id>> m_cleanup_objects; // [fence_counter, object]
 
+  // Pipelines can be created on worker threads, so the depth state cache needs to be protected.
+  Threading::Mutex m_depth_state_mutex;
   DepthStateMap m_depth_states;
 
   MetalStreamBuffer m_vertex_buffer;
@@ -444,6 +453,7 @@ private:
   MetalPipeline* m_current_pipeline = nullptr;
   id<MTLDepthStencilState> m_current_depth_state = nil;
   MTLCullMode m_current_cull_mode = MTLCullModeNone;
+  u32 m_current_blend_constants = 0;
   u32 m_current_uniform_buffer_position = 0;
 
   std::array<id<MTLTexture>, MAX_TEXTURE_SAMPLERS> m_current_textures = {};

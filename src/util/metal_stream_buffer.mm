@@ -40,7 +40,7 @@ bool MetalStreamBuffer::Create(id<MTLDevice> device, u32 size, Error* error)
     m_current_offset = 0;
     m_current_gpu_position = 0;
     m_tracked_fences.clear();
-    m_buffer = [new_buffer retain];
+    m_buffer = new_buffer;
     m_host_pointer = static_cast<u8*>([new_buffer contents]);
     return true;
   }
