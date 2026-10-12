@@ -63,8 +63,8 @@ enum : u32
   UNIFORM_PUSH_CONSTANTS_STAGES = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 
   // This is needed here as an upper bound because the descriptor needs an upper bound, and it's invalid to
-  // read past the end of that even if we're actually using less.
-  MAX_UNIFORM_BUFFER_SIZE = 1024,
+  // read past the end of that even if we're actually using less. This is the minimum maxUniformBufferRange.
+  MAX_UNIFORM_BUFFER_SIZE = 16384,
 };
 
 const std::array<VkFormat, static_cast<u32>(GPUTextureFormat::MaxCount)> VulkanDevice::TEXTURE_FORMAT_MAPPING = {
@@ -2506,6 +2506,7 @@ void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data
 
 void* VulkanDevice::MapUniformBuffer(u32 size)
 {
+  DebugAssert(size <= MAX_UNIFORM_BUFFER_SIZE);
   const u32 used_space = Common::AlignUpPow2(size, m_uniform_buffer_alignment);
   if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE, m_uniform_buffer_alignment))
   {
