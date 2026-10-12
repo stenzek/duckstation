@@ -307,12 +307,6 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
   m_rendering_input_attachment_locations = {};
   m_rendering_input_attachment_locations.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO_KHR;
 
-  // set defaults
-  SetNoCullRasterizationState();
-  SetNoDepthTestState();
-  SetNoBlendingState();
-  SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-
   // have to be specified even if dynamic
   SetViewport(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
   SetScissorRect(0, 0, 1, 1);
