@@ -484,16 +484,17 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
 
   const VkDevice vkdev = dev.GetVulkanDevice();
   res = vkCreateSwapchainKHR(vkdev, &swap_chain_info, nullptr, &m_swap_chain);
+
+  // Now destroy the old swap chain, since it's been recreated, or retired if creation failed.
+  // We can do this immediately since all work should have been completed before calling resize.
+  if (old_swap_chain != VK_NULL_HANDLE)
+    vkDestroySwapchainKHR(vkdev, old_swap_chain, nullptr);
+
   if (res != VK_SUCCESS)
   {
     Vulkan::SetErrorObject(error, "vkCreateSwapchainKHR failed: ", res);
     return false;
   }
-
-  // Now destroy the old swap chain, since it's been recreated.
-  // We can do this immediately since all work should have been completed before calling resize.
-  if (old_swap_chain != VK_NULL_HANDLE)
-    vkDestroySwapchainKHR(vkdev, old_swap_chain, nullptr);
 
   if (window_size.width > std::numeric_limits<u16>::max() || window_size.height > std::numeric_limits<u16>::max())
   {
