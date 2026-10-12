@@ -2330,6 +2330,12 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
       D->SetState(GPUTexture::State::Dirty);
   }
 
+  // Never used? Can't transition back to undefined afterwards.
+  if (S->GetLayout() == VulkanTexture::Layout::Undefined)
+    S->TransitionToLayout(m_current_command_buffer, VulkanTexture::Layout::TransferSrc);
+  if (D->GetLayout() == VulkanTexture::Layout::Undefined)
+    D->TransitionToLayout(m_current_command_buffer, VulkanTexture::Layout::TransferDst);
+
   S->TransitionSubresourcesToLayout(m_current_command_buffer, 0, 1, 0, 1, S->GetLayout(),
                                     VulkanTexture::Layout::TransferSrc);
   D->TransitionSubresourcesToLayout(m_current_command_buffer, dst_layer, 1, dst_level, 1, D->GetLayout(),
@@ -2347,6 +2353,8 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
                                     S->GetLayout());
   D->TransitionSubresourcesToLayout(m_current_command_buffer, dst_layer, 1, dst_level, 1,
                                     VulkanTexture::Layout::TransferDst, D->GetLayout());
+
+  D->SetState(GPUTexture::State::Dirty);
 }
 
 void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
