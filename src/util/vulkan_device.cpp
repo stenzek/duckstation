@@ -3595,19 +3595,15 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
     }
   }
 
-  if (m_num_current_render_targets > 0 &&
-      ((dirty & DIRTY_FLAG_RENDER_TARGETS) ||
-       (dirty & DIRTY_FLAG_PIPELINE_LAYOUT &&
-        (m_current_render_pass_flags & (GPUPipeline::ColorFeedbackLoop | GPUPipeline::BindRenderTargetsAsImages)))))
+  // Only the compute layout has a set for render targets. ROV is only used with HW batches, handled below.
+  if constexpr (is_compute)
   {
-    if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
+    if (m_num_current_render_targets > 0 && (dirty & (DIRTY_FLAG_RENDER_TARGETS | DIRTY_FLAG_PIPELINE_LAYOUT)) &&
+        (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))
     {
       VkDescriptorSet ids = AllocateDescriptorSet(m_image_ds_layout);
       if (ids == VK_NULL_HANDLE)
         return false;
-
-      // textures should have always been updated, so first_ds will correctly be either be 1 or 0
-      ds[num_ds++] = ids;
 
       Vulkan::DescriptorSetUpdateBuilder dsub;
       for (u32 i = 0; i < m_num_current_render_targets; i++)
@@ -3623,19 +3619,15 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
         dsub.AddStorageImageDescriptorWrite(ids, i, null_view, null_layout);
 
       dsub.Update(m_device, false);
-    }
-    else
-    {
-      VkDescriptorSet ids = AllocateDescriptorSet(m_feedback_loop_ds_layout);
-      if (ids == VK_NULL_HANDLE)
-        return false;
 
-      ds[num_ds++] = ids;
-
-      Vulkan::DescriptorSetUpdateBuilder dsub;
-      dsub.AddInputAttachmentDescriptorWrite(ids, 0, m_current_render_targets[0]->GetView(),
-                                             m_current_render_targets[0]->GetVkLayout());
-      dsub.Update(m_device, false);
+      // Images are the last set (2). Only needs its own bind when the UBO is being bound, and the textures between
+      // them are not, i.e. they were pushed instead.
+      if (num_ds == 0)
+        first_ds = 2;
+      if ((first_ds + num_ds) == 2)
+        ds[num_ds++] = ids;
+      else
+        vkCmdBindDescriptorSets(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, 2, 1, &ids, 0, nullptr);
     }
   }
 
