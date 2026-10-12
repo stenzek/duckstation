@@ -91,7 +91,7 @@ void TogglePostProcessing();
 void ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders);
 
 // Draws the specified bounding box with display rotation and pre-rotation.
-void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
+void DrawScreenQuad(const GSVector4i rect, GSVector4 uv_rect, const GSVector2i target_size,
                     const GSVector2i final_target_size, DisplayRotation uv_rotation, WindowInfoPrerotation prerotation,
                     const void* push_constants, u32 push_constants_size);
 

@@ -713,6 +713,12 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
   ImGuiUniforms uniforms;
   uniforms.mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
                                                                 static_cast<float>(window_height), 0.0f, 1.0f);
+  if (prerotation >= WindowInfoPrerotation::HorizontalMirror)
+  {
+    // Mirrored horizontally, then rotated.
+    uniforms.mproj = GSMatrix4x4::OffCenterOrthographicProjection(static_cast<float>(window_width), 0.0f, 0.0f,
+                                                                  static_cast<float>(window_height), 0.0f, 1.0f);
+  }
   if (prerotated)
     uniforms.mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * uniforms.mproj;
   GSVector2::store<true>(uniforms.blur_texture_scale, FullscreenUI::GetBlurTextureScale());

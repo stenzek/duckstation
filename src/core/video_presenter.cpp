@@ -969,7 +969,7 @@ void VideoPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i 
                  sizeof(uniforms));
 }
 
-void VideoPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
+void VideoPresenter::DrawScreenQuad(const GSVector4i rect, GSVector4 uv_rect, const GSVector2i target_size,
                                     const GSVector2i final_target_size, DisplayRotation rotation,
                                     WindowInfoPrerotation prerotation, const void* push_constants,
                                     u32 push_constants_size)
@@ -985,9 +985,14 @@ void VideoPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_re
                                 &base_vertex);
 
   // Combine display rotation and prerotation together, since the rectangle has already been adjusted.
+  // Mirrored prerotations flip the image first, which reverses the direction of the display rotation.
+  const bool mirrored = (prerotation >= WindowInfoPrerotation::HorizontalMirror);
   const GSVector4 xy = GPUBackend::GetScreenQuadClipSpaceCoordinates(real_rect, final_target_size);
   const DisplayRotation effective_rotation = static_cast<DisplayRotation>(
-    (static_cast<u32>(rotation) + static_cast<u32>(prerotation)) % static_cast<u32>(DisplayRotation::Count));
+    (static_cast<u32>(prerotation) + (mirrored ? (4u - static_cast<u32>(rotation)) : static_cast<u32>(rotation))) %
+    static_cast<u32>(DisplayRotation::Count));
+  if (mirrored)
+    uv_rect = uv_rect.zyxw();
   switch (effective_rotation)
   {
     case DisplayRotation::Normal:

@@ -22,5 +22,5 @@ float WindowInfo::GetZRotationForPreRotation(WindowInfoPrerotation prerotation)
     static_cast<float>(std::numbers::pi / 2.0),  // Rotate270Clockwise
   }};
 
-  return rotation_radians[static_cast<size_t>(prerotation)];
+  return rotation_radians[static_cast<size_t>(prerotation) & 3u];
 }

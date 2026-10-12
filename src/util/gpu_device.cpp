@@ -263,6 +263,13 @@ GPUSwapChain::~GPUSwapChain() = default;
 GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfoPrerotation prerotation, const GSVector2i surface_size,
                                            const GSVector4i& v)
 {
+  // Mirrored variants are flipped horizontally first, then rotated.
+  if (prerotation >= WindowInfoPrerotation::HorizontalMirror)
+  {
+    return PreRotateClipRect(static_cast<WindowInfoPrerotation>(static_cast<u8>(prerotation) & 3u), surface_size,
+                             GSVector4i(surface_size.x - v.z, v.y, surface_size.x - v.x, v.w));
+  }
+
   GSVector4i new_clip;
   switch (prerotation)
   {

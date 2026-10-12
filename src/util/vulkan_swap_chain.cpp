@@ -383,6 +383,32 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
       DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR pretransform.");
       break;
 
+    case VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR;
+      window_prerotation = WindowInfoPrerotation::HorizontalMirror;
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR pretransform.");
+      break;
+
+    case VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR;
+      window_prerotation = WindowInfoPrerotation::HorizontalMirrorRotate90Clockwise;
+      std::swap(size.width, size.height);
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR pretransform.");
+      break;
+
+    case VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR;
+      window_prerotation = WindowInfoPrerotation::HorizontalMirrorRotate180Clockwise;
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR pretransform.");
+      break;
+
+    case VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR;
+      window_prerotation = WindowInfoPrerotation::HorizontalMirrorRotate270Clockwise;
+      std::swap(size.width, size.height);
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR pretransform.");
+      break;
+
     default:
     {
       if (!(surface_caps.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))

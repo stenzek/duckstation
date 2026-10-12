@@ -24,6 +24,12 @@ enum class WindowInfoPrerotation : u8
   Rotate90Clockwise,
   Rotate180Clockwise,
   Rotate270Clockwise,
+
+  // Mirrored horizontally, then rotated. The low two bits are the rotation above.
+  HorizontalMirror,
+  HorizontalMirrorRotate90Clockwise,
+  HorizontalMirrorRotate180Clockwise,
+  HorizontalMirrorRotate270Clockwise,
 };
 
 // Contains the information required to create a graphics context in a window.
@@ -54,8 +60,7 @@ struct WindowInfo
 
   ALWAYS_INLINE static bool ShouldSwapDimensionsForPreRotation(WindowInfoPrerotation prerotation)
   {
-    return (prerotation == WindowInfoPrerotation::Rotate90Clockwise ||
-            prerotation == WindowInfoPrerotation::Rotate270Clockwise);
+    return ((static_cast<u8>(prerotation) & 1u) != 0);
   }
 
   static float GetZRotationForPreRotation(WindowInfoPrerotation prerotation);
