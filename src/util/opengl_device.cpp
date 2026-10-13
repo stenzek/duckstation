@@ -1066,6 +1066,7 @@ void OpenGLDevice::UnbindPipeline(const OpenGLPipeline* pl)
   if (m_current_pipeline == pl)
   {
     m_current_pipeline = nullptr;
+    m_last_program = 0;
     glUseProgram(0);
   }
 }
