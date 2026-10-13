@@ -747,6 +747,14 @@ GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUT
 
   glDrawBuffers(num_rts, s_draw_buffers.data());
 
+  if (num_rts == 0)
+  {
+    // Depth-only framebuffers are incomplete prior to GL 4.1 if the read buffer still points to a colour attachment.
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_id);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  }
+
   const GLenum err = glGetError();
   if (err != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) [[unlikely]]
   {
@@ -838,6 +846,11 @@ GPUPresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_
   m_gl_context->MakeCurrent(static_cast<OpenGLSwapChain*>(swap_chain)->GetSurfaceHandle());
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  if (m_framebuffer_srgb)
+  {
+    m_framebuffer_srgb = false;
+    glDisable(GL_FRAMEBUFFER_SRGB);
+  }
   glDisable(GL_SCISSOR_TEST);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearBufferfv(GL_COLOR, 0, GSVector4::unorm8(clear_color).F32);
@@ -1240,6 +1253,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
       {
         ERROR_LOG("Failed to get FBO for {} render targets", num_rts);
         m_current_fbo = 0;
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
         m_num_current_render_targets = 0;
         m_current_depth_target = nullptr;
@@ -1250,6 +1264,19 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
     s_stats.num_render_passes++;
     m_current_fbo = fbo;
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
+    // Desktop GL only encodes writes to sRGB targets when it is enabled, GLES always does.
+    if (!m_gl_context->IsGLES())
+    {
+      bool srgb = false;
+      for (u32 i = 0; i < num_rts; i++)
+        srgb |= (rts[i]->GetFormat() == GPUTextureFormat::SRGBA8);
+      if (m_framebuffer_srgb != srgb)
+      {
+        m_framebuffer_srgb = srgb;
+        srgb ? glEnable(GL_FRAMEBUFFER_SRGB) : glDisable(GL_FRAMEBUFFER_SRGB);
+      }
+    }
   }
 
   if (needs_rt_clear)

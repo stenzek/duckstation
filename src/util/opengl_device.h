@@ -247,6 +247,7 @@ private:
   u32 m_pipeline_disk_cache_version = 0;
   bool m_pipeline_disk_cache_changed = false;
 
+  bool m_framebuffer_srgb = false;
   bool m_disable_pbo = false;
   bool m_disable_async_download = false;
   bool m_use_get_texture_sub_image = false;
