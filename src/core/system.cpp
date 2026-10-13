@@ -1867,6 +1867,7 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
 
   // Good to go.
   s_state.state = State::Running;
+  UpdateGTEAspectRatio();
   SPU::GetOutputStream().SetPaused(false);
 
   // Immediately pausing?
@@ -1907,10 +1908,11 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   if (start_paused)
     PauseSystem(true);
 
+  UpdateMemorySaveStateSettings();
   UpdateSpeedLimiterState();
 
   INFO_LOG("System booted in {:.2f}ms", boot_timer.GetTimeMilliseconds());
-  PerformanceCounters::Reset();
+  PerformanceCounters::Clear();
   ResetThrottler();
   return BootResult::Success;
 }
@@ -1932,7 +1934,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_state.internal_frame_number = 0;
 
   s_state.target_speed = g_settings.emulation_speed;
-  s_state.video_frame_rate = 60.0f;
+  s_state.video_frame_rate = 0.0f; // Set by GPU::UpdateCRTCConfig()
   s_state.frame_period = 0;
   s_state.next_frame_time = 0;
   s_state.turbo_enabled = false;
@@ -1985,14 +1987,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   MDEC::Initialize();
   SIO::Initialize();
   PCDrv::Initialize();
-
-  UpdateGTEAspectRatio();
-  UpdateAutomaticResolutionScale();
-  UpdateThrottlePeriod();
-  UpdateMemorySaveStateSettings();
-
-  PerformanceCounters::Clear();
-
   return true;
 }
 
@@ -6243,7 +6237,7 @@ void System::RenderWindowResized()
 
 void System::UpdateGTEAspectRatio()
 {
-  if (!IsValidOrInitializing())
+  if (!IsValid())
     return;
 
   DisplayAspectRatio gte_ar = g_settings.display_aspect_ratio;
@@ -6278,7 +6272,7 @@ void System::UpdateGTEAspectRatio()
 
 void System::UpdateAutomaticResolutionScale()
 {
-  if (!IsValidOrInitializing() || !g_settings.gpu_automatic_resolution_scale)
+  if (!IsValid() || !g_settings.gpu_automatic_resolution_scale)
     return;
 
   const u32 new_scale = GPU::CalculateAutomaticResolutionScale();

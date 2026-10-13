@@ -145,7 +145,10 @@ u32 PerformanceCounters::GetFrameTimeHistoryPos()
 void PerformanceCounters::Clear()
 {
   DebugAssert(Host::IsOnCoreThread());
-  VideoThread::RunOnThread([]() { s_state = {}; });
+  VideoThread::RunOnThread([]() {
+    s_state = {};
+    s_state.last_frame_time = INVALID_FRAME_TIME;
+  });
 }
 
 void PerformanceCounters::Reset()
