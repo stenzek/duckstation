@@ -898,7 +898,7 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer_id);
 
     const u32 flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-    const u32 map_flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT;
+    const u32 map_flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
     if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage)
       glBufferStorage(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, flags);

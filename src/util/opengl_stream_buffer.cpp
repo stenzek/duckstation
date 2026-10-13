@@ -484,6 +484,9 @@ private:
 
 std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u32 size, Error* error /* = nullptr */)
 {
+  // The syncing buffers split the buffer into equally-sized blocks, so the size has to be divisible.
+  size = Common::AlignUp(size, static_cast<u32>(SyncingStreamBuffer::NUM_SYNC_POINTS));
+
   // In terms of speed: persistent mapping > map+sync -> map+orphan -> bufferdata/subdata
 
   std::unique_ptr<OpenGLStreamBuffer> buf;

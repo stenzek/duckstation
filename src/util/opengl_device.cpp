@@ -1168,15 +1168,17 @@ void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
 
 void* OpenGLDevice::MapUniformBuffer(u32 size)
 {
-  const auto res = m_uniform_buffer->Map(m_uniform_buffer_alignment, size);
+  const auto res = m_uniform_buffer->Map(m_uniform_buffer_alignment, Common::AlignUpPow2(size, 16));
   return res.pointer;
 }
 
 void OpenGLDevice::UnmapUniformBuffer(u32 size)
 {
-  const u32 pos = m_uniform_buffer->Unmap(size);
+  // Same as push constants, the bound range has to cover the padded std140 block.
+  const u32 bind_size = Common::AlignUpPow2(size, 16);
+  const u32 pos = m_uniform_buffer->Unmap(bind_size);
   s_stats.buffer_streamed += size;
-  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_uniform_buffer->GetGLBufferId(), pos, size);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_uniform_buffer->GetGLBufferId(), pos, bind_size);
 }
 
 void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
