@@ -603,7 +603,7 @@ bool OpenGLSwapChain::SetVSyncMode(GPUVSyncMode mode, Error* error)
 
   const bool result = SetSwapInterval(ctx, mode, error);
 
-  if (!is_main_swap_chain &&
+  if (!is_main_swap_chain && g_gpu_device->HasMainSwapChain() &&
       !ctx->MakeCurrent(static_cast<OpenGLSwapChain*>(g_gpu_device->GetMainSwapChain())->m_surface_handle, error))
   {
     return false;
@@ -641,10 +641,19 @@ std::unique_ptr<GPUSwapChain> OpenGLDevice::CreateSwapChain(const WindowInfo& wi
     return {};
   }
 
+  // OpenGL does not support mailbox.
+  vsync_mode = (vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : vsync_mode;
+
   WindowInfo wi_copy(wi);
   const OpenGLContext::SurfaceHandle surface_handle = m_gl_context->CreateSurface(wi_copy, error);
-  if (!surface_handle || !m_gl_context->MakeCurrent(surface_handle, error))
+  if (!surface_handle)
     return {};
+
+  if (!m_gl_context->MakeCurrent(surface_handle, error))
+  {
+    m_gl_context->DestroySurface(surface_handle);
+    return {};
+  }
 
   Error swap_interval_error;
   if (!OpenGLSwapChain::SetSwapInterval(m_gl_context.get(), vsync_mode, &swap_interval_error))
