@@ -536,14 +536,22 @@ std::string D3D11Device::GetDriverInfo() const
 void D3D11Device::FlushCommands()
 {
   m_context->Flush();
-  EndTimestampQuery();
   TrimTexturePool();
 }
 
 void D3D11Device::WaitForGPUIdle()
 {
   m_context->Flush();
-  EndTimestampQuery();
+
+  // Use an event query to wait for everything submitted so far to complete.
+  if (m_event_query)
+  {
+    BOOL done = FALSE;
+    m_context->End(m_event_query.Get());
+    while (m_context->GetData(m_event_query.Get(), &done, sizeof(done), 0) == S_FALSE)
+      SwitchToThread();
+  }
+
   TrimTexturePool();
 }
 
@@ -571,6 +579,10 @@ bool D3D11Device::CreateBuffers(Error* error)
   m_context->PSSetConstantBuffers(1, 1, m_push_constant_buffer.GetAddressOf());
   if (m_features.compute_shaders)
     m_context->CSSetConstantBuffers(1, 1, m_push_constant_buffer.GetAddressOf());
+
+  const CD3D11_QUERY_DESC qdesc(D3D11_QUERY_EVENT);
+  if (const HRESULT hr = m_device->CreateQuery(&qdesc, m_event_query.GetAddressOf()); FAILED(hr))
+    ERROR_LOG("Failed to create event query: {:08X}", static_cast<unsigned>(hr));
 
   return true;
 }
@@ -809,8 +821,7 @@ void D3D11Device::DestroyTimestampQueries()
   if (!m_timestamp_queries[0][0])
     return;
 
-  if (m_timestamp_query_started)
-    m_context->End(m_timestamp_queries[m_write_timestamp_query][1].Get());
+  EndTimestampQuery();
 
   m_timestamp_queries = {};
   m_read_timestamp_query = 0;
@@ -832,10 +843,9 @@ void D3D11Device::PopTimestampQuery()
     if (disjoint.Disjoint)
     {
       VERBOSE_LOG("GPU timing disjoint, resetting.");
-      m_read_timestamp_query = 0;
-      m_write_timestamp_query = 0;
+      // Drop the pending queries, but leave any in-progress query alone, it still needs to be ended.
+      m_read_timestamp_query = m_write_timestamp_query;
       m_waiting_timestamp_queries = 0;
-      m_timestamp_query_started = false;
     }
     else
     {
@@ -892,7 +902,10 @@ bool D3D11Device::SetGPUTimingEnabled(bool enabled)
   if (m_gpu_timing_enabled)
   {
     if (!CreateTimestampQueries())
+    {
+      m_gpu_timing_enabled = false;
       return false;
+    }
 
     StartTimestampQuery();
     return true;

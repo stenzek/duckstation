@@ -216,6 +216,7 @@ private:
   std::array<ID3D11ShaderResourceView*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<ID3D11SamplerState*, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
 
+  ComPtr<ID3D11Query> m_event_query;
   std::array<std::array<ComPtr<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
   u8 m_read_timestamp_query = 0;
   u8 m_write_timestamp_query = 0;
