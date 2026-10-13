@@ -139,8 +139,13 @@ private:
   using RasterizationStateMap = std::unordered_map<u16, ComPtr<ID3D11RasterizerState>>;
   using DepthStateMap = std::unordered_map<u8, ComPtr<ID3D11DepthStencilState>>;
   using BlendStateMap = std::unordered_map<BlendStateMapKey, ComPtr<ID3D11BlendState>, BlendStateMapHash>;
+  struct InputLayoutEntry
+  {
+    std::vector<GPUPipeline::VertexAttribute> attributes; // referenced by the map key
+    ComPtr<ID3D11InputLayout> layout;
+  };
   using InputLayoutMap =
-    std::unordered_map<GPUPipeline::InputLayout, ComPtr<ID3D11InputLayout>, GPUPipeline::InputLayoutHash>;
+    std::unordered_map<GPUPipeline::InputLayout, InputLayoutEntry, GPUPipeline::InputLayoutHash>;
 
   static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;

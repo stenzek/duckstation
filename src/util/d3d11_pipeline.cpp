@@ -176,7 +176,7 @@ D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(co
   desc.FillMode = D3D11_FILL_SOLID;
   desc.CullMode = cull_mapping[static_cast<u8>(rs.cull_mode.GetValue())];
   desc.ScissorEnable = TRUE;
-  // desc.MultisampleEnable ???
+  desc.MultisampleEnable = (rs.multisamples > 1); // needed for MSAA at feature level 10.0
 
   HRESULT hr = m_device->CreateRasterizerState(&desc, drs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
@@ -247,7 +247,8 @@ D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeli
 {
   ComPtr<ID3D11BlendState> dbs;
 
-  const std::pair<u64, u32> key(bs.key, num_rts);
+  // The blend constant is set separately, so keep it out of the key.
+  const std::pair<u64, u32> key(bs.key & 0xFFFFFFFFu, num_rts);
   {
     const Threading::SharedLockGuard lock(m_state_map_mutex);
     const auto it = m_blend_states.find(key);
@@ -362,11 +363,16 @@ D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipe
   HRESULT hr = m_device->CreateInputLayout(elems, static_cast<UINT>(il.vertex_attributes.size()),
                                            vs->GetBytecode().data(), vs->GetBytecode().size(), dil.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
+  {
     Error::SetHResult(error, "CreateInputLayout() failed: ", hr);
+  }
   else
   {
+    // The key has to reference our own copy of the attributes, the caller's may not outlive the cache.
+    InputLayoutEntry entry = {{il.vertex_attributes.begin(), il.vertex_attributes.end()}, dil};
+    const GPUPipeline::InputLayout key = {entry.attributes, il.vertex_stride};
     const std::lock_guard lock(m_state_map_mutex);
-    m_input_layouts.emplace(il, dil);
+    m_input_layouts.emplace(key, std::move(entry));
   }
 
   return dil;

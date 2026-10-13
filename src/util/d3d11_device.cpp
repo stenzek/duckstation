@@ -161,9 +161,10 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
   const D3D_FEATURE_LEVEL feature_level = m_device->GetFeatureLevel();
 
   m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
-  m_max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+  m_max_texture_size =
+    (feature_level >= D3D_FEATURE_LEVEL_11_0) ? D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION : 8192; // D3D10_REQ_*
   m_max_multisamples = 1;
-  for (u32 multisamples = 2; multisamples < D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)
+  for (u32 multisamples = 2; multisamples <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples *= 2)
   {
     UINT num_quality_levels;
     if (SUCCEEDED(
@@ -1286,9 +1287,8 @@ void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   DebugAssert(m_current_compute_shader);
   s_stats.num_draws++;
 
-  const u32 groups_x = threads_x / group_size_x;
-  const u32 groups_y = threads_y / group_size_y;
-  const u32 groups_z = threads_z / group_size_z;
+  const auto [groups_x, groups_y, groups_z] =
+    GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   m_context->Dispatch(groups_x, groups_y, groups_z);
 }
 

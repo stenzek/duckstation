@@ -38,7 +38,7 @@ bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max
     {
       // Older Intel drivers go absolutely bananas with CPU usage when using offset constant buffers.
       // NVIDIA seems to be okay, I don't know about AMD. So let's be safe and limit it to feature level 12+.
-      m_use_map_no_overwrite = options.MapNoOverwriteOnDynamicConstantBuffer;
+      m_use_map_no_overwrite = (options.MapNoOverwriteOnDynamicConstantBuffer && options.ConstantBufferOffsetting);
       if (m_use_map_no_overwrite && D3D11Device::GetMaxFeatureLevel() < D3D_FEATURE_LEVEL_12_0)
       {
         WARNING_LOG("Ignoring MapNoOverwriteOnDynamicConstantBuffer on driver due to feature level.");

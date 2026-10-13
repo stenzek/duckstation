@@ -280,6 +280,10 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
       DefaultCaseIsUnreachable();
   }
 
+  // Multisampled depth buffers cannot be sampled at feature level 10.0.
+  if (type == Type::DepthStencil && samples > 1 && device->GetFeatureLevel() < D3D_FEATURE_LEVEL_10_1)
+    bind_flags &= ~static_cast<u32>(D3D11_BIND_SHADER_RESOURCE);
+
   if ((flags & Flags::AllowBindAsImage) != Flags::None)
   {
     DebugAssert(levels == 1);
