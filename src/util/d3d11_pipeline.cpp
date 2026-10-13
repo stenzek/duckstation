@@ -452,7 +452,15 @@ void D3D11Device::SetPipeline(GPUPipeline* pipeline)
   if (!PL->IsComputePipeline())
   {
     if (was_compute)
+    {
       UnbindComputePipeline();
+
+      // OM targets were unbound when switching to compute, and the UBO was only bound to CS.
+      if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
+        BindRenderTargetImages();
+      if (m_current_uniform_size > 0)
+        BindUniformBuffer(m_current_uniform_offset, m_current_uniform_size);
+    }
 
     if (ID3D11InputLayout* il = PL->GetInputLayout(); m_current_input_layout != il)
     {
@@ -522,27 +530,17 @@ void D3D11Device::SetPipeline(GPUPipeline* pipeline)
     if (!was_compute)
     {
       // need to bind all SRVs/samplers
-      u32 count;
-      for (count = 0; count < MAX_TEXTURE_SAMPLERS; count++)
-      {
-        if (!m_current_textures[count])
-          break;
-      }
-      if (count > 0)
-      {
-        m_context->CSSetShaderResources(0, count, m_current_textures.data());
-        m_context->CSSetSamplers(0, count, m_current_samplers.data());
-      }
+      m_context->CSSetShaderResources(0, MAX_TEXTURE_SAMPLERS, m_current_textures.data());
+      m_context->CSSetSamplers(0, MAX_TEXTURE_SAMPLERS, m_current_samplers.data());
 
       if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
       {
-        ID3D11UnorderedAccessView* uavs[MAX_TEXTURE_SAMPLERS];
-        for (u32 i = 0; i < m_num_current_render_targets; i++)
-          uavs[i] = m_current_render_targets[i]->GetD3DUAV();
-
         m_context->OMSetRenderTargets(0, nullptr, nullptr);
-        m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, uavs, nullptr);
+        BindRenderTargetImages();
       }
+
+      if (m_current_uniform_size > 0)
+        BindUniformBuffer(m_current_uniform_offset, m_current_uniform_size);
     }
   }
 }
@@ -569,6 +567,7 @@ void D3D11Device::UnbindComputePipeline()
   m_context->CSSetShader(nullptr, nullptr, 0);
   m_context->CSSetShaderResources(0, MAX_TEXTURE_SAMPLERS, null_srvs);
   m_context->CSSetSamplers(0, MAX_TEXTURE_SAMPLERS, null_samplers);
-  if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
-    m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, null_uavs, nullptr);
+
+  // Always clear these, the render pass flags may have changed since they were bound.
+  m_context->CSSetUnorderedAccessViews(0, MAX_RENDER_TARGETS, null_uavs, nullptr);
 }

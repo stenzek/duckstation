@@ -721,7 +721,11 @@ GPUPresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   else
     m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
   if (m_current_compute_shader)
+  {
+    // Clear the current pipeline too, otherwise re-setting it would be skipped.
     UnbindComputePipeline();
+    m_current_pipeline = nullptr;
+  }
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
@@ -978,6 +982,9 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
 
 void D3D11Device::BindUniformBuffer(u32 offset, u32 size)
 {
+  m_current_uniform_offset = offset;
+  m_current_uniform_size = size;
+
   if (m_uniform_buffer.IsUsingMapNoOverwrite())
   {
     const UINT first_constant = offset / 16u;
@@ -1031,6 +1038,8 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
       {
         m_current_textures[i] = nullptr;
         m_context->PSSetShaderResources(i, 1, &m_current_textures[i]);
+        if (m_current_compute_shader)
+          m_context->CSSetShaderResources(i, 1, &m_current_textures[i]);
       }
     }
   }
@@ -1049,6 +1058,8 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
       {
         m_current_textures[j] = nullptr;
         m_context->PSSetShaderResources(j, 1, &m_current_textures[j]);
+        if (m_current_compute_shader)
+          m_context->CSSetShaderResources(j, 1, &m_current_textures[j]);
       }
     }
   }
@@ -1062,20 +1073,7 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 
   if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
   {
-    std::array<ID3D11UnorderedAccessView*, MAX_RENDER_TARGETS> uavs;
-    for (u32 i = 0; i < m_num_current_render_targets; i++)
-      uavs[i] = m_current_render_targets[i]->GetD3DUAV();
-
-    if (!m_current_compute_shader)
-    {
-      m_context->OMSetRenderTargetsAndUnorderedAccessViews(
-        0, nullptr, m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, 0,
-        m_num_current_render_targets, uavs.data(), nullptr);
-    }
-    else
-    {
-      m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, uavs.data(), nullptr);
-    }
+    BindRenderTargetImages();
   }
   else
   {
@@ -1086,6 +1084,25 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     m_context->OMSetRenderTargets(m_num_current_render_targets,
                                   (m_num_current_render_targets > 0) ? rtvs.data() : nullptr,
                                   m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr);
+  }
+}
+
+void D3D11Device::BindRenderTargetImages()
+{
+  std::array<ID3D11UnorderedAccessView*, MAX_RENDER_TARGETS> uavs = {};
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+    uavs[i] = m_current_render_targets[i]->GetD3DUAV();
+
+  if (!m_current_compute_shader)
+  {
+    m_context->OMSetRenderTargetsAndUnorderedAccessViews(
+      0, nullptr, m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, 0,
+      m_num_current_render_targets, uavs.data(), nullptr);
+  }
+  else
+  {
+    // Clear out any slots left over from a larger set of targets.
+    m_context->CSSetUnorderedAccessViews(0, MAX_RENDER_TARGETS, uavs.data(), nullptr);
   }
 }
 
@@ -1105,11 +1122,8 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   ID3D11SamplerState* S = sampler ? static_cast<D3D11Sampler*>(sampler)->GetSamplerState() : nullptr;
 
   // Runtime will null these if we don't...
-  DebugAssert(!texture ||
-              !((texture->IsRenderTarget() || texture->HasFlag(GPUTexture::Flags::AllowBindAsImage)) &&
-                IsRenderTargetBound(static_cast<D3D11Texture*>(texture))) ||
-              !(texture->IsDepthStencil() &&
-                (!m_current_depth_target || m_current_depth_target != static_cast<D3D11Texture*>(texture))));
+  DebugAssert(!texture || (!IsRenderTargetBound(static_cast<D3D11Texture*>(texture)) &&
+                           m_current_depth_target != static_cast<D3D11Texture*>(texture)));
 
   if (m_current_textures[slot] != T)
   {
@@ -1149,6 +1163,8 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
       {
         m_current_textures[i] = nullptr;
         m_context->PSSetShaderResources(i, 1, &m_current_textures[i]);
+        if (m_current_compute_shader)
+          m_context->CSSetShaderResources(i, 1, &m_current_textures[i]);
       }
     }
   }

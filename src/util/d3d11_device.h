@@ -155,6 +155,7 @@ private:
   bool CreateBuffers(Error* error);
   void DestroyBuffers();
   void BindUniformBuffer(u32 offset, u32 size);
+  void BindRenderTargetImages();
   void PushUniformBuffer(const void* data, u32 data_size);
   void UnbindComputePipeline();
 
@@ -208,6 +209,8 @@ private:
   D3D_PRIMITIVE_TOPOLOGY m_current_primitive_topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
   u32 m_current_vertex_stride = 0;
   u32 m_current_blend_factor = 0;
+  u32 m_current_uniform_offset = 0;
+  u32 m_current_uniform_size = 0;
 
   std::array<ID3D11ShaderResourceView*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<ID3D11SamplerState*, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
