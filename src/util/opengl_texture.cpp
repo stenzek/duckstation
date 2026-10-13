@@ -976,13 +976,21 @@ void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
     OpenGLTexture::GetPixelFormatMapping(srcgl->GetFormat(), dev.IsGLES());
   if (dev.m_use_get_texture_sub_image)
   {
-    glGetTextureSubImage(srcgl->GetGLId(), src_level, src_x, src_y, 0, width, height, 1, gl_format, gl_type,
+    glGetTextureSubImage(srcgl->GetGLId(), src_level, src_x, src_y, src_layer, width, height, 1, gl_format, gl_type,
                          m_current_pitch * height, m_cpu_buffer + copy_offset);
   }
   else
   {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, dev.m_read_fbo);
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, srcgl->GetGLId(), 0);
+    if (srcgl->IsTextureArray())
+    {
+      glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, srcgl->GetGLId(), src_level, src_layer);
+    }
+    else
+    {
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, srcgl->GetGLTarget(), srcgl->GetGLId(),
+                             src_level);
+    }
 
     glReadPixels(src_x, src_y, width, height, gl_format, gl_type, m_cpu_buffer + copy_offset);
 

@@ -90,18 +90,18 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
   const GLuint did = D->GetGLId();
   if (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_copy_image)
   {
-    glCopyImageSubData(sid, GL_TEXTURE_2D, src_level, src_x, src_y, src_layer, did, GL_TEXTURE_2D, dst_level, dst_x,
-                       dst_y, dst_layer, width, height, 1);
+    glCopyImageSubData(sid, S->GetGLTarget(), src_level, src_x, src_y, src_layer, did, D->GetGLTarget(), dst_level,
+                       dst_x, dst_y, dst_layer, width, height, 1);
   }
   else if (GLAD_GL_EXT_copy_image)
   {
-    glCopyImageSubDataEXT(sid, GL_TEXTURE_2D, src_level, src_x, src_y, src_layer, did, GL_TEXTURE_2D, dst_level, dst_x,
-                          dst_y, dst_layer, width, height, 1);
+    glCopyImageSubDataEXT(sid, S->GetGLTarget(), src_level, src_x, src_y, src_layer, did, D->GetGLTarget(), dst_level,
+                          dst_x, dst_y, dst_layer, width, height, 1);
   }
   else if (GLAD_GL_OES_copy_image)
   {
-    glCopyImageSubDataOES(sid, GL_TEXTURE_2D, src_level, src_x, src_y, src_layer, did, GL_TEXTURE_2D, dst_level, dst_x,
-                          dst_y, dst_layer, width, height, 1);
+    glCopyImageSubDataOES(sid, S->GetGLTarget(), src_level, src_x, src_y, src_layer, did, D->GetGLTarget(), dst_level,
+                          dst_x, dst_y, dst_layer, width, height, 1);
   }
   else
   {
@@ -139,6 +139,12 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
   OpenGLTexture* D = static_cast<OpenGLTexture*>(dst);
   OpenGLTexture* S = static_cast<OpenGLTexture*>(src);
 
+  // Clears may rebind the draw framebuffer, so they have to be committed before setting up the blit.
+  const bool full_resolve = (width == D->GetMipWidth(dst_level) && height == D->GetMipHeight(dst_level));
+  CommitClear(S);
+  if (!full_resolve)
+    CommitClear(D);
+
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_read_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
   if (D->IsTextureArray())
@@ -147,8 +153,7 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, D->GetGLTarget(), D->GetGLId(), dst_level);
   glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, S->GetGLTarget(), S->GetGLId(), 0);
 
-  CommitClear(S);
-  if (width == D->GetMipWidth(dst_level) && height == D->GetMipHeight(dst_level))
+  if (full_resolve)
   {
     D->SetState(GPUTexture::State::Dirty);
     if (glInvalidateFramebuffer)
@@ -156,10 +161,6 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
       const GLenum attachment = GL_COLOR_ATTACHMENT0;
       glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
     }
-  }
-  else
-  {
-    CommitClear(D);
   }
 
   s_stats.num_copies++;
