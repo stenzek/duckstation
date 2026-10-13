@@ -404,7 +404,16 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
     if (!is_gles)
       glBindFragDataLocation(program_id, 0, "o_col0");
 
-    if (m_features.dual_source_blend)
+    // With multiple render targets, o_col1 is the second target, not the second blend source.
+    if (plconfig.GetRenderTargetCount() > 1)
+    {
+      if (!is_gles)
+      {
+        for (u32 i = 1; i < plconfig.GetRenderTargetCount(); i++)
+          glBindFragDataLocation(program_id, i, TinyString::from_format("o_col{}", i));
+      }
+    }
+    else if (m_features.dual_source_blend)
     {
       if (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended)
       {
@@ -462,6 +471,12 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
       return 0;
     }
   }
+
+  // Shaders are not needed after linking, detach them so they can be freed.
+  glDetachShader(program_id, vertex_shader->GetGLId());
+  glDetachShader(program_id, fragment_shader->GetGLId());
+  if (geometry_shader)
+    glDetachShader(program_id, geometry_shader->GetGLId());
 
   PostLinkProgram(plconfig, program_id);
 
