@@ -377,6 +377,19 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   DEV_LOG("GL_MAX_TEXTURE_SIZE: {}", max_texture_size);
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   DEV_LOG("GL_MAX_SAMPLES: {}", max_samples);
+
+  // Multisampled textures have their own limits, and are not available at all in GLES 3.0.
+  if (GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_texture_multisample || GLAD_GL_ES_VERSION_3_1)
+  {
+    GLint max_color_samples = 1, max_depth_samples = 1;
+    glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &max_color_samples);
+    glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, &max_depth_samples);
+    max_samples = std::min(max_samples, std::min(max_color_samples, max_depth_samples));
+  }
+  else
+  {
+    max_samples = 1;
+  }
   m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
   m_max_multisamples = static_cast<u16>(std::max(1u, static_cast<u32>(max_samples)));
 

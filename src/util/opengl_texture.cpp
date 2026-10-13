@@ -40,10 +40,10 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {},                                                                                       // RGB5A1
       {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},                                         // A1BGR5
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
-      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
-      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
+      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},                            // D16
+      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},                            // D24S8
       {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},                                    // D32F
-      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT},                                       // D32FS8
+      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},              // D32FS8
       {GL_R16, GL_RED, GL_UNSIGNED_SHORT},                                                      // R16
       {GL_R16I, GL_RED_INTEGER, GL_SHORT},                                                      // R16I
       {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},                                            // R16U
@@ -58,7 +58,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT},                                                  // RGBA16
       {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                                                     // RGBA16F
       {GL_RGBA32F, GL_RGBA, GL_FLOAT},                                                          // RGBA32F
-      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
+      {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
       {GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE},                                             // SRGBA8
       {GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_UNSIGNED_BYTE},   // BC1
       {GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_UNSIGNED_BYTE},   // BC2
@@ -71,15 +71,15 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
     mapping_gles = {{
       {},                                                                                       // Unknown
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
-      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                                                    // BGRA8
+      {},                                                                                       // BGRA8
       {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},                                             // RGB565
       {},                                                                                       // RGB5A1
       {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},                                         // A1BGR5
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
-      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
-      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
+      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},                            // D16
+      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},                            // D24S8
       {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},                                    // D32F
-      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT},                                       // D32FS8
+      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},              // D32FS8
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                                                         // R16
       {GL_R16I, GL_RED_INTEGER, GL_SHORT},                                                      // R16I
       {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},                                            // R16U
@@ -88,13 +88,13 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},                                              // R32U
       {GL_R32F, GL_RED, GL_FLOAT},                                                              // R32F
       {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                                                        // RG8
-      {GL_RG16, GL_RG, GL_HALF_FLOAT},                                                          // RG16
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                                                         // RG16
       {GL_RG16F, GL_RG, GL_HALF_FLOAT},                                                         // RG16F
       {GL_RG32F, GL_RG, GL_FLOAT},                                                              // RG32F
-      {GL_RGBA16, GL_RGBA, GL_HALF_FLOAT},                                                      // RGBA16
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                                                     // RGBA16
       {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                                                     // RGBA16F
       {GL_RGBA32F, GL_RGBA, GL_FLOAT},                                                          // RGBA32F
-      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
+      {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
       {GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE},                                             // SRGBA8
       {GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_UNSIGNED_BYTE},   // BC1
       {GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_UNSIGNED_BYTE},   // BC2
@@ -108,6 +108,13 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
 ALWAYS_INLINE static u32 GetUploadAlignment(u32 pitch)
 {
   return ((pitch % 4) == 0) ? 4 : (((pitch % 2) == 0) ? 2 : 1);
+}
+
+ALWAYS_INLINE static u32 GetStreamUploadPitch(GPUTextureFormat format, u32 width)
+{
+  // GL_UNPACK_ROW_LENGTH is ignored for compressed data, so it has to be tightly packed.
+  const u32 pitch = GPUTexture::CalcUploadPitch(format, width);
+  return GPUTexture::IsCompressedFormat(format) ? pitch : Common::AlignUpPow2(pitch, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 }
 
 OpenGLTexture::OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
@@ -130,8 +137,10 @@ OpenGLTexture::~OpenGLTexture()
 
 bool OpenGLTexture::UseTextureStorage(bool multisampled)
 {
-  return (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_storage) ||
-         (multisampled ? GLAD_GL_ES_VERSION_3_1 : GLAD_GL_ES_VERSION_3_0);
+  if (multisampled)
+    return (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_texture_storage_multisample || GLAD_GL_ES_VERSION_3_1);
+
+  return (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_storage || GLAD_GL_ES_VERSION_3_0);
 }
 
 bool OpenGLTexture::UseTextureStorage() const
@@ -177,7 +186,7 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
     }
 
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels);
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels - 1);
   }
   else
   {
@@ -193,7 +202,6 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
 
     if (!use_texture_storage || data)
     {
-      const u32 pixel_size = GetPixelSize(format);
       const u32 alignment = GetUploadAlignment(data_pitch);
       if (data)
       {
@@ -205,24 +213,46 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
           glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
       }
 
+      // Compressed data can't use the row length, repack it if the caller's pitch has padding.
+      DynamicHeapArray<u8> packed_data;
+      if (data && is_compressed && data_pitch != CalcUploadPitch(format, width))
+      {
+        const u32 packed_pitch = CalcUploadPitch(format, width);
+        packed_data.resize(CalcUploadSize(format, height, packed_pitch));
+        CopyTextureDataForUpload(width, height, format, packed_data.data(), packed_pitch, data, data_pitch);
+      }
+
       const u8* data_ptr = static_cast<const u8*>(data);
       u32 current_width = width;
       u32 current_height = height;
       for (u32 i = 0; i < levels; i++)
       {
+        const u8* const level_data_ptr = data_ptr;
+        const u32 compressed_size = CalcUploadSize(format, current_height, CalcUploadPitch(format, current_width));
+        if (i == 0 && !packed_data.empty())
+        {
+          data_ptr = packed_data.data();
+        }
+        else if (data && i > 0)
+        {
+          glPixelStorei(GL_UNPACK_ROW_LENGTH, CalcUploadRowLengthFromPitch(format, data_pitch));
+          glPixelStorei(GL_UNPACK_ALIGNMENT, GetUploadAlignment(data_pitch));
+        }
+
         if (use_texture_storage)
         {
           if (is_compressed)
           {
-            const u32 size = CalcUploadSize(format, current_height, data_pitch);
             if (layers > 1)
             {
-              glCompressedTexSubImage3D(target, i, 0, 0, 0, current_width, current_height, layers, gl_format, size,
+              glCompressedTexSubImage3D(target, i, 0, 0, 0, current_width, current_height, layers, gl_format,
+                                        compressed_size,
                                         data_ptr);
             }
             else
             {
-              glCompressedTexSubImage2D(target, i, 0, 0, current_width, current_height, gl_format, size, data_ptr);
+              glCompressedTexSubImage2D(target, i, 0, 0, current_width, current_height, gl_format, compressed_size,
+                                        data_ptr);
             }
           }
           else
@@ -237,15 +267,16 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
         {
           if (is_compressed)
           {
-            const u32 size = CalcUploadSize(format, current_height, data_pitch);
             if (layers > 1)
             {
-              glCompressedTexImage3D(target, i, gl_internal_format, current_width, current_height, layers, 0, size,
+              glCompressedTexImage3D(target, i, gl_internal_format, current_width, current_height, layers, 0,
+                                     compressed_size,
                                      data_ptr);
             }
             else
             {
-              glCompressedTexImage2D(target, i, gl_internal_format, current_width, current_height, 0, size, data_ptr);
+              glCompressedTexImage2D(target, i, gl_internal_format, current_width, current_height, 0, compressed_size,
+                                     data_ptr);
             }
           }
           else
@@ -263,19 +294,19 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
           }
         }
 
-        if (data_ptr)
-          data_ptr += data_pitch * current_height;
+        if (level_data_ptr)
+          data_ptr = level_data_ptr + CalcUploadSize(format, current_height, data_pitch);
 
         current_width = (current_width > 1) ? (current_width / 2u) : current_width;
         current_height = (current_height > 1) ? (current_height / 2u) : current_height;
 
-        // TODO: Incorrect assumption.
-        data_pitch = pixel_size * current_width;
+        // Subsequent levels are assumed to be tightly packed.
+        data_pitch = CalcUploadPitch(format, current_width);
       }
 
       if (data)
       {
-        if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
+        if (alignment != DEFAULT_UPLOAD_ALIGNMENT || levels > 1)
           glPixelStorei(GL_UNPACK_ALIGNMENT, DEFAULT_UPLOAD_ALIGNMENT);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
       }
@@ -310,8 +341,8 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   // Worth using the PBO? Driver probably knows better...
   const GLenum target = GetGLTarget();
   const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format, OpenGLDevice::IsGLES());
-  const u32 preferred_pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 map_size = CalcUploadSize(height, pitch);
+  const u32 preferred_pitch = GetStreamUploadPitch(m_format, width);
+  const u32 map_size = CalcUploadSize(height, preferred_pitch);
   OpenGLStreamBuffer* sb = OpenGLDevice::GetTextureStreamBuffer();
 
   CommitClear();
@@ -325,6 +356,16 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   if (!sb || map_size > sb->GetChunkSize())
   {
     GL_INS_FMT("Not using PBO for map size {}", map_size);
+
+    // Compressed data can't use the row length, repack it if the caller's pitch has padding.
+    DynamicHeapArray<u8> packed_data;
+    if (IsCompressedFormat() && pitch != preferred_pitch)
+    {
+      packed_data.resize(map_size);
+      CopyTextureDataForUpload(width, height, m_format, packed_data.data(), preferred_pitch, data, pitch);
+      data = packed_data.data();
+      pitch = preferred_pitch;
+    }
 
     const u32 alignment = GetUploadAlignment(pitch);
     if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
@@ -361,7 +402,7 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
     glPixelStorei(GL_UNPACK_ROW_LENGTH, CalcUploadRowLengthFromPitch(preferred_pitch));
     if (IsCompressedFormat())
     {
-      const u32 size = CalcUploadSize(height, pitch);
+      const u32 size = map_size;
       if (IsTextureArray())
       {
         glCompressedTexSubImage3D(target, level, x, y, layer, width, height, 1, gl_format, size,
@@ -402,7 +443,7 @@ bool OpenGLTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u3
   if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer >= m_layers || level >= m_levels)
     return false;
 
-  const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 pitch = GetStreamUploadPitch(m_format, width);
   const u32 upload_size = CalcUploadSize(height, pitch);
   OpenGLStreamBuffer* sb = OpenGLDevice::GetTextureStreamBuffer();
   if (!sb || upload_size > sb->GetSize())
@@ -426,7 +467,7 @@ void OpenGLTexture::Unmap()
 {
   CommitClear();
 
-  const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(m_map_width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 pitch = GetStreamUploadPitch(m_format, m_map_width);
   const u32 upload_size = CalcUploadSize(m_map_height, pitch);
 
   GPUDevice::GetStatistics().buffer_streamed += upload_size;
