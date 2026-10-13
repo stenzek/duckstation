@@ -322,7 +322,7 @@ D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipe
     const Threading::SharedLockGuard lock(m_state_map_mutex);
     if (const auto it = m_input_layouts.find(il); it != m_input_layouts.end())
     {
-      dil = it->second;
+      dil = it->second.layout;
       return dil;
     }
   }

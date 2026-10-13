@@ -367,6 +367,9 @@ std::optional<GPUDevice::AdapterInfoList> D3DCommon::GetAdapterInfoList(Error* e
         {
           for (const DXGI_MODE_DESC& mode : dmodes)
           {
+            if (mode.RefreshRate.Denominator == 0)
+              continue;
+
             const GPUDevice::ExclusiveFullscreenMode efm{.width = mode.Width,
                                                          .height = mode.Height,
                                                          .refresh_rate =
@@ -433,7 +436,7 @@ D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIAdapter* adapter, const 
 
     const GSVector4i output_rc(output_desc.DesktopCoordinates.left, output_desc.DesktopCoordinates.top,
                                output_desc.DesktopCoordinates.right, output_desc.DesktopCoordinates.bottom);
-    if (!client_rc_vec.rintersects(output_rc))
+    if (client_rc_vec.rintersects(output_rc))
     {
       intersecting_output = std::move(this_output);
       break;
@@ -466,7 +469,7 @@ D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIAdapter* adapter, const 
   ret = DXGI_MODE_DESC();
 
   if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, &ret.value(), nullptr)) ||
-      request_mode.Format != format)
+      ret->Format != format)
   {
     ERROR_LOG("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
     ret.reset();

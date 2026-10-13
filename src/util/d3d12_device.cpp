@@ -879,6 +879,9 @@ bool D3D12SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
+  // Outputs are matched in desktop coordinates.
+  MapWindowPoints(window_hwnd, nullptr, reinterpret_cast<POINT*>(&client_rc), 2);
+
   m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
     D3D12Device::GetInstance().GetAdapter(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
   return m_fullscreen_mode.has_value();

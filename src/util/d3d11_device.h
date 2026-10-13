@@ -196,6 +196,7 @@ private:
   std::array<D3D11Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   u32 m_num_current_render_targets = 0;
   GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  bool m_device_lost = false;
   D3D11Texture* m_current_depth_target = nullptr;
 
   ID3D11InputLayout* m_current_input_layout = nullptr;

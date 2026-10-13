@@ -241,6 +241,9 @@ bool D3D11SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
+  // Outputs are matched in desktop coordinates.
+  MapWindowPoints(window_hwnd, nullptr, reinterpret_cast<POINT*>(&client_rc), 2);
+
   // Little bit messy...
   HRESULT hr;
   ComPtr<IDXGIDevice> dxgi_dev;
@@ -347,11 +350,12 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
 
     hr = dxgi_factory->CreateSwapChainForHwnd(d3d_device, window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                               m_swap_chain.ReleaseAndGetAddressOf());
-    if (FAILED(hr)) [[unlikely]]
-    {
-      Error::SetHResult(error, "CreateSwapChainForHwnd() failed: ", hr);
-      return false;
-    }
+  }
+
+  if (FAILED(hr)) [[unlikely]]
+  {
+    Error::SetHResult(error, "CreateSwapChainForHwnd() failed: ", hr);
+    return false;
   }
 
   // we need the specific factory for the device, otherwise MakeWindowAssociation() is flaky.
@@ -412,7 +416,7 @@ bool D3D11SwapChain::CreateRTV(Error* error)
     BOOL fullscreen = FALSE;
     DXGI_SWAP_CHAIN_DESC desc;
     if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
-        SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+        SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Denominator != 0)
     {
       m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
                                            static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
@@ -429,8 +433,10 @@ bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 
   m_swap_chain_rtv.Reset();
 
-  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-                                           m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  // Flags have to match what the swap chain was created with.
+  const UINT flags = IsExclusiveFullscreen() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
+                                               (m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, flags);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "ResizeBuffers() failed: ", hr);
@@ -703,6 +709,9 @@ GPUPresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
 {
   D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
 
+  if (m_device_lost) [[unlikely]]
+    return GPUPresentResult::DeviceLost;
+
   // Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
   // This might get called repeatedly if it takes a while to switch back, that's the host's problem.
   BOOL is_fullscreen;
@@ -712,6 +721,10 @@ GPUPresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
     TrimTexturePool();
     return GPUPresentResult::ExclusiveFullscreenLost;
   }
+
+  // No buffer to render to if a resize failed.
+  if (!SC->GetRTV()) [[unlikely]]
+    return GPUPresentResult::SkipPresent;
 
   // The time here seems to include the time for the buffer to become available.
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
@@ -753,7 +766,12 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-  SC->GetSwapChain()->Present(sync_interval, flags);
+  const HRESULT hr = SC->GetSwapChain()->Present(sync_interval, flags);
+  if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) [[unlikely]]
+  {
+    ERROR_LOG("Present() failed, device lost: {:08X}", static_cast<unsigned>(hr));
+    m_device_lost = true;
+  }
 
   if (m_gpu_timing_enabled)
     StartTimestampQuery();
