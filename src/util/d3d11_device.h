@@ -6,6 +6,7 @@
 #include "d3d11_stream_buffer.h"
 #include "gpu_device.h"
 
+#include "common/threading.h"
 #include "common/windows_headers.h"
 
 #include <d3d11_1.h>
@@ -176,6 +177,8 @@ private:
 
   ComPtr<IDXGIFactory5> m_dxgi_factory;
 
+  // Pipelines can be created from worker threads, so the state maps need to be protected.
+  Threading::SharedMutex m_state_map_mutex;
   RasterizationStateMap m_rasterization_states;
   DepthStateMap m_depth_states;
   BlendStateMap m_blend_states;
