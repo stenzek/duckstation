@@ -27,6 +27,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions Condition="!$(Configuration.Contains(Debug))">QT_NO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Work around broken deprecated warning bug in MSVC non-debug -->
+      <PreprocessorDefinitions Condition="!$(Configuration.Contains(Clang)) And !$(Configuration.Contains(Debug))">QT_NO_DEPRECATED_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(QtToolOutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(QtIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
