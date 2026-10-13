@@ -573,6 +573,36 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
 
 //////////////////////////////////////////////////////////////////////////
 
+static void ClearColorBuffer(const OpenGLTexture* tex, GLint idx)
+{
+  // Integer targets have to be cleared with the matching entry point, the float variant is undefined.
+  const auto color = tex->GetUNormClearColor();
+  switch (tex->GetFormat())
+  {
+    case GPUTextureFormat::R16I:
+    case GPUTextureFormat::R32I:
+    {
+      const GLint icolor[4] = {static_cast<GLint>(color[0]), static_cast<GLint>(color[1]),
+                               static_cast<GLint>(color[2]), static_cast<GLint>(color[3])};
+      glClearBufferiv(GL_COLOR, idx, icolor);
+    }
+    break;
+
+    case GPUTextureFormat::R16U:
+    case GPUTextureFormat::R32U:
+    {
+      const GLuint ucolor[4] = {static_cast<GLuint>(color[0]), static_cast<GLuint>(color[1]),
+                                static_cast<GLuint>(color[2]), static_cast<GLuint>(color[3])};
+      glClearBufferuiv(GL_COLOR, idx, ucolor);
+    }
+    break;
+
+    default:
+      glClearBufferfv(GL_COLOR, idx, color.data());
+      break;
+  }
+}
+
 void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 {
   switch (tex->GetState())
@@ -581,22 +611,9 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
     {
       tex->SetState(GPUTexture::State::Dirty);
 
+      // Not worth switching framebuffers just for a hint if we can't invalidate the texture directly.
       if (glInvalidateTexImage)
-      {
         glInvalidateTexImage(tex->GetGLId(), 0);
-      }
-      else if (glInvalidateFramebuffer)
-      {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
-
-        const GLenum attachment = tex->IsDepthStencil() ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0;
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, tex->GetGLTarget(), tex->GetGLId(), 0);
-
-        glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
-
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
-      }
     }
     break;
 
@@ -606,9 +623,30 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 
       if (glClearTexImage)
       {
-        const auto [gl_internal_format, gl_format, gl_type] =
-          OpenGLTexture::GetPixelFormatMapping(tex->GetFormat(), m_gl_context->IsGLES());
-        glClearTexImage(tex->GetGLId(), 0, gl_format, gl_type, &tex->GetClearValue());
+        // The clear value is always RGBA8 or a float depth, so it can't be passed through in the texture's format.
+        const auto color = tex->GetUNormClearColor();
+        if (tex->IsDepthStencil())
+        {
+          const struct
+          {
+            float depth;
+            u32 stencil;
+          } ds = {tex->GetClearDepth(), 0};
+          const bool has_stencil = GPUTexture::IsDepthStencilFormat(tex->GetFormat());
+          glClearTexImage(tex->GetGLId(), 0, has_stencil ? GL_DEPTH_STENCIL : GL_DEPTH_COMPONENT,
+                          has_stencil ? GL_FLOAT_32_UNSIGNED_INT_24_8_REV : GL_FLOAT, &ds);
+        }
+        else if (tex->GetFormat() == GPUTextureFormat::R16I || tex->GetFormat() == GPUTextureFormat::R16U ||
+                 tex->GetFormat() == GPUTextureFormat::R32I || tex->GetFormat() == GPUTextureFormat::R32U)
+        {
+          const GLint icolor[4] = {static_cast<GLint>(color[0]), static_cast<GLint>(color[1]),
+                                   static_cast<GLint>(color[2]), static_cast<GLint>(color[3])};
+          glClearTexImage(tex->GetGLId(), 0, GL_RGBA_INTEGER, GL_INT, icolor);
+        }
+        else
+        {
+          glClearTexImage(tex->GetGLId(), 0, GL_RGBA, GL_FLOAT, color.data());
+        }
       }
       else
       {
@@ -619,6 +657,9 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 
         if (tex->IsDepthStencil())
         {
+          // Drop any colour target left over from a copy, otherwise the clear is clipped to its size.
+          glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+
           const float depth = tex->GetClearDepth();
           glDisable(GL_SCISSOR_TEST);
           if (!m_last_depth_state.depth_write)
@@ -630,11 +671,10 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         }
         else
         {
-          const auto color = tex->GetUNormClearColor();
           glDisable(GL_SCISSOR_TEST);
           if (m_last_blend_state.write_mask != 0xf)
             glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-          glClearBufferfv(GL_COLOR, 0, color.data());
+          ClearColorBuffer(tex, 0);
           if (m_last_blend_state.write_mask != 0xf)
           {
             glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
@@ -673,11 +713,10 @@ void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
 
     case GPUTexture::State::Cleared:
     {
-      const auto color = tex->GetUNormClearColor();
       glDisable(GL_SCISSOR_TEST);
       if (m_last_blend_state.write_mask != 0xf)
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-      glClearBufferfv(GL_COLOR, static_cast<GLint>(idx), color.data());
+      ClearColorBuffer(tex, static_cast<GLint>(idx));
       if (m_last_blend_state.write_mask != 0xf)
       {
         glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
