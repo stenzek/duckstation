@@ -475,8 +475,9 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
                                 (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
   m_features.compute_shaders = false;
 
-  m_features.gpu_timing = !(m_gl_context->IsGLES() &&
-                            (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));
+  m_features.gpu_timing = m_gl_context->IsGLES() ?
+                            (GLAD_GL_EXT_disjoint_timer_query && glGetQueryObjectivEXT && glGetQueryObjectui64vEXT) :
+                            (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_timer_query);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = !HasCreateFlag(create_flags, CreateFlags::DisableMemoryImport);
   m_features.exclusive_fullscreen = false;

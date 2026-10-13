@@ -892,7 +892,7 @@ void OpenGLTextureBuffer::SetDebugName(std::string_view name)
 {
   if (glObjectLabel)
   {
-    glObjectLabel(GL_TEXTURE, m_buffer->GetGLBufferId(), static_cast<GLsizei>(name.length()),
+    glObjectLabel(GL_BUFFER, m_buffer->GetGLBufferId(), static_cast<GLsizei>(name.length()),
                   static_cast<const GLchar*>(name.data()));
   }
 }
@@ -1137,7 +1137,7 @@ void OpenGLDownloadTexture::Flush()
 
 void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 {
-  if (name.empty())
+  if (name.empty() || m_buffer_id != 0)
     return;
 
   if (glObjectLabel)
