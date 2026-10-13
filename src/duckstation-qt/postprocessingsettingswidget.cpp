@@ -100,6 +100,32 @@ PostProcessingChainConfigWidget::PostProcessingChainConfigWidget(SettingsWindow*
   connect(m_ui.enablePostProcessing, &QCheckBox::checkStateChanged, this,
           &PostProcessingChainConfigWidget::triggerSettingsReload);
 
+  // Subframes only apply to the display chain.
+  if (section == PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME)
+  {
+    // Not bound, since the chain has to be reloaded when it changes, and it uses the chain's settings layer.
+    QtUtils::FixSpinBoxTextMargins(m_ui.subframeCount);
+    m_ui.subframeCount->setMaximum(PostProcessing::Config::MAX_SUBFRAME_COUNT);
+    {
+      const auto lock = Core::GetSettingsLock();
+      m_ui.subframeCount->setValue(PostProcessing::Config::GetSubframeCount(getSettingsInterfaceToUpdate(), section));
+    }
+    connect(m_ui.subframeCount, &QSpinBox::valueChanged, this,
+            &PostProcessingChainConfigWidget::onSubframeCountChanged);
+    dialog->registerWidgetHelp(
+      m_ui.subframeCount, tr("Subframes"), tr("Automatic"),
+      tr("Presents additional frames between each frame the console renders, which post-processing shaders can use "
+         "for effects such as black frame insertion. Automatic presents as many subframes as the display's refresh "
+         "rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause "
+         "problems with a shader."));
+  }
+  else
+  {
+    QtUtils::SafeDeleteWidget(m_ui.subframeCountLabel);
+    QtUtils::SafeDeleteWidget(m_ui.subframeCount);
+    QtUtils::SafeDeleteWidget(m_ui.subframeLayout);
+  }
+
   updateList();
   updateButtonsAndConfigPane(std::nullopt);
   connectUi();
@@ -340,6 +366,15 @@ void PostProcessingChainConfigWidget::onStageItemSelectionChanged()
 {
   std::optional<u32> index = getSelectedIndex();
   updateButtonsAndConfigPane(index);
+}
+
+void PostProcessingChainConfigWidget::onSubframeCountChanged(int value)
+{
+  auto lock = Core::GetSettingsLock();
+  SettingsInterface& si = getSettingsInterfaceToUpdate();
+  si.SetIntValue(m_section, "SubframeCount", value);
+  lock.unlock();
+  commitSettingsUpdate();
 }
 
 void PostProcessingChainConfigWidget::onStageItemChanged(QListWidgetItem* item)

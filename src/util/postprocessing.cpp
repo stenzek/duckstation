@@ -283,6 +283,11 @@ bool PostProcessing::Config::IsEnabled(const SettingsInterface& si, const char* 
   return si.GetBoolValue(section, "Enabled", false);
 }
 
+s32 PostProcessing::Config::GetSubframeCount(const SettingsInterface& si, const char* section)
+{
+  return std::clamp<s32>(si.GetIntValue(section, "SubframeCount", DEFAULT_SUBFRAME_COUNT), -1, MAX_SUBFRAME_COUNT);
+}
+
 bool PostProcessing::Config::IsStageEnabled(const SettingsInterface& si, const char* section, u32 index)
 {
   return si.GetBoolValue(GetStageConfigSection(section, index), "StageEnabled", true);
@@ -445,6 +450,28 @@ bool PostProcessing::Chain::IsActive() const
   return m_enabled && !m_stages.empty();
 }
 
+bool PostProcessing::Chain::WantsSubFrames() const
+{
+  for (const std::unique_ptr<Shader>& stage : m_stages)
+  {
+    if (stage->IsEnabled() && stage->WantsSubFrames())
+      return true;
+  }
+
+  return false;
+}
+
+s32 PostProcessing::Chain::GetSubframeCount() const
+{
+  if (!IsActive() || m_subframe_count == 0)
+    return 0;
+  else if (m_subframe_count > 0)
+    return m_subframe_count;
+
+  // Automatic only presents subframes when a stage uses them.
+  return WantsSubFrames() ? -1 : 0;
+}
+
 void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
@@ -464,6 +491,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<Threading::Mutex>& setti
   DestroyTextures();
 
   m_enabled = Config::IsEnabled(si, m_section);
+  m_subframe_count = static_cast<s8>(Config::GetSubframeCount(si, m_section));
   m_wants_depth_buffer = false;
   m_wants_unscaled_input = false;
 
@@ -561,6 +589,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<Threading::Mutex>& s
                                            const SettingsInterface& si)
 {
   m_enabled = Config::IsEnabled(si, m_section);
+  m_subframe_count = static_cast<s8>(Config::GetSubframeCount(si, m_section));
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
   if (stage_count == 0)
@@ -851,7 +880,8 @@ void PostProcessing::Chain::DestroyTextures()
 
 GPUPresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
                                               GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width,
-                                              s32 orig_height, s32 native_width, s32 native_height)
+                                              s32 orig_height, s32 native_width, s32 native_height,
+                                              u32 current_subframe, u32 total_subframes)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
@@ -867,9 +897,10 @@ GPUPresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTextur
     if (!stage->IsEnabled())
       continue;
 
-    if (const GPUPresentResult pres = stage->Apply(
-          original_color, input_color, input_depth, stage->IsFinalStage() ? final_target : output, final_rect,
-          orig_width, orig_height, native_width, native_height, m_target_width, m_target_height, time);
+    if (const GPUPresentResult pres =
+          stage->Apply(original_color, input_color, input_depth, stage->IsFinalStage() ? final_target : output,
+                       final_rect, orig_width, orig_height, native_width, native_height, m_target_width,
+                       m_target_height, time, current_subframe, total_subframes);
         pres != GPUPresentResult::OK)
     {
       return pres;

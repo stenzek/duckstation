@@ -41,6 +41,7 @@ public:
   ALWAYS_INLINE void SetFinalStage(bool final_stage) { m_final_stage = final_stage; }
   ALWAYS_INLINE bool WantsDepthBuffer() const { return m_wants_depth_buffer; }
   ALWAYS_INLINE bool WantsUnscaledInput() const { return m_wants_unscaled_input; }
+  ALWAYS_INLINE bool WantsSubFrames() const { return m_wants_subframes; }
 
   std::vector<ShaderOption> TakeOptions();
   void LoadOptions(const SettingsInterface& si, const char* section);
@@ -57,7 +58,7 @@ public:
   virtual GPUPresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
                                  GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width,
                                  s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
-                                 u32 target_height, float time) = 0;
+                                 u32 target_height, float time, u32 current_subframe, u32 total_subframes) = 0;
 
 protected:
   using OptionList = std::vector<ShaderOption>;
@@ -72,6 +73,7 @@ protected:
   bool m_final_stage = false;
   bool m_wants_depth_buffer = false;
   bool m_wants_unscaled_input = false;
+  bool m_wants_subframes = false;
 };
 
 } // namespace PostProcessing

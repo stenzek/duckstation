@@ -610,17 +610,32 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   // If this returns false, our backend object is deleted and replaced with null, so bail out.
   if (cmd->present_frame)
   {
-    bool result;
-    if (VideoPresenter::ShouldPresentFrame(cmd->present_time))
+    bool result = true;
+    const u32 subframe_count = VideoPresenter::GetSubframeCount(cmd->present_period);
+    if (VideoPresenter::ShouldPresentFrame(cmd->present_time, subframe_count > 0))
     {
-      result = VideoPresenter::PresentFrame(this, cmd->present_time);
+      // Subframes are evenly spaced across the frame period. The core thread stays asleep, it only cares about the
+      // first one. Without a present time, the period starts now, not after the first present has blocked.
+      const u64 frame_time = (cmd->present_time != 0) ? cmd->present_time : Timer::GetCurrentValue();
+      result = VideoPresenter::PresentFrame(this, cmd->present_time, 1, subframe_count + 1);
+
+      // We specifically don't release the frame until all subframes are presented to avoid the core thread pushing
+      // too many frames while we're presenting subframes. Subframes that would be displayed late are skipped instead,
+      // otherwise blocking vsync would leave every following frame late.
+      for (u32 i = 1; result && i <= subframe_count; i++)
+      {
+        const u64 subframe_time = frame_time + ((cmd->present_period * i) / (subframe_count + 1));
+        if (VideoPresenter::ShouldPresentSubframe(subframe_time))
+        {
+          ImGuiManager::NewFrame(Timer::GetCurrentValue());
+          result = VideoPresenter::PresentFrame(this, subframe_time, i + 1, subframe_count + 1);
+        }
+      }
+
       if (result)
         ImGuiManager::NewFrame(Timer::GetCurrentValue());
+
       needs_restore = true;
-    }
-    else
-    {
-      result = true;
     }
 
     ReleaseQueuedFrame();

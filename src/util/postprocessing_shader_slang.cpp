@@ -63,6 +63,8 @@ enum : s32
   FrameDirection = -5,
   TextureSize = -6,
   Zero = -7,
+  CurrentSubFrame = -8,
+  TotalSubFrames = -9,
 };
 }
 
@@ -1829,6 +1831,8 @@ std::optional<PostProcessing::SlangShader::Uniform> PostProcessing::SlangShader:
     {"ViewportSize", BuiltinUniform::FinalViewportSize, 16},
     {"FrameCount", BuiltinUniform::FrameCount, 4},
     {"FrameDirection", BuiltinUniform::FrameDirection, 4},
+    {"CurrentSubFrame", BuiltinUniform::CurrentSubFrame, 4},
+    {"TotalSubFrames", BuiltinUniform::TotalSubFrames, 4},
   };
 
   for (const BuiltinUniformEntry& entry : builtins)
@@ -1838,6 +1842,8 @@ std::optional<PostProcessing::SlangShader::Uniform> PostProcessing::SlangShader:
       if (size != entry.expected_size)
         WARNING_LOG("Builtin uniform '{}' has incorrect size {}, expected {}", name, size, entry.expected_size);
 
+      m_wants_subframes |=
+        (entry.type == BuiltinUniform::CurrentSubFrame || entry.type == BuiltinUniform::TotalSubFrames);
       return Uniform{entry.type, 0, push_constant, size, offset};
     }
   }
@@ -1937,7 +1943,8 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
                                                     GPUTexture* input_depth, GPUTexture* final_target,
                                                     const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
                                                     s32 native_width, s32 native_height, u32 target_width,
-                                                    u32 target_height, float time)
+                                                    u32 target_height, float time, u32 current_subframe,
+                                                    u32 total_subframes)
 {
   const auto bind_final_target = [](GPUTexture* final_target, const GSVector4i& final_rect) {
     if (!final_target)
@@ -1965,9 +1972,14 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
   GL_SCOPE_FMT("Slang Shader {}", m_name);
 
   // TODO: Extract out
-  if (!m_original_history_textures.empty())
+  // Subframes of the same frame share its history, otherwise the previous frame would be the current one.
+  if (!m_original_history_textures.empty() && current_subframe == 1)
   {
     GL_INS_FMT("Updating original history texture");
+
+    // TODO: get rid of the rotate, replace with head ptr instead
+    std::rotate(m_original_history_textures.rbegin(), m_original_history_textures.rbegin() + 1,
+                m_original_history_textures.rend());
 
     // Need to copy the input before drawing, because of swap chain
     Error error;
@@ -1984,7 +1996,18 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
     }
   }
 
-  m_frame_count++;
+  // Subframes of the same frame share its frame count, and feedback from the previous frame.
+  if (current_subframe == 1)
+  {
+    m_frame_count++;
+
+    // Last frame's outputs become this frame's feedback.
+    for (Texture& tex : m_textures)
+    {
+      if (tex.needs_feedback)
+        std::swap(tex.feedback_texture, tex.texture);
+    }
+  }
 
   // Vertices are computed and uploaded once.
   static constexpr std::array<std::array<SlangShaderVertex, 4>, 3> vertices = {{
@@ -2067,7 +2090,8 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
 
     alignas(VECTOR_ALIGNMENT) u8 push_constant_data[MAX_PUSH_CONSTANT_SIZE];
     BindPassUniforms(pass, push_constant_data, original_color, input_color, output_size, final_rect, orig_width,
-                     orig_height, native_width, native_height, target_width, target_height, time);
+                     orig_height, native_width, native_height, target_width, target_height, time, current_subframe,
+                     total_subframes);
     if (pass.push_constants_size > 0)
       g_gpu_device->DrawWithPushConstants(4, base_vertex, push_constant_data, pass.push_constants_size);
     else
@@ -2078,9 +2102,6 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
       GL_INS("Generating mipmaps for output texture");
       framebuffer->GenerateMipmaps();
     }
-
-    if (output_texture.needs_feedback)
-      std::swap(output_texture.feedback_texture, output_texture.texture);
   }
 
   // blit pass if required
@@ -2096,13 +2117,6 @@ GPUPresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, 
     g_gpu_device->SetPipeline(m_output_blit_pipeline.get());
     g_gpu_device->SetTextureSampler(0, last_framebuffer, g_gpu_device->GetNearestSampler());
     g_gpu_device->Draw(4, 0);
-  }
-
-  // TODO: get rid of the rotate, replace with head ptr instead
-  if (!m_original_history_textures.empty())
-  {
-    std::rotate(m_original_history_textures.rbegin(), m_original_history_textures.rbegin() + 1,
-                m_original_history_textures.rend());
   }
 
   return GPUPresentResult::OK;
@@ -2174,7 +2188,8 @@ bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_hei
           return false;
         }
 
-        // in case it's read this frame, pre-clear it
+        // in case it's read before being drawn, pre-clear both, the swap at the start of the frame might be skipped
+        g_gpu_device->ClearRenderTarget(tex.texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
         g_gpu_device->ClearRenderTarget(tex.feedback_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
       }
     }
@@ -2259,7 +2274,8 @@ void PostProcessing::SlangShader::BindPassUniforms(const Pass& pass, u8* const p
                                                    GPUTexture* original_color, GPUTexture* input_color,
                                                    GSVector2i output_size, GSVector4i final_rect, s32 orig_width,
                                                    s32 orig_height, s32 native_width, s32 native_height,
-                                                   u32 target_width, u32 target_height, float time)
+                                                   u32 target_width, u32 target_height, float time,
+                                                   u32 current_subframe, u32 total_subframes)
 {
   GL_INS_FMT("Uniform buffer: {} bytes", pass.uniforms_size);
   GL_INS_FMT("Push constants: {} bytes", pass.push_constants_size);
@@ -2304,6 +2320,14 @@ void PostProcessing::SlangShader::BindPassUniforms(const Pass& pass, u8* const p
         case BuiltinUniform::FrameDirection:
         {
           const u32 val = 1;
+          std::memcpy(dst, &val, sizeof(u32));
+        }
+        break;
+
+        case BuiltinUniform::CurrentSubFrame:
+        case BuiltinUniform::TotalSubFrames:
+        {
+          const u32 val = (ui.type == BuiltinUniform::CurrentSubFrame) ? current_subframe : total_subframes;
           std::memcpy(dst, &val, sizeof(u32));
         }
         break;

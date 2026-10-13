@@ -5149,6 +5149,19 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                                       FSUI_VSTR("If not enabled, the current post processing chain will be ignored."),
                                       PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME, "Enabled", false);
 
+  // The chain reads the subframe count, so it has to be reloaded when it changes.
+  DrawIntRangeSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Subframes"),
+    FSUI_VSTR("Presents extra frames for effects such as black frame insertion."), section, "SubframeCount",
+    PostProcessing::Config::DEFAULT_SUBFRAME_COUNT, -1, PostProcessing::Config::MAX_SUBFRAME_COUNT,
+    [](const void*, int value) {
+      SmallString ret;
+      return (value < 0) ? SmallString(FSUI_VSTR("Automatic")) :
+                           ((value == 0) ? SmallString(FSUI_VSTR("Disabled")) :
+                                           TRANSLATE_PLURAL_SSTR("FullscreenUI", "%n Frames", "Subframe count", value));
+    },
+    nullptr, true, queue_reload);
+
   if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reload Shaders"),
                  FSUI_VSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue(PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME, "Enabled", false)))

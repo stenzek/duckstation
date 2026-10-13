@@ -59,6 +59,7 @@ private:
   void onOpenDirectoryButtonClicked();
   void onStageItemSelectionChanged();
   void onStageItemChanged(QListWidgetItem* item);
+  void onSubframeCountChanged(int value);
   void triggerSettingsReload();
 
   SettingsWindow* m_dialog;

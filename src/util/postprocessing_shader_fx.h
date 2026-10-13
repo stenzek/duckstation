@@ -39,7 +39,8 @@ public:
 
   GPUPresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
                          GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
-                         s32 native_width, s32 native_height, u32 target_width, u32 target_height, float time) override;
+                         s32 native_width, s32 native_height, u32 target_width, u32 target_height, float time,
+                         u32 current_subframe, u32 total_subframes) override;
 
 private:
   using TextureID = s32;
@@ -57,6 +58,10 @@ private:
     FrameTime,
     FrameCount,
     FrameCountF,
+    CurrentSubFrame,
+    CurrentSubFrameF,
+    TotalSubFrames,
+    TotalSubFramesF,
     PingPong,
     MousePoint,
     Random,

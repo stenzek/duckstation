@@ -178,6 +178,52 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="subframeLayout">
+     <item>
+      <widget class="QLabel" name="subframeCountLabel">
+       <property name="text">
+        <string>Subframes (post-processing frames per game frame):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="subframeSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="subframeCount">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="specialValueText">
+        <string>Automatic</string>
+       </property>
+       <property name="suffix">
+        <string> Frames</string>
+       </property>
+       <property name="minimum">
+        <number>-1</number>
+       </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -200,7 +246,7 @@
         <x>0</x>
         <y>0</y>
         <width>630</width>
-        <height>262</height>
+        <height>226</height>
        </rect>
       </property>
      </widget>

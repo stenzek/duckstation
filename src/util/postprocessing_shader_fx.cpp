@@ -591,6 +591,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::effect_modu
     if (so != SourceOptionType::None)
     {
       DEV_LOG("Add source based option {} at offset {} ({})", static_cast<u32>(so), ui.offset, ui.name);
+      m_wants_subframes |= (so >= SourceOptionType::CurrentSubFrame && so <= SourceOptionType::TotalSubFramesF);
 
       SourceOption sopt;
       sopt.source = so;
@@ -809,6 +810,22 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform& 
 
       // If it's an integer type, value is going to be garbage, user can deal with it.
       *si = SourceOptionType::FrameTime;
+      return true;
+    }
+    else if (source == "current_subframe" || source == "total_subframes")
+    {
+      if ((!ui.type.is_integral() && !ui.type.is_floating_point()) || ui.type.components() > 1)
+      {
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
+        return false;
+      }
+
+      const bool is_float = (ui.type.base == reshadefx::type::t_float);
+      if (source == "current_subframe")
+        *si = is_float ? SourceOptionType::CurrentSubFrameF : SourceOptionType::CurrentSubFrame;
+      else
+        *si = is_float ? SourceOptionType::TotalSubFramesF : SourceOptionType::TotalSubFrames;
       return true;
     }
     else if (source == "pingpong")
@@ -1588,11 +1605,14 @@ GPUPresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_col
                                                         GPUTexture* input_depth, GPUTexture* final_target,
                                                         const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
                                                         s32 native_width, s32 native_height, u32 target_width,
-                                                        u32 target_height, float time)
+                                                        u32 target_height, float time, u32 current_subframe,
+                                                        u32 total_subframes)
 {
   GL_SCOPE_FMT("PostProcessingShaderFX {}", m_name);
 
-  m_frame_count++;
+  // Subframes of the same frame share its frame count.
+  if (current_subframe == 1)
+    m_frame_count++;
 
   // Reshade timer variable is in milliseconds.
   time *= 1000.0f;
@@ -1648,6 +1668,23 @@ GPUPresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_col
         case SourceOptionType::FrameCountF:
         {
           const float value = static_cast<float>(m_frame_count);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::CurrentSubFrame:
+        case SourceOptionType::TotalSubFrames:
+        {
+          const u32 value = (so.source == SourceOptionType::CurrentSubFrame) ? current_subframe : total_subframes;
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::CurrentSubFrameF:
+        case SourceOptionType::TotalSubFramesF:
+        {
+          const float value =
+            static_cast<float>((so.source == SourceOptionType::CurrentSubFrameF) ? current_subframe : total_subframes);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;

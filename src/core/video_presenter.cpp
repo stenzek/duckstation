@@ -79,6 +79,7 @@ static bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
 static void DestroyDeinterlaceTextures();
 
 static void UpdatePostProcessingSettings(bool force_load);
+static void UpdateRequestedSubframeCount();
 
 /// Returns true if the previous present was displayed late, and blocked past the specified present time.
 static bool IsPresentLate(u64 present_time);
@@ -121,6 +122,9 @@ struct Locals
   bool last_present_on_time = false;
   u8 skipped_present_count = 0;
   PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;
+  u8 current_subframe = 1;
+  u8 total_subframes = 1;
+  std::atomic<s32> requested_subframe_count{0};
 
   GPUTextureFormat present_format = GPUTextureFormat::Unknown;
   bool display_texture_24bit = false;
@@ -224,6 +228,7 @@ bool VideoPresenter::Initialize(Error* error)
   }
 
   UpdatePostProcessingSettings(false);
+  UpdateRequestedSubframeCount();
 
   return true;
 }
@@ -255,6 +260,7 @@ void VideoPresenter::Shutdown()
   s_locals.border_overlay_destination_alpha_blend = false;
 
   s_locals.display_postfx.reset();
+  s_locals.requested_subframe_count.store(0, std::memory_order_release);
 
   s_locals.border_overlay_pipeline.reset();
   s_locals.present_clear_pipeline.reset();
@@ -1151,7 +1157,8 @@ GPUPresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPU
   {
     // Avoid passing invalid rectangles into the postfx backend.
     return s_locals.display_postfx->Apply(input, nullptr, target, GSVector4i::loadh(postfx_size), postfx_size.x,
-                                          postfx_size.y, postfx_size.x, postfx_size.y);
+                                          postfx_size.y, postfx_size.x, postfx_size.y, s_locals.current_subframe,
+                                          s_locals.total_subframes);
   }
 
   // "original size" in postfx includes padding.
@@ -1159,7 +1166,7 @@ GPUPresentResult VideoPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPU
     GSVector2(s_locals.display_texture_rect.rsize()) / GSVector2(s_locals.video_active_rect.rsize());
   const GSVector2i orig = GSVector2i((GSVector2(s_locals.video_size) * upscale).ceil());
   return s_locals.display_postfx->Apply(input, nullptr, target, display_rect, orig.x, orig.y, s_locals.video_size.x,
-                                        s_locals.video_size.y);
+                                        s_locals.video_size.y, s_locals.current_subframe, s_locals.total_subframes);
 }
 
 GPUPresentResult VideoPresenter::DrawDisplayCopy(GPUTexture* const source, GPUTexture* const target,
@@ -1444,7 +1451,7 @@ void VideoPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply
                          g_gpu_settings.display_fine_crop_amount, source_rect, display_rect, draw_rect);
 }
 
-bool VideoPresenter::ShouldPresentFrame(u64 present_time)
+bool VideoPresenter::ShouldPresentFrame(u64 present_time, bool has_subframes)
 {
   // TODO: Move to VideoPresenter once it's turned into a namespace.
   if (!g_gpu_device->HasMainSwapChain())
@@ -1456,7 +1463,7 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
   {
     // If the previous frame was displayed a vblank later than usual, and its present blocked past this frame's
     // scheduled time, this frame will also be displayed late. Drop it, otherwise every following frame is too.
-    if (present_time != 0 && s_locals.skipped_present_count == 0 &&
+    if (present_time != 0 && s_locals.skipped_present_count == 0 && !has_subframes &&
         g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking() && IsPresentLate(present_time)) [[unlikely]]
     {
       DEV_LOG("Dropping late frame, previous frame displayed {:.2f} ms after scheduled time (expected {:.2f} ms)",
@@ -1484,6 +1491,21 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
   }
 
   s_locals.skipped_present_count++;
+  return false;
+}
+
+bool VideoPresenter::ShouldPresentSubframe(u64 present_time)
+{
+  // Same as frames, a late subframe would push every following present back by a vblank. Skipping it leaves the
+  // previous subframe on screen for its slot, so unlike frames, consecutive subframes can be skipped to catch up.
+  if (!g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking() || !IsPresentLate(present_time)) [[likely]]
+    return true;
+
+  const u64 last_vblank_time = s_locals.last_vblank_time.load(std::memory_order_relaxed);
+  DEV_LOG("Skipping late subframe, previous present displayed {:.2f} ms after scheduled time (expected {:.2f} ms)",
+          Timer::ConvertValueToMilliseconds(s_locals.last_present_gap),
+          Timer::ConvertValueToMilliseconds(s_locals.present_gap_baseline));
+  s_locals.last_present_gap = last_vblank_time - present_time;
   return false;
 }
 
@@ -1568,8 +1590,52 @@ void VideoPresenter::ThrottlePresentation()
   Timer::SleepUntil(s_locals.next_throttle_time, false);
 }
 
-bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
+u32 VideoPresenter::GetSubframeCount(u64 present_period)
 {
+  // No subframes when the frame rate is unbounded, or we're skipping presents to keep up.
+  const s32 count = s_locals.requested_subframe_count.load(std::memory_order_relaxed);
+  if (count == 0 || present_period == 0 || s_locals.present_skip_mode != PresentSkipMode::Disabled ||
+      g_gpu_settings.gpu_show_vram || !g_gpu_device->HasMainSwapChain())
+  {
+    return 0;
+  }
+
+  if (count > 0)
+    return static_cast<u32>(count);
+
+  // Automatic, as many as the display can show.
+  const float refresh_rate = g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate;
+  const s32 presents_per_frame =
+    static_cast<s32>(std::round(static_cast<double>(refresh_rate) * Timer::ConvertValueToSeconds(present_period)));
+  return static_cast<u32>(std::clamp<s32>(presents_per_frame - 1, 0, PostProcessing::Config::MAX_SUBFRAME_COUNT));
+}
+
+s32 VideoPresenter::GetRequestedSubframeCount()
+{
+  return s_locals.requested_subframe_count.load(std::memory_order_acquire);
+}
+
+void VideoPresenter::UpdateRequestedSubframeCount()
+{
+  const s32 count = s_locals.display_postfx ? s_locals.display_postfx->GetSubframeCount() : 0;
+  if (s_locals.requested_subframe_count.exchange(count, std::memory_order_acq_rel) == count)
+    return;
+
+  INFO_LOG("Subframes changed to {}", count);
+
+  // Whether we can sync to the host refresh rate depends on the number of subframes.
+  Host::RunOnCoreThread([]() {
+    if (System::IsValid())
+      System::UpdateSpeedLimiterState();
+  });
+}
+
+bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time, u32 current_subframe /* = 1 */,
+                                  u32 total_subframes /* = 1 */)
+{
+  s_locals.current_subframe = static_cast<u8>(current_subframe);
+  s_locals.total_subframes = static_cast<u8>(total_subframes);
+
   FullscreenUI::UploadAsyncTextures();
 
   ImGuiManager::RenderDebugWindows();
@@ -1663,6 +1729,10 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   }
 
   FullscreenUI::RecycleQueuedTextures();
+
+  // Anything rendered outside of presentation (screenshots, captures) isn't a subframe.
+  s_locals.current_subframe = 1;
+  s_locals.total_subframes = 1;
 
   if (pres == GPUPresentResult::OK)
   {
@@ -1904,6 +1974,8 @@ void VideoPresenter::TogglePostProcessing()
 
     if (s_locals.display_postfx)
       s_locals.display_postfx->Toggle();
+
+    UpdateRequestedSubframeCount();
   });
 }
 
@@ -1939,6 +2011,7 @@ void VideoPresenter::ReloadPostProcessingSettings(bool display, bool internal, b
       }
 
       UpdatePostProcessingSettings(false);
+      UpdateRequestedSubframeCount();
     }
     if (internal)
       backend->UpdatePostProcessingSettings(reload_shaders);

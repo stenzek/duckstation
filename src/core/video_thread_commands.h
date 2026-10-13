@@ -148,6 +148,7 @@ struct GPUBackendFramePresentationParameters
   u32 internal_frame_number;
 
   u64 present_time;
+  u64 present_period;
   MediaCapture* media_capture;
 
   union

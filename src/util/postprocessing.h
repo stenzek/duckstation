@@ -109,7 +109,12 @@ namespace Config {
 extern const char* const DISPLAY_CHAIN_SECTION_NAME;
 extern const char* const INTERNAL_CHAIN_SECTION_NAME;
 
+/// Subframe count of -1 presents as many subframes as the refresh rate allows, when a stage uses them. 0 disables them.
+inline constexpr s32 DEFAULT_SUBFRAME_COUNT = -1;
+inline constexpr s32 MAX_SUBFRAME_COUNT = 7;
+
 bool IsEnabled(const SettingsInterface& si, const char* section);
+s32 GetSubframeCount(const SettingsInterface& si, const char* section);
 bool IsStageEnabled(const SettingsInterface& si, const char* section, u32 index);
 u32 GetStageCount(const SettingsInterface& si, const char* section);
 std::string GetStageShaderName(const SettingsInterface& si, const char* section, u32 index);
@@ -143,6 +148,12 @@ public:
 
   bool IsActive() const;
 
+  /// Returns true if any enabled stage reads the current/total subframe.
+  bool WantsSubFrames() const;
+
+  /// Returns the number of subframes to present per frame, or -1 for as many as the refresh rate allows.
+  s32 GetSubframeCount() const;
+
   void UpdateSettings(std::unique_lock<Threading::Mutex>& settings_lock, const SettingsInterface& si);
 
   void LoadStages(std::unique_lock<Threading::Mutex>& settings_lock, const SettingsInterface& si,
@@ -156,7 +167,7 @@ public:
 
   GPUPresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
                          const GSVector4i& final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                         s32 native_height);
+                         s32 native_height, u32 current_subframe = 1, u32 total_subframes = 1);
 
 private:
   void ClearStagesWithError(const Error& error);
@@ -175,6 +186,7 @@ private:
   bool m_wants_depth_buffer = false;
   bool m_needs_depth_buffer = false;
   bool m_wants_unscaled_input = false;
+  s8 m_subframe_count = 0;
 
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;

@@ -62,7 +62,11 @@ bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_asp
 void SendDisplayToMediaCapture(MediaCapture* cap);
 
 /// Returns true if the frame scheduled for presentation at the specified time should be presented.
-bool ShouldPresentFrame(u64 present_time);
+/// Frames with subframes are never dropped for being late, their subframes are skipped instead.
+bool ShouldPresentFrame(u64 present_time, bool has_subframes);
+
+/// Returns true if the subframe scheduled for presentation at the specified time should be presented.
+bool ShouldPresentSubframe(u64 present_time);
 
 /// Sets the present skip mode.
 void SetPresentSkipMode(PresentSkipMode mode);
@@ -70,9 +74,16 @@ void SetPresentSkipMode(PresentSkipMode mode);
 /// Limits presentation speed when running with no fixed rate, e.g. FullscreenUI open.
 void ThrottlePresentation();
 
+/// Returns the number of additional subframes to present for an emulated frame of the specified period.
+u32 GetSubframeCount(u64 present_period);
+
+/// Returns the number of subframes the display post-processing chain wants per frame, or -1 for as many as the
+/// refresh rate allows. Safe to call from any thread.
+s32 GetRequestedSubframeCount();
+
 /// Main frame presenter - used both when a game is and is not running.
 /// Does not start the next ImGui frame, the caller must call ImGuiManager::NewFrame() afterwards.
-bool PresentFrame(GPUBackend* backend, u64 present_time);
+bool PresentFrame(GPUBackend* backend, u64 present_time, u32 current_subframe = 1, u32 total_subframes = 1);
 
 /// Returns the time of the last vblank observed through a blocking present, or zero. Safe to call from any thread.
 u64 GetLastVBlankTime();

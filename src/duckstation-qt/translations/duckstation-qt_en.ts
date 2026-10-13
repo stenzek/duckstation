@@ -231,6 +231,14 @@
             <numerusform>%n minutes remaining</numerusform>
         </translation>
     </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation type="unfinished">
+            <numerusform>%n Frame</numerusform>
+            <numerusform>%n Frames</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>GPU_HW</name>

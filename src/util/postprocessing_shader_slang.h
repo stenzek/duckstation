@@ -37,7 +37,8 @@ public:
                        ProgressCallback* progress) override;
   GPUPresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
                          GPUTexture* final_target, const GSVector4i& final_rect, s32 orig_width, s32 orig_height,
-                         s32 native_width, s32 native_height, u32 target_width, u32 target_height, float time) override;
+                         s32 native_width, s32 native_height, u32 target_width, u32 target_height, float time,
+                         u32 current_subframe, u32 total_subframes) override;
 
 private:
   using TextureID = u32;
@@ -136,7 +137,7 @@ private:
   void BindPassUniforms(const Pass& pass, u8* const push_constant_data, GPUTexture* original_color,
                         GPUTexture* input_color, GSVector2i output_size, GSVector4i final_rect, s32 orig_width,
                         s32 orig_height, s32 native_width, s32 native_height, u32 target_width, u32 target_height,
-                        float time);
+                        float time, u32 current_subframe, u32 total_subframes);
 
   std::vector<Texture> m_textures;
   std::vector<Pass> m_passes;

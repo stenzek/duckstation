@@ -2349,6 +2349,7 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
   frame->present_time = (s_state.optimal_frame_pacing && s_state.throttler_enabled && !IsExecutionInterrupted()) ?
                           s_state.next_frame_time :
                           0;
+  frame->present_period = (s_state.throttler_enabled && !IsExecutionInterrupted()) ? s_state.frame_period : 0;
 
   // Video capture setup.
   frame->media_capture = nullptr;
@@ -2483,10 +2484,11 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   // exclusive fullscreen on D3D11, provides the same blocking, see D3DCommon::PresentSwapChain().
   //
   // When syncing to the host refresh rate, frame_period is the host refresh period (or a multiple of it, when the host
-  // refresh rate is a multiple of the console's), so emulation and display run at the same rate, but the throttler's
-  // schedule starts at an arbitrary point (ResetThrottler() uses the current time). The offset between present_time
-  // (P below) and the following vblank can be anywhere in the period, and every frame waits that long to be displayed.
-  // If it's very small, a little jitter makes a frame miss its vblank:
+  // refresh rate is a multiple of the console's, or with subframes, which are presented one refresh apart), so
+  // emulation and display run at the same rate, but the throttler's schedule starts at an arbitrary point
+  // (ResetThrottler() uses the current time). The offset between present_time (P below) and the following vblank can be
+  // anywhere in the period, and every frame waits that long to be displayed. If it's very small, a little jitter makes
+  // a frame miss its vblank:
   //
   //                 vblank                          vblank
   //                   |                               |
@@ -2511,7 +2513,8 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   // next frame's present_time, and from then on every frame is displayed one vblank late, because the queue never
   // drains at matched rates. VideoPresenter::ShouldPresentFrame() detects that and drops one frame. Since we're still
   // in phase, the frame after that makes its vblank again. When each frame spans several refreshes, a frame that misses
-  // its vblank is still displayed before the next frame's present_time, so there's no backlog to recover from.
+  // its vblank is still displayed before the next frame's present_time, so there's no backlog to recover from. That
+  // isn't true for subframes, so VideoPresenter::ShouldPresentSubframe() skips a late subframe instead.
   //
   // The margin is how long the frame has to be rendered and displayed. It starts at VSYNC_PRESENT_MARGIN_MS, which is
   // enough for most setups, but some need longer, e.g. exclusive fullscreen on D3D. If a frame which was presented on
@@ -2549,8 +2552,8 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   }
 
   // Frames are presented at the next frame time, we want that to be just before vblank. Any vblank works as a
-  // reference, since they're all a multiple of the refresh period apart. Wrap the error to within half a period, so we
-  // move in whichever direction is closer.
+  // reference, including those of subframes, since they're all a multiple of the refresh period apart. Wrap the error
+  // to within half a period, so we move in whichever direction is closer.
   const s64 target_time = static_cast<s64>(vblank_time) - static_cast<s64>(s_state.vsync_present_margin);
   s64 error = (target_time - static_cast<s64>(s_state.next_frame_time)) % period;
   if (error >= (period / 2))
@@ -3892,8 +3895,10 @@ void System::UpdateSpeedLimiterState()
                                                                                     g_settings.emulation_speed));
   s_state.throttler_enabled = (s_state.target_speed != 0.0f);
   s_state.optimal_frame_pacing = (s_state.throttler_enabled && g_settings.display_optimal_frame_pacing);
-  s_state.skip_presenting_duplicate_frames =
-    s_state.throttler_enabled && g_settings.display_skip_presenting_duplicate_frames;
+  // Duplicate frames still have to be presented with subframes, otherwise the last subframe is held.
+  s_state.skip_presenting_duplicate_frames = s_state.throttler_enabled &&
+                                             g_settings.display_skip_presenting_duplicate_frames &&
+                                             VideoPresenter::GetRequestedSubframeCount() == 0;
   s_state.pre_frame_sleep = s_state.optimal_frame_pacing && g_settings.display_pre_frame_sleep;
   s_state.can_sync_to_host = false;
   s_state.syncing_to_host = false;
@@ -3905,8 +3910,14 @@ void System::UpdateSpeedLimiterState()
         host_refresh_rate > 0.0f)
     {
       // The host refresh rate can be a multiple of ours, in which case each frame is displayed for several refreshes.
+      // Fixed subframes need exactly that many refreshes per frame, automatic is limited to the maximum subframe count.
+      const s32 subframe_count = VideoPresenter::GetRequestedSubframeCount();
       const float host_ratio = host_refresh_rate / s_state.video_frame_rate;
-      const u32 presents_per_frame = static_cast<u32>(std::max(static_cast<s32>(std::round(host_ratio)), 1));
+      s32 presents_per_frame = std::max(static_cast<s32>(std::round(host_ratio)), 1);
+      if (subframe_count > 0)
+        presents_per_frame = subframe_count + 1;
+      else if (subframe_count < 0)
+        presents_per_frame = std::min(presents_per_frame, PostProcessing::Config::MAX_SUBFRAME_COUNT + 1);
       const float ratio = host_ratio / static_cast<float>(presents_per_frame);
       s_state.can_sync_to_host = (ratio >= 0.95f && ratio <= 1.05f);
       INFO_LOG("Refresh rate: Host={}hz Guest={}hz Refreshes={} Ratio={} - {}", host_refresh_rate,
@@ -3918,7 +3929,7 @@ void System::UpdateSpeedLimiterState()
       if (s_state.syncing_to_host)
       {
         s_state.target_speed = ratio;
-        s_state.vsync_presents_per_frame = presents_per_frame;
+        s_state.vsync_presents_per_frame = static_cast<u32>(presents_per_frame);
       }
     }
   }
