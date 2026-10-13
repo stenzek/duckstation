@@ -181,19 +181,26 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
                        u32 level /*= 0*/)
 {
   if (!HasFlag(Flags::AllowMap) || (x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) ||
-      layer > m_layers || level > m_levels)
+      layer >= m_layers || level >= m_levels)
   {
     return false;
   }
 
-  const bool discard = (width == m_width && height == m_height);
+  // Dynamic textures can only be mapped with discard, so partial updates are not possible.
+  if (width != GetMipWidth(level) || height != GetMipHeight(level)) [[unlikely]]
+  {
+    ERROR_LOG("Partial map of {}x{} region in {}x{} texture is not supported", width, height, GetMipWidth(level),
+              GetMipHeight(level));
+    return false;
+  }
+
   const u32 srnum = D3D11CalcSubresource(level, layer, m_levels);
 
   ID3D11DeviceContext1* context = D3D11Device::GetD3DContext();
   CommitClear(context);
 
   D3D11_MAPPED_SUBRESOURCE sr;
-  HRESULT hr = context->Map(m_texture.Get(), srnum, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_READ_WRITE, 0, &sr);
+  HRESULT hr = context->Map(m_texture.Get(), srnum, D3D11_MAP_WRITE_DISCARD, 0, &sr);
   if (FAILED(hr)) [[unlikely]]
   {
     ERROR_LOG("Map pixels texture failed: {:08X}", static_cast<unsigned>(hr));
@@ -226,7 +233,9 @@ void D3D11Texture::Unmap()
 void D3D11Texture::GenerateMipmaps()
 {
   DebugAssert(HasFlag(Flags::AllowGenerateMipmaps));
-  D3D11Device::GetD3DContext()->GenerateMips(m_srv.Get());
+  ID3D11DeviceContext1* context = D3D11Device::GetD3DContext();
+  CommitClear(context);
+  context->GenerateMips(m_srv.Get());
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -301,15 +310,18 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
   srd.SysMemPitch = initial_data_stride;
   srd.SysMemSlicePitch = initial_data_stride * height;
 
+  // CreateTexture2D() expects data for every subresource, we only have the first.
+  const bool use_initial_data = (initial_data && layers == 1 && levels == 1);
+
   ComPtr<ID3D11Texture2D> texture;
-  const HRESULT tex_hr = device->CreateTexture2D(&desc, initial_data ? &srd : nullptr, texture.GetAddressOf());
+  const HRESULT tex_hr = device->CreateTexture2D(&desc, use_initial_data ? &srd : nullptr, texture.GetAddressOf());
   if (FAILED(tex_hr))
   {
     Error::SetHResult(error, "CreateTexture2D() failed: ", tex_hr);
     return nullptr;
   }
 
-  if (initial_data)
+  if (use_initial_data)
   {
     GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(format, height, initial_data_stride);
     GPUDevice::GetStatistics().num_uploads++;
@@ -377,9 +389,16 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     }
   }
 
-  return std::unique_ptr<D3D11Texture>(new D3D11Texture(width, height, layers, levels, samples, type, format, flags,
-                                                        std::move(texture), std::move(srv), std::move(rtv_dsv),
-                                                        std::move(uav)));
+  std::unique_ptr<D3D11Texture> ret(new D3D11Texture(width, height, layers, levels, samples, type, format, flags,
+                                                     std::move(texture), std::move(srv), std::move(rtv_dsv),
+                                                     std::move(uav)));
+  if (initial_data && !use_initial_data && !ret->Update(0, 0, width, height, initial_data, initial_data_stride))
+  {
+    Error::SetStringView(error, "Failed to upload initial texture data.");
+    return nullptr;
+  }
+
+  return ret;
 }
 
 D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)
@@ -556,6 +575,7 @@ void D3D11DownloadTexture::Flush()
     Unmap();
 
   // Handled when mapped.
+  m_needs_flush = false;
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

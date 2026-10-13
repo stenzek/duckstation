@@ -593,19 +593,18 @@ void D3D11Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
 
   if (dst11->IsRenderTargetOrDepthStencil())
   {
-    if (src11->GetState() == GPUTexture::State::Cleared)
+    // Clear/discard state only applies to level 0, and only when the whole target is overwritten.
+    if (dst_x == 0 && dst_y == 0 && dst_level == 0 && width == dst11->GetWidth() && height == dst11->GetHeight())
     {
-      if (src11->GetWidth() == dst11->GetWidth() && src11->GetHeight() == dst11->GetHeight())
+      if (src11->GetState() == GPUTexture::State::Cleared && src_level == 0 && src11->GetWidth() == width &&
+          src11->GetHeight() == height)
       {
         // pass clear through
         dst11->m_state = src11->m_state;
         dst11->m_clear_value = src11->m_clear_value;
         return;
       }
-    }
-    else if (dst_x == 0 && dst_y == 0 && width == dst11->GetMipWidth(dst_level) &&
-             height == dst11->GetMipHeight(dst_level))
-    {
+
       m_context->DiscardView(dst11->GetRTVOrDSV());
       dst11->SetState(GPUTexture::State::Dirty);
     }
@@ -619,9 +618,15 @@ void D3D11Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
 
   const CD3D11_BOX src_box(static_cast<LONG>(src_x), static_cast<LONG>(src_y), 0, static_cast<LONG>(src_x + width),
                            static_cast<LONG>(src_y + height), 1);
+
+  // Depth-stencil and multisampled resources can only be copied in their entirety, with no box.
+  const bool whole_subresource = (src11->IsDepthStencil() || src11->IsMultisampled());
+  DebugAssert(!whole_subresource || (dst_x == 0 && dst_y == 0 && src_x == 0 && src_y == 0 &&
+                                     width == src->GetMipWidth(src_level) && height == src->GetMipHeight(src_level)));
   m_context->CopySubresourceRegion(dst11->GetD3DTexture(), D3D11CalcSubresource(dst_level, dst_layer, dst->GetLevels()),
                                    dst_x, dst_y, 0, src11->GetD3DTexture(),
-                                   D3D11CalcSubresource(src_level, src_layer, src->GetLevels()), &src_box);
+                                   D3D11CalcSubresource(src_level, src_layer, src->GetLevels()),
+                                   whole_subresource ? nullptr : &src_box);
 }
 
 void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
@@ -645,7 +650,12 @@ void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   D3D11Texture* src11 = static_cast<D3D11Texture*>(src);
 
   src11->CommitClear(m_context.Get());
-  dst11->CommitClear(m_context.Get());
+
+  // The whole level is overwritten, so a pending clear of level 0 can be dropped.
+  if (dst_level == 0)
+    dst11->SetState(GPUTexture::State::Dirty);
+  else
+    dst11->CommitClear(m_context.Get());
 
   m_context->ResolveSubresource(dst11->GetD3DTexture(), D3D11CalcSubresource(dst_level, dst_layer, dst->GetLevels()),
                                 src11->GetD3DTexture(), 0, dst11->GetDXGIFormat());
