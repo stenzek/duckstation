@@ -549,6 +549,7 @@ OpenGLSampler::OpenGLSampler(GLuint id) : GPUSampler(), m_id(id)
 OpenGLSampler::~OpenGLSampler()
 {
   OpenGLDevice::GetInstance().UnbindSampler(m_id);
+  glDeleteSamplers(1, &m_id);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -593,9 +594,16 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
     return {};
   }
 
-  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, ta[static_cast<u8>(config.address_u.GetValue())]);
-  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, ta[static_cast<u8>(config.address_v.GetValue())]);
-  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, ta[static_cast<u8>(config.address_w.GetValue())]);
+  // Border clamp is not available in GLES prior to 3.2 without an extension, fall back to edge clamp.
+  const bool has_border_clamp =
+    (!IsGLES() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_EXT_texture_border_clamp || GLAD_GL_OES_texture_border_clamp);
+  const auto get_address_mode = [has_border_clamp](GPUSampler::AddressMode mode) {
+    return (mode == GPUSampler::AddressMode::ClampToBorder && !has_border_clamp) ? GL_CLAMP_TO_EDGE :
+                                                                                  ta[static_cast<u8>(mode)];
+  };
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, get_address_mode(config.address_u.GetValue()));
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, get_address_mode(config.address_v.GetValue()));
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, get_address_mode(config.address_w.GetValue()));
   const u8 mipmap_on_off = (config.min_lod != 0 || config.max_lod != 0);
   glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER,
                       filters[mipmap_on_off][static_cast<u8>(config.mip_filter.GetValue())]
@@ -605,9 +613,13 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
     filters[0][static_cast<u8>(config.mip_filter.GetValue())][static_cast<u8>(config.mag_filter.GetValue())]);
   glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, static_cast<float>(config.min_lod));
   glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, static_cast<float>(config.max_lod));
-  glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, config.GetBorderFloatColor().data());
-  if (config.anisotropy > 1)
+  if (has_border_clamp)
+    glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, config.GetBorderFloatColor().data());
+  if (config.anisotropy > 1 && (GLAD_GL_VERSION_4_6 || GLAD_GL_ARB_texture_filter_anisotropic ||
+                                GLAD_GL_EXT_texture_filter_anisotropic))
+  {
     glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(config.anisotropy.GetValue()));
+  }
 
   return std::unique_ptr<GPUSampler>(new OpenGLSampler(sampler));
 }
