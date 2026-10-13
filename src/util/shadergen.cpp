@@ -721,8 +721,16 @@ void ShaderGen::DeclareFragmentEntryPoint(
     }
     else
     {
+      // GLSL ES requires explicit locations when there are multiple outputs, and they can't be bound at link time.
+      // Dual source outputs are bound through EXT_blend_func_extended instead.
+      const bool explicit_locations =
+        (m_render_api == RenderAPI::OpenGLES && num_color_outputs > 1 && !dual_source_output);
       for (u32 i = 0; i < num_color_outputs; i++)
+      {
+        if (explicit_locations)
+          ss << "layout(location = " << i << ") ";
         ss << ((i == 0) ? target_0_qualifier : "out") << " float4 o_col" << i << ";\n";
+      }
     }
 
     ss << "\n";
