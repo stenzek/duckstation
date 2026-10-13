@@ -52,7 +52,7 @@ void OpenGLDevice::BindUpdateTextureUnit()
 
 bool OpenGLDevice::ShouldUsePBOsForDownloads()
 {
-  return !GetInstance().m_disable_pbo && !GetInstance().m_disable_async_download;
+  return !GetInstance().m_disable_async_download;
 }
 
 void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum glerr)
@@ -366,6 +366,7 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
      m_driver_type == GPUDriverType::ImaginationProprietary || m_driver_type == GPUDriverType::ARMMesa);
   m_disable_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
+  m_disable_async_download = m_disable_pbo;
   if (m_disable_pbo && !is_shitty_mobile_driver)
     WARNING_LOG("Not using PBOs for texture uploads because buffer_storage is unavailable.");
   else if (m_disable_pbo)
