@@ -791,6 +791,10 @@ public:
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config,
                                                       Error* error = nullptr) = 0;
 
+  /// Writes any pending pipeline cache changes to disk, if the backend updates it incrementally.
+  /// Should be called after compiling a large number of pipelines.
+  virtual void FlushPipelineCache();
+
 #ifdef ENABLE_GPU_OBJECT_NAMES
   /// Debug messaging.
   virtual void PushDebugGroup(const char* name) = 0;

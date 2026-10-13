@@ -935,9 +935,17 @@ bool OpenGLDevice::CreatePipelineCache(const std::string& path, Error* error)
     return false;
 #else
   // Manually truncate it, that way we don't blow away another process's file on Linux.
-  m_pipeline_disk_cache_file = FileSystem::OpenCFile(path.c_str(), "a+b", error);
-  if (!m_pipeline_disk_cache_file || !FileSystem::FSeek64(m_pipeline_disk_cache_file, 0, SEEK_SET, error))
+  // Can't use append mode, because the index gets rewritten in the middle of the file when flushing.
+  m_pipeline_disk_cache_file = FileSystem::OpenExistingOrCreateCFile(path.c_str(), -1, error);
+  if (!m_pipeline_disk_cache_file)
     return false;
+
+  if (!FileSystem::FSeek64(m_pipeline_disk_cache_file, 0, SEEK_SET, error))
+  {
+    std::fclose(m_pipeline_disk_cache_file);
+    m_pipeline_disk_cache_file = nullptr;
+    return false;
+  }
 
   m_pipeline_disk_cache_file_lock = FileSystem::POSIXLock(m_pipeline_disk_cache_file, false, error);
   if (!m_pipeline_disk_cache_file_lock.IsLocked())
@@ -954,6 +962,7 @@ bool OpenGLDevice::CreatePipelineCache(const std::string& path, Error* error)
     m_pipeline_disk_cache_file_lock = {};
     std::fclose(m_pipeline_disk_cache_file);
     m_pipeline_disk_cache_file = nullptr;
+    return false;
   }
 #endif
 
@@ -1032,6 +1041,7 @@ void OpenGLDevice::AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it)
   else if (static_cast<size_t>(binary_size) != uncompressed_data.size()) [[unlikely]]
   {
     WARNING_LOG("Size changed from {} to {} after glGetProgramBinary()", uncompressed_data.size(), binary_size);
+    uncompressed_data.resize(static_cast<size_t>(binary_size));
   }
 
   Error error;
@@ -1051,6 +1061,7 @@ void OpenGLDevice::AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it)
       std::fwrite(compressed_data->data(), compressed_data->size(), 1, m_pipeline_disk_cache_file) != 1)
   {
     ERROR_LOG("Failed to write binary to disk cache.");
+    return;
   }
 
   it->file_format = format;
@@ -1119,12 +1130,27 @@ bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
     return true;
   }
 
-  // Rewrite footer/index entries.
+  const bool result = WritePipelineCacheIndex(error);
+  close_cache();
+  return result;
+}
+
+void OpenGLDevice::FlushPipelineCache()
+{
+  if (!m_pipeline_disk_cache_file || !m_pipeline_disk_cache_changed)
+    return;
+
+  Error error;
+  if (!WritePipelineCacheIndex(&error))
+    ERROR_LOG("Failed to flush pipeline cache: {}", error.GetDescription());
+}
+
+bool OpenGLDevice::WritePipelineCacheIndex(Error* error)
+{
+  // Rewrite footer/index entries. New programs are written over the top of the old index, so this has to happen
+  // before the file is usable again.
   if (!FileSystem::FSeek64(m_pipeline_disk_cache_file, m_pipeline_disk_cache_data_end, SEEK_SET, error))
-  {
-    close_cache();
     return false;
-  }
 
   u32 count = 0;
 
@@ -1143,7 +1169,6 @@ bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
     if (std::fwrite(&entry, sizeof(entry), 1, m_pipeline_disk_cache_file) != 1) [[unlikely]]
     {
       Error::SetErrno(error, "fwrite() for entry failed: ", errno);
-      close_cache();
       return false;
     }
 
@@ -1158,10 +1183,9 @@ bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
       std::fflush(m_pipeline_disk_cache_file) != 0) [[unlikely]]
   {
     Error::SetErrno(error, "fwrite() for footer failed: ", errno);
-    close_cache();
     return false;
   }
 
-  close_cache();
+  m_pipeline_disk_cache_changed = false;
   return true;
 }

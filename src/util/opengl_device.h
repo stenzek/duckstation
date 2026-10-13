@@ -117,6 +117,8 @@ public:
   void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
   void SubmitPresent(GPUSwapChain* swap_chain) override;
 
+  void FlushPipelineCache() override;
+
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
@@ -187,6 +189,7 @@ private:
                                         const GPUPipeline::GraphicsConfig& plconfig);
   void AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it);
   bool DiscardPipelineCache();
+  bool WritePipelineCacheIndex(Error* error);
 
   void ApplyRasterizationState(GPUPipeline::RasterizationState rs);
   void ApplyDepthState(GPUPipeline::DepthState ds);
@@ -210,14 +213,15 @@ private:
   // VAO cache - fixed max as key. Pointers to elements are stable, iterators are not.
   const OpenGLPipeline::VertexArrayCache::value_type* m_last_vao = nullptr;
   GLuint m_default_vao = 0;
+  GLuint m_last_ssbo = 0;
   GPUPipeline::BlendState m_last_blend_state = {};
   GPUPipeline::RasterizationState m_last_rasterization_state = {};
   GPUPipeline::DepthState m_last_depth_state = {};
+  bool m_framebuffer_srgb = false;
   GLuint m_uniform_buffer_alignment = 1;
   GLuint m_last_program = 0;
   u32 m_last_texture_unit = 0;
   std::array<std::pair<GLuint, GLuint>, MAX_TEXTURE_SAMPLERS> m_last_samplers = {};
-  GLuint m_last_ssbo = 0;
   GSVector4i m_last_viewport = {};
   GSVector4i m_last_scissor = GSVector4i::cxpr(0, 0, 1, 1);
 
@@ -239,18 +243,17 @@ private:
   u8 m_waiting_timestamp_queries = 0;
   bool m_timestamp_query_started = false;
 
+  bool m_disable_pbo = false;
+  bool m_disable_async_download = false;
+  bool m_use_get_texture_sub_image = false;
+  bool m_pipeline_disk_cache_changed = false;
+
   std::FILE* m_pipeline_disk_cache_file = nullptr;
 #ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock m_pipeline_disk_cache_file_lock;
 #endif
   u32 m_pipeline_disk_cache_data_end = 0;
   u32 m_pipeline_disk_cache_version = 0;
-  bool m_pipeline_disk_cache_changed = false;
-
-  bool m_framebuffer_srgb = false;
-  bool m_disable_pbo = false;
-  bool m_disable_async_download = false;
-  bool m_use_get_texture_sub_image = false;
 };
 
 class OpenGLSwapChain : public GPUSwapChain

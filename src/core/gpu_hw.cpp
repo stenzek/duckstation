@@ -652,6 +652,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
       Error::AddPrefix(error, "Failed to recompile resolution dependent pipelines: ");
       return false;
     }
+
+    g_gpu_device->FlushPipelineCache();
   }
 
   if (framebuffer_changed)
@@ -2055,6 +2057,8 @@ bool GPU_HW::CompilePipelines(Error* error)
     return false;
 
 #undef UPDATE_PROGRESS
+
+  g_gpu_device->FlushPipelineCache();
 
   INFO_LOG("Pipeline creation took {:.2f} ms.", progress.GetElapsedMilliseconds());
   return true;

@@ -737,6 +737,10 @@ bool GPUDevice::ClosePipelineCache(const std::string& path, Error* error)
                                          error);
 }
 
+void GPUDevice::FlushPipelineCache()
+{
+}
+
 bool GPUDevice::ReadPipelineCache(DynamicHeapArray<u8> data, Error* error)
 {
   return false;
