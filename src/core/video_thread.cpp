@@ -4,9 +4,9 @@
 #include "video_thread.h"
 #include "core.h"
 #include "fullscreenui.h"
+#include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
-#include "gpu_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "performance_counters.h"
@@ -1001,6 +1001,11 @@ void VideoThread::ReconfigureOnThread(VideoThreadReconfigureCommand* cmd)
   if (cmd->renderer.has_value())
   {
     Timer timer;
+
+    // Prefill the resolution scale if we're using auto to reduce the chances of needing to recompile after init.
+    // Technically this is accessing core thread state which is wrong, but it'll be stalled waiting for us.
+    if (current_api == RenderAPI::None && g_gpu_settings.gpu_automatic_resolution_scale)
+      g_gpu_settings.gpu_resolution_scale = GPU::CalculateAutomaticResolutionScale();
 
     // Do we want a renderer?
     if (CreateGPUBackendOnThread(cmd->renderer.value() != GPURenderer::Software, cmd->upload_vram, &old_settings,

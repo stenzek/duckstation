@@ -2542,28 +2542,36 @@ u8 GPU::CalculateAutomaticResolutionScale()
   // When the system is starting and all borders crop is enabled, the registers are zero, and
   // display_height therefore is also zero. Keep the existing resolution until it updates.
   u32 scale = 1;
-  if (const WindowInfo& main_window_info = VideoThread::GetRenderWindowInfo();
-      !main_window_info.IsSurfaceless() && s_locals.crtc_state.display_width > 0 &&
-      s_locals.crtc_state.display_height > 0 && s_locals.crtc_state.display_vram_width > 0 &&
-      s_locals.crtc_state.display_vram_height > 0)
+  const WindowInfo& main_window_info = VideoThread::GetRenderWindowInfo();
+  const GSVector2i crtc_video_size = GetCRTCVideoSize();
+  if (!main_window_info.IsSurfaceless() && !crtc_video_size.eq(GSVector2i::zero()))
   {
+    GSVector4i vram_active_rect, vram_source_rect;
+    if (s_locals.crtc_state.display_vram_width > 0 && s_locals.crtc_state.display_vram_height > 0)
+    {
+      vram_active_rect = GetCRTCVideoActiveRect();
+      vram_source_rect = GetCRTCVRAMSourceRect();
+    }
+    else
+    {
+      // No video yet -> assume full screen.
+      vram_active_rect = vram_source_rect = GSVector4i::loadh(crtc_video_size);
+    }
+
     GSVector4i source_rect, display_rect, draw_rect;
-    CalculateDrawRect(GSVector2i(main_window_info.surface_width, main_window_info.surface_height), GetCRTCVideoSize(),
-                      GetCRTCVideoActiveRect(), GetCRTCVRAMSourceRect(), g_settings.display_rotation,
-                      g_settings.display_alignment, g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
+    CalculateDrawRect(GSVector2i(main_window_info.surface_width, main_window_info.surface_height), crtc_video_size,
+                      vram_active_rect, vram_source_rect, g_settings.display_rotation, g_settings.display_alignment,
+                      g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
                       g_settings.IsUsingIntegerDisplayScaling(false), g_settings.display_fine_crop_mode,
                       g_settings.display_fine_crop_amount, &source_rect, &display_rect, &draw_rect);
 
     // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
     // anamorphic aspect ratio.
-    const s32 draw_width = draw_rect.width();
-    const s32 draw_height = draw_rect.height();
-    scale = static_cast<u32>(std::ceil(
-      std::max(static_cast<float>(draw_width) / static_cast<float>(s_locals.crtc_state.display_vram_width),
-               static_cast<float>(draw_height) / static_cast<float>(s_locals.crtc_state.display_vram_height))));
+    const GSVector2i draw_size = draw_rect.rsize();
+    const GSVector2i vram_size = vram_source_rect.rsize();
+    scale = GSVector2i((GSVector2(draw_size) / GSVector2(vram_size)).ceil()).maxv_s32();
     scale = std::min<u32>(scale, std::numeric_limits<decltype(g_settings.gpu_resolution_scale)>::max());
-    VERBOSE_LOG("Draw Size = {}x{}, VRAM Size = {}x{}, Preferred Scale = {}", draw_width, draw_height,
-                s_locals.crtc_state.display_vram_width, s_locals.crtc_state.display_vram_height, scale);
+    VERBOSE_LOG("Draw Size = {}, VRAM Size = {}, Preferred Scale = {}", draw_size, vram_size, scale);
   }
 
   return Truncate8(scale);
