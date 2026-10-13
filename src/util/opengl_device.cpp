@@ -759,6 +759,10 @@ void OpenGLDevice::DestroyFramebuffer(GLuint fbo)
 
 bool OpenGLDevice::CreateBuffers()
 {
+  // Core profile has no default VAO, and the index buffer binding is VAO state, so we need one bound at all times.
+  glGenVertexArrays(1, &m_default_vao);
+  glBindVertexArray(m_default_vao);
+
   if (!(m_vertex_buffer = OpenGLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE)) ||
       !(m_index_buffer = OpenGLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE)) ||
       !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE)) ||
@@ -816,6 +820,8 @@ void OpenGLDevice::DestroyBuffers()
   m_uniform_buffer.reset();
   m_index_buffer.reset();
   m_vertex_buffer.reset();
+  if (m_default_vao != 0)
+    glDeleteVertexArrays(1, &m_default_vao);
 }
 
 GPUPresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)

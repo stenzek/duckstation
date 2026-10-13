@@ -516,14 +516,14 @@ void OpenGLDevice::UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key)
     m_program_cache.erase(it);
 }
 
-OpenGLPipeline::VertexArrayCache::const_iterator
+const OpenGLPipeline::VertexArrayCache::value_type*
 OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key, Error* error)
 {
   OpenGLPipeline::VertexArrayCache::iterator it = m_vao_cache.find(key);
   if (it != m_vao_cache.end())
   {
     it->second.reference_count++;
-    return it;
+    return &(*it);
   }
 
   OpenGLPipeline::VertexArrayCacheItem item;
@@ -531,10 +531,10 @@ OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key, Err
     CreateVAO(std::span<const GPUPipeline::VertexAttribute>(key.vertex_attributes, key.num_vertex_attributes),
               key.vertex_attribute_stride, error);
   if (item.vao_id == 0)
-    return m_vao_cache.cend();
+    return nullptr;
 
   item.reference_count = 1;
-  return m_vao_cache.emplace(key, item).first;
+  return &(*m_vao_cache.emplace(key, item).first);
 }
 
 GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride, Error* error)
@@ -565,8 +565,7 @@ GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> att
       glVertexAttribPointer(i, va.components, m.type, m.normalized, stride, ptr);
   }
 
-  if (m_last_vao != m_vao_cache.cend())
-    glBindVertexArray(m_last_vao->second.vao_id);
+  glBindVertexArray(m_last_vao ? m_last_vao->second.vao_id : m_default_vao);
 
   return vao;
 }
@@ -608,17 +607,17 @@ void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)
   if ((--it->second.reference_count) > 0)
     return;
 
-  if (m_last_vao == it)
+  if (m_last_vao == &(*it))
   {
-    m_last_vao = m_vao_cache.cend();
-    glBindVertexArray(0);
+    m_last_vao = nullptr;
+    glBindVertexArray(m_default_vao);
   }
 
   glDeleteVertexArrays(1, &it->second.vao_id);
   m_vao_cache.erase(it);
 }
 
-OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,
+OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, const VertexArrayCache::value_type* vao,
                                const RasterizationState& rs, const DepthState& ds, const BlendState& bs,
                                GLenum topology)
   : m_key(key), m_vao(vao), m_program(program), m_blend_state(bs), m_rasterization_state(rs), m_depth_state(ds),
@@ -662,8 +661,8 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Gra
   if (program_id == 0)
     return {};
 
-  const OpenGLPipeline::VertexArrayCache::const_iterator vao = LookupVAOCache(pkey.va_key, error);
-  if (vao == m_vao_cache.cend())
+  const OpenGLPipeline::VertexArrayCache::value_type* vao = LookupVAOCache(pkey.va_key, error);
+  if (!vao)
   {
     UnrefProgram(pkey);
     return {};

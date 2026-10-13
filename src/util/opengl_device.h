@@ -130,8 +130,8 @@ public:
   void PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id);
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
-  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key,
-                                                                  Error* error);
+  const OpenGLPipeline::VertexArrayCache::value_type* LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key,
+                                                                     Error* error);
   GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride, Error* error);
   void UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key);
 
@@ -207,8 +207,9 @@ private:
   OpenGLPipeline::ProgramCache m_program_cache;
   GPUFramebufferManager<GLuint, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
 
-  // VAO cache - fixed max as key
-  OpenGLPipeline::VertexArrayCache::const_iterator m_last_vao = m_vao_cache.cend();
+  // VAO cache - fixed max as key. Pointers to elements are stable, iterators are not.
+  const OpenGLPipeline::VertexArrayCache::value_type* m_last_vao = nullptr;
+  GLuint m_default_vao = 0;
   GPUPipeline::BlendState m_last_blend_state = {};
   GPUPipeline::RasterizationState m_last_rasterization_state = {};
   GPUPipeline::DepthState m_last_depth_state = {};
