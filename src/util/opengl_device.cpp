@@ -449,9 +449,9 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   // noperspective is not supported in GLSL ES.
   m_features.noperspective_interpolation = !is_gles;
 
-  // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
+  // glBlitFramebufer with same source/destination is only legal in desktop GL, invalid in GLES.
   // So, blit from the shadow texture, like in the other renderers.
-  m_features.texture_copy_to_self = (m_driver_type != GPUDriverType::ARMProprietary) &&
+  m_features.texture_copy_to_self = (!is_gles || GLAD_GL_EXT_copy_image || GLAD_GL_OES_copy_image) &&
                                     !HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf);
 
   m_features.feedback_loops = false;
