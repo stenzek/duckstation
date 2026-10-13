@@ -239,8 +239,20 @@ void VulkanDevice::SetupPipelineBuilder(Vulkan::GraphicsPipelineBuilder& gpb, co
                            config.blend.write_mask);
   }
 
-  const auto blend_constants = config.blend.GetConstantFloatColor();
-  gpb.SetBlendConstants(blend_constants[0], blend_constants[1], blend_constants[2], blend_constants[3]);
+  if (config.blend.enable)
+  {
+    for (const GPUPipeline::BlendFunc factor :
+         {config.blend.src_blend.GetValue(), config.blend.src_alpha_blend.GetValue(), config.blend.dst_blend.GetValue(),
+          config.blend.dst_alpha_blend.GetValue()})
+    {
+      if (factor == GPUPipeline::BlendFunc::ConstantColor || factor == GPUPipeline::BlendFunc::InvConstantColor)
+      {
+        const auto blend_constants = config.blend.GetConstantFloatColor();
+        gpb.SetBlendConstants(blend_constants[0], blend_constants[1], blend_constants[2], blend_constants[3]);
+        break;
+      }
+    }
+  }
 
   gpb.AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
   gpb.AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
