@@ -30,6 +30,7 @@ public:
   const std::string& GetPath() const { return m_path; }
 
   void Reset();
+  void Flush();
   bool DoState(StateWrapper& sw);
   void CopyState(const MemoryCard* src);
 

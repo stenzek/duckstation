@@ -3922,6 +3922,13 @@ void System::UpdateMemoryCards()
   if ((!s_state.running_game_path.empty() && IsPsfPath(s_state.running_game_path.c_str())) || IsReplayingGPUDump())
     return;
 
+  // Make sure all files are up to date, after swapping ports a card may be opened before the one holding it is closed.
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    if (MemoryCard* card = Pad::GetMemoryCard(i))
+      card->Flush();
+  }
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     const MemoryCardType type = g_settings.memory_card_types[i];

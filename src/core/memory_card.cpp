@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memory_card.h"
+#include "host.h"
 #include "system_private.h"
 
 #include "util/imgui_manager.h"
@@ -19,6 +20,8 @@
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
+#include <atomic>
+
 LOG_CHANNEL(MemoryCard);
 
 static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_names = {{
@@ -32,6 +35,9 @@ static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_
   "Memory Card 8 Host Flush",
 }};
 
+// Set while an async save is in progress for the card in this slot.
+static std::array<std::atomic_bool, NUM_CONTROLLER_AND_CARD_PORTS> s_save_pending;
+
 MemoryCard::MemoryCard(u32 index)
   : m_save_event(
       s_event_names[index], GetSaveDelayInTicks(), GetSaveDelayInTicks(),
@@ -44,6 +50,9 @@ MemoryCard::MemoryCard(u32 index)
 MemoryCard::~MemoryCard()
 {
   SaveIfChanged(false);
+
+  // the file has to be written before the card goes away, it may be reopened straight after
+  s_save_pending[m_index].wait(true, std::memory_order_acquire);
 }
 
 TickCount MemoryCard::GetSaveDelayInTicks()
@@ -61,6 +70,12 @@ void MemoryCard::Reset()
   ResetTransferState();
   SaveIfChanged(true);
   m_FLAG.no_write_yet = true;
+}
+
+void MemoryCard::Flush()
+{
+  SaveIfChanged(true);
+  s_save_pending[m_index].wait(true, std::memory_order_acquire);
 }
 
 bool MemoryCard::DoState(StateWrapper& sw)
@@ -363,33 +378,46 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (m_path.empty())
     return false;
 
-  const std::string_view filename = Path::GetFileName(m_path);
-  INFO_LOG("Saving memory card to {}...", filename);
+  // If the previous save is still in progress, wait for it, otherwise the writes could land out of order.
+  s_save_pending[m_index].wait(true, std::memory_order_acquire);
+  s_save_pending[m_index].store(true, std::memory_order_release);
 
-  Error error;
-  if (!MemoryCardImage::SaveToFile(m_data, m_path.c_str(), &error))
-  {
-    if (display_osd_message)
-    {
-      Host::AddIconOSDMessage(
-        OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
-        fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
-        fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"), filename, error.GetDescription()));
-    }
-
-    return false;
-  }
-
+  // Game state has to be read on the core thread.
+  std::string icon_path;
   if (display_osd_message)
   {
-    std::string icon_path = System::GetGameIconPath(false);
+    icon_path = System::GetGameIconPath(false);
     if (icon_path.empty())
       icon_path = ICON_PF_MEMORY_CARD;
-
-    Host::AddIconOSDMessage(OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
-                            fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
-                            fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), filename));
   }
+
+  Host::QueueAsyncTask([this, data = m_data, display_osd_message, icon_path = std::move(icon_path)]() mutable {
+    const std::string_view filename = Path::GetFileName(m_path);
+    INFO_LOG("Saving memory card to {}...", filename);
+
+    Error error;
+    if (!MemoryCardImage::SaveToFile(data, m_path.c_str(), &error))
+    {
+      if (display_osd_message)
+      {
+        Host::AddIconOSDMessage(
+          OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
+          fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"), filename, error.GetDescription()));
+      }
+    }
+    else if (display_osd_message)
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
+                              fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
+                              fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), filename));
+    }
+
+    // the card can be destroyed as soon as the flag is cleared, don't touch it afterwards
+    std::atomic_bool& pending = s_save_pending[m_index];
+    pending.store(false, std::memory_order_release);
+    pending.notify_one();
+  });
 
   return true;
 }
