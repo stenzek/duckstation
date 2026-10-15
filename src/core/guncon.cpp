@@ -3,6 +3,7 @@
 
 #include "guncon.h"
 #include "gpu.h"
+#include "system.h"
 
 #include "util/state_wrapper.h"
 #include "util/translation.h"
@@ -163,7 +164,10 @@ void GunCon::UpdatePosition()
 
   // are we within the active display area?
   s32 offset_tick, offset_line;
-  if (!pos.valid || (offset_tick = static_cast<s32>(pos.tick) + m_tick_offset) < 0 ||
+  TickCount remainder = 0;
+  if (!pos.valid ||
+      (offset_tick = System::UnscaleTicksToOverclock(static_cast<TickCount>(pos.tick), &remainder) + m_tick_offset) <
+        0 ||
       (offset_line = static_cast<s32>(pos.line) + m_line_offset) < 0 || m_shoot_offscreen)
   {
     DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", pos.window_x, pos.window_y);

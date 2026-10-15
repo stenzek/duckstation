@@ -1846,11 +1846,13 @@ bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_
     return false;
   }
 
-  *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(s_locals.GPUSTAT.vertical_interlace)) +
+  const bool double_height =
+    s_locals.GPUSTAT.vertical_interlace && (!s_locals.force_progressive_scan || s_locals.GPUSTAT.vertical_resolution);
+  *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(double_height)) +
               s_locals.crtc_state.vertical_visible_start;
-  *out_tick = static_cast<u32>(System::ScaleTicksToOverclock(static_cast<TickCount>(
-                std::round(display_x * static_cast<float>(s_locals.crtc_state.dot_clock_divider))))) +
-              s_locals.crtc_state.horizontal_visible_start;
+  *out_tick = static_cast<u32>(System::ScaleTicksToOverclock(
+    static_cast<TickCount>(std::round(display_x * static_cast<float>(s_locals.crtc_state.dot_clock_divider))) +
+    s_locals.crtc_state.horizontal_visible_start));
   return true;
 }
 

@@ -85,6 +85,40 @@ TEST_F(GPUFrontend, ProgressiveSettingUpdatesInterlacedDisplayHeight)
   EXPECT_EQ(GPU::GetCRTCVideoSize().y, 480);
 }
 
+TEST_F(GPUFrontend, BeamCoordinatesScaleTheDisplayOriginWithOverclock)
+{
+  for (const GSVector2 position : {GSVector2(0.0f, 0.0f), GSVector2(64.0f, 100.0f)})
+  {
+    g_settings.cpu_overclock_active = false;
+    GPU::CPUClockChanged();
+    u32 native_tick, native_line;
+    ASSERT_TRUE(GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(position, 1.0f, &native_tick, &native_line));
+
+    g_settings.cpu_overclock_active = true;
+    g_settings.cpu_overclock_numerator = 2;
+    g_settings.cpu_overclock_denominator = 1;
+    GPU::CPUClockChanged();
+    u32 overclocked_tick, overclocked_line;
+    ASSERT_TRUE(
+      GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(position, 1.0f, &overclocked_tick, &overclocked_line));
+    EXPECT_EQ(overclocked_tick, native_tick * 2);
+    EXPECT_EQ(overclocked_line, native_line);
+  }
+}
+
+TEST_F(GPUFrontend, ProgressiveInterlaceUsesOneBeamLinePerDisplayLine)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive;
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000020);
+
+  u32 tick, line, first_line;
+  ASSERT_TRUE(GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(GSVector2(0.0f, 0.0f), 1.0f, &tick, &first_line));
+  ASSERT_TRUE(GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(GSVector2(0.0f, 100.0f), 1.0f, &tick, &line));
+  EXPECT_EQ(line, first_line + 100);
+}
+
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)
 {
   GSVector4i source, display, draw;
