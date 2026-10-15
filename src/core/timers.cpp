@@ -241,13 +241,13 @@ void Timers::AddTicks(u32 timer, TickCount count)
     return;
   }
 
-  // Needs slow path if using non-repeat mode, because unless it's resetting an even number of times
-  // the IRQ might not actually trigger, and we need to stop in that middle state.
+  // Needs slow path if using toggle mode, because reaching the target and overflowing each toggle the request, and
+  // unless it's toggling an even number of times the IRQ might not actually trigger.
   if (cs.mode.irq_pulse_n)
   {
     do
     {
-      const u32 reset_at = (cs.mode.reset_at_target && cs.counter < cs.target) ? cs.target : TIMER_OVERFLOW;
+      const u32 reset_at = (cs.counter < cs.target) ? cs.target : TIMER_OVERFLOW;
       const u32 add = std::min(reset_at - cs.counter, static_cast<u32>(count));
       const u32 old_counter = cs.counter;
       cs.counter += add;

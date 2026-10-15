@@ -563,10 +563,6 @@ TEST_F(TimersTest, AddTicksMatchesSingleTicks)
     {
       for (const u32 irq_mode : irq_modes)
       {
-        // Toggle mode only toggles once when it passes the target and overflows without resetting in between.
-        if (toggle_mode != 0 && irq_mode == (MODE_IRQ_AT_TARGET | MODE_IRQ_ON_OVERFLOW))
-          continue;
-
         const u32 mode = reset_mode | toggle_mode | irq_mode | MODE_IRQ_REPEAT;
         for (const u32 target : targets)
         {
