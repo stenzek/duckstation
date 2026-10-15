@@ -9,6 +9,8 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
+
 namespace {
 
 class GPUFrontend : public testing::Test
@@ -57,4 +59,44 @@ TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
   GPU::WriteRegister(0, 0x1F000000);
   GPU::WriteRegister(4, 0x01000000);
   EXPECT_NE(GPU::ReadRegister(4) & (1u << 24), 0u);
+}
+
+TEST(GPUDisplay, FineCropUsesOriginalSourceScale)
+{
+  GSVector4i source, display, draw;
+  GPU::CalculateDrawRect(GSVector2i(576, 480), GSVector2i(640, 480), GSVector4i(0, 0, 640, 480),
+                         GSVector4i(100, 10, 740, 490), DisplayRotation::Normal, DisplayAlignment::Center, 1.0f, false,
+                         DisplayFineCropMode::VideoResolution, std::array<s16, 4>{64, 0, 0, 0}, &source, &display,
+                         &draw);
+  EXPECT_TRUE(source.eq(GSVector4i(164, 10, 740, 490)));
+  EXPECT_TRUE(display.eq(GSVector4i(0, 0, 576, 480)));
+  EXPECT_TRUE(draw.eq(display));
+}
+
+TEST(GPUDisplay, FineCropRemovesPaddingBeforeSourcePixels)
+{
+  GSVector4i source, display, draw;
+  GPU::CalculateDrawRect(GSVector2i(300, 240), GSVector2i(320, 240), GSVector4i(16, 0, 304, 240),
+                         GSVector4i(0, 0, 576, 480), DisplayRotation::Normal, DisplayAlignment::Center, 1.0f, false,
+                         DisplayFineCropMode::VideoResolution, std::array<s16, 4>{20, 0, 0, 0}, &source, &display,
+                         &draw);
+  EXPECT_TRUE(source.eq(GSVector4i(8, 0, 576, 480)));
+  EXPECT_TRUE(display.eq(GSVector4i(0, 0, 300, 240)));
+  EXPECT_TRUE(draw.eq(GSVector4i(0, 0, 284, 240)));
+}
+
+TEST(GPUDisplay, ExcessiveFineCropProducesEmptyBoundedRectangles)
+{
+  for (const auto amount : {std::array<s16, 4>{640, 480, 0, 0}, std::array<s16, 4>{1000, 1000, 1000, 1000}})
+  {
+    GSVector4i source, display, draw;
+    GPU::CalculateDrawRect(GSVector2i(640, 480), GSVector2i(640, 480), GSVector4i(0, 0, 640, 480),
+                           GSVector4i(100, 10, 740, 490), DisplayRotation::Normal, DisplayAlignment::Center, 1.0f,
+                           false, DisplayFineCropMode::VideoResolution, amount, &source, &display, &draw);
+    EXPECT_TRUE(source.eq(GSVector4i(740, 490, 740, 490)));
+    EXPECT_EQ(draw.width(), 0);
+    EXPECT_EQ(draw.height(), 0);
+    EXPECT_GT(display.width(), 0);
+    EXPECT_GT(display.height(), 0);
+  }
 }

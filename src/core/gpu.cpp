@@ -2317,20 +2317,24 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
     fvideo_size = fvideo_size - crop_padding_left_top - crop_padding_right_bottom;
     crop_amount = crop_amount - GSVector4::xyxy(crop_padding_left_top, crop_padding_right_bottom);
 
+    // Convert using the original active size, before removing any source pixels.
+    const GSVector2 video_to_source = fsource_rect.rsize() / fvideo_active_rect.rsize().max(GSVector2::cxpr(1.0f));
+
     // apply remaining crop to active area
     const GSVector2 crop_size = crop_amount.xy() + crop_amount.zw();
     fvideo_active_rect -= GSVector4::loadh(crop_size);
     fvideo_size -= crop_size;
 
     // need to take it off the source too
-    const GSVector2 video_to_source = fsource_rect.rsize() / fvideo_active_rect.rsize();
     const GSVector4 source_crop_amount = crop_amount * GSVector4::xyxy(video_to_source);
+    const GSVector4 original_source_rect = fsource_rect;
     fsource_rect = (fsource_rect + source_crop_amount).blend32<12>(fsource_rect - source_crop_amount);
 
     // ensure we haven't cropped everything away
-    fvideo_active_rect = fvideo_active_rect.sat(GSVector4::zero(), fvideo_active_rect);
-    fvideo_size -= crop_size.sat(GSVector2::zero(), GSVector2::cxpr(1.0f, 1.0f));
-    fsource_rect = fsource_rect.sat(GSVector4::zero(), fsource_rect);
+    fvideo_active_rect = fvideo_active_rect.max(fvideo_active_rect.xyxy());
+    fvideo_size = fvideo_size.max(GSVector2::cxpr(1.0f));
+    fsource_rect = fsource_rect.sat(original_source_rect);
+    fsource_rect = fsource_rect.max(fsource_rect.xyxy());
   }
 
   // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
