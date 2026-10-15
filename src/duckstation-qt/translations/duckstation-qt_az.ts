@@ -569,6 +569,36 @@ Yanlış: {}</translation>
         <translation>Bütün irəliləyiş yenilənişi uğursuz oldu</translation>
     </message>
     <message>
+        <source>Offline Mode</source>
+        <translation>Oflayn Rejim</translation>
+    </message>
+    <message>
+        <source>We were unable to connect to RetroAchievements.
+This session will start in offline mode.</source>
+        <translation>RetroAchievements-ə qoşula bilmədik.
+Bu seans oflayn rejimdə başlayacaq.</translation>
+    </message>
+    <message>
+        <source>Synchronizing Unlocks</source>
+        <translation>Açılmış Uğurlar Sinxronlaşdırılır</translation>
+    </message>
+    <message numerus="yes">
+        <source>Synchronizing %n offline unlocks with the server.</source>
+        <comment>Synchronizing Unlocks</comment>
+        <translation>
+            <numerusform>Oflayn açılmış %n uğur qulluqçu ilə sinxronlaşdırılır.</numerusform>
+            <numerusform>Oflayn açılmış %n uğur qulluqçu ilə sinxronlaşdırılır.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No offline achievement data is available for this game.</source>
+        <translation>Bu oyun üçün oflayn uğur məlumatları mövcud deyil.</translation>
+    </message>
+    <message>
+        <source>Failed to parse offline achievement data.</source>
+        <translation>Oflayn uğur məlumatlarını təhlil etmək alınmadı.</translation>
+    </message>
+    <message>
         <source>Achievements Unlocked</source>
         <comment>Pause Menu</comment>
         <translation>Uğur Açılıb</translation>
@@ -796,6 +826,10 @@ Yanlış: {}</translation>
     <message>
         <source>Loading state</source>
         <translation>Durum yüklənir</translation>
+    </message>
+    <message>
+        <source>Rewinding</source>
+        <translation>Geri Çəkiliş</translation>
     </message>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
@@ -1076,6 +1110,10 @@ Oxunmayan mesajlar: {}</translation>
         <translation>Genişləndirilmiş Mövcudluq İzləyicisi</translation>
     </message>
     <message>
+        <source>Test Achievements Offline Mode</source>
+        <translation>Uğurların Oflayn Rejimini Sına</translation>
+    </message>
+    <message>
         <source>Enable RAIntegration</source>
         <translation>RAIntegration Aktivləşdir</translation>
     </message>
@@ -1142,6 +1180,10 @@ Oxunmayan mesajlar: {}</translation>
     <message>
         <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
         <translation>Oyun toru və Böyük Görüntü İA&apos;sında işlədilən oyun örtüyü şəkillərinin saxlanışı üçün qovluğu göstərir.</translation>
+    </message>
+    <message>
+        <source>Forces all server calls to fail, useful for testing offline mode.</source>
+        <translation>Bütün qulluqçu çağırışlarını uğursuz olmağa məcbur edir, oflayn rejimin sınağı üçün faydalıdır.</translation>
     </message>
     <message>
         <source>Enable RAIntegration (Development Only)</source>
@@ -1556,6 +1598,5600 @@ Oxunmayan mesajlar: {}</translation>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Sağ analoq çubuğunun yönünü tərsləyir.</translation>
+    </message>
+</context>
+<context>
+    <name>Android</name>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_emulation_screen_orientation_entries[0]</comment>
+        <translation>Qurğunun Quruluşundan İşlət</translation>
+    </message>
+    <message>
+        <source>Portrait</source>
+        <comment>settings_emulation_screen_orientation_entries[1]</comment>
+        <translation>Şaquli</translation>
+    </message>
+    <message>
+        <source>Landscape</source>
+        <comment>settings_emulation_screen_orientation_entries[2]</comment>
+        <translation>Üfüqi</translation>
+    </message>
+    <message>
+        <source>Sensor Based</source>
+        <comment>settings_emulation_screen_orientation_entries[3]</comment>
+        <translation>Sensora Görə</translation>
+    </message>
+    <message>
+        <source>Follow System</source>
+        <comment>settings_theme_entries[0]</comment>
+        <translation>Sistemə Uyğun</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <comment>settings_theme_entries[1]</comment>
+        <translation>Açıq</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <comment>settings_theme_entries[2]</comment>
+        <translation>Tünd</translation>
+    </message>
+    <message>
+        <source>Dark Ocean</source>
+        <comment>settings_theme_entries[3]</comment>
+        <translation>Tünd Okean</translation>
+    </message>
+    <message>
+        <source>Touchscreen Press</source>
+        <comment>controller_other_binding_entries[0]</comment>
+        <translation>Toxunma Ekranına Basış</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Left</source>
+        <comment>controller_other_binding_entries[1]</comment>
+        <translation>Toxunma Ekranında Sola Sürüşdürmə</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Right</source>
+        <comment>controller_other_binding_entries[2]</comment>
+        <translation>Toxunma Ekranında Sağa Sürüşdürmə</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Up</source>
+        <comment>controller_other_binding_entries[3]</comment>
+        <translation>Toxunma Ekranında Yuxarı Sürüşdürmə</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Down</source>
+        <comment>controller_other_binding_entries[4]</comment>
+        <translation>Toxunma Ekranında Aşağı Sürüşdürmə</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Left (X)</source>
+        <comment>controller_other_binding_entries[5]</comment>
+        <translation>Akselerometrlə Sola Döndərmə (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Right (X)</source>
+        <comment>controller_other_binding_entries[6]</comment>
+        <translation>Akselerometrlə Sağa Döndərmə (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Backwards (Y)</source>
+        <comment>controller_other_binding_entries[7]</comment>
+        <translation>Akselerometrlə Arxaya Əymə (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Forwards (Y)</source>
+        <comment>controller_other_binding_entries[8]</comment>
+        <translation>Akselerometrlə İrəli Əymə (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Left (Z)</source>
+        <comment>controller_other_binding_entries[9]</comment>
+        <translation>Akselerometrlə Sola Fırlatma (Z)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Right (Z)</source>
+        <comment>controller_other_binding_entries[10]</comment>
+        <translation>Akselerometrlə Sağa Fırlatma (Z)</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <comment>settings_tab_interface</comment>
+        <translation>Arayüz</translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <comment>settings_tab_video</comment>
+        <translation>Video</translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <comment>settings_tab_audio</comment>
+        <translation>Səs</translation>
+    </message>
+    <message>
+        <source>Post-Processing</source>
+        <comment>settings_tab_post_processing</comment>
+        <translation>Sonrakı-İşləmləniş</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>settings_tab_achievements</comment>
+        <translation>Uğurlar</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <comment>settings_tab_advanced</comment>
+        <translation>Gəlişmiş</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <comment>settings_tab_information</comment>
+        <translation>Bilgi</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>settings_tab_patches</comment>
+        <translation>Yamaqlar</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_tab_cheats</comment>
+        <translation>Hiylələr</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <comment>dialog_yes</comment>
+        <translation>Hə</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <comment>dialog_no</comment>
+        <translation>Yox</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>dialog_close</comment>
+        <translation>Bağla</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <comment>dialog_done</comment>
+        <translation>Bitdi</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>dialog_clear</comment>
+        <translation>Təmizlə</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <comment>dialog_ok</comment>
+        <translation>Oldu</translation>
+    </message>
+    <message>
+        <source>App Settings</source>
+        <comment>action_settings</comment>
+        <translation>Tətbiq Quruluşları</translation>
+    </message>
+    <message>
+        <source>Normal Speed</source>
+        <comment>settings_normal_speed</comment>
+        <translation>Normal Sürət</translation>
+    </message>
+    <message>
+        <source>Fast Forward Speed</source>
+        <comment>settings_fast_forward_speed</comment>
+        <translation>Sürətli İrəliləyiş Sürəti</translation>
+    </message>
+    <message>
+        <source>Turbo Speed</source>
+        <comment>settings_turbo_speed</comment>
+        <translation>Turbo Sürəti</translation>
+    </message>
+    <message>
+        <source>Frame Count</source>
+        <comment>settings_runahead</comment>
+        <translation>Kadr Sayı</translation>
+    </message>
+    <message>
+        <source>Save State On Exit</source>
+        <comment>settings_save_state_on_exit</comment>
+        <translation>Çıxışda Durumu Qoru</translation>
+    </message>
+    <message>
+        <source>Pause On Controller Disconnection</source>
+        <comment>settings_pause_on_controller_disconnection</comment>
+        <translation>Yönəldən Çıxarılışında Ara Ver</translation>
+    </message>
+    <message>
+        <source>Apply Game Settings</source>
+        <comment>settings_apply_game_settings</comment>
+        <translation>Oyun Quruluşlarını Uyğula</translation>
+    </message>
+    <message>
+        <source>Enables loading of per-game configuration. If this option is disabled, only the global configuration will be used.</source>
+        <comment>settings_summary_apply_game_settings</comment>
+        <translation>Hər oyuna özəl quruluşların yüklənməsini qoşur. Bu seçim söndürülsə, yalnız qlobal quruluşlar işlədiləcək.</translation>
+    </message>
+    <message>
+        <source>Vertical Sync (VSync)</source>
+        <comment>settings_video_sync</comment>
+        <translation>Vertikal Sinx (VSync)</translation>
+    </message>
+    <message>
+        <source>Synchronizes presentation of the console&apos;s frames to the host.
+        Not needed on most devices, and can cause slowdown.</source>
+        <comment>settings_summary_video_sync</comment>
+        <translation>Konsol kadrlarının göstərilməsini yiyə ilə sinxronlaşdırır.
+        Çox qurğuda lazım deyil və yavaşlama yarada bilər.</translation>
+    </message>
+    <message>
+        <source>Sync To Host Refresh Rate</source>
+        <comment>settings_general_sync_to_host_refresh_rate</comment>
+        <translation>Yiyə Yeniləniş Tezliyinə Sinx&apos;lə</translation>
+    </message>
+    <message>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host.</source>
+        <comment>settings_summary_general_sync_to_host_refresh_rate</comment>
+        <translation>Konsolun yeniləniş tezliyini yiyəyə uyğunlaşdırmaq üçün emulyasiya sürətini tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Optimal Frame Pacing</source>
+        <comment>settings_optimal_frame_pacing</comment>
+        <translation>Uyğun Kadr Tempi</translation>
+    </message>
+    <message>
+        <source>Log To File</source>
+        <comment>settings_log_to_file</comment>
+        <translation>Fayla Gündəliklə</translation>
+    </message>
+    <message>
+        <source>Fast Forward Volume</source>
+        <comment>settings_fast_forward_volume</comment>
+        <translation>Sürətli İrəliləyiş Ucalığı</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Touchscreen Controller</source>
+        <comment>settings_auto_hide_touchscreen_controller</comment>
+        <translation>Toxunma Ekranı Yönəldənini Özbaşına Gizlət</translation>
+    </message>
+    <message>
+        <source>Hides the touchscreen controller when an external controller is detected.</source>
+        <comment>settings_summary_auto_hide_touchscreen_controller</comment>
+        <translation>Xarici yönəldən aşkar ediləndə toxunma ekranı yönəldənini gizlədir.</translation>
+    </message>
+    <message>
+        <source>Vibrate On Press</source>
+        <comment>settings_vibrate_on_press</comment>
+        <translation>Basışda Titrə</translation>
+    </message>
+    <message>
+        <source>Enables a short vibration when a touchscreen button is pressed. Requires &quot;Vibrate on Touch&quot; to be enabled on your device.</source>
+        <comment>settings_summary_vibrate_on_press</comment>
+        <translation>Toxunma ekranı düyməsi basılanda qısa titrəyiş qoşur. Qurğunuzda &quot;Toxunuşda Titrə&quot; seçiminin qoşulmasını tələb edir.</translation>
+    </message>
+    <message>
+        <source>Device Vibration</source>
+        <comment>settings_enable_vibration</comment>
+        <translation>Qurğu Titrəyişi</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio</source>
+        <comment>settings_aspect_ratio</comment>
+        <translation>En-Uzunluq Oranı</translation>
+    </message>
+    <message>
+        <source>Sets the target normal speed for gameplay.</source>
+        <comment>settings_summary_normal_speed</comment>
+        <translation>Oyun üçün hədəf normal sürəti təyin edir.</translation>
+    </message>
+    <message>
+        <source>Sets the target fast forward speed.</source>
+        <comment>settings_summary_fast_forward_speed</comment>
+        <translation>Hədəf sürətli irəliləyiş sürətini təyin edir.</translation>
+    </message>
+    <message>
+        <source>Sets the target turbo speed.</source>
+        <comment>settings_summary_turbo_speed</comment>
+        <translation>Hədəf turbo sürətini təyin edir.</translation>
+    </message>
+    <message>
+        <source>Sets how many frames to run ahead to reduce input latency.</source>
+        <comment>settings_summary_runahead</comment>
+        <translation>Giriliş gecikməsini azaltmaq üçün neçə kadr qabaqda işləməyi təyin edir.</translation>
+    </message>
+    <message>
+        <source>Selects how save states are compressed when they are written.</source>
+        <comment>settings_summary_save_state_compression</comment>
+        <translation>Durum qorunuşlarının yazılarkən necə sıxılacağını seçir.</translation>
+    </message>
+    <message>
+        <source>Keeps a .bak backup of the previous save state when creating a new one.</source>
+        <comment>settings_summary_create_save_state_backups</comment>
+        <translation>Yeni durum qorunuşu yaradarkən əvvəlkinin .bak ehtiyat nüsxəsini saxlayır.</translation>
+    </message>
+    <message>
+        <source>OSD Scale</source>
+        <comment>settings_osd_scale</comment>
+        <translation>EÜG Ölçəyi</translation>
+    </message>
+    <message>
+        <source>Show Latency Statistics</source>
+        <comment>settings_show_latency_statistics</comment>
+        <translation>Gecikmə Göstəricilərini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows information about input and audio latency in the top-right corner of the display.</source>
+        <comment>settings_summary_show_latency_statistics</comment>
+        <translation>Giriliş və səs gecikməsi bilgisini ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Show Frame Times</source>
+        <comment>settings_show_frame_times</comment>
+        <translation>Kadr Vaxtlarını Göstər</translation>
+    </message>
+    <message>
+        <source>Please wait…</source>
+        <comment>android_progress_callback_please_wait</comment>
+        <translation>Gözləyin…</translation>
+    </message>
+    <message>
+        <source>Startup Failed</source>
+        <comment>emulation_activity_boot_error</comment>
+        <translation>Başlatma Alınmadı</translation>
+    </message>
+    <message>
+        <source>Fatal Error</source>
+        <comment>emulation_activity_fatal_error</comment>
+        <translation>Ölümcül Xəta</translation>
+    </message>
+    <message>
+        <source>Shutting Down…</source>
+        <comment>emulation_activity_shutting_down</comment>
+        <translation>Söndürülür…</translation>
+    </message>
+    <message>
+        <source>Maximum Queued Frames</source>
+        <comment>settings_max_queued_frames</comment>
+        <translation>Növbədəki Ən Çox Kadr</translation>
+    </message>
+    <message>
+        <source>Sets the maximum number of frames that can be queued for rendering or presentation before the main thread is throttled.</source>
+        <comment>settings_summary_max_queued_frames</comment>
+        <translation>Əsas axın məhdudlaşdırılmazdan əvvəl işləniş və ya göstərilmə üçün növbəyə qoyula bilən ən çox kadr sayını təyin edir.</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>settings_language</comment>
+        <translation>Dil</translation>
+    </message>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_language_use_device</comment>
+        <translation>Qurğunun Quruluşundan İşlət</translation>
+    </message>
+    <message>
+        <source>Selects the language used by the app.</source>
+        <comment>settings_summary_language</comment>
+        <translation>Tətbiqin işlətdiyi dili seçir.</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>touchscreen_controller_reset_layout</comment>
+        <translation>Düzülüşü Sıfırla</translation>
+    </message>
+    <message>
+        <source>Touchscreen controller is not active.</source>
+        <comment>emulation_activity_touchscreen_controller_not_active</comment>
+        <translation>Toxunma ekranı yönəldəni etkin deyil.</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <comment>settings_theme</comment>
+        <translation>Tema</translation>
+    </message>
+    <message>
+        <source>Selects the app theme used by the interface.</source>
+        <comment>settings_summary_theme</comment>
+        <translation>Arayüzdə işlədilən tətbiq temasını seçir.</translation>
+    </message>
+    <message>
+        <source>Press button on controller to set new binding.
+
+Current Binding: %s</source>
+        <comment>controller_binding_dialog_message</comment>
+        <translation>Yeni bağlama təyin etmək üçün yönəldəndə düymə basın.
+
+Cari Bağlama: %s</translation>
+    </message>
+    <message>
+        <source>&lt;No Binding&gt;</source>
+        <comment>controller_binding_dialog_no_binding</comment>
+        <translation>&lt;Bağlama Yoxdur&gt;</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>controller_binding_dialog_clear</comment>
+        <translation>Təmizlə</translation>
+    </message>
+    <message>
+        <source>Scanning subfolders.</source>
+        <comment>content_folders_scanning_subdirectories</comment>
+        <translation>Alt qovluqlar daranır.</translation>
+    </message>
+    <message>
+        <source>Not scanning subfolders.</source>
+        <comment>content_folders_not_scanning_subdirectories</comment>
+        <translation>Alt qovluqlar daranmır.</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>content_folders_back</comment>
+        <translation>Geri</translation>
+    </message>
+    <message>
+        <source>More folder actions</source>
+        <comment>content_folders_more_actions</comment>
+        <translation>Başqa qovluq əməliyyatları</translation>
+    </message>
+    <message>
+        <source>Scan Subfolders</source>
+        <comment>content_folders_enable_recursive</comment>
+        <translation>Alt Qovluqları Dara</translation>
+    </message>
+    <message>
+        <source>Do Not Scan Subfolders</source>
+        <comment>content_folders_disable_recursive</comment>
+        <translation>Alt Qovluqları Darama</translation>
+    </message>
+    <message>
+        <source>Remove Folder</source>
+        <comment>content_folders_remove</comment>
+        <translation>Qovluğu Qaldır</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <comment>settings_category_global</comment>
+        <translation>Qlobal Quruluşlar</translation>
+    </message>
+    <message>
+        <source>Latency Control</source>
+        <comment>settings_category_latency_control</comment>
+        <translation>Gecikmə Yönətimi</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <comment>settings_category_audio_configuration</comment>
+        <translation>Quruluşlandırma</translation>
+    </message>
+    <message>
+        <source>Volume Control</source>
+        <comment>settings_category_audio_volume</comment>
+        <translation>Səs Ucalığı Yönətimi</translation>
+    </message>
+    <message>
+        <source>Console Settings</source>
+        <comment>settings_category_console</comment>
+        <translation>Konsol Quruluşları</translation>
+    </message>
+    <message>
+        <source>Logging Settings</source>
+        <comment>settings_category_logging</comment>
+        <translation>Gündəlikləmə Quruluşları</translation>
+    </message>
+    <message>
+        <source>Debug Settings</source>
+        <comment>settings_category_debug</comment>
+        <translation>Xəta Ayıqlama Quruluşları</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_category_osd</comment>
+        <translation>Ekran-Üstü Görüntü</translation>
+    </message>
+    <message>
+        <source>Speed Control</source>
+        <comment>settings_category_speed_control</comment>
+        <translation>Sürət Yönətimi</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settings_category_settings</comment>
+        <translation>Quruluşlar</translation>
+    </message>
+    <message>
+        <source>Behavior</source>
+        <comment>settings_category_behavior</comment>
+        <translation>Davranış</translation>
+    </message>
+    <message>
+        <source>Video Settings</source>
+        <comment>settings_category_video_settings</comment>
+        <translation>Video Quruluşları</translation>
+    </message>
+    <message>
+        <source>Notifications</source>
+        <comment>settings_category_achievement_notifications</comment>
+        <translation>Bildirişlər</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_category_achievement_overlays</comment>
+        <translation>Qaplamalar</translation>
+    </message>
+    <message>
+        <source>Touchscreen Controller Opacity</source>
+        <comment>dialog_touchscreen_controller_opacity</comment>
+        <translation>Toxunma Ekranı Yönəldəninin Qeyri-Şəffaflığı</translation>
+    </message>
+    <message>
+        <source>Touch Gliding</source>
+        <comment>settings_touch_gliding</comment>
+        <translation>Sürüşən Toxunuş</translation>
+    </message>
+    <message>
+        <source>Allows you to press multiple controller face buttons by dragging your finger along the screen.</source>
+        <comment>settings_summary_touch_gliding</comment>
+        <translation>Barmağınızı ekranda sürüşdürərək yönəldənin bir neçə ön düyməsini basmağa imkan verir.</translation>
+    </message>
+    <message>
+        <source>Other File…</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Başqa Fayl…</translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <comment>emulation_menu_change_media_current</comment>
+        <translation>Cari</translation>
+    </message>
+    <message>
+        <source>Selected file could not be opened.</source>
+        <comment>emulation_menu_change_media_invalid_file</comment>
+        <translation>Seçilmiş faylı açmaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Safety Check Failed</source>
+        <comment>emulation_menu_safety_check_title</comment>
+        <translation>Təhlükəsizlik Yoxlaması Alınmadı</translation>
+    </message>
+    <message>
+        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
+
+Do you want to %1$s anyway?</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>UYARI: Hazırda %1$s əməliyyatı təhlükəsiz deyil və verilənlərin korlanmasına səbəb ola bilər. Oyunu davam etdirməyi, 5 saniyə gözləyib yenidən cəhd etməyi tövsiyə edirik.
+
+Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Token Generation Time</source>
+        <comment>settings_achievements_token_generation_time</comment>
+        <translation>Tokenin Yaradılma Vaxtı</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <comment>settings_achievements_not_logged_in</comment>
+        <translation>Girilməyib.</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>settings_achievements_login</comment>
+        <translation>Giriş</translation>
+    </message>
+    <message>
+        <source>Register</source>
+        <comment>settings_achievements_register</comment>
+        <translation>Qeydiyyat</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <comment>settings_achievements_logout</comment>
+        <translation>Çıxış</translation>
+    </message>
+    <message>
+        <source>View Profile</source>
+        <comment>settings_achievements_view_profile</comment>
+        <translation>Profili Gör</translation>
+    </message>
+    <message>
+        <source>RetroAchievements Login</source>
+        <comment>achievement_settings_login_title</comment>
+        <translation>RetroAchievements Girişi</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <comment>achievement_settings_login_help</comment>
+        <translation>Aşağıda retroachievements.org üçün işlədici adını və keçid sözünü daxil edin. Keçid sözünüz DuckStation-da qorunmayacaq; onun əvəzinə giriş tokeni yaradılıb işlədiləcək.</translation>
+    </message>
+    <message>
+        <source>Your login token for retroachievements.org has expired. You must log in again. Your password will not be saved in DuckStation.</source>
+        <comment>achievement_settings_login_help_expired</comment>
+        <translation>retroachievements.org üçün giriş tokeninizin müddəti bitib. Yenidən girməlisiniz. Keçid sözünüz DuckStation-da qorunmayacaq.</translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <comment>achievement_settings_login_username_hint</comment>
+        <translation>İşlədici Adı</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <comment>achievement_settings_login_password_hint</comment>
+        <translation>Keçid Sözü</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>achievement_settings_login_button</comment>
+        <translation>Giriş</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <comment>achievement_settings_login_cancel_button</comment>
+        <translation>Vazkeç</translation>
+    </message>
+    <message>
+        <source>Login failed: %s</source>
+        <comment>achievement_settings_login_failed</comment>
+        <translation>Giriş alınmadı: %s</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d points</source>
+        <comment>achievement_points_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d point&quot;; other=&quot;%1$d points&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d xal</numerusform>
+            <numerusform>%1$d xal</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>%2$d uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+            <numerusform>%2$d uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements and earned %1$d points!</source>
+        <comment>achievement_summary_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Bütün uğurları açıb %1$d xal qazanmısınız!</numerusform>
+            <numerusform>Bütün uğurları açıb %1$d xal qazanmısınız!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_subset_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement in this subset, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Bu alt dəstdəki %2$d uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+            <numerusform>Bu alt dəstdəki %2$d uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements in this subset and earned %1$d points!</source>
+        <comment>achievement_subset_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements in this subset and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements in this subset and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Bu alt dəstdəki bütün uğurları açıb %1$d xal qazanmısınız!</numerusform>
+            <numerusform>Bu alt dəstdəki bütün uğurları açıb %1$d xal qazanmısınız!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unofficial_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>%2$d rəsmi olmayan uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+            <numerusform>%2$d rəsmi olmayan uğurdan %1$d uğur açaraq mümkün %4$d xaldan %3$d xal qazanmısınız.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_game_beaten_completed_format_string</comment>
+        <translation>Oyun %1$s tarixində keçilib, %2$s tarixində tamamlanıb.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_subset_beaten_completed_format_string</comment>
+        <translation>Alt dəst %1$s tarixində keçilib, %2$s tarixində tamamlanıb.</translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s.</source>
+        <comment>achievement_game_beaten_format_string</comment>
+        <translation>Oyun %1$s tarixində keçilib.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s.</source>
+        <comment>achievement_subset_beaten_format_string</comment>
+        <translation>Alt dəst %1$s tarixində keçilib.</translation>
+    </message>
+    <message>
+        <source>Game was completed on %1$s.</source>
+        <comment>achievement_game_completed_format_string</comment>
+        <translation>Oyun %1$s tarixində tamamlanıb.</translation>
+    </message>
+    <message>
+        <source>Subset was completed on %1$s.</source>
+        <comment>achievement_subset_completed_format_string</comment>
+        <translation>Alt dəst %1$s tarixində tamamlanıb.</translation>
+    </message>
+    <message>
+        <source>Unlocked %1$s</source>
+        <comment>achievement_unlocked_format_string</comment>
+        <translation>%1$s tarixində açılıb</translation>
+    </message>
+    <message>
+        <source>%1$.1f%% of players have this achievement</source>
+        <comment>achievement_rarity_format_string</comment>
+        <translation>Oyunçuların %1$.1f%% hissəsində bu uğur var</translation>
+    </message>
+    <message>
+        <source>%s (Hardcore Mode)</source>
+        <comment>achievement_title_challenge_mode_format_string</comment>
+        <translation>%s (Möhkəm Mod)</translation>
+    </message>
+    <message>
+        <source>Missable</source>
+        <comment>achievement_type_missable</comment>
+        <translation>Buraxıla bilər</translation>
+    </message>
+    <message>
+        <source>Progression</source>
+        <comment>achievement_type_progression</comment>
+        <translation>İrəliləyiş</translation>
+    </message>
+    <message>
+        <source>Win Condition</source>
+        <comment>achievement_type_win_condition</comment>
+        <translation>Qələbə Şərti</translation>
+    </message>
+    <message>
+        <source>Unofficial</source>
+        <comment>achievement_unofficial</comment>
+        <translation>Rəsmi Olmayan</translation>
+    </message>
+    <message>
+        <source>Open on RetroAchievements</source>
+        <comment>achievement_open_on_retroachievements</comment>
+        <translation>RetroAchievements&apos;də aç</translation>
+    </message>
+    <message>
+        <source>Pin to OSD</source>
+        <comment>achievement_pin_to_osd</comment>
+        <translation>EÜG&apos;ə bərkid</translation>
+    </message>
+    <message>
+        <source>Unpin from OSD</source>
+        <comment>achievement_unpin_from_osd</comment>
+        <translation>EÜG&apos;dən Qopart</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <comment>achievement_reset_unlock</comment>
+        <translation>Açılışı Sıfırla</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <comment>achievement_reset_unofficial_title</comment>
+        <translation>Rəsmi Olmayan Uğuru Sıfırla</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unofficial_message</comment>
+        <translation>&apos;%1$s&apos; üçün açılış durumu silinəcək. Bunu geri qaytarmaq olmaz.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <comment>achievement_unofficial_unlock_reset</comment>
+        <translation>Rəsmi olmayan uğurun açılışı sıfırlandı.</translation>
+    </message>
+    <message>
+        <source>Pinned to OSD</source>
+        <comment>achievement_pinned_to_osd_icon</comment>
+        <translation>EÜG-ə Bərkidilib</translation>
+    </message>
+    <message>
+        <source>%1$s pinned to OSD.</source>
+        <comment>achievement_pinned_to_osd</comment>
+        <translation>%1$s EÜG-ə bərkidildi.</translation>
+    </message>
+    <message>
+        <source>%1$s unpinned from OSD.</source>
+        <comment>achievement_unpinned_from_osd</comment>
+        <translation>%1$s EÜG-dən qoparıldı.</translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards.</source>
+        <comment>leaderboard_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard.&quot;; other=&quot;This game has %d leaderboards.&quot;</extracomment>
+        <translation>
+            <numerusform>Bu oyunun %d öndərlik taxtası var.</numerusform>
+            <numerusform>Bu oyunun %d öndərlik taxtası var.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards. Submission requires hardcore mode.</source>
+        <comment>leaderboard_summary_no_submission_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard. Submission requires hardcore mode.&quot;; other=&quot;This game has %d leaderboards. Submission requires hardcore mode.&quot;</extracomment>
+        <translation>
+            <numerusform>Bu oyunun %d öndərlik taxtası var. Göndəriş möhkəm mod tələb edir.</numerusform>
+            <numerusform>Bu oyunun %d öndərlik taxtası var. Göndəriş möhkəm mod tələb edir.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Rank</source>
+        <comment>leaderboard_heading_rank</comment>
+        <translation>Dərəcə</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>leaderboard_heading_name</comment>
+        <translation>Ad</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <comment>leaderboard_heading_time</comment>
+        <translation>Vaxt</translation>
+    </message>
+    <message>
+        <source>Score</source>
+        <comment>leaderboard_heading_score</comment>
+        <translation>Xal</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>leaderboard_heading_value</comment>
+        <translation>Dəyər</translation>
+    </message>
+    <message>
+        <source>Date Submitted</source>
+        <comment>leaderboard_heading_date_submitted</comment>
+        <translation>Göndərilmə Tarixi</translation>
+    </message>
+    <message>
+        <source>Show Nearby</source>
+        <comment>leaderboard_show_nearby</comment>
+        <translation>Yaxını Göstər</translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <comment>leaderboard_show_all</comment>
+        <translation>Hamısını Göstər</translation>
+    </message>
+    <message>
+        <source>No entries found.</source>
+        <comment>leaderboard_no_entries</comment>
+        <translation>Qeyd tapılmadı.</translation>
+    </message>
+    <message>
+        <source>Confirm Logout</source>
+        <comment>settings_achievements_confirm_logout_title</comment>
+        <translation>Çıxışı Təsdiqlə</translation>
+    </message>
+    <message>
+        <source>After logging out, no more achievements will be unlocked until you log back in again. Achievements already unlocked will not be lost.</source>
+        <comment>settings_achievements_confirm_logout_message</comment>
+        <translation>Çıxışdan sonra yenidən girənədək heç bir uğur açılmayacaq. Artıq açılmış uğurlar itirilməyəcək.</translation>
+    </message>
+    <message>
+        <source>Player %d</source>
+        <comment>controller_player_format</comment>
+        <translation>Oyunçu %d</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>controller_category_settings</comment>
+        <translation>Quruluşlar</translation>
+    </message>
+    <message>
+        <source>Hotkeys</source>
+        <comment>controller_settings_tab_hotkeys</comment>
+        <translation>İsti düymələr</translation>
+    </message>
+    <message>
+        <source>Touchscreen</source>
+        <comment>controller_settings_tab_touchscreen</comment>
+        <translation>Toxunma Ekranı</translation>
+    </message>
+    <message>
+        <source>Bindings</source>
+        <comment>controller_settings_category_bindings</comment>
+        <translation>Bağlanışlar</translation>
+    </message>
+    <message>
+        <source>Macros</source>
+        <comment>controller_settings_category_macros</comment>
+        <translation>Makrolar</translation>
+    </message>
+    <message>
+        <source>Perform Automatic Mapping</source>
+        <comment>controller_settings_automatic_mapping</comment>
+        <translation>Özbaşına Bağlama Apar</translation>
+    </message>
+    <message>
+        <source>Attempts to automatically bind all buttons/axes to a connected controller.</source>
+        <comment>controller_settings_summary_automatic_mapping</comment>
+        <translation>Bütün düymələri/oxları qoşulmuş yönəldənə özbaşına bağlamağa cəhd edir.</translation>
+    </message>
+    <message>
+        <source>Clear Bindings</source>
+        <comment>controller_settings_clear_controller_bindings</comment>
+        <translation>Bağlanışları Təmizlə</translation>
+    </message>
+    <message>
+        <source>Unbinds all buttons/axes for this controller.</source>
+        <comment>controller_settings_summary_clear_controller_bindings</comment>
+        <translation>Bu yönəldənin bütün düymə/ox bağlanışlarını qaldırır.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to clear all bindings? This cannot be reversed.</source>
+        <comment>controller_settings_clear_controller_bindings_confirm</comment>
+        <translation>Bütün bağlanışları təmizləmək istəyirsiniz? Bunu geri qaytarmaq olmaz.</translation>
+    </message>
+    <message>
+        <source>All bindings cleared for Controller %d.</source>
+        <comment>controller_settings_clear_controller_bindings_done</comment>
+        <translation>Yönəldən %d üçün bütün bağlanışlar təmizləndi.</translation>
+    </message>
+    <message>
+        <source>No suitable devices found. Automatic binding only supports gamepad devices, but you can still bind other device types manually.</source>
+        <comment>controller_auto_mapping_no_devices</comment>
+        <translation>Uyğun qurğu tapılmadı. Özbaşına bağlama yalnız oyun yönəldənlərini dəstəkləyir, ancaq başqa qurğu növlərini əllə bağlaya bilərsiniz.</translation>
+    </message>
+    <message>
+        <source>Select Device</source>
+        <comment>controller_auto_mapping_select_device</comment>
+        <translation>Qurğunu Seç</translation>
+    </message>
+    <message>
+        <source>Automatic mapping complete. You may still need to adjust some bindings.</source>
+        <comment>controller_auto_mapping_complete</comment>
+        <translation>Özbaşına bağlama tamamlandı. Bəzi bağlanışları hələ tənzimləməli ola bilərsiniz.</translation>
+    </message>
+    <message>
+        <source>Choose Binding</source>
+        <comment>controller_binding_choose_other</comment>
+        <translation>Bağlanış Seç</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <comment>controller_binding_set_other</comment>
+        <translation>Başqası</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>touchscreen_controller_edit_menu</comment>
+        <translation>Dəyişdirmə Menyusu</translation>
+    </message>
+    <message>
+        <source>Change Opacity</source>
+        <comment>touchscreen_controller_change_opacity</comment>
+        <translation>Qeyri-Şəffaflığı Dəyiş</translation>
+    </message>
+    <message>
+        <source>Resize Buttons</source>
+        <comment>touchscreen_controller_resize_buttons</comment>
+        <translation>Düymələrin Ölçüsünü Dəyiş</translation>
+    </message>
+    <message>
+        <source>Exit Editor</source>
+        <comment>touchscreen_controller_exit_editor</comment>
+        <translation>Dəyişdiricidən Çıx</translation>
+    </message>
+    <message>
+        <source>Multitap Mode</source>
+        <comment>settings_multitap_mode</comment>
+        <translation>Çox-bağlantı Durumu</translation>
+    </message>
+    <message>
+        <source>Enable Touchscreen Controller</source>
+        <comment>settings_enable_touchscreen_controller</comment>
+        <translation>Toxunma Ekranı Yönəldənini Qoş</translation>
+    </message>
+    <message>
+        <source>Controller settings initialized with global settings.</source>
+        <comment>input_settings_store_initialized</comment>
+        <translation>Yönəldən quruluşları qlobal quruluşlarla hazırlandı.</translation>
+    </message>
+    <message>
+        <source>If the touchscreen controller is not used, an external controller must be mapped.</source>
+        <comment>settings_summary_enable_touchscreen_controller</comment>
+        <translation>Toxunma ekranı yönəldəni işlədilmirsə, xarici yönəldənin bağlanışları qurulmalıdır.</translation>
+    </message>
+    <message>
+        <source>Touchscreen Player</source>
+        <comment>settings_touchscreen_controller_port</comment>
+        <translation>Toxunma Ekranı Oyunçusu</translation>
+    </message>
+    <message>
+        <source>Selects the player which touchscreen input will simulate.</source>
+        <comment>settings_summary_touchscreen_controller_port</comment>
+        <translation>Toxunma ekranı girilişinin hansı oyunçunu təqlid edəcəyini seçir.</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>emulation_menu_load_state</comment>
+        <translation>Durumu Yüklə</translation>
+    </message>
+    <message>
+        <source>Save State</source>
+        <comment>emulation_menu_save_state</comment>
+        <translation>Durumu Qoru</translation>
+    </message>
+    <message>
+        <source>Toggle Fast Forward</source>
+        <comment>emulation_menu_toggle_fast_forward</comment>
+        <translation>Sürətli İrəliləyişi Keçirt</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>emulation_menu_achievements</comment>
+        <translation>Uğurlar</translation>
+    </message>
+    <message>
+        <source>Leaderboards</source>
+        <comment>emulation_menu_leaderboards</comment>
+        <translation>Öndərlik Taxtaları</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>emulation_menu_cheats</comment>
+        <translation>Hiylələr</translation>
+    </message>
+    <message>
+        <source>Save Screenshot</source>
+        <comment>emulation_menu_save_screenshot</comment>
+        <translation>Ekran Çəkimini Qoru</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>emulation_menu_rewind</comment>
+        <translation>Geriyə Çək</translation>
+    </message>
+    <message>
+        <source>Load Rewind State</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Geri Çəkiliş Durumunu Yüklə</translation>
+    </message>
+    <message>
+        <source>Frame %1$d</source>
+        <comment>emulation_menu_rewind_frame</comment>
+        <translation>Kadr %1$d</translation>
+    </message>
+    <message>
+        <source>No rewind states are available.</source>
+        <comment>emulation_menu_rewind_empty</comment>
+        <translation>Geri çəkiliş durumları yoxdur.</translation>
+    </message>
+    <message>
+        <source>Screenshot unavailable</source>
+        <comment>emulation_menu_rewind_no_screenshot</comment>
+        <translation>Ekran çəkimi yoxdur</translation>
+    </message>
+    <message>
+        <source>Rewind state screenshot</source>
+        <comment>emulation_menu_rewind_screenshot</comment>
+        <translation>Geri çəkiliş durumunun ekran çəkimi</translation>
+    </message>
+    <message>
+        <source>Requires Restart</source>
+        <comment>settings_requires_restart</comment>
+        <translation>Yenidən Başlatma Tələb Edir</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>emulation_menu_edit</comment>
+        <translation>Dəyişdirmə Menyusu</translation>
+    </message>
+    <message>
+        <source>Tap to show or hide, hold and drag to rearrange</source>
+        <comment>emulation_menu_edit_hint</comment>
+        <translation>Göstərmək və ya gizlətmək üçün toxunun, sıralamanı dəyişmək üçün basıb saxlayın və sürükləyin</translation>
+    </message>
+    <message>
+        <source>Hidden</source>
+        <comment>emulation_menu_edit_hidden</comment>
+        <translation>Gizlədilmiş</translation>
+    </message>
+    <message>
+        <source>Drag items here to hide them</source>
+        <comment>emulation_menu_edit_hidden_empty</comment>
+        <translation>Elementləri gizlətmək üçün buraya sürükləyin</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>emulation_menu_edit_reset</comment>
+        <translation>Düzülüşü Sıfırla</translation>
+    </message>
+    <message>
+        <source>Show</source>
+        <comment>emulation_menu_edit_show</comment>
+        <translation>Göstər</translation>
+    </message>
+    <message>
+        <source>Hide</source>
+        <comment>emulation_menu_edit_hide</comment>
+        <translation>Gizlət</translation>
+    </message>
+    <message>
+        <source>Custom Aspect Ratio</source>
+        <comment>settings_custom_aspect_ratio</comment>
+        <translation>Özəl En-Uzunluq Oranı</translation>
+    </message>
+    <message>
+        <source>Used when aspect ratio is set to Custom.</source>
+        <comment>settings_summary_custom_aspect_ratio</comment>
+        <translation>En-uzunluq oranı Özəl seçildikdə işlədilir.</translation>
+    </message>
+    <message>
+        <source>Expand To Cutout Area</source>
+        <comment>settings_expand_to_cutout</comment>
+        <translation>Ekran Kəsiyi Sahəsinə Genişləndir</translation>
+    </message>
+    <message>
+        <source>Expands the display area to include the cutout (or notch) area.</source>
+        <comment>settings_summary_expand_to_cutout</comment>
+        <translation>Görüntü sahəsini ekran kəsiyi (və ya çentik) sahəsini də daxil edəcək şəkildə genişləndirir.</translation>
+    </message>
+    <message>
+        <source>Runahead</source>
+        <comment>settings_category_runahead</comment>
+        <translation>Önə Atlayış</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>settings_category_rewind</comment>
+        <translation>Geriyə Çək</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_category_save_states</comment>
+        <translation>Durum Qorunuşları</translation>
+    </message>
+    <message>
+        <source>Enable Rewinding</source>
+        <comment>settings_rewind_enable</comment>
+        <translation>Geri Çəkilişi Qoş</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Geri çəkiliş durumu hansı tezlikdə yaradılacaq. Yüksək tezliklərin yüksək sistem gərəksinimləri var.</translation>
+    </message>
+    <message>
+        <source>Save Frequency</source>
+        <comment>settings_rewind_save_frequency</comment>
+        <translation>Qoruma Tezliyi</translation>
+    </message>
+    <message>
+        <source>A rewind save will be created each time this interval lapses.</source>
+        <comment>settings_summary_rewind_save_frequency</comment>
+        <translation>Bu aralıq hər dəfə bitəndə geri çəkiliş qorunuşu yaradılacaq.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_rewind_buffer_size</comment>
+        <translation>Bufer Ölçüsü</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <comment>settings_summary_rewind_buffer_size</comment>
+        <translation>Geri çəkiliş durumları üçün ayrılacaq yaddaş miqdarı. Nə qədər geriyə çəkilə biləcəyinizi təyin edir.</translation>
+    </message>
+    <message>
+        <source>%s copied to clipboard.</source>
+        <comment>preference_text_copied_to_clipboard</comment>
+        <translation>%s mübadilə buferinə köçürüldü.</translation>
+    </message>
+    <message>
+        <source>Controller %1$d / Macro %2$d</source>
+        <comment>edit_macro_button_title</comment>
+        <translation>Yönəldən %1$d / Makro %2$d</translation>
+    </message>
+    <message>
+        <source>No trigger set</source>
+        <comment>edit_macro_button_no_trigger</comment>
+        <translation>Tətik təyin edilməyib</translation>
+    </message>
+    <message>
+        <source>No buttons set</source>
+        <comment>edit_macro_buttons_no_bindings</comment>
+        <translation>Düymə təyin edilməyib</translation>
+    </message>
+    <message>
+        <source>Macro will not repeat.</source>
+        <comment>edit_macro_button_no_repeat</comment>
+        <translation>Makro təkrarlanmayacaq.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Macro will toggle every %d frames.</source>
+        <comment>edit_macro_button_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>Makro hər %d kadrda keçəcək.</numerusform>
+            <numerusform>Makro hər %d kadrda keçəcək.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Choose Bindings</source>
+        <comment>edit_macro_button_choose_bindings</comment>
+        <translation>Bağlanışları Seç</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary_no_repeat</comment>
+        <translation>%1$s %2$s işə salır</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$s triggers %2$s every %3$d frames.</source>
+        <comment>edit_macro_button_summary_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$s hər %3$d kadrda %2$s işə salır.</numerusform>
+            <numerusform>%1$s hər %3$d kadrda %2$s işə salır.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <comment>edit_macro_button_trigger</comment>
+        <translation>Tətik</translation>
+    </message>
+    <message>
+        <source>Buttons</source>
+        <comment>edit_macro_button_buttons</comment>
+        <translation>Düymələr</translation>
+    </message>
+    <message>
+        <source>Frequency</source>
+        <comment>edit_macro_button_frequency</comment>
+        <translation>Tezlik</translation>
+    </message>
+    <message>
+        <source>Macro %d</source>
+        <comment>macro_binding_template</comment>
+        <translation>Makro %d</translation>
+    </message>
+    <message>
+        <source>No vibrators found. Your controller or driver may not support vibration.</source>
+        <comment>binding_no_vibrators_found</comment>
+        <translation>Titrədici tapılmadı. Yönəldəniniz və ya sürücünüz titrəyişi dəstəkləməyə bilər.</translation>
+    </message>
+    <message>
+        <source>Select Vibrator Binding</source>
+        <comment>select_vibrator_binding</comment>
+        <translation>Titrədici Bağlanışını Seç</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <comment>controller_settings_category_vibration</comment>
+        <translation>Titrəyiş</translation>
+    </message>
+    <message>
+        <source>Vibration Update Frequency</source>
+        <comment>settings_vibration_update_frequency</comment>
+        <translation>Titrəyiş Yeniləniş Tezliyi</translation>
+    </message>
+    <message>
+        <source>Throttles the frequency at which vibration updates are sent. May help with controller disconnection/lag issues.</source>
+        <comment>settings_summary_vibration_update_frequency</comment>
+        <translation>Titrəyiş yeniləmələrinin göndərilmə tezliyini məhdudlaşdırır. Yönəldənin bağlantı kəsilməsi/gecikmə problemlərinə kömək edə bilər.</translation>
+    </message>
+    <message>
+        <source>Settings cleared.</source>
+        <comment>game_properties_settings_cleared</comment>
+        <translation>Quruluşlar təmizləndi.</translation>
+    </message>
+    <message>
+        <source>Use Global Setting</source>
+        <comment>game_properties_use_global_setting</comment>
+        <translation>Qlobal Quruluşu İşlət</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <comment>game_setting_follow_default</comment>
+        <translation>Varsayılan</translation>
+    </message>
+    <message>
+        <source>Add/Remove Buttons</source>
+        <comment>settings_touchscreen_controller_add_remove_buttons</comment>
+        <translation>Düymə Əlavə Et/Qaldır</translation>
+    </message>
+    <message>
+        <source>Move Buttons</source>
+        <comment>settings_touchscreen_controller_move_buttons</comment>
+        <translation>Düymələri Yerindən Tərpət</translation>
+    </message>
+    <message>
+        <source>Overlay Opacity</source>
+        <comment>settings_touchscreen_controller_opacity</comment>
+        <translation>Qaplamanın Qeyri-Şəffaflığı</translation>
+    </message>
+    <message>
+        <source>Controls the transparency level of the touchscreen controller.</source>
+        <comment>settings_summary_touchscreen_controller_opacity</comment>
+        <translation>Toxunma ekranı yönəldəninin şəffaflıq səviyyəsini yönətir.</translation>
+    </message>
+    <message>
+        <source>Tap To Hold</source>
+        <comment>settings_touchscreen_controller_toggle_buttons</comment>
+        <translation>Basılı Saxlamaq üçün Toxun</translation>
+    </message>
+    <message>
+        <source>Swipe Horizontal Sensitivity</source>
+        <comment>settings_touchscreen_controller_x_scale</comment>
+        <translation>Üfüqi Sürüşdürmə Həssaslığı</translation>
+    </message>
+    <message>
+        <source>Swipe Vertical Sensitivity</source>
+        <comment>settings_touchscreen_controller_y_scale</comment>
+        <translation>Şaquli Sürüşdürmə Həssaslığı</translation>
+    </message>
+    <message>
+        <source>Adjusts the ratio of touch movement to stick pressure. Lower values imply more stick pressure.</source>
+        <comment>settings_touchscreen_controller_scale_summary</comment>
+        <translation>Toxunuş hərəkətinin çubuq təzyiqinə oranını tənzimləyir. Aşağı dəyərlər daha çox çubuq təzyiqi deməkdir.</translation>
+    </message>
+    <message>
+        <source>Failed to take persistable permission.</source>
+        <comment>game_list_settings_failed_to_take_persistable_permission</comment>
+        <translation>Daimi icazə almaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Save Slot %d</source>
+        <comment>save_slot_n</comment>
+        <translation>Qorunuş Yuvası %d</translation>
+    </message>
+    <message>
+        <source>No save present in this slot.</source>
+        <comment>save_slot_not_present</comment>
+        <translation>Bu yuvada qorunuş yoxdur.</translation>
+    </message>
+    <message>
+        <source>Resume Save</source>
+        <comment>save_slot_resume_save</comment>
+        <translation>Davam Qorunuşu</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>save_state_manager_title</comment>
+        <translation>Durum Qorunuşu Yönəticisi</translation>
+    </message>
+    <message>
+        <source>Confirm Deletion</source>
+        <comment>confirm_deletion</comment>
+        <translation>Silinişi Təsdiqlə</translation>
+    </message>
+    <message>
+        <source>Are you sure you wish to delete this save state? It cannot be recovered.</source>
+        <comment>confirm_delete_save_state</comment>
+        <translation>Bu durum qorunuşunu silmək istəyirsiniz? Onu bərpa etmək olmaz.</translation>
+    </message>
+    <message>
+        <source>Failed to delete save state.</source>
+        <comment>save_state_manager_failed_to_delete</comment>
+        <translation>Durum qorunuşunun silinişi uğursuz oldu.</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>resume_game_delete</comment>
+        <translation>Durumu Sil</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <comment>menu_refresh</comment>
+        <translation>Yenilə</translation>
+    </message>
+    <message>
+        <source>Failed to open/decode image.</source>
+        <comment>choose_cover_image_failed_decode</comment>
+        <translation>Şəkli açmaq/dekodlaşdırmaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Failed to save image.</source>
+        <comment>choose_cover_image_failed_save</comment>
+        <translation>Şəkli qorumaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>game_properties_title</comment>
+        <translation>Başlıq</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>game_properties_serial</comment>
+        <translation>Seriya</translation>
+    </message>
+    <message>
+        <source>More Details</source>
+        <comment>game_properties_more_details</comment>
+        <translation>Daha Çox Ayrıntı</translation>
+    </message>
+    <message>
+        <source>Languages</source>
+        <comment>game_properties_languages</comment>
+        <translation>Dillər</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>game_properties_type</comment>
+        <translation>Növ</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>game_properties_region</comment>
+        <translation>Bölgə</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>game_properties_language</comment>
+        <translation>Dil</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <comment>game_properties_path</comment>
+        <translation>Yol</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>game_properties_time_played</comment>
+        <translation>Oyun Vaxtı</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>game_properties_last_played</comment>
+        <translation>Son Oynanmış</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>game_properties_last_played_never</comment>
+        <translation>Heç vaxt</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>game_properties_time_played_none</comment>
+        <translation>Heç biri</translation>
+    </message>
+    <message>
+        <source>Copy Settings</source>
+        <comment>game_settings_copy_settings</comment>
+        <translation>Quruluşları Köçür</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        overwritten. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_copy_settings</comment>
+        <translation>Bu oyun üçün seçilmiş bütün quruluşların üzərinə
+        yazılacaq. Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Clear Settings</source>
+        <comment>game_settings_clear_settings</comment>
+        <translation>Quruluşları Təmizlə</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        removed. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_clear_settings</comment>
+        <translation>Bu oyun üçün seçilmiş bütün quruluşlar
+        silinəcək. Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Controller settings reset.</source>
+        <comment>controller_settings_reset_done</comment>
+        <translation>Yönəldən quruluşları sıfırlandı.</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <comment>settings_restore_defaults</comment>
+        <translation>Varsayılanları Qaytar</translation>
+    </message>
+    <message>
+        <source>This will restore all application settings to their defaults. You will not be able to recover these changes.</source>
+        <comment>settings_restore_defaults_message</comment>
+        <translation>Bu, bütün tətbiq quruluşlarını varsayılanlara qaytaracaq. Bu dəyişiklikləri geri qaytara bilməyəcəksiniz.</translation>
+    </message>
+    <message>
+        <source>This will restore all controller settings, including the touchscreen, to their defaults. Do you want to continue?</source>
+        <comment>controller_settings_restore_defaults_message</comment>
+        <translation>Bu, toxunma ekranı da daxil olmaqla bütün yönəldən quruluşlarını varsayılanlara qaytaracaq. Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Settings reset.</source>
+        <comment>main_settings_reset_done</comment>
+        <translation>Quruluşlar sıfırlandı.</translation>
+    </message>
+    <message>
+        <source>Run Setup Wizard</source>
+        <comment>settings_run_setup_wizard</comment>
+        <translation>Quraşdırma Köməkçisini Başlat</translation>
+    </message>
+    <message>
+        <source>Finish</source>
+        <comment>setup_wizard_finish</comment>
+        <translation>Bitir</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <comment>setup_wizard_next</comment>
+        <translation>Sonrakı</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>setup_wizard_back</comment>
+        <translation>Geri</translation>
+    </message>
+    <message>
+        <source>Welcome to DuckStation!</source>
+        <comment>setup_wizard_welcome_title</comment>
+        <translation>DuckStation-a xoş gəlmisiniz!</translation>
+    </message>
+    <message>
+        <source>Please choose a theme and language, then tap Next to get started.</source>
+        <comment>setup_wizard_welcome_second_paragraph</comment>
+        <translation>Tema və dil seçin, sonra başlamaq üçün Sonrakı düyməsinə toxunun.</translation>
+    </message>
+    <message>
+        <source>Content Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Məzmun Qovluqları</translation>
+    </message>
+    <message>
+        <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
+        <comment>setup_wizard_input_setup_message</comment>
+        <translation>Yönəldən qoşun və hər iki oyunçudan biri üçün özbaşına bağlamadan işlədin. Ayrıntılı bağlanışlar sonradan Giriliş Quruluşlarında dəyişdirilə bilər.</translation>
+    </message>
+    <message>
+        <source>Mapped Device</source>
+        <comment>setup_wizard_mapped_device</comment>
+        <translation>Bağlanmış Qurğu</translation>
+    </message>
+    <message>
+        <source>Pause Menu Hotkey</source>
+        <comment>setup_wizard_pause_hotkey_title</comment>
+        <translation>Ara Seçməsinin Qısayol Düyməsi</translation>
+    </message>
+    <message>
+        <source>Graphics Setup</source>
+        <comment>setup_wizard_graphics_title</comment>
+        <translation>Görüntü Qurulumu</translation>
+    </message>
+    <message>
+        <source>These commonly used video options can be changed again after setup.</source>
+        <comment>setup_wizard_graphics_message</comment>
+        <translation>Bu çox işlədilən video seçimləri quraşdırmadan sonra yenidən dəyişdirilə bilər.</translation>
+    </message>
+    <message>
+        <source>View Selection</source>
+        <comment>setup_wizard_view_title</comment>
+        <translation>Görünüş Seçimi</translation>
+    </message>
+    <message>
+        <source>List View</source>
+        <comment>setup_wizard_list_view</comment>
+        <translation>Sıralıq Görünüşü</translation>
+    </message>
+    <message>
+        <source>Grid View</source>
+        <comment>setup_wizard_grid_view</comment>
+        <translation>Tor Görünüşü</translation>
+    </message>
+    <message>
+        <source>Exit Setup?</source>
+        <comment>setup_wizard_exit_title</comment>
+        <translation>Quraşdırmadan Çıxılsın?</translation>
+    </message>
+    <message>
+        <source>Setup is not complete. Are you sure you want to exit?</source>
+        <comment>setup_wizard_exit_message</comment>
+        <translation>Quraşdırma tamamlanmayıb. Çıxmaq istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Setup Complete</source>
+        <comment>setup_wizard_complete_title</comment>
+        <translation>Quraşdırma Tamamlandı</translation>
+    </message>
+    <message>
+        <source>Press finish to open the game list and start scanning for games. If you need to, you can re-run this setup wizard again from within App Settings.</source>
+        <comment>setup_wizard_complete_message</comment>
+        <translation>Oyun sıralığını açıb oyunları daramağa başlamaq üçün Bitir düyməsini basın. Lazım olsa, bu quraşdırma köməkçisini Tətbiq Quruluşlarından yenidən başlada bilərsiniz.</translation>
+    </message>
+    <message>
+        <source>Add New</source>
+        <comment>controller_binding_add_new_multibinding</comment>
+        <translation>Yeni Əlavə Et</translation>
+    </message>
+    <message numerus="yes">
+        <source>&lt;%d Bindings&gt;</source>
+        <comment>controller_binding_multiple_bindings</comment>
+        <extracomment>Android plural quantities: one=&quot;&lt;%d Binding&gt;&quot;; other=&quot;&lt;%d Bindings&gt;&quot;</extracomment>
+        <translation>
+            <numerusform>&lt;%d Bağlanış&gt;</numerusform>
+            <numerusform>&lt;%d Bağlanış&gt;</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Edit %s Bindings</source>
+        <comment>controller_binding_multibind_title</comment>
+        <translation>%s Bağlanışlarını Dəyiş</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Delay</source>
+        <comment>settings_touchscreen_auto_hide_time</comment>
+        <translation>Özbaşına Gizlətmə Gecikməsi</translation>
+    </message>
+    <message>
+        <source>Hides touch controls after the specified time. A delay of zero will not hide the controls.</source>
+        <comment>settings_summary_touchscreen_auto_hide_time</comment>
+        <translation>Göstərilən vaxtdan sonra toxunma yönətimlərini gizlədir. Sıfır gecikmə yönətimləri gizlətməyəcək.</translation>
+    </message>
+    <message>
+        <source>Bind To Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Sağ Çubuğa Bağla</translation>
+    </message>
+    <message>
+        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Toxunma ekranı sürüşdürmə hərəkətlərini sağ çubuğa, varsa, bağlayır.</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <comment>settings_advanced</comment>
+        <translation>Gəlişmiş Quruluşlar</translation>
+    </message>
+    <message>
+        <source>Disable All</source>
+        <comment>game_properties_disable_patch_codes</comment>
+        <translation>Hamısını Söndür</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <comment>cheat_codes_add</comment>
+        <translation>Artır</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>cheat_codes_import</comment>
+        <translation>İdxal Et</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>cheat_codes_export</comment>
+        <translation>İxrac Et</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <comment>cheat_codes_remove_all</comment>
+        <translation>Hamısını Sil</translation>
+    </message>
+    <message>
+        <source>Auto (Game Native)</source>
+        <comment>settings_video_aspect_ratio_entries[0]</comment>
+        <translation>Özbaşına (Oyunun Öz Oranı)</translation>
+    </message>
+    <message>
+        <source>Stretch To Fill</source>
+        <comment>settings_video_aspect_ratio_entries[1]</comment>
+        <translation>Doldurmaq Üçün Uzat</translation>
+    </message>
+    <message>
+        <source>4:3</source>
+        <comment>settings_video_aspect_ratio_entries[2]</comment>
+        <translation>4:3</translation>
+    </message>
+    <message>
+        <source>16:9</source>
+        <comment>settings_video_aspect_ratio_entries[3]</comment>
+        <translation>16:9</translation>
+    </message>
+    <message>
+        <source>19:9</source>
+        <comment>settings_video_aspect_ratio_entries[4]</comment>
+        <translation>19:9</translation>
+    </message>
+    <message>
+        <source>20:9</source>
+        <comment>settings_video_aspect_ratio_entries[5]</comment>
+        <translation>20:9</translation>
+    </message>
+    <message>
+        <source>21:9</source>
+        <comment>settings_video_aspect_ratio_entries[6]</comment>
+        <translation>21:9</translation>
+    </message>
+    <message>
+        <source>16:10</source>
+        <comment>settings_video_aspect_ratio_entries[7]</comment>
+        <translation>16:10</translation>
+    </message>
+    <message>
+        <source>PAR 1:1</source>
+        <comment>settings_video_aspect_ratio_entries[8]</comment>
+        <translation>PAR 1:1</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_video_aspect_ratio_entries[9]</comment>
+        <translation>Özəl</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_achievement_scale_entries[0]</comment>
+        <translation>Özbaşına</translation>
+    </message>
+    <message>
+        <source>Use OSD Scale</source>
+        <comment>settings_achievement_scale_entries[1]</comment>
+        <translation>EÜG Ölçəyini İşlət</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_achievement_scale_entries[2]</comment>
+        <translation>Özəl</translation>
+    </message>
+    <message>
+        <source>AMOLED</source>
+        <comment>settings_theme_entries[4]</comment>
+        <translation>AMOLED</translation>
+    </message>
+    <message>
+        <source>Cobalt Sky</source>
+        <comment>settings_theme_entries[5]</comment>
+        <translation>Kobalt Göy Üzü</translation>
+    </message>
+    <message>
+        <source>Dark Ruby</source>
+        <comment>settings_theme_entries[6]</comment>
+        <translation>Tünd Yaqut</translation>
+    </message>
+    <message>
+        <source>Grey Matter</source>
+        <comment>settings_theme_entries[7]</comment>
+        <translation>Boz Maddə</translation>
+    </message>
+    <message>
+        <source>Purple Rain</source>
+        <comment>settings_theme_entries[8]</comment>
+        <translation>Bənövşəyi Yağış</translation>
+    </message>
+    <message>
+        <source>Green Giant</source>
+        <comment>settings_theme_entries[9]</comment>
+        <translation>Yaşıl Div</translation>
+    </message>
+    <message>
+        <source>Pinky Pals</source>
+        <comment>settings_theme_entries[10]</comment>
+        <translation>Çəhrayı Dostlar</translation>
+    </message>
+    <message>
+        <source>None (Double Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[0]</comment>
+        <translation>Heç biri (İkiqat Sürət)</translation>
+    </message>
+    <message>
+        <source>2x (Quad Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[1]</comment>
+        <translation>2x (Dördqat Sürət)</translation>
+    </message>
+    <message>
+        <source>3x (6x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[2]</comment>
+        <translation>3x (6x Sürət)</translation>
+    </message>
+    <message>
+        <source>4x (8x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[3]</comment>
+        <translation>4x (8x Sürət)</translation>
+    </message>
+    <message>
+        <source>5x (10x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[4]</comment>
+        <translation>5x (10x Sürət)</translation>
+    </message>
+    <message>
+        <source>6x (12x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[5]</comment>
+        <translation>6x (12x Sürət)</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_read_speedup_entries[6]</comment>
+        <translation>Ən Yüksək (Daha Güvənli)</translation>
+    </message>
+    <message>
+        <source>None (Normal Speed)</source>
+        <comment>settings_cdrom_seek_speedup_entries[0]</comment>
+        <translation>Heç biri (Normal Sürət)</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_cdrom_seek_speedup_entries[1]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x</source>
+        <comment>settings_cdrom_seek_speedup_entries[2]</comment>
+        <translation>3x</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_cdrom_seek_speedup_entries[3]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x</source>
+        <comment>settings_cdrom_seek_speedup_entries[4]</comment>
+        <translation>5x</translation>
+    </message>
+    <message>
+        <source>6x</source>
+        <comment>settings_cdrom_seek_speedup_entries[5]</comment>
+        <translation>6x</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_seek_speedup_entries[6]</comment>
+        <translation>Ən Yüksək (Daha Güvənli)</translation>
+    </message>
+    <message>
+        <source>Emulation</source>
+        <comment>settings_tab_emulation</comment>
+        <translation>Yamsılanış</translation>
+    </message>
+    <message>
+        <source>Start BIOS</source>
+        <comment>content_list_start_bios</comment>
+        <translation>BIOS&apos;u Başlat</translation>
+    </message>
+    <message>
+        <source>DuckStation</source>
+        <comment>app_name</comment>
+        <translation>DuckStation</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <comment>dialog_copy</comment>
+        <translation>Köçür</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>dialog_back</comment>
+        <translation>Geri</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>action_input_settings</comment>
+        <translation>Yönəldən Quruluşları</translation>
+    </message>
+    <message>
+        <source>Show Messages</source>
+        <comment>settings_show_osd_messages</comment>
+        <translation>Bildirişləri Göstər</translation>
+    </message>
+    <message>
+        <source>Show Speed</source>
+        <comment>settings_show_speed</comment>
+        <translation>Sürəti Göstər</translation>
+    </message>
+    <message>
+        <source>Show FPS</source>
+        <comment>settings_show_fps</comment>
+        <translation>KSAN&apos;ı Göstər</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <comment>settings_execution_mode</comment>
+        <translation>Yerinə Yetirmə Durumu</translation>
+    </message>
+    <message>
+        <source>Selects the method used to emulate the CPU. The recompiler is the fastest and is recommended.</source>
+        <comment>settings_summary_execution_mode</comment>
+        <translation>OİB-ni yamsılamaq üçün işlədilən üsulu seçir. Təkrar dərləyici ən sürətlidir və tövsiyə olunur.</translation>
+    </message>
+    <message>
+        <source>GPU Renderer</source>
+        <comment>settings_renderer</comment>
+        <translation>GİB İşlənişçisi</translation>
+    </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <comment>settings_summary_renderer</comment>
+        <translation>Konsol/oyun görüntüləri işlənişi üçün işlənəcək arxa-ucu seçir.</translation>
+    </message>
+    <message>
+        <source>Automatically saves the current state when closing a game or leaving the app.</source>
+        <comment>settings_summary_save_state_on_exit</comment>
+        <translation>Oyunu bağlayanda və ya tətbiqdən çıxanda cari durumu özbaşına qoruyur.</translation>
+    </message>
+    <message>
+        <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+        <comment>settings_summary_pause_on_controller_disconnection</comment>
+        <translation>Bağlanışlı yönəldənin çıxarılışında yamsılayıcıya ara verdirir.</translation>
+    </message>
+    <message>
+        <source>Game Screen Orientation</source>
+        <comment>settings_emulation_screen_orientation</comment>
+        <translation>Oyun Ekranının Yönü</translation>
+    </message>
+    <message>
+        <source>Sets the screen orientation while games are running.</source>
+        <comment>settings_summary_emulation_screen_orientation</comment>
+        <translation>Oyunlar işləyərkən ekranın yönünü təyin edir.</translation>
+    </message>
+    <message>
+        <source>Immersive Pause Menu</source>
+        <comment>settings_immersive_pause_menu</comment>
+        <translation>Tam Ekranlı Fasilə Menyusu</translation>
+    </message>
+    <message>
+        <source>Keeps the status and navigation bars hidden while the pause menu is open.</source>
+        <comment>settings_summary_immersive_pause_menu</comment>
+        <translation>Fasilə menyusu açıq olduqda durum və naviqasiya zolaqlarını gizli saxlayır.</translation>
+    </message>
+    <message>
+        <source>Improves frame pacing and presentation time, but can increase battery usage. Do not enable on slow devices.</source>
+        <comment>settings_summary_optimal_frame_pacing</comment>
+        <translation>Kadrların ahəngini və göstərilmə vaxtını yaxşılaşdırır, amma batareya sərfini artıra bilər. Yavaş cihazlarda qoşmayın.</translation>
+    </message>
+    <message>
+        <source>Log Level</source>
+        <comment>settings_log_level</comment>
+        <translation>Gündəlik Aşaması</translation>
+    </message>
+    <message>
+        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
+        <comment>settings_summary_log_level</comment>
+        <translation>Gündəliklənmiş göndərişlərin ayrıntılılığını qurur. Daha yüksək aşamalar daha çox göndəriş gündəlikləyəcək.</translation>
+    </message>
+    <message>
+        <source>Logs messages to duckstation.log in the user directory.</source>
+        <comment>settings_summary_log_to_file</comment>
+        <translation>Göndərişləri işlədici qovluğundakı duckstation.log&apos;a gündəlikləyir.</translation>
+    </message>
+    <message>
+        <source>Log To Logcat</source>
+        <comment>settings_log_to_debug</comment>
+        <translation>Logcat-a Gündəliklə</translation>
+    </message>
+    <message>
+        <source>Writes log messages to the Android message logger. Only useful when attached to a computer with adb.</source>
+        <comment>settings_summary_log_to_debug</comment>
+        <translation>Gündəlik göndərişlərini Android göndəriş gündəliyinə yazır. Yalnız adb ilə kompüterə bağlı olduqda yararlıdır.</translation>
+    </message>
+    <message>
+        <source>Audio Backend</source>
+        <comment>settings_backend</comment>
+        <translation>Səs Arxa-ucu</translation>
+    </message>
+    <message>
+        <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
+        <comment>settings_summary_backend</comment>
+        <translation>Səs arxa-ucu, yamsılayıcının ürətdiyi kadrların yiyəyə ötürülüşü şəklini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Stretch Mode</source>
+        <comment>settings_stretch_mode</comment>
+        <translation>Uzadılış Durumu</translation>
+    </message>
+    <message>
+        <source>Determines quality of audio when not running at 100% speed.</source>
+        <comment>settings_summary_stretch_mode</comment>
+        <translation>100% sürətlə çalışmadıqda səs keyfiyyətini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Output Volume</source>
+        <comment>settings_output_volume</comment>
+        <translation>Çıxarış Ucalığı</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host.</source>
+        <comment>settings_summary_output_volume</comment>
+        <translation>Yiyədə çıxan səsin ucalığını yönəldir.</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+        <comment>settings_summary_fast_forward_volume</comment>
+        <translation>Sürətli irəliləyiş zamanı yiyədə çıxan səsin ucalığını yönəldir.</translation>
+    </message>
+    <message>
+        <source>Mute All Sound</source>
+        <comment>settings_output_muted</comment>
+        <translation>Bütün Səsləri Susdur</translation>
+    </message>
+    <message>
+        <source>Prevents the app from emitting any sound.</source>
+        <comment>settings_summary_output_muted</comment>
+        <translation>Tətbiqin hər hansı səs çıxarmasını əngəlləyir.</translation>
+    </message>
+    <message>
+        <source>Output Latency</source>
+        <comment>settings_output_latency_ms</comment>
+        <translation>Çıxarış Gecikməsi</translation>
+    </message>
+    <message>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <comment>settings_summary_output_latency_ms</comment>
+        <translation>Səsin yiyə API&apos;si ilə götürülüşü və səsçıxardanlardan çıxışı arasındakı gecikmənin dəyərini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_buffer_ms</comment>
+        <translation>Bufer Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+        <comment>settings_summary_buffer_ms</comment>
+        <translation>Yiyə API&apos;si ilə çıxarılışı öncəsi səs buferi dəyərini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
+        <comment>settings_summary_aspect_ratio</comment>
+        <translation>Konsolun ekrana çıxarışını göstərmək üçün işlədilən en-uzunluq oranını dəyişir.</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>settings_scaling</comment>
+        <translation>Ölçəkləniş</translation>
+    </message>
+    <message>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <comment>settings_summary_scaling</comment>
+        <translation>Yamsılanmış konsolun çıxarışının monitorunuzun çözünürlüyünə uyğun böyüdülüşünü ya da kiçildilişini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>FMV Scaling</source>
+        <comment>settings_scaling_24_bit</comment>
+        <translation>FMV Ölçəklənişi</translation>
+    </message>
+    <message>
+        <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
+        <comment>settings_summary_scaling_24_bit</comment>
+        <translation>24-bit içərik işlək olduğunda, adətən FMV&apos;lər, işlədilən ölçəkləniş alqoritmini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Screen Rotation</source>
+        <comment>settings_rotation</comment>
+        <translation>Ekran Dönüşü</translation>
+    </message>
+    <message>
+        <source>Determines the rotation of the simulated TV screen.</source>
+        <comment>settings_summary_rotation</comment>
+        <translation>Yamsılanmış TV ekranının dönüşünü bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
+        <comment>settings_summary_show_osd_messages</comment>
+        <translation>Etkinlik baş verdikdə ekranüstü görüntü göndərişini göstərir. Yanlışlar və uyarımlar bu quruluşdan asılı olmayaraq görüntülənəcək.</translation>
+    </message>
+    <message>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <comment>settings_summary_show_speed</comment>
+        <translation>Sistemin hazırki yamsılanış sürətini ekranın üst-sağ küncündə yüzdə olaraq göstərir.</translation>
+    </message>
+    <message>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_fps</comment>
+        <translation>Sistemin saniyə başı göstərdiyi kadrların (ya da v-sinxlərin) sayını ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Determines how large the on-screen messages and monitor are.</source>
+        <comment>settings_summary_osd_scale</comment>
+        <translation>Ekran-üstü göndərişlərin və monitorun böyüklüyünü bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Screen Margins</source>
+        <comment>settings_osd_margin</comment>
+        <translation>Ekran Boşluqları</translation>
+    </message>
+    <message>
+        <source>Determines the margin between the edge of the screen and on-screen messages.</source>
+        <comment>settings_summary_osd_margin</comment>
+        <translation>Ekran qırağı ilə ekran-üstü göndərişlər arasındakı boşluğu bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Message Location</source>
+        <comment>settings_osd_message_location</comment>
+        <translation>Göndəriş Yerləşimi</translation>
+    </message>
+    <message>
+        <source>Selects which location on the screen messages are displayed.</source>
+        <comment>settings_summary_osd_message_location</comment>
+        <translation>Göndərişlərin ekranda göstəriləcək yerləşimini seçir.</translation>
+    </message>
+    <message>
+        <source>Animate Messages</source>
+        <comment>settings_animate_osd_messages</comment>
+        <translation>Göndərişləri Canlandır</translation>
+    </message>
+    <message>
+        <source>Enables animation for on-screen messages when they appear and disappear.</source>
+        <comment>settings_summary_animate_osd_messages</comment>
+        <translation>Ekranüstü göndərişlərin ortaya çıxışı və itişi üçün canlandırma qoşur.</translation>
+    </message>
+    <message>
+        <source>Blur Message Backgrounds</source>
+        <comment>settings_blur_osd_message_backgrounds</comment>
+        <translation>Göndəriş Arxa Planlarını Bula</translation>
+    </message>
+    <message>
+        <source>Enables a blur effect on the background behind on-screen messages to improve readability.</source>
+        <comment>settings_summary_blur_osd_message_backgrounds</comment>
+        <translation>Oxunaqlılığı yaxşılaşdırmaq üçün ekranüstü göndərişlərin arxasında bulanıqlıq etkisini qoşur.</translation>
+    </message>
+    <message>
+        <source>Error Duration</source>
+        <comment>settings_osd_error_duration</comment>
+        <translation>Yanlış Göndərişlərinin Sürəsi</translation>
+    </message>
+    <message>
+        <source>Determines how long error messages are displayed on screen.</source>
+        <comment>settings_summary_osd_error_duration</comment>
+        <translation>Yanlış göndərişlərinin ekranda görünmə sürəsini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Warning Duration</source>
+        <comment>settings_osd_warning_duration</comment>
+        <translation>Uyarım Göndərişlərinin Sürəsi</translation>
+    </message>
+    <message>
+        <source>Determines how long warning messages are displayed on screen.</source>
+        <comment>settings_summary_osd_warning_duration</comment>
+        <translation>Uyarım göndərişlərinin ekranda görünmə sürəsini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Information Duration</source>
+        <comment>settings_osd_info_duration</comment>
+        <translation>Bilgi Göndərişlərinin Sürəsi</translation>
+    </message>
+    <message>
+        <source>Determines how long information messages are displayed on screen.</source>
+        <comment>settings_summary_osd_info_duration</comment>
+        <translation>Bilgi göndərişlərinin ekranda görünmə sürəsini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Action Duration</source>
+        <comment>settings_osd_quick_duration</comment>
+        <translation>Əməl Göndərişlərinin Sürəsi</translation>
+    </message>
+    <message>
+        <source>Determines how long messages for quick actions, such as saving or loading states, are displayed on screen.</source>
+        <comment>settings_summary_osd_quick_duration</comment>
+        <translation>Durumların qorunuşu və yüklənişi kimi tez əməllər üçün göndərişlərin ekranda görünmə sürəsini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Show CPU Usage</source>
+        <comment>settings_show_cpu</comment>
+        <translation>OİB İşlənişini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <comment>settings_summary_show_cpu</comment>
+        <translation>Hər sistem axınının yiyə OİB işlədilişini ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Show Status Indicators</source>
+        <comment>settings_show_status_indicators</comment>
+        <translation>Durum Bildiricilərini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows indicators when running outside normal parameters (e.g. fast forward).</source>
+        <comment>settings_summary_show_status_indicators</comment>
+        <translation>Normal parametrlərdən kənar işləyəndə (məsələn, sürətli irəliləyişdə) bildiricilər göstərir.</translation>
+    </message>
+    <message>
+        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+        <comment>settings_summary_show_frame_times</comment>
+        <translation>Kadr vaxtlarının görüntü keçmişini ekranın üst-sol küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Threaded Rendering</source>
+        <comment>settings_use_thread</comment>
+        <translation>Axınlanmış İşləniş</translation>
+    </message>
+    <message>
+        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement and is safe to use.</source>
+        <comment>settings_summary_use_thread</comment>
+        <translation>Qrafik çəkmək üçün ikinci axından istifadə edir. Sürəti əhəmiyyətli dərəcədə artırır və istifadəsi güvənlidir.</translation>
+    </message>
+    <message>
+        <source>OSD Theme</source>
+        <comment>settings_fullscreen_ui_theme</comment>
+        <translation>EÜG Teması</translation>
+    </message>
+    <message>
+        <source>Selects the theme used to render on-screen display elements.</source>
+        <comment>settings_summary_fullscreen_ui_theme</comment>
+        <translation>Ekran-üstü görüntü ögələrini çəkmək üçün işlədilən temanı seçir.</translation>
+    </message>
+    <message>
+        <source>OSD Font</source>
+        <comment>settings_imgui_text_font</comment>
+        <translation>EÜG Şrifti</translation>
+    </message>
+    <message>
+        <source>Selects the font used to render on-screen display elements.</source>
+        <comment>settings_summary_imgui_text_font</comment>
+        <translation>Ekran-üstü görüntü ögələrini çəkmək üçün işlədilən şrifti seçir.</translation>
+    </message>
+    <message>
+        <source>Overlay Font</source>
+        <comment>settings_imgui_fixed_font</comment>
+        <translation>Üst Göstəricinin Şrifti</translation>
+    </message>
+    <message>
+        <source>Selects the font used for the performance overlay.</source>
+        <comment>settings_summary_imgui_fixed_font</comment>
+        <translation>Performans göstəricisi üçün istifadə olunan şrifti seçir.</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_title</comment>
+        <translation>Oyun Qovluqları</translation>
+    </message>
+    <message>
+        <source>Add game folder</source>
+        <comment>content_folders_add</comment>
+        <translation>Oyun qovluğu əlavə et</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_tab_folders</comment>
+        <translation>Oyun Qovluqları</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <comment>content_folders_tab_excluded</comment>
+        <translation>İstisna Edilmiş Yollar</translation>
+    </message>
+    <message>
+        <source>No games have been excluded.</source>
+        <comment>content_folders_excluded_empty</comment>
+        <translation>Heç bir oyun istisna edilməyib.</translation>
+    </message>
+    <message>
+        <source>More excluded path actions</source>
+        <comment>content_folders_excluded_more_actions</comment>
+        <translation>İstisna edilmiş yollar üçün başqa əməliyyatlar</translation>
+    </message>
+    <message>
+        <source>Remove From Excluded Paths</source>
+        <comment>content_folders_excluded_remove</comment>
+        <translation>İstisna Edilmiş Yollardan Qaldır</translation>
+    </message>
+    <message>
+        <source>Game Display</source>
+        <comment>settings_category_game_display</comment>
+        <translation>Oyun Ekranı</translation>
+    </message>
+    <message>
+        <source>Basic Rendering</source>
+        <comment>settings_category_graphics_basic_rendering</comment>
+        <translation>Əsas İşləniş</translation>
+    </message>
+    <message>
+        <source>Advanced Rendering</source>
+        <comment>settings_category_graphics_advanced_rendering</comment>
+        <translation>Gəlişmiş İşləniş</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <comment>settings_enabled</comment>
+        <translation>Uğurları Qoş</translation>
+    </message>
+    <message>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <comment>settings_summary_enabled</comment>
+        <translation>Qoşulub girildikdə, DuckStation başlanışda uğurları darayacaq.</translation>
+    </message>
+    <message>
+        <source>Hardcore Mode</source>
+        <comment>settings_challenge_mode</comment>
+        <translation>Möhkəm Mod</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <comment>settings_summary_challenge_mode</comment>
+        <translation>Uğurlar üçün öndərlik taxtasının izlənməsini də daşıyan &quot;çağırış&quot; durumu. Durum qorunuşunu, hiylələri və yavaşlayış işləyişlərini söndürür.</translation>
+    </message>
+    <message>
+        <source>Encore Mode</source>
+        <comment>settings_encore_mode</comment>
+        <translation>Təkrar Durumu</translation>
+    </message>
+    <message>
+        <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
+        <comment>settings_summary_encore_mode</comment>
+        <translation>Qoşulduqda, hər oturum heç bir uğur açılmamış kimi davranacaq.</translation>
+    </message>
+    <message>
+        <source>Spectator Mode</source>
+        <comment>settings_spectator_mode</comment>
+        <translation>İzləyici Durumu</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <comment>settings_summary_spectator_mode</comment>
+        <translation>Qoşulduqda, DuckStation bütün uğurları qapalı sayacaq və qulluqçuya heç bir açılış bildirişi göndərməyəcək.</translation>
+    </message>
+    <message>
+        <source>Sound Effects</source>
+        <comment>settings_sound_effects</comment>
+        <translation>Səs Etkiləri</translation>
+    </message>
+    <message>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_sound_effects</comment>
+        <translation>Uğur açılışları və öndərlik taxtası göndərişləri kimi etkinliklərdə səs etkiləri çıxarır.</translation>
+    </message>
+    <message>
+        <source>Achievement Notifications</source>
+        <comment>settings_notifications</comment>
+        <translation>Uğur Bildirişləri</translation>
+    </message>
+    <message>
+        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_notifications</comment>
+        <translation>Uğur açılışları və öndərlik taxtası göndərişləri kimi etkinliklərdə sıçrayan bildirişlər göstərir.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notifications</source>
+        <comment>settings_leaderboard_notifications</comment>
+        <translation>Öndərlik Taxtası Bildirişləri</translation>
+    </message>
+    <message>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <comment>settings_summary_leaderboard_notifications</comment>
+        <translation>Öndərlik taxtası çağırışı başlayanda, nəticə göndəriləndə və ya uğursuz olduqda sıçrayan bildirişlər göstərir.</translation>
+    </message>
+    <message>
+        <source>Achievement Notification Duration</source>
+        <comment>settings_notifications_duration</comment>
+        <translation>Uğur Bildirişinin Müddəti</translation>
+    </message>
+    <message>
+        <source>Controls how long achievement notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_notifications_duration</comment>
+        <translation>Uğur bildirişlərinin ekranda neçə saniyə qalacağını yönətir.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notification Duration</source>
+        <comment>settings_leaderboards_duration</comment>
+        <translation>Öndərlik Taxtası Bildirişinin Müddəti</translation>
+    </message>
+    <message>
+        <source>Controls how long leaderboard notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_leaderboards_duration</comment>
+        <translation>Öndərlik taxtası bildirişlərinin ekranda neçə saniyə qalacağını yönətir.</translation>
+    </message>
+    <message>
+        <source>Notification Location</source>
+        <comment>settings_notification_location</comment>
+        <translation>Bildiriş Yerləşimi</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for achievement and leaderboard notifications.</source>
+        <comment>settings_summary_notification_location</comment>
+        <translation>Uğur və öndərlik taxtası bildirişləri üçün ekran yerləşimini seçir.</translation>
+    </message>
+    <message>
+        <source>Notification Size</source>
+        <comment>settings_notification_scale</comment>
+        <translation>Bildiriş Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Determines the size of achievement notification popups. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_notification_scale</comment>
+        <translation>Uğur bildirişi sıçrayıcılarının ölçüsünü bəlirləyir. Özbaşına, Böyük Görüntü İA&apos;sı ilə eyni ölçəklənişi işlədəcək.</translation>
+    </message>
+    <message>
+        <source>Custom Notification Scale</source>
+        <comment>settings_notification_scale_custom</comment>
+        <translation>Özəl Bildiriş Ölçəyi</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for achievement notifications.</source>
+        <comment>settings_summary_notification_scale_custom</comment>
+        <translation>Uğur bildirişləri üçün özəl ölçək yüzdəsini qurur.</translation>
+    </message>
+    <message>
+        <source>Achievement tracking is not currently enabled. Your login will have no effect until achievements are enabled. Do you want to enable them now?</source>
+        <comment>settings_achievements_enable_prompt</comment>
+        <translation>Uğurların izlənməsi hazırda qoşulmayıb. Uğurlar qoşulana qədər girişinizin heç bir etkisi olmayacaq. Onları indi qoşmaq istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
+        <comment>settings_achievements_hardcore_restart_prompt</comment>
+        <translation>Oyun yenidən başladılana qədər Hardcore rejimi qoşulmayacaq. Oyunu indi yenidən başlatmaq istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Indicator Size</source>
+        <comment>settings_indicator_scale</comment>
+        <translation>Bildirici Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Determines the size of challenge/progress indicators. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_indicator_scale</comment>
+        <translation>Çağırış/irəliləyiş bildiricilərinin ölçüsünü bəlirləyir. Özbaşına, Böyük Görüntü İA&apos;sı ilə eyni ölçəklənişi işlədəcək.</translation>
+    </message>
+    <message>
+        <source>Custom Indicator Scale</source>
+        <comment>settings_indicator_scale_custom</comment>
+        <translation>Özəl Bildirici Ölçəyi</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for challenge/progress indicators.</source>
+        <comment>settings_summary_indicator_scale_custom</comment>
+        <translation>Çağırış/irəliləyiş bildiriciləri üçün özəl ölçək yüzdəsini qurur.</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators</source>
+        <comment>settings_challenge_indicator_mode</comment>
+        <translation>Çağırış Bildiriciləri</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
+        <comment>settings_summary_challenge_indicator_mode</comment>
+        <translation>Çağırış/hazırlanmış uğur işlək olduğunda seçilmiş yerdə bildiriş və ya ikonları göstərir.</translation>
+    </message>
+    <message>
+        <source>Indicator Location</source>
+        <comment>settings_indicator_location</comment>
+        <translation>Bildirici Yerləşimi</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
+        <comment>settings_summary_indicator_location</comment>
+        <translation>Çağırış/irəliləyiş bildiriciləri və öndərlik taxtası izləyiciləri üçün ekran yerləşimini seçir.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Trackers</source>
+        <comment>settings_leaderboard_trackers</comment>
+        <translation>Öndərlik Taxtası İzləyiciləri</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
+        <comment>settings_summary_leaderboard_trackers</comment>
+        <translation>Öndərlik taxtası çağırışları işlək olduğunda seçilmiş yerdə zamanlayıcını göstərir.</translation>
+    </message>
+    <message>
+        <source>Progress Indicators</source>
+        <comment>settings_progress_indicator_mode</comment>
+        <translation>İrəliləyiş Bildiriciləri</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
+        <comment>settings_summary_progress_indicator_mode</comment>
+        <translation>Ölçülən uğura doğru irəliləyiş dəyişdiyində seçilmiş yerdə sıçrayıcı göstərir.</translation>
+    </message>
+    <message>
+        <source>Prefetch Badges</source>
+        <comment>settings_prefetch_badges</comment>
+        <translation>Simgəcikləri Önal</translation>
+    </message>
+    <message>
+        <source>Downloads all locked achievement badges when starting the game, reducing delays when showing unlock images.</source>
+        <comment>settings_summary_prefetch_badges</comment>
+        <translation>Oyun başlayanda bütün qapalı uğur simgəciklərini endirir və uğur açılışı şəkillərinin göstərilməsində gecikmələri azaldır.</translation>
+    </message>
+    <message>
+        <source>Track Unofficial Achievements</source>
+        <comment>settings_unofficial_test_mode</comment>
+        <translation>Rəsmi olmayan Uğurları İzlə</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_unofficial_test_mode</comment>
+        <translation>Aktiv olduqda, DuckStation rəsmi olmayan uğurları izləyəcək. Açılan uğurlar yerli olaraq saxlanacaq və RetroAchievements xidmətinə göndərilməyəcək.</translation>
+    </message>
+    <message>
+        <source>Test RetroAchievements Offline Mode</source>
+        <comment>settings_test_offline_mode</comment>
+        <translation>RetroAchievements Bağlantısız Durumunu Yoxla</translation>
+    </message>
+    <message>
+        <source>Forces all RetroAchievements server calls to fail, useful for testing offline mode.</source>
+        <comment>settings_summary_test_offline_mode</comment>
+        <translation>Bütün RetroAchievements qulluqçu çağırışlarını uğursuz edir; bağlantısız durumu yoxlamaq üçün yararlıdır.</translation>
+    </message>
+    <message>
+        <source>Rich Presence Monitor</source>
+        <comment>settings_rich_presence_monitor</comment>
+        <translation>Genişləndirilmiş Mövcudluq İzləyicisi</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <comment>settings_summary_rich_presence_monitor</comment>
+        <translation>Göstərici sahəsində həmişə cari RetroAchievements genişləndirilmiş mövcudluq mətnini göstərir.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
+        <comment>achievement_unsupported_count_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d uğur DuckStation tərəfindən dəstəklənmir və açıla bilməz.</numerusform>
+            <numerusform>%1$d uğur DuckStation tərəfindən dəstəklənmir və açıla bilməz.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
+        <comment>settings_achievements_disclaimer</comment>
+        <translation>DuckStation, uğur verilənlər bazası və irəliləyişi izləmək üçün RetroAchievements (retroachievements.org) işlədir. DuckStation işlətmək üçün RetroAchievements hesabı tələb olunmur.</translation>
+    </message>
+    <message>
+        <source>Port %1$d</source>
+        <comment>controller_port_format</comment>
+        <translation>Port %1$d</translation>
+    </message>
+    <message>
+        <source>Controller Type</source>
+        <comment>controller_type</comment>
+        <translation>Yönəldən Biçimi</translation>
+    </message>
+    <message>
+        <source>Selects the emulated controller type.</source>
+        <comment>controller_type_message</comment>
+        <translation>Emulyasiya olunan yönəldən növünü seçir.</translation>
+    </message>
+    <message>
+        <source>Show Controller Input</source>
+        <comment>settings_show_inputs</comment>
+        <translation>Yönəldən Girilişini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <comment>settings_summary_show_inputs</comment>
+        <translation>Sistemin hazırki yönəldən durumunu ekranın alt-sol küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
+        <comment>touchscreen_controller_reset_layout_confirm</comment>
+        <translation>Bu, bu görünüşdə və yönləndirmədə hər düymənin yerləşimini, ölçüsünü və görünməsini sıfırlayacaq. Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Editing layout in &apos;%s&apos;.</source>
+        <comment>touchscreen_controller_editing_layout</comment>
+        <translation>&apos;%s&apos; daxilində düzən dəyişdirilir.</translation>
+    </message>
+    <message>
+        <source>Game Specific Settings</source>
+        <comment>input_settings_game_specific</comment>
+        <translation>Oyuna Özəl Ayarlar</translation>
+    </message>
+    <message>
+        <source>Settings are unavailable for this game.</source>
+        <comment>game_settings_unavailable</comment>
+        <translation>Bu oyun üçün quruluşlar əlçatan deyil.</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_folder_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>settings_folder_memory_cards</comment>
+        <translation>Yaddaş Kartları</translation>
+    </message>
+    <message>
+        <source>Game Settings</source>
+        <comment>settings_folder_game_settings</comment>
+        <translation>Oyun Quruluşları</translation>
+    </message>
+    <message>
+        <source>Input Profiles</source>
+        <comment>settings_folder_input_profiles</comment>
+        <translation>Giriliş Profilləri</translation>
+    </message>
+    <message>
+        <source>Textures</source>
+        <comment>settings_folder_textures</comment>
+        <translation>Toxumalar</translation>
+    </message>
+    <message>
+        <source>Shaders</source>
+        <comment>settings_folder_shaders</comment>
+        <translation>Kölgələndiricilər</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_folder_overlays</comment>
+        <translation>Qaplamalar</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_folder_screenshots</comment>
+        <translation>Ekran Çəkimləri</translation>
+    </message>
+    <message>
+        <source>No save states have been created for this game.</source>
+        <comment>save_state_grid_empty</comment>
+        <translation>Bu oyun üçün heç bir qorunuş durumu yaradılmayıb.</translation>
+    </message>
+    <message>
+        <source>Toggle Analog Mode</source>
+        <comment>emulation_menu_toggle_analog_mode</comment>
+        <translation>Analoq Rejimi Dəyiş</translation>
+    </message>
+    <message>
+        <source>Change Disc</source>
+        <comment>emulation_menu_change_media</comment>
+        <translation>Diski Dəyiş</translation>
+    </message>
+    <message>
+        <source>Restart Game</source>
+        <comment>emulation_menu_restart_content</comment>
+        <translation>Oyunu Yenidən Başlat</translation>
+    </message>
+    <message>
+        <source>Close Game</source>
+        <comment>emulation_menu_close_content</comment>
+        <translation>Oyunu Bağla</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>emulation_menu_content_settings</comment>
+        <translation>Oyun Özəllikləri</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>emulation_menu_input_settings</comment>
+        <translation>Yönəldən Quruluşları</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <comment>settings_speed_unlimited</comment>
+        <translation>Limitsiz</translation>
+    </message>
+    <message>
+        <source>%1$s px</source>
+        <comment>settings_value_pixels</comment>
+        <translation>%1$s px</translation>
+    </message>
+    <message>
+        <source>%1$s×</source>
+        <comment>settings_value_scale</comment>
+        <translation>%1$s×</translation>
+    </message>
+    <message>
+        <source>Enable Game Vibration</source>
+        <comment>settings_touchscreen_enable_vibration</comment>
+        <translation>Oyun Titrəyişini Qoş</translation>
+    </message>
+    <message>
+        <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
+        <comment>settings_summary_touchscreen_enable_vibration</comment>
+        <translation>Oyundakı titrəyişi qurğunuzun titrəyiş mühərrikinə, varsa, ötürür.</translation>
+    </message>
+    <message>
+        <source>Global Save %d</source>
+        <comment>save_slot_global_n</comment>
+        <translation>Ümumi Qorunuş %d</translation>
+    </message>
+    <message>
+        <source>Undo Load State</source>
+        <comment>save_slot_undo_load_state</comment>
+        <translation>Durum Yüklənişini Geri Al</translation>
+    </message>
+    <message>
+        <source>No save states found.</source>
+        <comment>save_state_manager_empty</comment>
+        <translation>Durum qorunuşu tapılmadı.</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>title_activity_memory_card_editor</comment>
+        <translation>Yaddaş Kartı Düzəldicisi</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>action_memory_card_editor</comment>
+        <translation>Yaddaş Kartı Düzəldicisi</translation>
+    </message>
+    <message>
+        <source>Import Card</source>
+        <comment>action_memory_card_editor_import_card</comment>
+        <translation>Kartı İdxal Et</translation>
+    </message>
+    <message>
+        <source>Open Card</source>
+        <comment>action_memory_card_editor_open_card</comment>
+        <translation>Kartı Aç</translation>
+    </message>
+    <message>
+        <source>New Card</source>
+        <comment>action_memory_card_editor_new_card</comment>
+        <translation>Yeni Kart</translation>
+    </message>
+    <message>
+        <source>Format Card</source>
+        <comment>action_memory_card_editor_format_card</comment>
+        <translation>Kartı Biçimləndir</translation>
+    </message>
+    <message>
+        <source>Delete Card</source>
+        <comment>action_memory_card_editor_delete_card</comment>
+        <translation>Kartı Sil</translation>
+    </message>
+    <message>
+        <source>Close Card</source>
+        <comment>action_memory_card_editor_close_card</comment>
+        <translation>Kartı Bağla</translation>
+    </message>
+    <message>
+        <source>No memory cards are open.</source>
+        <comment>memory_card_editor_no_cards_open</comment>
+        <translation>Heç bir yaddaş kartı açıq deyil.</translation>
+    </message>
+    <message>
+        <source>This memory card is empty.</source>
+        <comment>memory_card_editor_no_saves</comment>
+        <translation>Bu yaddaş kartı boşdur.</translation>
+    </message>
+    <message>
+        <source>%d blocks free</source>
+        <comment>memory_card_editor_free_blocks</comment>
+        <translation>%d blok boşdur</translation>
+    </message>
+    <message>
+        <source>%d Blocks</source>
+        <comment>memory_card_editor_blocks</comment>
+        <translation>%d Blok</translation>
+    </message>
+    <message>
+        <source>%.1f KB</source>
+        <comment>memory_card_editor_file_size</comment>
+        <translation>%.1f KB</translation>
+    </message>
+    <message>
+        <source>%s (Deleted)</source>
+        <comment>memory_card_editor_deleted_title</comment>
+        <translation>%s (Silinib)</translation>
+    </message>
+    <message>
+        <source>Copy Save</source>
+        <comment>memory_card_editor_copy_save</comment>
+        <translation>Qorunuşu Köçür</translation>
+    </message>
+    <message>
+        <source>Delete Save</source>
+        <comment>memory_card_editor_delete_save</comment>
+        <translation>Qorunuşu Sil</translation>
+    </message>
+    <message>
+        <source>Undelete Save</source>
+        <comment>memory_card_editor_undelete_save</comment>
+        <translation>Silinmiş Qorunuşu Bərpa Et</translation>
+    </message>
+    <message>
+        <source>Permanently Delete Save</source>
+        <comment>memory_card_editor_permanently_delete_save</comment>
+        <translation>Qorunuşu Birdəfəlik Sil</translation>
+    </message>
+    <message>
+        <source>No memory cards found.</source>
+        <comment>memory_card_editor_no_cards_found</comment>
+        <translation>Yaddaş kartı tapılmadı.</translation>
+    </message>
+    <message>
+        <source>This card is already open.</source>
+        <comment>memory_card_editor_card_already_open</comment>
+        <translation>Bu kart artıq açıqdır.</translation>
+    </message>
+    <message>
+        <source>Failed to open or read memory card.</source>
+        <comment>memory_card_editor_failed_to_open_card</comment>
+        <translation>Yaddaş kartını açmaq və ya oxumaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Must have at least two cards open to copy.</source>
+        <comment>memory_card_editor_must_have_at_least_two_cards_to_copy</comment>
+        <translation>Köçürmək üçün ən azı iki kart açıq olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Select Card</source>
+        <comment>memory_card_editor_select_card</comment>
+        <translation>Kart Seç</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <comment>memory_card_editor_error</comment>
+        <translation>Yanlış</translation>
+    </message>
+    <message>
+        <source>This file requires %1$d blocks, but only %2$d blocks are free.</source>
+        <comment>memory_card_editor_copy_insufficient_blocks</comment>
+        <translation>Bu fayl üçün %1$d blok tələb olunur, ancaq yalnız %2$d blok boşdur.</translation>
+    </message>
+    <message>
+        <source>File &apos;%s&apos; already exists on destination card.</source>
+        <comment>memory_card_editor_copy_already_exists</comment>
+        <translation>&apos;%s&apos; faylı hədəf kartda artıq var.</translation>
+    </message>
+    <message>
+        <source>Failed to read file &apos;%s&apos; from source card.</source>
+        <comment>memory_card_editor_copy_read_failed</comment>
+        <translation>&apos;%s&apos; faylını qaynaq kartdan oxumaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Failed to write file &apos;%s&apos; to destination card.</source>
+        <comment>memory_card_editor_copy_write_failed</comment>
+        <translation>&apos;%s&apos; faylını hədəf karta yazmaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Copied &apos;%1$s&apos; to &apos;%2$s&apos;.</source>
+        <comment>memory_card_editor_copy_success</comment>
+        <translation>&apos;%1$s&apos; &apos;%2$s&apos; daxilinə köçürüldü.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the save &apos;%s&apos;?</source>
+        <comment>memory_card_editor_delete_confirm</comment>
+        <translation>&apos;%s&apos; qorunuşunu silmək istədiyinizə əminsiniz?</translation>
+    </message>
+    <message>
+        <source>Deleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_success</comment>
+        <translation>&apos;%s&apos; qorunuşu silindi.</translation>
+    </message>
+    <message>
+        <source>Failed to delete file &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_failed</comment>
+        <translation>&apos;%s&apos; faylını silmək alınmadı.</translation>
+    </message>
+    <message>
+        <source>Failed to import card. It may not be a supported format.</source>
+        <comment>memory_card_editor_import_failed</comment>
+        <translation>Kartı idxal etmək alınmadı. Biçimi dəstəklənməyə bilər.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be deleted, and cannot be recovered. Are you sure you want to delete this card?</source>
+        <comment>memory_card_editor_delete_card_confirm_message</comment>
+        <translation>&apos;%s&apos; yaddaş kartı silinəcək və bərpa edilə bilməyəcək. Bu kartı silmək istədiyinizə əminsiniz?</translation>
+    </message>
+    <message>
+        <source>Failed to delete &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_failed</comment>
+        <translation>&apos;%s&apos; silmək alınmadı.</translation>
+    </message>
+    <message>
+        <source>Deleted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_success</comment>
+        <translation>&apos;%s&apos; kartı silindi.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be formatted, clearing all saves. Are you sure you want to format this card?</source>
+        <comment>memory_card_editor_format_card_confirm_message</comment>
+        <translation>&apos;%s&apos; yaddaş kartı biçimləndiriləcək və bütün qorunuşlar təmizlənəcək. Bu kartı biçimləndirmək istədiyinizə əminsiniz?</translation>
+    </message>
+    <message>
+        <source>Failed to format &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_failed</comment>
+        <translation>&apos;%s&apos; biçimləndirmək alınmadı.</translation>
+    </message>
+    <message>
+        <source>Formatted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_success</comment>
+        <translation>&apos;%s&apos; kartı biçimləndirildi.</translation>
+    </message>
+    <message>
+        <source>Importing &apos;%1$s&apos; will remove all saves in &apos;%2$s&apos;. Do you want to continue?</source>
+        <comment>memory_card_editor_import_card_confirm_message</comment>
+        <translation>&apos;%1$s&apos; idxal ediləndə &apos;%2$s&apos; daxilindəki bütün qorunuşlar silinəcək. Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Failed to read &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_read_failed</comment>
+        <translation>&apos;%s&apos; oxumaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Imported card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_success</comment>
+        <translation>&apos;%s&apos; kartı idxal edildi.</translation>
+    </message>
+    <message>
+        <source>Undeleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_undelete_success</comment>
+        <translation>&apos;%s&apos; qorunuşu bərpa edildi.</translation>
+    </message>
+    <message>
+        <source>Failed to undelete save &apos;%s&apos;. The save may already be partially overwritten.</source>
+        <comment>memory_card_editor_undelete_failed</comment>
+        <translation>&apos;%s&apos; qorunuşunu bərpa etmək alınmadı. Qorunuşun bir hissəsi artıq yenidən yazılmış ola bilər.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to permanently delete the save &apos;%s&apos;? You cannot recover the save afterwards.</source>
+        <comment>memory_card_editor_permanently_delete_confirm</comment>
+        <translation>&apos;%s&apos; qorunuşunu birdəfəlik silmək istədiyinizə əminsiniz? Sonra qorunuşu bərpa edə bilməyəcəksiniz.</translation>
+    </message>
+    <message>
+        <source>Memory Card Name</source>
+        <comment>create_memory_card_title</comment>
+        <translation>Yaddaş Kartının Adı</translation>
+    </message>
+    <message>
+        <source>You must enter a card name.</source>
+        <comment>create_memory_card_no_name</comment>
+        <translation>Kart adı daxil etməlisiniz.</translation>
+    </message>
+    <message>
+        <source>&apos;%s&apos; is not a valid card name.</source>
+        <comment>create_memory_card_invalid_name</comment>
+        <translation>&apos;%s&apos; keçərli kart adı deyil.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists.</source>
+        <comment>create_memory_card_exists</comment>
+        <translation>&apos;%s&apos; adlı yaddaş kartı artıq var.</translation>
+    </message>
+    <message>
+        <source>Failed to create memory card &apos;%s&apos;.</source>
+        <comment>create_memory_card_failed</comment>
+        <translation>&apos;%s&apos; yaddaş kartını yaratmaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; created.</source>
+        <comment>create_memory_card_done</comment>
+        <translation>&apos;%s&apos; yaddaş kartı yaradıldı.</translation>
+    </message>
+    <message>
+        <source>Edit Memory Cards</source>
+        <comment>game_list_bottom_sheet_edit_memory_cards</comment>
+        <translation>Yaddaş Kartlarını Dəyişdir</translation>
+    </message>
+    <message>
+        <source>No memory cards found for this game.</source>
+        <comment>game_list_bottom_sheet_no_memory_cards_found</comment>
+        <translation>Bu oyun üçün yaddaş kartı tapılmadı.</translation>
+    </message>
+    <message>
+        <source>Game Hash</source>
+        <comment>game_properties_content_hash</comment>
+        <translation>Oyun Heşi</translation>
+    </message>
+    <message>
+        <source>RA Hash</source>
+        <comment>game_properties_achievements_hash</comment>
+        <translation>RA Heşi</translation>
+    </message>
+    <message>
+        <source>Just a few setup steps are necessary before you can run games.</source>
+        <comment>setup_wizard_welcome_first_paragraph</comment>
+        <translation>Oyunları işlətmək üçün bir neçə quraşdırma addımı lazımdır.</translation>
+    </message>
+    <message>
+        <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
+        <comment>setup_wizard_content_folders_message</comment>
+        <translation>DuckStation burada seçdiyiniz qovluqlardakı oyunları özbaşına tapacaq. Daramaq üçün ən azı bir qovluq əlavə etməlisiniz. Saxlama qurğunuzun kök qovluğunu əlavə etməyin, yoxsa darama çox uzun çəkəcək.</translation>
+    </message>
+    <message>
+        <source>Controller Setup</source>
+        <comment>setup_wizard_input_setup</comment>
+        <translation>Yönəldən Qurulumu</translation>
+    </message>
+    <message>
+        <source>No Game Folders Selected</source>
+        <comment>setup_wizard_no_directories_title</comment>
+        <translation>Oyun Qovluğu Seçilməyib</translation>
+    </message>
+    <message>
+        <source>The game list will be empty until you add a folder. Continue anyway?</source>
+        <comment>setup_wizard_no_directories_message</comment>
+        <translation>Qovluq əlavə edənədək oyun sıralığı boş olacaq. Yenə də davam edilsin?</translation>
+    </message>
+    <message>
+        <source>Choose how games should be displayed in the main list.</source>
+        <comment>setup_wizard_view_message</comment>
+        <translation>Oyunların əsas sıralıqda necə göstəriləcəyini seçin.</translation>
+    </message>
+    <message>
+        <source>Alignment (Landscape)</source>
+        <comment>settings_display_alignment_landscape</comment>
+        <translation>Hizalanma (Üfüqi)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in landscape mode.</source>
+        <comment>settings_summary_display_alignment_landscape</comment>
+        <translation>Üfüqi durumda ekranın harada çəkiləcəyini seçir.</translation>
+    </message>
+    <message>
+        <source>Alignment (Portrait)</source>
+        <comment>settings_display_alignment_portrait</comment>
+        <translation>Hizalanma (Şaquli)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in portrait mode.</source>
+        <comment>settings_summary_display_alignment_portrait</comment>
+        <translation>Şaquli durumda ekranın harada çəkiləcəyini seçir.</translation>
+    </message>
+    <message>
+        <source>Use Debug GPU Device</source>
+        <comment>settings_use_debug_device</comment>
+        <translation>Xəta Ayıqlama GİB Qurğusunu İşlət</translation>
+    </message>
+    <message>
+        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_debug_device</comment>
+        <translation>Yiyənin işlənişçi API&apos;si dəstəklədiyində yolaqoyuşu qoş. Ancaq gəlişdiricilər üçün.</translation>
+    </message>
+    <message>
+        <source>Prefer OpenGL ES Context</source>
+        <comment>settings_prefer_gles_context</comment>
+        <translation>OpenGL ES Kontekstinə Üstünlük Ver</translation>
+    </message>
+    <message>
+        <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
+        <comment>settings_summary_prefer_gles_context</comment>
+        <translation>İş masası OpenGL-i dəstəklənsə də OpenGL ES-dən istifadə edir. Bəzi SBC sürücülərində performansı artıra bilər.</translation>
+    </message>
+    <message>
+        <source>Disable Shader Caches</source>
+        <comment>settings_disable_shader_cache</comment>
+        <translation>Kölgələndirici Keşlərini Söndür</translation>
+    </message>
+    <message>
+        <source>Prevents the caching of shaders, forcing them to be recompiled every time.</source>
+        <comment>settings_summary_disable_shader_cache</comment>
+        <translation>Kölgələndiricilərin keşlənməsini əngəlləyərək onların hər dəfə yenidən yığılmasını tələb edir.</translation>
+    </message>
+    <message>
+        <source>Shader &apos;%s&apos; added.</source>
+        <comment>postfx_shader_added</comment>
+        <translation>&apos;%s&apos; kölgələndiricisi əlavə edildi.</translation>
+    </message>
+    <message>
+        <source>Shaders cleared.</source>
+        <comment>postfx_shaders_cleared</comment>
+        <translation>Kölgələndiricilər təmizləndi.</translation>
+    </message>
+    <message>
+        <source>Confirm Shader Clear</source>
+        <comment>postfx_confirm_clear_title</comment>
+        <translation>Kölgələndiricilərin Təmizlənməsini Təsdiqlə</translation>
+    </message>
+    <message>
+        <source>This will remove all shaders from the chain. Their configuration cannot be recovered. Are you sure you want to clear all shaders?</source>
+        <comment>postfx_confirm_clear_message</comment>
+        <translation>Bu, zəncirdən bütün kölgələndiriciləri qaldıracaq. Onların quruluşlarını bərpa etmək olmaz. Bütün kölgələndiriciləri təmizləmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Stage %d removed.</source>
+        <comment>postfx_shader_removed</comment>
+        <translation>Mərhələ %d qaldırıldı.</translation>
+    </message>
+    <message>
+        <source>Enable Post Processing</source>
+        <comment>postfx_setting_enable</comment>
+        <translation>Sonrakı-İşləmlənişi Qoş</translation>
+    </message>
+    <message>
+        <source>Applies the post-processing chain configured below.</source>
+        <comment>postfx_setting_summary_enable</comment>
+        <translation>Aşağıda qurulmuş sonrakı-işləmləniş zəncirini uyğulayır.</translation>
+    </message>
+    <message>
+        <source>Add Shader</source>
+        <comment>postfx_setting_add_shader</comment>
+        <translation>Kölgələndirici Artır</translation>
+    </message>
+    <message>
+        <source>Adds a new shader to the chain.</source>
+        <comment>postfx_setting_summary_add_shader</comment>
+        <translation>Zəncirə yeni kölgələndirici artırır.</translation>
+    </message>
+    <message>
+        <source>Clear Shaders</source>
+        <comment>postfx_setting_clear_shaders</comment>
+        <translation>Kölgələndiriciləri Təmizlə</translation>
+    </message>
+    <message>
+        <source>Removes all shaders from the chain.</source>
+        <comment>postfx_setting_summary_clear_shaders</comment>
+        <translation>Zəncirdən bütün kölgələndiriciləri qaldırır.</translation>
+    </message>
+    <message>
+        <source>Stage %1$d: %2$s</source>
+        <comment>postfx_stage_category</comment>
+        <translation>Mərhələ %1$d: %2$s</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <comment>postfx_setting_options</comment>
+        <translation>Seçimlər</translation>
+    </message>
+    <message>
+        <source>Edits options for this shader.</source>
+        <comment>postfx_setting_summary_options</comment>
+        <translation>Bu kölgələndiricinin seçimlərini dəyişir.</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>postfx_setting_move_up</comment>
+        <translation>Yuxarı Daşı</translation>
+    </message>
+    <message>
+        <source>Moves this shader up in the application order.</source>
+        <comment>postfx_setting_summary_move_up</comment>
+        <translation>Bu kölgələndiricini uyğulanma sırasında yuxarı daşıyır.</translation>
+    </message>
+    <message>
+        <source>Shader %1$d swapped with shader %2$d.</source>
+        <comment>postfx_shader_swapped</comment>
+        <translation>Kölgələndirici %1$d ilə kölgələndirici %2$d yer dəyişdi.</translation>
+    </message>
+    <message>
+        <source>Removes this shader from the post-processing pipeline.</source>
+        <comment>postfx_setting_summary_remove_shader</comment>
+        <translation>Bu kölgələndiricini sonrakı-işləmləniş xəttindən qaldırır.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <comment>postfx_setting_remove_shader</comment>
+        <translation>Sil</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>postfx_setting_move_down</comment>
+        <translation>Aşağı Daşı</translation>
+    </message>
+    <message>
+        <source>Moves this shader down in the application order.</source>
+        <comment>postfx_setting_summary_move_down</comment>
+        <translation>Bu kölgələndiricini uyğulanma sırasında aşağı daşıyır.</translation>
+    </message>
+    <message>
+        <source>Select Shader</source>
+        <comment>postfx_add_select_shader</comment>
+        <translation>Kölgələndirici Seç</translation>
+    </message>
+    <message>
+        <source>No shaders found.</source>
+        <comment>postfx_add_no_shaders_found</comment>
+        <translation>Kölgələndirici tapılmadı.</translation>
+    </message>
+    <message>
+        <source>This shader does not have any configurable options.</source>
+        <comment>postfx_no_options</comment>
+        <translation>Bu kölgələndiricinin tənzimlənən seçimi yoxdur.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Additional border overlays can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</source>
+        <comment>postfx_additional_shaders_notice</comment>
+        <translation>Əlavə GLSL, ReShade və Slang kölgələndiriciləri bu qovluğa əlavə edilə bilər:
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Əlavə çərçivə qaplamaları bu qovluğa əlavə edilə bilər:
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Border Overlay</source>
+        <comment>postfx_border_overlay_preset</comment>
+        <translation>Çərçivə Qaplaması</translation>
+    </message>
+    <message>
+        <source>Patches Unavailable</source>
+        <comment>game_properties_patches_unavailable</comment>
+        <translation>Yamaqlar Yoxdur</translation>
+    </message>
+    <message>
+        <source>No patches are available for this game.</source>
+        <comment>game_properties_patches_unavailable_summary</comment>
+        <translation>Bu oyun üçün əlçatan yamaq yoxdur.</translation>
+    </message>
+    <message>
+        <source>Patch Codes Unavailable</source>
+        <comment>game_properties_patch_codes_unavailable</comment>
+        <translation>Yamaq Kodları Yoxdur</translation>
+    </message>
+    <message>
+        <source>No patch codes are available for this game.</source>
+        <comment>game_properties_patch_codes_unavailable_summary</comment>
+        <translation>Bu oyun üçün yamaq kodu yoxdur.</translation>
+    </message>
+    <message>
+        <source>Enable Codes</source>
+        <comment>game_properties_enable_patch_codes</comment>
+        <translation>Kodları Qoş</translation>
+    </message>
+    <message>
+        <source>Enabling this option will enable any codes selected below to be applied.</source>
+        <comment>game_properties_enable_patch_codes_summary</comment>
+        <translation>Bu seçimin qoşulması aşağıda seçilmiş kodların uyğulanmasını qoşacaq.</translation>
+    </message>
+    <message>
+        <source>Load Database Codes</source>
+        <comment>game_properties_load_database_codes</comment>
+        <translation>Verilənlər Bazası Kodlarını Yüklə</translation>
+    </message>
+    <message>
+        <source>Import Codes</source>
+        <comment>game_properties_import_patch_codes</comment>
+        <translation>Kodları İdxal Et</translation>
+    </message>
+    <message>
+        <source>Patch codes can be imported directly from text,
+        or from files in various formats. Please choose the type of codes to import.</source>
+        <comment>game_properties_import_patch_codes_message</comment>
+        <translation>Yamaq kodları birbaşa mətndən və ya müxtəlif biçimli
+        fayllardan idxal edilə bilər. İdxal ediləcək kod növünü seçin.</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <comment>game_properties_import_patch_codes_text</comment>
+        <translation>Mətn</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <comment>game_properties_import_patch_codes_file</comment>
+        <translation>Fayl</translation>
+    </message>
+    <message>
+        <source>Import Failed</source>
+        <comment>game_properties_import_failed</comment>
+        <translation>İdxal Alınmadı</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d patch codes were added.</source>
+        <comment>game_properties_import_count</comment>
+        <extracomment>Android plural quantities: one=&quot;%d patch code was added.&quot;; other=&quot;%d patch codes were added.&quot;</extracomment>
+        <translation>
+            <numerusform>%d yamaq kodu əlavə edildi.</numerusform>
+            <numerusform>%d yamaq kodu əlavə edildi.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Confirm Removal</source>
+        <comment>game_properties_remove_patch_codes</comment>
+        <translation>Silinişi Onayla</translation>
+    </message>
+    <message>
+        <source>You are removing all patch codes manually added for this game. This action cannot be reversed.
+
+Any database cheats will still be loaded and present unless you uncheck the &quot;Load Database Cheats&quot; option.
+
+Are you sure you want to continue?</source>
+        <comment>game_properties_remove_patch_codes_message</comment>
+        <translation>Bu oyun üçün əllə əlavə edilmiş bütün yamaq kodlarını qaldırırsınız. Bu əməliyyatı geri qaytarmaq olmaz.
+
+&quot;Verilənlər Bazası Hiylələrini Yüklə&quot; seçimini söndürməsəniz, verilənlər bazası hiylələri yenə yüklənəcək və mövcud olacaq.
+
+Davam etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Patch Codes Disabled</source>
+        <comment>game_properties_should_enable_patch_codes</comment>
+        <translation>Yamaq Kodları Söndürülüb</translation>
+    </message>
+    <message>
+        <source>Enabling this code will not have any effect until codes are enabled for this game. Do you want to do this now?</source>
+        <comment>game_properties_should_enable_patch_codes_message</comment>
+        <translation>Bu oyun üçün kodlar qoşulanadək bu kodu qoşmağın heç bir etkisi olmayacaq. Bunu indi etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>game_properties_patch_code_disabled</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>Failed to update custom properties.</source>
+        <comment>game_properties_custom_properties_update_failed</comment>
+        <translation>Özəl özəllikləri yeniləmək alınmadı.</translation>
+    </message>
+    <message>
+        <source>Edit Details</source>
+        <comment>game_properties_edit_details</comment>
+        <translation>Ayrıntıları Dəyiş</translation>
+    </message>
+    <message>
+        <source>Default (%1$s)</source>
+        <comment>game_properties_default_value</comment>
+        <translation>Varsayılan (%1$s)</translation>
+    </message>
+    <message>
+        <source>Disable All Patches</source>
+        <comment>patch_codes_disable_all_patches</comment>
+        <translation>Bütün Yamaqları Söndür</translation>
+    </message>
+    <message>
+        <source>Disables every patch currently enabled for this game.</source>
+        <comment>patch_codes_disable_all_patches_summary</comment>
+        <translation>Bu oyun üçün hazırda qoşulmuş bütün yamaqları söndürür.</translation>
+    </message>
+    <message>
+        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>RetroAchievements möhkəm modu etkin olduqda əlçatan deyil.</translation>
+    </message>
+    <message>
+        <source>Search codes</source>
+        <comment>cheat_codes_search</comment>
+        <translation>Kodları axtar</translation>
+    </message>
+    <message>
+        <source>Sort By Name</source>
+        <comment>cheat_codes_sort</comment>
+        <translation>Ada Görə Sırala</translation>
+    </message>
+    <message>
+        <source>Database code</source>
+        <comment>cheat_codes_database</comment>
+        <translation>Verilənlər bazası kodu</translation>
+    </message>
+    <message>
+        <source>Save Copy</source>
+        <comment>cheat_codes_save_copy</comment>
+        <translation>Nüsxəni Qoru</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>cheat_codes_name</comment>
+        <translation>Ad</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <comment>cheat_codes_group</comment>
+        <translation>Qrup</translation>
+    </message>
+    <message>
+        <source>Ungrouped</source>
+        <comment>cheat_codes_ungrouped</comment>
+        <translation>Qruplanmamış</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <comment>cheat_codes_description</comment>
+        <translation>Açıqlama</translation>
+    </message>
+    <message>
+        <source>Instructions</source>
+        <comment>cheat_codes_instructions</comment>
+        <translation>Əmrlər</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>cheat_codes_type</comment>
+        <translation>Növ</translation>
+    </message>
+    <message>
+        <source>Activation</source>
+        <comment>cheat_codes_activation</comment>
+        <translation>Aktivləşdirmə</translation>
+    </message>
+    <message>
+        <source>Options Type</source>
+        <comment>cheat_codes_options_type</comment>
+        <translation>Seçimlərin Növü</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>cheat_codes_options_none</comment>
+        <translation>Heç biri</translation>
+    </message>
+    <message>
+        <source>Choice</source>
+        <comment>cheat_codes_options_choice</comment>
+        <translation>Seçim</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <comment>cheat_codes_options_range</comment>
+        <translation>Aralıq</translation>
+    </message>
+    <message>
+        <source>Option name</source>
+        <comment>cheat_codes_option_name</comment>
+        <translation>Seçim adı</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>cheat_codes_option_value</comment>
+        <translation>Dəyər</translation>
+    </message>
+    <message>
+        <source>Add Option</source>
+        <comment>cheat_codes_option_add</comment>
+        <translation>Seçim Əlavə Et</translation>
+    </message>
+    <message>
+        <source>Remove Option</source>
+        <comment>cheat_codes_option_remove</comment>
+        <translation>Seçimi Qaldır</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <comment>cheat_codes_range_minimum</comment>
+        <translation>Ən Az</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <comment>cheat_codes_range_maximum</comment>
+        <translation>Ən Çox</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <comment>cheat_codes_save</comment>
+        <translation>Qoru</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <comment>cheat_codes_delete</comment>
+        <translation>Sil</translation>
+    </message>
+    <message>
+        <source>Delete this user code?</source>
+        <comment>cheat_codes_confirm_delete</comment>
+        <translation>Bu istifadəçi kodu silinsin?</translation>
+    </message>
+    <message>
+        <source>Name must not be blank.</source>
+        <comment>cheat_codes_validation_name</comment>
+        <translation>Ad boş olmamalıdır.</translation>
+    </message>
+    <message>
+        <source>Instructions must not be blank.</source>
+        <comment>cheat_codes_validation_body</comment>
+        <translation>Əmrlər boş olmamalıdır.</translation>
+    </message>
+    <message>
+        <source>The full name contains an invalid section delimiter or line break.</source>
+        <comment>cheat_codes_validation_section</comment>
+        <translation>Tam adda keçərsiz bölüm ayırıcısı və ya sətir keçidi var.</translation>
+    </message>
+    <message>
+        <source>Another code already has this name.</source>
+        <comment>cheat_codes_validation_collision</comment>
+        <translation>Başqa bir kod artıq bu adı daşıyır.</translation>
+    </message>
+    <message>
+        <source>Choice options need unique nonblank names and unsigned 32-bit values.</source>
+        <comment>cheat_codes_validation_choice</comment>
+        <translation>Seçimlərin bənzərsiz, boş olmayan adları və işarəsiz 32-bit dəyərləri olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Choice mode requires at least one option.</source>
+        <comment>cheat_codes_validation_choice_empty</comment>
+        <translation>Seçim durumu ən azı bir seçim tələb edir.</translation>
+    </message>
+    <message>
+        <source>Range must satisfy 0 ≤ minimum &lt; maximum ≤ 65535.</source>
+        <comment>cheat_codes_validation_range</comment>
+        <translation>Aralıq 0 ≤ ən az &lt; ən çox ≤ 65535 şərtini ödəməlidir.</translation>
+    </message>
+    <message>
+        <source>Cheat file operation failed: %1$s</source>
+        <comment>cheat_codes_io_failed</comment>
+        <translation>Hiylə faylı əməliyyatı alınmadı: %1$s</translation>
+    </message>
+    <message>
+        <source>Codes exported successfully.</source>
+        <comment>cheat_codes_export_complete</comment>
+        <translation>Kodlar uğurla ixrac edildi.</translation>
+    </message>
+    <message>
+        <source>Verify</source>
+        <comment>content_verification_verify</comment>
+        <translation>Doğrula</translation>
+    </message>
+    <message>
+        <source>Reading and checking game…</source>
+        <comment>content_verification_progress_status</comment>
+        <translation>Oyun oxunur və yoxlanır…</translation>
+    </message>
+    <message>
+        <source>Enable Global Save States</source>
+        <comment>settings_enable_global_save_states</comment>
+        <translation>Ümumi Qorunuşları Aktivləşdir</translation>
+    </message>
+    <message>
+        <source>Makes the legacy global save state slots available. These slots are independent of the current game.</source>
+        <comment>settings_summary_enable_global_save_states</comment>
+        <translation>Köhnə ümumi qorunuş durumu yuvalarını əlçatan edir. Bu yuvalar hazırkı oyundan asılı deyil.</translation>
+    </message>
+    <message>
+        <source>Screenshot Size</source>
+        <comment>settings_screenshot_mode</comment>
+        <translation>Ekran Çəkimi Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Determines the size of screenshots created by DuckStation.</source>
+        <comment>settings_summary_screenshot_mode</comment>
+        <translation>DuckStation-un yaratdığı ekran çəkimlərinin ölçüsünü bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Determines the format that screenshots will be saved/compressed with.</source>
+        <comment>settings_summary_screenshot_format</comment>
+        <translation>Ekran çəkimlərinin qorunuş/sıxılış biçimini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Screenshot Quality</source>
+        <comment>settings_screenshot_quality</comment>
+        <translation>Ekran Çəkimi Keyfiyyəti</translation>
+    </message>
+    <message>
+        <source>Selects the quality at which screenshots will be compressed.</source>
+        <comment>settings_summary_screenshot_quality</comment>
+        <translation>Ekran çəkimlərinin sıxılışı üçün keyfiyyət seçir.</translation>
+    </message>
+    <message>
+        <source>Screenshot File Name Format</source>
+        <comment>settings_screenshot_file_name_format</comment>
+        <translation>Ekran Çəkiminin Fayl Adı Formatı</translation>
+    </message>
+    <message>
+        <source>Determines the format of the screenshot file names.</source>
+        <comment>settings_summary_screenshot_file_name_format</comment>
+        <translation>Ekran çəkiminin fayl adlarının biçimini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Enables manual fine cropping of the display area while preserving the aspect ratio. Useful for removing black borders.</source>
+        <comment>settings_summary_fine_crop_mode</comment>
+        <translation>En-uzunluq oranını qoruyaraq görüntü sahəsini əl ilə dəqiq kəsməyə imkan verir. Qara haşiyələri qaldırmaq üçün yararlıdır.</translation>
+    </message>
+    <message>
+        <source>Minimal Output Latency</source>
+        <comment>settings_output_latency_minimal</comment>
+        <translation>Ən Aşağı Çıxarış Gecikməsi</translation>
+    </message>
+    <message>
+        <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+        <comment>settings_summary_output_latency_minimal</comment>
+        <translation>Qoşulduqda, yiyə API&apos;si üçün dəstəklənən ən aşağı çıxarış gecikməsi işlədiləcək.</translation>
+    </message>
+    <message>
+        <source>Sequence Length</source>
+        <comment>settings_stretch_sequence_length_ms</comment>
+        <translation>Ardıcıllıq Uzunluğu</translation>
+    </message>
+    <message>
+        <source>Sets the length of each audio stretch sequence in milliseconds.</source>
+        <comment>settings_summary_stretch_sequence_length_ms</comment>
+        <translation>Hər səs uzadılış ardıcıllığının uzunluğunu millisaniyə ilə təyin edir.</translation>
+    </message>
+    <message>
+        <source>Seek Window</source>
+        <comment>settings_stretch_seek_window_ms</comment>
+        <translation>Axtarış Pəncərəsi</translation>
+    </message>
+    <message>
+        <source>Sets the search window used when stretching audio, in milliseconds.</source>
+        <comment>settings_summary_stretch_seek_window_ms</comment>
+        <translation>Səs uzadılışında işlədilən axtarış pəncərəsini millisaniyə ilə təyin edir.</translation>
+    </message>
+    <message>
+        <source>Overlap</source>
+        <comment>settings_stretch_overlap_ms</comment>
+        <translation>Örtüşmə</translation>
+    </message>
+    <message>
+        <source>Sets how much neighboring audio stretch sequences overlap, in milliseconds.</source>
+        <comment>settings_summary_stretch_overlap_ms</comment>
+        <translation>Qonşu səs uzadılış ardıcıllıqlarının nə qədər örtüşəcəyini millisaniyə ilə təyin edir.</translation>
+    </message>
+    <message>
+        <source>Use Quick Seek</source>
+        <comment>settings_stretch_use_quick_seek</comment>
+        <translation>Tez Axtarışı İşlət</translation>
+    </message>
+    <message>
+        <source>Uses a quicker seek method when stretching audio. May reduce quality.</source>
+        <comment>settings_summary_stretch_use_quick_seek</comment>
+        <translation>Səsi uzadarkən daha sürətli axtarış üsulundan işlədir. Keyfiyyəti azalda bilər.</translation>
+    </message>
+    <message>
+        <source>Use Anti-Aliasing Filter</source>
+        <comment>settings_stretch_use_aa_filter</comment>
+        <translation>Yumşaldıcı Süzgəci İşlət</translation>
+    </message>
+    <message>
+        <source>Uses an anti-aliasing filter when stretching audio.</source>
+        <comment>settings_summary_stretch_use_aa_filter</comment>
+        <translation>Səsi uzadarkən yumşaldıcı süzgəcdən işlədir.</translation>
+    </message>
+    <message>
+        <source>Analog Toggle</source>
+        <comment>touchscreen_controller_analog</comment>
+        <translation>Analoq Keçidi</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <comment>touchscreen_controller_l1</comment>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <comment>touchscreen_controller_l2</comment>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <comment>touchscreen_controller_r1</comment>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <comment>touchscreen_controller_r2</comment>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <comment>touchscreen_controller_triangle</comment>
+        <translation>Üçbucaq</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <comment>touchscreen_controller_circle</comment>
+        <translation>Yuvarlaq</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <comment>touchscreen_controller_cross</comment>
+        <translation>Xaç</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <comment>touchscreen_controller_square</comment>
+        <translation>Dördbucaq</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <comment>touchscreen_controller_select</comment>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>touchscreen_controller_back</comment>
+        <translation>Geri</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <comment>touchscreen_controller_a</comment>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <comment>touchscreen_controller_b</comment>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <comment>content_list_no_achievements</comment>
+        <translation>Ə/D</translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <comment>content_list_filter_all</comment>
+        <translation>Bütün Fayllar</translation>
+    </message>
+    <message>
+        <source>Merge Disc Sets</source>
+        <comment>content_list_merge_media_sets</comment>
+        <translation>Disk Dəstlərini Birləşdir</translation>
+    </message>
+    <message>
+        <source>Scan For New Games</source>
+        <comment>content_list_scan_new</comment>
+        <translation>Yeni Oyunlar Üçün Dara</translation>
+    </message>
+    <message>
+        <source>Rescan All Games</source>
+        <comment>content_list_rescan_all</comment>
+        <translation>Bütün Oyunları Yenidən Dara</translation>
+    </message>
+    <message>
+        <source>No games were found. Please add a directory with games to begin.</source>
+        <comment>content_list_empty_title</comment>
+        <translation>Oyun tapılmadı. Başlamaq üçün oyun olan qovluq əlavə edin.</translation>
+    </message>
+    <message>
+        <source>Add Game Directory</source>
+        <comment>content_list_empty_add_directory</comment>
+        <translation>Oyun Qovluğu Əlavə Et</translation>
+    </message>
+    <message>
+        <source>Start Game</source>
+        <comment>content_bottom_sheet_start</comment>
+        <translation>Oyunu Başlat</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>content_bottom_sheet_properties</comment>
+        <translation>Oyun Özəllikləri</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
+        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <translation>Bu oyunun örtük şəklini silmək istəyirsiniz? Onu bərpa etmək olmaz.</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <comment>content_download_covers_description</comment>
+        <translation>DuckStation, örtüyü qurulmamış oyunlar üçün örtükləri özbaşına endirə bilir. Biz heç bir örtük görüntüsü saxlamırıq, görüntülər üçün işlədici özü qaynaq sağlamalıdır.</translation>
+    </message>
+    <message>
+        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
+        <comment>content_download_covers_copyright</comment>
+        <translation>Yarğı yetkinizə bağlı olaraq, oyun örtüklərinin müəllif hüququ qoruna bilər. Sizin bu aləti yalnızca öz qulluqçularınız və şəkillərinizlə işlətməyə yetkiniz var.</translation>
+    </message>
+    <message>
+        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
+
+${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.
+
+Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>content_download_covers_hint</comment>
+        <translation>Aşağıdakı qutuda örtüklərin endiriləcəyi URL-ləri göstərin, hər sətirdə bir şablon URL olsun. Bu dəyişənlər əlçatandır:
+
+${title}: Oyunun başlığı.
+${savetitle}: Bölgə sonluğunu da içərən oyunun qorunuş başlığı.
+${localizedtitle}: Oyunun öz dilində yerli başlığı.
+${filetitle}: Oyunun fayl adının ad bölümü.
+${serial}: Oyunun seriyası.
+
+Örnək: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
+        <comment>content_download_covers_invalid_url</comment>
+        <translation>URL-də ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} və ya ${serial} yoxdur.</translation>
+    </message>
+    <message>
+        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <comment>content_download_covers_use_serial_description</comment>
+        <translation>Varsayılan olaraq, endirilmiş örtüklər oyunun başlığı ilə qorunacaq. Bu istənmirsə, aşağıda &quot;Seriyalı Fayl Adları İşlət&quot; seçimini qoşa bilərsiniz. Oyun başlıqları yerinə seriyaların işlədilməsi eyni oyunun bir neçə bölgəsi işlədildikdə uyuşmazlıqların qarşısını alacaq.</translation>
+    </message>
+    <message>
+        <source>Use Serial File Names</source>
+        <comment>content_download_covers_use_serial</comment>
+        <translation>Seriyalı Fayl Adları İşlət</translation>
+    </message>
+    <message>
+        <source>Stopping…</source>
+        <comment>content_download_covers_stopping</comment>
+        <translation>Dayandırılır…</translation>
+    </message>
+    <message>
+        <source>Download complete.</source>
+        <comment>content_download_covers_complete</comment>
+        <translation>Endirilmə tamamlandı.</translation>
+    </message>
+    <message>
+        <source>Transfer Data</source>
+        <comment>transfer_data_title</comment>
+        <translation>Verilənləri Köçür</translation>
+    </message>
+    <message>
+        <source>Back up or move your data</source>
+        <comment>transfer_data_help_title</comment>
+        <translation>Verilənlərinizin ehtiyat nüsxəsini yaradın və ya onları daşıyın</translation>
+    </message>
+    <message>
+        <source>Exporting copies your saves, settings and other files to a folder or ZIP file. Importing adds the files from one to this device, which lets you move them between devices.</source>
+        <comment>transfer_data_help_summary</comment>
+        <translation>İxrac qorunuşlarınızı, ayarlarınızı və başqa fayllarınızı bir qovluğa və ya ZIP faylına köçürür. İdxal həmin qovluq və ya fayldakı faylları bu cihaza əlavə edir, beləcə onları cihazlar arasında daşıya bilərsiniz.</translation>
+    </message>
+    <message>
+        <source>Transfer Unavailable</source>
+        <comment>transfer_data_unavailable_title</comment>
+        <translation>Köçürmə Əlçatan Deyil</translation>
+    </message>
+    <message>
+        <source>Data cannot be transferred while a game is running.</source>
+        <comment>transfer_data_session_active</comment>
+        <translation>Oyun işləyərkən verilənlər köçürülə bilməz.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import_category</comment>
+        <translation>İdxal Et</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export_category</comment>
+        <translation>İxrac Et</translation>
+    </message>
+    <message>
+        <source>Import From Folder</source>
+        <comment>transfer_data_import_folder</comment>
+        <translation>Qovluqdan İdxal Et</translation>
+    </message>
+    <message>
+        <source>Copies files from a folder which was exported earlier.</source>
+        <comment>transfer_data_import_folder_summary</comment>
+        <translation>Daha öncə ixrac edilmiş qovluqdan faylları köçürür.</translation>
+    </message>
+    <message>
+        <source>Import From ZIP File</source>
+        <comment>transfer_data_import_zip</comment>
+        <translation>ZIP Faylından İdxal Et</translation>
+    </message>
+    <message>
+        <source>Copies files from a ZIP file which was exported earlier.</source>
+        <comment>transfer_data_import_zip_summary</comment>
+        <translation>Daha öncə ixrac edilmiş ZIP faylından faylları köçürür.</translation>
+    </message>
+    <message>
+        <source>Export To Folder</source>
+        <comment>transfer_data_export_folder</comment>
+        <translation>Qovluğa İxrac Et</translation>
+    </message>
+    <message>
+        <source>Copies your files into a folder you choose.</source>
+        <comment>transfer_data_export_folder_summary</comment>
+        <translation>Fayllarınızı seçdiyiniz qovluğa köçürür.</translation>
+    </message>
+    <message>
+        <source>Export To ZIP File</source>
+        <comment>transfer_data_export_zip</comment>
+        <translation>ZIP Faylına İxrac Et</translation>
+    </message>
+    <message>
+        <source>Saves your files to a single ZIP file.</source>
+        <comment>transfer_data_export_zip_summary</comment>
+        <translation>Fayllarınızı tək bir ZIP faylında qoruyur.</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>transfer_data_category_patches</comment>
+        <translation>Yamaqlar</translation>
+    </message>
+    <message>
+        <source>Select Files</source>
+        <comment>transfer_data_select_files</comment>
+        <translation>Faylları Seç</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d files, %3$s)</source>
+        <comment>transfer_data_category_summary</comment>
+        <translation>%1$s (%2$d fayl, %3$s)</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import</comment>
+        <translation>İdxal Et</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export</comment>
+        <translation>İxrac Et</translation>
+    </message>
+    <message>
+        <source>No compatible files were found.</source>
+        <comment>transfer_data_no_files_found</comment>
+        <translation>Uyğun fayl tapılmadı.</translation>
+    </message>
+    <message>
+        <source>Looking for files</source>
+        <comment>transfer_data_scanning</comment>
+        <translation>Fayllar axtarılır</translation>
+    </message>
+    <message>
+        <source>Importing files</source>
+        <comment>transfer_data_importing</comment>
+        <translation>Fayllar idxal edilir</translation>
+    </message>
+    <message>
+        <source>Exporting files</source>
+        <comment>transfer_data_exporting</comment>
+        <translation>Fayllar ixrac edilir</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1$s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>transfer_data_conflict_message</comment>
+        <translation>&apos;%1$s&apos; faylı artıq var. Üzərinə yazmaq istəyirsiniz? Mövcud verilənlər itəcək.</translation>
+    </message>
+    <message>
+        <source>Apply to the remaining %1$d files</source>
+        <comment>transfer_data_apply_to_remaining</comment>
+        <translation>Qalan %1$d fayla tətbiq et</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>transfer_data_overwrite</comment>
+        <translation>Üzərinə Yaz</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <comment>transfer_data_skip</comment>
+        <translation>Ötür</translation>
+    </message>
+    <message>
+        <source>Transfer complete. %1$d files copied, %2$d skipped.</source>
+        <comment>transfer_data_result_complete</comment>
+        <translation>Köçürmə tamamlandı. %1$d fayl köçürüldü, %2$d fayl ötürüldü.</translation>
+    </message>
+    <message>
+        <source>Transfer finished with errors. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_failures</comment>
+        <translation>Köçürmə yanlışlarla tamamlandı. %1$d fayl köçürüldü, %2$d fayl ötürüldü, %3$d fayl köçürülə bilmədi.</translation>
+    </message>
+    <message>
+        <source>Transfer cancelled. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_cancelled</comment>
+        <translation>Köçürmə ləğv edildi. %1$d fayl köçürüldü, %2$d fayl ötürüldü, %3$d fayl köçürülə bilmədi.</translation>
+    </message>
+    <message>
+        <source>The transfer failed.</source>
+        <comment>transfer_data_result_error</comment>
+        <translation>Köçürmə uğursuz oldu.</translation>
+    </message>
+    <message>
+        <source>Increase</source>
+        <comment>preference_increase</comment>
+        <translation>Artır</translation>
+    </message>
+    <message>
+        <source>Decrease</source>
+        <comment>preference_decrease</comment>
+        <translation>Azalt</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>preference_enabled</comment>
+        <translation>Qoşulub</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>preference_disabled</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>postfx_border_overlay_none</comment>
+        <translation>Heç biri</translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <comment>postfx_component_red</comment>
+        <translation>Qırmızı</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <comment>postfx_component_green</comment>
+        <translation>Yaşıl</translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <comment>postfx_component_blue</comment>
+        <translation>Göy</translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <comment>postfx_component_alpha</comment>
+        <translation>Alfa</translation>
+    </message>
+    <message>
+        <source>%1$s [%2$s]</source>
+        <comment>postfx_option_component</comment>
+        <translation>%1$s [%2$s]</translation>
+    </message>
+    <message>
+        <source>Unknown (%1$d)</source>
+        <comment>postfx_choice_unknown</comment>
+        <translation>Bilinməyən (%1$d)</translation>
+    </message>
+    <message>
+        <source>Selected URI is not a document tree.</source>
+        <comment>content_folders_not_document_tree</comment>
+        <translation>Seçilmiş URI sənəd ağacı deyil.</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_runahead_disabled</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d seconds</source>
+        <comment>settings_duration_seconds</comment>
+        <extracomment>Android plural quantities: one=&quot;%d second&quot;; other=&quot;%d seconds&quot;</extracomment>
+        <translation>
+            <numerusform>%d saniyə</numerusform>
+            <numerusform>%d saniyə</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>settings_runahead_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d Kadr</numerusform>
+            <numerusform>%d Kadr</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>CPU Settings</source>
+        <comment>settings_category_cpu</comment>
+        <translation>OİB Quruluşları</translation>
+    </message>
+    <message>
+        <source>CD-ROM Settings</source>
+        <comment>settings_category_cdrom</comment>
+        <translation>CD-ROM Quruluşları</translation>
+    </message>
+    <message>
+        <source>Downsampling Display Scale</source>
+        <comment>settings_downsample_scale</comment>
+        <translation>Ekran Ölçəyinin Aşağı-Örnəklənişi</translation>
+    </message>
+    <message>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <comment>settings_summary_downsample_scale</comment>
+        <translation>Son görüntü üçün uyğulanacaq çözünürlük ölçəyini seçir. 1x, doğma konsol çözünürlüyünə aşağı örnəkləyəcək.</translation>
+    </message>
+    <message>
+        <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
+        <comment>settings_summary_skip_duplicate_frames</comment>
+        <translation>Görüntü dəyişmədikdə kadrların göstərilməsini ötürür. Çox yavaş cihazlarda performansa kömək edə bilər.</translation>
+    </message>
+    <message>
+        <source>When enabled, the clock speed set below will be used. Overclocking may break games.</source>
+        <comment>settings_summary_overclock_enable</comment>
+        <translation>Qoşulduqda aşağıda qurulmuş saat sürəti işlədiləcək. Sürətin artırılması oyunların işini poza bilər.</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>settings_region</comment>
+        <translation>Bölgə</translation>
+    </message>
+    <message>
+        <source>Game Specific Controller Settings</source>
+        <comment>input_settings_game_specific_input</comment>
+        <translation>Oyuna Özəl Yönəldən Quruluşları</translation>
+    </message>
+    <message>
+        <source>Uses separate controller settings for this game instead of the global settings.</source>
+        <comment>input_settings_game_specific_summary</comment>
+        <translation>Bu oyun üçün ümumi quruluşlar yerinə ayrı yönəldən quruluşları işlədir.</translation>
+    </message>
+    <message>
+        <source>Copy %s to…</source>
+        <comment>memory_card_editor_copy_save_to</comment>
+        <translation>%s buraya köçürülsün…</translation>
+    </message>
+    <message>
+        <source>File Name</source>
+        <comment>game_properties_file_name</comment>
+        <translation>Fayl Adı</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>game_properties_achievements</comment>
+        <translation>Uğurlar</translation>
+    </message>
+    <message>
+        <source>RA Game ID</source>
+        <comment>game_properties_achievements_game_id</comment>
+        <translation>RA Oyun ID-si</translation>
+    </message>
+    <message>
+        <source>Show Advanced Settings</source>
+        <comment>settings_show_advanced_settings</comment>
+        <translation>Gəlişmiş Quruluşları Göstər</translation>
+    </message>
+    <message>
+        <source>Search Settings</source>
+        <comment>settings_search</comment>
+        <translation>Quruluşları Axtar</translation>
+    </message>
+    <message>
+        <source>No matching settings.</source>
+        <comment>settings_search_no_results</comment>
+        <translation>Uyğun quruluş tapılmadı.</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>content_bottom_sheet_achievements</comment>
+        <translation>Uğurlar</translation>
+    </message>
+    <message>
+        <source>Determines the emulated hardware type.</source>
+        <comment>settings_summary_region</comment>
+        <translation>Yamsılanmış qurğu biçimini bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Safe Mode</source>
+        <comment>settings_disable_all_enhancements</comment>
+        <translation>Güvənli Durum</translation>
+    </message>
+    <message>
+        <source>Temporarily disables all enhancements, useful when testing.</source>
+        <comment>settings_summary_disable_all_enhancements</comment>
+        <translation>Bütün gəlişimləri müvəqqəti olaraq söndürür, sınayış üçün yararlıdır.</translation>
+    </message>
+    <message>
+        <source>Fast Boot</source>
+        <comment>settings_patch_fast_boot</comment>
+        <translation>Sürətli Başlanış</translation>
+    </message>
+    <message>
+        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
+        <comment>settings_summary_patch_fast_boot</comment>
+        <translation>Başlanış animasiyasının buraxılışı üçün BIOS&apos;u yamayır. Güvənlidir.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Boot</source>
+        <comment>settings_fast_forward_boot</comment>
+        <translation>Sürətli İrəliləyiş Başlayışı</translation>
+    </message>
+    <message>
+        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
+        <comment>settings_summary_fast_forward_boot</comment>
+        <translation>Sürətli başlanış zamanı erkən yükləniş işləmindən sürətlə keçir, vaxt qazandırır. Nəticə oyunlara görə dəyişə bilər.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Memory Card Access</source>
+        <comment>settings_fast_forward_access</comment>
+        <translation>Sürətli İrəliləyiş Yaddaş Kartı Girişi</translation>
+    </message>
+    <message>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <comment>settings_summary_fast_forward_access</comment>
+        <translation>Yaddaş kartı girişindən sürətlə keçir, yüklənişdən də, qorunuşdan da. Tez-tez yaddaş kartına yönələn oyunlarda gözləmə vaxtlarını azalda bilər.</translation>
+    </message>
+    <message>
+        <source>Overclocking Percentage</source>
+        <comment>settings_overclock</comment>
+        <translation>Saataşımı Yüzdəsi</translation>
+    </message>
+    <message>
+        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
+        <comment>settings_summary_overclock</comment>
+        <translation>Yamsılanan qurğunun çalışacağı normal saat sürətinin yüzdəsini seçir.</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <comment>settings_enable_8mb_ram</comment>
+        <translation>8MB RAM&apos;ı Qoş</translation>
+    </message>
+    <message>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
+        <comment>settings_summary_enable_8mb_ram</comment>
+        <translation>Toplamda 2+6 = 8MB üçün RGY&apos;yə (RAM) artıq 6MB qoşur, adətən gəliştiriliş konsollarında olur.</translation>
+    </message>
+    <message>
+        <source>Preload Images to RAM</source>
+        <comment>settings_load_image_to_ram</comment>
+        <translation>Disk Görüntülərini RGY-yə Öncədən Yüklə</translation>
+    </message>
+    <message>
+        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
+        <comment>settings_summary_load_image_to_ram</comment>
+        <translation>Oyun disk görüntüsünü RGY-yə yükləyir. Oyun zamanı etibarsız ola biləcək tor yolları üçün yararlıdır.</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <comment>settings_load_image_patches</comment>
+        <translation>Disk Görüntüsü Yamaqlarını Uyğula</translation>
+    </message>
+    <message>
+        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
+        <comment>settings_summary_load_image_patches</comment>
+        <translation>Var olduqlarında yamaqları disk görüntülərinə özbaşına uyğulayır, indilik ancaq PPF dəstəklənir.</translation>
+    </message>
+    <message>
+        <source>Read Speedup</source>
+        <comment>settings_read_speedup</comment>
+        <translation>Oxunuş Sürətlənişi</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_read_speedup</comment>
+        <translation>CD-ROM oxunuşlarını göstərilmiş əmsala görə sürətləndirir. Bəzi oyunlarda yüklənişi sürətləndirə, başqalarının işləyişini poza bilər.</translation>
+    </message>
+    <message>
+        <source>Seek Speedup</source>
+        <comment>settings_seek_speedup</comment>
+        <translation>Axtarış Sürətlənişi</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_seek_speedup</comment>
+        <translation>CD-ROM axtarışlarını göstərilmiş əmsala görə sürətləndirir. Bəzi oyunlarda yüklənişi sürətləndirə, başqalarının işləyişini poza bilər.</translation>
+    </message>
+    <message>
+        <source>Auto-Detect</source>
+        <comment>bios_auto_detect</comment>
+        <translation>Özü-Bəlirləmə</translation>
+    </message>
+    <message>
+        <source>No BIOS images found, you must import one first.</source>
+        <comment>bios_select_no_images</comment>
+        <translation>BIOS görüntüsü tapılmadı, öncə birini idxal etməlisiniz.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the BIOS named &apos;%s&apos;? This action is permanent.</source>
+        <comment>bios_delete_confirm</comment>
+        <translation>&apos;%s&apos; adlı BIOS-u qaldırmaq istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.</translation>
+    </message>
+    <message>
+        <source>Import BIOS</source>
+        <comment>setup_wizard_bios_title</comment>
+        <translation>BIOS İdxal Et</translation>
+    </message>
+    <message>
+        <source>A PS1 or PS2 BIOS image is required to play games and is not optional.
+        This image should be dumped from your own console, using tools such as Caetla or Unirom. There are plenty of
+        guides available online on how to dump your console&apos;s BIOS.</source>
+        <comment>setup_wizard_bios_message</comment>
+        <translation>Oyunları oynamaq üçün PS1 və ya PS2 BIOS görüntüsü tələb olunur və bu, məcburidir.
+        Bu görüntü Caetla və ya Unirom kimi vasitələrlə öz konsolunuzdan çıxarılmalıdır. Konsolunuzun BIOS-unu
+        çıxarmaq barədə tor üzərində çoxlu təlimat var.</translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <comment>settings_tab_console</comment>
+        <translation>Konsol</translation>
+    </message>
+    <message>
+        <source>%1$d%% (%2$d MHz)</source>
+        <comment>settings_cpu_overclock_value_format</comment>
+        <translation>%1$d%% (%2$d MHz)</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_tab_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <comment>settings_tab_folders</comment>
+        <translation>Qovluqlar</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <comment>bios_install</comment>
+        <translation>BIOS Quraşdır</translation>
+    </message>
+    <message>
+        <source>Imports a new image to the BIOS directory.</source>
+        <comment>bios_install_summary</comment>
+        <translation>BIOS qovluğuna yeni görüntü idxal edir.</translation>
+    </message>
+    <message>
+        <source>Delete BIOS</source>
+        <comment>bios_delete</comment>
+        <translation>BIOS-u Sil</translation>
+    </message>
+    <message>
+        <source>Selected BIOS Images</source>
+        <comment>bios_selected_images</comment>
+        <translation>Seçilmiş BIOS Görüntüləri</translation>
+    </message>
+    <message>
+        <source>Installed BIOS Images</source>
+        <comment>bios_installed_images</comment>
+        <translation>Quraşdırılmış BIOS Görüntüləri</translation>
+    </message>
+    <message>
+        <source>Unknown / Any Region</source>
+        <comment>bios_unknown_region</comment>
+        <translation>Bilinməyən / İstənilən Bölgə</translation>
+    </message>
+    <message>
+        <source>Importing BIOS image…</source>
+        <comment>bios_installing</comment>
+        <translation>BIOS görüntüsü idxal edilir…</translation>
+    </message>
+    <message>
+        <source>Missing BIOS Image</source>
+        <comment>bios_missing_title</comment>
+        <translation>BIOS Görüntüsü Çatışmır</translation>
+    </message>
+    <message>
+        <source>A BIOS image is required to start this game.
+
+%1$s
+
+Would you like to import one now?</source>
+        <comment>bios_missing_message</comment>
+        <translation>Bu oyunu başlatmaq üçün BIOS görüntüsü tələb olunur.
+
+%1$s
+
+İndi birini idxal etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>BIOS Imported</source>
+        <comment>bios_import_success_title</comment>
+        <translation>BIOS İdxal Edildi</translation>
+    </message>
+    <message>
+        <source>The BIOS image was imported successfully. Would you like to retry starting the game?</source>
+        <comment>bios_import_success_retry</comment>
+        <translation>BIOS görüntüsü uğurla idxal edildi. Oyunu başlatmağa yenidən cəhd etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Internal Resolution</source>
+        <comment>settings_resolution_scale</comment>
+        <translation>İç Çözünürlük</translation>
+    </message>
+    <message>
+        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
+        <comment>settings_summary_resolution_scale</comment>
+        <translation>Oyunun işlənişini göstərilən çoxaldıcıya görə ölçəkləyir.</translation>
+    </message>
+    <message>
+        <source>Mute CD Audio</source>
+        <comment>settings_mute_cd_audio</comment>
+        <translation>CD Səsini Susdur</translation>
+    </message>
+    <message>
+        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
+        <comment>settings_summary_mute_cd_audio</comment>
+        <translation>CD-ROM&apos;dan həm CD-DA, həm də XA səsini gücəndirərək susdurur. Bir sıra oyunda arxa plan musiqisini qoşmamaq üçün işlədilə bilər.</translation>
+    </message>
+    <message>
+        <source>Crop Mode</source>
+        <comment>settings_crop_mode</comment>
+        <translation>Qırpma Durumu</translation>
+    </message>
+    <message>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
+        <comment>settings_summary_crop_mode</comment>
+        <translation>Qırpma/gizlətmə üçün işlədici TV&apos;sində görünməyən alanın ölçüsünü bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Deinterlacing Mode</source>
+        <comment>settings_deinterlacing_mode</comment>
+        <translation>Deinterlyasiya Durumu</translation>
+    </message>
+    <message>
+        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
+        <comment>settings_summary_deinterlacing_mode</comment>
+        <translation>Sisteminizdə göstərmək üçün interlyasiyalı kadrların proqressivə çevirilişində işlədilən alqoritmi bəlirləyir.</translation>
+    </message>
+    <message>
+        <source>Force Video Timing</source>
+        <comment>settings_force_video_timing</comment>
+        <translation>Video Zamanlamasını Məcbur Et</translation>
+    </message>
+    <message>
+        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
+        <comment>settings_summary_force_video_timing</comment>
+        <translation>Oyunun quruluşundan asılı olmayaraq seçilmiş kadr tezliyini işlədir.</translation>
+    </message>
+    <message>
+        <source>Show GPU Statistics</source>
+        <comment>settings_show_gpu_statistics</comment>
+        <translation>GİB Göstəricilərini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
+        <comment>settings_summary_show_gpu_statistics</comment>
+        <translation>Yamsılanmış GİB bilgisini ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Show Enhancement Settings</source>
+        <comment>settings_show_enhancements</comment>
+        <translation>Gəlişim Quruluşlarını Göstər</translation>
+    </message>
+    <message>
+        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
+        <comment>settings_summary_show_enhancements</comment>
+        <translation>Gəlişim quruluşlarını ekranın alt-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Dithering</source>
+        <comment>settings_dithering_mode</comment>
+        <translation>Dizerinq</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
+        <comment>settings_summary_dithering_mode</comment>
+        <translation>Yamsılanmış GİB&apos;dəki dizerinqin uyğulanış şəklini yönəldir. Gerçək Rəng, dizerinqi qaldırır və ən gözəl görünüşlü qradientləri ürədir.</translation>
+    </message>
+    <message>
+        <source>Texture Filtering</source>
+        <comment>settings_texture_filter</comment>
+        <translation>Toxuma Süzgüsü</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
+        <comment>settings_summary_texture_filter</comment>
+        <translation>3D obyektlərdə böyüdülmüş toxumaların blokluluğunu axışqanlaşdırır.</translation>
+    </message>
+    <message>
+        <source>Sprite Texture Filtering</source>
+        <comment>settings_sprite_texture_filter</comment>
+        <translation>Sprayt Toxumasının Süzgüsü</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
+        <comment>settings_summary_sprite_texture_filter</comment>
+        <translation>2D obyektlərdə böyüdülmüş toxumaların blokluluğunu axışqanlaşdırır.</translation>
+    </message>
+    <message>
+        <source>Widescreen Rendering</source>
+        <comment>settings_widescreen_hack</comment>
+        <translation>Geniş Ekran İşlənişi</translation>
+    </message>
+    <message>
+        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
+        <comment>settings_summary_widescreen_hack</comment>
+        <translation>3D oyunlarda görüntü alanını 4:3&apos;dən seçilmiş ekran en-uzunluq oranına artırır.</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For FMVs</source>
+        <comment>settings_force_4_3_for_24_bit</comment>
+        <translation>FMV üçün 4:3&apos;ü gücəndir</translation>
+    </message>
+    <message>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_force_4_3_for_24_bit</comment>
+        <translation>24-bit kontent göstərildiyində, adətən FMV&apos;lərdə, en-uzunluq oranını 4:3&apos;ə geri çevirir.</translation>
+    </message>
+    <message>
+        <source>FMV Chroma Smoothing</source>
+        <comment>settings_chroma_smoothing_24_bit</comment>
+        <translation>FMV Xroma Axışqanlaşdırılışı</translation>
+    </message>
+    <message>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_chroma_smoothing_24_bit</comment>
+        <translation>24-bit kontentin, adətən FMV&apos;lərdə, rəng keçidləri arasındakı blokluluğu axışqanlaşdırır.</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Correction</source>
+        <comment>settings_pgxp_enable</comment>
+        <translation>PGXP Həndəsə Düzəlişi</translation>
+    </message>
+    <message>
+        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. Only works with the hardware renderers.</source>
+        <comment>settings_summary_pgxp_enable</comment>
+        <translation>PS1 oyunlarında geniş yayılmış &quot;titrəyən&quot; poliqonları və &quot;əyilən&quot; toxumaları azaldır. Yalnız qurğu işlənişçiləri ilə işləyir.</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Buffer</source>
+        <comment>settings_pgxp_depth_buffer</comment>
+        <translation>PGXP Dərinlik Buferi</translation>
+    </message>
+    <message>
+        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
+        <comment>settings_summary_pgxp_depth_buffer</comment>
+        <translation>Poliqon Z-savaşını dərinlik sınağı içindən azaldır. Oyunlarla az uyumludur.</translation>
+    </message>
+    <message>
+        <source>Downsampling</source>
+        <comment>settings_downsample_mode</comment>
+        <translation>Aşağı-örnəkləniş</translation>
+    </message>
+    <message>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
+        <comment>settings_summary_downsample_mode</comment>
+        <translation>İşlənmiş görüntünü göstərməzdən öncə aşağı-örnəkləyir. Qarışıq 2D/3D oyunlarda ümumi görüntü keyfiyyətini artıra bilər.</translation>
+    </message>
+    <message>
+        <source>Show Resolution</source>
+        <comment>settings_show_resolution</comment>
+        <translation>Çözünürlüyü Göstər</translation>
+    </message>
+    <message>
+        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_resolution</comment>
+        <translation>Sistemin hazırki işləniş çözünürlüyünü ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer For Readbacks</source>
+        <comment>settings_use_software_renderer_for_readbacks</comment>
+        <translation>Gerioxunuşlar Üçün Yazılım İşlənişçisini İşlət</translation>
+    </message>
+    <message>
+        <source>Runs the software renderer in parallel for VRAM readbacks, which may improve performance with the hardware renderer.</source>
+        <comment>settings_summary_use_software_renderer_for_readbacks</comment>
+        <translation>VRAM gerioxunuşları üçün yazılım işlənişçisini paralel işlədir; bu, qurğu işlənişçisi ilə performansı artıra bilər.</translation>
+    </message>
+    <message>
+        <source>Texture Replacement</source>
+        <comment>settings_category_texture_replacements</comment>
+        <translation>Toxuma Dəyişdirilişi</translation>
+    </message>
+    <message>
+        <source>Enable Texture Cache</source>
+        <comment>settings_enable_texture_cache</comment>
+        <translation>Toxuma Önyaddaşını Qoş</translation>
+    </message>
+    <message>
+        <source>Enables caching of guest textures, required for texture replacement.</source>
+        <comment>settings_summary_enable_texture_cache</comment>
+        <translation>Qonaq toxumaların önyaddaşlanışını qoşur, toxuma dəyişdirilişi üçün gərəklidir.</translation>
+    </message>
+    <message>
+        <source>Use Old MDEC Routines</source>
+        <comment>settings_use_old_mdec_routines</comment>
+        <translation>Köhnə MDEC Rutinlərini İşlət</translation>
+    </message>
+    <message>
+        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <comment>settings_summary_use_old_mdec_routines</comment>
+        <translation>Köhnə, daha az dəqiq MDEC dekodlanış rutinlərini qoşur. Köhnə əvəzləmə arxa planlarının uyğun gəlməsi/yüklənməsi üçün gərəkli ola bilər.</translation>
+    </message>
+    <message>
+        <source>Enable Texture Replacements</source>
+        <comment>settings_enable_texture_replacements</comment>
+        <translation>Toxuma Dəyişdirilişini Qoş</translation>
+    </message>
+    <message>
+        <source>Enables loading of replacement textures. Not compatible with all games.</source>
+        <comment>settings_summary_enable_texture_replacements</comment>
+        <translation>Dəyişdiriliş toxumalarının yüklənişini qoşur. Bütün oyunlarla uyumlu deyil.</translation>
+    </message>
+    <message>
+        <source>Enable VRAM Write Replacement</source>
+        <comment>settings_enable_vram_write_replacements</comment>
+        <translation>VRAM Yazı Dəyişdirilişini Qoş</translation>
+    </message>
+    <message>
+        <source>Enables the replacement of background textures in supported games.</source>
+        <comment>settings_summary_enable_vram_write_replacements</comment>
+        <translation>Dəstəklənən oyunlarda arxa plan toxumalarının dəyişdirilişini qoşur.</translation>
+    </message>
+    <message>
+        <source>Preload Replacement Textures</source>
+        <comment>settings_preload_textures</comment>
+        <translation>Dəyişdiriliş Toxumalarını Öncədən Yüklə</translation>
+    </message>
+    <message>
+        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
+        <comment>settings_summary_preload_textures</comment>
+        <translation>Bütün dəyişdiriliş toxumalarını RGY-yə yükləyir və işləyərkən ilişmələri azaldır.</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_category_screenshots</comment>
+        <translation>Ekran Çəkimləri</translation>
+    </message>
+    <message>
+        <source>Numerator</source>
+        <comment>preference_ratio_numerator</comment>
+        <translation>Surət</translation>
+    </message>
+    <message>
+        <source>Denominator</source>
+        <comment>preference_ratio_denominator</comment>
+        <translation>Məxrəc</translation>
+    </message>
+    <message>
+        <source>Apply Compatibility Settings</source>
+        <comment>settings_apply_compatibility_settings</comment>
+        <translation>Uyumluluq Quruluşlarını Uyğula</translation>
+    </message>
+    <message>
+        <source>Readahead Sectors</source>
+        <comment>settings_readahead_sectors</comment>
+        <translation>Önoxunuş Bölgələri</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Sectors</source>
+        <comment>settings_readahead_sectors_value</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Sector&quot;; other=&quot;%d Sectors&quot;</extracomment>
+        <translation>
+            <numerusform>%d Bölgə</numerusform>
+            <numerusform>%d Bölgə</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <comment>settings_summary_readahead_sectors</comment>
+        <translation>İşçi axınındakı CD verilənini asinxron oxudaraq/sıxılışdan çıxardaraq yamsılanışdakı axsaqlıqları azaldır.</translation>
+    </message>
+    <message>
+        <source>Enable Region Check</source>
+        <comment>settings_region_check</comment>
+        <translation>Bölgə Yoxlanışını Qoş</translation>
+    </message>
+    <message>
+        <source>Enable TTY Logging</source>
+        <comment>settings_tty_logging</comment>
+        <translation>TTY Gündəliklənişini Qoş</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Block Linking</source>
+        <comment>settings_recompiler_block_linking</comment>
+        <translation>Təkrar Dərləyicinin Blok Keçidlənişini Qoş</translation>
+    </message>
+    <message>
+        <source>Recompiler Fast Memory Access</source>
+        <comment>settings_fastmem_mode</comment>
+        <translation>Təkrar Dərləyicinin Sürətli Yaddaş Girişi</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler ICache</source>
+        <comment>settings_recompiler_icache</comment>
+        <translation>Təkrar Dərləyicinin Təlimat Önyaddaşını Qoş</translation>
+    </message>
+    <message>
+        <source>Disable Dual-Source Blending</source>
+        <comment>settings_disable_dual_source_blend</comment>
+        <translation>İkili-Qaynaq Qarışımını Qoşma</translation>
+    </message>
+    <message>
+        <source>Disable Framebuffer Fetch</source>
+        <comment>settings_disable_framebuffer_fetch</comment>
+        <translation>Kadr Buferi İçə Alışını Qoşma</translation>
+    </message>
+    <message>
+        <source>Disable Texture Buffers</source>
+        <comment>settings_disable_texture_buffers</comment>
+        <translation>Toxuma Buferlərini Qoşma</translation>
+    </message>
+    <message>
+        <source>Disable Texture Copy To Self</source>
+        <comment>settings_disable_texture_copy_to_self</comment>
+        <translation>Toxumanın Özünə Köçürülüşünü Qoşma</translation>
+    </message>
+    <message>
+        <source>Line Detection</source>
+        <comment>settings_line_detect_mode</comment>
+        <translation>Xətt Bəlirlənişi</translation>
+    </message>
+    <message>
+        <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
+        <comment>settings_summary_line_detect_mode</comment>
+        <translation>Ölçəklənməmiş rasterizasiya davranışına dayanan bir piksel hündürlüyündə/enində xətləri tapmağa çalışır və ölçəkləmə nəticəsində yaranan boşluqları doldurur.</translation>
+    </message>
+    <message>
+        <source>Multisample Antialiasing</source>
+        <comment>settings_multisamples</comment>
+        <translation>Çoxörnəkli Kənar Yumşaltma</translation>
+    </message>
+    <message>
+        <source>Smooths polygon edges by rendering multiple samples per pixel. Increases GPU load.</source>
+        <comment>settings_summary_multisamples</comment>
+        <translation>Hər piksel üçün bir neçə örnək işləyərək poliqon kənarlarını yumşaldır. GİB yükünü artırır.</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Colors</source>
+        <comment>settings_pgxp_color_correction</comment>
+        <translation>Perspektivi Düzgün Rənglər</translation>
+    </message>
+    <message>
+        <source>CPU Mode</source>
+        <comment>settings_pgxp_cpu</comment>
+        <translation>OİB Durumu</translation>
+    </message>
+    <message>
+        <source>Culling Correction</source>
+        <comment>settings_pgxp_culling</comment>
+        <translation>Ayırma Düzəlişi</translation>
+    </message>
+    <message>
+        <source>Disable on 2D Polygons</source>
+        <comment>settings_pgxp_disable_on_2d_polygons</comment>
+        <translation>2D Poliqonlarda Qoşma</translation>
+    </message>
+    <message>
+        <source>Preserve Projection Precision</source>
+        <comment>settings_pgxp_preserve_proj_fp</comment>
+        <translation>Proyeksiya Kəsinliyini Qoru</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Textures</source>
+        <comment>settings_pgxp_texture_correction</comment>
+        <translation>Perspektivi Düzgün Toxumalar</translation>
+    </message>
+    <message>
+        <source>Vertex Cache</source>
+        <comment>settings_pgxp_vertex_cache</comment>
+        <translation>Uc Önyaddaşı</translation>
+    </message>
+    <message>
+        <source>Round Upscaled Texture Coordinates</source>
+        <comment>settings_force_round_texture_coordinates</comment>
+        <translation>Böyüdülmüş Toxuma Koordinatlarını Yuvarlaqla</translation>
+    </message>
+    <message>
+        <source>Scaled Interlacing</source>
+        <comment>settings_scaled_interlacing</comment>
+        <translation>Ölçəklənmiş İnterlyasiya</translation>
+    </message>
+    <message>
+        <source>Show VRAM</source>
+        <comment>settings_show_vram</comment>
+        <translation>VRGY&apos;ni Göstər</translation>
+    </message>
+    <message>
+        <source>Automatically disable enhancements when they are not supported by games.</source>
+        <comment>settings_summary_apply_compatibility_settings</comment>
+        <translation>Oyunlar tərəfindən dəstəklənməyən gəlişimləri özbaşına söndürür.</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
+        <comment>settings_summary_max_read_speedup_cycles</comment>
+        <translation>&apos;Maksimum&apos; oxunuş sürətlənişi aşaması üçün minimum gecikməni qurur.</translation>
+    </message>
+    <message>
+        <source>Simulates the region check present in original, unmodified consoles.</source>
+        <comment>settings_summary_region_check</comment>
+        <translation>Doğma, dəyişilməmiş konsollarda olan bölgə yoxlanışını yamsılayır.</translation>
+    </message>
+    <message>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <comment>settings_summary_tty_logging</comment>
+        <translation>BGÇS (BIOS) çağırışlarını printf()&apos;ə gündəlikləyir. Hər oyun yolaqoyuş göndərişi daşımır.</translation>
+    </message>
+    <message>
+        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
+        <comment>settings_summary_recompiler_block_linking</comment>
+        <translation>Performans gəlişimi - paylayıcıya qayıtmaq əvəzinə birbaşa bloklar arasında atlayır.</translation>
+    </message>
+    <message>
+        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
+        <comment>settings_summary_fastmem_mode</comment>
+        <translation>C++ çağırışları yayınır, təkrar dərləyicini böyük ölçüdə sürətləndirir.</translation>
+    </message>
+    <message>
+        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
+        <comment>settings_summary_recompiler_icache</comment>
+        <translation>OİB-nin təlimat önyaddaşının təkrar dərləyicidə yamsılanıb-yamsılanmayacağını bəlirləyir. Performansa az təsir edərək dəqiqliyi artırır. Oyunlar çox sürətli işləyirsə, bu seçimi qoşmağa çalışın.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the dual-source blending extensions.</source>
+        <comment>settings_summary_disable_dual_source_blend</comment>
+        <translation>İkili-qaynaq qarışımı genişlənmələrindən istifadəni əngəlləyir.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the framebuffer fetch extensions.</source>
+        <comment>settings_summary_disable_framebuffer_fetch</comment>
+        <translation>Kadr buferi içə alış genişlənmələrindən istifadəni əngəlləyir.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the texture/shader storage buffers. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_buffers</comment>
+        <translation>Toxuma/kölgələndirici saxlama buferlərindən istifadəni əngəlləyir. Performansı azaldacaq.</translation>
+    </message>
+    <message>
+        <source>Always copies through the shadow texture. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_copy_to_self</comment>
+        <translation>Həmişə kölgə toxuması vasitəsilə köçürür. Performansı azaldacaq.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_color_correction</comment>
+        <translation>Bir sıra oyunda görüntünü artıra biləcək rənglər üçün perspektiv-düzəlişi interpolyasiyasını işlədir.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Yalnız yaddaş işləmləri üçün deyil, bütün təlimatlar üçün PGXP işlədir.</translation>
+    </message>
+    <message>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
+        <comment>settings_summary_pgxp_culling</comment>
+        <translation>Poliqon ayırmasının dəqiqliyini artırır və həndəsədəki dəliklərin sayını azaldır.</translation>
+    </message>
+    <message>
+        <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
+        <comment>settings_summary_pgxp_disable_on_2d_polygons</comment>
+        <translation>Kəsin koordinatlar yerinə, 2D poliqonlar üçün doğma çözünürlük koordinatlarını işlədir. Bir sıra oyunda düzlənməmiş AY&apos;ni düzəldə bilər, ancaq əks halda qoşulmamalıdır.</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_preserve_proj_fp</comment>
+        <translation>PGXP verilən sonrakı-proyeksiyasına artıq kəsinlik artırır. Bir sıra oyunda görüntünü gəliştirə bilər.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
+        <comment>settings_summary_pgxp_texture_correction</comment>
+        <translation>Əyilmiş toxumaları düzəldərək toxuma koordinatları üçün perspektiv düzəlişli interpolyasiya işlədir.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>PGXP verilənini çözmək üçün ekran yerləşimlərini işlədir. Bir sıra oyunda vizualları artıra bilər.</translation>
+    </message>
+    <message>
+        <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
+        <comment>settings_summary_force_round_texture_coordinates</comment>
+        <translation>Böyüdərkən toxuma koordinatlarını aşağıya yuvarlaqlaşdırmaq əvəzinə ən yaxın tam ədədə yuvarlaqlaşdırır. Bəzi oyunlarda düzlənməmiş toxumaları düzəldə, başqalarının işləyişini poza bilər.</translation>
+    </message>
+    <message>
+        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
+        <comment>settings_summary_scaled_interlacing</comment>
+        <translation>İnterlyasiyalı işlənişdə xətt buraxılışını iç çözünürlüyə ölçəkləyərək daha az gözə çarpdırır. Adətən qoşmaq güvənlidir.</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
+        <comment>settings_enable_modulation_crop</comment>
+        <translation>Toxuma Modulyasiyasının Qırpımı (&quot;Köhnə/v0&quot; GİB)</translation>
+    </message>
+    <message>
+        <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
+        <comment>settings_summary_enable_modulation_crop</comment>
+        <translation>Toxuma rəngi ilə modulyasiyadan öncə uc rənglərini 5:5:5-ə qırpır; bu, adətən rəng zolaqlarını daha nəzərə çarpan edir.</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>settings_disable_upscaled_direct_textures</comment>
+        <translation>Böyüdülmüş Birbaşa Teksturları Söndür</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. Can fix filtering of FMVs/backgrounds in some games.</source>
+        <comment>settings_summary_disable_upscaled_direct_textures</comment>
+        <translation>Böyüdərkən 16-bit birbaşa rəngli toxumaları doğma çözünürlükdə örnəkləyir. Bəzi oyunlarda FMV/arxa plan süzgülənməsini düzəldə bilər.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>settings_filter_framebuffer_uploads</comment>
+        <translation>Kadr Buferi Yükləmələrini Süzgəcdən Keçir</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads, smoothing backgrounds in some games while preserving 24-bit video.</source>
+        <comment>settings_summary_filter_framebuffer_uploads</comment>
+        <translation>Seçilmiş sprayt toxuması süzgəcini kadr buferi yükləmələrinə uyğulayır, 24-bit videonu qoruyaraq bəzi oyunlarda arxa planları yumşaldır.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Kadr Buferi Yükləməsinin Minimum Eni</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Yalnız ən azı bu enlikdə olan kadr buferi yükləmələrini süzgəcdən keçirir. Tekstur məlumatlarını süzgəcdən keçirməmək üçün bu dəyəri artırın.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Kadr Buferi Yükləməsinin Minimum Hündürlüyü</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Yalnız ən azı bu hündürlükdə olan kadr buferi yükləmələrini süzgəcdən keçirir. Tekstur məlumatlarını süzgəcdən keçirməmək üçün bu dəyəri artırın.</translation>
+    </message>
+    <message>
+        <source>Shows the entirety of the console&apos;s VRAM instead of the display area (debugging feature).</source>
+        <comment>settings_summary_show_vram</comment>
+        <translation>Görüntü sahəsinin əvəzinə konsolun bütün VRAM-ını göstərir (xəta ayıqlama özəlliyi).</translation>
+    </message>
+    <message>
+        <source>Global settings copied.</source>
+        <comment>game_properties_settings_copied</comment>
+        <translation>Qlobal quruluşlar köçürüldü.</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>game_properties_compatibility_rating</comment>
+        <translation>Uyumluluq</translation>
+    </message>
+    <message>
+        <source>Database Title</source>
+        <comment>game_properties_database_title</comment>
+        <translation>Verilənlər Bazasında Adı</translation>
+    </message>
+    <message>
+        <source>Disc Set</source>
+        <comment>game_properties_disc_set_title</comment>
+        <translation>Disk Toplusu</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>game_properties_developer</comment>
+        <translation>Gəliştirici</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>game_properties_publisher</comment>
+        <translation>Yayımçı</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>game_properties_genre</comment>
+        <translation>Janr</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <comment>game_properties_release_date</comment>
+        <translation>Buraxılış Tarixi</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>game_properties_players</comment>
+        <translation>Oyunçular</translation>
+    </message>
+    <message>
+        <source>Save Blocks</source>
+        <comment>game_properties_memory_card_blocks</comment>
+        <translation>Qorunuş Blokları</translation>
+    </message>
+    <message>
+        <source>Use Separate Disc Settings</source>
+        <comment>game_settings_use_separate_disc_settings</comment>
+        <translation>Ayrı Disk Quruluşlarını İşlət</translation>
+    </message>
+    <message>
+        <source>Uses separate game settings for each disc in a set. Can only be changed on the first disc.</source>
+        <comment>game_settings_use_separate_disc_settings_summary</comment>
+        <translation>Topludakı hər disk üçün ayrı oyun quruluşlarından istifadə edir. Yalnız birinci diskdə dəyişdirilə bilər.</translation>
+    </message>
+    <message>
+        <source>Select Disc</source>
+        <comment>content_select_disc</comment>
+        <translation>Diski Seç</translation>
+    </message>
+    <message>
+        <source>Maximum Read Speedup Cycles</source>
+        <comment>settings_max_read_speedup_cycles</comment>
+        <translation>Maksimum Oxunuş Sürətlənişi Döngüləri</translation>
+    </message>
+    <message>
+        <source>Maximum Seek Speedup Cycles</source>
+        <comment>settings_max_seek_speedup_cycles</comment>
+        <translation>Maksimum Axtarış Sürətlənişi Döngüləri</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
+        <comment>settings_summary_max_seek_speedup_cycles</comment>
+        <translation>&apos;Maksimum&apos; axtarış sürətlənişi aşaması üçün minimum gecikməni qurur.</translation>
+    </message>
+    <message>
+        <source>Skip Duplicate Frames</source>
+        <comment>settings_skip_duplicate_frames</comment>
+        <translation>Təkrarlanan Kadrları Burax</translation>
+    </message>
+    <message>
+        <source>Enable Overclocking</source>
+        <comment>settings_overclock_enable</comment>
+        <translation>Saataşımını Qoş</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_gpu_resolution_scale_entries[0]</comment>
+        <translation>Özbaşına</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <comment>settings_gpu_resolution_scale_entries[1]</comment>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_gpu_resolution_scale_entries[2]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x (for 720p)</source>
+        <comment>settings_gpu_resolution_scale_entries[3]</comment>
+        <translation>3x (720p üçün)</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_gpu_resolution_scale_entries[4]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x (for 1080p)</source>
+        <comment>settings_gpu_resolution_scale_entries[5]</comment>
+        <translation>5x (1080p üçün)</translation>
+    </message>
+    <message>
+        <source>6x (for 1440p)</source>
+        <comment>settings_gpu_resolution_scale_entries[6]</comment>
+        <translation>6x (1440p üçün)</translation>
+    </message>
+    <message>
+        <source>7x</source>
+        <comment>settings_gpu_resolution_scale_entries[7]</comment>
+        <translation>7x</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <comment>settings_gpu_resolution_scale_entries[8]</comment>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>9x (for 4K)</source>
+        <comment>settings_gpu_resolution_scale_entries[9]</comment>
+        <translation>9x (4K üçün)</translation>
+    </message>
+    <message>
+        <source>10x</source>
+        <comment>settings_gpu_resolution_scale_entries[10]</comment>
+        <translation>10x</translation>
+    </message>
+    <message>
+        <source>11x</source>
+        <comment>settings_gpu_resolution_scale_entries[11]</comment>
+        <translation>11x</translation>
+    </message>
+    <message>
+        <source>12x</source>
+        <comment>settings_gpu_resolution_scale_entries[12]</comment>
+        <translation>12x</translation>
+    </message>
+    <message>
+        <source>13x</source>
+        <comment>settings_gpu_resolution_scale_entries[13]</comment>
+        <translation>13x</translation>
+    </message>
+    <message>
+        <source>14x</source>
+        <comment>settings_gpu_resolution_scale_entries[14]</comment>
+        <translation>14x</translation>
+    </message>
+    <message>
+        <source>15x</source>
+        <comment>settings_gpu_resolution_scale_entries[15]</comment>
+        <translation>15x</translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <comment>settings_gpu_resolution_scale_entries[16]</comment>
+        <translation>16x</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_gpu_msaa_entries[0]</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>2x MSAA</source>
+        <comment>settings_gpu_msaa_entries[1]</comment>
+        <translation>2x MSAA</translation>
+    </message>
+    <message>
+        <source>4x MSAA</source>
+        <comment>settings_gpu_msaa_entries[2]</comment>
+        <translation>4x MSAA</translation>
+    </message>
+    <message>
+        <source>8x MSAA</source>
+        <comment>settings_gpu_msaa_entries[3]</comment>
+        <translation>8x MSAA</translation>
+    </message>
+    <message>
+        <source>2x SSAA</source>
+        <comment>settings_gpu_msaa_entries[4]</comment>
+        <translation>2x SSAA</translation>
+    </message>
+    <message>
+        <source>4x SSAA</source>
+        <comment>settings_gpu_msaa_entries[5]</comment>
+        <translation>4x SSAA</translation>
+    </message>
+    <message>
+        <source>8x SSAA</source>
+        <comment>settings_gpu_msaa_entries[6]</comment>
+        <translation>8x SSAA</translation>
+    </message>
+    <message>
+        <source>Verifying Content…</source>
+        <comment>content_verification_progress_title</comment>
+        <translation>Məzmun Doğrulanır…</translation>
+    </message>
+    <message>
+        <source>Content verification could not be completed.</source>
+        <comment>content_verification_failed_to_run</comment>
+        <translation>Məzmunun doğrulanmasını tamamlamaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>Content Verification Error</source>
+        <comment>content_verification_error_title</comment>
+        <translation>Məzmun Doğrulama Xətası</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <comment>content_verification_item_valid</comment>
+        <translation>Keçərli</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <comment>content_verification_item_invalid</comment>
+        <translation>Keçərsiz</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Audio)</source>
+        <comment>disc_verify_audio_track</comment>
+        <translation>Trek %1$d (Səs)</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Data)</source>
+        <comment>disc_verify_data_track</comment>
+        <translation>Trek %1$d (Verilən)</translation>
+    </message>
+    <message>
+        <source>Start: %1$s | Length: %2$s</source>
+        <comment>disc_verify_track_times</comment>
+        <translation>Başlanğıc: %1$s | Uzunluq: %2$s</translation>
+    </message>
+    <message>
+        <source>Hash: %1$s</source>
+        <comment>disc_verify_track_hash</comment>
+        <translation>Heş: %1$s</translation>
+    </message>
+    <message>
+        <source>Search on redump.info</source>
+        <comment>disc_verify_search_redump</comment>
+        <translation>redump.info saytında Axtar</translation>
+    </message>
+    <message>
+        <source>Save State Compression</source>
+        <comment>settings_save_state_compression</comment>
+        <translation>Durum Qorunuşu Sıxılışı</translation>
+    </message>
+    <message>
+        <source>Create Save State Backups</source>
+        <comment>settings_create_save_state_backups</comment>
+        <translation>Durum Qorunuşu Yedəkləri Yarat</translation>
+    </message>
+    <message>
+        <source>Logged in as %s</source>
+        <comment>setup_wizard_achievements_logged_in</comment>
+        <translation>%s kimi girilib</translation>
+    </message>
+    <message>
+        <source>Screenshot saved.</source>
+        <comment>screenshot_saved</comment>
+        <translation>Ekran çəkimi qorundu.</translation>
+    </message>
+    <message>
+        <source>Screenshot Format</source>
+        <comment>settings_screenshot_format</comment>
+        <translation>Ekran Çəkimi Biçimi</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode</source>
+        <comment>settings_fine_crop_mode</comment>
+        <translation>İncə Qırpma Durumu</translation>
+    </message>
+    <message>
+        <source>Left Crop</source>
+        <comment>settings_fine_crop_left</comment>
+        <translation>Sol Qırpma</translation>
+    </message>
+    <message>
+        <source>Adjusts the left crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_left</comment>
+        <translation>Sol qırpma kənarını piksellə tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Top Crop</source>
+        <comment>settings_fine_crop_top</comment>
+        <translation>Üst Qırpma</translation>
+    </message>
+    <message>
+        <source>Adjusts the top crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_top</comment>
+        <translation>Üst qırpma kənarını piksellə tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Right Crop</source>
+        <comment>settings_fine_crop_right</comment>
+        <translation>Sağ Qırpma</translation>
+    </message>
+    <message>
+        <source>Adjusts the right crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_right</comment>
+        <translation>Sağ qırpma kənarını piksellə tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Bottom Crop</source>
+        <comment>settings_fine_crop_bottom</comment>
+        <translation>Alt Qırpma</translation>
+    </message>
+    <message>
+        <source>Adjusts the bottom crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_bottom</comment>
+        <translation>Alt qırpma kənarını piksellə tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep</source>
+        <comment>settings_pre_frame_sleep</comment>
+        <translation>Kadrdan Öncə Gözləmə</translation>
+    </message>
+    <message>
+        <source>Sleeps briefly before presenting each frame to reduce latency.</source>
+        <comment>settings_summary_pre_frame_sleep</comment>
+        <translation>Gecikməni azaltmaq üçün hər kadrı göstərməzdən əvvəl qısa müddət gözləyir.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep Buffer</source>
+        <comment>settings_pre_frame_sleep_buffer</comment>
+        <translation>Kadrdan Öncə Gözləmə Buferi</translation>
+    </message>
+    <message>
+        <source>Time to sleep before presenting each frame, in milliseconds.</source>
+        <comment>settings_summary_pre_frame_sleep_buffer</comment>
+        <translation>Hər kadrı göstərməzdən əvvəl gözləmə vaxtı, millisaniyə ilə.</translation>
+    </message>
+    <message>
+        <source>Disable Mailbox Presentation</source>
+        <comment>settings_disable_mailbox_presentation</comment>
+        <translation>Mailbox Göstərilməsini Söndür</translation>
+    </message>
+    <message>
+        <source>Forces the use of FIFO over mailbox presentation, which may be needed for some drivers.</source>
+        <comment>settings_summary_disable_mailbox_presentation</comment>
+        <translation>Mailbox göstərilməsi əvəzinə FIFO-dan işlətməyi tələb edir; bəzi sürücülərdə lazım ola bilər.</translation>
+    </message>
+    <message>
+        <source>Time Stretching</source>
+        <comment>settings_category_time_stretching</comment>
+        <translation>Vaxt Uzadılışı</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>controller_type_none</comment>
+        <translation>Heç biri</translation>
+    </message>
+    <message>
+        <source>Fast Forward</source>
+        <comment>touchscreen_controller_fast_forward</comment>
+        <translation>Sürətli İrəliləyiş</translation>
+    </message>
+    <message>
+        <source>Switch View</source>
+        <comment>touchscreen_controller_switch_view</comment>
+        <translation>Görünüşü Dəyiş</translation>
+    </message>
+    <message>
+        <source>Open Pause Menu</source>
+        <comment>touchscreen_controller_open_pause_menu</comment>
+        <translation>Ara Seçməsini Aç</translation>
+    </message>
+    <message>
+        <source>Quick Load</source>
+        <comment>touchscreen_controller_quick_load</comment>
+        <translation>Tez Yüklə</translation>
+    </message>
+    <message>
+        <source>Quick Save</source>
+        <comment>touchscreen_controller_quick_save</comment>
+        <translation>Tez Qoru</translation>
+    </message>
+    <message>
+        <source>D-Pad</source>
+        <comment>touchscreen_controller_dpad</comment>
+        <translation>D-Qolu</translation>
+    </message>
+    <message>
+        <source>Left Stick</source>
+        <comment>touchscreen_controller_left_stick</comment>
+        <translation>Sol Çubuq</translation>
+    </message>
+    <message>
+        <source>Left Stick Button</source>
+        <comment>touchscreen_controller_left_stick_button</comment>
+        <translation>Sol Çubuq Düyməsi</translation>
+    </message>
+    <message>
+        <source>Right Stick</source>
+        <comment>touchscreen_controller_right_stick</comment>
+        <translation>Sağ Çubuq</translation>
+    </message>
+    <message>
+        <source>Right Stick Button</source>
+        <comment>touchscreen_controller_right_stick_button</comment>
+        <translation>Sağ Çubuq Düyməsi</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <comment>touchscreen_controller_start</comment>
+        <translation>Başlat</translation>
+    </message>
+    <message>
+        <source>Macro 1</source>
+        <comment>touchscreen_controller_macro_1</comment>
+        <translation>Makro 1</translation>
+    </message>
+    <message>
+        <source>Macro 2</source>
+        <comment>touchscreen_controller_macro_2</comment>
+        <translation>Makro 2</translation>
+    </message>
+    <message>
+        <source>Macro 3</source>
+        <comment>touchscreen_controller_macro_3</comment>
+        <translation>Makro 3</translation>
+    </message>
+    <message>
+        <source>Macro 4</source>
+        <comment>touchscreen_controller_macro_4</comment>
+        <translation>Makro 4</translation>
+    </message>
+    <message>
+        <source>Type: %s</source>
+        <comment>content_list_filter_type_template</comment>
+        <translation>Növ: %s</translation>
+    </message>
+    <message>
+        <source>Sort By: %s</source>
+        <comment>content_list_sort_template</comment>
+        <translation>Sıralama: %s</translation>
+    </message>
+    <message>
+        <source>Search…</source>
+        <comment>content_list_search</comment>
+        <translation>Axtar…</translation>
+    </message>
+    <message>
+        <source>Start File</source>
+        <comment>content_list_start_file</comment>
+        <translation>Faylı Başlat</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>content_list_save_state_manager</comment>
+        <translation>Durum Qorunuşu Yönəticisi</translation>
+    </message>
+    <message>
+        <source>Download Covers</source>
+        <comment>content_list_download_covers</comment>
+        <translation>Örtükləri Endir</translation>
+    </message>
+    <message>
+        <source>Change Background</source>
+        <comment>content_list_change_background</comment>
+        <translation>Arxa Planı Dəyiş</translation>
+    </message>
+    <message>
+        <source>Show Version</source>
+        <comment>content_list_show_version</comment>
+        <translation>Buraxılışı Göstər</translation>
+    </message>
+    <message>
+        <source>App Version</source>
+        <comment>version_dialog_title</comment>
+        <translation>Tətbiq Versiyası</translation>
+    </message>
+    <message>
+        <source>Third-Party Notices</source>
+        <comment>content_list_third_party_notices</comment>
+        <translation>Üçüncü Tərəf Bildirişləri</translation>
+    </message>
+    <message>
+        <source>Show Grid</source>
+        <comment>content_list_show_grid</comment>
+        <translation>Toru Göstər</translation>
+    </message>
+    <message>
+        <source>Show List</source>
+        <comment>content_list_show_list</comment>
+        <translation>Sıralığı Göstər</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>content_bottom_sheet_load_state</comment>
+        <translation>Durumu Yüklə</translation>
+    </message>
+    <message>
+        <source>Choose Cover Image</source>
+        <comment>content_bottom_sheet_choose_cover</comment>
+        <translation>Örtük Şəkli Seç</translation>
+    </message>
+    <message>
+        <source>Delete Cover Image</source>
+        <comment>content_bottom_sheet_delete_cover</comment>
+        <translation>Örtük Şəklini Sil</translation>
+    </message>
+    <message>
+        <source>Create Launcher Shortcut</source>
+        <comment>content_bottom_sheet_create_shortcut</comment>
+        <translation>Başladıcı Qısayolu Yarat</translation>
+    </message>
+    <message>
+        <source>Exclude From List</source>
+        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <translation>Sıralıqdan Çıxart</translation>
+    </message>
+    <message>
+        <source>Do you want to load the automatic save created %s?
+</source>
+        <comment>content_resume_summary</comment>
+        <translation>%s yaradılmış özbaşına qorunuşu yükləmək istəyirsiniz?
+</translation>
+    </message>
+    <message>
+        <source>Clean Boot</source>
+        <comment>content_resume_clean_boot</comment>
+        <translation>Təmiz Başlanış</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>content_resume_delete_state</comment>
+        <translation>Durumu Sil</translation>
+    </message>
+    <message>
+        <source>Do you want to clear or set a new background image?</source>
+        <comment>content_background_prompt</comment>
+        <translation>Arxa plan şəklini təmizləmək və ya yeni şəkil təyin etmək istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <comment>content_background_change</comment>
+        <translation>Dəyiş</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>content_background_clear</comment>
+        <translation>Təmizlə</translation>
+    </message>
+    <message>
+        <source>Shortcut created for %s.</source>
+        <comment>content_shortcut_created</comment>
+        <translation>%s üçün qısayol yaradıldı.</translation>
+    </message>
+    <message>
+        <source>Cannot create shortcut. Make sure your launcher supports it.</source>
+        <comment>content_shortcut_failed</comment>
+        <translation>Qısayol yaratmaq alınmadı. Başladıcınızın bunu dəstəklədiyinə əmin olun.</translation>
+    </message>
+    <message>
+        <source>Download</source>
+        <comment>content_download_covers_start</comment>
+        <translation>Endir</translation>
+    </message>
+    <message>
+        <source>Digital</source>
+        <comment>touchscreen_layout_digital</comment>
+        <translation>Rəqəmsal</translation>
+    </message>
+    <message>
+        <source>Analog Stick</source>
+        <comment>touchscreen_layout_analog_stick</comment>
+        <translation>Analoq Çubuq</translation>
+    </message>
+    <message>
+        <source>Twin Analog Sticks</source>
+        <comment>touchscreen_layout_analog_sticks</comment>
+        <translation>İki Analoq Çubuq</translation>
+    </message>
+    <message>
+        <source>Light Gun</source>
+        <comment>touchscreen_layout_lightgun</comment>
+        <translation>İşıq Tapançası</translation>
+    </message>
+    <message>
+        <source>Edit Layout</source>
+        <comment>settings_touchscreen_controller_edit_layout</comment>
+        <translation>Düzülüşü Dəyiş</translation>
+    </message>
+    <message>
+        <source>Reposition, resize, and show or hide touchscreen buttons.</source>
+        <comment>settings_touchscreen_controller_edit_layout_summary</comment>
+        <translation>Toxunma ekranı düymələrinin yerini, ölçüsünü dəyişin, onları göstərin və ya gizlədin.</translation>
+    </message>
+    <message>
+        <source>Folder Locations</source>
+        <comment>settings_folder_experimental_category</comment>
+        <translation>Qovluq Yerləşimləri</translation>
+    </message>
+    <message>
+        <source>This feature is experimental</source>
+        <comment>settings_folder_experimental_title</comment>
+        <translation>Bu özəllik sınaq mərhələsindədir</translation>
+    </message>
+    <message>
+        <source>Changing folders may cause data loss. Make a backup first. Copy Files is recommended over Move Files because it preserves the original data.</source>
+        <comment>settings_folder_experimental_summary</comment>
+        <translation>Qovluqları dəyişmək verilən itkisinə səbəb ola bilər. Əvvəlcə yedək yaradın. Faylları Köçür seçimi ilkin verilənləri saxladığı üçün Faylları Daşı seçimindən üstün tutulur.</translation>
+    </message>
+    <message>
+        <source>Folder Changes Unavailable</source>
+        <comment>settings_folder_unavailable_title</comment>
+        <translation>Qovluq Dəyişiklikləri Əlçatan Deyil</translation>
+    </message>
+    <message>
+        <source>Folder locations cannot be changed while a session is active.</source>
+        <comment>settings_folder_session_active</comment>
+        <translation>Oturum etkin olduğu müddətdə qovluq yerləşimləri dəyişdirilə bilməz.</translation>
+    </message>
+    <message>
+        <source>%1$s (Modified)</source>
+        <comment>settings_folder_modified_title</comment>
+        <translation>%1$s (Dəyişdirilib)</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_folder_save_states</comment>
+        <translation>Durum Qorunuşları</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_folder_cheats</comment>
+        <translation>Hiylələr</translation>
+    </message>
+    <message>
+        <source>Covers</source>
+        <comment>settings_folder_covers</comment>
+        <translation>Örtüklər</translation>
+    </message>
+    <message>
+        <source>Choose New Location</source>
+        <comment>settings_folder_choose_location</comment>
+        <translation>Yeni Yerləşim Seç</translation>
+    </message>
+    <message>
+        <source>Restore Default</source>
+        <comment>settings_folder_restore_default</comment>
+        <translation>Varsayılanı Qaytar</translation>
+    </message>
+    <message>
+        <source>Transfer Existing Files?</source>
+        <comment>settings_folder_transfer_title</comment>
+        <translation>Mövcud Fayllar Ötürülsün?</translation>
+    </message>
+    <message>
+        <source>Copy Files is the safer, recommended choice because it preserves the old contents. Move Files copies first and removes copied originals only after the new setting is saved.</source>
+        <comment>settings_folder_transfer_summary</comment>
+        <translation>Faylları Köçür köhnə məzmunu saxladığı üçün daha təhlükəsiz, tövsiyə olunan seçimdir. Faylları Daşı əvvəlcə köçürür və köçürülmüş ilkin faylları yalnız yeni quruluş qorunandan sonra qaldırır.</translation>
+    </message>
+    <message>
+        <source>Copy Files (Recommended)</source>
+        <comment>settings_folder_copy_files</comment>
+        <translation>Faylları Köçür (Tövsiyə Olunur)</translation>
+    </message>
+    <message>
+        <source>Move Files</source>
+        <comment>settings_folder_move_files</comment>
+        <translation>Faylları Daşı</translation>
+    </message>
+    <message>
+        <source>Do Nothing</source>
+        <comment>settings_folder_do_nothing</comment>
+        <translation>Heç Nə Etmə</translation>
+    </message>
+    <message>
+        <source>A file already exists at the destination:
+%1$s</source>
+        <comment>settings_folder_file_conflict</comment>
+        <translation>Hədəfdə fayl artıq mövcuddur:
+%1$s</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>settings_folder_overwrite</comment>
+        <translation>Üzərinə Yaz</translation>
+    </message>
+    <message>
+        <source>Keep Existing</source>
+        <comment>settings_folder_keep_existing</comment>
+        <translation>Mövcudu Saxla</translation>
+    </message>
+    <message>
+        <source>That location overlaps another managed folder: %1$s</source>
+        <comment>settings_folder_overlap_error</comment>
+        <translation>Bu yerləşim başqa yönətilən qovluqla örtüşür: %1$s</translation>
+    </message>
+    <message>
+        <source>Could not retain read and write access to that folder.</source>
+        <comment>settings_folder_permission_error</comment>
+        <translation>Bu qovluğa oxuma və yazma erişimini saxlamaq alınmadı.</translation>
+    </message>
+    <message>
+        <source>This document provider does not expose a path-based folder and cannot be used here.</source>
+        <comment>settings_folder_provider_unsupported</comment>
+        <translation>Bu sənəd təminatçısı yola əsaslanan qovluq təqdim etmir və burada işlədilə bilməz.</translation>
+    </message>
+    <message>
+        <source>Copying files</source>
+        <comment>settings_folder_copying</comment>
+        <translation>Fayllar köçürülür</translation>
+    </message>
+    <message>
+        <source>Removing old files</source>
+        <comment>settings_folder_removing</comment>
+        <translation>Köhnə fayllar qaldırılır</translation>
+    </message>
+    <message>
+        <source>The files could not be transferred. The previous setting remains active.</source>
+        <comment>settings_folder_copy_error</comment>
+        <translation>Faylları ötürmək alınmadı. Əvvəlki quruluş etkin qalır.</translation>
+    </message>
+    <message>
+        <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
+        <comment>settings_folder_cleanup_warning</comment>
+        <translation>Yeni qovluq etkindir, ancaq bəzi köhnə faylları qaldırmaq alınmadı və onlar təkrar nüsxələr olaraq qalır.</translation>
     </message>
 </context>
 <context>
@@ -2970,10 +8606,6 @@ Bu uyarım ancaq bir dəfə göstəriləcək.</translation>
         <translation>Bu yönəldən üçün bütün xəritələnişləri təmizləmək istədiyinizdən əminsiniz? Bu eyləm qayıdışsızdır.</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>&apos;%1&apos; qurğusu üçün heç bir ümumi bağlanış oluşdurulmayıb. Yönəldən/qaynaq özbaşına xəritələnişi dəstəkləməmiş ola bilər.</translation>
-    </message>
-    <message>
         <source>Controller %1 %2</source>
         <translation>Yönəldən %1 %2</translation>
     </message>
@@ -4043,7 +9675,7 @@ Yenə də %2 istəyirsiniz?</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %1</source>
-        <translation>%1 alt-görünüşünə keçid uğursuz oldu</translation>
+        <translation>%1 alt görüntüsünə keçmək alınmadı</translation>
     </message>
     <message>
         <source>Confirm Download</source>
@@ -5024,10 +10656,6 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Geri Çəkiliş Tezliyi:</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> Kadr</translation>
-    </message>
-    <message>
         <source>Normal Speed:</source>
         <translation>Normal Sürət:</translation>
     </message>
@@ -5048,6 +10676,14 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Turbo Sürətini Sıfırla</translation>
     </message>
     <message>
+        <source> MB</source>
+        <translation> MB</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> Kadr</translation>
+    </message>
+    <message>
         <source>Rewind Buffer Size:</source>
         <translation>Geri Çəkiliş Bufer Ölçüsü:</translation>
     </message>
@@ -5058,6 +10694,10 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
     <message>
         <source>Enable Rewinding</source>
         <translation>Geri Çəkilişi Qoş</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer (Low VRAM Mode)</source>
+        <translation>Yazılım İşlənişçisini İşlət (Az VRAM Rejimi)</translation>
     </message>
     <message>
         <source>Runahead</source>
@@ -5193,7 +10833,53 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
     </message>
     <message>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Geri Çəkilişi Qoş:&lt;/b&gt; Ara-ara durumu qoruyur, odur ki, oynadığınızda etdiyiniz bütün yanlışları geri çəkə bilərsiniz.&lt;br&gt; &lt;b&gt;Qorunuşun Geri Çəkiliş Tezliyi:&lt;/b&gt; Geri çəkiliş qorunuşu hansı tezliklərlə yaradılır. Yüksək tezliklərin daha böyük sistem gərəksinimləri var.&lt;br&gt; &lt;b&gt;Geri Çəkiliş Bufer Ölçüsü:&lt;/b&gt; Geri çəkiliş üçün nə qədər çox qorunuşlar tutulacaq. Yüksək dəyərlərin böyük yaddaş gərəksinimləri var.</translation>
+        <translation>&lt;b&gt;Geri Çəkilişi Qoş:&lt;/b&gt; Durumu ara-ara qoruyur ki, oyun vaxtı yanlışları geri çəkə biləsiniz.&lt;br&gt; &lt;b&gt;Geri Çəkiliş Qorunuş Tezliyi:&lt;/b&gt; Geri çəkiliş durumunun hansı tezliklə yaradılacağı. Yüksək tezliklərin daha böyük sistem gərəksinimləri var.&lt;br&gt; &lt;b&gt;Geri Çəkiliş Bufer Ölçüsü:&lt;/b&gt; Geri çəkiliş üçün neçə qorunuşun saxlanacağı. Yüksək dəyərlər daha çox yaddaş tələb edir.</translation>
+    </message>
+    <message>
+        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
+        <translation>Əlavə VRAM işlədilişinin qarşısını almaq üçün geri çəkiliş durumlarını yaradarkən yazılım işlənişçisini işlədir. Xüsusilə çözünürlük artırıldıqda yararlıdır, çünki geri çəkiliş üçün sistem gərəksinimlərini xeyli azaldır.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
+        <translation>
+            <numerusform>%1 saniyə davam edən %n kadrlıq geri çəkiliş üçün %2MB RAM və %3MB VRAM tələb olunacaq.</numerusform>
+            <numerusform>%1 saniyə davam edən %n kadrlıq geri çəkiliş üçün %2MB RAM və %3MB VRAM tələb olunacaq.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
+        <translation>
+            <numerusform>%1 saniyə davam edən %n kadrlıq geri çəkiliş üçün %2MB RAM tələb olunacaq.</numerusform>
+            <numerusform>%1 saniyə davam edən %n kadrlıq geri çəkiliş üçün %2MB RAM tələb olunacaq.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
+        <translation>Önə atlayış qoşulduğu üçün geri çəkiliş söndürülüb. Önə atlayış sistem gərəksinimlərini xeyli artıracaq.</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <translation>Durumu ara-ara qoruyur ki, oyun vaxtı yanlışları geri çəkə biləsiniz.</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <translation>Geri çəkiliş durumu hansı tezlikdə yaradılacaq. Yüksək tezliklərin yüksək sistem gərəksinimləri var.</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Geri çəkiliş durumları üçün ayrılacaq yaddaş miqdarı. Nə qədər geriyə çəkilə biləcəyinizi təyin edir.</translation>
+    </message>
+    <message>
+        <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
+        <translation>%1MB geri çəkiliş buferi %n durum tutur və %2 saniyəyədək geriyə çəkilməyə imkan verir.</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Geri çəkiliş buferi tək bir durumu tutmaq üçün çox kiçikdir.</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>{0} MB geri çəkiliş buferi {1} durum tutur və {2:.2f} saniyəyədək geriyə çəkilməyə imkan verir.</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
@@ -5216,38 +10902,12 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Limitsiz</translation>
     </message>
     <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Önləyiş qoşulu olduğu üçün geri çəkiliş qoşulmayıb. Önləyiş, sistem gərəksinimini böyük ölçüdə artıracaq.</translation>
-    </message>
-    <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Geri çəkiliş qoşulmayıb. Ağlınızda olsun ki, geri çəkiliş qoşuluşu sistem gərəksinimlərini böyük ölçüdə artıra bilər.</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Yazılımlı İşlənişiçini İşlət (Aşağı VRGY Durumu)</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>Seçilib</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Artıq VRGY (VRAM) işlədilişini əngəlləmək üçün geri çəkiliş durumlarının yaradılışında yazılımlı işlənişçini işlədir. Özəlliklə, ölçəklənişdə yararlıdır, çünki bu geri çəkiliş üçün sistem gərəksinimlərini gözə çarpacaq dərəcədə azaldır.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>%n kadr üçün geri çəkiliş, %1 saniyə sürür, %2MB RGY və %3MB VRGY istəyəcək.</numerusform>
-            <numerusform>%n kadr üçün geri çəkiliş, %1 saniyə sürür, %2MB RGY və %3MB VRGY istəyəcək.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>%n kadr üçün geri çəkiliş, %1 saniyə sürür, %2MB RGY istəyəcək.</numerusform>
-            <numerusform>%n kadr üçün geri çəkiliş, %1 saniyə sürür, %2MB RGY istəyəcək.</numerusform>
-        </translation>
     </message>
 </context>
 <context>
@@ -5441,10 +11101,6 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Uğur Bildirişləri</translation>
     </message>
     <message>
-        <source>Achievement Unlock/Count</source>
-        <translation>Uğur Açılışı/Sayışı</translation>
-    </message>
-    <message>
         <source>Achievements</source>
         <translation>Uğurlar</translation>
     </message>
@@ -5597,16 +11253,16 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Özbaşına Xəritələniş</translation>
     </message>
     <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Özbaşına Xəritələniş Uğursuz Oldu</translation>
+    </message>
+    <message>
         <source>Automatic based on window size</source>
         <translation>Pəncərə ölçüsünə əsasən özbaşına</translation>
     </message>
     <message>
         <source>Automatic mapping completed for {}.</source>
         <translation>{} üçün özbaşına xəritələniş tamamlandı.</translation>
-    </message>
-    <message>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>{} üçün özbaşına xəritələniş uğursuz oldu.</translation>
     </message>
     <message>
         <source>Automatic mapping failed, no devices are available.</source>
@@ -5759,6 +11415,10 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Change Serial</source>
         <translation>Seriyanı Dəyiş</translation>
+    </message>
+    <message>
+        <source>Change State</source>
+        <translation>Durumu Dəyiş</translation>
     </message>
     <message>
         <source>Change Title</source>
@@ -5991,10 +11651,6 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Default Value</source>
         <translation>Varsayılan Dəyər</translation>
-    </message>
-    <message>
-        <source>Default View</source>
-        <translation>Varsayılan Görünüş</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -6503,20 +12159,16 @@ Yanlış:</translation>
         <translation>Sürətli İrəliləyiş Ucalığı</translation>
     </message>
     <message>
+        <source>Fast Scroll</source>
+        <translation>Tez Sürüşdür</translation>
+    </message>
+    <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Yaddaş kartı girişindən sürətlə keçir, yüklənişdən də, qorunuşdan da. Tez-tez yaddaş kartına yönələn oyunlarda gözləmə vaxtlarını azalda bilər.</translation>
     </message>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
         <translation>Sürətli başlanış zamanı erkən yükləniş işləmindən sürətlə keçir, vaxt qazandırır. Nəticə oyunlara görə dəyişə bilər.</translation>
-    </message>
-    <message>
-        <source>File Size</source>
-        <translation>Fayl Ölçüsü</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Fayl Başlığı</translation>
     </message>
     <message>
         <source>Force 4:3 For FMVs</source>
@@ -6676,7 +12328,7 @@ Yanlış:</translation>
     </message>
     <message>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Geri çəkiliş üçün neçə qorunuş saxlanacaq. Yüksək dəyərlərin yüksək yaddaş gərəksinimləri var.</translation>
+        <translation>Geri çəkiliş üçün neçə qorunuşun saxlanacağı. Yüksək dəyərlər daha çox yaddaş tələb edir.</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -6757,10 +12409,6 @@ Yanlış:</translation>
     <message>
         <source>Language: </source>
         <translation>Dil: </translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Son Oynanmış</translation>
     </message>
     <message>
         <source>Last Played: </source>
@@ -7045,6 +12693,10 @@ Yanlış: {}
     <message>
         <source>No resume save state found.</source>
         <translation>Davam durumu qorunuşu tapılmadı.</translation>
+    </message>
+    <message>
+        <source>No rewind states are available yet.</source>
+        <translation>Hələ heç bir geri çəkiliş durumu yoxdur.</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -7451,16 +13103,20 @@ Yanlış: {}
         <translation>Oyun sıralığı sıra düzülüşünü varsayılandan tərsləyir (adətən yüksələndən alçalana).</translation>
     </message>
     <message>
+        <source>Rewind</source>
+        <translation>Geriyə Çək</translation>
+    </message>
+    <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Geri Çəkiliş Bufer Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Geri çəkiliş durumları üçün yaddaş ayrıla bilmədi.</translation>
+    </message>
+    <message>
         <source>Rewind Save Frequency</source>
         <translation>Qorunuş Tezliyini Geri Çək</translation>
-    </message>
-    <message>
-        <source>Rewind Save Slots</source>
-        <translation>Qorunuş Yuvalarını Geri Çək</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Önləyiş qoşulu olduğu üçün geri çəkiliş qoşulmayıb. Önləyiş, sistem gərəksinimini böyük ölçüdə artıracaq.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -7667,10 +13323,6 @@ Yanlış: {}
         <translation>Bu giriş üçün yamsılanmış yönəldən biçimini seçir.</translation>
     </message>
     <message>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>Oyun sıralığının açılaçağı görünüşü seçir.</translation>
-    </message>
-    <message>
         <source>Serial</source>
         <translation>Seriya</translation>
     </message>
@@ -7835,6 +13487,10 @@ Yanlış: {}
         <translation>Sistemin hazırki işləniş çözünürlüyünü ekranın üst-sağ küncündə göstərir.</translation>
     </message>
     <message>
+        <source>Shows the game list as a grid instead of a vertical list.</source>
+        <translation>Oyun siyahısını şaquli siyahı yerinə tor kimi göstərir.</translation>
+    </message>
+    <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>İndi oynadığınız oyunu Discord profilinizin parçası kimi göstərir.</translation>
     </message>
@@ -7979,6 +13635,10 @@ Yanlış: {}
         <translation>Taxılı disk olmadan konsolu başlat.</translation>
     </message>
     <message>
+        <source>State {0} of {1} (frame {2})</source>
+        <translation>Durum {0} / {1} (kadr {2})</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>İndiki quruluşları yönəldən ön-quruluşunda saxlayır.</translation>
     </message>
@@ -8039,6 +13699,10 @@ Yanlış: {}
         <translation>Səs arxa-ucu, yamsılayıcının ürətdiyi kadrların yiyəyə ötürülüşü şəklini bəlirləyir.</translation>
     </message>
     <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Geri çəkiliş buferi tək bir durumu tutmaq üçün çox kiçikdir.</translation>
+    </message>
+    <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
         <translation>Seçilmiş yaddaş kartı görünüşü bu yuva üçün paylaşılmış durumda işlədiləcək.</translation>
     </message>
@@ -8049,10 +13713,6 @@ Yanlış: {}
     <message>
         <source>Threaded Rendering</source>
         <translation>Axınlanmış İşləniş</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Oyun Vaxtı</translation>
     </message>
     <message>
         <source>Time Played: </source>
@@ -8109,10 +13769,6 @@ Yanlış: {}
     <message>
         <source>Type</source>
         <translation>Biçim</translation>
-    </message>
-    <message>
-        <source>Uncompressed Size</source>
-        <translation>Sıxışdırılmamış Ölçü</translation>
     </message>
     <message>
         <source>Undo Load State</source>
@@ -8579,6 +14235,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Qlobal Quruluşlar</translation>
     </message>
     <message>
+        <source>Grid View</source>
+        <translation>Tor Görünüşü</translation>
+    </message>
+    <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
         <translation>Sistem yenidən başladılmadan möhkəm modu qoşulmayacaq. Oyunu indi yenidən başlatmaq istəyirsiniz?</translation>
     </message>
@@ -8589,6 +14249,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>Hotkeys</source>
         <translation>İsti düymələr</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Geri çəkiliş durumları üçün ayrılacaq yaddaş miqdarı. Nə qədər geriyə çəkilə biləcəyinizi təyin edir.</translation>
     </message>
     <message>
         <source>If disabled, the shader in this stage will not be applied.</source>
@@ -8747,12 +14411,20 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Oyunu Yenidən Başlat</translation>
     </message>
     <message>
+        <source>Rewind Save Slots</source>
+        <translation>Geri Çəkiliş Qorunuş Yuvaları</translation>
+    </message>
+    <message>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{0} kadr üçün geri çəkiliş, {1:.2f} saniyə sürür, {2} MB RGY və {3} MB VRGY istəyir.</translation>
+        <translation>{1:.2f} saniyə davam edən {0} kadrlıq geri çəkiliş üçün {2} MB RAM və {3} MB VRAM tələb olunacaq.</translation>
     </message>
     <message>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>{0} kadr üçün geri çəkiliş, {1:.2f} saniyə sürür, {2} MB RGY istəyir.</translation>
+        <translation>{1:.2f} saniyə davam edən {0} kadrlıq geri çəkiliş üçün {2} MB RAM tələb olunacaq.</translation>
+    </message>
+    <message>
+        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
+        <translation>Önə atlayış qoşulduğu üçün geri çəkiliş söndürülüb. Önə atlayış sistem gərəksinimlərini xeyli artıracaq.</translation>
     </message>
     <message>
         <source>SDL Persistent Device Identifiers</source>
@@ -8911,8 +14583,16 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Oyun sıralığında göstərilən uğurların verilənlər bazasını güncəlləyir.</translation>
     </message>
     <message>
+        <source>Use Software Renderer (Low VRAM Mode)</source>
+        <translation>Yazılım İşlənişçisini İşlət (Az VRAM Rejimi)</translation>
+    </message>
+    <message>
         <source>Use This Directory</source>
         <translation>Bu Qovluqdan İstifadə Et</translation>
+    </message>
+    <message>
+        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
+        <translation>Əlavə VRAM işlədilişinin qarşısını almaq üçün geri çəkiliş durumlarını yaradarkən yazılım işlənişçisini işlədir. Xüsusilə çözünürlük artırıldıqda yararlıdır.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -8973,6 +14653,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>${title}: Title of the game.</source>
         <translation>${title}: Oyunun adı.</translation>
+    </message>
+    <message>
+        <source>%d MB</source>
+        <translation>%d MB</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -9091,20 +14775,12 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Oyun-Başı Oyun Giriliş Qaynaqlarını İşlət</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Yazılım İşlənişiçisini İşlət (Aşağı VRGY Durumu)</translation>
-    </message>
-    <message>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
         <translation>İsti düymələr üçün oyuna özəl görkəmləniş işlədir. Qoşulmadıqda, qlobal isti düymələr işlədiləcək.</translation>
     </message>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Giriliş qaynaqları üçün oyuna özəl görkəmləniş işlədir. Qoşulmadıqda, qlobal görkəmləniş işlədiləcək.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Artıq VRGY (VRAM) işlədilişini əngəlləmək üçün geri çəkiliş durumlarının yaradılışında yazılımlı işlənişçini işlədir. Özəlliklə, ölçəklənişdə yararlıdır.</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -10042,6 +15718,86 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
         <translation>PSF</translation>
     </message>
     <message>
+        <source>Type</source>
+        <comment>Column</comment>
+        <translation>Növ</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>Column</comment>
+        <translation>Seriya</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>Column</comment>
+        <translation>Başlıq</translation>
+    </message>
+    <message>
+        <source>File Title</source>
+        <comment>Column</comment>
+        <translation>Fayl Başlığı</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>Column</comment>
+        <translation>Gəliştirici</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>Column</comment>
+        <translation>Yayımçı</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>Column</comment>
+        <translation>Janr</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <comment>Column</comment>
+        <translation>İl</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>Column</comment>
+        <translation>Oyunçular</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>Column</comment>
+        <translation>Oyun Vaxtı</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>Column</comment>
+        <translation>Son Oynanmış</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <comment>Column</comment>
+        <translation>Ölçü</translation>
+    </message>
+    <message>
+        <source>Data Size</source>
+        <comment>Column</comment>
+        <translation>Verilən Ölçüsü</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>Column</comment>
+        <translation>Bölgə</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>Column</comment>
+        <translation>Uğurlar</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>Column</comment>
+        <translation>Uyumluluq</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>&apos;{}&apos; qovluğu daranır...</translation>
     </message>
@@ -10064,70 +15820,6 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
 </context>
 <context>
     <name>GameListModel</name>
-    <message>
-        <source>Icon</source>
-        <translation>İkon</translation>
-    </message>
-    <message>
-        <source>Serial</source>
-        <translation>Seriya</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation>Başlıq</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Fayl Başlığı</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation>Gəliştirici</translation>
-    </message>
-    <message>
-        <source>Publisher</source>
-        <translation>Yayımçı</translation>
-    </message>
-    <message>
-        <source>Genre</source>
-        <translation>Janr</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>İl</translation>
-    </message>
-    <message>
-        <source>Players</source>
-        <translation>Oyunçu</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Oyun Vaxtı</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Son Oynanmış</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation>Ölçü</translation>
-    </message>
-    <message>
-        <source>Data Size</source>
-        <translation>Verilən Ölçüsü</translation>
-    </message>
-    <message>
-        <source>Region</source>
-        <translation>Bölgə</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation>Uğurlar</translation>
-    </message>
-    <message>
-        <source>Compatibility</source>
-        <translation>Uyumluluq</translation>
-    </message>
     <message>
         <source>No Achievements</source>
         <translation>Uğur Yoxdur</translation>
@@ -12343,12 +18035,20 @@ Shift-click to set multiple bindings.</source>
         <translation>Göstərici-{0}/{1}</translation>
     </message>
     <message>
+        <source>No mappings were added. {} may not support automatic binding, or no matches were found for your controller.</source>
+        <translation>Heç bir xəritələmə əlavə edilmədi. {} özbaşına bağlanışı dəstəkləməyə bilər və ya yönəldəniniz üçün heç bir uyğunluq tapılmayıb.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Yönəldən {} taxıldı.</translation>
     </message>
     <message>
         <source>System paused because controller {} was disconnected.</source>
         <translation>Yönəldən {} çıxarıldığı üçün sistem ara verdi.</translation>
+    </message>
+    <message>
+        <source>No generic bindings were generated for device &apos;{}&apos;. The controller/source may not support automatic mapping.</source>
+        <translation>&apos;{}&apos; cihazı üçün heç bir ümumi bağlanış yaradılmadı. Yönəldən/qaynaq özbaşına xəritələməni dəstəkləməyə bilər.</translation>
     </message>
 </context>
 <context>
@@ -15289,10 +20989,6 @@ Yanlış: {1}</translation>
         <translation>Özbaşına Xəritələniş Uğursuz Oldu</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>&apos;%1&apos; qurğusu üçün heç bir ümumi bağlanış oluşdurulmayıb. Yönəldən/qaynaq özbaşına xəritələnişi dəstəkləməmiş ola bilər.</translation>
-    </message>
-    <message>
         <source>No devices were selected.</source>
         <translation>Heç bir qurğu seçilməyib.</translation>
     </message>
@@ -15545,12 +21241,12 @@ Yanlış: {1}</translation>
         <translation>Özəl bütün ekrana keçid uğursuz oldu, yerinə çərçivəsiz işlədilir.</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Öncədən icra aktiv olduqda geri sarma söndürülür.</translation>
-    </message>
-    <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Təhlükəsiz rejim aktiv olduqda geri sarma söndürülür.</translation>
+    </message>
+    <message>
+        <source>Rewinding is disabled while runahead is enabled.</source>
+        <translation>Önə atlayış qoşulduqda geri çəkiliş söndürülür.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -17086,9 +22782,9 @@ Bu qovluğu yaratmaq istəyirsiniz?</translation>
         <translation>Qoşulmayıb (Ən Yavaş)</translation>
     </message>
     <message>
-        <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
+        <source>MMap (Fastest)</source>
         <comment>CPUFastmemMode</comment>
-        <translation>MMap (Donanım, Sürətli, Yalnız 64-Bit)</translation>
+        <translation>MMap (Ən Tez)</translation>
     </message>
     <message>
         <source>LUT (Faster)</source>
@@ -17724,6 +23420,21 @@ Bu qovluğu yaratmaq istəyirsiniz?</translation>
         <source>Time Stretch (Tempo Change, Best Sound)</source>
         <comment>AudioStretchMode</comment>
         <translation>Vaxt Uzanışı (Temp Dəyişimi, Ən Yaxşı Səs)</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>Resampling</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Təkrar Örnəkləniş</translation>
+    </message>
+    <message>
+        <source>Time Stretch</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Vaxt Uzanışı</translation>
     </message>
     <message>
         <source>None</source>
@@ -18410,6 +24121,10 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Əlçatan qurğu yoxdur</translation>
     </message>
     <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Özbaşına Xəritələniş Uğursuz Oldu</translation>
+    </message>
+    <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
         <translation>PGXP aktiv deyil. PGXP-ni aktivləşdirmədən təsvir ölçüsünü artırmaq görünən poliqon qüsurlarına səbəb olacaq.</translation>
     </message>
@@ -18418,10 +24133,6 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
 Token generated %2</source>
         <translation>%1 kimi daxil olunub
 Token %2 yaradılıb</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>&apos;%1&apos; qurğusu üçün heç bir ümumi bağlanış oluşdurulmayıb. Yönəldən/qaynaq özbaşına xəritələnişi dəstəkləməmiş ola bilər.</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -18438,10 +24149,6 @@ Token %2 yaradılıb</translation>
     <message>
         <source>No Game Directories Selected</source>
         <translation>Oyun Qovluqları Seçilməyib</translation>
-    </message>
-    <message>
-        <source>Automatic Binding Failed</source>
-        <translation>Özbaşına Bağlanış Uğursuz Oldu</translation>
     </message>
 </context>
 <context>
@@ -18579,10 +24286,6 @@ Tökümünüz tamamlanmayıb, bu oyunu çalışdırmaq üçün SBI faylını art
 SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Alt-görünüş {}&apos;ə keçid burada &apos;{}&apos; uğursuz oldu: {}.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Alt-görünüş {}&apos;ə ({}) burada &apos;{}&apos; keçildi.</translation>
     </message>
@@ -18653,6 +24356,22 @@ SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</trans
     <message>
         <source>This save state was created with a different console region, and may be unstable.</source>
         <translation>Bu durum qorunuşu başqa konsol bölgəsi ilə yaradılıb və qeyri-sabit ola bilər.</translation>
+    </message>
+    <message>
+        <source>Runahead Disabled</source>
+        <translation>Önə Atlayış Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>Failed to allocate runahead states: {}</source>
+        <translation>Önə atlayış durumları üçün yaddaş ayrılışı uğursuz oldu: {}</translation>
+    </message>
+    <message>
+        <source>Rewind Disabled</source>
+        <translation>Geri Çəkiliş Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>Failed to allocate rewind states: {}</source>
+        <translation>Geri çəkiliş durumları üçün yaddaş ayrılışı uğursuz oldu: {}</translation>
     </message>
     <message>
         <source>Overclock disabled.</source>
@@ -18753,6 +24472,18 @@ SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</trans
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM SubQ Sürüşməsi qoşuldu. Bu oyunları sındıracaq.</translation>
+    </message>
+    <message>
+        <source>Rewind buffer size is too small to hold a single save state.</source>
+        <translation>Geri çəkiliş buferinin ölçüsü tək bir qorunuş durumunu tutmaq üçün çox kiçikdir.</translation>
+    </message>
+    <message>
+        <source>Failed to load rewind state</source>
+        <translation>Geri çəkiliş durumunun yüklənişi uğursuz oldu</translation>
+    </message>
+    <message>
+        <source>Invalid rewind slot {}.</source>
+        <translation>Keçərsiz geri çəkiliş yuvası {}.</translation>
     </message>
     <message>
         <source>Failed to save resume state: {}</source>
@@ -18892,6 +24623,10 @@ Yanlış: {1}
         <translation>Çalışan keçərli oyun yoxdur.</translation>
     </message>
     <message>
+        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
+        <translation>{} alt görüntüsünə &apos;{}&apos; içində keçmək alınmadı: {}.</translation>
+    </message>
+    <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Bu qorunuş durumu sıradakı ləkəli seçimlərlə yaradılıb, və dəngəsiz ola bilər.
@@ -18934,14 +24669,6 @@ Using shared card instead.</source>
 Yerinə paylaşımlı kart işlədilir.</translation>
     </message>
     <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Geri çəkiş qoşulmadı.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Geri çəkiş və önə atlayış birgə işlədilə bilməz.</translation>
-    </message>
-    <message>
         <source>No BIOS image found for {} region.
 
 DuckStation requires a PS1 or PS2 BIOS in order to run.
@@ -18952,6 +24679,14 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 DuckStation işləmək üçün PS1 və ya PS2 BIOS-u tələb edir.
 
 Hüquqi səbəblərə görə BIOS-u sahibi olduğunuz əsl PS1/PS2 qurğusundan əldə etməlisiniz (borc götürmək sayılmır).</translation>
+    </message>
+    <message>
+        <source>Rewind has been disabled.</source>
+        <translation>Geri çəkiliş söndürüldü.</translation>
+    </message>
+    <message>
+        <source>Rewind and runahead cannot be used at the same time.</source>
+        <translation>Geri çəkiliş və önə atlayış eyni vaxtda işlədilə bilməz.</translation>
     </message>
 </context>
 <context>
