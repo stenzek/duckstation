@@ -407,8 +407,7 @@ u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 void GPU::Initialize()
 {
-  if (!System::IsReplayingGPUDump())
-    s_locals.crtc_tick_event.Activate();
+  s_locals.crtc_tick_event.Activate();
 
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   s_locals.fifo_size = g_settings.gpu_fifo_size;
@@ -1016,15 +1015,14 @@ void GPU::AddCommandTicks(TickCount ticks)
 
 void GPU::SynchronizeCRTC()
 {
-  // The event always gets rescheduled, except for when replaying a GPU dump, but then it's never active.
+  // The event always gets rescheduled.
   s_locals.crtc_tick_event.InvokeEarlyNoReschedule();
 }
 
 void GPU::RescheduleCRTC()
 {
   // Timer IRQ or gate might be needed sooner than what we're currently scheduled for.
-  if (s_locals.crtc_tick_event.IsActive())
-    UpdateCRTCTickEvent();
+  UpdateCRTCTickEvent();
 }
 
 float GPU::ComputeHorizontalFrequency()
@@ -1569,8 +1567,7 @@ void GPU::UpdateCRTCTickEvent()
     ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
   }
 
-  if (!System::IsReplayingGPUDump()) [[likely]]
-    s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, cs.fractional_ticks));
+  s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, cs.fractional_ticks));
 }
 
 bool GPU::IsCRTCScanlinePending()
@@ -4181,6 +4178,9 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
       SystemTicksToCRTCTicks(system_ticks_per_frame, &s_locals.crtc_state.fractional_ticks);
       TimingEvents::SetGlobalTickCounter(TimingEvents::GetGlobalTickCounter() +
                                          static_cast<GlobalTicks>(system_ticks_per_frame));
+
+      // consume the ticks without running the CRTC, otherwise the next sync would raise another vblank
+      s_locals.crtc_tick_event.m_last_run_time = TimingEvents::GetGlobalTickCounter();
       System::IncrementFrameNumber();
       UpdateDisplay(true);
       System::FrameDone();
