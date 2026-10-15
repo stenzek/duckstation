@@ -61,6 +61,30 @@ TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
   EXPECT_NE(GPU::ReadRegister(4) & (1u << 24), 0u);
 }
 
+TEST_F(GPUFrontend, ProgressiveSettingUpdatesInterlacedDisplayHeight)
+{
+  Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive;
+  g_settings.display_crop_mode = DisplayCropMode::None;
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x07040010); // Display lines 16 through 255.
+  GPU::WriteRegister(4, 0x08000020); // Interlace enabled, 240-line framebuffer.
+  EXPECT_EQ(GPU::GetCRTCVideoSize().y, 240);
+
+  old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
+  GPU::UpdateSettings(old_settings);
+  EXPECT_EQ(GPU::GetCRTCVideoSize().y, 480);
+
+  old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive;
+  GPU::UpdateSettings(old_settings);
+  EXPECT_EQ(GPU::GetCRTCVideoSize().y, 240);
+
+  GPU::WriteRegister(4, 0x08000024); // Interleaved 480i still has a 480-line framebuffer.
+  EXPECT_EQ(GPU::GetCRTCVideoSize().y, 480);
+}
+
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)
 {
   GSVector4i source, display, draw;

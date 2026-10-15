@@ -441,7 +441,8 @@ void GPU::UpdateSettings(const Settings& old_settings)
     s_locals.console_is_pal = console_is_pal;
     UpdateCRTCConfig();
   }
-  else if (g_settings.display_crop_mode != old_settings.display_crop_mode ||
+  else if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
+           g_settings.display_crop_mode != old_settings.display_crop_mode ||
            g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
            g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
            g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
