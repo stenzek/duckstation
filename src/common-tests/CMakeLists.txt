@@ -24,3 +24,15 @@ add_executable(common-tests
 
 target_include_directories(common-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common-tests PRIVATE common gtest gtest_main)
+
+# Keep AVX2 instructions out of the baseline test executable.
+if(CPU_ARCH_X64)
+  add_executable(gsvector-avx2-tests gsvector_tests.cpp)
+  target_include_directories(gsvector-avx2-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
+  target_link_libraries(gsvector-avx2-tests PRIVATE common gtest gtest_main)
+  if(MSVC)
+    target_compile_options(gsvector-avx2-tests PRIVATE /arch:AVX2)
+  else()
+    target_compile_options(gsvector-avx2-tests PRIVATE -mavx2)
+  endif()
+endif()

@@ -5,6 +5,9 @@
 
 #include "gtest/gtest.h"
 
+#include <limits>
+#include <type_traits>
+
 static constexpr s8 s8t(int v)
 {
   return static_cast<s8>(static_cast<s32>(v));
@@ -1626,3 +1629,159 @@ TEST(GSVector4Test, Blend32AllMasks)
   EXPECT_FLOAT_EQ(r10.z, 3.0f); // bit2=0 -> a
   EXPECT_FLOAT_EQ(r10.w, 8.0f); // bit3=1 -> b
 }
+
+#ifdef GSVECTOR_HAS_256
+
+template<typename V>
+class GSVectorAVX2Test : public ::testing::Test
+{
+};
+
+using GSVectorAVX2Types = ::testing::Types<GSVector2i, GSVector4i, GSVector8i>;
+TYPED_TEST_SUITE(GSVectorAVX2Test, GSVectorAVX2Types);
+
+TYPED_TEST(GSVectorAVX2Test, Variable16BitShifts)
+{
+  static constexpr u16 values[] = {0, 1, 0x7F, 0x80, 0xFF, 0x100, 0x7FFF, 0x8000, 0x8001, 0xFFFF};
+  static constexpr u16 counts[] = {0, 1, 2, 7, 8, 14, 15, 16, 17, 31, 32, 63, 64, 255, 256, 0x8000, 0xFFFF};
+  constexpr u32 num_lanes = std::is_same_v<TypeParam, GSVector2i> ? 4 : sizeof(TypeParam) / sizeof(u16);
+  for (u32 value_index = 0; value_index < std::size(values); value_index++)
+  {
+    for (u32 count_index = 0; count_index < std::size(counts); count_index++)
+    {
+      TypeParam input = TypeParam::zero();
+      TypeParam shifts = TypeParam::zero();
+      for (u32 lane = 0; lane < num_lanes; lane++)
+      {
+        input.U16[lane] = values[(value_index + lane) % std::size(values)];
+        shifts.U16[lane] = counts[(count_index + lane) % std::size(counts)];
+      }
+
+      const TypeParam left = input.sllv16(shifts);
+      const TypeParam right = input.srlv16(shifts);
+      const TypeParam arithmetic = input.srav16(shifts);
+      for (u32 lane = 0; lane < num_lanes; lane++)
+      {
+        const u32 count = shifts.U16[lane];
+        SCOPED_TRACE(::testing::Message() << "value=" << input.U16[lane] << ", count=" << count << ", lane=" << lane);
+        EXPECT_EQ(left.U16[lane], count < 16 ? static_cast<u16>(static_cast<u32>(input.U16[lane]) << count) : 0);
+        EXPECT_EQ(right.U16[lane], count < 16 ? static_cast<u16>(input.U16[lane] >> count) : 0);
+        EXPECT_EQ(arithmetic.S16[lane], static_cast<s16>(input.S16[lane] >> std::min(count, 15u)));
+      }
+    }
+  }
+}
+
+TEST(GSVector8iTest, GreaterEqual16)
+{
+  static constexpr s16 values[] = {std::numeric_limits<s16>::min(), -256, -129, -128, -1, 0, 1, 127, 128, 255, 256,
+                                   std::numeric_limits<s16>::max()};
+  for (u32 left_index = 0; left_index < std::size(values); left_index++)
+  {
+    for (u32 right_index = 0; right_index < std::size(values); right_index++)
+    {
+      GSVector8i left, right;
+      for (u32 lane = 0; lane < 16; lane++)
+      {
+        left.S16[lane] = values[(left_index + lane) % std::size(values)];
+        right.S16[lane] = values[(right_index + lane) % std::size(values)];
+      }
+      const GSVector8i result = left.ge16(right);
+      for (u32 lane = 0; lane < 16; lane++)
+        EXPECT_EQ(result.U16[lane], left.S16[lane] >= right.S16[lane] ? 0xFFFFu : 0u);
+    }
+  }
+}
+
+TEST(GSVector8iTest, GreaterEqual32)
+{
+  static constexpr s32 values[] = {
+    std::numeric_limits<s32>::min(), -65536, -32769, -256, -129, -1, 0, 1, 127, 128, 255, 256, 32768, 65536,
+    std::numeric_limits<s32>::max()};
+  for (u32 left_index = 0; left_index < std::size(values); left_index++)
+  {
+    for (u32 right_index = 0; right_index < std::size(values); right_index++)
+    {
+      GSVector8i left, right;
+      for (u32 lane = 0; lane < 8; lane++)
+      {
+        left.S32[lane] = values[(left_index + lane) % std::size(values)];
+        right.S32[lane] = values[(right_index + lane) % std::size(values)];
+      }
+      const GSVector8i result = left.ge32(right);
+      for (u32 lane = 0; lane < 8; lane++)
+        EXPECT_EQ(result.U32[lane], left.S32[lane] >= right.S32[lane] ? 0xFFFFFFFFu : 0u);
+    }
+  }
+}
+
+TEST(GSVector8iTest, UnsignedByteTo64)
+{
+  for (u32 value = 0; value < 256; value++)
+  {
+    GSVector8i input;
+    for (u32 lane = 0; lane < 32; lane++)
+      input.U8[lane] = static_cast<u8>(value + lane * 53);
+    const GSVector8i member_result = input.u8to64();
+    const GSVector8i static_result = GSVector8i::u8to64(input.low128());
+    for (u32 lane = 0; lane < 4; lane++)
+    {
+      EXPECT_EQ(member_result.U64[lane], input.U8[lane]);
+      EXPECT_EQ(static_result.U64[lane], input.U8[lane]);
+    }
+  }
+}
+
+TEST(GSVector8iTest, Arithmetic64BitShifts)
+{
+  static constexpr s64 values[] = {std::numeric_limits<s64>::min(), -0x100000001LL, -1, 0, 1, 0x100000001LL,
+                                   std::numeric_limits<s64>::max()};
+  static constexpr s32 counts[] = {
+    0, 1, 7, 15, 31, 32, 33, 62, 63, 64, 65, 127, 255, 256, std::numeric_limits<s32>::max(), -1};
+  for (u32 value_index = 0; value_index < std::size(values); value_index++)
+  {
+    GSVector8i input;
+    for (u32 lane = 0; lane < 4; lane++)
+      input.S64[lane] = values[(value_index + lane) % std::size(values)];
+    for (const s32 count : counts)
+    {
+      const GSVector8i result = input.sra64(count);
+      for (u32 lane = 0; lane < 4; lane++)
+        EXPECT_EQ(result.S64[lane], input.S64[lane] >> std::min(static_cast<u32>(count), 63u));
+    }
+
+    const GSVector8i results[] = {input.sra64<0>(),  input.sra64<1>(),  input.sra64<31>(), input.sra64<32>(),
+                                  input.sra64<63>(), input.sra64<64>(), input.sra64<65>()};
+    static constexpr u32 immediate_counts[] = {0, 1, 31, 32, 63, 64, 65};
+    for (u32 i = 0; i < std::size(results); i++)
+    {
+      for (u32 lane = 0; lane < 4; lane++)
+        EXPECT_EQ(results[i].S64[lane], input.S64[lane] >> std::min(immediate_counts[i], 63u));
+    }
+  }
+}
+
+TEST(GSVector8iTest, VariableArithmetic64BitShifts)
+{
+  static constexpr s64 values[] = {std::numeric_limits<s64>::min(), -0x100000001LL, -1, 0, 1, 0x100000001LL,
+                                   std::numeric_limits<s64>::max()};
+  static constexpr u64 counts[] = {
+    0, 1, 7, 31, 32, 33, 63, 64, 65, 127, 256, UINT64_C(0x8000000000000000), std::numeric_limits<u64>::max()};
+  for (u32 value_index = 0; value_index < std::size(values); value_index++)
+  {
+    for (u32 count_index = 0; count_index < std::size(counts); count_index++)
+    {
+      GSVector8i input, shifts;
+      for (u32 lane = 0; lane < 4; lane++)
+      {
+        input.S64[lane] = values[(value_index + lane) % std::size(values)];
+        shifts.U64[lane] = counts[(count_index + lane) % std::size(counts)];
+      }
+      const GSVector8i result = input.srav64(shifts);
+      for (u32 lane = 0; lane < 4; lane++)
+        EXPECT_EQ(result.S64[lane], input.S64[lane] >> std::min<u64>(shifts.U64[lane], 63));
+    }
+  }
+}
+
+#endif

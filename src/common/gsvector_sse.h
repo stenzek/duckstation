@@ -426,7 +426,12 @@ public:
   ALWAYS_INLINE GSVector2i sll16(s32 i) const { return GSVector2i(_mm_sll_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector2i sllv16(const GSVector2i& v) const { return GSVector2i(_mm_sllv_epi16(m, v.m)); }
+  // Shift the two 16-bit halves separately, since AVX2 only has variable shifts for wider lanes.
+  ALWAYS_INLINE GSVector2i sllv16(const GSVector2i& v) const
+  {
+    static constexpr GSVector2i mask = GSVector2i::cxpr(0xFFFF);
+    return (sllv32(v & mask) & mask) | andnot(mask).sllv32(v.srl32<16>());
+  }
 #endif
 
   template<s32 i>
@@ -438,7 +443,11 @@ public:
   ALWAYS_INLINE GSVector2i srl16(s32 i) const { return GSVector2i(_mm_srl_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector2i srlv16(const GSVector2i& v) const { return GSVector2i(_mm_srlv_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector2i srlv16(const GSVector2i& v) const
+  {
+    static constexpr GSVector2i mask = GSVector2i::cxpr(0xFFFF);
+    return (*this & mask).srlv32(v & mask) | srlv32(v.srl32<16>()).andnot(mask);
+  }
 #endif
 
   template<s32 i>
@@ -450,7 +459,11 @@ public:
   ALWAYS_INLINE GSVector2i sra16(s32 i) const { return GSVector2i(_mm_sra_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector2i srav16(const GSVector2i& v) const { return GSVector2i(_mm_srav_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector2i srav16(const GSVector2i& v) const
+  {
+    static constexpr GSVector2i mask = GSVector2i::cxpr(0xFFFF);
+    return sll32<16>().srav32(v & mask).srl32<16>() | srav32(v.srl32<16>()).andnot(mask);
+  }
 #endif
 
   template<s32 i>
@@ -1547,7 +1560,12 @@ public:
   ALWAYS_INLINE GSVector4i sll16(s32 i) const { return GSVector4i(_mm_sll_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector4i sllv16(const GSVector4i& v) const { return GSVector4i(_mm_sllv_epi16(m, v.m)); }
+  // Shift the two 16-bit halves separately, since AVX2 only has variable shifts for wider lanes.
+  ALWAYS_INLINE GSVector4i sllv16(const GSVector4i& v) const
+  {
+    static constexpr GSVector4i mask = GSVector4i::cxpr(0xFFFF);
+    return (sllv32(v & mask) & mask) | andnot(mask).sllv32(v.srl32<16>());
+  }
 #endif
 
   template<s32 i>
@@ -1559,7 +1577,11 @@ public:
   ALWAYS_INLINE GSVector4i srl16(s32 i) const { return GSVector4i(_mm_srl_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector4i srlv16(const GSVector4i& v) const { return GSVector4i(_mm_srlv_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector4i srlv16(const GSVector4i& v) const
+  {
+    static constexpr GSVector4i mask = GSVector4i::cxpr(0xFFFF);
+    return (*this & mask).srlv32(v & mask) | srlv32(v.srl32<16>()).andnot(mask);
+  }
 #endif
 
   template<s32 i>
@@ -1571,7 +1593,11 @@ public:
   ALWAYS_INLINE GSVector4i sra16(s32 i) const { return GSVector4i(_mm_sra_epi16(m, _mm_cvtsi32_si128(i))); }
 
 #ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector4i srav16(const GSVector4i& v) const { return GSVector4i(_mm_srav_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector4i srav16(const GSVector4i& v) const
+  {
+    static constexpr GSVector4i mask = GSVector4i::cxpr(0xFFFF);
+    return sll32<16>().srav32(v & mask).srl32<16>() | srav32(v.srl32<16>()).andnot(mask);
+  }
 #endif
 
   template<s32 i>
@@ -3031,7 +3057,7 @@ public:
   ALWAYS_INLINE GSVector8i s32to64() const { return GSVector8i(_mm256_cvtepi32_epi64(_mm256_castsi256_si128(m))); }
   ALWAYS_INLINE GSVector8i u8to16() const { return GSVector8i(_mm256_cvtepu8_epi16(_mm256_castsi256_si128(m))); }
   ALWAYS_INLINE GSVector8i u8to32() const { return GSVector8i(_mm256_cvtepu8_epi32(_mm256_castsi256_si128(m))); }
-  ALWAYS_INLINE GSVector8i u8to64() const { return GSVector8i(_mm256_cvtepu16_epi64(_mm256_castsi256_si128(m))); }
+  ALWAYS_INLINE GSVector8i u8to64() const { return GSVector8i(_mm256_cvtepu8_epi64(_mm256_castsi256_si128(m))); }
   ALWAYS_INLINE GSVector8i u16to32() const { return GSVector8i(_mm256_cvtepu16_epi32(_mm256_castsi256_si128(m))); }
   ALWAYS_INLINE GSVector8i u16to64() const { return GSVector8i(_mm256_cvtepu16_epi64(_mm256_castsi256_si128(m))); }
   ALWAYS_INLINE GSVector8i u32to64() const { return GSVector8i(_mm256_cvtepu32_epi64(_mm256_castsi256_si128(m))); }
@@ -3045,7 +3071,7 @@ public:
   ALWAYS_INLINE static GSVector8i s32to64(const GSVector4i& v) { return GSVector8i(_mm256_cvtepi32_epi64(v.m)); }
   ALWAYS_INLINE static GSVector8i u8to16(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu8_epi16(v.m)); }
   ALWAYS_INLINE static GSVector8i u8to32(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu8_epi32(v.m)); }
-  ALWAYS_INLINE static GSVector8i u8to64(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu16_epi64(v.m)); }
+  ALWAYS_INLINE static GSVector8i u8to64(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu8_epi64(v.m)); }
   ALWAYS_INLINE static GSVector8i u16to32(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu16_epi32(v.m)); }
   ALWAYS_INLINE static GSVector8i u16to64(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu16_epi64(v.m)); }
   ALWAYS_INLINE static GSVector8i u32to64(const GSVector4i& v) { return GSVector8i(_mm256_cvtepu32_epi64(v.m)); }
@@ -3075,7 +3101,12 @@ public:
   }
 
   ALWAYS_INLINE GSVector8i sll16(s32 i) const { return GSVector8i(_mm256_sll_epi16(m, _mm_cvtsi32_si128(i))); }
-  ALWAYS_INLINE GSVector8i sllv16(const GSVector8i& v) const { return GSVector8i(_mm256_sllv_epi16(m, v.m)); }
+  // Shift the two 16-bit halves separately, since AVX2 only has variable shifts for wider lanes.
+  ALWAYS_INLINE GSVector8i sllv16(const GSVector8i& v) const
+  {
+    static constexpr GSVector8i mask = GSVector8i::cxpr(0xFFFF);
+    return (sllv32(v & mask) & mask) | andnot(mask).sllv32(v.srl32<16>());
+  }
 
   template<s32 i>
   ALWAYS_INLINE GSVector8i srl16() const
@@ -3084,7 +3115,11 @@ public:
   }
 
   ALWAYS_INLINE GSVector8i srl16(s32 i) const { return GSVector8i(_mm256_srl_epi16(m, _mm_cvtsi32_si128(i))); }
-  ALWAYS_INLINE GSVector8i srlv16(const GSVector8i& v) const { return GSVector8i(_mm256_srlv_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector8i srlv16(const GSVector8i& v) const
+  {
+    static constexpr GSVector8i mask = GSVector8i::cxpr(0xFFFF);
+    return (*this & mask).srlv32(v & mask) | srlv32(v.srl32<16>()).andnot(mask);
+  }
 
   template<s32 i>
   ALWAYS_INLINE GSVector8i sra16() const
@@ -3093,7 +3128,11 @@ public:
   }
 
   ALWAYS_INLINE GSVector8i sra16(s32 i) const { return GSVector8i(_mm256_sra_epi16(m, _mm_cvtsi32_si128(i))); }
-  ALWAYS_INLINE GSVector8i srav16(const GSVector8i& v) const { return GSVector8i(_mm256_srav_epi16(m, v.m)); }
+  ALWAYS_INLINE GSVector8i srav16(const GSVector8i& v) const
+  {
+    static constexpr GSVector8i mask = GSVector8i::cxpr(0xFFFF);
+    return sll32<16>().srav32(v & mask).srl32<16>() | srav32(v.srl32<16>()).andnot(mask);
+  }
 
   template<s32 i>
   ALWAYS_INLINE GSVector8i sll32() const
@@ -3143,11 +3182,22 @@ public:
   template<s64 i>
   ALWAYS_INLINE GSVector8i sra64() const
   {
-    return GSVector8i(_mm256_srai_epi64(m, i));
+    // Complement negative lanes around a logical shift to fill the vacated bits with the sign bit.
+    const __m256i sign = _mm256_cmpgt_epi64(_mm256_setzero_si256(), m);
+    return GSVector8i(_mm256_xor_si256(_mm256_srli_epi64(_mm256_xor_si256(m, sign), i), sign));
   }
 
-  ALWAYS_INLINE GSVector8i sra64(s32 i) const { return GSVector8i(_mm256_sra_epi64(m, _mm_cvtsi32_si128(i))); }
-  ALWAYS_INLINE GSVector8i srav64(const GSVector8i& v) const { return GSVector8i(_mm256_srav_epi64(m, v.m)); }
+  ALWAYS_INLINE GSVector8i sra64(s32 i) const
+  {
+    const __m256i sign = _mm256_cmpgt_epi64(_mm256_setzero_si256(), m);
+    return GSVector8i(_mm256_xor_si256(_mm256_srl_epi64(_mm256_xor_si256(m, sign), _mm_cvtsi32_si128(i)), sign));
+  }
+
+  ALWAYS_INLINE GSVector8i srav64(const GSVector8i& v) const
+  {
+    const __m256i sign = _mm256_cmpgt_epi64(_mm256_setzero_si256(), m);
+    return GSVector8i(_mm256_xor_si256(_mm256_srlv_epi64(_mm256_xor_si256(m, sign), v.m), sign));
+  }
 
   ALWAYS_INLINE GSVector8i add8(const GSVector8i& v) const { return GSVector8i(_mm256_add_epi8(m, v.m)); }
   ALWAYS_INLINE GSVector8i add16(const GSVector8i& v) const { return GSVector8i(_mm256_add_epi16(m, v.m)); }
@@ -3191,8 +3241,8 @@ public:
   ALWAYS_INLINE GSVector8i gt32(const GSVector8i& v) const { return GSVector8i(_mm256_cmpgt_epi32(m, v.m)); }
 
   ALWAYS_INLINE GSVector8i ge8(const GSVector8i& v) const { return ~GSVector8i(_mm256_cmpgt_epi8(v.m, m)); }
-  ALWAYS_INLINE GSVector8i ge16(const GSVector8i& v) const { return ~GSVector8i(_mm256_cmpgt_epi8(v.m, m)); }
-  ALWAYS_INLINE GSVector8i ge32(const GSVector8i& v) const { return ~GSVector8i(_mm256_cmpgt_epi8(v.m, m)); }
+  ALWAYS_INLINE GSVector8i ge16(const GSVector8i& v) const { return ~GSVector8i(_mm256_cmpgt_epi16(v.m, m)); }
+  ALWAYS_INLINE GSVector8i ge32(const GSVector8i& v) const { return ~GSVector8i(_mm256_cmpgt_epi32(v.m, m)); }
 
   ALWAYS_INLINE GSVector8i lt8(const GSVector8i& v) const { return GSVector8i(_mm256_cmpgt_epi8(v.m, m)); }
   ALWAYS_INLINE GSVector8i lt16(const GSVector8i& v) const { return GSVector8i(_mm256_cmpgt_epi16(v.m, m)); }
