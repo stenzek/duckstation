@@ -1433,8 +1433,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
   *menu_pos = ImVec2(0.0f, heading_size.y);
   *menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading",
-                            ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", ImVec4()))
   {
     ImFont* const heading_font = UIStyle.Font;
     const float heading_font_size = UIStyle.LargeFontSize;
@@ -1455,8 +1454,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
       const ImVec2 text_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
                                                            IMSTR_START_END(heading_text));
       const ImVec2 text_pos = ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y);
-      RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, text_pos, text_pos + text_size,
-                                text_color, heading_text, &text_size);
+      RenderShadowedTextClipped(dl, heading_font, heading_font_size, heading_font_weight, text_pos,
+                                text_pos + text_size, text_color, heading_text, &text_size);
     }
 
     // draw time
@@ -1468,8 +1467,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
                                                            IMSTR_START_END(s_locals.current_time_string));
       time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
                         LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
-      RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, time_pos, time_pos + time_size,
-                                text_color, s_locals.current_time_string, &time_size);
+      RenderShadowedTextClipped(dl, heading_font, heading_font_size, heading_font_weight, time_pos,
+                                time_pos + time_size, text_color, s_locals.current_time_string, &time_size);
     }
 
     // draw achievements info
@@ -1482,8 +1481,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
           heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(username));
         const ImVec2 name_pos =
           ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
-        RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, name_pos, name_pos + name_size,
-                                  text_color, username, &name_size);
+        RenderShadowedTextClipped(dl, heading_font, heading_font_size, heading_font_weight, name_pos,
+                                  name_pos + name_size, text_color, username, &name_size);
 
         if (const std::string& badge_path = Achievements::GetLoggedInUserIconURL(); !badge_path.empty())
         {

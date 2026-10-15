@@ -1998,7 +1998,7 @@ void FullscreenUI::DrawSettingsWindow()
 
     for (u32 i = 0; i < count; i++)
     {
-      if (NavButton(titles[static_cast<u32>(pages[i])].second, i == index, true))
+      if (NavButton(titles[static_cast<u32>(pages[i])].second, i == index, true, true))
       {
         BeginTransition([page = pages[i]]() {
           s_settings_locals.settings_page = page;

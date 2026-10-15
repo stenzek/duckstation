@@ -75,7 +75,7 @@ void CopyTextToClipboard(std::string title, std::string_view text);
 // Landing
 //////////////////////////////////////////////////////////////////////////
 
-inline constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
+inline constexpr const char* DEFAULT_BACKGROUND_NAME = "Waves";
 inline constexpr const char* NONE_BACKGROUND_NAME = "None";
 ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = UIStyle.BackgroundColor);
 ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);

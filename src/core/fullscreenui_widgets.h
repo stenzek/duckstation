@@ -67,10 +67,10 @@ inline constexpr float LAYOUT_ITEM_Y_SPACING = 4.0f;
 inline constexpr float LAYOUT_FOOTER_X_PADDING = 15.0f;
 inline constexpr float LAYOUT_FOOTER_Y_PADDING = 10.0f;
 inline constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_Y_PADDING * 2.0f;
-inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
-inline constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 280.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 24.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
-inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 150.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 112.0f;
 inline constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
 inline constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
 inline constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
@@ -525,7 +525,7 @@ void EndNavBar();
 void NavTitle(std::string_view title);
 void RightAlignNavButtons(u32 num_items);
 void RightAlignNavButtons(float total_width);
-bool NavButton(std::string_view title, bool is_active, bool enabled = true);
+bool NavButton(std::string_view title, bool is_active, bool enabled = true, bool show_active_indicator = false);
 bool NavTab(std::string_view title, bool is_active, bool enabled, float width);
 
 bool BeginFloatingNavBar(float x, float y, float items_width, float font_size = UIStyle.LargeFontSize,

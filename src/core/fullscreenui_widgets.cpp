@@ -4299,7 +4299,8 @@ void FullscreenUI::RightAlignNavButtons(float total_width)
   ImGui::SetCursorPosX(window->InnerClipRect.Max.x - total_width - style.FramePadding.x);
 }
 
-bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enabled /* = true */)
+bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enabled /* = true */,
+                             bool show_active_indicator /* = false */)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
@@ -4342,6 +4343,14 @@ bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enable
   else
   {
     pressed = false;
+  }
+
+  if (is_active && enabled && show_active_indicator)
+  {
+    const ImVec2 indicator_min = ImVec2(bb.Min.x + style.FramePadding.x, bb.Max.y - LayoutScale(4.0f));
+    const ImVec2 indicator_max = ImVec2(bb.Max.x - style.FramePadding.x, indicator_min.y + LayoutScale(2.0f));
+    ImGui::GetWindowDrawList()->AddRectFilled(indicator_min, indicator_max,
+                                              ImGui::GetColorU32(UIStyle.SecondaryStrongColor), LayoutScale(1.0f));
   }
 
   bb.Min += style.FramePadding;
@@ -4662,7 +4671,8 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
   bool held;
   bool hovered;
   const bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
-  if (hovered || GImGui->NavInitResult.ID == id)
+  const bool focused = (hovered || GImGui->NavInitResult.ID == id);
+  if (focused)
     DrawMenuButtonFrame(bb.Min, bb.Max, held);
 
   const ImGuiStyle& style = ImGui::GetStyle();
@@ -4684,7 +4694,7 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
   const ImVec2 title_size = title_font->CalcTextSizeA(
     title_font_size, title_font_weight, std::numeric_limits<float>::max(), avail_width, IMSTR_START_END(title));
   const ImVec2 title_pos =
-    ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(10.0f));
+    ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(18.0f));
   const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
 
   RenderShadowedTextClipped(title_font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max,
@@ -4696,14 +4706,10 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
     ImFont* const desc_font = UIStyle.Font;
     const float desc_font_size = UIStyle.MediumFontSize;
     const float desc_font_weight = UIStyle.NormalFontWeight;
-    const ImVec2 desc_size = desc_font->CalcTextSizeA(
-      desc_font_size, desc_font_weight, std::numeric_limits<float>::max(), avail_width, IMSTR_START_END(description));
-    const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_bb.Max.y + LayoutScale(10.0f));
-    const ImRect desc_bb = ImRect(desc_pos, desc_pos + desc_size);
-
-    RenderShadowedTextClipped(desc_font, desc_font_size, desc_font_weight, desc_bb.Min, desc_bb.Max,
-                              ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), description,
-                              nullptr, ImVec2(0.0f, 0.0f), avail_width, &desc_bb);
+    const ImRect desc_bb = ImRect(ImVec2(bb.Min.x, title_bb.Max.y + LayoutScale(10.0f)), bb.Max);
+    RenderMultiLineShadowedTextClipped(dl, desc_font, desc_font_size, desc_font_weight, desc_bb.Min, desc_bb.Max,
+                                       ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                                       description, ImVec2(0.5f, 0.0f), avail_width, &desc_bb);
   }
 
   ImGui::SameLine();

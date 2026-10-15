@@ -249,7 +249,7 @@ void FullscreenUI::DrawGameListWindow()
     for (u32 grid = 0; grid < 2; grid++)
     {
       if (NavButton(grid ? ICON_FA_TABLE_CELLS_LARGE : ICON_FA_LIST, grid == BoolToUInt32(s_game_list_locals.grid_view),
-                    true))
+                    true, true))
       {
         BeginTransition([grid]() {
           s_game_list_locals.grid_view = ConvertToBoolUnchecked(grid);
