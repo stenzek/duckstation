@@ -99,6 +99,14 @@
             <numerusform>This subset has %n leaderboards.</numerusform>
         </translation>
     </message>
+    <message numerus="yes">
+        <source>Synchronizing %n offline unlocks with the server.</source>
+        <comment>Synchronizing Unlocks</comment>
+        <translation type="unfinished">
+            <numerusform>Synchronizing %n offline unlock with the server.</numerusform>
+            <numerusform>Synchronizing %n offline unlocks with the server.</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>CDImage</name>
