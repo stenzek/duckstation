@@ -976,6 +976,40 @@ Olästa meddelanden: {}</translation>
         <source>Pin Achievement</source>
         <translation>Fäst prestation</translation>
     </message>
+    <message>
+        <source>Offline Mode</source>
+        <translation>Offlineläge</translation>
+    </message>
+    <message>
+        <source>We were unable to connect to RetroAchievements.
+This session will start in offline mode.</source>
+        <translation>Vi kunde inte ansluta till RetroAchievements.
+Den här sessionen startar i offlineläge.</translation>
+    </message>
+    <message>
+        <source>Synchronizing Unlocks</source>
+        <translation>Synkroniserar upplåsningar</translation>
+    </message>
+    <message numerus="yes">
+        <source>Synchronizing %n offline unlocks with the server.</source>
+        <comment>Synchronizing Unlocks</comment>
+        <translation>
+            <numerusform>Synkroniserar %n upplåsning gjord offline med servern.</numerusform>
+            <numerusform>Synkroniserar %n upplåsningar gjorda offline med servern.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No offline achievement data is available for this game.</source>
+        <translation>Inga prestationsdata för offlineläge finns tillgängliga för det här spelet.</translation>
+    </message>
+    <message>
+        <source>Failed to parse offline achievement data.</source>
+        <translation>Det gick inte att tolka prestationsdata för offlineläge.</translation>
+    </message>
+    <message>
+        <source>Rewinding</source>
+        <translation>Tillbakaspolning</translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -1154,6 +1188,14 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
         <translation>Inkluderar den tid som förflutit sedan programmet startades i filloggarna.</translation>
+    </message>
+    <message>
+        <source>Test Achievements Offline Mode</source>
+        <translation>Testa offlineläget för prestationer</translation>
+    </message>
+    <message>
+        <source>Forces all server calls to fail, useful for testing offline mode.</source>
+        <translation>Tvingar alla serveranrop att misslyckas, vilket är användbart för att testa offlineläget.</translation>
     </message>
 </context>
 <context>
@@ -5245,6 +5287,34 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
             <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kräver %2MB RAM.</numerusform>
         </translation>
     </message>
+    <message>
+        <source> MB</source>
+        <translation> MB</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <translation>Sparar tillståndet regelbundet så att du kan spola tillbaka eventuella misstag medan du spelar.</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <translation>Hur ofta ett tillbakaspolningstillstånd ska skapas. Högre frekvenser ställer högre krav på systemet.</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Hur mycket minne som reserveras för tillbakaspolningstillstånd. Bestämmer hur långt tillbaka du kan spola.</translation>
+    </message>
+    <message>
+        <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
+        <translation>En tillbakaspolningsbuffert på %1MB rymmer %n tillstånd och låter dig spola tillbaka upp till %2 sekund(er).</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Tillbakaspolningsbufferten är för liten för att rymma ett enda tillstånd.</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>En tillbakaspolningsbuffert på {0} MB rymmer {1} tillstånd och låter dig spola tillbaka upp till {2:.2f} sekunder.</translation>
+    </message>
 </context>
 <context>
     <name>FullscreenUI</name>
@@ -9102,6 +9172,50 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>{} unpinned.</source>
         <translation>{} har lossats.</translation>
+    </message>
+    <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Automatisk mappning misslyckades</translation>
+    </message>
+    <message>
+        <source>No rewind states are available yet.</source>
+        <translation>Inga tillbakaspolningstillstånd är tillgängliga ännu.</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <translation>Spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Buffertstorlek för tillbakaspolning</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Tillbakaspolningstillstånd kunde inte allokeras.</translation>
+    </message>
+    <message>
+        <source>%d MB</source>
+        <translation>%d MB</translation>
+    </message>
+    <message>
+        <source>Change State</source>
+        <translation>Byt tillstånd</translation>
+    </message>
+    <message>
+        <source>Fast Scroll</source>
+        <translation>Snabbrullning</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Hur mycket minne som reserveras för tillbakaspolningstillstånd. Bestämmer hur långt tillbaka du kan spola.</translation>
+    </message>
+    <message>
+        <source>State {0} of {1} (frame {2})</source>
+        <translation>Tillstånd {0} av {1} (bildruta {2})</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Tillbakaspolningsbufferten är för liten för att rymma ett enda tillstånd.</translation>
     </message>
 </context>
 <context>
@@ -17778,6 +17892,21 @@ Vill du skapa denna katalog?</translation>
         <comment>NotificationLocation</comment>
         <translation>Nederst till höger</translation>
     </message>
+    <message>
+        <source>Off</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Av</translation>
+    </message>
+    <message>
+        <source>Resampling</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Omsampling</translation>
+    </message>
+    <message>
+        <source>Time Stretch</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Tidsutsträckning</translation>
+    </message>
 </context>
 <context>
     <name>SettingsWindow</name>
@@ -18942,6 +19071,34 @@ DuckStation kräver ett PS1- eller PS2-BIOS för att köras.
 
 Av juridiska skäl måste du skaffa ett BIOS från en faktisk PS1-/PS2-enhet som du äger (det räknas inte att låna en).</translation>
     </message>
+    <message>
+        <source>Runahead Disabled</source>
+        <translation>Runahead inaktiverat</translation>
+    </message>
+    <message>
+        <source>Failed to allocate runahead states: {}</source>
+        <translation>Misslyckades med att allokera runahead-tillstånd: {}</translation>
+    </message>
+    <message>
+        <source>Rewind Disabled</source>
+        <translation>Tillbakaspolning inaktiverad</translation>
+    </message>
+    <message>
+        <source>Failed to allocate rewind states: {}</source>
+        <translation>Misslyckades med att allokera tillbakaspolningstillstånd: {}</translation>
+    </message>
+    <message>
+        <source>Rewind buffer size is too small to hold a single save state.</source>
+        <translation>Tillbakaspolningsbufferten är för liten för att rymma ett enda sparat tillstånd.</translation>
+    </message>
+    <message>
+        <source>Failed to load rewind state</source>
+        <translation>Misslyckades med att läsa in tillbakaspolningstillstånd</translation>
+    </message>
+    <message>
+        <source>Invalid rewind slot {}.</source>
+        <translation>Ogiltig tillbakaspolningsplats {}.</translation>
+    </message>
 </context>
 <context>
     <name>TextureReplacementSettingsDialog</name>
@@ -19167,6 +19324,5600 @@ Av juridiska skäl måste du skaffa ett BIOS från en faktisk PS1-/PS2-enhet som
     <message>
         <source>LargeMotor</source>
         <translation>LargeMotor</translation>
+    </message>
+</context>
+<context>
+    <name>Android</name>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_emulation_screen_orientation_entries[0]</comment>
+        <translation>Använd enhetens inställning</translation>
+    </message>
+    <message>
+        <source>Portrait</source>
+        <comment>settings_emulation_screen_orientation_entries[1]</comment>
+        <translation>Stående</translation>
+    </message>
+    <message>
+        <source>Landscape</source>
+        <comment>settings_emulation_screen_orientation_entries[2]</comment>
+        <translation>Liggande</translation>
+    </message>
+    <message>
+        <source>Sensor Based</source>
+        <comment>settings_emulation_screen_orientation_entries[3]</comment>
+        <translation>Sensorstyrd</translation>
+    </message>
+    <message>
+        <source>Follow System</source>
+        <comment>settings_theme_entries[0]</comment>
+        <translation>Följ systemet</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <comment>settings_theme_entries[1]</comment>
+        <translation>Ljus</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <comment>settings_theme_entries[2]</comment>
+        <translation>Mörk</translation>
+    </message>
+    <message>
+        <source>Dark Ocean</source>
+        <comment>settings_theme_entries[3]</comment>
+        <translation>Mörkt hav</translation>
+    </message>
+    <message>
+        <source>Touchscreen Press</source>
+        <comment>controller_other_binding_entries[0]</comment>
+        <translation>Tryck på pekskärmen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Left</source>
+        <comment>controller_other_binding_entries[1]</comment>
+        <translation>Svep åt vänster på pekskärmen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Right</source>
+        <comment>controller_other_binding_entries[2]</comment>
+        <translation>Svep åt höger på pekskärmen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Up</source>
+        <comment>controller_other_binding_entries[3]</comment>
+        <translation>Svep uppåt på pekskärmen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Down</source>
+        <comment>controller_other_binding_entries[4]</comment>
+        <translation>Svep nedåt på pekskärmen</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Left (X)</source>
+        <comment>controller_other_binding_entries[5]</comment>
+        <translation>Accelerometer: sväng vänster (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Right (X)</source>
+        <comment>controller_other_binding_entries[6]</comment>
+        <translation>Accelerometer: sväng höger (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Backwards (Y)</source>
+        <comment>controller_other_binding_entries[7]</comment>
+        <translation>Accelerometer: luta bakåt (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Forwards (Y)</source>
+        <comment>controller_other_binding_entries[8]</comment>
+        <translation>Accelerometer: luta framåt (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Left (Z)</source>
+        <comment>controller_other_binding_entries[9]</comment>
+        <translation>Accelerometer: rotera åt vänster (Z)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Right (Z)</source>
+        <comment>controller_other_binding_entries[10]</comment>
+        <translation>Accelerometer: rotera åt höger (Z)</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <comment>settings_tab_interface</comment>
+        <translation>Gränssnitt</translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <comment>settings_tab_video</comment>
+        <translation>Bild</translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <comment>settings_tab_audio</comment>
+        <translation>Ljud</translation>
+    </message>
+    <message>
+        <source>Post-Processing</source>
+        <comment>settings_tab_post_processing</comment>
+        <translation>Efterbehandling</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>settings_tab_achievements</comment>
+        <translation>Prestationer</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <comment>settings_tab_advanced</comment>
+        <translation>Avancerat</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <comment>settings_tab_information</comment>
+        <translation>Information</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>settings_tab_patches</comment>
+        <translation>Patchar</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_tab_cheats</comment>
+        <translation>Fusk</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <comment>dialog_yes</comment>
+        <translation>Ja</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <comment>dialog_no</comment>
+        <translation>Nej</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>dialog_close</comment>
+        <translation>Stäng</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <comment>dialog_done</comment>
+        <translation>Klar</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>dialog_clear</comment>
+        <translation>Töm</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <comment>dialog_ok</comment>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source>App Settings</source>
+        <comment>action_settings</comment>
+        <translation>Appinställningar</translation>
+    </message>
+    <message>
+        <source>Normal Speed</source>
+        <comment>settings_normal_speed</comment>
+        <translation>Normal hastighet</translation>
+    </message>
+    <message>
+        <source>Fast Forward Speed</source>
+        <comment>settings_fast_forward_speed</comment>
+        <translation>Hastighet för snabbspolning</translation>
+    </message>
+    <message>
+        <source>Turbo Speed</source>
+        <comment>settings_turbo_speed</comment>
+        <translation>Turbohastighet</translation>
+    </message>
+    <message>
+        <source>Frame Count</source>
+        <comment>settings_runahead</comment>
+        <translation>Antal bildrutor</translation>
+    </message>
+    <message>
+        <source>Save State On Exit</source>
+        <comment>settings_save_state_on_exit</comment>
+        <translation>Spara tillstånd vid avslut</translation>
+    </message>
+    <message>
+        <source>Pause On Controller Disconnection</source>
+        <comment>settings_pause_on_controller_disconnection</comment>
+        <translation>Pausa när handkontroller kopplas från</translation>
+    </message>
+    <message>
+        <source>Apply Game Settings</source>
+        <comment>settings_apply_game_settings</comment>
+        <translation>Tillämpa spelinställningar</translation>
+    </message>
+    <message>
+        <source>Enables loading of per-game configuration. If this option is disabled, only the global configuration will be used.</source>
+        <comment>settings_summary_apply_game_settings</comment>
+        <translation>Aktiverar inläsning av spelspecifik konfiguration. Om det här alternativet är inaktiverat används endast den globala konfigurationen.</translation>
+    </message>
+    <message>
+        <source>Vertical Sync (VSync)</source>
+        <comment>settings_video_sync</comment>
+        <translation>Vertikal sync (VSync)</translation>
+    </message>
+    <message>
+        <source>Synchronizes presentation of the console&apos;s frames to the host.
+        Not needed on most devices, and can cause slowdown.</source>
+        <comment>settings_summary_video_sync</comment>
+        <translation>Synkroniserar visningen av konsolens bildrutor med värden.
+        Behövs inte på de flesta enheter och kan orsaka nedsaktning.</translation>
+    </message>
+    <message>
+        <source>Sync To Host Refresh Rate</source>
+        <comment>settings_general_sync_to_host_refresh_rate</comment>
+        <translation>Synka till värdens uppdateringsfrekvens</translation>
+    </message>
+    <message>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host.</source>
+        <comment>settings_summary_general_sync_to_host_refresh_rate</comment>
+        <translation>Justerar emuleringshastigheten så att konsolens uppdateringsfrekvens matchar värdens.</translation>
+    </message>
+    <message>
+        <source>Optimal Frame Pacing</source>
+        <comment>settings_optimal_frame_pacing</comment>
+        <translation>Optimal bildrytm</translation>
+    </message>
+    <message>
+        <source>Log To File</source>
+        <comment>settings_log_to_file</comment>
+        <translation>Logga till fil</translation>
+    </message>
+    <message>
+        <source>Fast Forward Volume</source>
+        <comment>settings_fast_forward_volume</comment>
+        <translation>Snabbspolningsvolym</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Touchscreen Controller</source>
+        <comment>settings_auto_hide_touchscreen_controller</comment>
+        <translation>Dölj pekskärmskontrollen automatiskt</translation>
+    </message>
+    <message>
+        <source>Hides the touchscreen controller when an external controller is detected.</source>
+        <comment>settings_summary_auto_hide_touchscreen_controller</comment>
+        <translation>Döljer pekskärmskontrollen när en extern handkontroll upptäcks.</translation>
+    </message>
+    <message>
+        <source>Vibrate On Press</source>
+        <comment>settings_vibrate_on_press</comment>
+        <translation>Vibrera vid tryck</translation>
+    </message>
+    <message>
+        <source>Enables a short vibration when a touchscreen button is pressed. Requires &quot;Vibrate on Touch&quot; to be enabled on your device.</source>
+        <comment>settings_summary_vibrate_on_press</comment>
+        <translation>Aktiverar en kort vibration när en knapp på pekskärmen trycks ned. Kräver att &quot;Vibrera vid beröring&quot; är aktiverat på din enhet.</translation>
+    </message>
+    <message>
+        <source>Device Vibration</source>
+        <comment>settings_enable_vibration</comment>
+        <translation>Enhetsvibration</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio</source>
+        <comment>settings_aspect_ratio</comment>
+        <translation>Bildförhållande</translation>
+    </message>
+    <message>
+        <source>Sets the target normal speed for gameplay.</source>
+        <comment>settings_summary_normal_speed</comment>
+        <translation>Anger den normala målhastigheten för spel.</translation>
+    </message>
+    <message>
+        <source>Sets the target fast forward speed.</source>
+        <comment>settings_summary_fast_forward_speed</comment>
+        <translation>Anger målhastigheten för snabbspolning.</translation>
+    </message>
+    <message>
+        <source>Sets the target turbo speed.</source>
+        <comment>settings_summary_turbo_speed</comment>
+        <translation>Anger målhastigheten för turbo.</translation>
+    </message>
+    <message>
+        <source>Sets how many frames to run ahead to reduce input latency.</source>
+        <comment>settings_summary_runahead</comment>
+        <translation>Anger hur många bildrutor som ska köras i förväg för att minska inmatningslatensen.</translation>
+    </message>
+    <message>
+        <source>Selects how save states are compressed when they are written.</source>
+        <comment>settings_summary_save_state_compression</comment>
+        <translation>Väljer hur sparade tillstånd komprimeras när de skrivs.</translation>
+    </message>
+    <message>
+        <source>Keeps a .bak backup of the previous save state when creating a new one.</source>
+        <comment>settings_summary_create_save_state_backups</comment>
+        <translation>Behåller en .bak-säkerhetskopia av det föregående sparade tillståndet när ett nytt skapas.</translation>
+    </message>
+    <message>
+        <source>OSD Scale</source>
+        <comment>settings_osd_scale</comment>
+        <translation>OSD-skala</translation>
+    </message>
+    <message>
+        <source>Show Latency Statistics</source>
+        <comment>settings_show_latency_statistics</comment>
+        <translation>Visa latensstatistik</translation>
+    </message>
+    <message>
+        <source>Shows information about input and audio latency in the top-right corner of the display.</source>
+        <comment>settings_summary_show_latency_statistics</comment>
+        <translation>Visar information om inmatnings- och ljudlatens i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Show Frame Times</source>
+        <comment>settings_show_frame_times</comment>
+        <translation>Visa bildrutetider</translation>
+    </message>
+    <message>
+        <source>Please wait…</source>
+        <comment>android_progress_callback_please_wait</comment>
+        <translation>Vänta…</translation>
+    </message>
+    <message>
+        <source>Startup Failed</source>
+        <comment>emulation_activity_boot_error</comment>
+        <translation>Starten misslyckades</translation>
+    </message>
+    <message>
+        <source>Fatal Error</source>
+        <comment>emulation_activity_fatal_error</comment>
+        <translation>Allvarligt fel</translation>
+    </message>
+    <message>
+        <source>Shutting Down…</source>
+        <comment>emulation_activity_shutting_down</comment>
+        <translation>Stänger av…</translation>
+    </message>
+    <message>
+        <source>Maximum Queued Frames</source>
+        <comment>settings_max_queued_frames</comment>
+        <translation>Maximalt antal köade bildrutor</translation>
+    </message>
+    <message>
+        <source>Sets the maximum number of frames that can be queued for rendering or presentation before the main thread is throttled.</source>
+        <comment>settings_summary_max_queued_frames</comment>
+        <translation>Anger det maximala antalet bildrutor som kan köas för rendering eller visning innan huvudtråden bromsas.</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>settings_language</comment>
+        <translation>Språk</translation>
+    </message>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_language_use_device</comment>
+        <translation>Använd enhetens inställning</translation>
+    </message>
+    <message>
+        <source>Selects the language used by the app.</source>
+        <comment>settings_summary_language</comment>
+        <translation>Väljer språket som appen använder.</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>touchscreen_controller_reset_layout</comment>
+        <translation>Återställ layout</translation>
+    </message>
+    <message>
+        <source>Touchscreen controller is not active.</source>
+        <comment>emulation_activity_touchscreen_controller_not_active</comment>
+        <translation>Pekskärmskontrollen är inte aktiv.</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <comment>settings_theme</comment>
+        <translation>Tema</translation>
+    </message>
+    <message>
+        <source>Selects the app theme used by the interface.</source>
+        <comment>settings_summary_theme</comment>
+        <translation>Väljer det apptema som gränssnittet använder.</translation>
+    </message>
+    <message>
+        <source>Press button on controller to set new binding.
+
+Current Binding: %s</source>
+        <comment>controller_binding_dialog_message</comment>
+        <translation>Tryck på en knapp på handkontrollen för att ange en ny bindning.
+
+Aktuell bindning: %s</translation>
+    </message>
+    <message>
+        <source>&lt;No Binding&gt;</source>
+        <comment>controller_binding_dialog_no_binding</comment>
+        <translation>&lt;Ingen bindning&gt;</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>controller_binding_dialog_clear</comment>
+        <translation>Töm</translation>
+    </message>
+    <message>
+        <source>Scanning subfolders.</source>
+        <comment>content_folders_scanning_subdirectories</comment>
+        <translation>Söker igenom undermappar.</translation>
+    </message>
+    <message>
+        <source>Not scanning subfolders.</source>
+        <comment>content_folders_not_scanning_subdirectories</comment>
+        <translation>Söker inte igenom undermappar.</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>content_folders_back</comment>
+        <translation>Tillbaka</translation>
+    </message>
+    <message>
+        <source>More folder actions</source>
+        <comment>content_folders_more_actions</comment>
+        <translation>Fler mappåtgärder</translation>
+    </message>
+    <message>
+        <source>Scan Subfolders</source>
+        <comment>content_folders_enable_recursive</comment>
+        <translation>Sök igenom undermappar</translation>
+    </message>
+    <message>
+        <source>Do Not Scan Subfolders</source>
+        <comment>content_folders_disable_recursive</comment>
+        <translation>Sök inte igenom undermappar</translation>
+    </message>
+    <message>
+        <source>Remove Folder</source>
+        <comment>content_folders_remove</comment>
+        <translation>Ta bort mapp</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <comment>settings_category_global</comment>
+        <translation>Globala inställningar</translation>
+    </message>
+    <message>
+        <source>Latency Control</source>
+        <comment>settings_category_latency_control</comment>
+        <translation>Latenskontroll</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <comment>settings_category_audio_configuration</comment>
+        <translation>Konfiguration</translation>
+    </message>
+    <message>
+        <source>Volume Control</source>
+        <comment>settings_category_audio_volume</comment>
+        <translation>Volymkontroll</translation>
+    </message>
+    <message>
+        <source>Console Settings</source>
+        <comment>settings_category_console</comment>
+        <translation>Konsolinställningar</translation>
+    </message>
+    <message>
+        <source>Logging Settings</source>
+        <comment>settings_category_logging</comment>
+        <translation>Loggningsinställningar</translation>
+    </message>
+    <message>
+        <source>Debug Settings</source>
+        <comment>settings_category_debug</comment>
+        <translation>Felsökningsinställningar</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_category_osd</comment>
+        <translation>Skärmvisning</translation>
+    </message>
+    <message>
+        <source>Speed Control</source>
+        <comment>settings_category_speed_control</comment>
+        <translation>Hastighetskontroll</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settings_category_settings</comment>
+        <translation>Inställningar</translation>
+    </message>
+    <message>
+        <source>Behavior</source>
+        <comment>settings_category_behavior</comment>
+        <translation>Beteende</translation>
+    </message>
+    <message>
+        <source>Video Settings</source>
+        <comment>settings_category_video_settings</comment>
+        <translation>Bildinställningar</translation>
+    </message>
+    <message>
+        <source>Notifications</source>
+        <comment>settings_category_achievement_notifications</comment>
+        <translation>Aviseringar</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_category_achievement_overlays</comment>
+        <translation>Överlägg</translation>
+    </message>
+    <message>
+        <source>Touchscreen Controller Opacity</source>
+        <comment>dialog_touchscreen_controller_opacity</comment>
+        <translation>Pekskärmskontrollens opacitet</translation>
+    </message>
+    <message>
+        <source>Touch Gliding</source>
+        <comment>settings_touch_gliding</comment>
+        <translation>Glidande beröring</translation>
+    </message>
+    <message>
+        <source>Allows you to press multiple controller face buttons by dragging your finger along the screen.</source>
+        <comment>settings_summary_touch_gliding</comment>
+        <translation>Låter dig trycka på flera av handkontrollens främre knappar genom att dra fingret över skärmen.</translation>
+    </message>
+    <message>
+        <source>Other File…</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Annan fil…</translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <comment>emulation_menu_change_media_current</comment>
+        <translation>Aktuell</translation>
+    </message>
+    <message>
+        <source>Selected file could not be opened.</source>
+        <comment>emulation_menu_change_media_invalid_file</comment>
+        <translation>Den valda filen kunde inte öppnas.</translation>
+    </message>
+    <message>
+        <source>Safety Check Failed</source>
+        <comment>emulation_menu_safety_check_title</comment>
+        <translation>Säkerhetskontrollen misslyckades</translation>
+    </message>
+    <message>
+        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
+
+Do you want to %1$s anyway?</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>VARNING: Det är för närvarande inte säkert att %1$s, och det kan leda till att data skadas. Vi rekommenderar att du återupptar spelet och väntar 5 sekunder innan du försöker igen.
+
+Vill du %1$s ändå?</translation>
+    </message>
+    <message>
+        <source>Token Generation Time</source>
+        <comment>settings_achievements_token_generation_time</comment>
+        <translation>Tidpunkt då token skapades</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <comment>settings_achievements_not_logged_in</comment>
+        <translation>Inte inloggad.</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>settings_achievements_login</comment>
+        <translation>Logga in</translation>
+    </message>
+    <message>
+        <source>Register</source>
+        <comment>settings_achievements_register</comment>
+        <translation>Registrera</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <comment>settings_achievements_logout</comment>
+        <translation>Logga ut</translation>
+    </message>
+    <message>
+        <source>View Profile</source>
+        <comment>settings_achievements_view_profile</comment>
+        <translation>Visa profil</translation>
+    </message>
+    <message>
+        <source>RetroAchievements Login</source>
+        <comment>achievement_settings_login_title</comment>
+        <translation>Inloggning för RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <comment>achievement_settings_login_help</comment>
+        <translation>Ange användarnamn och lösenord för retroachievements.org nedan. Ditt lösenord sparas inte i DuckStation. En åtkomsttoken skapas och används i stället.</translation>
+    </message>
+    <message>
+        <source>Your login token for retroachievements.org has expired. You must log in again. Your password will not be saved in DuckStation.</source>
+        <comment>achievement_settings_login_help_expired</comment>
+        <translation>Din inloggningstoken för retroachievements.org har gått ut. Du måste logga in igen. Ditt lösenord sparas inte i DuckStation.</translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <comment>achievement_settings_login_username_hint</comment>
+        <translation>Användarnamn</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <comment>achievement_settings_login_password_hint</comment>
+        <translation>Lösenord</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>achievement_settings_login_button</comment>
+        <translation>Logga in</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <comment>achievement_settings_login_cancel_button</comment>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Login failed: %s</source>
+        <comment>achievement_settings_login_failed</comment>
+        <translation>Inloggningen misslyckades: %s</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d points</source>
+        <comment>achievement_points_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d point&quot;; other=&quot;%1$d points&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d poäng</numerusform>
+            <numerusform>%1$d poäng</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Du har låst upp %1$d av %2$d prestationer och fått %3$d av %4$d möjliga poäng.</numerusform>
+            <numerusform>Du har låst upp %1$d av %2$d prestationer och fått %3$d av %4$d möjliga poäng.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements and earned %1$d points!</source>
+        <comment>achievement_summary_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Du har låst upp alla prestationer och fått %1$d poäng!</numerusform>
+            <numerusform>Du har låst upp alla prestationer och fått %1$d poäng!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_subset_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement in this subset, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Du har låst upp %1$d av %2$d prestationer i denna delmängd och fått %3$d av %4$d möjliga poäng.</numerusform>
+            <numerusform>Du har låst upp %1$d av %2$d prestationer i denna delmängd och fått %3$d av %4$d möjliga poäng.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements in this subset and earned %1$d points!</source>
+        <comment>achievement_subset_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements in this subset and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements in this subset and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Du har låst upp alla prestationer i denna delmängd och fått %1$d poäng!</numerusform>
+            <numerusform>Du har låst upp alla prestationer i denna delmängd och fått %1$d poäng!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unofficial_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Du har låst upp %1$d av %2$d inofficiella prestationer och fått %3$d av %4$d möjliga poäng.</numerusform>
+            <numerusform>Du har låst upp %1$d av %2$d inofficiella prestationer och fått %3$d av %4$d möjliga poäng.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_game_beaten_completed_format_string</comment>
+        <translation>Spelet klarades den %1$s och slutfördes helt den %2$s.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_subset_beaten_completed_format_string</comment>
+        <translation>Delmängden klarades den %1$s och slutfördes helt den %2$s.</translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s.</source>
+        <comment>achievement_game_beaten_format_string</comment>
+        <translation>Spelet klarades den %1$s.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s.</source>
+        <comment>achievement_subset_beaten_format_string</comment>
+        <translation>Delmängden klarades den %1$s.</translation>
+    </message>
+    <message>
+        <source>Game was completed on %1$s.</source>
+        <comment>achievement_game_completed_format_string</comment>
+        <translation>Spelet slutfördes helt den %1$s.</translation>
+    </message>
+    <message>
+        <source>Subset was completed on %1$s.</source>
+        <comment>achievement_subset_completed_format_string</comment>
+        <translation>Delmängden slutfördes helt den %1$s.</translation>
+    </message>
+    <message>
+        <source>Unlocked %1$s</source>
+        <comment>achievement_unlocked_format_string</comment>
+        <translation>Upplåst %1$s</translation>
+    </message>
+    <message>
+        <source>%1$.1f%% of players have this achievement</source>
+        <comment>achievement_rarity_format_string</comment>
+        <translation>%1$.1f%% av spelarna har den här prestationen</translation>
+    </message>
+    <message>
+        <source>%s (Hardcore Mode)</source>
+        <comment>achievement_title_challenge_mode_format_string</comment>
+        <translation>%s (hardcore-läge)</translation>
+    </message>
+    <message>
+        <source>Missable</source>
+        <comment>achievement_type_missable</comment>
+        <translation>Kan missas</translation>
+    </message>
+    <message>
+        <source>Progression</source>
+        <comment>achievement_type_progression</comment>
+        <translation>Utveckling</translation>
+    </message>
+    <message>
+        <source>Win Condition</source>
+        <comment>achievement_type_win_condition</comment>
+        <translation>Villkor för att vinna</translation>
+    </message>
+    <message>
+        <source>Unofficial</source>
+        <comment>achievement_unofficial</comment>
+        <translation>Inofficiell</translation>
+    </message>
+    <message>
+        <source>Open on RetroAchievements</source>
+        <comment>achievement_open_on_retroachievements</comment>
+        <translation>Öppna på RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Pin to OSD</source>
+        <comment>achievement_pin_to_osd</comment>
+        <translation>Fäst på OSD</translation>
+    </message>
+    <message>
+        <source>Unpin from OSD</source>
+        <comment>achievement_unpin_from_osd</comment>
+        <translation>Lossa från OSD</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <comment>achievement_reset_unlock</comment>
+        <translation>Återställ upplåsning</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <comment>achievement_reset_unofficial_title</comment>
+        <translation>Återställ inofficiell prestation</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unofficial_message</comment>
+        <translation>Upplåsningsstatusen för &apos;%1$s&apos; tas bort. Detta kan inte ångras.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <comment>achievement_unofficial_unlock_reset</comment>
+        <translation>Inofficiell prestationsupplåsning återställd.</translation>
+    </message>
+    <message>
+        <source>Pinned to OSD</source>
+        <comment>achievement_pinned_to_osd_icon</comment>
+        <translation>Fäst på OSD</translation>
+    </message>
+    <message>
+        <source>%1$s pinned to OSD.</source>
+        <comment>achievement_pinned_to_osd</comment>
+        <translation>%1$s har fästs på OSD.</translation>
+    </message>
+    <message>
+        <source>%1$s unpinned from OSD.</source>
+        <comment>achievement_unpinned_from_osd</comment>
+        <translation>%1$s har lossats från OSD.</translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards.</source>
+        <comment>leaderboard_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard.&quot;; other=&quot;This game has %d leaderboards.&quot;</extracomment>
+        <translation>
+            <numerusform>Det här spelet har %d ledartavla.</numerusform>
+            <numerusform>Det här spelet har %d ledartavlor.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards. Submission requires hardcore mode.</source>
+        <comment>leaderboard_summary_no_submission_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard. Submission requires hardcore mode.&quot;; other=&quot;This game has %d leaderboards. Submission requires hardcore mode.&quot;</extracomment>
+        <translation>
+            <numerusform>Det här spelet har %d ledartavla. Insändning kräver hardcore-läge.</numerusform>
+            <numerusform>Det här spelet har %d ledartavlor. Insändning kräver hardcore-läge.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Rank</source>
+        <comment>leaderboard_heading_rank</comment>
+        <translation>Placering</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>leaderboard_heading_name</comment>
+        <translation>Namn</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <comment>leaderboard_heading_time</comment>
+        <translation>Tid</translation>
+    </message>
+    <message>
+        <source>Score</source>
+        <comment>leaderboard_heading_score</comment>
+        <translation>Poäng</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>leaderboard_heading_value</comment>
+        <translation>Värde</translation>
+    </message>
+    <message>
+        <source>Date Submitted</source>
+        <comment>leaderboard_heading_date_submitted</comment>
+        <translation>Datum inskickad</translation>
+    </message>
+    <message>
+        <source>Show Nearby</source>
+        <comment>leaderboard_show_nearby</comment>
+        <translation>Visa närliggande</translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <comment>leaderboard_show_all</comment>
+        <translation>Visa alla</translation>
+    </message>
+    <message>
+        <source>No entries found.</source>
+        <comment>leaderboard_no_entries</comment>
+        <translation>Inga poster hittades.</translation>
+    </message>
+    <message>
+        <source>Confirm Logout</source>
+        <comment>settings_achievements_confirm_logout_title</comment>
+        <translation>Bekräfta utloggning</translation>
+    </message>
+    <message>
+        <source>After logging out, no more achievements will be unlocked until you log back in again. Achievements already unlocked will not be lost.</source>
+        <comment>settings_achievements_confirm_logout_message</comment>
+        <translation>Efter utloggning låses inga fler prestationer upp förrän du loggar in igen. Redan upplåsta prestationer går inte förlorade.</translation>
+    </message>
+    <message>
+        <source>Player %d</source>
+        <comment>controller_player_format</comment>
+        <translation>Spelare %d</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>controller_category_settings</comment>
+        <translation>Inställningar</translation>
+    </message>
+    <message>
+        <source>Hotkeys</source>
+        <comment>controller_settings_tab_hotkeys</comment>
+        <translation>Snabbtangenter</translation>
+    </message>
+    <message>
+        <source>Touchscreen</source>
+        <comment>controller_settings_tab_touchscreen</comment>
+        <translation>Pekskärm</translation>
+    </message>
+    <message>
+        <source>Bindings</source>
+        <comment>controller_settings_category_bindings</comment>
+        <translation>Bindningar</translation>
+    </message>
+    <message>
+        <source>Macros</source>
+        <comment>controller_settings_category_macros</comment>
+        <translation>Makron</translation>
+    </message>
+    <message>
+        <source>Perform Automatic Mapping</source>
+        <comment>controller_settings_automatic_mapping</comment>
+        <translation>Utför automatisk mappning</translation>
+    </message>
+    <message>
+        <source>Attempts to automatically bind all buttons/axes to a connected controller.</source>
+        <comment>controller_settings_summary_automatic_mapping</comment>
+        <translation>Försöker automatiskt binda alla knappar och axlar till en ansluten handkontroll.</translation>
+    </message>
+    <message>
+        <source>Clear Bindings</source>
+        <comment>controller_settings_clear_controller_bindings</comment>
+        <translation>Töm bindningar</translation>
+    </message>
+    <message>
+        <source>Unbinds all buttons/axes for this controller.</source>
+        <comment>controller_settings_summary_clear_controller_bindings</comment>
+        <translation>Tar bort bindningar för alla knappar och axlar för den här handkontrollen.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to clear all bindings? This cannot be reversed.</source>
+        <comment>controller_settings_clear_controller_bindings_confirm</comment>
+        <translation>Är du säker på att du vill tömma alla bindningar? Detta kan inte ångras.</translation>
+    </message>
+    <message>
+        <source>All bindings cleared for Controller %d.</source>
+        <comment>controller_settings_clear_controller_bindings_done</comment>
+        <translation>Alla bindningar har tömts för handkontroll %d.</translation>
+    </message>
+    <message>
+        <source>No suitable devices found. Automatic binding only supports gamepad devices, but you can still bind other device types manually.</source>
+        <comment>controller_auto_mapping_no_devices</comment>
+        <translation>Inga lämpliga enheter hittades. Automatisk bindning stöder endast handkontroller, men du kan fortfarande binda andra enhetstyper manuellt.</translation>
+    </message>
+    <message>
+        <source>Select Device</source>
+        <comment>controller_auto_mapping_select_device</comment>
+        <translation>Välj enhet</translation>
+    </message>
+    <message>
+        <source>Automatic mapping complete. You may still need to adjust some bindings.</source>
+        <comment>controller_auto_mapping_complete</comment>
+        <translation>Automatisk mappning slutförd. Du kan fortfarande behöva justera vissa bindningar.</translation>
+    </message>
+    <message>
+        <source>Choose Binding</source>
+        <comment>controller_binding_choose_other</comment>
+        <translation>Välj bindning</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <comment>controller_binding_set_other</comment>
+        <translation>Annat</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>touchscreen_controller_edit_menu</comment>
+        <translation>Redigeringsmeny</translation>
+    </message>
+    <message>
+        <source>Change Opacity</source>
+        <comment>touchscreen_controller_change_opacity</comment>
+        <translation>Ändra opacitet</translation>
+    </message>
+    <message>
+        <source>Resize Buttons</source>
+        <comment>touchscreen_controller_resize_buttons</comment>
+        <translation>Ändra knapparnas storlek</translation>
+    </message>
+    <message>
+        <source>Exit Editor</source>
+        <comment>touchscreen_controller_exit_editor</comment>
+        <translation>Avsluta redigeraren</translation>
+    </message>
+    <message>
+        <source>Multitap Mode</source>
+        <comment>settings_multitap_mode</comment>
+        <translation>Multitap-läge</translation>
+    </message>
+    <message>
+        <source>Enable Touchscreen Controller</source>
+        <comment>settings_enable_touchscreen_controller</comment>
+        <translation>Aktivera pekskärmskontrollen</translation>
+    </message>
+    <message>
+        <source>Controller settings initialized with global settings.</source>
+        <comment>input_settings_store_initialized</comment>
+        <translation>Handkontrollens inställningar har initierats med globala inställningar.</translation>
+    </message>
+    <message>
+        <source>If the touchscreen controller is not used, an external controller must be mapped.</source>
+        <comment>settings_summary_enable_touchscreen_controller</comment>
+        <translation>Om pekskärmskontrollen inte används måste en extern handkontroll mappas.</translation>
+    </message>
+    <message>
+        <source>Touchscreen Player</source>
+        <comment>settings_touchscreen_controller_port</comment>
+        <translation>Spelare för pekskärmen</translation>
+    </message>
+    <message>
+        <source>Selects the player which touchscreen input will simulate.</source>
+        <comment>settings_summary_touchscreen_controller_port</comment>
+        <translation>Väljer vilken spelare som pekskärmsinmatningen ska simulera.</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>emulation_menu_load_state</comment>
+        <translation>Läs in tillstånd</translation>
+    </message>
+    <message>
+        <source>Save State</source>
+        <comment>emulation_menu_save_state</comment>
+        <translation>Spara tillstånd</translation>
+    </message>
+    <message>
+        <source>Toggle Fast Forward</source>
+        <comment>emulation_menu_toggle_fast_forward</comment>
+        <translation>Växla snabbspolning</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>emulation_menu_achievements</comment>
+        <translation>Prestationer</translation>
+    </message>
+    <message>
+        <source>Leaderboards</source>
+        <comment>emulation_menu_leaderboards</comment>
+        <translation>Ledartavlor</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>emulation_menu_cheats</comment>
+        <translation>Fusk</translation>
+    </message>
+    <message>
+        <source>Save Screenshot</source>
+        <comment>emulation_menu_save_screenshot</comment>
+        <translation>Spara skärmbild</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>emulation_menu_rewind</comment>
+        <translation>Spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Load Rewind State</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Läs in tillbakaspolningstillstånd</translation>
+    </message>
+    <message>
+        <source>Frame %1$d</source>
+        <comment>emulation_menu_rewind_frame</comment>
+        <translation>Bildruta %1$d</translation>
+    </message>
+    <message>
+        <source>No rewind states are available.</source>
+        <comment>emulation_menu_rewind_empty</comment>
+        <translation>Inga tillbakaspolningstillstånd finns tillgängliga.</translation>
+    </message>
+    <message>
+        <source>Screenshot unavailable</source>
+        <comment>emulation_menu_rewind_no_screenshot</comment>
+        <translation>Skärmbild saknas</translation>
+    </message>
+    <message>
+        <source>Rewind state screenshot</source>
+        <comment>emulation_menu_rewind_screenshot</comment>
+        <translation>Skärmbild av tillbakaspolningstillstånd</translation>
+    </message>
+    <message>
+        <source>Requires Restart</source>
+        <comment>settings_requires_restart</comment>
+        <translation>Kräver omstart</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>emulation_menu_edit</comment>
+        <translation>Redigera meny</translation>
+    </message>
+    <message>
+        <source>Tap to show or hide, hold and drag to rearrange</source>
+        <comment>emulation_menu_edit_hint</comment>
+        <translation>Tryck för att visa eller dölja, håll ned och dra för att ändra ordningen</translation>
+    </message>
+    <message>
+        <source>Hidden</source>
+        <comment>emulation_menu_edit_hidden</comment>
+        <translation>Dolda</translation>
+    </message>
+    <message>
+        <source>Drag items here to hide them</source>
+        <comment>emulation_menu_edit_hidden_empty</comment>
+        <translation>Dra objekt hit för att dölja dem</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>emulation_menu_edit_reset</comment>
+        <translation>Återställ layout</translation>
+    </message>
+    <message>
+        <source>Show</source>
+        <comment>emulation_menu_edit_show</comment>
+        <translation>Visa</translation>
+    </message>
+    <message>
+        <source>Hide</source>
+        <comment>emulation_menu_edit_hide</comment>
+        <translation>Dölj</translation>
+    </message>
+    <message>
+        <source>Custom Aspect Ratio</source>
+        <comment>settings_custom_aspect_ratio</comment>
+        <translation>Anpassat bildförhållande</translation>
+    </message>
+    <message>
+        <source>Used when aspect ratio is set to Custom.</source>
+        <comment>settings_summary_custom_aspect_ratio</comment>
+        <translation>Används när bildförhållandet är inställt på Anpassad.</translation>
+    </message>
+    <message>
+        <source>Expand To Cutout Area</source>
+        <comment>settings_expand_to_cutout</comment>
+        <translation>Utöka till skärmutskärningen</translation>
+    </message>
+    <message>
+        <source>Expands the display area to include the cutout (or notch) area.</source>
+        <comment>settings_summary_expand_to_cutout</comment>
+        <translation>Utökar visningsområdet till att omfatta skärmutskärningen (eller fliken).</translation>
+    </message>
+    <message>
+        <source>Runahead</source>
+        <comment>settings_category_runahead</comment>
+        <translation>Runahead</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>settings_category_rewind</comment>
+        <translation>Spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_category_save_states</comment>
+        <translation>Sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Enable Rewinding</source>
+        <comment>settings_rewind_enable</comment>
+        <translation>Aktivera tillbakaspolning</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Hur ofta ett tillbakaspolningstillstånd ska skapas. Högre frekvenser ställer högre krav på systemet.</translation>
+    </message>
+    <message>
+        <source>Save Frequency</source>
+        <comment>settings_rewind_save_frequency</comment>
+        <translation>Sparfrekvens</translation>
+    </message>
+    <message>
+        <source>A rewind save will be created each time this interval lapses.</source>
+        <comment>settings_summary_rewind_save_frequency</comment>
+        <translation>Ett tillbakaspolningstillstånd sparas varje gång det här intervallet har gått.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_rewind_buffer_size</comment>
+        <translation>Buffertstorlek</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <comment>settings_summary_rewind_buffer_size</comment>
+        <translation>Hur mycket minne som reserveras för tillbakaspolningstillstånd. Bestämmer hur långt tillbaka du kan spola.</translation>
+    </message>
+    <message>
+        <source>%s copied to clipboard.</source>
+        <comment>preference_text_copied_to_clipboard</comment>
+        <translation>%s har kopierats till urklipp.</translation>
+    </message>
+    <message>
+        <source>Controller %1$d / Macro %2$d</source>
+        <comment>edit_macro_button_title</comment>
+        <translation>Handkontroll %1$d / Makro %2$d</translation>
+    </message>
+    <message>
+        <source>No trigger set</source>
+        <comment>edit_macro_button_no_trigger</comment>
+        <translation>Ingen utlösare angiven</translation>
+    </message>
+    <message>
+        <source>No buttons set</source>
+        <comment>edit_macro_buttons_no_bindings</comment>
+        <translation>Inga knappar angivna</translation>
+    </message>
+    <message>
+        <source>Macro will not repeat.</source>
+        <comment>edit_macro_button_no_repeat</comment>
+        <translation>Makrot kommer inte upprepas.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Macro will toggle every %d frames.</source>
+        <comment>edit_macro_button_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>Makrot växlar varje %d bildruta.</numerusform>
+            <numerusform>Makrot växlar var %d:e bildruta.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Choose Bindings</source>
+        <comment>edit_macro_button_choose_bindings</comment>
+        <translation>Välj bindningar</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary_no_repeat</comment>
+        <translation>%1$s utlöser %2$s</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$s triggers %2$s every %3$d frames.</source>
+        <comment>edit_macro_button_summary_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$s utlöser %2$s varje %3$d bildruta.</numerusform>
+            <numerusform>%1$s utlöser %2$s var %3$d:e bildruta.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <comment>edit_macro_button_trigger</comment>
+        <translation>Utlösare</translation>
+    </message>
+    <message>
+        <source>Buttons</source>
+        <comment>edit_macro_button_buttons</comment>
+        <translation>Knappar</translation>
+    </message>
+    <message>
+        <source>Frequency</source>
+        <comment>edit_macro_button_frequency</comment>
+        <translation>Frekvens</translation>
+    </message>
+    <message>
+        <source>Macro %d</source>
+        <comment>macro_binding_template</comment>
+        <translation>Makro %d</translation>
+    </message>
+    <message>
+        <source>No vibrators found. Your controller or driver may not support vibration.</source>
+        <comment>binding_no_vibrators_found</comment>
+        <translation>Inga vibrationsenheter hittades. Din handkontroll eller drivrutin kanske inte stöder vibration.</translation>
+    </message>
+    <message>
+        <source>Select Vibrator Binding</source>
+        <comment>select_vibrator_binding</comment>
+        <translation>Välj vibrationsbindning</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <comment>controller_settings_category_vibration</comment>
+        <translation>Vibration</translation>
+    </message>
+    <message>
+        <source>Vibration Update Frequency</source>
+        <comment>settings_vibration_update_frequency</comment>
+        <translation>Uppdateringsfrekvens för vibration</translation>
+    </message>
+    <message>
+        <source>Throttles the frequency at which vibration updates are sent. May help with controller disconnection/lag issues.</source>
+        <comment>settings_summary_vibration_update_frequency</comment>
+        <translation>Begränsar hur ofta vibrationsuppdateringar skickas. Kan hjälpa vid problem med frånkoppling eller fördröjning av handkontrollen.</translation>
+    </message>
+    <message>
+        <source>Settings cleared.</source>
+        <comment>game_properties_settings_cleared</comment>
+        <translation>Inställningarna har tömts.</translation>
+    </message>
+    <message>
+        <source>Use Global Setting</source>
+        <comment>game_properties_use_global_setting</comment>
+        <translation>Använd global inställning</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <comment>game_setting_follow_default</comment>
+        <translation>Standard</translation>
+    </message>
+    <message>
+        <source>Add/Remove Buttons</source>
+        <comment>settings_touchscreen_controller_add_remove_buttons</comment>
+        <translation>Lägg till/ta bort knappar</translation>
+    </message>
+    <message>
+        <source>Move Buttons</source>
+        <comment>settings_touchscreen_controller_move_buttons</comment>
+        <translation>Flytta knappar</translation>
+    </message>
+    <message>
+        <source>Overlay Opacity</source>
+        <comment>settings_touchscreen_controller_opacity</comment>
+        <translation>Överläggets opacitet</translation>
+    </message>
+    <message>
+        <source>Controls the transparency level of the touchscreen controller.</source>
+        <comment>settings_summary_touchscreen_controller_opacity</comment>
+        <translation>Styr pekskärmskontrollens genomskinlighet.</translation>
+    </message>
+    <message>
+        <source>Tap To Hold</source>
+        <comment>settings_touchscreen_controller_toggle_buttons</comment>
+        <translation>Tryck för att hålla ned</translation>
+    </message>
+    <message>
+        <source>Swipe Horizontal Sensitivity</source>
+        <comment>settings_touchscreen_controller_x_scale</comment>
+        <translation>Känslighet för horisontella svep</translation>
+    </message>
+    <message>
+        <source>Swipe Vertical Sensitivity</source>
+        <comment>settings_touchscreen_controller_y_scale</comment>
+        <translation>Känslighet för vertikala svep</translation>
+    </message>
+    <message>
+        <source>Adjusts the ratio of touch movement to stick pressure. Lower values imply more stick pressure.</source>
+        <comment>settings_touchscreen_controller_scale_summary</comment>
+        <translation>Justerar förhållandet mellan fingerrörelse och spakutslag. Lägre värden innebär större spakutslag.</translation>
+    </message>
+    <message>
+        <source>Failed to take persistable permission.</source>
+        <comment>game_list_settings_failed_to_take_persistable_permission</comment>
+        <translation>Misslyckades med att erhålla beständig behörighet.</translation>
+    </message>
+    <message>
+        <source>Save Slot %d</source>
+        <comment>save_slot_n</comment>
+        <translation>Sparplats %d</translation>
+    </message>
+    <message>
+        <source>No save present in this slot.</source>
+        <comment>save_slot_not_present</comment>
+        <translation>Ingen sparning finns på denna plats.</translation>
+    </message>
+    <message>
+        <source>Resume Save</source>
+        <comment>save_slot_resume_save</comment>
+        <translation>Återuppta sparat tillstånd</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>save_state_manager_title</comment>
+        <translation>Hanterare för sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Confirm Deletion</source>
+        <comment>confirm_deletion</comment>
+        <translation>Bekräfta borttagning</translation>
+    </message>
+    <message>
+        <source>Are you sure you wish to delete this save state? It cannot be recovered.</source>
+        <comment>confirm_delete_save_state</comment>
+        <translation>Är du säker på att du vill ta bort det här sparade tillståndet? Det kan inte återställas.</translation>
+    </message>
+    <message>
+        <source>Failed to delete save state.</source>
+        <comment>save_state_manager_failed_to_delete</comment>
+        <translation>Misslyckades med att ta bort sparat tillstånd.</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>resume_game_delete</comment>
+        <translation>Ta bort tillstånd</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <comment>menu_refresh</comment>
+        <translation>Uppdatera</translation>
+    </message>
+    <message>
+        <source>Failed to open/decode image.</source>
+        <comment>choose_cover_image_failed_decode</comment>
+        <translation>Misslyckades med att öppna/avkoda bilden.</translation>
+    </message>
+    <message>
+        <source>Failed to save image.</source>
+        <comment>choose_cover_image_failed_save</comment>
+        <translation>Misslyckades med att spara bilden.</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>game_properties_title</comment>
+        <translation>Titel</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>game_properties_serial</comment>
+        <translation>Serienummer</translation>
+    </message>
+    <message>
+        <source>More Details</source>
+        <comment>game_properties_more_details</comment>
+        <translation>Fler detaljer</translation>
+    </message>
+    <message>
+        <source>Languages</source>
+        <comment>game_properties_languages</comment>
+        <translation>Språk</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>game_properties_type</comment>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>game_properties_region</comment>
+        <translation>Region</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>game_properties_language</comment>
+        <translation>Språk</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <comment>game_properties_path</comment>
+        <translation>Sökväg</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>game_properties_time_played</comment>
+        <translation>Tid spelat</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>game_properties_last_played</comment>
+        <translation>Senast spelat</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>game_properties_last_played_never</comment>
+        <translation>Aldrig</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>game_properties_time_played_none</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Copy Settings</source>
+        <comment>game_settings_copy_settings</comment>
+        <translation>Kopiera inställningar</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        overwritten. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_copy_settings</comment>
+        <translation>Alla inställningar som för närvarande är inställda för detta spel
+        skrivs över. Är du säker på att du vill fortsätta?</translation>
+    </message>
+    <message>
+        <source>Clear Settings</source>
+        <comment>game_settings_clear_settings</comment>
+        <translation>Töm inställningar</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        removed. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_clear_settings</comment>
+        <translation>Alla inställningar som för närvarande är inställda för detta spel
+        tas bort. Är du säker på att du vill fortsätta?</translation>
+    </message>
+    <message>
+        <source>Controller settings reset.</source>
+        <comment>controller_settings_reset_done</comment>
+        <translation>Handkontrollinställningarna har återställts.</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <comment>settings_restore_defaults</comment>
+        <translation>Återställ standardvärden</translation>
+    </message>
+    <message>
+        <source>This will restore all application settings to their defaults. You will not be able to recover these changes.</source>
+        <comment>settings_restore_defaults_message</comment>
+        <translation>Detta återställer alla appinställningar till standardvärdena. Du kan inte återställa dessa ändringar.</translation>
+    </message>
+    <message>
+        <source>This will restore all controller settings, including the touchscreen, to their defaults. Do you want to continue?</source>
+        <comment>controller_settings_restore_defaults_message</comment>
+        <translation>Detta återställer alla handkontrollinställningar, inklusive pekskärmen, till standardvärdena. Vill du fortsätta?</translation>
+    </message>
+    <message>
+        <source>Settings reset.</source>
+        <comment>main_settings_reset_done</comment>
+        <translation>Inställningarna har återställts.</translation>
+    </message>
+    <message>
+        <source>Run Setup Wizard</source>
+        <comment>settings_run_setup_wizard</comment>
+        <translation>Kör installationsguiden</translation>
+    </message>
+    <message>
+        <source>Finish</source>
+        <comment>setup_wizard_finish</comment>
+        <translation>Slutför</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <comment>setup_wizard_next</comment>
+        <translation>Nästa</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>setup_wizard_back</comment>
+        <translation>Tillbaka</translation>
+    </message>
+    <message>
+        <source>Welcome to DuckStation!</source>
+        <comment>setup_wizard_welcome_title</comment>
+        <translation>Välkommen till DuckStation!</translation>
+    </message>
+    <message>
+        <source>Please choose a theme and language, then tap Next to get started.</source>
+        <comment>setup_wizard_welcome_second_paragraph</comment>
+        <translation>Välj ett tema och språk och tryck sedan på Nästa för att komma igång.</translation>
+    </message>
+    <message>
+        <source>Content Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Innehållsmappar</translation>
+    </message>
+    <message>
+        <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
+        <comment>setup_wizard_input_setup_message</comment>
+        <translation>Anslut en handkontroll och använd automatisk mappning för valfri spelare. Detaljerade bindningar kan ändras senare i inmatningsinställningarna.</translation>
+    </message>
+    <message>
+        <source>Mapped Device</source>
+        <comment>setup_wizard_mapped_device</comment>
+        <translation>Mappad enhet</translation>
+    </message>
+    <message>
+        <source>Pause Menu Hotkey</source>
+        <comment>setup_wizard_pause_hotkey_title</comment>
+        <translation>Snabbtangent för pausmeny</translation>
+    </message>
+    <message>
+        <source>Graphics Setup</source>
+        <comment>setup_wizard_graphics_title</comment>
+        <translation>Grafikkonfiguration</translation>
+    </message>
+    <message>
+        <source>These commonly used video options can be changed again after setup.</source>
+        <comment>setup_wizard_graphics_message</comment>
+        <translation>Dessa vanliga bildalternativ kan ändras igen efter installationen.</translation>
+    </message>
+    <message>
+        <source>View Selection</source>
+        <comment>setup_wizard_view_title</comment>
+        <translation>Val av vy</translation>
+    </message>
+    <message>
+        <source>List View</source>
+        <comment>setup_wizard_list_view</comment>
+        <translation>Listvy</translation>
+    </message>
+    <message>
+        <source>Grid View</source>
+        <comment>setup_wizard_grid_view</comment>
+        <translation>Rutnätsvy</translation>
+    </message>
+    <message>
+        <source>Exit Setup?</source>
+        <comment>setup_wizard_exit_title</comment>
+        <translation>Avsluta installationen?</translation>
+    </message>
+    <message>
+        <source>Setup is not complete. Are you sure you want to exit?</source>
+        <comment>setup_wizard_exit_message</comment>
+        <translation>Installationen är inte klar. Är du säker på att du vill avsluta?</translation>
+    </message>
+    <message>
+        <source>Setup Complete</source>
+        <comment>setup_wizard_complete_title</comment>
+        <translation>Installationen är klar</translation>
+    </message>
+    <message>
+        <source>Press finish to open the game list and start scanning for games. If you need to, you can re-run this setup wizard again from within App Settings.</source>
+        <comment>setup_wizard_complete_message</comment>
+        <translation>Tryck på Slutför för att öppna spellistan och börja söka efter spel. Om du behöver kan du köra den här installationsguiden igen från appinställningarna.</translation>
+    </message>
+    <message>
+        <source>Add New</source>
+        <comment>controller_binding_add_new_multibinding</comment>
+        <translation>Lägg till ny</translation>
+    </message>
+    <message numerus="yes">
+        <source>&lt;%d Bindings&gt;</source>
+        <comment>controller_binding_multiple_bindings</comment>
+        <extracomment>Android plural quantities: one=&quot;&lt;%d Binding&gt;&quot;; other=&quot;&lt;%d Bindings&gt;&quot;</extracomment>
+        <translation>
+            <numerusform>&lt;%d bindning&gt;</numerusform>
+            <numerusform>&lt;%d bindningar&gt;</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Edit %s Bindings</source>
+        <comment>controller_binding_multibind_title</comment>
+        <translation>Redigera bindningar för %s</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Delay</source>
+        <comment>settings_touchscreen_auto_hide_time</comment>
+        <translation>Fördröjning för automatisk döljning</translation>
+    </message>
+    <message>
+        <source>Hides touch controls after the specified time. A delay of zero will not hide the controls.</source>
+        <comment>settings_summary_touchscreen_auto_hide_time</comment>
+        <translation>Döljer pekkontroller efter den angivna tiden. En fördröjning på noll döljer inte kontrollerna.</translation>
+    </message>
+    <message>
+        <source>Bind To Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Bind till höger spak</translation>
+    </message>
+    <message>
+        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Binder svepgester på pekskärmen till höger spak, om en sådan finns.</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <comment>settings_advanced</comment>
+        <translation>Avancerade inställningar</translation>
+    </message>
+    <message>
+        <source>Disable All</source>
+        <comment>game_properties_disable_patch_codes</comment>
+        <translation>Inaktivera alla</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <comment>cheat_codes_add</comment>
+        <translation>Lägg till</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>cheat_codes_import</comment>
+        <translation>Importera</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>cheat_codes_export</comment>
+        <translation>Exportera</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <comment>cheat_codes_remove_all</comment>
+        <translation>Ta bort alla</translation>
+    </message>
+    <message>
+        <source>Auto (Game Native)</source>
+        <comment>settings_video_aspect_ratio_entries[0]</comment>
+        <translation>Automatiskt (spelets inbyggda)</translation>
+    </message>
+    <message>
+        <source>Stretch To Fill</source>
+        <comment>settings_video_aspect_ratio_entries[1]</comment>
+        <translation>Sträck ut för att fylla</translation>
+    </message>
+    <message>
+        <source>4:3</source>
+        <comment>settings_video_aspect_ratio_entries[2]</comment>
+        <translation>4:3</translation>
+    </message>
+    <message>
+        <source>16:9</source>
+        <comment>settings_video_aspect_ratio_entries[3]</comment>
+        <translation>16:9</translation>
+    </message>
+    <message>
+        <source>19:9</source>
+        <comment>settings_video_aspect_ratio_entries[4]</comment>
+        <translation>19:9</translation>
+    </message>
+    <message>
+        <source>20:9</source>
+        <comment>settings_video_aspect_ratio_entries[5]</comment>
+        <translation>20:9</translation>
+    </message>
+    <message>
+        <source>21:9</source>
+        <comment>settings_video_aspect_ratio_entries[6]</comment>
+        <translation>21:9</translation>
+    </message>
+    <message>
+        <source>16:10</source>
+        <comment>settings_video_aspect_ratio_entries[7]</comment>
+        <translation>16:10</translation>
+    </message>
+    <message>
+        <source>PAR 1:1</source>
+        <comment>settings_video_aspect_ratio_entries[8]</comment>
+        <translation>PAR 1:1</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_video_aspect_ratio_entries[9]</comment>
+        <translation>Anpassad</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_achievement_scale_entries[0]</comment>
+        <translation>Automatisk</translation>
+    </message>
+    <message>
+        <source>Use OSD Scale</source>
+        <comment>settings_achievement_scale_entries[1]</comment>
+        <translation>Använd OSD-skala</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_achievement_scale_entries[2]</comment>
+        <translation>Anpassad</translation>
+    </message>
+    <message>
+        <source>AMOLED</source>
+        <comment>settings_theme_entries[4]</comment>
+        <translation>AMOLED</translation>
+    </message>
+    <message>
+        <source>Cobalt Sky</source>
+        <comment>settings_theme_entries[5]</comment>
+        <translation>Cobalt Sky</translation>
+    </message>
+    <message>
+        <source>Dark Ruby</source>
+        <comment>settings_theme_entries[6]</comment>
+        <translation>Mörk rubin</translation>
+    </message>
+    <message>
+        <source>Grey Matter</source>
+        <comment>settings_theme_entries[7]</comment>
+        <translation>Grå materia</translation>
+    </message>
+    <message>
+        <source>Purple Rain</source>
+        <comment>settings_theme_entries[8]</comment>
+        <translation>Purple Rain</translation>
+    </message>
+    <message>
+        <source>Green Giant</source>
+        <comment>settings_theme_entries[9]</comment>
+        <translation>Gröna jätten</translation>
+    </message>
+    <message>
+        <source>Pinky Pals</source>
+        <comment>settings_theme_entries[10]</comment>
+        <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>None (Double Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[0]</comment>
+        <translation>Ingen (dubbel hastighet)</translation>
+    </message>
+    <message>
+        <source>2x (Quad Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[1]</comment>
+        <translation>2x (fyrdubbel hastighet)</translation>
+    </message>
+    <message>
+        <source>3x (6x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[2]</comment>
+        <translation>3x (6x hastighet)</translation>
+    </message>
+    <message>
+        <source>4x (8x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[3]</comment>
+        <translation>4x (8x hastighet)</translation>
+    </message>
+    <message>
+        <source>5x (10x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[4]</comment>
+        <translation>5x (10x hastighet)</translation>
+    </message>
+    <message>
+        <source>6x (12x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[5]</comment>
+        <translation>6x (12x hastighet)</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_read_speedup_entries[6]</comment>
+        <translation>Maximalt (säkrare)</translation>
+    </message>
+    <message>
+        <source>None (Normal Speed)</source>
+        <comment>settings_cdrom_seek_speedup_entries[0]</comment>
+        <translation>Ingen (normal hastighet)</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_cdrom_seek_speedup_entries[1]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x</source>
+        <comment>settings_cdrom_seek_speedup_entries[2]</comment>
+        <translation>3x</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_cdrom_seek_speedup_entries[3]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x</source>
+        <comment>settings_cdrom_seek_speedup_entries[4]</comment>
+        <translation>5x</translation>
+    </message>
+    <message>
+        <source>6x</source>
+        <comment>settings_cdrom_seek_speedup_entries[5]</comment>
+        <translation>6x</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_seek_speedup_entries[6]</comment>
+        <translation>Maximalt (säkrare)</translation>
+    </message>
+    <message>
+        <source>Emulation</source>
+        <comment>settings_tab_emulation</comment>
+        <translation>Emulering</translation>
+    </message>
+    <message>
+        <source>Start BIOS</source>
+        <comment>content_list_start_bios</comment>
+        <translation>Starta BIOS</translation>
+    </message>
+    <message>
+        <source>DuckStation</source>
+        <comment>app_name</comment>
+        <translation>DuckStation</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <comment>dialog_copy</comment>
+        <translation>Kopiera</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>dialog_back</comment>
+        <translation>Tillbaka</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>action_input_settings</comment>
+        <translation>Inställningar för handkontroller</translation>
+    </message>
+    <message>
+        <source>Show Messages</source>
+        <comment>settings_show_osd_messages</comment>
+        <translation>Visa meddelanden</translation>
+    </message>
+    <message>
+        <source>Show Speed</source>
+        <comment>settings_show_speed</comment>
+        <translation>Visa hastighet</translation>
+    </message>
+    <message>
+        <source>Show FPS</source>
+        <comment>settings_show_fps</comment>
+        <translation>Visa bilder/s</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <comment>settings_execution_mode</comment>
+        <translation>Körningsläge</translation>
+    </message>
+    <message>
+        <source>Selects the method used to emulate the CPU. The recompiler is the fastest and is recommended.</source>
+        <comment>settings_summary_execution_mode</comment>
+        <translation>Väljer den metod som används för att emulera CPU:n. Omkompilatorn är snabbast och rekommenderas.</translation>
+    </message>
+    <message>
+        <source>GPU Renderer</source>
+        <comment>settings_renderer</comment>
+        <translation>GPU-renderare</translation>
+    </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <comment>settings_summary_renderer</comment>
+        <translation>Väljer den bakände som ska användas för att rendera konsolens och spelets grafik.</translation>
+    </message>
+    <message>
+        <source>Automatically saves the current state when closing a game or leaving the app.</source>
+        <comment>settings_summary_save_state_on_exit</comment>
+        <translation>Sparar automatiskt det aktuella tillståndet när ett spel stängs eller appen lämnas.</translation>
+    </message>
+    <message>
+        <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+        <comment>settings_summary_pause_on_controller_disconnection</comment>
+        <translation>Pausar emulatorn när en handkontroller med bindningar kopplas från.</translation>
+    </message>
+    <message>
+        <source>Game Screen Orientation</source>
+        <comment>settings_emulation_screen_orientation</comment>
+        <translation>Skärmorientering för spel</translation>
+    </message>
+    <message>
+        <source>Sets the screen orientation while games are running.</source>
+        <comment>settings_summary_emulation_screen_orientation</comment>
+        <translation>Anger skärmens orientering när spel körs.</translation>
+    </message>
+    <message>
+        <source>Immersive Pause Menu</source>
+        <comment>settings_immersive_pause_menu</comment>
+        <translation>Pausmeny i helskärmsläge</translation>
+    </message>
+    <message>
+        <source>Keeps the status and navigation bars hidden while the pause menu is open.</source>
+        <comment>settings_summary_immersive_pause_menu</comment>
+        <translation>Håller status- och navigeringsfälten dolda medan pausmenyn är öppen.</translation>
+    </message>
+    <message>
+        <source>Improves frame pacing and presentation time, but can increase battery usage. Do not enable on slow devices.</source>
+        <comment>settings_summary_optimal_frame_pacing</comment>
+        <translation>Förbättrar bildrutornas tidsfördelning och visningstidpunkt, men kan öka batteriförbrukningen. Aktivera inte på långsamma enheter.</translation>
+    </message>
+    <message>
+        <source>Log Level</source>
+        <comment>settings_log_level</comment>
+        <translation>Loggnivå</translation>
+    </message>
+    <message>
+        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
+        <comment>settings_summary_log_level</comment>
+        <translation>Anger hur utförligt meddelanden loggas. Högre nivåer loggar fler meddelanden.</translation>
+    </message>
+    <message>
+        <source>Logs messages to duckstation.log in the user directory.</source>
+        <comment>settings_summary_log_to_file</comment>
+        <translation>Loggar meddelanden till duckstation.log i användarkatalogen.</translation>
+    </message>
+    <message>
+        <source>Log To Logcat</source>
+        <comment>settings_log_to_debug</comment>
+        <translation>Logga till Logcat</translation>
+    </message>
+    <message>
+        <source>Writes log messages to the Android message logger. Only useful when attached to a computer with adb.</source>
+        <comment>settings_summary_log_to_debug</comment>
+        <translation>Skriver loggmeddelanden till Androids meddelandelogg. Endast användbart när enheten är ansluten till en dator med adb.</translation>
+    </message>
+    <message>
+        <source>Audio Backend</source>
+        <comment>settings_backend</comment>
+        <translation>Ljudbakände</translation>
+    </message>
+    <message>
+        <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
+        <comment>settings_summary_backend</comment>
+        <translation>Ljudbakänden avgör hur ljudramar som produceras av emulatorn skickas till värden.</translation>
+    </message>
+    <message>
+        <source>Stretch Mode</source>
+        <comment>settings_stretch_mode</comment>
+        <translation>Sträckläge</translation>
+    </message>
+    <message>
+        <source>Determines quality of audio when not running at 100% speed.</source>
+        <comment>settings_summary_stretch_mode</comment>
+        <translation>Bestämmer kvaliteten på ljudet när det inte körs på 100% hastighet.</translation>
+    </message>
+    <message>
+        <source>Output Volume</source>
+        <comment>settings_output_volume</comment>
+        <translation>Utmatningsvolym</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host.</source>
+        <comment>settings_summary_output_volume</comment>
+        <translation>Styr volymen för ljudet som spelas på värden.</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+        <comment>settings_summary_fast_forward_volume</comment>
+        <translation>Styr volymen för ljudet som spelas på värden vid snabbspolning.</translation>
+    </message>
+    <message>
+        <source>Mute All Sound</source>
+        <comment>settings_output_muted</comment>
+        <translation>Tysta allt ljud</translation>
+    </message>
+    <message>
+        <source>Prevents the app from emitting any sound.</source>
+        <comment>settings_summary_output_muted</comment>
+        <translation>Förhindrar att appen spelar upp ljud.</translation>
+    </message>
+    <message>
+        <source>Output Latency</source>
+        <comment>settings_output_latency_ms</comment>
+        <translation>Utmatningslatens</translation>
+    </message>
+    <message>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <comment>settings_summary_output_latency_ms</comment>
+        <translation>Bestämmer hur stor fördröjning det är mellan det att ljudet plockas upp av värd-API:et och spelas upp i högtalarna.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_buffer_ms</comment>
+        <translation>Buffertstorlek</translation>
+    </message>
+    <message>
+        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+        <comment>settings_summary_buffer_ms</comment>
+        <translation>Bestämmer hur mycket ljud som buffras innan det hämtas av värd-API:et.</translation>
+    </message>
+    <message>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
+        <comment>settings_summary_aspect_ratio</comment>
+        <translation>Ändrar bildförhållandet som används för att visa konsolens utmatning på skärmen.</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>settings_scaling</comment>
+        <translation>Skalning</translation>
+    </message>
+    <message>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <comment>settings_summary_scaling</comment>
+        <translation>Bestämmer hur den emulerade konsolens utdata ska upp- eller nedskalas till din bildskärms upplösning.</translation>
+    </message>
+    <message>
+        <source>FMV Scaling</source>
+        <comment>settings_scaling_24_bit</comment>
+        <translation>FMV-skalning</translation>
+    </message>
+    <message>
+        <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
+        <comment>settings_summary_scaling_24_bit</comment>
+        <translation>Bestämmer skalningsalgoritmen som används när 24-bitarsinnehåll är aktivt, vanligtvis FMV.</translation>
+    </message>
+    <message>
+        <source>Screen Rotation</source>
+        <comment>settings_rotation</comment>
+        <translation>Skärmrotering</translation>
+    </message>
+    <message>
+        <source>Determines the rotation of the simulated TV screen.</source>
+        <comment>settings_summary_rotation</comment>
+        <translation>Bestämmer rotationen för den simulerade tv-skärmen.</translation>
+    </message>
+    <message>
+        <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
+        <comment>settings_summary_show_osd_messages</comment>
+        <translation>Visar meddelanden på skärmen när händelser inträffar. Fel och varningar visas alltid oavsett denna inställning.</translation>
+    </message>
+    <message>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <comment>settings_summary_show_speed</comment>
+        <translation>Visar aktuell emuleringshastighet för systemet i övre högra hörnet av skärmen som ett procenttal.</translation>
+    </message>
+    <message>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_fps</comment>
+        <translation>Visar antalet bildrutor (eller v-syncs) som visas per sekund av systemet i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Determines how large the on-screen messages and monitor are.</source>
+        <comment>settings_summary_osd_scale</comment>
+        <translation>Bestämmer hur stora skärmmeddelandena och prestandavisningen är.</translation>
+    </message>
+    <message>
+        <source>Screen Margins</source>
+        <comment>settings_osd_margin</comment>
+        <translation>Skärmmarginaler</translation>
+    </message>
+    <message>
+        <source>Determines the margin between the edge of the screen and on-screen messages.</source>
+        <comment>settings_summary_osd_margin</comment>
+        <translation>Bestämmer marginalen mellan skärmkanten och skärmmeddelanden.</translation>
+    </message>
+    <message>
+        <source>Message Location</source>
+        <comment>settings_osd_message_location</comment>
+        <translation>Meddelandeplats</translation>
+    </message>
+    <message>
+        <source>Selects which location on the screen messages are displayed.</source>
+        <comment>settings_summary_osd_message_location</comment>
+        <translation>Väljer var på skärmen meddelanden visas.</translation>
+    </message>
+    <message>
+        <source>Animate Messages</source>
+        <comment>settings_animate_osd_messages</comment>
+        <translation>Animera meddelanden</translation>
+    </message>
+    <message>
+        <source>Enables animation for on-screen messages when they appear and disappear.</source>
+        <comment>settings_summary_animate_osd_messages</comment>
+        <translation>Animerar skärmmeddelanden när de visas och försvinner.</translation>
+    </message>
+    <message>
+        <source>Blur Message Backgrounds</source>
+        <comment>settings_blur_osd_message_backgrounds</comment>
+        <translation>Gör meddelandebakgrunder oskarpa</translation>
+    </message>
+    <message>
+        <source>Enables a blur effect on the background behind on-screen messages to improve readability.</source>
+        <comment>settings_summary_blur_osd_message_backgrounds</comment>
+        <translation>Aktiverar oskärpa i bakgrunden bakom skärmmeddelanden för bättre läsbarhet.</translation>
+    </message>
+    <message>
+        <source>Error Duration</source>
+        <comment>settings_osd_error_duration</comment>
+        <translation>Visningstid för felmeddelanden</translation>
+    </message>
+    <message>
+        <source>Determines how long error messages are displayed on screen.</source>
+        <comment>settings_summary_osd_error_duration</comment>
+        <translation>Bestämmer hur länge felmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Warning Duration</source>
+        <comment>settings_osd_warning_duration</comment>
+        <translation>Visningstid för varningar</translation>
+    </message>
+    <message>
+        <source>Determines how long warning messages are displayed on screen.</source>
+        <comment>settings_summary_osd_warning_duration</comment>
+        <translation>Bestämmer hur länge varningsmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Information Duration</source>
+        <comment>settings_osd_info_duration</comment>
+        <translation>Visningstid för information</translation>
+    </message>
+    <message>
+        <source>Determines how long information messages are displayed on screen.</source>
+        <comment>settings_summary_osd_info_duration</comment>
+        <translation>Bestämmer hur länge informationsmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Action Duration</source>
+        <comment>settings_osd_quick_duration</comment>
+        <translation>Visningstid för åtgärdsmeddelanden</translation>
+    </message>
+    <message>
+        <source>Determines how long messages for quick actions, such as saving or loading states, are displayed on screen.</source>
+        <comment>settings_summary_osd_quick_duration</comment>
+        <translation>Bestämmer hur länge meddelanden för snabba åtgärder, som att spara eller läsa in tillstånd, visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Show CPU Usage</source>
+        <comment>settings_show_cpu</comment>
+        <translation>Visa CPU-användning</translation>
+    </message>
+    <message>
+        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <comment>settings_summary_show_cpu</comment>
+        <translation>Visar värdens CPU-användning för varje systemtråd i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Show Status Indicators</source>
+        <comment>settings_show_status_indicators</comment>
+        <translation>Visa statusindikatorer</translation>
+    </message>
+    <message>
+        <source>Shows indicators when running outside normal parameters (e.g. fast forward).</source>
+        <comment>settings_summary_show_status_indicators</comment>
+        <translation>Visar indikatorer när körningen sker utanför normala parametrar (t.ex. snabbspolning).</translation>
+    </message>
+    <message>
+        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+        <comment>settings_summary_show_frame_times</comment>
+        <translation>Visar en visuell historik över bildrutetider i övre vänstra hörnet på skärmen.</translation>
+    </message>
+    <message>
+        <source>Threaded Rendering</source>
+        <comment>settings_use_thread</comment>
+        <translation>Trådad rendering</translation>
+    </message>
+    <message>
+        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement and is safe to use.</source>
+        <comment>settings_summary_use_thread</comment>
+        <translation>Använder en andra tråd för att rita grafik. Ger en betydande hastighetsökning och är säkert att använda.</translation>
+    </message>
+    <message>
+        <source>OSD Theme</source>
+        <comment>settings_fullscreen_ui_theme</comment>
+        <translation>OSD-tema</translation>
+    </message>
+    <message>
+        <source>Selects the theme used to render on-screen display elements.</source>
+        <comment>settings_summary_fullscreen_ui_theme</comment>
+        <translation>Väljer temat som används för skärmvisningens element.</translation>
+    </message>
+    <message>
+        <source>OSD Font</source>
+        <comment>settings_imgui_text_font</comment>
+        <translation>OSD-teckensnitt</translation>
+    </message>
+    <message>
+        <source>Selects the font used to render on-screen display elements.</source>
+        <comment>settings_summary_imgui_text_font</comment>
+        <translation>Väljer teckensnittet som används för skärmvisningens element.</translation>
+    </message>
+    <message>
+        <source>Overlay Font</source>
+        <comment>settings_imgui_fixed_font</comment>
+        <translation>Överläggsteckensnitt</translation>
+    </message>
+    <message>
+        <source>Selects the font used for the performance overlay.</source>
+        <comment>settings_summary_imgui_fixed_font</comment>
+        <translation>Väljer teckensnittet för prestandaöverlägget.</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_title</comment>
+        <translation>Spelmappar</translation>
+    </message>
+    <message>
+        <source>Add game folder</source>
+        <comment>content_folders_add</comment>
+        <translation>Lägg till spelmapp</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_tab_folders</comment>
+        <translation>Spelmappar</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <comment>content_folders_tab_excluded</comment>
+        <translation>Undantagna sökvägar</translation>
+    </message>
+    <message>
+        <source>No games have been excluded.</source>
+        <comment>content_folders_excluded_empty</comment>
+        <translation>Inga spel har undantagits.</translation>
+    </message>
+    <message>
+        <source>More excluded path actions</source>
+        <comment>content_folders_excluded_more_actions</comment>
+        <translation>Fler åtgärder för undantagna sökvägar</translation>
+    </message>
+    <message>
+        <source>Remove From Excluded Paths</source>
+        <comment>content_folders_excluded_remove</comment>
+        <translation>Ta bort från undantagna sökvägar</translation>
+    </message>
+    <message>
+        <source>Game Display</source>
+        <comment>settings_category_game_display</comment>
+        <translation>Spelskärm</translation>
+    </message>
+    <message>
+        <source>Basic Rendering</source>
+        <comment>settings_category_graphics_basic_rendering</comment>
+        <translation>Grundläggande rendering</translation>
+    </message>
+    <message>
+        <source>Advanced Rendering</source>
+        <comment>settings_category_graphics_advanced_rendering</comment>
+        <translation>Avancerad rendering</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <comment>settings_enabled</comment>
+        <translation>Aktivera prestationer</translation>
+    </message>
+    <message>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <comment>settings_summary_enabled</comment>
+        <translation>När aktiverat och inloggad kommer DuckStation att söka efter prestationer vid uppstart.</translation>
+    </message>
+    <message>
+        <source>Hardcore Mode</source>
+        <comment>settings_challenge_mode</comment>
+        <translation>Hardcore-läge</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <comment>settings_summary_challenge_mode</comment>
+        <translation>&quot;Utmaningsläge&quot; för prestationer, inklusive resultattavlor. Inaktiverar sparade tillstånd, fusk och funktioner för långsammare körning.</translation>
+    </message>
+    <message>
+        <source>Encore Mode</source>
+        <comment>settings_encore_mode</comment>
+        <translation>Encore-läge</translation>
+    </message>
+    <message>
+        <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
+        <comment>settings_summary_encore_mode</comment>
+        <translation>När aktiverat kommer varje session att bete sig som att ingen prestation har låsts upp.</translation>
+    </message>
+    <message>
+        <source>Spectator Mode</source>
+        <comment>settings_spectator_mode</comment>
+        <translation>Åskådarläge</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <comment>settings_summary_spectator_mode</comment>
+        <translation>När detta är aktiverat antar DuckStation att alla prestationer är låsta och skickar inga upplåsningsaviseringar till servern.</translation>
+    </message>
+    <message>
+        <source>Sound Effects</source>
+        <comment>settings_sound_effects</comment>
+        <translation>Ljudeffekter</translation>
+    </message>
+    <message>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_sound_effects</comment>
+        <translation>Spelar upp ljudeffekter vid händelser som upplåsning av prestationer och insändning av resultat till ledartavlor.</translation>
+    </message>
+    <message>
+        <source>Achievement Notifications</source>
+        <comment>settings_notifications</comment>
+        <translation>Aviseringar om prestationer</translation>
+    </message>
+    <message>
+        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_notifications</comment>
+        <translation>Visar popupmeddelanden vid händelser som upplåsning av prestationer och insändning av resultat till ledartavlor.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notifications</source>
+        <comment>settings_leaderboard_notifications</comment>
+        <translation>Aviseringar för ledartavlor</translation>
+    </message>
+    <message>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <comment>settings_summary_leaderboard_notifications</comment>
+        <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en ledartavleutmaning.</translation>
+    </message>
+    <message>
+        <source>Achievement Notification Duration</source>
+        <comment>settings_notifications_duration</comment>
+        <translation>Visningstid för prestationsaviseringar</translation>
+    </message>
+    <message>
+        <source>Controls how long achievement notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_notifications_duration</comment>
+        <translation>Styr hur länge prestationsaviseringar visas på skärmen, i sekunder.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notification Duration</source>
+        <comment>settings_leaderboards_duration</comment>
+        <translation>Visningstid för ledartavleaviseringar</translation>
+    </message>
+    <message>
+        <source>Controls how long leaderboard notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_leaderboards_duration</comment>
+        <translation>Styr hur länge ledartavleaviseringar visas på skärmen, i sekunder.</translation>
+    </message>
+    <message>
+        <source>Notification Location</source>
+        <comment>settings_notification_location</comment>
+        <translation>Aviseringsplats</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for achievement and leaderboard notifications.</source>
+        <comment>settings_summary_notification_location</comment>
+        <translation>Väljer skärmplatsen för aviseringar om prestationer och ledartavlor.</translation>
+    </message>
+    <message>
+        <source>Notification Size</source>
+        <comment>settings_notification_scale</comment>
+        <translation>Aviseringsstorlek</translation>
+    </message>
+    <message>
+        <source>Determines the size of achievement notification popups. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_notification_scale</comment>
+        <translation>Bestämmer storleken på prestationsaviseringar. Automatiskt använder samma skalning som storbildsgränssnittet.</translation>
+    </message>
+    <message>
+        <source>Custom Notification Scale</source>
+        <comment>settings_notification_scale_custom</comment>
+        <translation>Anpassad aviseringsskala</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for achievement notifications.</source>
+        <comment>settings_summary_notification_scale_custom</comment>
+        <translation>Anger den anpassade skalningsprocenten för prestationsaviseringar.</translation>
+    </message>
+    <message>
+        <source>Achievement tracking is not currently enabled. Your login will have no effect until achievements are enabled. Do you want to enable them now?</source>
+        <comment>settings_achievements_enable_prompt</comment>
+        <translation>Prestationsspårning är inte aktiverad för närvarande. Din inloggning har ingen effekt förrän prestationer aktiveras. Vill du aktivera dem nu?</translation>
+    </message>
+    <message>
+        <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
+        <comment>settings_achievements_hardcore_restart_prompt</comment>
+        <translation>Hardcore-läget aktiveras inte förrän spelet har startats om. Vill du starta om spelet nu?</translation>
+    </message>
+    <message>
+        <source>Indicator Size</source>
+        <comment>settings_indicator_scale</comment>
+        <translation>Indikatorstorlek</translation>
+    </message>
+    <message>
+        <source>Determines the size of challenge/progress indicators. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_indicator_scale</comment>
+        <translation>Bestämmer storleken på utmanings- och förloppsindikatorer. Automatiskt använder samma skalning som storbildsgränssnittet.</translation>
+    </message>
+    <message>
+        <source>Custom Indicator Scale</source>
+        <comment>settings_indicator_scale_custom</comment>
+        <translation>Anpassad indikatorskala</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for challenge/progress indicators.</source>
+        <comment>settings_summary_indicator_scale_custom</comment>
+        <translation>Anger den anpassade skalningsprocenten för utmanings- och förloppsindikatorer.</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators</source>
+        <comment>settings_challenge_indicator_mode</comment>
+        <translation>Utmaningsindikatorer</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
+        <comment>settings_summary_challenge_indicator_mode</comment>
+        <translation>Visar en avisering eller ikoner på den valda platsen när en utmaning/förberedd prestation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Indicator Location</source>
+        <comment>settings_indicator_location</comment>
+        <translation>Indikatorplats</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
+        <comment>settings_summary_indicator_location</comment>
+        <translation>Väljer skärmplatsen för utmanings-/förloppsindikatorer och ledartavlespårning.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Trackers</source>
+        <comment>settings_leaderboard_trackers</comment>
+        <translation>Ledartavlespårning</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
+        <comment>settings_summary_leaderboard_trackers</comment>
+        <translation>Visar en timer på den valda platsen när utmaningar för ledartavlan är aktiva.</translation>
+    </message>
+    <message>
+        <source>Progress Indicators</source>
+        <comment>settings_progress_indicator_mode</comment>
+        <translation>Förloppsindikatorer</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
+        <comment>settings_summary_progress_indicator_mode</comment>
+        <translation>Visar ett popupmeddelande på den valda platsen när framstegen mot en uppmätt prestation förändras.</translation>
+    </message>
+    <message>
+        <source>Prefetch Badges</source>
+        <comment>settings_prefetch_badges</comment>
+        <translation>Förhämta märken</translation>
+    </message>
+    <message>
+        <source>Downloads all locked achievement badges when starting the game, reducing delays when showing unlock images.</source>
+        <comment>settings_summary_prefetch_badges</comment>
+        <translation>Hämtar alla låsta prestationsmärken när spelet startas, vilket minskar fördröjningen när upplåsningsbilder visas.</translation>
+    </message>
+    <message>
+        <source>Track Unofficial Achievements</source>
+        <comment>settings_unofficial_test_mode</comment>
+        <translation>Spåra inofficiella prestationer</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_unofficial_test_mode</comment>
+        <translation>När detta är aktiverat spårar DuckStation inofficiella prestationer. Upplåsningar sparas lokalt och skickas inte till RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>Test RetroAchievements Offline Mode</source>
+        <comment>settings_test_offline_mode</comment>
+        <translation>Testa RetroAchievements offlineläge</translation>
+    </message>
+    <message>
+        <source>Forces all RetroAchievements server calls to fail, useful for testing offline mode.</source>
+        <comment>settings_summary_test_offline_mode</comment>
+        <translation>Tvingar alla anrop till RetroAchievements server att misslyckas, användbart för att testa offlineläget.</translation>
+    </message>
+    <message>
+        <source>Rich Presence Monitor</source>
+        <comment>settings_rich_presence_monitor</comment>
+        <translation>Rich Presence-övervakare</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <comment>settings_summary_rich_presence_monitor</comment>
+        <translation>Visar alltid den aktuella RetroAchievements Rich Presence-strängen i indikatorområdet.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
+        <comment>achievement_unsupported_count_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d prestation stöds inte av DuckStation och kan inte låsas upp.</numerusform>
+            <numerusform>%1$d prestationer stöds inte av DuckStation och kan inte låsas upp.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
+        <comment>settings_achievements_disclaimer</comment>
+        <translation>DuckStation använder RetroAchievements (retroachievements.org) som prestationsdatabas och för att spåra framsteg. Du behöver inget RetroAchievements-konto för att använda DuckStation.</translation>
+    </message>
+    <message>
+        <source>Port %1$d</source>
+        <comment>controller_port_format</comment>
+        <translation>Port %1$d</translation>
+    </message>
+    <message>
+        <source>Controller Type</source>
+        <comment>controller_type</comment>
+        <translation>Handkontrollertyp</translation>
+    </message>
+    <message>
+        <source>Selects the emulated controller type.</source>
+        <comment>controller_type_message</comment>
+        <translation>Väljer vilken typ av handkontroll som emuleras.</translation>
+    </message>
+    <message>
+        <source>Show Controller Input</source>
+        <comment>settings_show_inputs</comment>
+        <translation>Visa kontrollerinmatning</translation>
+    </message>
+    <message>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <comment>settings_summary_show_inputs</comment>
+        <translation>Visar aktuellt tillstånd för handkontroller för systemet i nedre vänstra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
+        <comment>touchscreen_controller_reset_layout_confirm</comment>
+        <translation>Detta återställer positionen, storleken och synligheten för alla knappar i den här vyn och skärmorienteringen. Vill du fortsätta?</translation>
+    </message>
+    <message>
+        <source>Editing layout in &apos;%s&apos;.</source>
+        <comment>touchscreen_controller_editing_layout</comment>
+        <translation>Redigerar layout i &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Game Specific Settings</source>
+        <comment>input_settings_game_specific</comment>
+        <translation>Spelspecifika inställningar</translation>
+    </message>
+    <message>
+        <source>Settings are unavailable for this game.</source>
+        <comment>game_settings_unavailable</comment>
+        <translation>Inställningar är inte tillgängliga för detta spel.</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_folder_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>settings_folder_memory_cards</comment>
+        <translation>Minneskort</translation>
+    </message>
+    <message>
+        <source>Game Settings</source>
+        <comment>settings_folder_game_settings</comment>
+        <translation>Spelinställningar</translation>
+    </message>
+    <message>
+        <source>Input Profiles</source>
+        <comment>settings_folder_input_profiles</comment>
+        <translation>Inmatningsprofiler</translation>
+    </message>
+    <message>
+        <source>Textures</source>
+        <comment>settings_folder_textures</comment>
+        <translation>Texturer</translation>
+    </message>
+    <message>
+        <source>Shaders</source>
+        <comment>settings_folder_shaders</comment>
+        <translation>Shaderprogram</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_folder_overlays</comment>
+        <translation>Överlägg</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_folder_screenshots</comment>
+        <translation>Skärmbilder</translation>
+    </message>
+    <message>
+        <source>No save states have been created for this game.</source>
+        <comment>save_state_grid_empty</comment>
+        <translation>Inga sparade tillstånd har skapats för det här spelet.</translation>
+    </message>
+    <message>
+        <source>Toggle Analog Mode</source>
+        <comment>emulation_menu_toggle_analog_mode</comment>
+        <translation>Växla analogt läge</translation>
+    </message>
+    <message>
+        <source>Change Disc</source>
+        <comment>emulation_menu_change_media</comment>
+        <translation>Byt skiva</translation>
+    </message>
+    <message>
+        <source>Restart Game</source>
+        <comment>emulation_menu_restart_content</comment>
+        <translation>Starta om spelet</translation>
+    </message>
+    <message>
+        <source>Close Game</source>
+        <comment>emulation_menu_close_content</comment>
+        <translation>Stäng spelet</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>emulation_menu_content_settings</comment>
+        <translation>Spelegenskaper</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>emulation_menu_input_settings</comment>
+        <translation>Inställningar för handkontroller</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <comment>settings_speed_unlimited</comment>
+        <translation>Obegränsad</translation>
+    </message>
+    <message>
+        <source>%1$s px</source>
+        <comment>settings_value_pixels</comment>
+        <translation>%1$s px</translation>
+    </message>
+    <message>
+        <source>%1$s×</source>
+        <comment>settings_value_scale</comment>
+        <translation>%1$s×</translation>
+    </message>
+    <message>
+        <source>Enable Game Vibration</source>
+        <comment>settings_touchscreen_enable_vibration</comment>
+        <translation>Aktivera vibration från spelet</translation>
+    </message>
+    <message>
+        <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
+        <comment>settings_summary_touchscreen_enable_vibration</comment>
+        <translation>Vidarebefordrar vibration från spelet till enhetens vibrationsmotor, om en sådan finns.</translation>
+    </message>
+    <message>
+        <source>Global Save %d</source>
+        <comment>save_slot_global_n</comment>
+        <translation>Globalt sparat tillstånd %d</translation>
+    </message>
+    <message>
+        <source>Undo Load State</source>
+        <comment>save_slot_undo_load_state</comment>
+        <translation>Ångra inläst tillstånd</translation>
+    </message>
+    <message>
+        <source>No save states found.</source>
+        <comment>save_state_manager_empty</comment>
+        <translation>Inga sparade tillstånd hittades.</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>title_activity_memory_card_editor</comment>
+        <translation>Redigera minneskort</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>action_memory_card_editor</comment>
+        <translation>Redigera minneskort</translation>
+    </message>
+    <message>
+        <source>Import Card</source>
+        <comment>action_memory_card_editor_import_card</comment>
+        <translation>Importera kort</translation>
+    </message>
+    <message>
+        <source>Open Card</source>
+        <comment>action_memory_card_editor_open_card</comment>
+        <translation>Öppna kort</translation>
+    </message>
+    <message>
+        <source>New Card</source>
+        <comment>action_memory_card_editor_new_card</comment>
+        <translation>Nytt kort</translation>
+    </message>
+    <message>
+        <source>Format Card</source>
+        <comment>action_memory_card_editor_format_card</comment>
+        <translation>Formatera kort</translation>
+    </message>
+    <message>
+        <source>Delete Card</source>
+        <comment>action_memory_card_editor_delete_card</comment>
+        <translation>Ta bort kort</translation>
+    </message>
+    <message>
+        <source>Close Card</source>
+        <comment>action_memory_card_editor_close_card</comment>
+        <translation>Stäng kort</translation>
+    </message>
+    <message>
+        <source>No memory cards are open.</source>
+        <comment>memory_card_editor_no_cards_open</comment>
+        <translation>Inga minneskort är öppna.</translation>
+    </message>
+    <message>
+        <source>This memory card is empty.</source>
+        <comment>memory_card_editor_no_saves</comment>
+        <translation>Detta minneskort är tomt.</translation>
+    </message>
+    <message>
+        <source>%d blocks free</source>
+        <comment>memory_card_editor_free_blocks</comment>
+        <translation>%d lediga block</translation>
+    </message>
+    <message>
+        <source>%d Blocks</source>
+        <comment>memory_card_editor_blocks</comment>
+        <translation>%d block</translation>
+    </message>
+    <message>
+        <source>%.1f KB</source>
+        <comment>memory_card_editor_file_size</comment>
+        <translation>%.1f KB</translation>
+    </message>
+    <message>
+        <source>%s (Deleted)</source>
+        <comment>memory_card_editor_deleted_title</comment>
+        <translation>%s (borttagen)</translation>
+    </message>
+    <message>
+        <source>Copy Save</source>
+        <comment>memory_card_editor_copy_save</comment>
+        <translation>Kopiera sparning</translation>
+    </message>
+    <message>
+        <source>Delete Save</source>
+        <comment>memory_card_editor_delete_save</comment>
+        <translation>Ta bort sparning</translation>
+    </message>
+    <message>
+        <source>Undelete Save</source>
+        <comment>memory_card_editor_undelete_save</comment>
+        <translation>Ångra borttagning av sparning</translation>
+    </message>
+    <message>
+        <source>Permanently Delete Save</source>
+        <comment>memory_card_editor_permanently_delete_save</comment>
+        <translation>Ta bort sparning permanent</translation>
+    </message>
+    <message>
+        <source>No memory cards found.</source>
+        <comment>memory_card_editor_no_cards_found</comment>
+        <translation>Inga minneskort hittades.</translation>
+    </message>
+    <message>
+        <source>This card is already open.</source>
+        <comment>memory_card_editor_card_already_open</comment>
+        <translation>Detta kort är redan öppet.</translation>
+    </message>
+    <message>
+        <source>Failed to open or read memory card.</source>
+        <comment>memory_card_editor_failed_to_open_card</comment>
+        <translation>Misslyckades med att öppna eller läsa minneskortet.</translation>
+    </message>
+    <message>
+        <source>Must have at least two cards open to copy.</source>
+        <comment>memory_card_editor_must_have_at_least_two_cards_to_copy</comment>
+        <translation>Minst två kort måste vara öppna för att kunna kopiera.</translation>
+    </message>
+    <message>
+        <source>Select Card</source>
+        <comment>memory_card_editor_select_card</comment>
+        <translation>Välj kort</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <comment>memory_card_editor_error</comment>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>This file requires %1$d blocks, but only %2$d blocks are free.</source>
+        <comment>memory_card_editor_copy_insufficient_blocks</comment>
+        <translation>Denna fil kräver %1$d block, men endast %2$d block är lediga.</translation>
+    </message>
+    <message>
+        <source>File &apos;%s&apos; already exists on destination card.</source>
+        <comment>memory_card_editor_copy_already_exists</comment>
+        <translation>Filen &apos;%s&apos; finns redan på målkortet.</translation>
+    </message>
+    <message>
+        <source>Failed to read file &apos;%s&apos; from source card.</source>
+        <comment>memory_card_editor_copy_read_failed</comment>
+        <translation>Misslyckades med att läsa filen &apos;%s&apos; från källkortet.</translation>
+    </message>
+    <message>
+        <source>Failed to write file &apos;%s&apos; to destination card.</source>
+        <comment>memory_card_editor_copy_write_failed</comment>
+        <translation>Misslyckades med att skriva filen &apos;%s&apos; till målkortet.</translation>
+    </message>
+    <message>
+        <source>Copied &apos;%1$s&apos; to &apos;%2$s&apos;.</source>
+        <comment>memory_card_editor_copy_success</comment>
+        <translation>Kopierade &apos;%1$s&apos; till &apos;%2$s&apos;.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the save &apos;%s&apos;?</source>
+        <comment>memory_card_editor_delete_confirm</comment>
+        <translation>Är du säker på att du vill ta bort sparningen &apos;%s&apos;?</translation>
+    </message>
+    <message>
+        <source>Deleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_success</comment>
+        <translation>Tog bort sparningen &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Failed to delete file &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_failed</comment>
+        <translation>Misslyckades med att ta bort filen &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Failed to import card. It may not be a supported format.</source>
+        <comment>memory_card_editor_import_failed</comment>
+        <translation>Misslyckades med att importera kortet. Formatet kanske inte stöds.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be deleted, and cannot be recovered. Are you sure you want to delete this card?</source>
+        <comment>memory_card_editor_delete_card_confirm_message</comment>
+        <translation>Minneskortet &apos;%s&apos; kommer att tas bort och kan inte återställas. Är du säker på att du vill ta bort detta kort?</translation>
+    </message>
+    <message>
+        <source>Failed to delete &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_failed</comment>
+        <translation>Misslyckades med att ta bort &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Deleted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_success</comment>
+        <translation>Tog bort kortet &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be formatted, clearing all saves. Are you sure you want to format this card?</source>
+        <comment>memory_card_editor_format_card_confirm_message</comment>
+        <translation>Minneskortet &apos;%s&apos; kommer att formateras och alla sparningar raderas. Är du säker på att du vill formatera detta kort?</translation>
+    </message>
+    <message>
+        <source>Failed to format &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_failed</comment>
+        <translation>Misslyckades med att formatera &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Formatted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_success</comment>
+        <translation>Formaterade kortet &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Importing &apos;%1$s&apos; will remove all saves in &apos;%2$s&apos;. Do you want to continue?</source>
+        <comment>memory_card_editor_import_card_confirm_message</comment>
+        <translation>Import av &apos;%1$s&apos; kommer att ta bort alla sparningar i &apos;%2$s&apos;. Vill du fortsätta?</translation>
+    </message>
+    <message>
+        <source>Failed to read &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_read_failed</comment>
+        <translation>Misslyckades med att läsa &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Imported card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_success</comment>
+        <translation>Importerade kortet &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Undeleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_undelete_success</comment>
+        <translation>Återställde den borttagna sparningen &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Failed to undelete save &apos;%s&apos;. The save may already be partially overwritten.</source>
+        <comment>memory_card_editor_undelete_failed</comment>
+        <translation>Misslyckades med att återställa den borttagna sparningen &apos;%s&apos;. Sparningen kan redan vara delvis överskriven.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to permanently delete the save &apos;%s&apos;? You cannot recover the save afterwards.</source>
+        <comment>memory_card_editor_permanently_delete_confirm</comment>
+        <translation>Är du säker på att du vill ta bort sparningen &apos;%s&apos; permanent? Du kan inte återställa sparningen efteråt.</translation>
+    </message>
+    <message>
+        <source>Memory Card Name</source>
+        <comment>create_memory_card_title</comment>
+        <translation>Minneskortets namn</translation>
+    </message>
+    <message>
+        <source>You must enter a card name.</source>
+        <comment>create_memory_card_no_name</comment>
+        <translation>Du måste ange ett kortnamn.</translation>
+    </message>
+    <message>
+        <source>&apos;%s&apos; is not a valid card name.</source>
+        <comment>create_memory_card_invalid_name</comment>
+        <translation>&apos;%s&apos; är inte ett giltigt kortnamn.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists.</source>
+        <comment>create_memory_card_exists</comment>
+        <translation>Ett minneskort med namnet &apos;%s&apos; finns redan.</translation>
+    </message>
+    <message>
+        <source>Failed to create memory card &apos;%s&apos;.</source>
+        <comment>create_memory_card_failed</comment>
+        <translation>Misslyckades med att skapa minneskortet &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; created.</source>
+        <comment>create_memory_card_done</comment>
+        <translation>Minneskortet &apos;%s&apos; skapades.</translation>
+    </message>
+    <message>
+        <source>Edit Memory Cards</source>
+        <comment>game_list_bottom_sheet_edit_memory_cards</comment>
+        <translation>Redigera minneskort</translation>
+    </message>
+    <message>
+        <source>No memory cards found for this game.</source>
+        <comment>game_list_bottom_sheet_no_memory_cards_found</comment>
+        <translation>Inga minneskort hittades för detta spel.</translation>
+    </message>
+    <message>
+        <source>Game Hash</source>
+        <comment>game_properties_content_hash</comment>
+        <translation>Spelhash</translation>
+    </message>
+    <message>
+        <source>RA Hash</source>
+        <comment>game_properties_achievements_hash</comment>
+        <translation>RA-hash</translation>
+    </message>
+    <message>
+        <source>Just a few setup steps are necessary before you can run games.</source>
+        <comment>setup_wizard_welcome_first_paragraph</comment>
+        <translation>Bara några få inställningssteg krävs innan du kan köra spel.</translation>
+    </message>
+    <message>
+        <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
+        <comment>setup_wizard_content_folders_message</comment>
+        <translation>DuckStation upptäcker automatiskt spel i de mappar du anger här. Du bör lägga till minst en mapp att söka igenom. Lägg inte till rotkatalogen på din lagringsvolym, eftersom sökningen då tar mycket lång tid.</translation>
+    </message>
+    <message>
+        <source>Controller Setup</source>
+        <comment>setup_wizard_input_setup</comment>
+        <translation>Handkontroller</translation>
+    </message>
+    <message>
+        <source>No Game Folders Selected</source>
+        <comment>setup_wizard_no_directories_title</comment>
+        <translation>Inga spelmappar valda</translation>
+    </message>
+    <message>
+        <source>The game list will be empty until you add a folder. Continue anyway?</source>
+        <comment>setup_wizard_no_directories_message</comment>
+        <translation>Spellistan är tom tills du lägger till en mapp. Fortsätta ändå?</translation>
+    </message>
+    <message>
+        <source>Choose how games should be displayed in the main list.</source>
+        <comment>setup_wizard_view_message</comment>
+        <translation>Välj hur spel ska visas i huvudlistan.</translation>
+    </message>
+    <message>
+        <source>Alignment (Landscape)</source>
+        <comment>settings_display_alignment_landscape</comment>
+        <translation>Justering (liggande)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in landscape mode.</source>
+        <comment>settings_summary_display_alignment_landscape</comment>
+        <translation>Väljer var bilden renderas i liggande läge.</translation>
+    </message>
+    <message>
+        <source>Alignment (Portrait)</source>
+        <comment>settings_display_alignment_portrait</comment>
+        <translation>Justering (stående)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in portrait mode.</source>
+        <comment>settings_summary_display_alignment_portrait</comment>
+        <translation>Väljer var bilden renderas i stående läge.</translation>
+    </message>
+    <message>
+        <source>Use Debug GPU Device</source>
+        <comment>settings_use_debug_device</comment>
+        <translation>Använd GPU-enhet för felsökning</translation>
+    </message>
+    <message>
+        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_debug_device</comment>
+        <translation>Aktivera felsökning när detta stöds av värdens API för rendering. Endast för användning av utvecklare.</translation>
+    </message>
+    <message>
+        <source>Prefer OpenGL ES Context</source>
+        <comment>settings_prefer_gles_context</comment>
+        <translation>Föredra OpenGL ES-kontext</translation>
+    </message>
+    <message>
+        <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
+        <comment>settings_summary_prefer_gles_context</comment>
+        <translation>Använder OpenGL ES även när OpenGL för stationära datorer stöds. Kan förbättra prestandan på vissa SBC-drivrutiner.</translation>
+    </message>
+    <message>
+        <source>Disable Shader Caches</source>
+        <comment>settings_disable_shader_cache</comment>
+        <translation>Inaktivera shadercachar</translation>
+    </message>
+    <message>
+        <source>Prevents the caching of shaders, forcing them to be recompiled every time.</source>
+        <comment>settings_summary_disable_shader_cache</comment>
+        <translation>Förhindrar cachning av shaders och tvingar dem att kompileras om varje gång.</translation>
+    </message>
+    <message>
+        <source>Shader &apos;%s&apos; added.</source>
+        <comment>postfx_shader_added</comment>
+        <translation>Shadern &apos;%s&apos; har lagts till.</translation>
+    </message>
+    <message>
+        <source>Shaders cleared.</source>
+        <comment>postfx_shaders_cleared</comment>
+        <translation>Shaders har tömts.</translation>
+    </message>
+    <message>
+        <source>Confirm Shader Clear</source>
+        <comment>postfx_confirm_clear_title</comment>
+        <translation>Bekräfta tömning av shaders</translation>
+    </message>
+    <message>
+        <source>This will remove all shaders from the chain. Their configuration cannot be recovered. Are you sure you want to clear all shaders?</source>
+        <comment>postfx_confirm_clear_message</comment>
+        <translation>Detta tar bort alla shaders från kedjan. Deras konfiguration kan inte återställas. Är du säker på att du vill tömma alla shaders?</translation>
+    </message>
+    <message>
+        <source>Stage %d removed.</source>
+        <comment>postfx_shader_removed</comment>
+        <translation>Steg %d har tagits bort.</translation>
+    </message>
+    <message>
+        <source>Enable Post Processing</source>
+        <comment>postfx_setting_enable</comment>
+        <translation>Aktivera efterbehandling</translation>
+    </message>
+    <message>
+        <source>Applies the post-processing chain configured below.</source>
+        <comment>postfx_setting_summary_enable</comment>
+        <translation>Tillämpar efterbehandlingskedjan som konfigurerats nedan.</translation>
+    </message>
+    <message>
+        <source>Add Shader</source>
+        <comment>postfx_setting_add_shader</comment>
+        <translation>Lägg till shader</translation>
+    </message>
+    <message>
+        <source>Adds a new shader to the chain.</source>
+        <comment>postfx_setting_summary_add_shader</comment>
+        <translation>Lägger till en ny shader till kedjan.</translation>
+    </message>
+    <message>
+        <source>Clear Shaders</source>
+        <comment>postfx_setting_clear_shaders</comment>
+        <translation>Töm shaders</translation>
+    </message>
+    <message>
+        <source>Removes all shaders from the chain.</source>
+        <comment>postfx_setting_summary_clear_shaders</comment>
+        <translation>Tar bort alla shaders från kedjan.</translation>
+    </message>
+    <message>
+        <source>Stage %1$d: %2$s</source>
+        <comment>postfx_stage_category</comment>
+        <translation>Steg %1$d: %2$s</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <comment>postfx_setting_options</comment>
+        <translation>Alternativ</translation>
+    </message>
+    <message>
+        <source>Edits options for this shader.</source>
+        <comment>postfx_setting_summary_options</comment>
+        <translation>Redigerar alternativ för den här shadern.</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>postfx_setting_move_up</comment>
+        <translation>Flytta upp</translation>
+    </message>
+    <message>
+        <source>Moves this shader up in the application order.</source>
+        <comment>postfx_setting_summary_move_up</comment>
+        <translation>Flyttar den här shadern uppåt i tillämpningsordningen.</translation>
+    </message>
+    <message>
+        <source>Shader %1$d swapped with shader %2$d.</source>
+        <comment>postfx_shader_swapped</comment>
+        <translation>Shader %1$d har bytt plats med shader %2$d.</translation>
+    </message>
+    <message>
+        <source>Removes this shader from the post-processing pipeline.</source>
+        <comment>postfx_setting_summary_remove_shader</comment>
+        <translation>Tar bort den här shadern från efterbehandlingskedjan.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <comment>postfx_setting_remove_shader</comment>
+        <translation>Ta bort</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>postfx_setting_move_down</comment>
+        <translation>Flytta ner</translation>
+    </message>
+    <message>
+        <source>Moves this shader down in the application order.</source>
+        <comment>postfx_setting_summary_move_down</comment>
+        <translation>Flyttar den här shadern nedåt i tillämpningsordningen.</translation>
+    </message>
+    <message>
+        <source>Select Shader</source>
+        <comment>postfx_add_select_shader</comment>
+        <translation>Välj shader</translation>
+    </message>
+    <message>
+        <source>No shaders found.</source>
+        <comment>postfx_add_no_shaders_found</comment>
+        <translation>Inga shaders hittades.</translation>
+    </message>
+    <message>
+        <source>This shader does not have any configurable options.</source>
+        <comment>postfx_no_options</comment>
+        <translation>Den här shadern har inga konfigurerbara alternativ.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Additional border overlays can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</source>
+        <comment>postfx_additional_shaders_notice</comment>
+        <translation>Ytterligare GLSL-, ReShade- och Slang-shaders kan läggas till i
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Ytterligare kantöverlägg kan läggas till i
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Border Overlay</source>
+        <comment>postfx_border_overlay_preset</comment>
+        <translation>Kantöverlägg</translation>
+    </message>
+    <message>
+        <source>Patches Unavailable</source>
+        <comment>game_properties_patches_unavailable</comment>
+        <translation>Patchar saknas</translation>
+    </message>
+    <message>
+        <source>No patches are available for this game.</source>
+        <comment>game_properties_patches_unavailable_summary</comment>
+        <translation>Det finns inga patchar tillgängliga för detta spel.</translation>
+    </message>
+    <message>
+        <source>Patch Codes Unavailable</source>
+        <comment>game_properties_patch_codes_unavailable</comment>
+        <translation>Patchkoder saknas</translation>
+    </message>
+    <message>
+        <source>No patch codes are available for this game.</source>
+        <comment>game_properties_patch_codes_unavailable_summary</comment>
+        <translation>Det finns inga patchkoder tillgängliga för detta spel.</translation>
+    </message>
+    <message>
+        <source>Enable Codes</source>
+        <comment>game_properties_enable_patch_codes</comment>
+        <translation>Aktivera koder</translation>
+    </message>
+    <message>
+        <source>Enabling this option will enable any codes selected below to be applied.</source>
+        <comment>game_properties_enable_patch_codes_summary</comment>
+        <translation>Aktiverar tillämpning av de koder som valts nedan.</translation>
+    </message>
+    <message>
+        <source>Load Database Codes</source>
+        <comment>game_properties_load_database_codes</comment>
+        <translation>Läs in databaskoder</translation>
+    </message>
+    <message>
+        <source>Import Codes</source>
+        <comment>game_properties_import_patch_codes</comment>
+        <translation>Importera koder</translation>
+    </message>
+    <message>
+        <source>Patch codes can be imported directly from text,
+        or from files in various formats. Please choose the type of codes to import.</source>
+        <comment>game_properties_import_patch_codes_message</comment>
+        <translation>Patchkoder kan importeras direkt från text
+        eller från filer i olika format. Välj vilken typ av koder som ska importeras.</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <comment>game_properties_import_patch_codes_text</comment>
+        <translation>Text</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <comment>game_properties_import_patch_codes_file</comment>
+        <translation>Fil</translation>
+    </message>
+    <message>
+        <source>Import Failed</source>
+        <comment>game_properties_import_failed</comment>
+        <translation>Importen misslyckades</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d patch codes were added.</source>
+        <comment>game_properties_import_count</comment>
+        <extracomment>Android plural quantities: one=&quot;%d patch code was added.&quot;; other=&quot;%d patch codes were added.&quot;</extracomment>
+        <translation>
+            <numerusform>%d patchkod har lagts till.</numerusform>
+            <numerusform>%d patchkoder har lagts till.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Confirm Removal</source>
+        <comment>game_properties_remove_patch_codes</comment>
+        <translation>Bekräfta borttagning</translation>
+    </message>
+    <message>
+        <source>You are removing all patch codes manually added for this game. This action cannot be reversed.
+
+Any database cheats will still be loaded and present unless you uncheck the &quot;Load Database Cheats&quot; option.
+
+Are you sure you want to continue?</source>
+        <comment>game_properties_remove_patch_codes_message</comment>
+        <translation>Du tar bort alla patchkoder som lagts till manuellt för detta spel. Åtgärden kan inte ångras.
+
+Databasfusk läses fortfarande in och finns kvar om du inte avmarkerar alternativet &quot;Läs in databasfusk&quot;.
+
+Är du säker på att du vill fortsätta?</translation>
+    </message>
+    <message>
+        <source>Patch Codes Disabled</source>
+        <comment>game_properties_should_enable_patch_codes</comment>
+        <translation>Patchkoder inaktiverade</translation>
+    </message>
+    <message>
+        <source>Enabling this code will not have any effect until codes are enabled for this game. Do you want to do this now?</source>
+        <comment>game_properties_should_enable_patch_codes_message</comment>
+        <translation>Att aktivera den här koden har ingen effekt förrän koder har aktiverats för detta spel. Vill du göra det nu?</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>game_properties_patch_code_disabled</comment>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message>
+        <source>Failed to update custom properties.</source>
+        <comment>game_properties_custom_properties_update_failed</comment>
+        <translation>Misslyckades med att uppdatera anpassade egenskaper.</translation>
+    </message>
+    <message>
+        <source>Edit Details</source>
+        <comment>game_properties_edit_details</comment>
+        <translation>Redigera detaljer</translation>
+    </message>
+    <message>
+        <source>Default (%1$s)</source>
+        <comment>game_properties_default_value</comment>
+        <translation>Standard (%1$s)</translation>
+    </message>
+    <message>
+        <source>Disable All Patches</source>
+        <comment>patch_codes_disable_all_patches</comment>
+        <translation>Inaktivera alla patchar</translation>
+    </message>
+    <message>
+        <source>Disables every patch currently enabled for this game.</source>
+        <comment>patch_codes_disable_all_patches_summary</comment>
+        <translation>Inaktiverar alla patchar som för närvarande är aktiverade för detta spel.</translation>
+    </message>
+    <message>
+        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>Otillgängligt när RetroAchievements hardcore-läge är aktivt.</translation>
+    </message>
+    <message>
+        <source>Search codes</source>
+        <comment>cheat_codes_search</comment>
+        <translation>Sök koder</translation>
+    </message>
+    <message>
+        <source>Sort By Name</source>
+        <comment>cheat_codes_sort</comment>
+        <translation>Sortera efter namn</translation>
+    </message>
+    <message>
+        <source>Database code</source>
+        <comment>cheat_codes_database</comment>
+        <translation>Databaskod</translation>
+    </message>
+    <message>
+        <source>Save Copy</source>
+        <comment>cheat_codes_save_copy</comment>
+        <translation>Spara kopia</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>cheat_codes_name</comment>
+        <translation>Namn</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <comment>cheat_codes_group</comment>
+        <translation>Grupp</translation>
+    </message>
+    <message>
+        <source>Ungrouped</source>
+        <comment>cheat_codes_ungrouped</comment>
+        <translation>Inte grupperad</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <comment>cheat_codes_description</comment>
+        <translation>Beskrivning</translation>
+    </message>
+    <message>
+        <source>Instructions</source>
+        <comment>cheat_codes_instructions</comment>
+        <translation>Instruktioner</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>cheat_codes_type</comment>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Activation</source>
+        <comment>cheat_codes_activation</comment>
+        <translation>Aktivering</translation>
+    </message>
+    <message>
+        <source>Options Type</source>
+        <comment>cheat_codes_options_type</comment>
+        <translation>Alternativtyp</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>cheat_codes_options_none</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Choice</source>
+        <comment>cheat_codes_options_choice</comment>
+        <translation>Val</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <comment>cheat_codes_options_range</comment>
+        <translation>Omfång</translation>
+    </message>
+    <message>
+        <source>Option name</source>
+        <comment>cheat_codes_option_name</comment>
+        <translation>Alternativnamn</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>cheat_codes_option_value</comment>
+        <translation>Värde</translation>
+    </message>
+    <message>
+        <source>Add Option</source>
+        <comment>cheat_codes_option_add</comment>
+        <translation>Lägg till alternativ</translation>
+    </message>
+    <message>
+        <source>Remove Option</source>
+        <comment>cheat_codes_option_remove</comment>
+        <translation>Ta bort alternativ</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <comment>cheat_codes_range_minimum</comment>
+        <translation>Minimivärde</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <comment>cheat_codes_range_maximum</comment>
+        <translation>Maximivärde</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <comment>cheat_codes_save</comment>
+        <translation>Spara</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <comment>cheat_codes_delete</comment>
+        <translation>Ta bort</translation>
+    </message>
+    <message>
+        <source>Delete this user code?</source>
+        <comment>cheat_codes_confirm_delete</comment>
+        <translation>Ta bort den här användarkoden?</translation>
+    </message>
+    <message>
+        <source>Name must not be blank.</source>
+        <comment>cheat_codes_validation_name</comment>
+        <translation>Namnet får inte vara tomt.</translation>
+    </message>
+    <message>
+        <source>Instructions must not be blank.</source>
+        <comment>cheat_codes_validation_body</comment>
+        <translation>Instruktionerna får inte vara tomma.</translation>
+    </message>
+    <message>
+        <source>The full name contains an invalid section delimiter or line break.</source>
+        <comment>cheat_codes_validation_section</comment>
+        <translation>Det fullständiga namnet innehåller en ogiltig avsnittsavgränsare eller radbrytning.</translation>
+    </message>
+    <message>
+        <source>Another code already has this name.</source>
+        <comment>cheat_codes_validation_collision</comment>
+        <translation>En annan kod har redan detta namn.</translation>
+    </message>
+    <message>
+        <source>Choice options need unique nonblank names and unsigned 32-bit values.</source>
+        <comment>cheat_codes_validation_choice</comment>
+        <translation>Valalternativ behöver unika namn som inte är tomma och 32-bitarsvärden utan tecken.</translation>
+    </message>
+    <message>
+        <source>Choice mode requires at least one option.</source>
+        <comment>cheat_codes_validation_choice_empty</comment>
+        <translation>Valläget kräver minst ett alternativ.</translation>
+    </message>
+    <message>
+        <source>Range must satisfy 0 ≤ minimum &lt; maximum ≤ 65535.</source>
+        <comment>cheat_codes_validation_range</comment>
+        <translation>Omfånget måste uppfylla 0 ≤ minimivärde &lt; maximivärde ≤ 65535.</translation>
+    </message>
+    <message>
+        <source>Cheat file operation failed: %1$s</source>
+        <comment>cheat_codes_io_failed</comment>
+        <translation>Åtgärden på fuskfilen misslyckades: %1$s</translation>
+    </message>
+    <message>
+        <source>Codes exported successfully.</source>
+        <comment>cheat_codes_export_complete</comment>
+        <translation>Koderna har exporterats.</translation>
+    </message>
+    <message>
+        <source>Verify</source>
+        <comment>content_verification_verify</comment>
+        <translation>Verifiera</translation>
+    </message>
+    <message>
+        <source>Reading and checking game…</source>
+        <comment>content_verification_progress_status</comment>
+        <translation>Läser och kontrollerar spel…</translation>
+    </message>
+    <message>
+        <source>Enable Global Save States</source>
+        <comment>settings_enable_global_save_states</comment>
+        <translation>Aktivera globala sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Makes the legacy global save state slots available. These slots are independent of the current game.</source>
+        <comment>settings_summary_enable_global_save_states</comment>
+        <translation>Gör de äldre globala platserna för sparade tillstånd tillgängliga. Dessa platser är oberoende av det aktuella spelet.</translation>
+    </message>
+    <message>
+        <source>Screenshot Size</source>
+        <comment>settings_screenshot_mode</comment>
+        <translation>Skärmbildsstorlek</translation>
+    </message>
+    <message>
+        <source>Determines the size of screenshots created by DuckStation.</source>
+        <comment>settings_summary_screenshot_mode</comment>
+        <translation>Bestämmer storleken för skärmbilder som skapas av DuckStation.</translation>
+    </message>
+    <message>
+        <source>Determines the format that screenshots will be saved/compressed with.</source>
+        <comment>settings_summary_screenshot_format</comment>
+        <translation>Bestämmer det format som skärmbilder ska sparas/komprimeras med.</translation>
+    </message>
+    <message>
+        <source>Screenshot Quality</source>
+        <comment>settings_screenshot_quality</comment>
+        <translation>Skärmbildskvalitet</translation>
+    </message>
+    <message>
+        <source>Selects the quality at which screenshots will be compressed.</source>
+        <comment>settings_summary_screenshot_quality</comment>
+        <translation>Väljer den kvalitet som skärmbilder komprimeras med.</translation>
+    </message>
+    <message>
+        <source>Screenshot File Name Format</source>
+        <comment>settings_screenshot_file_name_format</comment>
+        <translation>Filnamnsformat för skärmbilder</translation>
+    </message>
+    <message>
+        <source>Determines the format of the screenshot file names.</source>
+        <comment>settings_summary_screenshot_file_name_format</comment>
+        <translation>Bestämmer formatet för skärmbildernas filnamn.</translation>
+    </message>
+    <message>
+        <source>Enables manual fine cropping of the display area while preserving the aspect ratio. Useful for removing black borders.</source>
+        <comment>settings_summary_fine_crop_mode</comment>
+        <translation>Aktiverar manuell finbeskärning av visningsområdet med bibehållet bildförhållande. Användbart för att ta bort svarta kanter.</translation>
+    </message>
+    <message>
+        <source>Minimal Output Latency</source>
+        <comment>settings_output_latency_minimal</comment>
+        <translation>Minimal utdatalatens</translation>
+    </message>
+    <message>
+        <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+        <comment>settings_summary_output_latency_minimal</comment>
+        <translation>När den är aktiverad används den minsta stödda utmatningslatensen för värd-API:et.</translation>
+    </message>
+    <message>
+        <source>Sequence Length</source>
+        <comment>settings_stretch_sequence_length_ms</comment>
+        <translation>Sekvenslängd</translation>
+    </message>
+    <message>
+        <source>Sets the length of each audio stretch sequence in milliseconds.</source>
+        <comment>settings_summary_stretch_sequence_length_ms</comment>
+        <translation>Anger längden på varje tidssträckningssekvens för ljud i millisekunder.</translation>
+    </message>
+    <message>
+        <source>Seek Window</source>
+        <comment>settings_stretch_seek_window_ms</comment>
+        <translation>Sökfönster</translation>
+    </message>
+    <message>
+        <source>Sets the search window used when stretching audio, in milliseconds.</source>
+        <comment>settings_summary_stretch_seek_window_ms</comment>
+        <translation>Anger sökfönstret som används vid tidssträckning av ljud, i millisekunder.</translation>
+    </message>
+    <message>
+        <source>Overlap</source>
+        <comment>settings_stretch_overlap_ms</comment>
+        <translation>Överlappning</translation>
+    </message>
+    <message>
+        <source>Sets how much neighboring audio stretch sequences overlap, in milliseconds.</source>
+        <comment>settings_summary_stretch_overlap_ms</comment>
+        <translation>Anger hur mycket intilliggande tidssträckningssekvenser för ljud överlappar, i millisekunder.</translation>
+    </message>
+    <message>
+        <source>Use Quick Seek</source>
+        <comment>settings_stretch_use_quick_seek</comment>
+        <translation>Använd snabbsökning</translation>
+    </message>
+    <message>
+        <source>Uses a quicker seek method when stretching audio. May reduce quality.</source>
+        <comment>settings_summary_stretch_use_quick_seek</comment>
+        <translation>Använder en snabbare sökmetod vid tidssträckning av ljud. Kan minska kvaliteten.</translation>
+    </message>
+    <message>
+        <source>Use Anti-Aliasing Filter</source>
+        <comment>settings_stretch_use_aa_filter</comment>
+        <translation>Använd antialiasfilter</translation>
+    </message>
+    <message>
+        <source>Uses an anti-aliasing filter when stretching audio.</source>
+        <comment>settings_summary_stretch_use_aa_filter</comment>
+        <translation>Använder ett antialiasfilter vid tidssträckning av ljud.</translation>
+    </message>
+    <message>
+        <source>Analog Toggle</source>
+        <comment>touchscreen_controller_analog</comment>
+        <translation>Analog växling</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <comment>touchscreen_controller_l1</comment>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <comment>touchscreen_controller_l2</comment>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <comment>touchscreen_controller_r1</comment>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <comment>touchscreen_controller_r2</comment>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <comment>touchscreen_controller_triangle</comment>
+        <translation>Triangel</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <comment>touchscreen_controller_circle</comment>
+        <translation>Cirkel</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <comment>touchscreen_controller_cross</comment>
+        <translation>Kryss</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <comment>touchscreen_controller_square</comment>
+        <translation>Fyrkant</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <comment>touchscreen_controller_select</comment>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>touchscreen_controller_back</comment>
+        <translation>Tillbaka</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <comment>touchscreen_controller_a</comment>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <comment>touchscreen_controller_b</comment>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <comment>content_list_no_achievements</comment>
+        <translation>Inte tillgängligt</translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <comment>content_list_filter_all</comment>
+        <translation>Alla filer</translation>
+    </message>
+    <message>
+        <source>Merge Disc Sets</source>
+        <comment>content_list_merge_media_sets</comment>
+        <translation>Slå samman skivuppsättningar</translation>
+    </message>
+    <message>
+        <source>Scan For New Games</source>
+        <comment>content_list_scan_new</comment>
+        <translation>Sök efter nya spel</translation>
+    </message>
+    <message>
+        <source>Rescan All Games</source>
+        <comment>content_list_rescan_all</comment>
+        <translation>Sök igenom alla spel igen</translation>
+    </message>
+    <message>
+        <source>No games were found. Please add a directory with games to begin.</source>
+        <comment>content_list_empty_title</comment>
+        <translation>Inga spel hittades. Lägg till en katalog med spel för att börja.</translation>
+    </message>
+    <message>
+        <source>Add Game Directory</source>
+        <comment>content_list_empty_add_directory</comment>
+        <translation>Lägg till spelkatalog</translation>
+    </message>
+    <message>
+        <source>Start Game</source>
+        <comment>content_bottom_sheet_start</comment>
+        <translation>Starta spel</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>content_bottom_sheet_properties</comment>
+        <translation>Spelegenskaper</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
+        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <translation>Är du säker på att du vill ta bort omslagsbilden för detta spel? Den kan inte återställas.</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <comment>content_download_covers_description</comment>
+        <translation>DuckStation kan automatiskt hämta omslagsbilder för spel som för närvarande saknar omslag. Vi tillhandahåller inga omslagsbilder, så användaren måste ange en egen bildkälla.</translation>
+    </message>
+    <message>
+        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
+        <comment>content_download_covers_copyright</comment>
+        <translation>Beroende på din jurisdiktion kan spelomslag vara upphovsrättsskyddade. Du får endast använda verktyget med dina egna servrar och bilder.</translation>
+    </message>
+    <message>
+        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
+
+${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.
+
+Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>content_download_covers_hint</comment>
+        <translation>Ange webbadresserna som omslag ska hämtas från i rutan nedan, med en malladress per rad. Följande variabler är tillgängliga:
+
+${title}: Spelets titel.
+${savetitle}: Spelets titel för sparfiler, inklusive regionssuffix.
+${localizedtitle}: Lokaliserad titel för spelet på dess originalspråk.
+${filetitle}: Namndelen av spelets filnamn.
+${serial}: Spelets serienummer.
+
+Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
+        <comment>content_download_covers_invalid_url</comment>
+        <translation>Webbadressen innehåller inte ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} eller ${serial}.</translation>
+    </message>
+    <message>
+        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <comment>content_download_covers_use_serial_description</comment>
+        <translation>Som standard sparas de hämtade omslagen med spelets titel. Om du inte vill det kan du aktivera &quot;Använd serienummer som filnamn&quot; nedan. Serienummer i stället för speltitlar förhindrar konflikter när flera regionversioner av samma spel används.</translation>
+    </message>
+    <message>
+        <source>Use Serial File Names</source>
+        <comment>content_download_covers_use_serial</comment>
+        <translation>Använd serienummer som filnamn</translation>
+    </message>
+    <message>
+        <source>Stopping…</source>
+        <comment>content_download_covers_stopping</comment>
+        <translation>Stoppar…</translation>
+    </message>
+    <message>
+        <source>Download complete.</source>
+        <comment>content_download_covers_complete</comment>
+        <translation>Hämtningen är färdig.</translation>
+    </message>
+    <message>
+        <source>Transfer Data</source>
+        <comment>transfer_data_title</comment>
+        <translation>Överför data</translation>
+    </message>
+    <message>
+        <source>Back up or move your data</source>
+        <comment>transfer_data_help_title</comment>
+        <translation>Säkerhetskopiera eller flytta dina data</translation>
+    </message>
+    <message>
+        <source>Exporting copies your saves, settings and other files to a folder or ZIP file. Importing adds the files from one to this device, which lets you move them between devices.</source>
+        <comment>transfer_data_help_summary</comment>
+        <translation>Export kopierar dina sparfiler, inställningar och andra filer till en mapp eller ZIP-fil. Import lägger till filerna från en sådan på den här enheten, så att du kan flytta dem mellan enheter.</translation>
+    </message>
+    <message>
+        <source>Transfer Unavailable</source>
+        <comment>transfer_data_unavailable_title</comment>
+        <translation>Överföring är inte tillgänglig</translation>
+    </message>
+    <message>
+        <source>Data cannot be transferred while a game is running.</source>
+        <comment>transfer_data_session_active</comment>
+        <translation>Data kan inte överföras medan ett spel körs.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import_category</comment>
+        <translation>Importera</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export_category</comment>
+        <translation>Exportera</translation>
+    </message>
+    <message>
+        <source>Import From Folder</source>
+        <comment>transfer_data_import_folder</comment>
+        <translation>Importera från mapp</translation>
+    </message>
+    <message>
+        <source>Copies files from a folder which was exported earlier.</source>
+        <comment>transfer_data_import_folder_summary</comment>
+        <translation>Kopierar filer från en mapp som exporterats tidigare.</translation>
+    </message>
+    <message>
+        <source>Import From ZIP File</source>
+        <comment>transfer_data_import_zip</comment>
+        <translation>Importera från ZIP-fil</translation>
+    </message>
+    <message>
+        <source>Copies files from a ZIP file which was exported earlier.</source>
+        <comment>transfer_data_import_zip_summary</comment>
+        <translation>Kopierar filer från en ZIP-fil som exporterats tidigare.</translation>
+    </message>
+    <message>
+        <source>Export To Folder</source>
+        <comment>transfer_data_export_folder</comment>
+        <translation>Exportera till mapp</translation>
+    </message>
+    <message>
+        <source>Copies your files into a folder you choose.</source>
+        <comment>transfer_data_export_folder_summary</comment>
+        <translation>Kopierar dina filer till en mapp som du väljer.</translation>
+    </message>
+    <message>
+        <source>Export To ZIP File</source>
+        <comment>transfer_data_export_zip</comment>
+        <translation>Exportera till ZIP-fil</translation>
+    </message>
+    <message>
+        <source>Saves your files to a single ZIP file.</source>
+        <comment>transfer_data_export_zip_summary</comment>
+        <translation>Sparar dina filer i en enda ZIP-fil.</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>transfer_data_category_patches</comment>
+        <translation>Patchar</translation>
+    </message>
+    <message>
+        <source>Select Files</source>
+        <comment>transfer_data_select_files</comment>
+        <translation>Välj filer</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d files, %3$s)</source>
+        <comment>transfer_data_category_summary</comment>
+        <translation>%1$s (%2$d filer, %3$s)</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import</comment>
+        <translation>Importera</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export</comment>
+        <translation>Exportera</translation>
+    </message>
+    <message>
+        <source>No compatible files were found.</source>
+        <comment>transfer_data_no_files_found</comment>
+        <translation>Inga kompatibla filer hittades.</translation>
+    </message>
+    <message>
+        <source>Looking for files</source>
+        <comment>transfer_data_scanning</comment>
+        <translation>Söker efter filer</translation>
+    </message>
+    <message>
+        <source>Importing files</source>
+        <comment>transfer_data_importing</comment>
+        <translation>Importerar filer</translation>
+    </message>
+    <message>
+        <source>Exporting files</source>
+        <comment>transfer_data_exporting</comment>
+        <translation>Exporterar filer</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1$s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>transfer_data_conflict_message</comment>
+        <translation>Filen &apos;%1$s&apos; finns redan. Vill du skriva över den? Alla befintliga data kommer att gå förlorade.</translation>
+    </message>
+    <message>
+        <source>Apply to the remaining %1$d files</source>
+        <comment>transfer_data_apply_to_remaining</comment>
+        <translation>Tillämpa på de återstående %1$d filerna</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>transfer_data_overwrite</comment>
+        <translation>Skriv över</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <comment>transfer_data_skip</comment>
+        <translation>Hoppa över</translation>
+    </message>
+    <message>
+        <source>Transfer complete. %1$d files copied, %2$d skipped.</source>
+        <comment>transfer_data_result_complete</comment>
+        <translation>Överföringen är klar. %1$d filer kopierades, %2$d hoppades över.</translation>
+    </message>
+    <message>
+        <source>Transfer finished with errors. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_failures</comment>
+        <translation>Överföringen avslutades med fel. %1$d filer kopierades, %2$d hoppades över, %3$d misslyckades.</translation>
+    </message>
+    <message>
+        <source>Transfer cancelled. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_cancelled</comment>
+        <translation>Överföringen avbröts. %1$d filer kopierades, %2$d hoppades över, %3$d misslyckades.</translation>
+    </message>
+    <message>
+        <source>The transfer failed.</source>
+        <comment>transfer_data_result_error</comment>
+        <translation>Överföringen misslyckades.</translation>
+    </message>
+    <message>
+        <source>Increase</source>
+        <comment>preference_increase</comment>
+        <translation>Öka</translation>
+    </message>
+    <message>
+        <source>Decrease</source>
+        <comment>preference_decrease</comment>
+        <translation>Minska</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>preference_enabled</comment>
+        <translation>Aktiverad</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>preference_disabled</comment>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>postfx_border_overlay_none</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <comment>postfx_component_red</comment>
+        <translation>Röd</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <comment>postfx_component_green</comment>
+        <translation>Grön</translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <comment>postfx_component_blue</comment>
+        <translation>Blå</translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <comment>postfx_component_alpha</comment>
+        <translation>Alfa</translation>
+    </message>
+    <message>
+        <source>%1$s [%2$s]</source>
+        <comment>postfx_option_component</comment>
+        <translation>%1$s [%2$s]</translation>
+    </message>
+    <message>
+        <source>Unknown (%1$d)</source>
+        <comment>postfx_choice_unknown</comment>
+        <translation>Okänd (%1$d)</translation>
+    </message>
+    <message>
+        <source>Selected URI is not a document tree.</source>
+        <comment>content_folders_not_document_tree</comment>
+        <translation>Den valda URI:n är inte ett dokumentträd.</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_runahead_disabled</comment>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d seconds</source>
+        <comment>settings_duration_seconds</comment>
+        <extracomment>Android plural quantities: one=&quot;%d second&quot;; other=&quot;%d seconds&quot;</extracomment>
+        <translation>
+            <numerusform>%d sekund</numerusform>
+            <numerusform>%d sekunder</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>settings_runahead_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d bildruta</numerusform>
+            <numerusform>%d bildrutor</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>CPU Settings</source>
+        <comment>settings_category_cpu</comment>
+        <translation>CPU-inställningar</translation>
+    </message>
+    <message>
+        <source>CD-ROM Settings</source>
+        <comment>settings_category_cdrom</comment>
+        <translation>CD-ROM-inställningar</translation>
+    </message>
+    <message>
+        <source>Downsampling Display Scale</source>
+        <comment>settings_downsample_scale</comment>
+        <translation>Skala för skärmnedsampling</translation>
+    </message>
+    <message>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <comment>settings_summary_downsample_scale</comment>
+        <translation>Väljer den upplösningsskala som ska tillämpas på den slutliga bilden. 1x innebär nedskalning till den ursprungliga konsolupplösningen.</translation>
+    </message>
+    <message>
+        <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
+        <comment>settings_summary_skip_duplicate_frames</comment>
+        <translation>Hoppa över visning av bildrutor när bilden inte har ändrats. Kan förbättra prestandan på mycket långsamma enheter.</translation>
+    </message>
+    <message>
+        <source>When enabled, the clock speed set below will be used. Overclocking may break games.</source>
+        <comment>settings_summary_overclock_enable</comment>
+        <translation>När detta är aktiverat används klockfrekvensen som anges nedan. Överklockning kan göra att spel slutar fungera.</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>settings_region</comment>
+        <translation>Region</translation>
+    </message>
+    <message>
+        <source>Game Specific Controller Settings</source>
+        <comment>input_settings_game_specific_input</comment>
+        <translation>Spelspecifika inställningar för handkontroller</translation>
+    </message>
+    <message>
+        <source>Uses separate controller settings for this game instead of the global settings.</source>
+        <comment>input_settings_game_specific_summary</comment>
+        <translation>Använder separata inställningar för handkontroller för det här spelet i stället för de globala inställningarna.</translation>
+    </message>
+    <message>
+        <source>Copy %s to…</source>
+        <comment>memory_card_editor_copy_save_to</comment>
+        <translation>Kopiera %s till…</translation>
+    </message>
+    <message>
+        <source>File Name</source>
+        <comment>game_properties_file_name</comment>
+        <translation>Filnamn</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>game_properties_achievements</comment>
+        <translation>Prestationer</translation>
+    </message>
+    <message>
+        <source>RA Game ID</source>
+        <comment>game_properties_achievements_game_id</comment>
+        <translation>RA-spel-ID</translation>
+    </message>
+    <message>
+        <source>Show Advanced Settings</source>
+        <comment>settings_show_advanced_settings</comment>
+        <translation>Visa avancerade inställningar</translation>
+    </message>
+    <message>
+        <source>Search Settings</source>
+        <comment>settings_search</comment>
+        <translation>Sök i inställningar</translation>
+    </message>
+    <message>
+        <source>No matching settings.</source>
+        <comment>settings_search_no_results</comment>
+        <translation>Inga matchande inställningar.</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>content_bottom_sheet_achievements</comment>
+        <translation>Prestationer</translation>
+    </message>
+    <message>
+        <source>Determines the emulated hardware type.</source>
+        <comment>settings_summary_region</comment>
+        <translation>Bestämmer emulerad hårdvarutyp.</translation>
+    </message>
+    <message>
+        <source>Safe Mode</source>
+        <comment>settings_disable_all_enhancements</comment>
+        <translation>Säkert läge</translation>
+    </message>
+    <message>
+        <source>Temporarily disables all enhancements, useful when testing.</source>
+        <comment>settings_summary_disable_all_enhancements</comment>
+        <translation>Inaktiverar tillfälligt alla förbättringar, användbart vid testning.</translation>
+    </message>
+    <message>
+        <source>Fast Boot</source>
+        <comment>settings_patch_fast_boot</comment>
+        <translation>Snabb uppstart</translation>
+    </message>
+    <message>
+        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
+        <comment>settings_summary_patch_fast_boot</comment>
+        <translation>Patchar BIOS till att hoppa över uppstartsanimeringen. Säkert att aktivera.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Boot</source>
+        <comment>settings_fast_forward_boot</comment>
+        <translation>Snabbspolad uppstart</translation>
+    </message>
+    <message>
+        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
+        <comment>settings_summary_fast_forward_boot</comment>
+        <translation>Snabbspolar igenom den tidiga inläsningsprocessen vid snabb uppstart, vilket sparar tid. Resultaten kan variera mellan spel.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Memory Card Access</source>
+        <comment>settings_fast_forward_access</comment>
+        <translation>Snabbspolning av minneskort</translation>
+    </message>
+    <message>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <comment>settings_summary_fast_forward_access</comment>
+        <translation>Snabbspolar genom minneskortsåtkomst, både inläsning och lagring. Kan minska väntetiderna i spel som ofta använder minneskort.</translation>
+    </message>
+    <message>
+        <source>Overclocking Percentage</source>
+        <comment>settings_overclock</comment>
+        <translation>Överklockningsprocent</translation>
+    </message>
+    <message>
+        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
+        <comment>settings_summary_overclock</comment>
+        <translation>Väljer den procentandel av den normala klockfrekvensen som den emulerade hårdvaran ska köras med.</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <comment>settings_enable_8mb_ram</comment>
+        <translation>Aktivera 8MB RAM</translation>
+    </message>
+    <message>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
+        <comment>settings_summary_enable_8mb_ram</comment>
+        <translation>Aktiverar ytterligare 6 MB RAM för att få totalt 2+6 = 8 MB, vanligtvis på utvecklingskonsoler.</translation>
+    </message>
+    <message>
+        <source>Preload Images to RAM</source>
+        <comment>settings_load_image_to_ram</comment>
+        <translation>Förinläs avbilder till RAM</translation>
+    </message>
+    <message>
+        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
+        <comment>settings_summary_load_image_to_ram</comment>
+        <translation>Läser in spelavbildningen till RAM-minnet. Användbart för nätverksvägar som kan bli opålitliga under spelets gång.</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <comment>settings_load_image_patches</comment>
+        <translation>Tillämpa avbildningspatchar</translation>
+    </message>
+    <message>
+        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
+        <comment>settings_summary_load_image_patches</comment>
+        <translation>Tillämpar automatiskt patchar till skivavbilder när de finns tillgängliga. Endast PPF stöds för närvarande.</translation>
+    </message>
+    <message>
+        <source>Read Speedup</source>
+        <comment>settings_read_speedup</comment>
+        <translation>Högre läshastighet</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_read_speedup</comment>
+        <translation>Snabbar upp CD-ROM-läsningen med den angivna faktorn. Kan förbättra inläsningshastigheter i vissa spel och förstöra andra.</translation>
+    </message>
+    <message>
+        <source>Seek Speedup</source>
+        <comment>settings_seek_speedup</comment>
+        <translation>Snabba upp sökning</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_seek_speedup</comment>
+        <translation>Snabbar upp hastigheten på CD-ROM-sökningar med den angivna faktorn. Kan förbättra inläsningshastigheter i vissa spel och förstöra andra.</translation>
+    </message>
+    <message>
+        <source>Auto-Detect</source>
+        <comment>bios_auto_detect</comment>
+        <translation>Identifiera automatiskt</translation>
+    </message>
+    <message>
+        <source>No BIOS images found, you must import one first.</source>
+        <comment>bios_select_no_images</comment>
+        <translation>Inga BIOS-avbilder hittades. Du måste importera en först.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the BIOS named &apos;%s&apos;? This action is permanent.</source>
+        <comment>bios_delete_confirm</comment>
+        <translation>Är du säker på att du vill ta bort BIOS med namnet &apos;%s&apos;? Denna åtgärd är permanent.</translation>
+    </message>
+    <message>
+        <source>Import BIOS</source>
+        <comment>setup_wizard_bios_title</comment>
+        <translation>Importera BIOS</translation>
+    </message>
+    <message>
+        <source>A PS1 or PS2 BIOS image is required to play games and is not optional.
+        This image should be dumped from your own console, using tools such as Caetla or Unirom. There are plenty of
+        guides available online on how to dump your console&apos;s BIOS.</source>
+        <comment>setup_wizard_bios_message</comment>
+        <translation>En BIOS-avbild från PS1 eller PS2 krävs för att spela spel och är inte valfri.
+        Denna avbild bör kopieras från din egen konsol med verktyg som Caetla eller Unirom. Det finns många
+        guider på nätet om hur du kopierar din konsols BIOS.</translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <comment>settings_tab_console</comment>
+        <translation>Konsol</translation>
+    </message>
+    <message>
+        <source>%1$d%% (%2$d MHz)</source>
+        <comment>settings_cpu_overclock_value_format</comment>
+        <translation>%1$d%% (%2$d MHz)</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_tab_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <comment>settings_tab_folders</comment>
+        <translation>Mappar</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <comment>bios_install</comment>
+        <translation>Installera BIOS</translation>
+    </message>
+    <message>
+        <source>Imports a new image to the BIOS directory.</source>
+        <comment>bios_install_summary</comment>
+        <translation>Importerar en ny avbild till BIOS-katalogen.</translation>
+    </message>
+    <message>
+        <source>Delete BIOS</source>
+        <comment>bios_delete</comment>
+        <translation>Ta bort BIOS</translation>
+    </message>
+    <message>
+        <source>Selected BIOS Images</source>
+        <comment>bios_selected_images</comment>
+        <translation>Valda BIOS-avbilder</translation>
+    </message>
+    <message>
+        <source>Installed BIOS Images</source>
+        <comment>bios_installed_images</comment>
+        <translation>Installerade BIOS-avbilder</translation>
+    </message>
+    <message>
+        <source>Unknown / Any Region</source>
+        <comment>bios_unknown_region</comment>
+        <translation>Okänd / valfri region</translation>
+    </message>
+    <message>
+        <source>Importing BIOS image…</source>
+        <comment>bios_installing</comment>
+        <translation>Importerar BIOS-avbild…</translation>
+    </message>
+    <message>
+        <source>Missing BIOS Image</source>
+        <comment>bios_missing_title</comment>
+        <translation>BIOS-avbild saknas</translation>
+    </message>
+    <message>
+        <source>A BIOS image is required to start this game.
+
+%1$s
+
+Would you like to import one now?</source>
+        <comment>bios_missing_message</comment>
+        <translation>En BIOS-avbild krävs för att starta detta spel.
+
+%1$s
+
+Vill du importera en nu?</translation>
+    </message>
+    <message>
+        <source>BIOS Imported</source>
+        <comment>bios_import_success_title</comment>
+        <translation>BIOS importerat</translation>
+    </message>
+    <message>
+        <source>The BIOS image was imported successfully. Would you like to retry starting the game?</source>
+        <comment>bios_import_success_retry</comment>
+        <translation>BIOS-avbilden har importerats. Vill du försöka starta spelet igen?</translation>
+    </message>
+    <message>
+        <source>Internal Resolution</source>
+        <comment>settings_resolution_scale</comment>
+        <translation>Intern upplösning</translation>
+    </message>
+    <message>
+        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
+        <comment>settings_summary_resolution_scale</comment>
+        <translation>Uppskalar spelets rendering med den angivna multiplikatorn.</translation>
+    </message>
+    <message>
+        <source>Mute CD Audio</source>
+        <comment>settings_mute_cd_audio</comment>
+        <translation>Tysta cd-ljud</translation>
+    </message>
+    <message>
+        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
+        <comment>settings_summary_mute_cd_audio</comment>
+        <translation>Tvingar både CD-DA och XA-ljud från cd-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Crop Mode</source>
+        <comment>settings_crop_mode</comment>
+        <translation>Beskäringsläge</translation>
+    </message>
+    <message>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
+        <comment>settings_summary_crop_mode</comment>
+        <translation>Bestämmer hur stor del av området som normalt inte syns på en konsument-TV som ska beskäras/döljas.</translation>
+    </message>
+    <message>
+        <source>Deinterlacing Mode</source>
+        <comment>settings_deinterlacing_mode</comment>
+        <translation>Deinterlacing-läge</translation>
+    </message>
+    <message>
+        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
+        <comment>settings_summary_deinterlacing_mode</comment>
+        <translation>Bestämmer vilken algoritm som används för att konvertera sammanflätade bildrutor till progressiva för visning på ditt system.</translation>
+    </message>
+    <message>
+        <source>Force Video Timing</source>
+        <comment>settings_force_video_timing</comment>
+        <translation>Tvinga videotiming</translation>
+    </message>
+    <message>
+        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
+        <comment>settings_summary_force_video_timing</comment>
+        <translation>Använder den valda bildfrekvensen oavsett spelets inställning.</translation>
+    </message>
+    <message>
+        <source>Show GPU Statistics</source>
+        <comment>settings_show_gpu_statistics</comment>
+        <translation>Visa GPU-statistik</translation>
+    </message>
+    <message>
+        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
+        <comment>settings_summary_show_gpu_statistics</comment>
+        <translation>Visar information om emulerad GPU i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Show Enhancement Settings</source>
+        <comment>settings_show_enhancements</comment>
+        <translation>Visa förbättringsinställningar</translation>
+    </message>
+    <message>
+        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
+        <comment>settings_summary_show_enhancements</comment>
+        <translation>Visar förbättringsinställningar i nedre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Dithering</source>
+        <comment>settings_dithering_mode</comment>
+        <translation>Dithering</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
+        <comment>settings_summary_dithering_mode</comment>
+        <translation>Kontrollerar hur dithering tillämpas i den emulerade GPU:n. True Color inaktiverar dithering och ger de snyggaste gradienterna.</translation>
+    </message>
+    <message>
+        <source>Texture Filtering</source>
+        <comment>settings_texture_filter</comment>
+        <translation>Texturfiltrering</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
+        <comment>settings_summary_texture_filter</comment>
+        <translation>Utjämnar blockigheten i förstorade texturer på 3D-objekt.</translation>
+    </message>
+    <message>
+        <source>Sprite Texture Filtering</source>
+        <comment>settings_sprite_texture_filter</comment>
+        <translation>Filtrering av sprite-textur</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
+        <comment>settings_summary_sprite_texture_filter</comment>
+        <translation>Utjämnar blockigheten i förstorade texturer på 2D-objekt.</translation>
+    </message>
+    <message>
+        <source>Widescreen Rendering</source>
+        <comment>settings_widescreen_hack</comment>
+        <translation>Bredbildsrendering</translation>
+    </message>
+    <message>
+        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
+        <comment>settings_summary_widescreen_hack</comment>
+        <translation>Ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel.</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For FMVs</source>
+        <comment>settings_force_4_3_for_24_bit</comment>
+        <translation>Tvinga 4:3 för FMVs</translation>
+    </message>
+    <message>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_force_4_3_for_24_bit</comment>
+        <translation>Växlar tillbaka till bildförhållandet 4:3 vid visning av 24-bitars innehåll, vanligtvis FMV.</translation>
+    </message>
+    <message>
+        <source>FMV Chroma Smoothing</source>
+        <comment>settings_chroma_smoothing_24_bit</comment>
+        <translation>FMV Chroma-utjämning</translation>
+    </message>
+    <message>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_chroma_smoothing_24_bit</comment>
+        <translation>Utjämnar blockighet mellan färgövergångar i 24-bitars innehåll, vanligtvis FMV.</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Correction</source>
+        <comment>settings_pgxp_enable</comment>
+        <translation>PGXP-geometrikorrigering</translation>
+    </message>
+    <message>
+        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. Only works with the hardware renderers.</source>
+        <comment>settings_summary_pgxp_enable</comment>
+        <translation>Minskar &quot;darrande&quot; polygoner och &quot;förvrängda&quot; texturer som är vanliga i PS1-spel. Fungerar endast med hårdvarurenderarna.</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Buffer</source>
+        <comment>settings_pgxp_depth_buffer</comment>
+        <translation>PGXP-djupbuffert</translation>
+    </message>
+    <message>
+        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
+        <comment>settings_summary_pgxp_depth_buffer</comment>
+        <translation>Minskar polygon Z-fighting genom djuptestning. Låg kompatibilitet med spel.</translation>
+    </message>
+    <message>
+        <source>Downsampling</source>
+        <comment>settings_downsample_mode</comment>
+        <translation>Nersampling</translation>
+    </message>
+    <message>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
+        <comment>settings_summary_downsample_mode</comment>
+        <translation>Samplar ner den renderade bilden innan den visas. Kan förbättra den övergripande bildkvaliteten i blandade 2D/3D-spel.</translation>
+    </message>
+    <message>
+        <source>Show Resolution</source>
+        <comment>settings_show_resolution</comment>
+        <translation>Visa upplösning</translation>
+    </message>
+    <message>
+        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_resolution</comment>
+        <translation>Visar aktuell renderingsupplösning för systemet i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer For Readbacks</source>
+        <comment>settings_use_software_renderer_for_readbacks</comment>
+        <translation>Använd programvarurenderare för återläsning</translation>
+    </message>
+    <message>
+        <source>Runs the software renderer in parallel for VRAM readbacks, which may improve performance with the hardware renderer.</source>
+        <comment>settings_summary_use_software_renderer_for_readbacks</comment>
+        <translation>Kör programvarurenderaren parallellt för VRAM-återläsningar, vilket kan förbättra prestandan med hårdvarurenderaren.</translation>
+    </message>
+    <message>
+        <source>Texture Replacement</source>
+        <comment>settings_category_texture_replacements</comment>
+        <translation>Texturersättning</translation>
+    </message>
+    <message>
+        <source>Enable Texture Cache</source>
+        <comment>settings_enable_texture_cache</comment>
+        <translation>Aktivera texturcache</translation>
+    </message>
+    <message>
+        <source>Enables caching of guest textures, required for texture replacement.</source>
+        <comment>settings_summary_enable_texture_cache</comment>
+        <translation>Aktiverar cachning av gästtexturer, krävs för texturersättning.</translation>
+    </message>
+    <message>
+        <source>Use Old MDEC Routines</source>
+        <comment>settings_use_old_mdec_routines</comment>
+        <translation>Använd gamla MDEC-rutiner</translation>
+    </message>
+    <message>
+        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <comment>settings_summary_use_old_mdec_routines</comment>
+        <translation>Aktiverar de äldre, mindre exakta MDEC-avkodningsrutinerna. Kan krävas för att gamla ersättningsbakgrunder ska matcha/läsas in.</translation>
+    </message>
+    <message>
+        <source>Enable Texture Replacements</source>
+        <comment>settings_enable_texture_replacements</comment>
+        <translation>Aktivera texturersättningar</translation>
+    </message>
+    <message>
+        <source>Enables loading of replacement textures. Not compatible with all games.</source>
+        <comment>settings_summary_enable_texture_replacements</comment>
+        <translation>Aktiverar inläsning av ersättningstexturer. Inte kompatibelt med alla spel.</translation>
+    </message>
+    <message>
+        <source>Enable VRAM Write Replacement</source>
+        <comment>settings_enable_vram_write_replacements</comment>
+        <translation>Aktivera VRAM-skrivningsersättning</translation>
+    </message>
+    <message>
+        <source>Enables the replacement of background textures in supported games.</source>
+        <comment>settings_summary_enable_vram_write_replacements</comment>
+        <translation>Aktiverar ersättning av bakgrundstexturer i spel som stöds.</translation>
+    </message>
+    <message>
+        <source>Preload Replacement Textures</source>
+        <comment>settings_preload_textures</comment>
+        <translation>Förinläs ersättningstexturer</translation>
+    </message>
+    <message>
+        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
+        <comment>settings_summary_preload_textures</comment>
+        <translation>Läser in alla ersättningstexturer till RAM-minnet, vilket minskar hack under körning.</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_category_screenshots</comment>
+        <translation>Skärmbilder</translation>
+    </message>
+    <message>
+        <source>Numerator</source>
+        <comment>preference_ratio_numerator</comment>
+        <translation>Täljare</translation>
+    </message>
+    <message>
+        <source>Denominator</source>
+        <comment>preference_ratio_denominator</comment>
+        <translation>Nämnare</translation>
+    </message>
+    <message>
+        <source>Apply Compatibility Settings</source>
+        <comment>settings_apply_compatibility_settings</comment>
+        <translation>Tillämpa kompatibilitetsinställningar</translation>
+    </message>
+    <message>
+        <source>Readahead Sectors</source>
+        <comment>settings_readahead_sectors</comment>
+        <translation>Readahead-sektorer</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Sectors</source>
+        <comment>settings_readahead_sectors_value</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Sector&quot;; other=&quot;%d Sectors&quot;</extracomment>
+        <translation>
+            <numerusform>%d sektor</numerusform>
+            <numerusform>%d sektorer</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <comment>settings_summary_readahead_sectors</comment>
+        <translation>Minskar hack i emuleringen genom att läsa/dekomprimera CD-data asynkront i en arbetstråd.</translation>
+    </message>
+    <message>
+        <source>Enable Region Check</source>
+        <comment>settings_region_check</comment>
+        <translation>Aktivera regionskontroll</translation>
+    </message>
+    <message>
+        <source>Enable TTY Logging</source>
+        <comment>settings_tty_logging</comment>
+        <translation>Aktivera TTY-loggning</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Block Linking</source>
+        <comment>settings_recompiler_block_linking</comment>
+        <translation>Aktivera blocklänkning för omkompilerare</translation>
+    </message>
+    <message>
+        <source>Recompiler Fast Memory Access</source>
+        <comment>settings_fastmem_mode</comment>
+        <translation>Snabb minnesåtkomst för omkompilerare</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler ICache</source>
+        <comment>settings_recompiler_icache</comment>
+        <translation>Aktivera ICache för omkompilerare</translation>
+    </message>
+    <message>
+        <source>Disable Dual-Source Blending</source>
+        <comment>settings_disable_dual_source_blend</comment>
+        <translation>Inaktivera blandning med dubbla källor</translation>
+    </message>
+    <message>
+        <source>Disable Framebuffer Fetch</source>
+        <comment>settings_disable_framebuffer_fetch</comment>
+        <translation>Inaktivera framebuffer-hämtning</translation>
+    </message>
+    <message>
+        <source>Disable Texture Buffers</source>
+        <comment>settings_disable_texture_buffers</comment>
+        <translation>Inaktivera texturbuffertar</translation>
+    </message>
+    <message>
+        <source>Disable Texture Copy To Self</source>
+        <comment>settings_disable_texture_copy_to_self</comment>
+        <translation>Inaktivera texturkopia till själv</translation>
+    </message>
+    <message>
+        <source>Line Detection</source>
+        <comment>settings_line_detect_mode</comment>
+        <translation>Linjedetektion</translation>
+    </message>
+    <message>
+        <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
+        <comment>settings_summary_line_detect_mode</comment>
+        <translation>Försöker upptäcka en bildpunkt höga/breda linjer som förlitar sig på rastrering utan uppskalning och fyller i luckor som uppstått genom uppskalning.</translation>
+    </message>
+    <message>
+        <source>Multisample Antialiasing</source>
+        <comment>settings_multisamples</comment>
+        <translation>Multisampling-kantutjämning</translation>
+    </message>
+    <message>
+        <source>Smooths polygon edges by rendering multiple samples per pixel. Increases GPU load.</source>
+        <comment>settings_summary_multisamples</comment>
+        <translation>Jämnar ut polygonkanter genom att rendera flera sampel per bildpunkt. Ökar GPU-belastningen.</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Colors</source>
+        <comment>settings_pgxp_color_correction</comment>
+        <translation>Perspektivkorrekta färger</translation>
+    </message>
+    <message>
+        <source>CPU Mode</source>
+        <comment>settings_pgxp_cpu</comment>
+        <translation>CPU-läge</translation>
+    </message>
+    <message>
+        <source>Culling Correction</source>
+        <comment>settings_pgxp_culling</comment>
+        <translation>Korrigering av bortgallring</translation>
+    </message>
+    <message>
+        <source>Disable on 2D Polygons</source>
+        <comment>settings_pgxp_disable_on_2d_polygons</comment>
+        <translation>Inaktivera för 2D-polygoner</translation>
+    </message>
+    <message>
+        <source>Preserve Projection Precision</source>
+        <comment>settings_pgxp_preserve_proj_fp</comment>
+        <translation>Bevara projektionens precision</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Textures</source>
+        <comment>settings_pgxp_texture_correction</comment>
+        <translation>Perspektivkorrekta texturer</translation>
+    </message>
+    <message>
+        <source>Vertex Cache</source>
+        <comment>settings_pgxp_vertex_cache</comment>
+        <translation>Vertex-cache</translation>
+    </message>
+    <message>
+        <source>Round Upscaled Texture Coordinates</source>
+        <comment>settings_force_round_texture_coordinates</comment>
+        <translation>Avrunda uppskalade texturkoordinater</translation>
+    </message>
+    <message>
+        <source>Scaled Interlacing</source>
+        <comment>settings_scaled_interlacing</comment>
+        <translation>Skalad interlacing</translation>
+    </message>
+    <message>
+        <source>Show VRAM</source>
+        <comment>settings_show_vram</comment>
+        <translation>Visa VRAM</translation>
+    </message>
+    <message>
+        <source>Automatically disable enhancements when they are not supported by games.</source>
+        <comment>settings_summary_apply_compatibility_settings</comment>
+        <translation>Inaktivera automatiskt förbättringar när de inte stöds av spelen.</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
+        <comment>settings_summary_max_read_speedup_cycles</comment>
+        <translation>Ställer in den minsta fördröjningen för läshastighetsnivån ”Maximal”.</translation>
+    </message>
+    <message>
+        <source>Simulates the region check present in original, unmodified consoles.</source>
+        <comment>settings_summary_region_check</comment>
+        <translation>Simulerar den regionskontroll som finns i ursprungliga, omodifierade konsoler.</translation>
+    </message>
+    <message>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <comment>settings_summary_tty_logging</comment>
+        <translation>Loggar BIOS-anrop till printf(). Inte alla spel innehåller felsökningsmeddelanden.</translation>
+    </message>
+    <message>
+        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
+        <comment>settings_summary_recompiler_block_linking</comment>
+        <translation>Prestandaförbättring - hoppar direkt mellan blocken i stället för att återvända till dispatchern.</translation>
+    </message>
+    <message>
+        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
+        <comment>settings_summary_fastmem_mode</comment>
+        <translation>Undviker anrop till C++-kod, snabbar upp omkompileraren avsevärt.</translation>
+    </message>
+    <message>
+        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
+        <comment>settings_summary_recompiler_icache</comment>
+        <translation>Bestämmer om CPU:ns instruktionscache simuleras i omkompileraren. Förbättrar noggrannheten med en liten prestandaförlust. Om spel körs för snabbt kan du prova att aktivera detta alternativ.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the dual-source blending extensions.</source>
+        <comment>settings_summary_disable_dual_source_blend</comment>
+        <translation>Förhindrar användning av tillägg för blandning med dubbla källor.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the framebuffer fetch extensions.</source>
+        <comment>settings_summary_disable_framebuffer_fetch</comment>
+        <translation>Förhindrar användning av tillägg för framebuffer-hämtning.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the texture/shader storage buffers. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_buffers</comment>
+        <translation>Förhindrar användning av texturbuffertar och lagringsbuffertar för shaderprogram. Minskar prestandan.</translation>
+    </message>
+    <message>
+        <source>Always copies through the shadow texture. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_copy_to_self</comment>
+        <translation>Kopierar alltid via skuggtexturen. Minskar prestandan.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_color_correction</comment>
+        <translation>Använder perspektivkorrigerad interpolering för färger, vilket kan förbättra grafiken i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer.</translation>
+    </message>
+    <message>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
+        <comment>settings_summary_pgxp_culling</comment>
+        <translation>Ökar precisionen vid bortgallring av polygoner, vilket minskar antalet hål i geometrin.</translation>
+    </message>
+    <message>
+        <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
+        <comment>settings_summary_pgxp_disable_on_2d_polygons</comment>
+        <translation>Använder koordinater med inbyggd upplösning för 2D-polygoner, istället för exakta koordinater. Kan åtgärda felriktat användargränssnitt i vissa spel, men bör annars lämnas inaktiverad.</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_preserve_proj_fp</comment>
+        <translation>Ökar precisionen hos PGXP-data efter projektion. Kan förbättra grafiken i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
+        <comment>settings_summary_pgxp_texture_correction</comment>
+        <translation>Använder perspektivkorrigerad interpolering för texturkoordinater, vilket rätar ut skeva texturer.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Använder skärmpositioner för att identifiera PGXP-data. Kan förbättra grafiken i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
+        <comment>settings_summary_force_round_texture_coordinates</comment>
+        <translation>Avrundar texturkoordinater i stället för att avrunda nedåt vid uppskalning. Kan åtgärda feljusterade texturer i vissa spel, men orsaka problem i andra.</translation>
+    </message>
+    <message>
+        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
+        <comment>settings_summary_scaled_interlacing</comment>
+        <translation>Skalar linjeöverhoppning vid interlaced-rendering till den interna upplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
+        <comment>settings_enable_modulation_crop</comment>
+        <translation>Beskärning av texturmodulation (&quot;Old/v0&quot; GPU)</translation>
+    </message>
+    <message>
+        <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
+        <comment>settings_summary_enable_modulation_crop</comment>
+        <translation>Begränsar vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis ger mer synliga färgband.</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>settings_disable_upscaled_direct_textures</comment>
+        <translation>Inaktivera uppskalade direktfärgstexturer</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. Can fix filtering of FMVs/backgrounds in some games.</source>
+        <comment>settings_summary_disable_upscaled_direct_textures</comment>
+        <translation>Samplar 16-bitars direktfärgstexturer med ursprunglig upplösning vid uppskalning. Kan åtgärda filtrering av FMV/bakgrunder i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>settings_filter_framebuffer_uploads</comment>
+        <translation>Filtrera överföringar till framebufferten</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads, smoothing backgrounds in some games while preserving 24-bit video.</source>
+        <comment>settings_summary_filter_framebuffer_uploads</comment>
+        <translation>Tillämpar det valda sprite-texturfiltret på överföringar till framebufferten, vilket jämnar ut bakgrunder i vissa spel samtidigt som 24-bitarsvideo bevaras.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Minsta bredd för överföringar till framebufferten</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Filtrerar endast överföringar till framebufferten som är minst så här breda. Öka detta värde för att undvika filtrering av texturdata.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Minsta höjd för överföringar till framebufferten</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Filtrerar endast överföringar till framebufferten som är minst så här höga. Öka detta värde för att undvika filtrering av texturdata.</translation>
+    </message>
+    <message>
+        <source>Shows the entirety of the console&apos;s VRAM instead of the display area (debugging feature).</source>
+        <comment>settings_summary_show_vram</comment>
+        <translation>Visar hela konsolens VRAM i stället för visningsområdet (felsökningsfunktion).</translation>
+    </message>
+    <message>
+        <source>Global settings copied.</source>
+        <comment>game_properties_settings_copied</comment>
+        <translation>Globala inställningar kopierade.</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>game_properties_compatibility_rating</comment>
+        <translation>Kompatibilitet</translation>
+    </message>
+    <message>
+        <source>Database Title</source>
+        <comment>game_properties_database_title</comment>
+        <translation>Databastitel</translation>
+    </message>
+    <message>
+        <source>Disc Set</source>
+        <comment>game_properties_disc_set_title</comment>
+        <translation>Skivuppsättning</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>game_properties_developer</comment>
+        <translation>Utvecklare</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>game_properties_publisher</comment>
+        <translation>Utgivare</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>game_properties_genre</comment>
+        <translation>Genre</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <comment>game_properties_release_date</comment>
+        <translation>Utgiven</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>game_properties_players</comment>
+        <translation>Spelare</translation>
+    </message>
+    <message>
+        <source>Save Blocks</source>
+        <comment>game_properties_memory_card_blocks</comment>
+        <translation>Sparningsblock</translation>
+    </message>
+    <message>
+        <source>Use Separate Disc Settings</source>
+        <comment>game_settings_use_separate_disc_settings</comment>
+        <translation>Använd separata skivinställningar</translation>
+    </message>
+    <message>
+        <source>Uses separate game settings for each disc in a set. Can only be changed on the first disc.</source>
+        <comment>game_settings_use_separate_disc_settings_summary</comment>
+        <translation>Använder separata spelinställningar för varje skiva i en uppsättning. Kan endast ändras på den första skivan.</translation>
+    </message>
+    <message>
+        <source>Select Disc</source>
+        <comment>content_select_disc</comment>
+        <translation>Välj skiva</translation>
+    </message>
+    <message>
+        <source>Maximum Read Speedup Cycles</source>
+        <comment>settings_max_read_speedup_cycles</comment>
+        <translation>Cykler vid maximal läshastighetsökning</translation>
+    </message>
+    <message>
+        <source>Maximum Seek Speedup Cycles</source>
+        <comment>settings_max_seek_speedup_cycles</comment>
+        <translation>Cykler vid maximal sökhastighetsökning</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
+        <comment>settings_summary_max_seek_speedup_cycles</comment>
+        <translation>Ställer in den minsta fördröjningen för sökhastighetsnivån ”Maximal”.</translation>
+    </message>
+    <message>
+        <source>Skip Duplicate Frames</source>
+        <comment>settings_skip_duplicate_frames</comment>
+        <translation>Hoppa över duplicerade bildrutor</translation>
+    </message>
+    <message>
+        <source>Enable Overclocking</source>
+        <comment>settings_overclock_enable</comment>
+        <translation>Aktivera överklockning</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_gpu_resolution_scale_entries[0]</comment>
+        <translation>Automatisk</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <comment>settings_gpu_resolution_scale_entries[1]</comment>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_gpu_resolution_scale_entries[2]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x (for 720p)</source>
+        <comment>settings_gpu_resolution_scale_entries[3]</comment>
+        <translation>3x (för 720p)</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_gpu_resolution_scale_entries[4]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x (for 1080p)</source>
+        <comment>settings_gpu_resolution_scale_entries[5]</comment>
+        <translation>5x (för 1080p)</translation>
+    </message>
+    <message>
+        <source>6x (for 1440p)</source>
+        <comment>settings_gpu_resolution_scale_entries[6]</comment>
+        <translation>6x (för 1440p)</translation>
+    </message>
+    <message>
+        <source>7x</source>
+        <comment>settings_gpu_resolution_scale_entries[7]</comment>
+        <translation>7x</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <comment>settings_gpu_resolution_scale_entries[8]</comment>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>9x (for 4K)</source>
+        <comment>settings_gpu_resolution_scale_entries[9]</comment>
+        <translation>9x (för 4K)</translation>
+    </message>
+    <message>
+        <source>10x</source>
+        <comment>settings_gpu_resolution_scale_entries[10]</comment>
+        <translation>10x</translation>
+    </message>
+    <message>
+        <source>11x</source>
+        <comment>settings_gpu_resolution_scale_entries[11]</comment>
+        <translation>11x</translation>
+    </message>
+    <message>
+        <source>12x</source>
+        <comment>settings_gpu_resolution_scale_entries[12]</comment>
+        <translation>12x</translation>
+    </message>
+    <message>
+        <source>13x</source>
+        <comment>settings_gpu_resolution_scale_entries[13]</comment>
+        <translation>13x</translation>
+    </message>
+    <message>
+        <source>14x</source>
+        <comment>settings_gpu_resolution_scale_entries[14]</comment>
+        <translation>14x</translation>
+    </message>
+    <message>
+        <source>15x</source>
+        <comment>settings_gpu_resolution_scale_entries[15]</comment>
+        <translation>15x</translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <comment>settings_gpu_resolution_scale_entries[16]</comment>
+        <translation>16x</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_gpu_msaa_entries[0]</comment>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message>
+        <source>2x MSAA</source>
+        <comment>settings_gpu_msaa_entries[1]</comment>
+        <translation>2x MSAA</translation>
+    </message>
+    <message>
+        <source>4x MSAA</source>
+        <comment>settings_gpu_msaa_entries[2]</comment>
+        <translation>4x MSAA</translation>
+    </message>
+    <message>
+        <source>8x MSAA</source>
+        <comment>settings_gpu_msaa_entries[3]</comment>
+        <translation>8x MSAA</translation>
+    </message>
+    <message>
+        <source>2x SSAA</source>
+        <comment>settings_gpu_msaa_entries[4]</comment>
+        <translation>2x SSAA</translation>
+    </message>
+    <message>
+        <source>4x SSAA</source>
+        <comment>settings_gpu_msaa_entries[5]</comment>
+        <translation>4x SSAA</translation>
+    </message>
+    <message>
+        <source>8x SSAA</source>
+        <comment>settings_gpu_msaa_entries[6]</comment>
+        <translation>8x SSAA</translation>
+    </message>
+    <message>
+        <source>Verifying Content…</source>
+        <comment>content_verification_progress_title</comment>
+        <translation>Verifierar innehåll…</translation>
+    </message>
+    <message>
+        <source>Content verification could not be completed.</source>
+        <comment>content_verification_failed_to_run</comment>
+        <translation>Innehållsverifieringen kunde inte slutföras.</translation>
+    </message>
+    <message>
+        <source>Content Verification Error</source>
+        <comment>content_verification_error_title</comment>
+        <translation>Fel vid innehållsverifiering</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <comment>content_verification_item_valid</comment>
+        <translation>Giltig</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <comment>content_verification_item_invalid</comment>
+        <translation>Ogiltig</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Audio)</source>
+        <comment>disc_verify_audio_track</comment>
+        <translation>Spår %1$d (ljud)</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Data)</source>
+        <comment>disc_verify_data_track</comment>
+        <translation>Spår %1$d (data)</translation>
+    </message>
+    <message>
+        <source>Start: %1$s | Length: %2$s</source>
+        <comment>disc_verify_track_times</comment>
+        <translation>Start: %1$s | Längd: %2$s</translation>
+    </message>
+    <message>
+        <source>Hash: %1$s</source>
+        <comment>disc_verify_track_hash</comment>
+        <translation>Hashvärde: %1$s</translation>
+    </message>
+    <message>
+        <source>Search on redump.info</source>
+        <comment>disc_verify_search_redump</comment>
+        <translation>Sök på redump.info</translation>
+    </message>
+    <message>
+        <source>Save State Compression</source>
+        <comment>settings_save_state_compression</comment>
+        <translation>Komprimering för sparat tillstånd</translation>
+    </message>
+    <message>
+        <source>Create Save State Backups</source>
+        <comment>settings_create_save_state_backups</comment>
+        <translation>Skapa säkerhetskopior av sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Logged in as %s</source>
+        <comment>setup_wizard_achievements_logged_in</comment>
+        <translation>Inloggad som %s</translation>
+    </message>
+    <message>
+        <source>Screenshot saved.</source>
+        <comment>screenshot_saved</comment>
+        <translation>Skärmbilden har sparats.</translation>
+    </message>
+    <message>
+        <source>Screenshot Format</source>
+        <comment>settings_screenshot_format</comment>
+        <translation>Skärmbildsformat</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode</source>
+        <comment>settings_fine_crop_mode</comment>
+        <translation>Läget för finjusterad beskäring</translation>
+    </message>
+    <message>
+        <source>Left Crop</source>
+        <comment>settings_fine_crop_left</comment>
+        <translation>Beskärning till vänster</translation>
+    </message>
+    <message>
+        <source>Adjusts the left crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_left</comment>
+        <translation>Justerar vänster beskärningskant i bildpunkter.</translation>
+    </message>
+    <message>
+        <source>Top Crop</source>
+        <comment>settings_fine_crop_top</comment>
+        <translation>Beskärning upptill</translation>
+    </message>
+    <message>
+        <source>Adjusts the top crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_top</comment>
+        <translation>Justerar övre beskärningskant i bildpunkter.</translation>
+    </message>
+    <message>
+        <source>Right Crop</source>
+        <comment>settings_fine_crop_right</comment>
+        <translation>Beskärning till höger</translation>
+    </message>
+    <message>
+        <source>Adjusts the right crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_right</comment>
+        <translation>Justerar höger beskärningskant i bildpunkter.</translation>
+    </message>
+    <message>
+        <source>Bottom Crop</source>
+        <comment>settings_fine_crop_bottom</comment>
+        <translation>Beskärning nedtill</translation>
+    </message>
+    <message>
+        <source>Adjusts the bottom crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_bottom</comment>
+        <translation>Justerar nedre beskärningskant i bildpunkter.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep</source>
+        <comment>settings_pre_frame_sleep</comment>
+        <translation>Väntan före bildruta</translation>
+    </message>
+    <message>
+        <source>Sleeps briefly before presenting each frame to reduce latency.</source>
+        <comment>settings_summary_pre_frame_sleep</comment>
+        <translation>Väntar kort före visningen av varje bildruta för att minska latensen.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep Buffer</source>
+        <comment>settings_pre_frame_sleep_buffer</comment>
+        <translation>Buffert för väntan före bildruta</translation>
+    </message>
+    <message>
+        <source>Time to sleep before presenting each frame, in milliseconds.</source>
+        <comment>settings_summary_pre_frame_sleep_buffer</comment>
+        <translation>Väntetid före visningen av varje bildruta, i millisekunder.</translation>
+    </message>
+    <message>
+        <source>Disable Mailbox Presentation</source>
+        <comment>settings_disable_mailbox_presentation</comment>
+        <translation>Inaktivera mailbox-presentation</translation>
+    </message>
+    <message>
+        <source>Forces the use of FIFO over mailbox presentation, which may be needed for some drivers.</source>
+        <comment>settings_summary_disable_mailbox_presentation</comment>
+        <translation>Tvingar användning av FIFO i stället för mailbox-presentation, vilket kan krävas för vissa drivrutiner.</translation>
+    </message>
+    <message>
+        <source>Time Stretching</source>
+        <comment>settings_category_time_stretching</comment>
+        <translation>Tidssträckning</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>controller_type_none</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Fast Forward</source>
+        <comment>touchscreen_controller_fast_forward</comment>
+        <translation>Snabbspolning</translation>
+    </message>
+    <message>
+        <source>Switch View</source>
+        <comment>touchscreen_controller_switch_view</comment>
+        <translation>Växla vy</translation>
+    </message>
+    <message>
+        <source>Open Pause Menu</source>
+        <comment>touchscreen_controller_open_pause_menu</comment>
+        <translation>Öppna pausmenyn</translation>
+    </message>
+    <message>
+        <source>Quick Load</source>
+        <comment>touchscreen_controller_quick_load</comment>
+        <translation>Snabbinläsning</translation>
+    </message>
+    <message>
+        <source>Quick Save</source>
+        <comment>touchscreen_controller_quick_save</comment>
+        <translation>Snabbsparning</translation>
+    </message>
+    <message>
+        <source>D-Pad</source>
+        <comment>touchscreen_controller_dpad</comment>
+        <translation>Riktningsknappar</translation>
+    </message>
+    <message>
+        <source>Left Stick</source>
+        <comment>touchscreen_controller_left_stick</comment>
+        <translation>Vänster spak</translation>
+    </message>
+    <message>
+        <source>Left Stick Button</source>
+        <comment>touchscreen_controller_left_stick_button</comment>
+        <translation>Vänster spakknapp</translation>
+    </message>
+    <message>
+        <source>Right Stick</source>
+        <comment>touchscreen_controller_right_stick</comment>
+        <translation>Höger spak</translation>
+    </message>
+    <message>
+        <source>Right Stick Button</source>
+        <comment>touchscreen_controller_right_stick_button</comment>
+        <translation>Höger spakknapp</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <comment>touchscreen_controller_start</comment>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Macro 1</source>
+        <comment>touchscreen_controller_macro_1</comment>
+        <translation>Makro 1</translation>
+    </message>
+    <message>
+        <source>Macro 2</source>
+        <comment>touchscreen_controller_macro_2</comment>
+        <translation>Makro 2</translation>
+    </message>
+    <message>
+        <source>Macro 3</source>
+        <comment>touchscreen_controller_macro_3</comment>
+        <translation>Makro 3</translation>
+    </message>
+    <message>
+        <source>Macro 4</source>
+        <comment>touchscreen_controller_macro_4</comment>
+        <translation>Makro 4</translation>
+    </message>
+    <message>
+        <source>Type: %s</source>
+        <comment>content_list_filter_type_template</comment>
+        <translation>Typ: %s</translation>
+    </message>
+    <message>
+        <source>Sort By: %s</source>
+        <comment>content_list_sort_template</comment>
+        <translation>Sortera efter: %s</translation>
+    </message>
+    <message>
+        <source>Search…</source>
+        <comment>content_list_search</comment>
+        <translation>Sök…</translation>
+    </message>
+    <message>
+        <source>Start File</source>
+        <comment>content_list_start_file</comment>
+        <translation>Starta fil</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>content_list_save_state_manager</comment>
+        <translation>Hanterare för sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Download Covers</source>
+        <comment>content_list_download_covers</comment>
+        <translation>Hämta omslagsbilder</translation>
+    </message>
+    <message>
+        <source>Change Background</source>
+        <comment>content_list_change_background</comment>
+        <translation>Ändra bakgrund</translation>
+    </message>
+    <message>
+        <source>Show Version</source>
+        <comment>content_list_show_version</comment>
+        <translation>Visa version</translation>
+    </message>
+    <message>
+        <source>App Version</source>
+        <comment>version_dialog_title</comment>
+        <translation>Appversion</translation>
+    </message>
+    <message>
+        <source>Third-Party Notices</source>
+        <comment>content_list_third_party_notices</comment>
+        <translation>Meddelanden från tredje part</translation>
+    </message>
+    <message>
+        <source>Show Grid</source>
+        <comment>content_list_show_grid</comment>
+        <translation>Visa rutnät</translation>
+    </message>
+    <message>
+        <source>Show List</source>
+        <comment>content_list_show_list</comment>
+        <translation>Visa lista</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>content_bottom_sheet_load_state</comment>
+        <translation>Läs in tillstånd</translation>
+    </message>
+    <message>
+        <source>Choose Cover Image</source>
+        <comment>content_bottom_sheet_choose_cover</comment>
+        <translation>Välj omslagsbild</translation>
+    </message>
+    <message>
+        <source>Delete Cover Image</source>
+        <comment>content_bottom_sheet_delete_cover</comment>
+        <translation>Ta bort omslagsbild</translation>
+    </message>
+    <message>
+        <source>Create Launcher Shortcut</source>
+        <comment>content_bottom_sheet_create_shortcut</comment>
+        <translation>Skapa genväg på startskärmen</translation>
+    </message>
+    <message>
+        <source>Exclude From List</source>
+        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <translation>Exkludera från lista</translation>
+    </message>
+    <message>
+        <source>Do you want to load the automatic save created %s?
+</source>
+        <comment>content_resume_summary</comment>
+        <translation>Vill du läsa in det automatiskt sparade tillståndet som skapades %s?
+</translation>
+    </message>
+    <message>
+        <source>Clean Boot</source>
+        <comment>content_resume_clean_boot</comment>
+        <translation>Ren uppstart</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>content_resume_delete_state</comment>
+        <translation>Ta bort tillstånd</translation>
+    </message>
+    <message>
+        <source>Do you want to clear or set a new background image?</source>
+        <comment>content_background_prompt</comment>
+        <translation>Vill du ta bort eller ange en ny bakgrundsbild?</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <comment>content_background_change</comment>
+        <translation>Ändra</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>content_background_clear</comment>
+        <translation>Töm</translation>
+    </message>
+    <message>
+        <source>Shortcut created for %s.</source>
+        <comment>content_shortcut_created</comment>
+        <translation>Genväg skapad för %s.</translation>
+    </message>
+    <message>
+        <source>Cannot create shortcut. Make sure your launcher supports it.</source>
+        <comment>content_shortcut_failed</comment>
+        <translation>Kan inte skapa genväg. Kontrollera att din startskärmsapp stöder det.</translation>
+    </message>
+    <message>
+        <source>Download</source>
+        <comment>content_download_covers_start</comment>
+        <translation>Hämta</translation>
+    </message>
+    <message>
+        <source>Digital</source>
+        <comment>touchscreen_layout_digital</comment>
+        <translation>Digital</translation>
+    </message>
+    <message>
+        <source>Analog Stick</source>
+        <comment>touchscreen_layout_analog_stick</comment>
+        <translation>Analog spak</translation>
+    </message>
+    <message>
+        <source>Twin Analog Sticks</source>
+        <comment>touchscreen_layout_analog_sticks</comment>
+        <translation>Dubbla analoga spakar</translation>
+    </message>
+    <message>
+        <source>Light Gun</source>
+        <comment>touchscreen_layout_lightgun</comment>
+        <translation>Ljuspistol</translation>
+    </message>
+    <message>
+        <source>Edit Layout</source>
+        <comment>settings_touchscreen_controller_edit_layout</comment>
+        <translation>Redigera layout</translation>
+    </message>
+    <message>
+        <source>Reposition, resize, and show or hide touchscreen buttons.</source>
+        <comment>settings_touchscreen_controller_edit_layout_summary</comment>
+        <translation>Flytta, ändra storlek på och visa eller dölj pekskärmsknappar.</translation>
+    </message>
+    <message>
+        <source>Folder Locations</source>
+        <comment>settings_folder_experimental_category</comment>
+        <translation>Mappplatser</translation>
+    </message>
+    <message>
+        <source>This feature is experimental</source>
+        <comment>settings_folder_experimental_title</comment>
+        <translation>Den här funktionen är experimentell</translation>
+    </message>
+    <message>
+        <source>Changing folders may cause data loss. Make a backup first. Copy Files is recommended over Move Files because it preserves the original data.</source>
+        <comment>settings_folder_experimental_summary</comment>
+        <translation>Att ändra mappar kan orsaka dataförlust. Säkerhetskopiera först. Kopiera filer rekommenderas framför Flytta filer eftersom det bevarar ursprungliga data.</translation>
+    </message>
+    <message>
+        <source>Folder Changes Unavailable</source>
+        <comment>settings_folder_unavailable_title</comment>
+        <translation>Mappändringar är inte tillgängliga</translation>
+    </message>
+    <message>
+        <source>Folder locations cannot be changed while a session is active.</source>
+        <comment>settings_folder_session_active</comment>
+        <translation>Mappplatser kan inte ändras medan en session är aktiv.</translation>
+    </message>
+    <message>
+        <source>%1$s (Modified)</source>
+        <comment>settings_folder_modified_title</comment>
+        <translation>%1$s (ändrad)</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_folder_save_states</comment>
+        <translation>Sparade tillstånd</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_folder_cheats</comment>
+        <translation>Fusk</translation>
+    </message>
+    <message>
+        <source>Covers</source>
+        <comment>settings_folder_covers</comment>
+        <translation>Omslagsbilder</translation>
+    </message>
+    <message>
+        <source>Choose New Location</source>
+        <comment>settings_folder_choose_location</comment>
+        <translation>Välj ny plats</translation>
+    </message>
+    <message>
+        <source>Restore Default</source>
+        <comment>settings_folder_restore_default</comment>
+        <translation>Återställ standardvärde</translation>
+    </message>
+    <message>
+        <source>Transfer Existing Files?</source>
+        <comment>settings_folder_transfer_title</comment>
+        <translation>Överför befintliga filer?</translation>
+    </message>
+    <message>
+        <source>Copy Files is the safer, recommended choice because it preserves the old contents. Move Files copies first and removes copied originals only after the new setting is saved.</source>
+        <comment>settings_folder_transfer_summary</comment>
+        <translation>Kopiera filer är det säkrare, rekommenderade valet eftersom det bevarar det gamla innehållet. Flytta filer kopierar först och tar bort kopierade original först efter att den nya inställningen har sparats.</translation>
+    </message>
+    <message>
+        <source>Copy Files (Recommended)</source>
+        <comment>settings_folder_copy_files</comment>
+        <translation>Kopiera filer (rekommenderas)</translation>
+    </message>
+    <message>
+        <source>Move Files</source>
+        <comment>settings_folder_move_files</comment>
+        <translation>Flytta filer</translation>
+    </message>
+    <message>
+        <source>Do Nothing</source>
+        <comment>settings_folder_do_nothing</comment>
+        <translation>Gör ingenting</translation>
+    </message>
+    <message>
+        <source>A file already exists at the destination:
+%1$s</source>
+        <comment>settings_folder_file_conflict</comment>
+        <translation>En fil finns redan på målplatsen:
+%1$s</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>settings_folder_overwrite</comment>
+        <translation>Skriv över</translation>
+    </message>
+    <message>
+        <source>Keep Existing</source>
+        <comment>settings_folder_keep_existing</comment>
+        <translation>Behåll befintlig</translation>
+    </message>
+    <message>
+        <source>That location overlaps another managed folder: %1$s</source>
+        <comment>settings_folder_overlap_error</comment>
+        <translation>Den platsen överlappar en annan hanterad mapp: %1$s</translation>
+    </message>
+    <message>
+        <source>Could not retain read and write access to that folder.</source>
+        <comment>settings_folder_permission_error</comment>
+        <translation>Kunde inte behålla läs- och skrivåtkomst till den mappen.</translation>
+    </message>
+    <message>
+        <source>This document provider does not expose a path-based folder and cannot be used here.</source>
+        <comment>settings_folder_provider_unsupported</comment>
+        <translation>Den här dokumentleverantören tillhandahåller ingen mapp med en sökväg och kan inte användas här.</translation>
+    </message>
+    <message>
+        <source>Copying files</source>
+        <comment>settings_folder_copying</comment>
+        <translation>Kopierar filer</translation>
+    </message>
+    <message>
+        <source>Removing old files</source>
+        <comment>settings_folder_removing</comment>
+        <translation>Tar bort gamla filer</translation>
+    </message>
+    <message>
+        <source>The files could not be transferred. The previous setting remains active.</source>
+        <comment>settings_folder_copy_error</comment>
+        <translation>Filerna kunde inte överföras. Den föregående inställningen förblir aktiv.</translation>
+    </message>
+    <message>
+        <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
+        <comment>settings_folder_cleanup_warning</comment>
+        <translation>Den nya mappen är aktiv, men vissa gamla filer kunde inte tas bort och finns kvar som dubbletter.</translation>
     </message>
 </context>
 </TS>

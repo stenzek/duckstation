@@ -990,6 +990,40 @@ Messaggi non letti: {}</translation>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Scaricamento dei dati della classifica, attendere...</translation>
     </message>
+    <message>
+        <source>Rewinding</source>
+        <translation>Riavvolgimento</translation>
+    </message>
+    <message>
+        <source>Offline Mode</source>
+        <translation>Modalità offline</translation>
+    </message>
+    <message>
+        <source>We were unable to connect to RetroAchievements.
+This session will start in offline mode.</source>
+        <translation>Impossibile connettersi a RetroAchievements.
+Questa sessione verrà avviata in modalità offline.</translation>
+    </message>
+    <message>
+        <source>Synchronizing Unlocks</source>
+        <translation>Sincronizzazione degli obiettivi sbloccati</translation>
+    </message>
+    <message numerus="yes">
+        <source>Synchronizing %n offline unlocks with the server.</source>
+        <comment>Synchronizing Unlocks</comment>
+        <translation>
+            <numerusform>Sincronizzazione con il server di %n obiettivo sbloccato offline.</numerusform>
+            <numerusform>Sincronizzazione con il server di %n obiettivi sbloccati offline.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No offline achievement data is available for this game.</source>
+        <translation>Non sono disponibili dati offline degli obiettivi per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Failed to parse offline achievement data.</source>
+        <translation>Impossibile analizzare i dati offline degli obiettivi.</translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -1168,6 +1202,14 @@ Messaggi non letti: {}</translation>
     <message>
         <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
         <translation>Dimensione attuale della cache: %1 MB (%2 MB in %3 oggetti)</translation>
+    </message>
+    <message>
+        <source>Test Achievements Offline Mode</source>
+        <translation>Testa la modalità offline degli obiettivi</translation>
+    </message>
+    <message>
+        <source>Forces all server calls to fail, useful for testing offline mode.</source>
+        <translation>Forza il fallimento di tutte le chiamate al server, utile per testare la modalità offline.</translation>
     </message>
 </context>
 <context>
@@ -5284,6 +5326,34 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Il riavvolgimento non è abilitato. Abilitarlo potrebbe aumentare notevolmente i requisiti di sistema.</translation>
     </message>
+    <message>
+        <source> MB</source>
+        <translation> MB</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <translation>Salva lo stato periodicamente per poter riavvolgere qualsiasi errore durante il gioco.</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <translation>Frequenza con cui viene creato uno stato di riavvolgimento. Frequenze più elevate richiedono maggiori risorse di sistema.</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Quantità di memoria riservata agli stati di riavvolgimento. Determina quanto indietro puoi riavvolgere.</translation>
+    </message>
+    <message>
+        <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
+        <translation>Un buffer di riavvolgimento da %1MB contiene %n stati, consentendoti di riavvolgere fino a %2 secondi.</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Il buffer di riavvolgimento è troppo piccolo per contenere un singolo stato.</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Un buffer di riavvolgimento da {0} MB contiene {1} stati, consentendoti di riavvolgere fino a {2:.2f} secondi.</translation>
+    </message>
 </context>
 <context>
     <name>FullscreenUI</name>
@@ -9165,6 +9235,62 @@ Vuoi comunque {0}?</translation>
             <numerusform>Mancano %n minuti</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Change State</source>
+        <translation>Cambia stato</translation>
+    </message>
+    <message>
+        <source>Fast Scroll</source>
+        <translation>Scorrimento rapido</translation>
+    </message>
+    <message>
+        <source>Grid View</source>
+        <translation>Vista griglia</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <translation>Quantità di memoria riservata agli stati di riavvolgimento. Determina quanto indietro puoi riavvolgere.</translation>
+    </message>
+    <message>
+        <source>Loading Game List...</source>
+        <translation>Caricamento dell&apos;elenco dei giochi...</translation>
+    </message>
+    <message>
+        <source>No rewind states are available yet.</source>
+        <translation>Non sono ancora disponibili stati di riavvolgimento.</translation>
+    </message>
+    <message>
+        <source>%d MB</source>
+        <translation>%d MB</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <translation>Riavvolgi</translation>
+    </message>
+    <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Dimensione buffer di riavvolgimento</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Impossibile allocare gli stati di riavvolgimento.</translation>
+    </message>
+    <message>
+        <source>Shows the game list as a grid instead of a vertical list.</source>
+        <translation>Mostra l&apos;elenco dei giochi come una griglia anziché come un elenco verticale.</translation>
+    </message>
+    <message>
+        <source>State {0} of {1} (frame {2})</source>
+        <translation>Stato {0} di {1} (fotogramma {2})</translation>
+    </message>
+    <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Mappatura automatica non riuscita</translation>
+    </message>
+    <message>
+        <source>The rewind buffer is too small to hold a single state.</source>
+        <translation>Il buffer di riavvolgimento è troppo piccolo per contenere un singolo stato.</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -10097,6 +10223,86 @@ Sei sicuro di voler continuare?</translation>
     <message>
         <source>No URLs to download enumerated.</source>
         <translation>Non sono stati elencati URL da scaricare.</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>Column</comment>
+        <translation>Tipo</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>Column</comment>
+        <translation>Seriale</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>Column</comment>
+        <translation>Titolo</translation>
+    </message>
+    <message>
+        <source>File Title</source>
+        <comment>Column</comment>
+        <translation>Titolo del file</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>Column</comment>
+        <translation>Sviluppatore</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>Column</comment>
+        <translation>Editore</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>Column</comment>
+        <translation>Genere</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <comment>Column</comment>
+        <translation>Anno</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>Column</comment>
+        <translation>Giocatori</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>Column</comment>
+        <translation>Tempo giocato</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>Column</comment>
+        <translation>Ultima partita</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <comment>Column</comment>
+        <translation>Dimensione</translation>
+    </message>
+    <message>
+        <source>Data Size</source>
+        <comment>Column</comment>
+        <translation>Dimensione dati</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>Column</comment>
+        <translation>Regione</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>Column</comment>
+        <translation>Obiettivi</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>Column</comment>
+        <translation>Compatibilità</translation>
     </message>
 </context>
 <context>
@@ -12392,6 +12598,14 @@ Fai clic tenendo premuto Maiusc per impostare più associazioni.</translation>
     <message>
         <source>Mouse</source>
         <translation>Mouse</translation>
+    </message>
+    <message>
+        <source>No mappings were added. {} may not support automatic binding, or no matches were found for your controller.</source>
+        <translation>Non sono state aggiunte mappature. {} potrebbe non supportare l&apos;associazione automatica, oppure non sono state trovate corrispondenze per il tuo controller.</translation>
+    </message>
+    <message>
+        <source>No generic bindings were generated for device &apos;{}&apos;. The controller/source may not support automatic mapping.</source>
+        <translation>Non sono state generate associazioni generiche per il dispositivo &apos;{}&apos;. Il controller o la sorgente potrebbero non supportare la mappatura automatica.</translation>
     </message>
 </context>
 <context>
@@ -17835,6 +18049,26 @@ Vuoi creare la cartella?</translation>
         <comment>AudioStretchMode</comment>
         <translation>Allungamento temporale (variazione del tempo, audio migliore)</translation>
     </message>
+    <message>
+        <source>MMap (Fastest)</source>
+        <comment>CPUFastmemMode</comment>
+        <translation>MMap (il più veloce)</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Disattivato</translation>
+    </message>
+    <message>
+        <source>Resampling</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Ricampionamento</translation>
+    </message>
+    <message>
+        <source>Time Stretch</source>
+        <comment>AudioStretchMode</comment>
+        <translation>Allungamento temporale</translation>
+    </message>
 </context>
 <context>
     <name>SettingsWindow</name>
@@ -18493,6 +18727,10 @@ Token generato %2</translation>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nessuna associazione generica è stata generata per il dispositivo &quot;%1&quot;. Il controller o la sorgente potrebbero non supportare la mappatura automatica.</translation>
     </message>
+    <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Mappatura automatica non riuscita</translation>
+    </message>
 </context>
 <context>
     <name>System</name>
@@ -19003,6 +19241,34 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 
 Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer scelto ({1}) o che i driver grafici devono essere aggiornati.</translation>
     </message>
+    <message>
+        <source>Runahead Disabled</source>
+        <translation>Runahead disabilitato</translation>
+    </message>
+    <message>
+        <source>Failed to allocate runahead states: {}</source>
+        <translation>Allocazione degli stati di runahead non riuscita: {}</translation>
+    </message>
+    <message>
+        <source>Rewind Disabled</source>
+        <translation>Riavvolgimento disabilitato</translation>
+    </message>
+    <message>
+        <source>Failed to allocate rewind states: {}</source>
+        <translation>Allocazione degli stati di riavvolgimento non riuscita: {}</translation>
+    </message>
+    <message>
+        <source>Rewind buffer size is too small to hold a single save state.</source>
+        <translation>Il buffer di riavvolgimento è troppo piccolo per contenere un singolo salvataggio di stato.</translation>
+    </message>
+    <message>
+        <source>Failed to load rewind state</source>
+        <translation>Caricamento dello stato di riavvolgimento non riuscito</translation>
+    </message>
+    <message>
+        <source>Invalid rewind slot {}.</source>
+        <translation>Slot di riavvolgimento {} non valido.</translation>
+    </message>
 </context>
 <context>
     <name>TextureReplacementSettingsDialog</name>
@@ -19228,6 +19494,5600 @@ Ciò potrebbe essere dovuto al fatto che la tua GPU non supporta il renderer sce
     <message>
         <source>LargeMotor</source>
         <translation>MotoreGrande</translation>
+    </message>
+</context>
+<context>
+    <name>Android</name>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_emulation_screen_orientation_entries[0]</comment>
+        <translation>Usa impostazione del dispositivo</translation>
+    </message>
+    <message>
+        <source>Portrait</source>
+        <comment>settings_emulation_screen_orientation_entries[1]</comment>
+        <translation>Verticale</translation>
+    </message>
+    <message>
+        <source>Landscape</source>
+        <comment>settings_emulation_screen_orientation_entries[2]</comment>
+        <translation>Orizzontale</translation>
+    </message>
+    <message>
+        <source>Sensor Based</source>
+        <comment>settings_emulation_screen_orientation_entries[3]</comment>
+        <translation>In base ai sensori</translation>
+    </message>
+    <message>
+        <source>Follow System</source>
+        <comment>settings_theme_entries[0]</comment>
+        <translation>Segui il sistema</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <comment>settings_theme_entries[1]</comment>
+        <translation>Chiaro</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <comment>settings_theme_entries[2]</comment>
+        <translation>Scuro</translation>
+    </message>
+    <message>
+        <source>Dark Ocean</source>
+        <comment>settings_theme_entries[3]</comment>
+        <translation>Oceano scuro</translation>
+    </message>
+    <message>
+        <source>Touchscreen Press</source>
+        <comment>controller_other_binding_entries[0]</comment>
+        <translation>Pressione sul touchscreen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Left</source>
+        <comment>controller_other_binding_entries[1]</comment>
+        <translation>Scorrimento a sinistra sul touchscreen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Right</source>
+        <comment>controller_other_binding_entries[2]</comment>
+        <translation>Scorrimento a destra sul touchscreen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Up</source>
+        <comment>controller_other_binding_entries[3]</comment>
+        <translation>Scorrimento verso l&apos;alto sul touchscreen</translation>
+    </message>
+    <message>
+        <source>Touchscreen Swipe Down</source>
+        <comment>controller_other_binding_entries[4]</comment>
+        <translation>Scorrimento verso il basso sul touchscreen</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Left (X)</source>
+        <comment>controller_other_binding_entries[5]</comment>
+        <translation>Accelerometro: svolta a sinistra (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Turn Right (X)</source>
+        <comment>controller_other_binding_entries[6]</comment>
+        <translation>Accelerometro: svolta a destra (X)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Backwards (Y)</source>
+        <comment>controller_other_binding_entries[7]</comment>
+        <translation>Accelerometro: inclinazione all&apos;indietro (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Tilt Forwards (Y)</source>
+        <comment>controller_other_binding_entries[8]</comment>
+        <translation>Accelerometro: inclinazione in avanti (Y)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Left (Z)</source>
+        <comment>controller_other_binding_entries[9]</comment>
+        <translation>Accelerometro: rotazione a sinistra (Z)</translation>
+    </message>
+    <message>
+        <source>Accelerometer Rotate Right (Z)</source>
+        <comment>controller_other_binding_entries[10]</comment>
+        <translation>Accelerometro: rotazione a destra (Z)</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <comment>settings_tab_interface</comment>
+        <translation>Interfaccia</translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <comment>settings_tab_video</comment>
+        <translation>Video</translation>
+    </message>
+    <message>
+        <source>Audio</source>
+        <comment>settings_tab_audio</comment>
+        <translation>Audio</translation>
+    </message>
+    <message>
+        <source>Post-Processing</source>
+        <comment>settings_tab_post_processing</comment>
+        <translation>Post-elaborazione</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>settings_tab_achievements</comment>
+        <translation>Obiettivi</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <comment>settings_tab_advanced</comment>
+        <translation>Avanzate</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <comment>settings_tab_information</comment>
+        <translation>Informazioni</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>settings_tab_patches</comment>
+        <translation>Patch</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_tab_cheats</comment>
+        <translation>Trucchi</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <comment>dialog_yes</comment>
+        <translation>Sì</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <comment>dialog_no</comment>
+        <translation>No</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>dialog_close</comment>
+        <translation>Chiudi</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <comment>dialog_done</comment>
+        <translation>Fine</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>dialog_clear</comment>
+        <translation>Svuota</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <comment>dialog_ok</comment>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>App Settings</source>
+        <comment>action_settings</comment>
+        <translation>Impostazioni app</translation>
+    </message>
+    <message>
+        <source>Normal Speed</source>
+        <comment>settings_normal_speed</comment>
+        <translation>Velocità normale</translation>
+    </message>
+    <message>
+        <source>Fast Forward Speed</source>
+        <comment>settings_fast_forward_speed</comment>
+        <translation>Velocità avanzamento veloce</translation>
+    </message>
+    <message>
+        <source>Turbo Speed</source>
+        <comment>settings_turbo_speed</comment>
+        <translation>Velocità turbo</translation>
+    </message>
+    <message>
+        <source>Frame Count</source>
+        <comment>settings_runahead</comment>
+        <translation>Numero di fotogrammi</translation>
+    </message>
+    <message>
+        <source>Save State On Exit</source>
+        <comment>settings_save_state_on_exit</comment>
+        <translation>Salva stato all&apos;uscita</translation>
+    </message>
+    <message>
+        <source>Pause On Controller Disconnection</source>
+        <comment>settings_pause_on_controller_disconnection</comment>
+        <translation>Metti in pausa alla disconnessione del controller</translation>
+    </message>
+    <message>
+        <source>Apply Game Settings</source>
+        <comment>settings_apply_game_settings</comment>
+        <translation>Applica impostazioni del gioco</translation>
+    </message>
+    <message>
+        <source>Enables loading of per-game configuration. If this option is disabled, only the global configuration will be used.</source>
+        <comment>settings_summary_apply_game_settings</comment>
+        <translation>Abilita il caricamento della configurazione specifica per ciascun gioco. Se questa opzione è disabilitata, verrà usata solo la configurazione globale.</translation>
+    </message>
+    <message>
+        <source>Vertical Sync (VSync)</source>
+        <comment>settings_video_sync</comment>
+        <translation>Sincronizzazione verticale (VSync)</translation>
+    </message>
+    <message>
+        <source>Synchronizes presentation of the console&apos;s frames to the host.
+        Not needed on most devices, and can cause slowdown.</source>
+        <comment>settings_summary_video_sync</comment>
+        <translation>Sincronizza la presentazione dei fotogrammi della console con l&apos;host.
+        Non è necessaria sulla maggior parte dei dispositivi e può causare rallentamenti.</translation>
+    </message>
+    <message>
+        <source>Sync To Host Refresh Rate</source>
+        <comment>settings_general_sync_to_host_refresh_rate</comment>
+        <translation>Sincronizza con la frequenza di aggiornamento dell&apos;host</translation>
+    </message>
+    <message>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host.</source>
+        <comment>settings_summary_general_sync_to_host_refresh_rate</comment>
+        <translation>Regola la velocità di emulazione affinché la frequenza di aggiornamento della console corrisponda a quella dell&apos;host.</translation>
+    </message>
+    <message>
+        <source>Optimal Frame Pacing</source>
+        <comment>settings_optimal_frame_pacing</comment>
+        <translation>Ritmo ottimale dei fotogrammi</translation>
+    </message>
+    <message>
+        <source>Log To File</source>
+        <comment>settings_log_to_file</comment>
+        <translation>Registra su file</translation>
+    </message>
+    <message>
+        <source>Fast Forward Volume</source>
+        <comment>settings_fast_forward_volume</comment>
+        <translation>Volume avanzamento veloce</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Touchscreen Controller</source>
+        <comment>settings_auto_hide_touchscreen_controller</comment>
+        <translation>Nascondi automaticamente il controller touchscreen</translation>
+    </message>
+    <message>
+        <source>Hides the touchscreen controller when an external controller is detected.</source>
+        <comment>settings_summary_auto_hide_touchscreen_controller</comment>
+        <translation>Nasconde il controller touchscreen quando viene rilevato un controller esterno.</translation>
+    </message>
+    <message>
+        <source>Vibrate On Press</source>
+        <comment>settings_vibrate_on_press</comment>
+        <translation>Vibra alla pressione</translation>
+    </message>
+    <message>
+        <source>Enables a short vibration when a touchscreen button is pressed. Requires &quot;Vibrate on Touch&quot; to be enabled on your device.</source>
+        <comment>settings_summary_vibrate_on_press</comment>
+        <translation>Abilita una breve vibrazione alla pressione di un pulsante touchscreen. Richiede che l&apos;opzione &quot;Vibra al tocco&quot; sia abilitata sul dispositivo.</translation>
+    </message>
+    <message>
+        <source>Device Vibration</source>
+        <comment>settings_enable_vibration</comment>
+        <translation>Vibrazione del dispositivo</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio</source>
+        <comment>settings_aspect_ratio</comment>
+        <translation>Rapporto d&apos;aspetto</translation>
+    </message>
+    <message>
+        <source>Sets the target normal speed for gameplay.</source>
+        <comment>settings_summary_normal_speed</comment>
+        <translation>Imposta la velocità normale desiderata per il gioco.</translation>
+    </message>
+    <message>
+        <source>Sets the target fast forward speed.</source>
+        <comment>settings_summary_fast_forward_speed</comment>
+        <translation>Imposta la velocità desiderata per l&apos;avanzamento veloce.</translation>
+    </message>
+    <message>
+        <source>Sets the target turbo speed.</source>
+        <comment>settings_summary_turbo_speed</comment>
+        <translation>Imposta la velocità turbo desiderata.</translation>
+    </message>
+    <message>
+        <source>Sets how many frames to run ahead to reduce input latency.</source>
+        <comment>settings_summary_runahead</comment>
+        <translation>Imposta il numero di fotogrammi da eseguire in anticipo per ridurre la latenza di input.</translation>
+    </message>
+    <message>
+        <source>Selects how save states are compressed when they are written.</source>
+        <comment>settings_summary_save_state_compression</comment>
+        <translation>Seleziona come comprimere i salvataggi di stato quando vengono scritti.</translation>
+    </message>
+    <message>
+        <source>Keeps a .bak backup of the previous save state when creating a new one.</source>
+        <comment>settings_summary_create_save_state_backups</comment>
+        <translation>Conserva una copia di backup .bak del precedente salvataggio di stato quando ne viene creato uno nuovo.</translation>
+    </message>
+    <message>
+        <source>OSD Scale</source>
+        <comment>settings_osd_scale</comment>
+        <translation>Scala dell&apos;OSD</translation>
+    </message>
+    <message>
+        <source>Show Latency Statistics</source>
+        <comment>settings_show_latency_statistics</comment>
+        <translation>Mostra statistiche latenza</translation>
+    </message>
+    <message>
+        <source>Shows information about input and audio latency in the top-right corner of the display.</source>
+        <comment>settings_summary_show_latency_statistics</comment>
+        <translation>Mostra informazioni sulla latenza di input e dell&apos;audio nell&apos;angolo in alto a destra del display.</translation>
+    </message>
+    <message>
+        <source>Show Frame Times</source>
+        <comment>settings_show_frame_times</comment>
+        <translation>Mostra tempi dei fotogrammi</translation>
+    </message>
+    <message>
+        <source>Please wait…</source>
+        <comment>android_progress_callback_please_wait</comment>
+        <translation>Attendi…</translation>
+    </message>
+    <message>
+        <source>Startup Failed</source>
+        <comment>emulation_activity_boot_error</comment>
+        <translation>Avvio non riuscito</translation>
+    </message>
+    <message>
+        <source>Fatal Error</source>
+        <comment>emulation_activity_fatal_error</comment>
+        <translation>Errore irreversibile</translation>
+    </message>
+    <message>
+        <source>Shutting Down…</source>
+        <comment>emulation_activity_shutting_down</comment>
+        <translation>Spegnimento…</translation>
+    </message>
+    <message>
+        <source>Maximum Queued Frames</source>
+        <comment>settings_max_queued_frames</comment>
+        <translation>Numero massimo di fotogrammi in coda</translation>
+    </message>
+    <message>
+        <source>Sets the maximum number of frames that can be queued for rendering or presentation before the main thread is throttled.</source>
+        <comment>settings_summary_max_queued_frames</comment>
+        <translation>Imposta il numero massimo di fotogrammi che possono essere accodati per il rendering o la presentazione prima che il thread principale venga rallentato.</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>settings_language</comment>
+        <translation>Lingua</translation>
+    </message>
+    <message>
+        <source>Use Device Setting</source>
+        <comment>settings_language_use_device</comment>
+        <translation>Usa impostazione del dispositivo</translation>
+    </message>
+    <message>
+        <source>Selects the language used by the app.</source>
+        <comment>settings_summary_language</comment>
+        <translation>Seleziona la lingua usata dall&apos;app.</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>touchscreen_controller_reset_layout</comment>
+        <translation>Ripristina disposizione</translation>
+    </message>
+    <message>
+        <source>Touchscreen controller is not active.</source>
+        <comment>emulation_activity_touchscreen_controller_not_active</comment>
+        <translation>Il controller touchscreen non è attivo.</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <comment>settings_theme</comment>
+        <translation>Tema</translation>
+    </message>
+    <message>
+        <source>Selects the app theme used by the interface.</source>
+        <comment>settings_summary_theme</comment>
+        <translation>Seleziona il tema dell&apos;app usato dall&apos;interfaccia.</translation>
+    </message>
+    <message>
+        <source>Press button on controller to set new binding.
+
+Current Binding: %s</source>
+        <comment>controller_binding_dialog_message</comment>
+        <translation>Premi un pulsante sul controller per impostare una nuova associazione.
+
+Associazione attuale: %s</translation>
+    </message>
+    <message>
+        <source>&lt;No Binding&gt;</source>
+        <comment>controller_binding_dialog_no_binding</comment>
+        <translation>&lt;Nessuna associazione&gt;</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>controller_binding_dialog_clear</comment>
+        <translation>Svuota</translation>
+    </message>
+    <message>
+        <source>Scanning subfolders.</source>
+        <comment>content_folders_scanning_subdirectories</comment>
+        <translation>Scansione delle sottocartelle abilitata.</translation>
+    </message>
+    <message>
+        <source>Not scanning subfolders.</source>
+        <comment>content_folders_not_scanning_subdirectories</comment>
+        <translation>Scansione delle sottocartelle disabilitata.</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>content_folders_back</comment>
+        <translation>Indietro</translation>
+    </message>
+    <message>
+        <source>More folder actions</source>
+        <comment>content_folders_more_actions</comment>
+        <translation>Altre azioni per la cartella</translation>
+    </message>
+    <message>
+        <source>Scan Subfolders</source>
+        <comment>content_folders_enable_recursive</comment>
+        <translation>Scansiona sottocartelle</translation>
+    </message>
+    <message>
+        <source>Do Not Scan Subfolders</source>
+        <comment>content_folders_disable_recursive</comment>
+        <translation>Non scansionare sottocartelle</translation>
+    </message>
+    <message>
+        <source>Remove Folder</source>
+        <comment>content_folders_remove</comment>
+        <translation>Rimuovi cartella</translation>
+    </message>
+    <message>
+        <source>Global Settings</source>
+        <comment>settings_category_global</comment>
+        <translation>Impostazioni globali</translation>
+    </message>
+    <message>
+        <source>Latency Control</source>
+        <comment>settings_category_latency_control</comment>
+        <translation>Controllo latenza</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <comment>settings_category_audio_configuration</comment>
+        <translation>Configurazione</translation>
+    </message>
+    <message>
+        <source>Volume Control</source>
+        <comment>settings_category_audio_volume</comment>
+        <translation>Controllo volume</translation>
+    </message>
+    <message>
+        <source>Console Settings</source>
+        <comment>settings_category_console</comment>
+        <translation>Impostazioni console</translation>
+    </message>
+    <message>
+        <source>Logging Settings</source>
+        <comment>settings_category_logging</comment>
+        <translation>Impostazioni dei Registri</translation>
+    </message>
+    <message>
+        <source>Debug Settings</source>
+        <comment>settings_category_debug</comment>
+        <translation>Impostazioni debug</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_category_osd</comment>
+        <translation>Messaggi a schermo (OSD)</translation>
+    </message>
+    <message>
+        <source>Speed Control</source>
+        <comment>settings_category_speed_control</comment>
+        <translation>Controllo velocità</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settings_category_settings</comment>
+        <translation>Impostazioni</translation>
+    </message>
+    <message>
+        <source>Behavior</source>
+        <comment>settings_category_behavior</comment>
+        <translation>Comportamento</translation>
+    </message>
+    <message>
+        <source>Video Settings</source>
+        <comment>settings_category_video_settings</comment>
+        <translation>Impostazioni video</translation>
+    </message>
+    <message>
+        <source>Notifications</source>
+        <comment>settings_category_achievement_notifications</comment>
+        <translation>Notifiche</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_category_achievement_overlays</comment>
+        <translation>Sovraimpressioni</translation>
+    </message>
+    <message>
+        <source>Touchscreen Controller Opacity</source>
+        <comment>dialog_touchscreen_controller_opacity</comment>
+        <translation>Opacità del controller touchscreen</translation>
+    </message>
+    <message>
+        <source>Touch Gliding</source>
+        <comment>settings_touch_gliding</comment>
+        <translation>Scorrimento del tocco</translation>
+    </message>
+    <message>
+        <source>Allows you to press multiple controller face buttons by dragging your finger along the screen.</source>
+        <comment>settings_summary_touch_gliding</comment>
+        <translation>Consente di premere più pulsanti frontali del controller trascinando il dito sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Other File…</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Altro file…</translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <comment>emulation_menu_change_media_current</comment>
+        <translation>Attuale</translation>
+    </message>
+    <message>
+        <source>Selected file could not be opened.</source>
+        <comment>emulation_menu_change_media_invalid_file</comment>
+        <translation>Impossibile aprire il file selezionato.</translation>
+    </message>
+    <message>
+        <source>Safety Check Failed</source>
+        <comment>emulation_menu_safety_check_title</comment>
+        <translation>Controllo di sicurezza non superato</translation>
+    </message>
+    <message>
+        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
+
+Do you want to %1$s anyway?</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>ATTENZIONE: Al momento non è sicuro eseguire l&apos;azione %1$s, poiché potrebbe causare la corruzione dei dati. Consigliamo di riprendere il gioco, attendere 5 secondi e riprovare.
+
+Vuoi comunque eseguire l&apos;azione %1$s?</translation>
+    </message>
+    <message>
+        <source>Token Generation Time</source>
+        <comment>settings_achievements_token_generation_time</comment>
+        <translation>Data e ora di generazione del token</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <comment>settings_achievements_not_logged_in</comment>
+        <translation>Accesso non effettuato.</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>settings_achievements_login</comment>
+        <translation>Accedi</translation>
+    </message>
+    <message>
+        <source>Register</source>
+        <comment>settings_achievements_register</comment>
+        <translation>Registrati</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <comment>settings_achievements_logout</comment>
+        <translation>Disconnettiti</translation>
+    </message>
+    <message>
+        <source>View Profile</source>
+        <comment>settings_achievements_view_profile</comment>
+        <translation>Mostra profilo</translation>
+    </message>
+    <message>
+        <source>RetroAchievements Login</source>
+        <comment>achievement_settings_login_title</comment>
+        <translation>Accesso a RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <comment>achievement_settings_login_help</comment>
+        <translation>Inserisci qui sotto il nome utente e la password per retroachievements.org. La password non verrà salvata in DuckStation; verrà invece generato e usato un token di accesso.</translation>
+    </message>
+    <message>
+        <source>Your login token for retroachievements.org has expired. You must log in again. Your password will not be saved in DuckStation.</source>
+        <comment>achievement_settings_login_help_expired</comment>
+        <translation>Il tuo token di accesso per retroachievements.org è scaduto. Devi accedere di nuovo. La password non verrà salvata in DuckStation.</translation>
+    </message>
+    <message>
+        <source>Username</source>
+        <comment>achievement_settings_login_username_hint</comment>
+        <translation>Nome utente</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <comment>achievement_settings_login_password_hint</comment>
+        <translation>Password</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>achievement_settings_login_button</comment>
+        <translation>Accedi</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <comment>achievement_settings_login_cancel_button</comment>
+        <translation>Annulla</translation>
+    </message>
+    <message>
+        <source>Login failed: %s</source>
+        <comment>achievement_settings_login_failed</comment>
+        <translation>Accesso non riuscito: %s</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d points</source>
+        <comment>achievement_points_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d point&quot;; other=&quot;%1$d points&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d punto</numerusform>
+            <numerusform>%1$d punti</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Hai sbloccato %1$d obiettivo su %2$d, ottenendo %3$d punti su %4$d possibili.</numerusform>
+            <numerusform>Hai sbloccato %1$d obiettivi su %2$d, ottenendo %3$d punti su %4$d possibili.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements and earned %1$d points!</source>
+        <comment>achievement_summary_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Hai sbloccato tutti gli obiettivi e ottenuto %1$d punto!</numerusform>
+            <numerusform>Hai sbloccato tutti gli obiettivi e ottenuto %1$d punti!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_subset_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement in this subset, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Hai sbloccato %1$d obiettivo su %2$d in questo sottoinsieme, ottenendo %3$d punti su %4$d possibili.</numerusform>
+            <numerusform>Hai sbloccato %1$d obiettivi su %2$d in questo sottoinsieme, ottenendo %3$d punti su %4$d possibili.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked all achievements in this subset and earned %1$d points!</source>
+        <comment>achievement_subset_all_unlocked_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements in this subset and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements in this subset and earned %1$d points!&quot;</extracomment>
+        <translation>
+            <numerusform>Hai sbloccato tutti gli obiettivi di questo sottoinsieme e ottenuto %1$d punto!</numerusform>
+            <numerusform>Hai sbloccato tutti gli obiettivi di questo sottoinsieme e ottenuto %1$d punti!</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unofficial_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Hai sbloccato %1$d obiettivo non ufficiale su %2$d, ottenendo %3$d punti su %4$d possibili.</numerusform>
+            <numerusform>Hai sbloccato %1$d obiettivi non ufficiali su %2$d, ottenendo %3$d punti su %4$d possibili.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_game_beaten_completed_format_string</comment>
+        <translation>Gioco finito il %1$s e completato il %2$s.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s, and completed on %2$s.</source>
+        <comment>achievement_subset_beaten_completed_format_string</comment>
+        <translation>Sottoinsieme finito il %1$s e completato il %2$s.</translation>
+    </message>
+    <message>
+        <source>Game was beaten on %1$s.</source>
+        <comment>achievement_game_beaten_format_string</comment>
+        <translation>Gioco finito il %1$s.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on %1$s.</source>
+        <comment>achievement_subset_beaten_format_string</comment>
+        <translation>Sottoinsieme finito il %1$s.</translation>
+    </message>
+    <message>
+        <source>Game was completed on %1$s.</source>
+        <comment>achievement_game_completed_format_string</comment>
+        <translation>Gioco completato il %1$s.</translation>
+    </message>
+    <message>
+        <source>Subset was completed on %1$s.</source>
+        <comment>achievement_subset_completed_format_string</comment>
+        <translation>Sottoinsieme completato il %1$s.</translation>
+    </message>
+    <message>
+        <source>Unlocked %1$s</source>
+        <comment>achievement_unlocked_format_string</comment>
+        <translation>Sbloccato il %1$s</translation>
+    </message>
+    <message>
+        <source>%1$.1f%% of players have this achievement</source>
+        <comment>achievement_rarity_format_string</comment>
+        <translation>Il %1$.1f%% dei giocatori ha questo obiettivo</translation>
+    </message>
+    <message>
+        <source>%s (Hardcore Mode)</source>
+        <comment>achievement_title_challenge_mode_format_string</comment>
+        <translation>%s (modalità hardcore)</translation>
+    </message>
+    <message>
+        <source>Missable</source>
+        <comment>achievement_type_missable</comment>
+        <translation>Mancabile</translation>
+    </message>
+    <message>
+        <source>Progression</source>
+        <comment>achievement_type_progression</comment>
+        <translation>Progressione</translation>
+    </message>
+    <message>
+        <source>Win Condition</source>
+        <comment>achievement_type_win_condition</comment>
+        <translation>Condizione di vittoria</translation>
+    </message>
+    <message>
+        <source>Unofficial</source>
+        <comment>achievement_unofficial</comment>
+        <translation>Non ufficiali</translation>
+    </message>
+    <message>
+        <source>Open on RetroAchievements</source>
+        <comment>achievement_open_on_retroachievements</comment>
+        <translation>Apri su RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Pin to OSD</source>
+        <comment>achievement_pin_to_osd</comment>
+        <translation>Fissa nell&apos;OSD</translation>
+    </message>
+    <message>
+        <source>Unpin from OSD</source>
+        <comment>achievement_unpin_from_osd</comment>
+        <translation>Rimuovi dall&apos;OSD</translation>
+    </message>
+    <message>
+        <source>Reset Unlock</source>
+        <comment>achievement_reset_unlock</comment>
+        <translation>Azzera sblocco</translation>
+    </message>
+    <message>
+        <source>Reset Unofficial Achievement</source>
+        <comment>achievement_reset_unofficial_title</comment>
+        <translation>Azzera obiettivo non ufficiale</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unofficial_message</comment>
+        <translation>Lo stato di sblocco di &apos;%1$s&apos; verrà rimosso. Questa operazione non può essere annullata.</translation>
+    </message>
+    <message>
+        <source>Unofficial achievement unlock reset.</source>
+        <comment>achievement_unofficial_unlock_reset</comment>
+        <translation>Sblocco obiettivo non ufficiale azzerato.</translation>
+    </message>
+    <message>
+        <source>Pinned to OSD</source>
+        <comment>achievement_pinned_to_osd_icon</comment>
+        <translation>Fissato nell&apos;OSD</translation>
+    </message>
+    <message>
+        <source>%1$s pinned to OSD.</source>
+        <comment>achievement_pinned_to_osd</comment>
+        <translation>%1$s fissato nell&apos;OSD.</translation>
+    </message>
+    <message>
+        <source>%1$s unpinned from OSD.</source>
+        <comment>achievement_unpinned_from_osd</comment>
+        <translation>%1$s rimosso dall&apos;OSD.</translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards.</source>
+        <comment>leaderboard_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard.&quot;; other=&quot;This game has %d leaderboards.&quot;</extracomment>
+        <translation>
+            <numerusform>Questo gioco ha %d classifica.</numerusform>
+            <numerusform>Questo gioco ha %d classifiche.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>This game has %d leaderboards. Submission requires hardcore mode.</source>
+        <comment>leaderboard_summary_no_submission_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;This game has %d leaderboard. Submission requires hardcore mode.&quot;; other=&quot;This game has %d leaderboards. Submission requires hardcore mode.&quot;</extracomment>
+        <translation>
+            <numerusform>Questo gioco ha %d classifica. L&apos;invio richiede la modalità hardcore.</numerusform>
+            <numerusform>Questo gioco ha %d classifiche. L&apos;invio richiede la modalità hardcore.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Rank</source>
+        <comment>leaderboard_heading_rank</comment>
+        <translation>Rango</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>leaderboard_heading_name</comment>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <comment>leaderboard_heading_time</comment>
+        <translation>Tempo</translation>
+    </message>
+    <message>
+        <source>Score</source>
+        <comment>leaderboard_heading_score</comment>
+        <translation>Punteggio</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>leaderboard_heading_value</comment>
+        <translation>Valore</translation>
+    </message>
+    <message>
+        <source>Date Submitted</source>
+        <comment>leaderboard_heading_date_submitted</comment>
+        <translation>Data di invio</translation>
+    </message>
+    <message>
+        <source>Show Nearby</source>
+        <comment>leaderboard_show_nearby</comment>
+        <translation>Mostra vicini</translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <comment>leaderboard_show_all</comment>
+        <translation>Mostra tutti</translation>
+    </message>
+    <message>
+        <source>No entries found.</source>
+        <comment>leaderboard_no_entries</comment>
+        <translation>Nessuna voce trovata.</translation>
+    </message>
+    <message>
+        <source>Confirm Logout</source>
+        <comment>settings_achievements_confirm_logout_title</comment>
+        <translation>Conferma disconnessione</translation>
+    </message>
+    <message>
+        <source>After logging out, no more achievements will be unlocked until you log back in again. Achievements already unlocked will not be lost.</source>
+        <comment>settings_achievements_confirm_logout_message</comment>
+        <translation>Dopo la disconnessione, non verranno sbloccati altri obiettivi finché non accederai di nuovo. Gli obiettivi già sbloccati non andranno persi.</translation>
+    </message>
+    <message>
+        <source>Player %d</source>
+        <comment>controller_player_format</comment>
+        <translation>Giocatore %d</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>controller_category_settings</comment>
+        <translation>Impostazioni</translation>
+    </message>
+    <message>
+        <source>Hotkeys</source>
+        <comment>controller_settings_tab_hotkeys</comment>
+        <translation>Tasti di scelta rapida</translation>
+    </message>
+    <message>
+        <source>Touchscreen</source>
+        <comment>controller_settings_tab_touchscreen</comment>
+        <translation>Touchscreen</translation>
+    </message>
+    <message>
+        <source>Bindings</source>
+        <comment>controller_settings_category_bindings</comment>
+        <translation>Associazioni</translation>
+    </message>
+    <message>
+        <source>Macros</source>
+        <comment>controller_settings_category_macros</comment>
+        <translation>Macro</translation>
+    </message>
+    <message>
+        <source>Perform Automatic Mapping</source>
+        <comment>controller_settings_automatic_mapping</comment>
+        <translation>Esegui mappatura automatica</translation>
+    </message>
+    <message>
+        <source>Attempts to automatically bind all buttons/axes to a connected controller.</source>
+        <comment>controller_settings_summary_automatic_mapping</comment>
+        <translation>Tenta di associare automaticamente tutti i pulsanti e gli assi a un controller collegato.</translation>
+    </message>
+    <message>
+        <source>Clear Bindings</source>
+        <comment>controller_settings_clear_controller_bindings</comment>
+        <translation>Cancella associazioni</translation>
+    </message>
+    <message>
+        <source>Unbinds all buttons/axes for this controller.</source>
+        <comment>controller_settings_summary_clear_controller_bindings</comment>
+        <translation>Rimuove le associazioni di tutti i pulsanti e gli assi di questo controller.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to clear all bindings? This cannot be reversed.</source>
+        <comment>controller_settings_clear_controller_bindings_confirm</comment>
+        <translation>Vuoi davvero cancellare tutte le associazioni? Questa operazione non può essere annullata.</translation>
+    </message>
+    <message>
+        <source>All bindings cleared for Controller %d.</source>
+        <comment>controller_settings_clear_controller_bindings_done</comment>
+        <translation>Tutte le associazioni del controller %d sono state cancellate.</translation>
+    </message>
+    <message>
+        <source>No suitable devices found. Automatic binding only supports gamepad devices, but you can still bind other device types manually.</source>
+        <comment>controller_auto_mapping_no_devices</comment>
+        <translation>Nessun dispositivo adatto trovato. L&apos;associazione automatica supporta solo i gamepad, ma puoi comunque associare manualmente altri tipi di dispositivi.</translation>
+    </message>
+    <message>
+        <source>Select Device</source>
+        <comment>controller_auto_mapping_select_device</comment>
+        <translation>Seleziona Dispositivo</translation>
+    </message>
+    <message>
+        <source>Automatic mapping complete. You may still need to adjust some bindings.</source>
+        <comment>controller_auto_mapping_complete</comment>
+        <translation>Mappatura automatica completata. Potrebbe essere ancora necessario regolare alcune associazioni.</translation>
+    </message>
+    <message>
+        <source>Choose Binding</source>
+        <comment>controller_binding_choose_other</comment>
+        <translation>Scegli associazione</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <comment>controller_binding_set_other</comment>
+        <translation>Altro</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>touchscreen_controller_edit_menu</comment>
+        <translation>Menu di modifica</translation>
+    </message>
+    <message>
+        <source>Change Opacity</source>
+        <comment>touchscreen_controller_change_opacity</comment>
+        <translation>Modifica opacità</translation>
+    </message>
+    <message>
+        <source>Resize Buttons</source>
+        <comment>touchscreen_controller_resize_buttons</comment>
+        <translation>Ridimensiona pulsanti</translation>
+    </message>
+    <message>
+        <source>Exit Editor</source>
+        <comment>touchscreen_controller_exit_editor</comment>
+        <translation>Esci dall&apos;editor</translation>
+    </message>
+    <message>
+        <source>Multitap Mode</source>
+        <comment>settings_multitap_mode</comment>
+        <translation>Modalità multitap</translation>
+    </message>
+    <message>
+        <source>Enable Touchscreen Controller</source>
+        <comment>settings_enable_touchscreen_controller</comment>
+        <translation>Abilita controller touchscreen</translation>
+    </message>
+    <message>
+        <source>Controller settings initialized with global settings.</source>
+        <comment>input_settings_store_initialized</comment>
+        <translation>Impostazioni controller inizializzate con le impostazioni globali.</translation>
+    </message>
+    <message>
+        <source>If the touchscreen controller is not used, an external controller must be mapped.</source>
+        <comment>settings_summary_enable_touchscreen_controller</comment>
+        <translation>Se non viene usato il controller touchscreen, è necessario configurare la mappatura di un controller esterno.</translation>
+    </message>
+    <message>
+        <source>Touchscreen Player</source>
+        <comment>settings_touchscreen_controller_port</comment>
+        <translation>Giocatore touchscreen</translation>
+    </message>
+    <message>
+        <source>Selects the player which touchscreen input will simulate.</source>
+        <comment>settings_summary_touchscreen_controller_port</comment>
+        <translation>Seleziona il giocatore simulato dall&apos;input del touchscreen.</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>emulation_menu_load_state</comment>
+        <translation>Carica stato</translation>
+    </message>
+    <message>
+        <source>Save State</source>
+        <comment>emulation_menu_save_state</comment>
+        <translation>Salva stato</translation>
+    </message>
+    <message>
+        <source>Toggle Fast Forward</source>
+        <comment>emulation_menu_toggle_fast_forward</comment>
+        <translation>Attiva/disattiva avanzamento veloce</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>emulation_menu_achievements</comment>
+        <translation>Obiettivi</translation>
+    </message>
+    <message>
+        <source>Leaderboards</source>
+        <comment>emulation_menu_leaderboards</comment>
+        <translation>Classifiche</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>emulation_menu_cheats</comment>
+        <translation>Trucchi</translation>
+    </message>
+    <message>
+        <source>Save Screenshot</source>
+        <comment>emulation_menu_save_screenshot</comment>
+        <translation>Salva screenshot</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>emulation_menu_rewind</comment>
+        <translation>Riavvolgi</translation>
+    </message>
+    <message>
+        <source>Load Rewind State</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Carica stato di riavvolgimento</translation>
+    </message>
+    <message>
+        <source>Frame %1$d</source>
+        <comment>emulation_menu_rewind_frame</comment>
+        <translation>Fotogramma %1$d</translation>
+    </message>
+    <message>
+        <source>No rewind states are available.</source>
+        <comment>emulation_menu_rewind_empty</comment>
+        <translation>Nessuno stato di riavvolgimento disponibile.</translation>
+    </message>
+    <message>
+        <source>Screenshot unavailable</source>
+        <comment>emulation_menu_rewind_no_screenshot</comment>
+        <translation>Screenshot non disponibile</translation>
+    </message>
+    <message>
+        <source>Rewind state screenshot</source>
+        <comment>emulation_menu_rewind_screenshot</comment>
+        <translation>Screenshot dello stato di riavvolgimento</translation>
+    </message>
+    <message>
+        <source>Requires Restart</source>
+        <comment>settings_requires_restart</comment>
+        <translation>Richiede riavvio</translation>
+    </message>
+    <message>
+        <source>Edit Menu</source>
+        <comment>emulation_menu_edit</comment>
+        <translation>Modifica menu</translation>
+    </message>
+    <message>
+        <source>Tap to show or hide, hold and drag to rearrange</source>
+        <comment>emulation_menu_edit_hint</comment>
+        <translation>Tocca per mostrare o nascondere, tieni premuto e trascina per riordinare</translation>
+    </message>
+    <message>
+        <source>Hidden</source>
+        <comment>emulation_menu_edit_hidden</comment>
+        <translation>Nascosti</translation>
+    </message>
+    <message>
+        <source>Drag items here to hide them</source>
+        <comment>emulation_menu_edit_hidden_empty</comment>
+        <translation>Trascina qui gli elementi per nasconderli</translation>
+    </message>
+    <message>
+        <source>Reset Layout</source>
+        <comment>emulation_menu_edit_reset</comment>
+        <translation>Ripristina disposizione</translation>
+    </message>
+    <message>
+        <source>Show</source>
+        <comment>emulation_menu_edit_show</comment>
+        <translation>Mostra</translation>
+    </message>
+    <message>
+        <source>Hide</source>
+        <comment>emulation_menu_edit_hide</comment>
+        <translation>Nascondi</translation>
+    </message>
+    <message>
+        <source>Custom Aspect Ratio</source>
+        <comment>settings_custom_aspect_ratio</comment>
+        <translation>Rapporto d&apos;aspetto personalizzato</translation>
+    </message>
+    <message>
+        <source>Used when aspect ratio is set to Custom.</source>
+        <comment>settings_summary_custom_aspect_ratio</comment>
+        <translation>Usato quando il rapporto d&apos;aspetto è impostato su Personalizzato.</translation>
+    </message>
+    <message>
+        <source>Expand To Cutout Area</source>
+        <comment>settings_expand_to_cutout</comment>
+        <translation>Estendi all&apos;area del notch</translation>
+    </message>
+    <message>
+        <source>Expands the display area to include the cutout (or notch) area.</source>
+        <comment>settings_summary_expand_to_cutout</comment>
+        <translation>Estende l&apos;area di visualizzazione per includere l&apos;area del foro o del notch.</translation>
+    </message>
+    <message>
+        <source>Runahead</source>
+        <comment>settings_category_runahead</comment>
+        <translation>Runahead</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>settings_category_rewind</comment>
+        <translation>Riavvolgimento</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_category_save_states</comment>
+        <translation>Salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Enable Rewinding</source>
+        <comment>settings_rewind_enable</comment>
+        <translation>Abilita riavvolgimento</translation>
+    </message>
+    <message>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Frequenza con cui viene creato uno stato di riavvolgimento. Frequenze più elevate richiedono maggiori risorse di sistema.</translation>
+    </message>
+    <message>
+        <source>Save Frequency</source>
+        <comment>settings_rewind_save_frequency</comment>
+        <translation>Frequenza di salvataggio</translation>
+    </message>
+    <message>
+        <source>A rewind save will be created each time this interval lapses.</source>
+        <comment>settings_summary_rewind_save_frequency</comment>
+        <translation>Viene creato un salvataggio di riavvolgimento ogni volta che trascorre questo intervallo.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_rewind_buffer_size</comment>
+        <translation>Dimensione buffer</translation>
+    </message>
+    <message>
+        <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
+        <comment>settings_summary_rewind_buffer_size</comment>
+        <translation>Quantità di memoria riservata agli stati di riavvolgimento. Determina quanto indietro puoi riavvolgere.</translation>
+    </message>
+    <message>
+        <source>%s copied to clipboard.</source>
+        <comment>preference_text_copied_to_clipboard</comment>
+        <translation>%s copiato negli appunti.</translation>
+    </message>
+    <message>
+        <source>Controller %1$d / Macro %2$d</source>
+        <comment>edit_macro_button_title</comment>
+        <translation>Controller %1$d / Macro %2$d</translation>
+    </message>
+    <message>
+        <source>No trigger set</source>
+        <comment>edit_macro_button_no_trigger</comment>
+        <translation>Nessun attivatore impostato</translation>
+    </message>
+    <message>
+        <source>No buttons set</source>
+        <comment>edit_macro_buttons_no_bindings</comment>
+        <translation>Nessun pulsante impostato</translation>
+    </message>
+    <message>
+        <source>Macro will not repeat.</source>
+        <comment>edit_macro_button_no_repeat</comment>
+        <translation>La macro non si ripeterà.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Macro will toggle every %d frames.</source>
+        <comment>edit_macro_button_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>La macro si attiverà/disattiverà ogni %d fotogramma.</numerusform>
+            <numerusform>La macro si attiverà/disattiverà ogni %d fotogrammi.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Choose Bindings</source>
+        <comment>edit_macro_button_choose_bindings</comment>
+        <translation>Scegli associazioni</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary_no_repeat</comment>
+        <translation>%1$s attiva %2$s</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$s triggers %2$s every %3$d frames.</source>
+        <comment>edit_macro_button_summary_repeat</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$s attiva %2$s ogni %3$d fotogramma.</numerusform>
+            <numerusform>%1$s attiva %2$s ogni %3$d fotogrammi.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <comment>edit_macro_button_trigger</comment>
+        <translation>Innesco</translation>
+    </message>
+    <message>
+        <source>Buttons</source>
+        <comment>edit_macro_button_buttons</comment>
+        <translation>Pulsanti</translation>
+    </message>
+    <message>
+        <source>Frequency</source>
+        <comment>edit_macro_button_frequency</comment>
+        <translation>Frequenza</translation>
+    </message>
+    <message>
+        <source>Macro %d</source>
+        <comment>macro_binding_template</comment>
+        <translation>Macro %d</translation>
+    </message>
+    <message>
+        <source>No vibrators found. Your controller or driver may not support vibration.</source>
+        <comment>binding_no_vibrators_found</comment>
+        <translation>Nessun motore di vibrazione trovato. Il controller o il driver potrebbe non supportare la vibrazione.</translation>
+    </message>
+    <message>
+        <source>Select Vibrator Binding</source>
+        <comment>select_vibrator_binding</comment>
+        <translation>Seleziona associazione del motore di vibrazione</translation>
+    </message>
+    <message>
+        <source>Vibration</source>
+        <comment>controller_settings_category_vibration</comment>
+        <translation>Vibrazione</translation>
+    </message>
+    <message>
+        <source>Vibration Update Frequency</source>
+        <comment>settings_vibration_update_frequency</comment>
+        <translation>Frequenza di aggiornamento della vibrazione</translation>
+    </message>
+    <message>
+        <source>Throttles the frequency at which vibration updates are sent. May help with controller disconnection/lag issues.</source>
+        <comment>settings_summary_vibration_update_frequency</comment>
+        <translation>Limita la frequenza con cui vengono inviati gli aggiornamenti della vibrazione. Può aiutare a risolvere problemi di disconnessione o ritardo del controller.</translation>
+    </message>
+    <message>
+        <source>Settings cleared.</source>
+        <comment>game_properties_settings_cleared</comment>
+        <translation>Impostazioni cancellate.</translation>
+    </message>
+    <message>
+        <source>Use Global Setting</source>
+        <comment>game_properties_use_global_setting</comment>
+        <translation>Usa impostazione globale</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <comment>game_setting_follow_default</comment>
+        <translation>Predefinito</translation>
+    </message>
+    <message>
+        <source>Add/Remove Buttons</source>
+        <comment>settings_touchscreen_controller_add_remove_buttons</comment>
+        <translation>Aggiungi/rimuovi pulsanti</translation>
+    </message>
+    <message>
+        <source>Move Buttons</source>
+        <comment>settings_touchscreen_controller_move_buttons</comment>
+        <translation>Sposta pulsanti</translation>
+    </message>
+    <message>
+        <source>Overlay Opacity</source>
+        <comment>settings_touchscreen_controller_opacity</comment>
+        <translation>Opacità della sovraimpressione</translation>
+    </message>
+    <message>
+        <source>Controls the transparency level of the touchscreen controller.</source>
+        <comment>settings_summary_touchscreen_controller_opacity</comment>
+        <translation>Controlla il livello di trasparenza del controller touchscreen.</translation>
+    </message>
+    <message>
+        <source>Tap To Hold</source>
+        <comment>settings_touchscreen_controller_toggle_buttons</comment>
+        <translation>Tocca per mantenere premuto</translation>
+    </message>
+    <message>
+        <source>Swipe Horizontal Sensitivity</source>
+        <comment>settings_touchscreen_controller_x_scale</comment>
+        <translation>Sensibilità dello scorrimento orizzontale</translation>
+    </message>
+    <message>
+        <source>Swipe Vertical Sensitivity</source>
+        <comment>settings_touchscreen_controller_y_scale</comment>
+        <translation>Sensibilità dello scorrimento verticale</translation>
+    </message>
+    <message>
+        <source>Adjusts the ratio of touch movement to stick pressure. Lower values imply more stick pressure.</source>
+        <comment>settings_touchscreen_controller_scale_summary</comment>
+        <translation>Regola il rapporto tra il movimento del tocco e la pressione della levetta. Valori più bassi comportano una maggiore pressione della levetta.</translation>
+    </message>
+    <message>
+        <source>Failed to take persistable permission.</source>
+        <comment>game_list_settings_failed_to_take_persistable_permission</comment>
+        <translation>Impossibile ottenere un&apos;autorizzazione persistente.</translation>
+    </message>
+    <message>
+        <source>Save Slot %d</source>
+        <comment>save_slot_n</comment>
+        <translation>Spazio di salvataggio %d</translation>
+    </message>
+    <message>
+        <source>No save present in this slot.</source>
+        <comment>save_slot_not_present</comment>
+        <translation>Nessun salvataggio presente in questo spazio.</translation>
+    </message>
+    <message>
+        <source>Resume Save</source>
+        <comment>save_slot_resume_save</comment>
+        <translation>Salvataggio di ripresa</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>save_state_manager_title</comment>
+        <translation>Gestore dei salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Confirm Deletion</source>
+        <comment>confirm_deletion</comment>
+        <translation>Conferma eliminazione</translation>
+    </message>
+    <message>
+        <source>Are you sure you wish to delete this save state? It cannot be recovered.</source>
+        <comment>confirm_delete_save_state</comment>
+        <translation>Vuoi davvero eliminare questo salvataggio di stato? Non potrà essere recuperato.</translation>
+    </message>
+    <message>
+        <source>Failed to delete save state.</source>
+        <comment>save_state_manager_failed_to_delete</comment>
+        <translation>Eliminazione del salvataggio di stato non riuscita.</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>resume_game_delete</comment>
+        <translation>Elimina stato</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <comment>menu_refresh</comment>
+        <translation>Aggiorna</translation>
+    </message>
+    <message>
+        <source>Failed to open/decode image.</source>
+        <comment>choose_cover_image_failed_decode</comment>
+        <translation>Apertura o decodifica dell&apos;immagine non riuscita.</translation>
+    </message>
+    <message>
+        <source>Failed to save image.</source>
+        <comment>choose_cover_image_failed_save</comment>
+        <translation>Salvataggio dell&apos;immagine non riuscito.</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>game_properties_title</comment>
+        <translation>Titolo</translation>
+    </message>
+    <message>
+        <source>Serial</source>
+        <comment>game_properties_serial</comment>
+        <translation>Seriale</translation>
+    </message>
+    <message>
+        <source>More Details</source>
+        <comment>game_properties_more_details</comment>
+        <translation>Altri dettagli</translation>
+    </message>
+    <message>
+        <source>Languages</source>
+        <comment>game_properties_languages</comment>
+        <translation>Lingue</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>game_properties_type</comment>
+        <translation>Tipo</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>game_properties_region</comment>
+        <translation>Regione</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <comment>game_properties_language</comment>
+        <translation>Lingua</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <comment>game_properties_path</comment>
+        <translation>Percorso</translation>
+    </message>
+    <message>
+        <source>Time Played</source>
+        <comment>game_properties_time_played</comment>
+        <translation>Tempo giocato</translation>
+    </message>
+    <message>
+        <source>Last Played</source>
+        <comment>game_properties_last_played</comment>
+        <translation>Ultima partita</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>game_properties_last_played_never</comment>
+        <translation>Mai</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>game_properties_time_played_none</comment>
+        <translation>Nessuno</translation>
+    </message>
+    <message>
+        <source>Copy Settings</source>
+        <comment>game_settings_copy_settings</comment>
+        <translation>Copia impostazioni</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        overwritten. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_copy_settings</comment>
+        <translation>Tutte le impostazioni attualmente configurate per questo gioco verranno
+        sovrascritte. Vuoi davvero continuare?</translation>
+    </message>
+    <message>
+        <source>Clear Settings</source>
+        <comment>game_settings_clear_settings</comment>
+        <translation>Cancella impostazioni</translation>
+    </message>
+    <message>
+        <source>Any settings currently set for this game will be
+        removed. Are you sure you want to continue?</source>
+        <comment>game_settings_confirm_clear_settings</comment>
+        <translation>Tutte le impostazioni attualmente configurate per questo gioco verranno
+        rimosse. Vuoi davvero continuare?</translation>
+    </message>
+    <message>
+        <source>Controller settings reset.</source>
+        <comment>controller_settings_reset_done</comment>
+        <translation>Impostazioni controller ripristinate.</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <comment>settings_restore_defaults</comment>
+        <translation>Ripristina valori predefiniti</translation>
+    </message>
+    <message>
+        <source>This will restore all application settings to their defaults. You will not be able to recover these changes.</source>
+        <comment>settings_restore_defaults_message</comment>
+        <translation>Questa operazione ripristinerà tutte le impostazioni dell&apos;applicazione ai valori predefiniti. Non potrai recuperare le modifiche apportate.</translation>
+    </message>
+    <message>
+        <source>This will restore all controller settings, including the touchscreen, to their defaults. Do you want to continue?</source>
+        <comment>controller_settings_restore_defaults_message</comment>
+        <translation>Questa operazione ripristinerà tutte le impostazioni dei controller, incluso il touchscreen, ai valori predefiniti. Vuoi continuare?</translation>
+    </message>
+    <message>
+        <source>Settings reset.</source>
+        <comment>main_settings_reset_done</comment>
+        <translation>Impostazioni ripristinate.</translation>
+    </message>
+    <message>
+        <source>Run Setup Wizard</source>
+        <comment>settings_run_setup_wizard</comment>
+        <translation>Avvia configurazione guidata</translation>
+    </message>
+    <message>
+        <source>Finish</source>
+        <comment>setup_wizard_finish</comment>
+        <translation>Fine</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <comment>setup_wizard_next</comment>
+        <translation>Avanti</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>setup_wizard_back</comment>
+        <translation>Indietro</translation>
+    </message>
+    <message>
+        <source>Welcome to DuckStation!</source>
+        <comment>setup_wizard_welcome_title</comment>
+        <translation>Benvenuto in DuckStation!</translation>
+    </message>
+    <message>
+        <source>Please choose a theme and language, then tap Next to get started.</source>
+        <comment>setup_wizard_welcome_second_paragraph</comment>
+        <translation>Scegli un tema e una lingua, poi tocca Avanti per iniziare.</translation>
+    </message>
+    <message>
+        <source>Content Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Cartelle dei contenuti</translation>
+    </message>
+    <message>
+        <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
+        <comment>setup_wizard_input_setup_message</comment>
+        <translation>Collega un controller e usa la mappatura automatica per uno dei giocatori. Potrai modificare le singole associazioni in seguito nelle impostazioni input.</translation>
+    </message>
+    <message>
+        <source>Mapped Device</source>
+        <comment>setup_wizard_mapped_device</comment>
+        <translation>Dispositivo mappato</translation>
+    </message>
+    <message>
+        <source>Pause Menu Hotkey</source>
+        <comment>setup_wizard_pause_hotkey_title</comment>
+        <translation>Scorciatoia menu pausa</translation>
+    </message>
+    <message>
+        <source>Graphics Setup</source>
+        <comment>setup_wizard_graphics_title</comment>
+        <translation>Impostazioni grafiche</translation>
+    </message>
+    <message>
+        <source>These commonly used video options can be changed again after setup.</source>
+        <comment>setup_wizard_graphics_message</comment>
+        <translation>Queste opzioni video di uso comune potranno essere modificate di nuovo dopo la configurazione.</translation>
+    </message>
+    <message>
+        <source>View Selection</source>
+        <comment>setup_wizard_view_title</comment>
+        <translation>Selezione vista</translation>
+    </message>
+    <message>
+        <source>List View</source>
+        <comment>setup_wizard_list_view</comment>
+        <translation>Vista elenco</translation>
+    </message>
+    <message>
+        <source>Grid View</source>
+        <comment>setup_wizard_grid_view</comment>
+        <translation>Vista griglia</translation>
+    </message>
+    <message>
+        <source>Exit Setup?</source>
+        <comment>setup_wizard_exit_title</comment>
+        <translation>Uscire dalla configurazione?</translation>
+    </message>
+    <message>
+        <source>Setup is not complete. Are you sure you want to exit?</source>
+        <comment>setup_wizard_exit_message</comment>
+        <translation>La configurazione non è completa. Vuoi davvero uscire?</translation>
+    </message>
+    <message>
+        <source>Setup Complete</source>
+        <comment>setup_wizard_complete_title</comment>
+        <translation>Configurazione completata</translation>
+    </message>
+    <message>
+        <source>Press finish to open the game list and start scanning for games. If you need to, you can re-run this setup wizard again from within App Settings.</source>
+        <comment>setup_wizard_complete_message</comment>
+        <translation>Premi Fine per aprire l&apos;elenco dei giochi e avviare la ricerca dei giochi. Se necessario, potrai eseguire di nuovo questa configurazione guidata dalle impostazioni app.</translation>
+    </message>
+    <message>
+        <source>Add New</source>
+        <comment>controller_binding_add_new_multibinding</comment>
+        <translation>Aggiungi nuovo</translation>
+    </message>
+    <message numerus="yes">
+        <source>&lt;%d Bindings&gt;</source>
+        <comment>controller_binding_multiple_bindings</comment>
+        <extracomment>Android plural quantities: one=&quot;&lt;%d Binding&gt;&quot;; other=&quot;&lt;%d Bindings&gt;&quot;</extracomment>
+        <translation>
+            <numerusform>&lt;%d associazione&gt;</numerusform>
+            <numerusform>&lt;%d associazioni&gt;</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Edit %s Bindings</source>
+        <comment>controller_binding_multibind_title</comment>
+        <translation>Modifica associazioni di %s</translation>
+    </message>
+    <message>
+        <source>Auto-Hide Delay</source>
+        <comment>settings_touchscreen_auto_hide_time</comment>
+        <translation>Ritardo di nascondimento automatico</translation>
+    </message>
+    <message>
+        <source>Hides touch controls after the specified time. A delay of zero will not hide the controls.</source>
+        <comment>settings_summary_touchscreen_auto_hide_time</comment>
+        <translation>Nasconde i controlli touch dopo il tempo specificato. Un ritardo pari a zero mantiene visibili i controlli.</translation>
+    </message>
+    <message>
+        <source>Bind To Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Associa alla levetta destra</translation>
+    </message>
+    <message>
+        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Associa i gesti di scorrimento sul touchscreen alla levetta destra, se presente.</translation>
+    </message>
+    <message>
+        <source>Advanced Settings</source>
+        <comment>settings_advanced</comment>
+        <translation>Impostazioni avanzate</translation>
+    </message>
+    <message>
+        <source>Disable All</source>
+        <comment>game_properties_disable_patch_codes</comment>
+        <translation>Disabilita tutti</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <comment>cheat_codes_add</comment>
+        <translation>Aggiungi</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>cheat_codes_import</comment>
+        <translation>Importa</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>cheat_codes_export</comment>
+        <translation>Esporta</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <comment>cheat_codes_remove_all</comment>
+        <translation>Rimuovi tutti</translation>
+    </message>
+    <message>
+        <source>Auto (Game Native)</source>
+        <comment>settings_video_aspect_ratio_entries[0]</comment>
+        <translation>Automatico (nativo del gioco)</translation>
+    </message>
+    <message>
+        <source>Stretch To Fill</source>
+        <comment>settings_video_aspect_ratio_entries[1]</comment>
+        <translation>Espandi fino a riempire</translation>
+    </message>
+    <message>
+        <source>4:3</source>
+        <comment>settings_video_aspect_ratio_entries[2]</comment>
+        <translation>4:3</translation>
+    </message>
+    <message>
+        <source>16:9</source>
+        <comment>settings_video_aspect_ratio_entries[3]</comment>
+        <translation>16:9</translation>
+    </message>
+    <message>
+        <source>19:9</source>
+        <comment>settings_video_aspect_ratio_entries[4]</comment>
+        <translation>19:9</translation>
+    </message>
+    <message>
+        <source>20:9</source>
+        <comment>settings_video_aspect_ratio_entries[5]</comment>
+        <translation>20:9</translation>
+    </message>
+    <message>
+        <source>21:9</source>
+        <comment>settings_video_aspect_ratio_entries[6]</comment>
+        <translation>21:9</translation>
+    </message>
+    <message>
+        <source>16:10</source>
+        <comment>settings_video_aspect_ratio_entries[7]</comment>
+        <translation>16:10</translation>
+    </message>
+    <message>
+        <source>PAR 1:1</source>
+        <comment>settings_video_aspect_ratio_entries[8]</comment>
+        <translation>PAR 1:1</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_video_aspect_ratio_entries[9]</comment>
+        <translation>Personalizzato</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_achievement_scale_entries[0]</comment>
+        <translation>Automatica</translation>
+    </message>
+    <message>
+        <source>Use OSD Scale</source>
+        <comment>settings_achievement_scale_entries[1]</comment>
+        <translation>Usa scala OSD</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>settings_achievement_scale_entries[2]</comment>
+        <translation>Personalizzata</translation>
+    </message>
+    <message>
+        <source>AMOLED</source>
+        <comment>settings_theme_entries[4]</comment>
+        <translation>AMOLED</translation>
+    </message>
+    <message>
+        <source>Cobalt Sky</source>
+        <comment>settings_theme_entries[5]</comment>
+        <translation>Cielo cobalto</translation>
+    </message>
+    <message>
+        <source>Dark Ruby</source>
+        <comment>settings_theme_entries[6]</comment>
+        <translation>Rubino scuro</translation>
+    </message>
+    <message>
+        <source>Grey Matter</source>
+        <comment>settings_theme_entries[7]</comment>
+        <translation>Materia grigia</translation>
+    </message>
+    <message>
+        <source>Purple Rain</source>
+        <comment>settings_theme_entries[8]</comment>
+        <translation>Pioggia viola</translation>
+    </message>
+    <message>
+        <source>Green Giant</source>
+        <comment>settings_theme_entries[9]</comment>
+        <translation>Gigante verde</translation>
+    </message>
+    <message>
+        <source>Pinky Pals</source>
+        <comment>settings_theme_entries[10]</comment>
+        <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>None (Double Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[0]</comment>
+        <translation>Nessuna (velocità doppia)</translation>
+    </message>
+    <message>
+        <source>2x (Quad Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[1]</comment>
+        <translation>2x (velocità quadrupla)</translation>
+    </message>
+    <message>
+        <source>3x (6x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[2]</comment>
+        <translation>3x (velocità 6x)</translation>
+    </message>
+    <message>
+        <source>4x (8x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[3]</comment>
+        <translation>4x (velocità 8x)</translation>
+    </message>
+    <message>
+        <source>5x (10x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[4]</comment>
+        <translation>5x (velocità 10x)</translation>
+    </message>
+    <message>
+        <source>6x (12x Speed)</source>
+        <comment>settings_cdrom_read_speedup_entries[5]</comment>
+        <translation>6x (velocità 12x)</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_read_speedup_entries[6]</comment>
+        <translation>Massima (più sicura)</translation>
+    </message>
+    <message>
+        <source>None (Normal Speed)</source>
+        <comment>settings_cdrom_seek_speedup_entries[0]</comment>
+        <translation>Nessuna (velocità normale)</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_cdrom_seek_speedup_entries[1]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x</source>
+        <comment>settings_cdrom_seek_speedup_entries[2]</comment>
+        <translation>3x</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_cdrom_seek_speedup_entries[3]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x</source>
+        <comment>settings_cdrom_seek_speedup_entries[4]</comment>
+        <translation>5x</translation>
+    </message>
+    <message>
+        <source>6x</source>
+        <comment>settings_cdrom_seek_speedup_entries[5]</comment>
+        <translation>6x</translation>
+    </message>
+    <message>
+        <source>Maximum (Safer)</source>
+        <comment>settings_cdrom_seek_speedup_entries[6]</comment>
+        <translation>Massima (più sicura)</translation>
+    </message>
+    <message>
+        <source>Emulation</source>
+        <comment>settings_tab_emulation</comment>
+        <translation>Emulazione</translation>
+    </message>
+    <message>
+        <source>Start BIOS</source>
+        <comment>content_list_start_bios</comment>
+        <translation>Avvia BIOS</translation>
+    </message>
+    <message>
+        <source>DuckStation</source>
+        <comment>app_name</comment>
+        <translation>DuckStation</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <comment>dialog_copy</comment>
+        <translation>Copia</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>dialog_back</comment>
+        <translation>Indietro</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>action_input_settings</comment>
+        <translation>Impostazioni controller</translation>
+    </message>
+    <message>
+        <source>Show Messages</source>
+        <comment>settings_show_osd_messages</comment>
+        <translation>Mostra messaggi</translation>
+    </message>
+    <message>
+        <source>Show Speed</source>
+        <comment>settings_show_speed</comment>
+        <translation>Mostra velocità</translation>
+    </message>
+    <message>
+        <source>Show FPS</source>
+        <comment>settings_show_fps</comment>
+        <translation>Mostra FPS</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <comment>settings_execution_mode</comment>
+        <translation>Modalità di esecuzione</translation>
+    </message>
+    <message>
+        <source>Selects the method used to emulate the CPU. The recompiler is the fastest and is recommended.</source>
+        <comment>settings_summary_execution_mode</comment>
+        <translation>Seleziona il metodo usato per emulare la CPU. Il ricompilatore è il più veloce ed è consigliato.</translation>
+    </message>
+    <message>
+        <source>GPU Renderer</source>
+        <comment>settings_renderer</comment>
+        <translation>Renderer GPU</translation>
+    </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <comment>settings_summary_renderer</comment>
+        <translation>Seleziona il backend da utilizzare per il rendering delle immagini della console/del gioco.</translation>
+    </message>
+    <message>
+        <source>Automatically saves the current state when closing a game or leaving the app.</source>
+        <comment>settings_summary_save_state_on_exit</comment>
+        <translation>Salva automaticamente lo stato attuale quando si chiude un gioco o si esce dall&apos;app.</translation>
+    </message>
+    <message>
+        <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+        <comment>settings_summary_pause_on_controller_disconnection</comment>
+        <translation>Mette in pausa l&apos;emulatore quando un controller con associazioni viene scollegato.</translation>
+    </message>
+    <message>
+        <source>Game Screen Orientation</source>
+        <comment>settings_emulation_screen_orientation</comment>
+        <translation>Orientamento dello schermo di gioco</translation>
+    </message>
+    <message>
+        <source>Sets the screen orientation while games are running.</source>
+        <comment>settings_summary_emulation_screen_orientation</comment>
+        <translation>Imposta l’orientamento dello schermo durante l’esecuzione dei giochi.</translation>
+    </message>
+    <message>
+        <source>Immersive Pause Menu</source>
+        <comment>settings_immersive_pause_menu</comment>
+        <translation>Menu di pausa immersivo</translation>
+    </message>
+    <message>
+        <source>Keeps the status and navigation bars hidden while the pause menu is open.</source>
+        <comment>settings_summary_immersive_pause_menu</comment>
+        <translation>Mantiene nascoste le barre di stato e di navigazione mentre il menu di pausa è aperto.</translation>
+    </message>
+    <message>
+        <source>Improves frame pacing and presentation time, but can increase battery usage. Do not enable on slow devices.</source>
+        <comment>settings_summary_optimal_frame_pacing</comment>
+        <translation>Migliora il ritmo dei fotogrammi e i tempi di presentazione, ma può aumentare il consumo della batteria. Non abilitare sui dispositivi lenti.</translation>
+    </message>
+    <message>
+        <source>Log Level</source>
+        <comment>settings_log_level</comment>
+        <translation>Livello registrazione</translation>
+    </message>
+    <message>
+        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
+        <comment>settings_summary_log_level</comment>
+        <translation>Imposta la verbosità dei messaggi registrati. Livelli più alti registreranno più messaggi.</translation>
+    </message>
+    <message>
+        <source>Logs messages to duckstation.log in the user directory.</source>
+        <comment>settings_summary_log_to_file</comment>
+        <translation>Registra i messaggi nel file duckstation.log nella cartella utente.</translation>
+    </message>
+    <message>
+        <source>Log To Logcat</source>
+        <comment>settings_log_to_debug</comment>
+        <translation>Registra su Logcat</translation>
+    </message>
+    <message>
+        <source>Writes log messages to the Android message logger. Only useful when attached to a computer with adb.</source>
+        <comment>settings_summary_log_to_debug</comment>
+        <translation>Scrive i messaggi di registro nel sistema di registrazione dei messaggi di Android. Utile solo quando il dispositivo è collegato a un computer con adb.</translation>
+    </message>
+    <message>
+        <source>Audio Backend</source>
+        <comment>settings_backend</comment>
+        <translation>Backend audio</translation>
+    </message>
+    <message>
+        <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
+        <comment>settings_summary_backend</comment>
+        <translation>Il backend audio determina come i fotogrammi prodotti dall&apos;emulatore vengono inviati all&apos;host.</translation>
+    </message>
+    <message>
+        <source>Stretch Mode</source>
+        <comment>settings_stretch_mode</comment>
+        <translation>Modalità allungamento</translation>
+    </message>
+    <message>
+        <source>Determines quality of audio when not running at 100% speed.</source>
+        <comment>settings_summary_stretch_mode</comment>
+        <translation>Determina la qualità dell&apos;audio quando la velocità di esecuzione non è al 100%.</translation>
+    </message>
+    <message>
+        <source>Output Volume</source>
+        <comment>settings_output_volume</comment>
+        <translation>Volume in uscita</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host.</source>
+        <comment>settings_summary_output_volume</comment>
+        <translation>Controlla il volume dell&apos;audio riprodotto sull&apos;host.</translation>
+    </message>
+    <message>
+        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+        <comment>settings_summary_fast_forward_volume</comment>
+        <translation>Controlla il volume dell&apos;audio riprodotto sull&apos;host durante l&apos;avanzamento veloce.</translation>
+    </message>
+    <message>
+        <source>Mute All Sound</source>
+        <comment>settings_output_muted</comment>
+        <translation>Silenzia tutti i suoni</translation>
+    </message>
+    <message>
+        <source>Prevents the app from emitting any sound.</source>
+        <comment>settings_summary_output_muted</comment>
+        <translation>Impedisce all&apos;app di emettere qualsiasi suono.</translation>
+    </message>
+    <message>
+        <source>Output Latency</source>
+        <comment>settings_output_latency_ms</comment>
+        <translation>Latenza in uscita</translation>
+    </message>
+    <message>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <comment>settings_summary_output_latency_ms</comment>
+        <translation>Determina quanta latenza c&apos;è fra il momento in cui l&apos;audio viene captato dall&apos;API dell&apos;host e quello in cui viene riprodotto dagli altoparlanti.</translation>
+    </message>
+    <message>
+        <source>Buffer Size</source>
+        <comment>settings_buffer_ms</comment>
+        <translation>Dimensione buffer</translation>
+    </message>
+    <message>
+        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+        <comment>settings_summary_buffer_ms</comment>
+        <translation>Determina la quantità di audio memorizzata nel buffer prima che venga recuperata dall&apos;API dell&apos;host.</translation>
+    </message>
+    <message>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
+        <comment>settings_summary_aspect_ratio</comment>
+        <translation>Cambia il rapporto d&apos;aspetto usato per mostrare l&apos;output della console su schermo.</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>settings_scaling</comment>
+        <translation>Ridimensionamento</translation>
+    </message>
+    <message>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <comment>settings_summary_scaling</comment>
+        <translation>Determina il modo in cui l&apos;output della console emulata viene ingrandito o ridotto per adattarsi alla risoluzione del monitor.</translation>
+    </message>
+    <message>
+        <source>FMV Scaling</source>
+        <comment>settings_scaling_24_bit</comment>
+        <translation>Ridimensionamento FMV</translation>
+    </message>
+    <message>
+        <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
+        <comment>settings_summary_scaling_24_bit</comment>
+        <translation>Determina l&apos;algoritmo di ridimensionamento usato quando è attivo il contenuto a 24 bit, in genere i filmati FMV.</translation>
+    </message>
+    <message>
+        <source>Screen Rotation</source>
+        <comment>settings_rotation</comment>
+        <translation>Rotazione dello schermo</translation>
+    </message>
+    <message>
+        <source>Determines the rotation of the simulated TV screen.</source>
+        <comment>settings_summary_rotation</comment>
+        <translation>Determina la rotazione dello schermo TV simulato.</translation>
+    </message>
+    <message>
+        <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
+        <comment>settings_summary_show_osd_messages</comment>
+        <translation>Mostra i messaggi OSD quando si verificano degli eventi. Errori e avvisi vengono comunque visualizzati indipendentemente da questa impostazione.</translation>
+    </message>
+    <message>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <comment>settings_summary_show_speed</comment>
+        <translation>Mostra la velocità di emulazione attuale del sistema nell&apos;angolo in alto a destra del display, in percentuale.</translation>
+    </message>
+    <message>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_fps</comment>
+        <translation>Mostra il numero di fotogrammi (o sincronizzazioni verticali) mostrati per secondo dal sistema nell&apos;angolo in alto a destra del display.</translation>
+    </message>
+    <message>
+        <source>Determines how large the on-screen messages and monitor are.</source>
+        <comment>settings_summary_osd_scale</comment>
+        <translation>Determina le dimensioni dei messaggi e degli indicatori a schermo.</translation>
+    </message>
+    <message>
+        <source>Screen Margins</source>
+        <comment>settings_osd_margin</comment>
+        <translation>Margini dello schermo</translation>
+    </message>
+    <message>
+        <source>Determines the margin between the edge of the screen and on-screen messages.</source>
+        <comment>settings_summary_osd_margin</comment>
+        <translation>Determina il margine tra il bordo dello schermo e i messaggi sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Message Location</source>
+        <comment>settings_osd_message_location</comment>
+        <translation>Posizione dei messaggi</translation>
+    </message>
+    <message>
+        <source>Selects which location on the screen messages are displayed.</source>
+        <comment>settings_summary_osd_message_location</comment>
+        <translation>Seleziona la posizione sullo schermo in cui visualizzare i messaggi.</translation>
+    </message>
+    <message>
+        <source>Animate Messages</source>
+        <comment>settings_animate_osd_messages</comment>
+        <translation>Anima i messaggi</translation>
+    </message>
+    <message>
+        <source>Enables animation for on-screen messages when they appear and disappear.</source>
+        <comment>settings_summary_animate_osd_messages</comment>
+        <translation>Abilita l&apos;animazione dei messaggi sullo schermo quando compaiono e scompaiono.</translation>
+    </message>
+    <message>
+        <source>Blur Message Backgrounds</source>
+        <comment>settings_blur_osd_message_backgrounds</comment>
+        <translation>Sfoca gli sfondi dei messaggi</translation>
+    </message>
+    <message>
+        <source>Enables a blur effect on the background behind on-screen messages to improve readability.</source>
+        <comment>settings_summary_blur_osd_message_backgrounds</comment>
+        <translation>Abilita un effetto di sfocatura sullo sfondo dei messaggi OSD per migliorarne la leggibilità.</translation>
+    </message>
+    <message>
+        <source>Error Duration</source>
+        <comment>settings_osd_error_duration</comment>
+        <translation>Durata dei messaggi di errore</translation>
+    </message>
+    <message>
+        <source>Determines how long error messages are displayed on screen.</source>
+        <comment>settings_summary_osd_error_duration</comment>
+        <translation>Determina per quanto tempo i messaggi di errore vengono visualizzati sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Warning Duration</source>
+        <comment>settings_osd_warning_duration</comment>
+        <translation>Durata dei messaggi di avviso</translation>
+    </message>
+    <message>
+        <source>Determines how long warning messages are displayed on screen.</source>
+        <comment>settings_summary_osd_warning_duration</comment>
+        <translation>Determina per quanto tempo i messaggi di avviso vengono visualizzati sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Information Duration</source>
+        <comment>settings_osd_info_duration</comment>
+        <translation>Durata dei messaggi informativi</translation>
+    </message>
+    <message>
+        <source>Determines how long information messages are displayed on screen.</source>
+        <comment>settings_summary_osd_info_duration</comment>
+        <translation>Determina per quanto tempo i messaggi informativi vengono visualizzati sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Action Duration</source>
+        <comment>settings_osd_quick_duration</comment>
+        <translation>Durata dei messaggi delle azioni</translation>
+    </message>
+    <message>
+        <source>Determines how long messages for quick actions, such as saving or loading states, are displayed on screen.</source>
+        <comment>settings_summary_osd_quick_duration</comment>
+        <translation>Determina per quanto tempo i messaggi delle azioni rapide, come il salvataggio o il caricamento degli stati, vengono visualizzati sullo schermo.</translation>
+    </message>
+    <message>
+        <source>Show CPU Usage</source>
+        <comment>settings_show_cpu</comment>
+        <translation>Mostra utilizzo CPU</translation>
+    </message>
+    <message>
+        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <comment>settings_summary_show_cpu</comment>
+        <translation>Mostra l&apos;utilizzo della CPU dell&apos;host per ogni thread di sistema nell&apos;angolo in alto a destra dello schermo.</translation>
+    </message>
+    <message>
+        <source>Show Status Indicators</source>
+        <comment>settings_show_status_indicators</comment>
+        <translation>Mostra indicatori di stato</translation>
+    </message>
+    <message>
+        <source>Shows indicators when running outside normal parameters (e.g. fast forward).</source>
+        <comment>settings_summary_show_status_indicators</comment>
+        <translation>Mostra indicatori quando l&apos;esecuzione avviene al di fuori dei parametri normali (ad es. durante l&apos;avanzamento veloce).</translation>
+    </message>
+    <message>
+        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+        <comment>settings_summary_show_frame_times</comment>
+        <translation>Mostra una cronologia visiva dei frame time nell&apos;angolo in alto a sinistra del display.</translation>
+    </message>
+    <message>
+        <source>Threaded Rendering</source>
+        <comment>settings_use_thread</comment>
+        <translation>Rendering con thread</translation>
+    </message>
+    <message>
+        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement and is safe to use.</source>
+        <comment>settings_summary_use_thread</comment>
+        <translation>Usa un secondo thread per il rendering della grafica. Offre un miglioramento significativo della velocità ed è sicuro da usare.</translation>
+    </message>
+    <message>
+        <source>OSD Theme</source>
+        <comment>settings_fullscreen_ui_theme</comment>
+        <translation>Tema dell&apos;OSD</translation>
+    </message>
+    <message>
+        <source>Selects the theme used to render on-screen display elements.</source>
+        <comment>settings_summary_fullscreen_ui_theme</comment>
+        <translation>Seleziona il tema usato per visualizzare gli elementi a schermo.</translation>
+    </message>
+    <message>
+        <source>OSD Font</source>
+        <comment>settings_imgui_text_font</comment>
+        <translation>Carattere dell&apos;OSD</translation>
+    </message>
+    <message>
+        <source>Selects the font used to render on-screen display elements.</source>
+        <comment>settings_summary_imgui_text_font</comment>
+        <translation>Seleziona il carattere usato per visualizzare gli elementi a schermo.</translation>
+    </message>
+    <message>
+        <source>Overlay Font</source>
+        <comment>settings_imgui_fixed_font</comment>
+        <translation>Carattere per le sovraimpressioni</translation>
+    </message>
+    <message>
+        <source>Selects the font used for the performance overlay.</source>
+        <comment>settings_summary_imgui_fixed_font</comment>
+        <translation>Seleziona il carattere utilizzato per l&apos;overlay delle prestazioni.</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_title</comment>
+        <translation>Cartelle dei giochi</translation>
+    </message>
+    <message>
+        <source>Add game folder</source>
+        <comment>content_folders_add</comment>
+        <translation>Aggiungi cartella dei giochi</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>content_folders_tab_folders</comment>
+        <translation>Cartelle dei giochi</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <comment>content_folders_tab_excluded</comment>
+        <translation>Percorsi esclusi</translation>
+    </message>
+    <message>
+        <source>No games have been excluded.</source>
+        <comment>content_folders_excluded_empty</comment>
+        <translation>Nessun gioco è stato escluso.</translation>
+    </message>
+    <message>
+        <source>More excluded path actions</source>
+        <comment>content_folders_excluded_more_actions</comment>
+        <translation>Altre azioni per i percorsi esclusi</translation>
+    </message>
+    <message>
+        <source>Remove From Excluded Paths</source>
+        <comment>content_folders_excluded_remove</comment>
+        <translation>Rimuovi dai percorsi esclusi</translation>
+    </message>
+    <message>
+        <source>Game Display</source>
+        <comment>settings_category_game_display</comment>
+        <translation>Visualizzazione del gioco</translation>
+    </message>
+    <message>
+        <source>Basic Rendering</source>
+        <comment>settings_category_graphics_basic_rendering</comment>
+        <translation>Rendering di base</translation>
+    </message>
+    <message>
+        <source>Advanced Rendering</source>
+        <comment>settings_category_graphics_advanced_rendering</comment>
+        <translation>Rendering avanzato</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <comment>settings_enabled</comment>
+        <translation>Abilita obiettivi</translation>
+    </message>
+    <message>
+        <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
+        <comment>settings_summary_enabled</comment>
+        <translation>Quando abilitato e ad accesso effettuato, DuckStation cercherà gli obiettivi all&apos;avvio.</translation>
+    </message>
+    <message>
+        <source>Hardcore Mode</source>
+        <comment>settings_challenge_mode</comment>
+        <translation>Modalità Hardcore</translation>
+    </message>
+    <message>
+        <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
+        <comment>settings_summary_challenge_mode</comment>
+        <translation>Modalità &quot;sfida&quot; per gli obiettivi, inclusa la partecipazione alle classifiche. Disabilita salvataggi di stato, trucchi e funzionalità di rallentamento.</translation>
+    </message>
+    <message>
+        <source>Encore Mode</source>
+        <comment>settings_encore_mode</comment>
+        <translation>Modalità encore</translation>
+    </message>
+    <message>
+        <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
+        <comment>settings_summary_encore_mode</comment>
+        <translation>Quando è abilitato, ogni sessione si comporterà come se nessun obiettivo fosse stato sbloccato.</translation>
+    </message>
+    <message>
+        <source>Spectator Mode</source>
+        <comment>settings_spectator_mode</comment>
+        <translation>Modalità spettatore</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
+        <comment>settings_summary_spectator_mode</comment>
+        <translation>Quando abilitato, DuckStation presumerà che tutti gli obiettivi siano bloccati e non invierà notifiche di sblocco al server.</translation>
+    </message>
+    <message>
+        <source>Sound Effects</source>
+        <comment>settings_sound_effects</comment>
+        <translation>Effetti sonori</translation>
+    </message>
+    <message>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_sound_effects</comment>
+        <translation>Riproduce effetti sonori per eventi quali sblocchi di obiettivi e invii alle classifiche.</translation>
+    </message>
+    <message>
+        <source>Achievement Notifications</source>
+        <comment>settings_notifications</comment>
+        <translation>Notifiche obiettivi</translation>
+    </message>
+    <message>
+        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
+        <comment>settings_summary_notifications</comment>
+        <translation>Mostra messaggi popup su eventi quali lo sblocco degli obiettivi e gli invii alle classifiche.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notifications</source>
+        <comment>settings_leaderboard_notifications</comment>
+        <translation>Notifiche classifiche</translation>
+    </message>
+    <message>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <comment>settings_summary_leaderboard_notifications</comment>
+        <translation>Mostra messaggi popup all&apos;inizio, all&apos;invio o al fallimento di una sfida in classifica.</translation>
+    </message>
+    <message>
+        <source>Achievement Notification Duration</source>
+        <comment>settings_notifications_duration</comment>
+        <translation>Durata notifiche obiettivi</translation>
+    </message>
+    <message>
+        <source>Controls how long achievement notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_notifications_duration</comment>
+        <translation>Controlla per quanti secondi le notifiche degli obiettivi rimangono a schermo.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Notification Duration</source>
+        <comment>settings_leaderboards_duration</comment>
+        <translation>Durata notifiche classifiche</translation>
+    </message>
+    <message>
+        <source>Controls how long leaderboard notifications stay on screen, in seconds.</source>
+        <comment>settings_summary_leaderboards_duration</comment>
+        <translation>Controlla per quanti secondi le notifiche delle classifiche rimangono a schermo.</translation>
+    </message>
+    <message>
+        <source>Notification Location</source>
+        <comment>settings_notification_location</comment>
+        <translation>Posizione notifiche</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for achievement and leaderboard notifications.</source>
+        <comment>settings_summary_notification_location</comment>
+        <translation>Seleziona la posizione sullo schermo per le notifiche degli obiettivi e delle classifiche.</translation>
+    </message>
+    <message>
+        <source>Notification Size</source>
+        <comment>settings_notification_scale</comment>
+        <translation>Dimensione notifiche</translation>
+    </message>
+    <message>
+        <source>Determines the size of achievement notification popups. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_notification_scale</comment>
+        <translation>Determina la dimensione dei popup delle notifiche degli obiettivi. &quot;Automatica&quot; utilizzerà la stessa scala dell&apos;interfaccia Big Picture.</translation>
+    </message>
+    <message>
+        <source>Custom Notification Scale</source>
+        <comment>settings_notification_scale_custom</comment>
+        <translation>Scala personalizzata per le notifiche</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for achievement notifications.</source>
+        <comment>settings_summary_notification_scale_custom</comment>
+        <translation>Imposta la percentuale di ridimensionamento personalizzata per le notifiche degli obiettivi.</translation>
+    </message>
+    <message>
+        <source>Achievement tracking is not currently enabled. Your login will have no effect until achievements are enabled. Do you want to enable them now?</source>
+        <comment>settings_achievements_enable_prompt</comment>
+        <translation>Il monitoraggio degli obiettivi non è attualmente abilitato. L&apos;accesso non avrà alcun effetto finché gli obiettivi non saranno abilitati. Vuoi abilitarli ora?</translation>
+    </message>
+    <message>
+        <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
+        <comment>settings_achievements_hardcore_restart_prompt</comment>
+        <translation>La modalità hardcore non verrà abilitata finché il gioco non sarà riavviato. Vuoi riavviare il gioco ora?</translation>
+    </message>
+    <message>
+        <source>Indicator Size</source>
+        <comment>settings_indicator_scale</comment>
+        <translation>Dimensione indicatori</translation>
+    </message>
+    <message>
+        <source>Determines the size of challenge/progress indicators. Automatic will use the same scaling as the Big Picture UI.</source>
+        <comment>settings_summary_indicator_scale</comment>
+        <translation>Determina la dimensione degli indicatori delle sfide/dei progressi. &quot;Automatica&quot; utilizzerà la stessa scala dell&apos;interfaccia Big Picture.</translation>
+    </message>
+    <message>
+        <source>Custom Indicator Scale</source>
+        <comment>settings_indicator_scale_custom</comment>
+        <translation>Scala personalizzata per gli indicatori</translation>
+    </message>
+    <message>
+        <source>Sets the custom scale percentage for challenge/progress indicators.</source>
+        <comment>settings_summary_indicator_scale_custom</comment>
+        <translation>Imposta la percentuale di ridimensionamento personalizzata per gli indicatori delle sfide/dei progressi.</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators</source>
+        <comment>settings_challenge_indicator_mode</comment>
+        <translation>Indicatori sfide</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
+        <comment>settings_summary_challenge_indicator_mode</comment>
+        <translation>Mostra una notifica o delle icone nella posizione selezionata quando è attiva una sfida o un obiettivo innescato.</translation>
+    </message>
+    <message>
+        <source>Indicator Location</source>
+        <comment>settings_indicator_location</comment>
+        <translation>Posizione indicatori</translation>
+    </message>
+    <message>
+        <source>Selects the screen location for challenge/progress indicators, and leaderboard trackers.</source>
+        <comment>settings_summary_indicator_location</comment>
+        <translation>Seleziona la posizione sullo schermo per gli indicatori delle sfide/dei progressi e per gli indicatori delle classifiche.</translation>
+    </message>
+    <message>
+        <source>Leaderboard Trackers</source>
+        <comment>settings_leaderboard_trackers</comment>
+        <translation>Indicatori delle classifiche</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
+        <comment>settings_summary_leaderboard_trackers</comment>
+        <translation>Mostra un timer nella posizione selezionata quando sono attive le sfide delle classifiche.</translation>
+    </message>
+    <message>
+        <source>Progress Indicators</source>
+        <comment>settings_progress_indicator_mode</comment>
+        <translation>Indicatori progressi</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
+        <comment>settings_summary_progress_indicator_mode</comment>
+        <translation>Mostra un popup nella posizione selezionata quando cambia il progresso verso un obiettivo misurato.</translation>
+    </message>
+    <message>
+        <source>Prefetch Badges</source>
+        <comment>settings_prefetch_badges</comment>
+        <translation>Precarica emblemi</translation>
+    </message>
+    <message>
+        <source>Downloads all locked achievement badges when starting the game, reducing delays when showing unlock images.</source>
+        <comment>settings_summary_prefetch_badges</comment>
+        <translation>Scarica tutti gli emblemi degli obiettivi bloccati all&apos;avvio del gioco, riducendo i ritardi nella visualizzazione delle immagini di sblocco.</translation>
+    </message>
+    <message>
+        <source>Track Unofficial Achievements</source>
+        <comment>settings_unofficial_test_mode</comment>
+        <translation>Traccia obiettivi non ufficiali</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_unofficial_test_mode</comment>
+        <translation>Quando abilitato, DuckStation terrà traccia degli obiettivi non ufficiali. Gli obiettivi non ufficiali sbloccati verranno salvati in locale e non saranno inviati a RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>Test RetroAchievements Offline Mode</source>
+        <comment>settings_test_offline_mode</comment>
+        <translation>Testa modalità offline di RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Forces all RetroAchievements server calls to fail, useful for testing offline mode.</source>
+        <comment>settings_summary_test_offline_mode</comment>
+        <translation>Forza il fallimento di tutte le chiamate al server RetroAchievements, utile per testare la modalità offline.</translation>
+    </message>
+    <message>
+        <source>Rich Presence Monitor</source>
+        <comment>settings_rich_presence_monitor</comment>
+        <translation>Monitoraggio rich presence</translation>
+    </message>
+    <message>
+        <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
+        <comment>settings_summary_rich_presence_monitor</comment>
+        <translation>Mostra continuamente l&apos;attuale stringa di rich presence di RetroAchievements nell&apos;area degli indicatori.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
+        <comment>achievement_unsupported_count_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
+        <translation>
+            <numerusform>%1$d obiettivo non è supportato da DuckStation e non può essere sbloccato.</numerusform>
+            <numerusform>%1$d obiettivi non sono supportati da DuckStation e non possono essere sbloccati.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
+        <comment>settings_achievements_disclaimer</comment>
+        <translation>DuckStation usa RetroAchievements (retroachievements.org) come database degli obiettivi e per monitorare i progressi. Un account RetroAchievements non è necessario per usare DuckStation.</translation>
+    </message>
+    <message>
+        <source>Port %1$d</source>
+        <comment>controller_port_format</comment>
+        <translation>Porta %1$d</translation>
+    </message>
+    <message>
+        <source>Controller Type</source>
+        <comment>controller_type</comment>
+        <translation>Tipo di controller</translation>
+    </message>
+    <message>
+        <source>Selects the emulated controller type.</source>
+        <comment>controller_type_message</comment>
+        <translation>Seleziona il tipo di controller emulato.</translation>
+    </message>
+    <message>
+        <source>Show Controller Input</source>
+        <comment>settings_show_inputs</comment>
+        <translation>Mostra input del controller</translation>
+    </message>
+    <message>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <comment>settings_summary_show_inputs</comment>
+        <translation>Mostra lo stato attuale del controller del sistema nell&apos;angolo in basso a sinistra dello schermo.</translation>
+    </message>
+    <message>
+        <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
+        <comment>touchscreen_controller_reset_layout_confirm</comment>
+        <translation>Verranno ripristinate la posizione, la dimensione e la visibilità di ogni pulsante in questa vista e in questo orientamento. Vuoi continuare?</translation>
+    </message>
+    <message>
+        <source>Editing layout in &apos;%s&apos;.</source>
+        <comment>touchscreen_controller_editing_layout</comment>
+        <translation>Modifica della disposizione in &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Game Specific Settings</source>
+        <comment>input_settings_game_specific</comment>
+        <translation>Impostazioni specifiche del gioco</translation>
+    </message>
+    <message>
+        <source>Settings are unavailable for this game.</source>
+        <comment>game_settings_unavailable</comment>
+        <translation>Le impostazioni non sono disponibili per questo gioco.</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_folder_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>settings_folder_memory_cards</comment>
+        <translation>Memory card</translation>
+    </message>
+    <message>
+        <source>Game Settings</source>
+        <comment>settings_folder_game_settings</comment>
+        <translation>Impostazioni del gioco</translation>
+    </message>
+    <message>
+        <source>Input Profiles</source>
+        <comment>settings_folder_input_profiles</comment>
+        <translation>Profili di input</translation>
+    </message>
+    <message>
+        <source>Textures</source>
+        <comment>settings_folder_textures</comment>
+        <translation>Texture</translation>
+    </message>
+    <message>
+        <source>Shaders</source>
+        <comment>settings_folder_shaders</comment>
+        <translation>Shaders</translation>
+    </message>
+    <message>
+        <source>Overlays</source>
+        <comment>settings_folder_overlays</comment>
+        <translation>Sovraimpressioni</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_folder_screenshots</comment>
+        <translation>Screenshot</translation>
+    </message>
+    <message>
+        <source>No save states have been created for this game.</source>
+        <comment>save_state_grid_empty</comment>
+        <translation>Non sono stati creati salvataggi di stato per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Toggle Analog Mode</source>
+        <comment>emulation_menu_toggle_analog_mode</comment>
+        <translation>Attiva/disattiva modalità analogica</translation>
+    </message>
+    <message>
+        <source>Change Disc</source>
+        <comment>emulation_menu_change_media</comment>
+        <translation>Cambia disco</translation>
+    </message>
+    <message>
+        <source>Restart Game</source>
+        <comment>emulation_menu_restart_content</comment>
+        <translation>Riavvia gioco</translation>
+    </message>
+    <message>
+        <source>Close Game</source>
+        <comment>emulation_menu_close_content</comment>
+        <translation>Chiudi gioco</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>emulation_menu_content_settings</comment>
+        <translation>Proprietà del gioco</translation>
+    </message>
+    <message>
+        <source>Controller Settings</source>
+        <comment>emulation_menu_input_settings</comment>
+        <translation>Impostazioni controller</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <comment>settings_speed_unlimited</comment>
+        <translation>Illimitata</translation>
+    </message>
+    <message>
+        <source>%1$s px</source>
+        <comment>settings_value_pixels</comment>
+        <translation>%1$s px</translation>
+    </message>
+    <message>
+        <source>%1$s×</source>
+        <comment>settings_value_scale</comment>
+        <translation>%1$s×</translation>
+    </message>
+    <message>
+        <source>Enable Game Vibration</source>
+        <comment>settings_touchscreen_enable_vibration</comment>
+        <translation>Abilita vibrazione del gioco</translation>
+    </message>
+    <message>
+        <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
+        <comment>settings_summary_touchscreen_enable_vibration</comment>
+        <translation>Trasmette la vibrazione del gioco al motore di vibrazione del dispositivo, se presente.</translation>
+    </message>
+    <message>
+        <source>Global Save %d</source>
+        <comment>save_slot_global_n</comment>
+        <translation>Salvataggio globale %d</translation>
+    </message>
+    <message>
+        <source>Undo Load State</source>
+        <comment>save_slot_undo_load_state</comment>
+        <translation>Annulla caricamento dello stato</translation>
+    </message>
+    <message>
+        <source>No save states found.</source>
+        <comment>save_state_manager_empty</comment>
+        <translation>Non è stato trovato alcun salvataggio di stato.</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>title_activity_memory_card_editor</comment>
+        <translation>Editor di memory card</translation>
+    </message>
+    <message>
+        <source>Memory Card Editor</source>
+        <comment>action_memory_card_editor</comment>
+        <translation>Editor di memory card</translation>
+    </message>
+    <message>
+        <source>Import Card</source>
+        <comment>action_memory_card_editor_import_card</comment>
+        <translation>Importa memory card</translation>
+    </message>
+    <message>
+        <source>Open Card</source>
+        <comment>action_memory_card_editor_open_card</comment>
+        <translation>Apri memory card</translation>
+    </message>
+    <message>
+        <source>New Card</source>
+        <comment>action_memory_card_editor_new_card</comment>
+        <translation>Nuova memory card</translation>
+    </message>
+    <message>
+        <source>Format Card</source>
+        <comment>action_memory_card_editor_format_card</comment>
+        <translation>Formatta</translation>
+    </message>
+    <message>
+        <source>Delete Card</source>
+        <comment>action_memory_card_editor_delete_card</comment>
+        <translation>Elimina memory card</translation>
+    </message>
+    <message>
+        <source>Close Card</source>
+        <comment>action_memory_card_editor_close_card</comment>
+        <translation>Chiudi memory card</translation>
+    </message>
+    <message>
+        <source>No memory cards are open.</source>
+        <comment>memory_card_editor_no_cards_open</comment>
+        <translation>Nessuna memory card aperta.</translation>
+    </message>
+    <message>
+        <source>This memory card is empty.</source>
+        <comment>memory_card_editor_no_saves</comment>
+        <translation>Questa memory card è vuota.</translation>
+    </message>
+    <message>
+        <source>%d blocks free</source>
+        <comment>memory_card_editor_free_blocks</comment>
+        <translation>%d blocchi liberi</translation>
+    </message>
+    <message>
+        <source>%d Blocks</source>
+        <comment>memory_card_editor_blocks</comment>
+        <translation>%d blocchi</translation>
+    </message>
+    <message>
+        <source>%.1f KB</source>
+        <comment>memory_card_editor_file_size</comment>
+        <translation>%.1f KB</translation>
+    </message>
+    <message>
+        <source>%s (Deleted)</source>
+        <comment>memory_card_editor_deleted_title</comment>
+        <translation>%s (eliminato)</translation>
+    </message>
+    <message>
+        <source>Copy Save</source>
+        <comment>memory_card_editor_copy_save</comment>
+        <translation>Copia salvataggio</translation>
+    </message>
+    <message>
+        <source>Delete Save</source>
+        <comment>memory_card_editor_delete_save</comment>
+        <translation>Elimina salvataggio</translation>
+    </message>
+    <message>
+        <source>Undelete Save</source>
+        <comment>memory_card_editor_undelete_save</comment>
+        <translation>Ripristina salvataggio</translation>
+    </message>
+    <message>
+        <source>Permanently Delete Save</source>
+        <comment>memory_card_editor_permanently_delete_save</comment>
+        <translation>Elimina definitivamente salvataggio</translation>
+    </message>
+    <message>
+        <source>No memory cards found.</source>
+        <comment>memory_card_editor_no_cards_found</comment>
+        <translation>Nessuna memory card trovata.</translation>
+    </message>
+    <message>
+        <source>This card is already open.</source>
+        <comment>memory_card_editor_card_already_open</comment>
+        <translation>Questa memory card è già aperta.</translation>
+    </message>
+    <message>
+        <source>Failed to open or read memory card.</source>
+        <comment>memory_card_editor_failed_to_open_card</comment>
+        <translation>Impossibile aprire o leggere la memory card.</translation>
+    </message>
+    <message>
+        <source>Must have at least two cards open to copy.</source>
+        <comment>memory_card_editor_must_have_at_least_two_cards_to_copy</comment>
+        <translation>Per copiare è necessario avere almeno due memory card aperte.</translation>
+    </message>
+    <message>
+        <source>Select Card</source>
+        <comment>memory_card_editor_select_card</comment>
+        <translation>Seleziona memory card</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <comment>memory_card_editor_error</comment>
+        <translation>Errore</translation>
+    </message>
+    <message>
+        <source>This file requires %1$d blocks, but only %2$d blocks are free.</source>
+        <comment>memory_card_editor_copy_insufficient_blocks</comment>
+        <translation>Questo file richiede %1$d blocchi, ma solo %2$d blocchi sono liberi.</translation>
+    </message>
+    <message>
+        <source>File &apos;%s&apos; already exists on destination card.</source>
+        <comment>memory_card_editor_copy_already_exists</comment>
+        <translation>Il file &apos;%s&apos; esiste già nella memory card di destinazione.</translation>
+    </message>
+    <message>
+        <source>Failed to read file &apos;%s&apos; from source card.</source>
+        <comment>memory_card_editor_copy_read_failed</comment>
+        <translation>Impossibile leggere il file &apos;%s&apos; dalla memory card di origine.</translation>
+    </message>
+    <message>
+        <source>Failed to write file &apos;%s&apos; to destination card.</source>
+        <comment>memory_card_editor_copy_write_failed</comment>
+        <translation>Impossibile scrivere il file &apos;%s&apos; nella memory card di destinazione.</translation>
+    </message>
+    <message>
+        <source>Copied &apos;%1$s&apos; to &apos;%2$s&apos;.</source>
+        <comment>memory_card_editor_copy_success</comment>
+        <translation>&apos;%1$s&apos; copiato in &apos;%2$s&apos;.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the save &apos;%s&apos;?</source>
+        <comment>memory_card_editor_delete_confirm</comment>
+        <translation>Vuoi davvero eliminare il salvataggio &apos;%s&apos;?</translation>
+    </message>
+    <message>
+        <source>Deleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_success</comment>
+        <translation>Salvataggio &apos;%s&apos; eliminato.</translation>
+    </message>
+    <message>
+        <source>Failed to delete file &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_failed</comment>
+        <translation>Impossibile eliminare il file &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Failed to import card. It may not be a supported format.</source>
+        <comment>memory_card_editor_import_failed</comment>
+        <translation>Impossibile importare la memory card. Il formato potrebbe non essere supportato.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be deleted, and cannot be recovered. Are you sure you want to delete this card?</source>
+        <comment>memory_card_editor_delete_card_confirm_message</comment>
+        <translation>La memory card &apos;%s&apos; verrà eliminata e non potrà essere recuperata. Vuoi davvero eliminare questa memory card?</translation>
+    </message>
+    <message>
+        <source>Failed to delete &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_failed</comment>
+        <translation>Impossibile eliminare &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Deleted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_delete_card_success</comment>
+        <translation>Memory card &apos;%s&apos; eliminata.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; will be formatted, clearing all saves. Are you sure you want to format this card?</source>
+        <comment>memory_card_editor_format_card_confirm_message</comment>
+        <translation>La memory card &apos;%s&apos; verrà formattata, eliminando tutti i salvataggi. Vuoi davvero formattare questa memory card?</translation>
+    </message>
+    <message>
+        <source>Failed to format &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_failed</comment>
+        <translation>Impossibile formattare &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Formatted card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_format_card_success</comment>
+        <translation>Memory card &apos;%s&apos; formattata.</translation>
+    </message>
+    <message>
+        <source>Importing &apos;%1$s&apos; will remove all saves in &apos;%2$s&apos;. Do you want to continue?</source>
+        <comment>memory_card_editor_import_card_confirm_message</comment>
+        <translation>Importando &apos;%1$s&apos; verranno rimossi tutti i salvataggi in &apos;%2$s&apos;. Vuoi continuare?</translation>
+    </message>
+    <message>
+        <source>Failed to read &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_read_failed</comment>
+        <translation>Impossibile leggere &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Imported card &apos;%s&apos;.</source>
+        <comment>memory_card_editor_import_card_success</comment>
+        <translation>Memory card &apos;%s&apos; importata.</translation>
+    </message>
+    <message>
+        <source>Undeleted save &apos;%s&apos;.</source>
+        <comment>memory_card_editor_undelete_success</comment>
+        <translation>Salvataggio &apos;%s&apos; ripristinato.</translation>
+    </message>
+    <message>
+        <source>Failed to undelete save &apos;%s&apos;. The save may already be partially overwritten.</source>
+        <comment>memory_card_editor_undelete_failed</comment>
+        <translation>Impossibile ripristinare il salvataggio &apos;%s&apos;. Potrebbe essere già stato parzialmente sovrascritto.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to permanently delete the save &apos;%s&apos;? You cannot recover the save afterwards.</source>
+        <comment>memory_card_editor_permanently_delete_confirm</comment>
+        <translation>Vuoi davvero eliminare definitivamente il salvataggio &apos;%s&apos;? Non sarà più possibile recuperarlo.</translation>
+    </message>
+    <message>
+        <source>Memory Card Name</source>
+        <comment>create_memory_card_title</comment>
+        <translation>Nome della memory card</translation>
+    </message>
+    <message>
+        <source>You must enter a card name.</source>
+        <comment>create_memory_card_no_name</comment>
+        <translation>Devi inserire un nome per la memory card.</translation>
+    </message>
+    <message>
+        <source>&apos;%s&apos; is not a valid card name.</source>
+        <comment>create_memory_card_invalid_name</comment>
+        <translation>&apos;%s&apos; non è un nome valido per una memory card.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists.</source>
+        <comment>create_memory_card_exists</comment>
+        <translation>Esiste già una memory card denominata &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Failed to create memory card &apos;%s&apos;.</source>
+        <comment>create_memory_card_failed</comment>
+        <translation>Impossibile creare la memory card &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; created.</source>
+        <comment>create_memory_card_done</comment>
+        <translation>Memory card &apos;%s&apos; creata.</translation>
+    </message>
+    <message>
+        <source>Edit Memory Cards</source>
+        <comment>game_list_bottom_sheet_edit_memory_cards</comment>
+        <translation>Modifica memory card</translation>
+    </message>
+    <message>
+        <source>No memory cards found for this game.</source>
+        <comment>game_list_bottom_sheet_no_memory_cards_found</comment>
+        <translation>Nessuna memory card trovata per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Game Hash</source>
+        <comment>game_properties_content_hash</comment>
+        <translation>Hash del gioco</translation>
+    </message>
+    <message>
+        <source>RA Hash</source>
+        <comment>game_properties_achievements_hash</comment>
+        <translation>Hash RA</translation>
+    </message>
+    <message>
+        <source>Just a few setup steps are necessary before you can run games.</source>
+        <comment>setup_wizard_welcome_first_paragraph</comment>
+        <translation>Sono necessari solo pochi passaggi di configurazione prima di poter avviare i giochi.</translation>
+    </message>
+    <message>
+        <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
+        <comment>setup_wizard_content_folders_message</comment>
+        <translation>DuckStation rileverà automaticamente i giochi nelle cartelle specificate qui. Dovresti aggiungere almeno una cartella da scansionare. Non aggiungere la cartella principale del volume di archiviazione, altrimenti la scansione richiederà molto tempo.</translation>
+    </message>
+    <message>
+        <source>Controller Setup</source>
+        <comment>setup_wizard_input_setup</comment>
+        <translation>Impostazioni controller</translation>
+    </message>
+    <message>
+        <source>No Game Folders Selected</source>
+        <comment>setup_wizard_no_directories_title</comment>
+        <translation>Nessuna cartella dei giochi selezionata</translation>
+    </message>
+    <message>
+        <source>The game list will be empty until you add a folder. Continue anyway?</source>
+        <comment>setup_wizard_no_directories_message</comment>
+        <translation>L’elenco dei giochi rimarrà vuoto finché non aggiungerai una cartella. Vuoi continuare comunque?</translation>
+    </message>
+    <message>
+        <source>Choose how games should be displayed in the main list.</source>
+        <comment>setup_wizard_view_message</comment>
+        <translation>Scegli come visualizzare i giochi nell’elenco principale.</translation>
+    </message>
+    <message>
+        <source>Alignment (Landscape)</source>
+        <comment>settings_display_alignment_landscape</comment>
+        <translation>Allineamento (orizzontale)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in landscape mode.</source>
+        <comment>settings_summary_display_alignment_landscape</comment>
+        <translation>Seleziona dove visualizzare lo schermo in modalità orizzontale.</translation>
+    </message>
+    <message>
+        <source>Alignment (Portrait)</source>
+        <comment>settings_display_alignment_portrait</comment>
+        <translation>Allineamento (verticale)</translation>
+    </message>
+    <message>
+        <source>Selects where the screen will be rendered in portrait mode.</source>
+        <comment>settings_summary_display_alignment_portrait</comment>
+        <translation>Seleziona dove visualizzare lo schermo in modalità verticale.</translation>
+    </message>
+    <message>
+        <source>Use Debug GPU Device</source>
+        <comment>settings_use_debug_device</comment>
+        <translation>Usa dispositivo GPU di debug</translation>
+    </message>
+    <message>
+        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_debug_device</comment>
+        <translation>Abilita il debugging quando supportato dall&apos;API di rendering dell&apos;host. A utilizzo esclusivo degli sviluppatori.</translation>
+    </message>
+    <message>
+        <source>Prefer OpenGL ES Context</source>
+        <comment>settings_prefer_gles_context</comment>
+        <translation>Preferisci contesto OpenGL ES</translation>
+    </message>
+    <message>
+        <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
+        <comment>settings_summary_prefer_gles_context</comment>
+        <translation>Usa OpenGL ES anche quando è supportato OpenGL desktop. Può migliorare le prestazioni con alcuni driver SBC.</translation>
+    </message>
+    <message>
+        <source>Disable Shader Caches</source>
+        <comment>settings_disable_shader_cache</comment>
+        <translation>Disabilita cache degli shader</translation>
+    </message>
+    <message>
+        <source>Prevents the caching of shaders, forcing them to be recompiled every time.</source>
+        <comment>settings_summary_disable_shader_cache</comment>
+        <translation>Impedisce la memorizzazione degli shader nella cache, forzandone la ricompilazione ogni volta.</translation>
+    </message>
+    <message>
+        <source>Shader &apos;%s&apos; added.</source>
+        <comment>postfx_shader_added</comment>
+        <translation>Shader &apos;%s&apos; aggiunto.</translation>
+    </message>
+    <message>
+        <source>Shaders cleared.</source>
+        <comment>postfx_shaders_cleared</comment>
+        <translation>Shader cancellati.</translation>
+    </message>
+    <message>
+        <source>Confirm Shader Clear</source>
+        <comment>postfx_confirm_clear_title</comment>
+        <translation>Conferma cancellazione shader</translation>
+    </message>
+    <message>
+        <source>This will remove all shaders from the chain. Their configuration cannot be recovered. Are you sure you want to clear all shaders?</source>
+        <comment>postfx_confirm_clear_message</comment>
+        <translation>Questa operazione rimuoverà tutti gli shader dalla catena. La loro configurazione non potrà essere recuperata. Vuoi davvero cancellare tutti gli shader?</translation>
+    </message>
+    <message>
+        <source>Stage %d removed.</source>
+        <comment>postfx_shader_removed</comment>
+        <translation>Fase %d rimossa.</translation>
+    </message>
+    <message>
+        <source>Enable Post Processing</source>
+        <comment>postfx_setting_enable</comment>
+        <translation>Abilita post-elaborazione</translation>
+    </message>
+    <message>
+        <source>Applies the post-processing chain configured below.</source>
+        <comment>postfx_setting_summary_enable</comment>
+        <translation>Applica la catena di post-elaborazione configurata qui sotto.</translation>
+    </message>
+    <message>
+        <source>Add Shader</source>
+        <comment>postfx_setting_add_shader</comment>
+        <translation>Aggiungi shader</translation>
+    </message>
+    <message>
+        <source>Adds a new shader to the chain.</source>
+        <comment>postfx_setting_summary_add_shader</comment>
+        <translation>Aggiunge un nuovo shader alla catena.</translation>
+    </message>
+    <message>
+        <source>Clear Shaders</source>
+        <comment>postfx_setting_clear_shaders</comment>
+        <translation>Cancella shader</translation>
+    </message>
+    <message>
+        <source>Removes all shaders from the chain.</source>
+        <comment>postfx_setting_summary_clear_shaders</comment>
+        <translation>Rimuove tutti gli shader dalla catena.</translation>
+    </message>
+    <message>
+        <source>Stage %1$d: %2$s</source>
+        <comment>postfx_stage_category</comment>
+        <translation>Fase %1$d: %2$s</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <comment>postfx_setting_options</comment>
+        <translation>Opzioni</translation>
+    </message>
+    <message>
+        <source>Edits options for this shader.</source>
+        <comment>postfx_setting_summary_options</comment>
+        <translation>Modifica le opzioni di questo shader.</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>postfx_setting_move_up</comment>
+        <translation>Sposta su</translation>
+    </message>
+    <message>
+        <source>Moves this shader up in the application order.</source>
+        <comment>postfx_setting_summary_move_up</comment>
+        <translation>Sposta questo shader prima nell&apos;ordine di applicazione.</translation>
+    </message>
+    <message>
+        <source>Shader %1$d swapped with shader %2$d.</source>
+        <comment>postfx_shader_swapped</comment>
+        <translation>Shader %1$d scambiato con lo shader %2$d.</translation>
+    </message>
+    <message>
+        <source>Removes this shader from the post-processing pipeline.</source>
+        <comment>postfx_setting_summary_remove_shader</comment>
+        <translation>Rimuove questo shader dalla pipeline di post-elaborazione.</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <comment>postfx_setting_remove_shader</comment>
+        <translation>Rimuovi</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>postfx_setting_move_down</comment>
+        <translation>Sposta giù</translation>
+    </message>
+    <message>
+        <source>Moves this shader down in the application order.</source>
+        <comment>postfx_setting_summary_move_down</comment>
+        <translation>Sposta questo shader dopo nell&apos;ordine di applicazione.</translation>
+    </message>
+    <message>
+        <source>Select Shader</source>
+        <comment>postfx_add_select_shader</comment>
+        <translation>Seleziona shader</translation>
+    </message>
+    <message>
+        <source>No shaders found.</source>
+        <comment>postfx_add_no_shaders_found</comment>
+        <translation>Nessuno shader trovato.</translation>
+    </message>
+    <message>
+        <source>This shader does not have any configurable options.</source>
+        <comment>postfx_no_options</comment>
+        <translation>Questo shader non ha opzioni configurabili.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Additional border overlays can be added in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</source>
+        <comment>postfx_additional_shaders_notice</comment>
+        <translation>Puoi aggiungere altri shader GLSL, ReShade e Slang in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
+Puoi aggiungere altre sovrapposizioni bordo in
+        [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Border Overlay</source>
+        <comment>postfx_border_overlay_preset</comment>
+        <translation>Sovrapposizione bordo</translation>
+    </message>
+    <message>
+        <source>Patches Unavailable</source>
+        <comment>game_properties_patches_unavailable</comment>
+        <translation>Patch non disponibili</translation>
+    </message>
+    <message>
+        <source>No patches are available for this game.</source>
+        <comment>game_properties_patches_unavailable_summary</comment>
+        <translation>Non sono disponibili patch per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Patch Codes Unavailable</source>
+        <comment>game_properties_patch_codes_unavailable</comment>
+        <translation>Codici patch non disponibili</translation>
+    </message>
+    <message>
+        <source>No patch codes are available for this game.</source>
+        <comment>game_properties_patch_codes_unavailable_summary</comment>
+        <translation>Non sono disponibili codici patch per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Enable Codes</source>
+        <comment>game_properties_enable_patch_codes</comment>
+        <translation>Abilita codici</translation>
+    </message>
+    <message>
+        <source>Enabling this option will enable any codes selected below to be applied.</source>
+        <comment>game_properties_enable_patch_codes_summary</comment>
+        <translation>Abilitando questa opzione, verranno applicati i codici selezionati qui sotto.</translation>
+    </message>
+    <message>
+        <source>Load Database Codes</source>
+        <comment>game_properties_load_database_codes</comment>
+        <translation>Carica codici dal database</translation>
+    </message>
+    <message>
+        <source>Import Codes</source>
+        <comment>game_properties_import_patch_codes</comment>
+        <translation>Importa codici</translation>
+    </message>
+    <message>
+        <source>Patch codes can be imported directly from text,
+        or from files in various formats. Please choose the type of codes to import.</source>
+        <comment>game_properties_import_patch_codes_message</comment>
+        <translation>I codici patch possono essere importati direttamente dal testo
+        o da file in vari formati. Scegli il tipo di codici da importare.</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <comment>game_properties_import_patch_codes_text</comment>
+        <translation>Testo</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <comment>game_properties_import_patch_codes_file</comment>
+        <translation>File</translation>
+    </message>
+    <message>
+        <source>Import Failed</source>
+        <comment>game_properties_import_failed</comment>
+        <translation>Importazione non riuscita</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d patch codes were added.</source>
+        <comment>game_properties_import_count</comment>
+        <extracomment>Android plural quantities: one=&quot;%d patch code was added.&quot;; other=&quot;%d patch codes were added.&quot;</extracomment>
+        <translation>
+            <numerusform>È stato aggiunto %d codice patch.</numerusform>
+            <numerusform>Sono stati aggiunti %d codici patch.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Confirm Removal</source>
+        <comment>game_properties_remove_patch_codes</comment>
+        <translation>Conferma rimozione</translation>
+    </message>
+    <message>
+        <source>You are removing all patch codes manually added for this game. This action cannot be reversed.
+
+Any database cheats will still be loaded and present unless you uncheck the &quot;Load Database Cheats&quot; option.
+
+Are you sure you want to continue?</source>
+        <comment>game_properties_remove_patch_codes_message</comment>
+        <translation>Stai rimuovendo tutti i codici patch aggiunti manualmente per questo gioco. Questa operazione non può essere annullata.
+
+I trucchi del database verranno comunque caricati e rimarranno presenti, a meno che tu non deselezioni l&apos;opzione &quot;Carica trucchi dal database&quot;.
+
+Vuoi davvero continuare?</translation>
+    </message>
+    <message>
+        <source>Patch Codes Disabled</source>
+        <comment>game_properties_should_enable_patch_codes</comment>
+        <translation>Codici patch disabilitati</translation>
+    </message>
+    <message>
+        <source>Enabling this code will not have any effect until codes are enabled for this game. Do you want to do this now?</source>
+        <comment>game_properties_should_enable_patch_codes_message</comment>
+        <translation>L&apos;abilitazione di questo codice non avrà effetto finché i codici non saranno abilitati per questo gioco. Vuoi abilitarli ora?</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>game_properties_patch_code_disabled</comment>
+        <translation>Disabilitato</translation>
+    </message>
+    <message>
+        <source>Failed to update custom properties.</source>
+        <comment>game_properties_custom_properties_update_failed</comment>
+        <translation>Aggiornamento delle proprietà personalizzate non riuscito.</translation>
+    </message>
+    <message>
+        <source>Edit Details</source>
+        <comment>game_properties_edit_details</comment>
+        <translation>Modifica dettagli</translation>
+    </message>
+    <message>
+        <source>Default (%1$s)</source>
+        <comment>game_properties_default_value</comment>
+        <translation>Predefinito (%1$s)</translation>
+    </message>
+    <message>
+        <source>Disable All Patches</source>
+        <comment>patch_codes_disable_all_patches</comment>
+        <translation>Disabilita tutte le patch</translation>
+    </message>
+    <message>
+        <source>Disables every patch currently enabled for this game.</source>
+        <comment>patch_codes_disable_all_patches_summary</comment>
+        <translation>Disabilita tutte le patch attualmente abilitate per questo gioco.</translation>
+    </message>
+    <message>
+        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>Non disponibile mentre la modalità hardcore di RetroAchievements è attiva.</translation>
+    </message>
+    <message>
+        <source>Search codes</source>
+        <comment>cheat_codes_search</comment>
+        <translation>Cerca codici</translation>
+    </message>
+    <message>
+        <source>Sort By Name</source>
+        <comment>cheat_codes_sort</comment>
+        <translation>Ordina per nome</translation>
+    </message>
+    <message>
+        <source>Database code</source>
+        <comment>cheat_codes_database</comment>
+        <translation>Codice del database</translation>
+    </message>
+    <message>
+        <source>Save Copy</source>
+        <comment>cheat_codes_save_copy</comment>
+        <translation>Salva copia</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>cheat_codes_name</comment>
+        <translation>Nome</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <comment>cheat_codes_group</comment>
+        <translation>Gruppo</translation>
+    </message>
+    <message>
+        <source>Ungrouped</source>
+        <comment>cheat_codes_ungrouped</comment>
+        <translation>Non raggruppato</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <comment>cheat_codes_description</comment>
+        <translation>Descrizione</translation>
+    </message>
+    <message>
+        <source>Instructions</source>
+        <comment>cheat_codes_instructions</comment>
+        <translation>Istruzioni</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <comment>cheat_codes_type</comment>
+        <translation>Tipo</translation>
+    </message>
+    <message>
+        <source>Activation</source>
+        <comment>cheat_codes_activation</comment>
+        <translation>Attivazione</translation>
+    </message>
+    <message>
+        <source>Options Type</source>
+        <comment>cheat_codes_options_type</comment>
+        <translation>Tipo di opzioni</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>cheat_codes_options_none</comment>
+        <translation>Nessuno</translation>
+    </message>
+    <message>
+        <source>Choice</source>
+        <comment>cheat_codes_options_choice</comment>
+        <translation>Scelta</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <comment>cheat_codes_options_range</comment>
+        <translation>Intervallo</translation>
+    </message>
+    <message>
+        <source>Option name</source>
+        <comment>cheat_codes_option_name</comment>
+        <translation>Nome opzione</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <comment>cheat_codes_option_value</comment>
+        <translation>Valore</translation>
+    </message>
+    <message>
+        <source>Add Option</source>
+        <comment>cheat_codes_option_add</comment>
+        <translation>Aggiungi opzione</translation>
+    </message>
+    <message>
+        <source>Remove Option</source>
+        <comment>cheat_codes_option_remove</comment>
+        <translation>Rimuovi opzione</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <comment>cheat_codes_range_minimum</comment>
+        <translation>Minimo</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <comment>cheat_codes_range_maximum</comment>
+        <translation>Massimo</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <comment>cheat_codes_save</comment>
+        <translation>Salva</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <comment>cheat_codes_delete</comment>
+        <translation>Cancella</translation>
+    </message>
+    <message>
+        <source>Delete this user code?</source>
+        <comment>cheat_codes_confirm_delete</comment>
+        <translation>Cancellare questo codice utente?</translation>
+    </message>
+    <message>
+        <source>Name must not be blank.</source>
+        <comment>cheat_codes_validation_name</comment>
+        <translation>Il nome non può essere vuoto.</translation>
+    </message>
+    <message>
+        <source>Instructions must not be blank.</source>
+        <comment>cheat_codes_validation_body</comment>
+        <translation>Le istruzioni non possono essere vuote.</translation>
+    </message>
+    <message>
+        <source>The full name contains an invalid section delimiter or line break.</source>
+        <comment>cheat_codes_validation_section</comment>
+        <translation>Il nome completo contiene un delimitatore di sezione o un&apos;interruzione di riga non validi.</translation>
+    </message>
+    <message>
+        <source>Another code already has this name.</source>
+        <comment>cheat_codes_validation_collision</comment>
+        <translation>Un altro codice ha già questo nome.</translation>
+    </message>
+    <message>
+        <source>Choice options need unique nonblank names and unsigned 32-bit values.</source>
+        <comment>cheat_codes_validation_choice</comment>
+        <translation>Le opzioni di scelta devono avere nomi univoci non vuoti e valori a 32 bit senza segno.</translation>
+    </message>
+    <message>
+        <source>Choice mode requires at least one option.</source>
+        <comment>cheat_codes_validation_choice_empty</comment>
+        <translation>La modalità Scelta richiede almeno un&apos;opzione.</translation>
+    </message>
+    <message>
+        <source>Range must satisfy 0 ≤ minimum &lt; maximum ≤ 65535.</source>
+        <comment>cheat_codes_validation_range</comment>
+        <translation>L&apos;intervallo deve soddisfare 0 ≤ minimo &lt; massimo ≤ 65535.</translation>
+    </message>
+    <message>
+        <source>Cheat file operation failed: %1$s</source>
+        <comment>cheat_codes_io_failed</comment>
+        <translation>Operazione sul file dei trucchi non riuscita: %1$s</translation>
+    </message>
+    <message>
+        <source>Codes exported successfully.</source>
+        <comment>cheat_codes_export_complete</comment>
+        <translation>Codici esportati correttamente.</translation>
+    </message>
+    <message>
+        <source>Verify</source>
+        <comment>content_verification_verify</comment>
+        <translation>Verifica</translation>
+    </message>
+    <message>
+        <source>Reading and checking game…</source>
+        <comment>content_verification_progress_status</comment>
+        <translation>Lettura e verifica del gioco…</translation>
+    </message>
+    <message>
+        <source>Enable Global Save States</source>
+        <comment>settings_enable_global_save_states</comment>
+        <translation>Abilita salvataggi di stato globali</translation>
+    </message>
+    <message>
+        <source>Makes the legacy global save state slots available. These slots are independent of the current game.</source>
+        <comment>settings_summary_enable_global_save_states</comment>
+        <translation>Rende disponibili gli slot dei salvataggi di stato globali del sistema precedente. Questi slot sono indipendenti dal gioco attuale.</translation>
+    </message>
+    <message>
+        <source>Screenshot Size</source>
+        <comment>settings_screenshot_mode</comment>
+        <translation>Dimensione screenshot</translation>
+    </message>
+    <message>
+        <source>Determines the size of screenshots created by DuckStation.</source>
+        <comment>settings_summary_screenshot_mode</comment>
+        <translation>Determina la dimensione degli screenshot creati da DuckStation.</translation>
+    </message>
+    <message>
+        <source>Determines the format that screenshots will be saved/compressed with.</source>
+        <comment>settings_summary_screenshot_format</comment>
+        <translation>Determina il formato in cui gli screenshot verranno salvati/compressi.</translation>
+    </message>
+    <message>
+        <source>Screenshot Quality</source>
+        <comment>settings_screenshot_quality</comment>
+        <translation>Qualità screenshot</translation>
+    </message>
+    <message>
+        <source>Selects the quality at which screenshots will be compressed.</source>
+        <comment>settings_summary_screenshot_quality</comment>
+        <translation>Seleziona la qualità a cui gli screenshot verranno compressi.</translation>
+    </message>
+    <message>
+        <source>Screenshot File Name Format</source>
+        <comment>settings_screenshot_file_name_format</comment>
+        <translation>Formato dei nomi dei file degli screenshot</translation>
+    </message>
+    <message>
+        <source>Determines the format of the screenshot file names.</source>
+        <comment>settings_summary_screenshot_file_name_format</comment>
+        <translation>Determina il formato dei nomi dei file degli screenshot.</translation>
+    </message>
+    <message>
+        <source>Enables manual fine cropping of the display area while preserving the aspect ratio. Useful for removing black borders.</source>
+        <comment>settings_summary_fine_crop_mode</comment>
+        <translation>Abilita il ritaglio manuale preciso dell’area di visualizzazione mantenendo il rapporto d’aspetto. Utile per rimuovere i bordi neri.</translation>
+    </message>
+    <message>
+        <source>Minimal Output Latency</source>
+        <comment>settings_output_latency_minimal</comment>
+        <translation>Latenza minima in uscita</translation>
+    </message>
+    <message>
+        <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+        <comment>settings_summary_output_latency_minimal</comment>
+        <translation>Quando abilitata, la latenza di uscita minima supportata verrà utilizzata per l&apos;API dell&apos;host.</translation>
+    </message>
+    <message>
+        <source>Sequence Length</source>
+        <comment>settings_stretch_sequence_length_ms</comment>
+        <translation>Lunghezza sequenza</translation>
+    </message>
+    <message>
+        <source>Sets the length of each audio stretch sequence in milliseconds.</source>
+        <comment>settings_summary_stretch_sequence_length_ms</comment>
+        <translation>Imposta la lunghezza di ciascuna sequenza di allungamento audio in millisecondi.</translation>
+    </message>
+    <message>
+        <source>Seek Window</source>
+        <comment>settings_stretch_seek_window_ms</comment>
+        <translation>Finestra di ricerca</translation>
+    </message>
+    <message>
+        <source>Sets the search window used when stretching audio, in milliseconds.</source>
+        <comment>settings_summary_stretch_seek_window_ms</comment>
+        <translation>Imposta la finestra di ricerca usata per l&apos;allungamento audio, in millisecondi.</translation>
+    </message>
+    <message>
+        <source>Overlap</source>
+        <comment>settings_stretch_overlap_ms</comment>
+        <translation>Sovrapposizione</translation>
+    </message>
+    <message>
+        <source>Sets how much neighboring audio stretch sequences overlap, in milliseconds.</source>
+        <comment>settings_summary_stretch_overlap_ms</comment>
+        <translation>Imposta la sovrapposizione tra sequenze di allungamento audio adiacenti, in millisecondi.</translation>
+    </message>
+    <message>
+        <source>Use Quick Seek</source>
+        <comment>settings_stretch_use_quick_seek</comment>
+        <translation>Usa ricerca rapida</translation>
+    </message>
+    <message>
+        <source>Uses a quicker seek method when stretching audio. May reduce quality.</source>
+        <comment>settings_summary_stretch_use_quick_seek</comment>
+        <translation>Usa un metodo di ricerca più rapido per l&apos;allungamento audio. Può ridurre la qualità.</translation>
+    </message>
+    <message>
+        <source>Use Anti-Aliasing Filter</source>
+        <comment>settings_stretch_use_aa_filter</comment>
+        <translation>Usa filtro antialiasing</translation>
+    </message>
+    <message>
+        <source>Uses an anti-aliasing filter when stretching audio.</source>
+        <comment>settings_summary_stretch_use_aa_filter</comment>
+        <translation>Usa un filtro antialiasing per l&apos;allungamento audio.</translation>
+    </message>
+    <message>
+        <source>Analog Toggle</source>
+        <comment>touchscreen_controller_analog</comment>
+        <translation>Tasto modalità analogica (ANALOG)</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <comment>touchscreen_controller_l1</comment>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <comment>touchscreen_controller_l2</comment>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <comment>touchscreen_controller_r1</comment>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <comment>touchscreen_controller_r2</comment>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <comment>touchscreen_controller_triangle</comment>
+        <translation>Triangolo</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <comment>touchscreen_controller_circle</comment>
+        <translation>Cerchio</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <comment>touchscreen_controller_cross</comment>
+        <translation>Croce</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <comment>touchscreen_controller_square</comment>
+        <translation>Quadrato</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <comment>touchscreen_controller_select</comment>
+        <translation>SELECT</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>touchscreen_controller_back</comment>
+        <translation>Indietro</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <comment>touchscreen_controller_a</comment>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <comment>touchscreen_controller_b</comment>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>N/A</source>
+        <comment>content_list_no_achievements</comment>
+        <translation>N.D.</translation>
+    </message>
+    <message>
+        <source>All Files</source>
+        <comment>content_list_filter_all</comment>
+        <translation>Tutti i file</translation>
+    </message>
+    <message>
+        <source>Merge Disc Sets</source>
+        <comment>content_list_merge_media_sets</comment>
+        <translation>Unisci gruppi di dischi</translation>
+    </message>
+    <message>
+        <source>Scan For New Games</source>
+        <comment>content_list_scan_new</comment>
+        <translation>Cerca giochi nuovi</translation>
+    </message>
+    <message>
+        <source>Rescan All Games</source>
+        <comment>content_list_rescan_all</comment>
+        <translation>Scansiona nuovamente tutti i giochi</translation>
+    </message>
+    <message>
+        <source>No games were found. Please add a directory with games to begin.</source>
+        <comment>content_list_empty_title</comment>
+        <translation>Nessun gioco trovato. Aggiungi una cartella contenente giochi per iniziare.</translation>
+    </message>
+    <message>
+        <source>Add Game Directory</source>
+        <comment>content_list_empty_add_directory</comment>
+        <translation>Aggiungi cartella dei giochi</translation>
+    </message>
+    <message>
+        <source>Start Game</source>
+        <comment>content_bottom_sheet_start</comment>
+        <translation>Avvia gioco</translation>
+    </message>
+    <message>
+        <source>Game Properties</source>
+        <comment>content_bottom_sheet_properties</comment>
+        <translation>Proprietà del gioco</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
+        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <translation>Vuoi davvero cancellare l&apos;immagine di copertina di questo gioco? Non potrà essere recuperata.</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <comment>content_download_covers_description</comment>
+        <translation>DuckStation può scaricare automaticamente le copertine per i giochi che non ne hanno ancora una. Non ospitiamo immagini di copertina: l&apos;utente deve fornire la propria fonte per le immagini.</translation>
+    </message>
+    <message>
+        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
+        <comment>content_download_covers_copyright</comment>
+        <translation>A seconda della giurisdizione, le copertine dei giochi potrebbero essere protette da copyright. Sei autorizzato a usare questo strumento solo con i tuoi server e le tue immagini.</translation>
+    </message>
+    <message>
+        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
+
+${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.
+
+Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>content_download_covers_hint</comment>
+        <translation>Nel riquadro sottostante, specifica gli URL da cui scaricare le copertine, con un modello di URL per riga. Sono disponibili le seguenti variabili:
+
+${title}: Titolo del gioco.
+${savetitle}: Titolo di salvataggio del gioco, incluso il suffisso della regione.
+${localizedtitle}: Titolo localizzato del gioco nella sua lingua originale.
+${filetitle}: Parte del nome del file del gioco, senza l&apos;estensione.
+${serial}: Seriale del gioco.
+
+Esempio: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
+        <comment>content_download_covers_invalid_url</comment>
+        <translation>L&apos;URL non contiene ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} o ${serial}.</translation>
+    </message>
+    <message>
+        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <comment>content_download_covers_use_serial_description</comment>
+        <translation>Per impostazione predefinita, le copertine scaricate verranno salvate con il titolo del gioco. Se non lo desideri, puoi abilitare &quot;Usa nomi file seriali&quot; qui sotto. Usare i seriali al posto dei titoli dei giochi evita conflitti quando vengono utilizzate più versioni regionali dello stesso gioco.</translation>
+    </message>
+    <message>
+        <source>Use Serial File Names</source>
+        <comment>content_download_covers_use_serial</comment>
+        <translation>Usa nomi file seriali</translation>
+    </message>
+    <message>
+        <source>Stopping…</source>
+        <comment>content_download_covers_stopping</comment>
+        <translation>Arresto in corso…</translation>
+    </message>
+    <message>
+        <source>Download complete.</source>
+        <comment>content_download_covers_complete</comment>
+        <translation>Download completato.</translation>
+    </message>
+    <message>
+        <source>Transfer Data</source>
+        <comment>transfer_data_title</comment>
+        <translation>Trasferisci dati</translation>
+    </message>
+    <message>
+        <source>Back up or move your data</source>
+        <comment>transfer_data_help_title</comment>
+        <translation>Esegui un backup o sposta i tuoi dati</translation>
+    </message>
+    <message>
+        <source>Exporting copies your saves, settings and other files to a folder or ZIP file. Importing adds the files from one to this device, which lets you move them between devices.</source>
+        <comment>transfer_data_help_summary</comment>
+        <translation>L&apos;esportazione copia i salvataggi, le impostazioni e gli altri file in una cartella o in un file ZIP. L&apos;importazione aggiunge a questo dispositivo i file da una cartella o da un file ZIP, consentendoti di trasferirli tra dispositivi.</translation>
+    </message>
+    <message>
+        <source>Transfer Unavailable</source>
+        <comment>transfer_data_unavailable_title</comment>
+        <translation>Trasferimento non disponibile</translation>
+    </message>
+    <message>
+        <source>Data cannot be transferred while a game is running.</source>
+        <comment>transfer_data_session_active</comment>
+        <translation>Non è possibile trasferire dati mentre un gioco è in esecuzione.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import_category</comment>
+        <translation>Importa</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export_category</comment>
+        <translation>Esporta</translation>
+    </message>
+    <message>
+        <source>Import From Folder</source>
+        <comment>transfer_data_import_folder</comment>
+        <translation>Importa da cartella</translation>
+    </message>
+    <message>
+        <source>Copies files from a folder which was exported earlier.</source>
+        <comment>transfer_data_import_folder_summary</comment>
+        <translation>Copia i file da una cartella esportata in precedenza.</translation>
+    </message>
+    <message>
+        <source>Import From ZIP File</source>
+        <comment>transfer_data_import_zip</comment>
+        <translation>Importa da file ZIP</translation>
+    </message>
+    <message>
+        <source>Copies files from a ZIP file which was exported earlier.</source>
+        <comment>transfer_data_import_zip_summary</comment>
+        <translation>Copia i file da un file ZIP esportato in precedenza.</translation>
+    </message>
+    <message>
+        <source>Export To Folder</source>
+        <comment>transfer_data_export_folder</comment>
+        <translation>Esporta in cartella</translation>
+    </message>
+    <message>
+        <source>Copies your files into a folder you choose.</source>
+        <comment>transfer_data_export_folder_summary</comment>
+        <translation>Copia i tuoi file in una cartella a tua scelta.</translation>
+    </message>
+    <message>
+        <source>Export To ZIP File</source>
+        <comment>transfer_data_export_zip</comment>
+        <translation>Esporta in file ZIP</translation>
+    </message>
+    <message>
+        <source>Saves your files to a single ZIP file.</source>
+        <comment>transfer_data_export_zip_summary</comment>
+        <translation>Salva i tuoi file in un unico file ZIP.</translation>
+    </message>
+    <message>
+        <source>Patches</source>
+        <comment>transfer_data_category_patches</comment>
+        <translation>Patch</translation>
+    </message>
+    <message>
+        <source>Select Files</source>
+        <comment>transfer_data_select_files</comment>
+        <translation>Seleziona file</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d files, %3$s)</source>
+        <comment>transfer_data_category_summary</comment>
+        <translation>%1$s (%2$d file, %3$s)</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <comment>transfer_data_import</comment>
+        <translation>Importa</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <comment>transfer_data_export</comment>
+        <translation>Esporta</translation>
+    </message>
+    <message>
+        <source>No compatible files were found.</source>
+        <comment>transfer_data_no_files_found</comment>
+        <translation>Non sono stati trovati file compatibili.</translation>
+    </message>
+    <message>
+        <source>Looking for files</source>
+        <comment>transfer_data_scanning</comment>
+        <translation>Ricerca dei file</translation>
+    </message>
+    <message>
+        <source>Importing files</source>
+        <comment>transfer_data_importing</comment>
+        <translation>Importazione dei file</translation>
+    </message>
+    <message>
+        <source>Exporting files</source>
+        <comment>transfer_data_exporting</comment>
+        <translation>Esportazione dei file</translation>
+    </message>
+    <message>
+        <source>The file &apos;%1$s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>transfer_data_conflict_message</comment>
+        <translation>Il file &apos;%1$s&apos; esiste già. Vuoi sovrascriverlo? Tutti i dati esistenti andranno persi.</translation>
+    </message>
+    <message>
+        <source>Apply to the remaining %1$d files</source>
+        <comment>transfer_data_apply_to_remaining</comment>
+        <translation>Applica ai %1$d file rimanenti</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>transfer_data_overwrite</comment>
+        <translation>Sovrascrivi</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <comment>transfer_data_skip</comment>
+        <translation>Salta</translation>
+    </message>
+    <message>
+        <source>Transfer complete. %1$d files copied, %2$d skipped.</source>
+        <comment>transfer_data_result_complete</comment>
+        <translation>Trasferimento completato. %1$d file copiati, %2$d saltati.</translation>
+    </message>
+    <message>
+        <source>Transfer finished with errors. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_failures</comment>
+        <translation>Trasferimento terminato con errori. %1$d file copiati, %2$d saltati, %3$d non riusciti.</translation>
+    </message>
+    <message>
+        <source>Transfer cancelled. %1$d files copied, %2$d skipped, %3$d failed.</source>
+        <comment>transfer_data_result_cancelled</comment>
+        <translation>Trasferimento annullato. %1$d file copiati, %2$d saltati, %3$d non riusciti.</translation>
+    </message>
+    <message>
+        <source>The transfer failed.</source>
+        <comment>transfer_data_result_error</comment>
+        <translation>Trasferimento non riuscito.</translation>
+    </message>
+    <message>
+        <source>Increase</source>
+        <comment>preference_increase</comment>
+        <translation>Aumenta</translation>
+    </message>
+    <message>
+        <source>Decrease</source>
+        <comment>preference_decrease</comment>
+        <translation>Diminuisci</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>preference_enabled</comment>
+        <translation>Abilitato</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>preference_disabled</comment>
+        <translation>Disabilitato</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>postfx_border_overlay_none</comment>
+        <translation>Nessuno</translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <comment>postfx_component_red</comment>
+        <translation>Rosso</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <comment>postfx_component_green</comment>
+        <translation>Verde</translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <comment>postfx_component_blue</comment>
+        <translation>Blu</translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <comment>postfx_component_alpha</comment>
+        <translation>Alfa</translation>
+    </message>
+    <message>
+        <source>%1$s [%2$s]</source>
+        <comment>postfx_option_component</comment>
+        <translation>%1$s [%2$s]</translation>
+    </message>
+    <message>
+        <source>Unknown (%1$d)</source>
+        <comment>postfx_choice_unknown</comment>
+        <translation>Sconosciuto (%1$d)</translation>
+    </message>
+    <message>
+        <source>Selected URI is not a document tree.</source>
+        <comment>content_folders_not_document_tree</comment>
+        <translation>L’URI selezionato non è un albero di documenti.</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_runahead_disabled</comment>
+        <translation>Disabilitato</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d seconds</source>
+        <comment>settings_duration_seconds</comment>
+        <extracomment>Android plural quantities: one=&quot;%d second&quot;; other=&quot;%d seconds&quot;</extracomment>
+        <translation>
+            <numerusform>%d secondo</numerusform>
+            <numerusform>%d secondi</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>settings_runahead_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d fotogramma</numerusform>
+            <numerusform>%d fotogrammi</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>CPU Settings</source>
+        <comment>settings_category_cpu</comment>
+        <translation>Impostazioni CPU</translation>
+    </message>
+    <message>
+        <source>CD-ROM Settings</source>
+        <comment>settings_category_cdrom</comment>
+        <translation>Impostazioni CD-ROM</translation>
+    </message>
+    <message>
+        <source>Downsampling Display Scale</source>
+        <comment>settings_downsample_scale</comment>
+        <translation>Scala sottocampionamento display</translation>
+    </message>
+    <message>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <comment>settings_summary_downsample_scale</comment>
+        <translation>Seleziona la scala di risoluzione che verrà applicata all&apos;immagine finale. 1x sottocampionerà l&apos;immagine alla risoluzione originale della console.</translation>
+    </message>
+    <message>
+        <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
+        <comment>settings_summary_skip_duplicate_frames</comment>
+        <translation>Salta la presentazione dei fotogrammi quando l&apos;immagine non è cambiata. Può migliorare le prestazioni sui dispositivi molto lenti.</translation>
+    </message>
+    <message>
+        <source>When enabled, the clock speed set below will be used. Overclocking may break games.</source>
+        <comment>settings_summary_overclock_enable</comment>
+        <translation>Quando abilitato, verrà usata la frequenza di clock impostata qui sotto. L&apos;overclock può causare problemi nei giochi.</translation>
+    </message>
+    <message>
+        <source>Region</source>
+        <comment>settings_region</comment>
+        <translation>Regione</translation>
+    </message>
+    <message>
+        <source>Game Specific Controller Settings</source>
+        <comment>input_settings_game_specific_input</comment>
+        <translation>Impostazioni del controller specifiche del gioco</translation>
+    </message>
+    <message>
+        <source>Uses separate controller settings for this game instead of the global settings.</source>
+        <comment>input_settings_game_specific_summary</comment>
+        <translation>Usa impostazioni separate per il controller per questo gioco al posto delle impostazioni globali.</translation>
+    </message>
+    <message>
+        <source>Copy %s to…</source>
+        <comment>memory_card_editor_copy_save_to</comment>
+        <translation>Copia %s in…</translation>
+    </message>
+    <message>
+        <source>File Name</source>
+        <comment>game_properties_file_name</comment>
+        <translation>Nome file</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>game_properties_achievements</comment>
+        <translation>Obiettivi</translation>
+    </message>
+    <message>
+        <source>RA Game ID</source>
+        <comment>game_properties_achievements_game_id</comment>
+        <translation>ID del gioco RA</translation>
+    </message>
+    <message>
+        <source>Show Advanced Settings</source>
+        <comment>settings_show_advanced_settings</comment>
+        <translation>Mostra impostazioni avanzate</translation>
+    </message>
+    <message>
+        <source>Search Settings</source>
+        <comment>settings_search</comment>
+        <translation>Cerca impostazioni</translation>
+    </message>
+    <message>
+        <source>No matching settings.</source>
+        <comment>settings_search_no_results</comment>
+        <translation>Nessuna impostazione corrispondente.</translation>
+    </message>
+    <message>
+        <source>Achievements</source>
+        <comment>content_bottom_sheet_achievements</comment>
+        <translation>Obiettivi</translation>
+    </message>
+    <message>
+        <source>Determines the emulated hardware type.</source>
+        <comment>settings_summary_region</comment>
+        <translation>Determina il tipo di hardware emulato.</translation>
+    </message>
+    <message>
+        <source>Safe Mode</source>
+        <comment>settings_disable_all_enhancements</comment>
+        <translation>Modalità sicura</translation>
+    </message>
+    <message>
+        <source>Temporarily disables all enhancements, useful when testing.</source>
+        <comment>settings_summary_disable_all_enhancements</comment>
+        <translation>Disabilita temporaneamente tutti i miglioramenti, utile durante i test.</translation>
+    </message>
+    <message>
+        <source>Fast Boot</source>
+        <comment>settings_patch_fast_boot</comment>
+        <translation>Avvio rapido</translation>
+    </message>
+    <message>
+        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
+        <comment>settings_summary_patch_fast_boot</comment>
+        <translation>Applica una patch al BIOS per saltare l&apos;animazione di avvio. Può essere abilitata in sicurezza.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Boot</source>
+        <comment>settings_fast_forward_boot</comment>
+        <translation>Avanzamento veloce dell&apos;avvio</translation>
+    </message>
+    <message>
+        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
+        <comment>settings_summary_fast_forward_boot</comment>
+        <translation>Accelera il processo di caricamento iniziale durante l&apos;avvio rapido, risparmiando tempo. I risultati possono variare a seconda del gioco.</translation>
+    </message>
+    <message>
+        <source>Fast Forward Memory Card Access</source>
+        <comment>settings_fast_forward_access</comment>
+        <translation>Accelera l&apos;accesso alle memory card</translation>
+    </message>
+    <message>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <comment>settings_summary_fast_forward_access</comment>
+        <translation>Accelera l&apos;accesso alle memory card, sia in lettura sia in scrittura. Può ridurre i tempi di attesa nei giochi che accedono frequentemente alle memory card.</translation>
+    </message>
+    <message>
+        <source>Overclocking Percentage</source>
+        <comment>settings_overclock</comment>
+        <translation>Percentuale di overclock</translation>
+    </message>
+    <message>
+        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
+        <comment>settings_summary_overclock</comment>
+        <translation>Seleziona la percentuale della velocità di clock normale a cui funzionerà l&apos;hardware emulato.</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <comment>settings_enable_8mb_ram</comment>
+        <translation>Abilita RAM da 8 MB</translation>
+    </message>
+    <message>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
+        <comment>settings_summary_enable_8mb_ram</comment>
+        <translation>Abilita 6MB aggiuntivi di RAM per ottenere un totale di 2+6 = 8MB, solitamente presente sulle console di sviluppo.</translation>
+    </message>
+    <message>
+        <source>Preload Images to RAM</source>
+        <comment>settings_load_image_to_ram</comment>
+        <translation>Precarica immagini in RAM</translation>
+    </message>
+    <message>
+        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
+        <comment>settings_summary_load_image_to_ram</comment>
+        <translation>Carica l&apos;immagine del gioco nella RAM. Utile per percorsi di rete che potrebbero diventare inaffidabili durante il gameplay.</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <comment>settings_load_image_patches</comment>
+        <translation>Applica patch immagine</translation>
+    </message>
+    <message>
+        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
+        <comment>settings_summary_load_image_patches</comment>
+        <translation>Applica automaticamente le patch alle immagini del disco quando sono presenti, attualmente solo PPF è supportato.</translation>
+    </message>
+    <message>
+        <source>Read Speedup</source>
+        <comment>settings_read_speedup</comment>
+        <translation>Accelerazione lettura</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_read_speedup</comment>
+        <translation>Accelera le letture dal CD-ROM per il fattore specificato. Potrebbe migliorare le velocità di caricamento in alcuni giochi, e causare malfunzionamenti in altri.</translation>
+    </message>
+    <message>
+        <source>Seek Speedup</source>
+        <comment>settings_seek_speedup</comment>
+        <translation>Accelerazione ricerca</translation>
+    </message>
+    <message>
+        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <comment>settings_summary_seek_speedup</comment>
+        <translation>Accelera le ricerche dal CD-ROM per il fattore specificato. Potrebbe migliorare le velocità di caricamento in alcuni giochi, e causare malfunzionamenti in altri.</translation>
+    </message>
+    <message>
+        <source>Auto-Detect</source>
+        <comment>bios_auto_detect</comment>
+        <translation>Rileva automaticamente</translation>
+    </message>
+    <message>
+        <source>No BIOS images found, you must import one first.</source>
+        <comment>bios_select_no_images</comment>
+        <translation>Nessuna immagine BIOS trovata. Devi prima importarne una.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove the BIOS named &apos;%s&apos;? This action is permanent.</source>
+        <comment>bios_delete_confirm</comment>
+        <translation>Vuoi davvero rimuovere il BIOS denominato &apos;%s&apos;? Questa azione è permanente.</translation>
+    </message>
+    <message>
+        <source>Import BIOS</source>
+        <comment>setup_wizard_bios_title</comment>
+        <translation>Importa BIOS</translation>
+    </message>
+    <message>
+        <source>A PS1 or PS2 BIOS image is required to play games and is not optional.
+        This image should be dumped from your own console, using tools such as Caetla or Unirom. There are plenty of
+        guides available online on how to dump your console&apos;s BIOS.</source>
+        <comment>setup_wizard_bios_message</comment>
+        <translation>Un’immagine BIOS PS1 o PS2 è obbligatoria per avviare i giochi.
+        Questa immagine deve essere estratta dalla propria console usando strumenti come Caetla o Unirom. Sono disponibili molte
+        guide online su come estrarre il BIOS della propria console.</translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <comment>settings_tab_console</comment>
+        <translation>Console</translation>
+    </message>
+    <message>
+        <source>%1$d%% (%2$d MHz)</source>
+        <comment>settings_cpu_overclock_value_format</comment>
+        <translation>%1$d%% (%2$d MHz)</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <comment>settings_tab_bios</comment>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <comment>settings_tab_folders</comment>
+        <translation>Cartelle</translation>
+    </message>
+    <message>
+        <source>Install BIOS</source>
+        <comment>bios_install</comment>
+        <translation>Installa BIOS</translation>
+    </message>
+    <message>
+        <source>Imports a new image to the BIOS directory.</source>
+        <comment>bios_install_summary</comment>
+        <translation>Importa una nuova immagine nella cartella BIOS.</translation>
+    </message>
+    <message>
+        <source>Delete BIOS</source>
+        <comment>bios_delete</comment>
+        <translation>Elimina BIOS</translation>
+    </message>
+    <message>
+        <source>Selected BIOS Images</source>
+        <comment>bios_selected_images</comment>
+        <translation>Immagini BIOS selezionate</translation>
+    </message>
+    <message>
+        <source>Installed BIOS Images</source>
+        <comment>bios_installed_images</comment>
+        <translation>Immagini BIOS installate</translation>
+    </message>
+    <message>
+        <source>Unknown / Any Region</source>
+        <comment>bios_unknown_region</comment>
+        <translation>Sconosciuta / qualsiasi regione</translation>
+    </message>
+    <message>
+        <source>Importing BIOS image…</source>
+        <comment>bios_installing</comment>
+        <translation>Importazione dell’immagine BIOS…</translation>
+    </message>
+    <message>
+        <source>Missing BIOS Image</source>
+        <comment>bios_missing_title</comment>
+        <translation>Immagine BIOS mancante</translation>
+    </message>
+    <message>
+        <source>A BIOS image is required to start this game.
+
+%1$s
+
+Would you like to import one now?</source>
+        <comment>bios_missing_message</comment>
+        <translation>È necessaria un’immagine BIOS per avviare questo gioco.
+
+%1$s
+
+Vuoi importarne una ora?</translation>
+    </message>
+    <message>
+        <source>BIOS Imported</source>
+        <comment>bios_import_success_title</comment>
+        <translation>BIOS importato</translation>
+    </message>
+    <message>
+        <source>The BIOS image was imported successfully. Would you like to retry starting the game?</source>
+        <comment>bios_import_success_retry</comment>
+        <translation>L’immagine BIOS è stata importata correttamente. Vuoi provare ad avviare nuovamente il gioco?</translation>
+    </message>
+    <message>
+        <source>Internal Resolution</source>
+        <comment>settings_resolution_scale</comment>
+        <translation>Risoluzione interna</translation>
+    </message>
+    <message>
+        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
+        <comment>settings_summary_resolution_scale</comment>
+        <translation>Aumenta la risoluzione del rendering del gioco usando il moltiplicatore specificato.</translation>
+    </message>
+    <message>
+        <source>Mute CD Audio</source>
+        <comment>settings_mute_cd_audio</comment>
+        <translation>Silenzia audio CD</translation>
+    </message>
+    <message>
+        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
+        <comment>settings_summary_mute_cd_audio</comment>
+        <translation>Silenzia forzatamente sia l&apos;audio CD-DA sia l&apos;audio XA dal CD-ROM. Può essere utilizzato per disabilitare la musica di sottofondo in alcuni giochi.</translation>
+    </message>
+    <message>
+        <source>Crop Mode</source>
+        <comment>settings_crop_mode</comment>
+        <translation>Modalità ritaglio</translation>
+    </message>
+    <message>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
+        <comment>settings_summary_crop_mode</comment>
+        <translation>Determina quanto dell&apos;area tipicamente non visibile su una TV viene tagliato/nascosto.</translation>
+    </message>
+    <message>
+        <source>Deinterlacing Mode</source>
+        <comment>settings_deinterlacing_mode</comment>
+        <translation>Modalità deinterlacciamento</translation>
+    </message>
+    <message>
+        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
+        <comment>settings_summary_deinterlacing_mode</comment>
+        <translation>Determina quale algoritmo viene utilizzato per convertire i fotogrammi interlacciati in progressivi per mostrarli sul tuo sistema.</translation>
+    </message>
+    <message>
+        <source>Force Video Timing</source>
+        <comment>settings_force_video_timing</comment>
+        <translation>Forza temporizzazione video</translation>
+    </message>
+    <message>
+        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
+        <comment>settings_summary_force_video_timing</comment>
+        <translation>Utilizza la frequenza dei fotogrammi scelta indipendentemente dall&apos;impostazione del gioco.</translation>
+    </message>
+    <message>
+        <source>Show GPU Statistics</source>
+        <comment>settings_show_gpu_statistics</comment>
+        <translation>Mostra statistiche GPU</translation>
+    </message>
+    <message>
+        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
+        <comment>settings_summary_show_gpu_statistics</comment>
+        <translation>Mostra informazioni sulla GPU emulata nell&apos;angolo in alto a destra del display.</translation>
+    </message>
+    <message>
+        <source>Show Enhancement Settings</source>
+        <comment>settings_show_enhancements</comment>
+        <translation>Mostra impostazioni miglioramenti</translation>
+    </message>
+    <message>
+        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
+        <comment>settings_summary_show_enhancements</comment>
+        <translation>Mostra le impostazioni dei miglioramenti nell&apos;angolo in basso a destra dello schermo.</translation>
+    </message>
+    <message>
+        <source>Dithering</source>
+        <comment>settings_dithering_mode</comment>
+        <translation>Dithering</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
+        <comment>settings_summary_dithering_mode</comment>
+        <translation>Controlla come viene applicato il dithering nella GPU emulata. True Color disabilita il dithering e produce le sfumature dall&apos;aspetto migliore.</translation>
+    </message>
+    <message>
+        <source>Texture Filtering</source>
+        <comment>settings_texture_filter</comment>
+        <translation>Filtro texture</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
+        <comment>settings_summary_texture_filter</comment>
+        <translation>Smussa l’effetto a blocchi delle texture ingrandite sugli oggetti 3D.</translation>
+    </message>
+    <message>
+        <source>Sprite Texture Filtering</source>
+        <comment>settings_sprite_texture_filter</comment>
+        <translation>Filtro sprite</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
+        <comment>settings_summary_sprite_texture_filter</comment>
+        <translation>Smussa l’effetto a blocchi delle texture ingrandite sugli oggetti 2D.</translation>
+    </message>
+    <message>
+        <source>Widescreen Rendering</source>
+        <comment>settings_widescreen_hack</comment>
+        <translation>Rendering widescreen</translation>
+    </message>
+    <message>
+        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
+        <comment>settings_summary_widescreen_hack</comment>
+        <translation>Aumenta il campo visivo (FOV) da 4:3 al rapporto d&apos;aspetto scelto nei giochi 3D.</translation>
+    </message>
+    <message>
+        <source>Force 4:3 For FMVs</source>
+        <comment>settings_force_4_3_for_24_bit</comment>
+        <translation>Forza 4:3 per i filmati</translation>
+    </message>
+    <message>
+        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_force_4_3_for_24_bit</comment>
+        <translation>Imposta un rapporto d&apos;aspetto di 4:3 quando viene mostrato del contenuto a 24 bit, solitamente filmati prerenderizzati (FMV).</translation>
+    </message>
+    <message>
+        <source>FMV Chroma Smoothing</source>
+        <comment>settings_chroma_smoothing_24_bit</comment>
+        <translation>Smussamento della crominanza dei filmati</translation>
+    </message>
+    <message>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
+        <comment>settings_summary_chroma_smoothing_24_bit</comment>
+        <translation>Smussa l’effetto a blocchi nella transizione fra colori in contenuti a 24 bit, solitamente filmati prerenderizzati (FMV).</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Correction</source>
+        <comment>settings_pgxp_enable</comment>
+        <translation>Correzione geometria PGXP</translation>
+    </message>
+    <message>
+        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. Only works with the hardware renderers.</source>
+        <comment>settings_summary_pgxp_enable</comment>
+        <translation>Riduce i poligoni &quot;tremolanti&quot; e le texture &quot;distorte&quot; comuni nei giochi PS1. Funziona solo con i renderer hardware.</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Buffer</source>
+        <comment>settings_pgxp_depth_buffer</comment>
+        <translation>Buffer di profondità PGXP</translation>
+    </message>
+    <message>
+        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
+        <comment>settings_summary_pgxp_depth_buffer</comment>
+        <translation>Riduce lo Z-fighting (sovrapposizione contemporanea) dei poligoni attraverso il testing della profondità. Bassa compatibilità con i giochi.</translation>
+    </message>
+    <message>
+        <source>Downsampling</source>
+        <comment>settings_downsample_mode</comment>
+        <translation>Sottocampionamento</translation>
+    </message>
+    <message>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
+        <comment>settings_summary_downsample_mode</comment>
+        <translation>Sottocampiona l&apos;immagine renderizzata prima di mostrarla. Può migliorare la qualità complessiva dell&apos;immagine nei giochi misti 2D/3D.</translation>
+    </message>
+    <message>
+        <source>Show Resolution</source>
+        <comment>settings_show_resolution</comment>
+        <translation>Mostra risoluzione</translation>
+    </message>
+    <message>
+        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
+        <comment>settings_summary_show_resolution</comment>
+        <translation>Mostra l&apos;attuale risoluzione di rendering del sistema nell&apos;angolo in alto a destra del display.</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer For Readbacks</source>
+        <comment>settings_use_software_renderer_for_readbacks</comment>
+        <translation>Usa renderer software per i readback</translation>
+    </message>
+    <message>
+        <source>Runs the software renderer in parallel for VRAM readbacks, which may improve performance with the hardware renderer.</source>
+        <comment>settings_summary_use_software_renderer_for_readbacks</comment>
+        <translation>Esegue il renderer software in parallelo per i readback della VRAM, migliorando potenzialmente le prestazioni con il renderer hardware.</translation>
+    </message>
+    <message>
+        <source>Texture Replacement</source>
+        <comment>settings_category_texture_replacements</comment>
+        <translation>Sostituzione texture</translation>
+    </message>
+    <message>
+        <source>Enable Texture Cache</source>
+        <comment>settings_enable_texture_cache</comment>
+        <translation>Abilita cache delle texture</translation>
+    </message>
+    <message>
+        <source>Enables caching of guest textures, required for texture replacement.</source>
+        <comment>settings_summary_enable_texture_cache</comment>
+        <translation>Abilita la memorizzazione nella cache delle texture guest, necessaria per la sostituzione delle texture.</translation>
+    </message>
+    <message>
+        <source>Use Old MDEC Routines</source>
+        <comment>settings_use_old_mdec_routines</comment>
+        <translation>Usa routine MDEC vecchie</translation>
+    </message>
+    <message>
+        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <comment>settings_summary_use_old_mdec_routines</comment>
+        <translation>Abilita le routine di decodifica MDEC più vecchie e meno accurate. Potrebbe essere necessario affinché i vecchi sfondi sostitutivi vengano riconosciuti e caricati.</translation>
+    </message>
+    <message>
+        <source>Enable Texture Replacements</source>
+        <comment>settings_enable_texture_replacements</comment>
+        <translation>Abilita sostituzioni texture</translation>
+    </message>
+    <message>
+        <source>Enables loading of replacement textures. Not compatible with all games.</source>
+        <comment>settings_summary_enable_texture_replacements</comment>
+        <translation>Abilita il caricamento delle texture sostitutive. Non è compatibile con tutti i giochi.</translation>
+    </message>
+    <message>
+        <source>Enable VRAM Write Replacement</source>
+        <comment>settings_enable_vram_write_replacements</comment>
+        <translation>Abilita sostituzione delle scritture VRAM</translation>
+    </message>
+    <message>
+        <source>Enables the replacement of background textures in supported games.</source>
+        <comment>settings_summary_enable_vram_write_replacements</comment>
+        <translation>Abilita la sostituzione delle texture di background nei giochi supportati.</translation>
+    </message>
+    <message>
+        <source>Preload Replacement Textures</source>
+        <comment>settings_preload_textures</comment>
+        <translation>Precarica texture sostitutive</translation>
+    </message>
+    <message>
+        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
+        <comment>settings_summary_preload_textures</comment>
+        <translation>Carica tutte le texture sostitutive nella RAM, riducendo lo stuttering durante l&apos;esecuzione.</translation>
+    </message>
+    <message>
+        <source>Screenshots</source>
+        <comment>settings_category_screenshots</comment>
+        <translation>Screenshot</translation>
+    </message>
+    <message>
+        <source>Numerator</source>
+        <comment>preference_ratio_numerator</comment>
+        <translation>Numeratore</translation>
+    </message>
+    <message>
+        <source>Denominator</source>
+        <comment>preference_ratio_denominator</comment>
+        <translation>Denominatore</translation>
+    </message>
+    <message>
+        <source>Apply Compatibility Settings</source>
+        <comment>settings_apply_compatibility_settings</comment>
+        <translation>Applica impostazioni di compatibilità</translation>
+    </message>
+    <message>
+        <source>Readahead Sectors</source>
+        <comment>settings_readahead_sectors</comment>
+        <translation>Lettura anticipata settori</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Sectors</source>
+        <comment>settings_readahead_sectors_value</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Sector&quot;; other=&quot;%d Sectors&quot;</extracomment>
+        <translation>
+            <numerusform>%d settore</numerusform>
+            <numerusform>%d settori</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <comment>settings_summary_readahead_sectors</comment>
+        <translation>Riduce i rallentamenti durante l&apos;emulazione leggendo/decomprimendo i dati del CD in modo asincrono su un thread worker.</translation>
+    </message>
+    <message>
+        <source>Enable Region Check</source>
+        <comment>settings_region_check</comment>
+        <translation>Abilita controllo regione</translation>
+    </message>
+    <message>
+        <source>Enable TTY Logging</source>
+        <comment>settings_tty_logging</comment>
+        <translation>Abilita registrazione su TTY</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Block Linking</source>
+        <comment>settings_recompiler_block_linking</comment>
+        <translation>Abilita il link dei blocchi nel ricompilatore</translation>
+    </message>
+    <message>
+        <source>Recompiler Fast Memory Access</source>
+        <comment>settings_fastmem_mode</comment>
+        <translation>Accesso veloce alla memoria del ricompilatore</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler ICache</source>
+        <comment>settings_recompiler_icache</comment>
+        <translation>Abilita cache istruzioni (ICache) del ricompilatore</translation>
+    </message>
+    <message>
+        <source>Disable Dual-Source Blending</source>
+        <comment>settings_disable_dual_source_blend</comment>
+        <translation>Disabilita blending a doppia sorgente</translation>
+    </message>
+    <message>
+        <source>Disable Framebuffer Fetch</source>
+        <comment>settings_disable_framebuffer_fetch</comment>
+        <translation>Disabilita fetch del framebuffer</translation>
+    </message>
+    <message>
+        <source>Disable Texture Buffers</source>
+        <comment>settings_disable_texture_buffers</comment>
+        <translation>Disabilita buffer delle texture</translation>
+    </message>
+    <message>
+        <source>Disable Texture Copy To Self</source>
+        <comment>settings_disable_texture_copy_to_self</comment>
+        <translation>Disabilita copia texture su sé stessa</translation>
+    </message>
+    <message>
+        <source>Line Detection</source>
+        <comment>settings_line_detect_mode</comment>
+        <translation>Rilevazione linee</translation>
+    </message>
+    <message>
+        <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
+        <comment>settings_summary_line_detect_mode</comment>
+        <translation>Tenta di rilevare linee alte/larghe un pixel che si affidano al comportamento della rasterizzazione non ingrandita, riempiendo i buchi introdotti dall&apos;ingrandimento.</translation>
+    </message>
+    <message>
+        <source>Multisample Antialiasing</source>
+        <comment>settings_multisamples</comment>
+        <translation>Antialiasing multicampionamento</translation>
+    </message>
+    <message>
+        <source>Smooths polygon edges by rendering multiple samples per pixel. Increases GPU load.</source>
+        <comment>settings_summary_multisamples</comment>
+        <translation>Smussa i bordi dei poligoni renderizzando più campioni per pixel. Aumenta il carico sulla GPU.</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Colors</source>
+        <comment>settings_pgxp_color_correction</comment>
+        <translation>Correzione prospettiva dei colori</translation>
+    </message>
+    <message>
+        <source>CPU Mode</source>
+        <comment>settings_pgxp_cpu</comment>
+        <translation>Modalità CPU</translation>
+    </message>
+    <message>
+        <source>Culling Correction</source>
+        <comment>settings_pgxp_culling</comment>
+        <translation>Correzione del culling</translation>
+    </message>
+    <message>
+        <source>Disable on 2D Polygons</source>
+        <comment>settings_pgxp_disable_on_2d_polygons</comment>
+        <translation>Disabilita sui poligoni 2D</translation>
+    </message>
+    <message>
+        <source>Preserve Projection Precision</source>
+        <comment>settings_pgxp_preserve_proj_fp</comment>
+        <translation>Mantieni precisione della proiezione</translation>
+    </message>
+    <message>
+        <source>Perspective Correct Textures</source>
+        <comment>settings_pgxp_texture_correction</comment>
+        <translation>Correzione prospettiva delle texture</translation>
+    </message>
+    <message>
+        <source>Vertex Cache</source>
+        <comment>settings_pgxp_vertex_cache</comment>
+        <translation>Cache dei vertici</translation>
+    </message>
+    <message>
+        <source>Round Upscaled Texture Coordinates</source>
+        <comment>settings_force_round_texture_coordinates</comment>
+        <translation>Arrotonda le coordinate delle texture ingrandite</translation>
+    </message>
+    <message>
+        <source>Scaled Interlacing</source>
+        <comment>settings_scaled_interlacing</comment>
+        <translation>Interlacciamento ridimensionato</translation>
+    </message>
+    <message>
+        <source>Show VRAM</source>
+        <comment>settings_show_vram</comment>
+        <translation>Mostra VRAM</translation>
+    </message>
+    <message>
+        <source>Automatically disable enhancements when they are not supported by games.</source>
+        <comment>settings_summary_apply_compatibility_settings</comment>
+        <translation>Disabilita automaticamente i miglioramenti quando non sono supportati dai giochi.</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
+        <comment>settings_summary_max_read_speedup_cycles</comment>
+        <translation>Imposta il ritardo minimo per il livello di accelerazione della lettura &apos;Massima&apos;.</translation>
+    </message>
+    <message>
+        <source>Simulates the region check present in original, unmodified consoles.</source>
+        <comment>settings_summary_region_check</comment>
+        <translation>Simula il controllo regionale presente su console originali, non modificate.</translation>
+    </message>
+    <message>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <comment>settings_summary_tty_logging</comment>
+        <translation>Registra le chiamate del BIOS a printf(). Non tutti i giochi contengono messaggi di debug.</translation>
+    </message>
+    <message>
+        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
+        <comment>settings_summary_recompiler_block_linking</comment>
+        <translation>Miglioramento prestazionale - salta direttamente fra blocchi invece di ritornare al dispatcher.</translation>
+    </message>
+    <message>
+        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
+        <comment>settings_summary_fastmem_mode</comment>
+        <translation>Evita chiamate al codice C++, accelerando significativamente il ricompilatore.</translation>
+    </message>
+    <message>
+        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
+        <comment>settings_summary_recompiler_icache</comment>
+        <translation>Determina se la cache delle istruzioni della CPU viene simulata nel ricompilatore. Migliora l’accuratezza con un piccolo costo in termini di prestazioni. Se i giochi sono troppo veloci, prova ad abilitare questa opzione.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the dual-source blending extensions.</source>
+        <comment>settings_summary_disable_dual_source_blend</comment>
+        <translation>Impedisce l’uso delle estensioni di blending a doppia sorgente.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the framebuffer fetch extensions.</source>
+        <comment>settings_summary_disable_framebuffer_fetch</comment>
+        <translation>Impedisce l’uso delle estensioni di fetch del framebuffer.</translation>
+    </message>
+    <message>
+        <source>Prevents the use of the texture/shader storage buffers. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_buffers</comment>
+        <translation>Impedisce l’uso dei buffer di memorizzazione delle texture/degli shader. Riduce le prestazioni.</translation>
+    </message>
+    <message>
+        <source>Always copies through the shadow texture. Will reduce performance.</source>
+        <comment>settings_summary_disable_texture_copy_to_self</comment>
+        <translation>Esegue sempre le copie tramite la texture ausiliaria. Riduce le prestazioni.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_color_correction</comment>
+        <translation>Usa l’interpolazione prospetticamente corretta dei colori, che può migliorare la grafica in alcuni giochi.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Usa il PGXP per tutte le istruzioni, non solo le operazioni della memoria.</translation>
+    </message>
+    <message>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
+        <comment>settings_summary_pgxp_culling</comment>
+        <translation>Aumenta la precisione del culling dei poligoni, riducendo il numero di buchi nella geometria.</translation>
+    </message>
+    <message>
+        <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
+        <comment>settings_summary_pgxp_disable_on_2d_polygons</comment>
+        <translation>Utilizza coordinate con risoluzione nativa per i poligoni 2D invece di coordinate precise. Può correggere l&apos;allineamento errato dell&apos;interfaccia in alcuni giochi, ma altrimenti dovrebbe rimanere disabilitato.</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_preserve_proj_fp</comment>
+        <translation>Aggiunge ulteriore precisione ai dati PGXP dopo la proiezione. Potrebbe migliorare l&apos;immagine in alcuni giochi.</translation>
+    </message>
+    <message>
+        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
+        <comment>settings_summary_pgxp_texture_correction</comment>
+        <translation>Usa l&apos;interpolazione corretta prospetticamente per le coordinate delle texture, raddrizzando le texture distorte.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Usa le posizioni a schermo per risolvere i dati PGXP. Potrebbe migliorare la grafica in alcuni giochi.</translation>
+    </message>
+    <message>
+        <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
+        <comment>settings_summary_force_round_texture_coordinates</comment>
+        <translation>Arrotonda le coordinate delle texture invece di troncarle per difetto durante l’ingrandimento. Può correggere texture disallineate in alcuni giochi, ma causare problemi in altri.</translation>
+    </message>
+    <message>
+        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
+        <comment>settings_summary_scaled_interlacing</comment>
+        <translation>Ridimensiona il salto delle linee nel rendering interlacciato alla risoluzione interna, rendendolo meno evidente. Di solito è sicuro abilitarlo.</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
+        <comment>settings_enable_modulation_crop</comment>
+        <translation>Troncamento della modulazione delle texture (GPU &quot;vecchia/v0&quot;)</translation>
+    </message>
+    <message>
+        <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
+        <comment>settings_summary_enable_modulation_crop</comment>
+        <translation>Riduce i colori dei vertici a 5:5:5 prima di modularli con il colore della texture, causando in genere bande più visibili.</translation>
+    </message>
+    <message>
+        <source>Disable Upscaled Direct Textures</source>
+        <comment>settings_disable_upscaled_direct_textures</comment>
+        <translation>Disabilita ingrandimento delle texture dirette</translation>
+    </message>
+    <message>
+        <source>Samples 16-bit direct-color textures at native resolution when upscaling. Can fix filtering of FMVs/backgrounds in some games.</source>
+        <comment>settings_summary_disable_upscaled_direct_textures</comment>
+        <translation>Campiona le texture a colori diretti a 16 bit alla risoluzione nativa durante l’ingrandimento. Può correggere il filtraggio di filmati FMV e sfondi in alcuni giochi.</translation>
+    </message>
+    <message>
+        <source>Filter Framebuffer Uploads</source>
+        <comment>settings_filter_framebuffer_uploads</comment>
+        <translation>Filtra caricamenti del framebuffer</translation>
+    </message>
+    <message>
+        <source>Applies the selected sprite texture filter to framebuffer uploads, smoothing backgrounds in some games while preserving 24-bit video.</source>
+        <comment>settings_summary_filter_framebuffer_uploads</comment>
+        <translation>Applica il filtro selezionato per le texture degli sprite ai caricamenti del framebuffer, smussando gli sfondi in alcuni giochi e preservando i video a 24 bit.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Width</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Larghezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this wide. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_width</comment>
+        <translation>Filtra solo i caricamenti del framebuffer con una larghezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
+    </message>
+    <message>
+        <source>Minimum Framebuffer Upload Height</source>
+        <comment>settings_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Altezza minima del caricamento del framebuffer</translation>
+    </message>
+    <message>
+        <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
+        <comment>settings_summary_filter_framebuffer_uploads_minimum_height</comment>
+        <translation>Filtra solo i caricamenti del framebuffer con una altezza pari o superiore a questo valore. Aumenta questo valore per evitare di filtrare i dati delle texture.</translation>
+    </message>
+    <message>
+        <source>Shows the entirety of the console&apos;s VRAM instead of the display area (debugging feature).</source>
+        <comment>settings_summary_show_vram</comment>
+        <translation>Mostra l’intera VRAM della console invece dell’area di visualizzazione (funzionalità di debug).</translation>
+    </message>
+    <message>
+        <source>Global settings copied.</source>
+        <comment>game_properties_settings_copied</comment>
+        <translation>Impostazioni globali copiate.</translation>
+    </message>
+    <message>
+        <source>Compatibility</source>
+        <comment>game_properties_compatibility_rating</comment>
+        <translation>Compatibilità</translation>
+    </message>
+    <message>
+        <source>Database Title</source>
+        <comment>game_properties_database_title</comment>
+        <translation>Titolo nel database</translation>
+    </message>
+    <message>
+        <source>Disc Set</source>
+        <comment>game_properties_disc_set_title</comment>
+        <translation>Set di dischi</translation>
+    </message>
+    <message>
+        <source>Developer</source>
+        <comment>game_properties_developer</comment>
+        <translation>Sviluppatore</translation>
+    </message>
+    <message>
+        <source>Publisher</source>
+        <comment>game_properties_publisher</comment>
+        <translation>Editore</translation>
+    </message>
+    <message>
+        <source>Genre</source>
+        <comment>game_properties_genre</comment>
+        <translation>Genere</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <comment>game_properties_release_date</comment>
+        <translation>Data di uscita</translation>
+    </message>
+    <message>
+        <source>Players</source>
+        <comment>game_properties_players</comment>
+        <translation>Giocatori</translation>
+    </message>
+    <message>
+        <source>Save Blocks</source>
+        <comment>game_properties_memory_card_blocks</comment>
+        <translation>Blocchi di salvataggio</translation>
+    </message>
+    <message>
+        <source>Use Separate Disc Settings</source>
+        <comment>game_settings_use_separate_disc_settings</comment>
+        <translation>Usa impostazioni separate per i dischi</translation>
+    </message>
+    <message>
+        <source>Uses separate game settings for each disc in a set. Can only be changed on the first disc.</source>
+        <comment>game_settings_use_separate_disc_settings_summary</comment>
+        <translation>Usa impostazioni di gioco separate per ogni disco di un set. Può essere modificato solo sul primo disco.</translation>
+    </message>
+    <message>
+        <source>Select Disc</source>
+        <comment>content_select_disc</comment>
+        <translation>Seleziona disco</translation>
+    </message>
+    <message>
+        <source>Maximum Read Speedup Cycles</source>
+        <comment>settings_max_read_speedup_cycles</comment>
+        <translation>Cicli massimi di accelerazione della lettura</translation>
+    </message>
+    <message>
+        <source>Maximum Seek Speedup Cycles</source>
+        <comment>settings_max_seek_speedup_cycles</comment>
+        <translation>Cicli massimi di accelerazione della ricerca</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
+        <comment>settings_summary_max_seek_speedup_cycles</comment>
+        <translation>Imposta il ritardo minimo per il livello di accelerazione della ricerca &apos;Massima&apos;.</translation>
+    </message>
+    <message>
+        <source>Skip Duplicate Frames</source>
+        <comment>settings_skip_duplicate_frames</comment>
+        <translation>Salta fotogrammi duplicati</translation>
+    </message>
+    <message>
+        <source>Enable Overclocking</source>
+        <comment>settings_overclock_enable</comment>
+        <translation>Abilita overclocking</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>settings_gpu_resolution_scale_entries[0]</comment>
+        <translation>Automatica</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <comment>settings_gpu_resolution_scale_entries[1]</comment>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <comment>settings_gpu_resolution_scale_entries[2]</comment>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>3x (for 720p)</source>
+        <comment>settings_gpu_resolution_scale_entries[3]</comment>
+        <translation>3x (per 720p)</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <comment>settings_gpu_resolution_scale_entries[4]</comment>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>5x (for 1080p)</source>
+        <comment>settings_gpu_resolution_scale_entries[5]</comment>
+        <translation>5x (per 1080p)</translation>
+    </message>
+    <message>
+        <source>6x (for 1440p)</source>
+        <comment>settings_gpu_resolution_scale_entries[6]</comment>
+        <translation>6x (per 1440p)</translation>
+    </message>
+    <message>
+        <source>7x</source>
+        <comment>settings_gpu_resolution_scale_entries[7]</comment>
+        <translation>7x</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <comment>settings_gpu_resolution_scale_entries[8]</comment>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>9x (for 4K)</source>
+        <comment>settings_gpu_resolution_scale_entries[9]</comment>
+        <translation>9x (per 4K)</translation>
+    </message>
+    <message>
+        <source>10x</source>
+        <comment>settings_gpu_resolution_scale_entries[10]</comment>
+        <translation>10x</translation>
+    </message>
+    <message>
+        <source>11x</source>
+        <comment>settings_gpu_resolution_scale_entries[11]</comment>
+        <translation>11x</translation>
+    </message>
+    <message>
+        <source>12x</source>
+        <comment>settings_gpu_resolution_scale_entries[12]</comment>
+        <translation>12x</translation>
+    </message>
+    <message>
+        <source>13x</source>
+        <comment>settings_gpu_resolution_scale_entries[13]</comment>
+        <translation>13x</translation>
+    </message>
+    <message>
+        <source>14x</source>
+        <comment>settings_gpu_resolution_scale_entries[14]</comment>
+        <translation>14x</translation>
+    </message>
+    <message>
+        <source>15x</source>
+        <comment>settings_gpu_resolution_scale_entries[15]</comment>
+        <translation>15x</translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <comment>settings_gpu_resolution_scale_entries[16]</comment>
+        <translation>16x</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>settings_gpu_msaa_entries[0]</comment>
+        <translation>Disabilitato</translation>
+    </message>
+    <message>
+        <source>2x MSAA</source>
+        <comment>settings_gpu_msaa_entries[1]</comment>
+        <translation>2x MSAA</translation>
+    </message>
+    <message>
+        <source>4x MSAA</source>
+        <comment>settings_gpu_msaa_entries[2]</comment>
+        <translation>4x MSAA</translation>
+    </message>
+    <message>
+        <source>8x MSAA</source>
+        <comment>settings_gpu_msaa_entries[3]</comment>
+        <translation>8x MSAA</translation>
+    </message>
+    <message>
+        <source>2x SSAA</source>
+        <comment>settings_gpu_msaa_entries[4]</comment>
+        <translation>2x SSAA</translation>
+    </message>
+    <message>
+        <source>4x SSAA</source>
+        <comment>settings_gpu_msaa_entries[5]</comment>
+        <translation>4x SSAA</translation>
+    </message>
+    <message>
+        <source>8x SSAA</source>
+        <comment>settings_gpu_msaa_entries[6]</comment>
+        <translation>8x SSAA</translation>
+    </message>
+    <message>
+        <source>Verifying Content…</source>
+        <comment>content_verification_progress_title</comment>
+        <translation>Verifica dei contenuti…</translation>
+    </message>
+    <message>
+        <source>Content verification could not be completed.</source>
+        <comment>content_verification_failed_to_run</comment>
+        <translation>Impossibile completare la verifica dei contenuti.</translation>
+    </message>
+    <message>
+        <source>Content Verification Error</source>
+        <comment>content_verification_error_title</comment>
+        <translation>Errore di verifica dei contenuti</translation>
+    </message>
+    <message>
+        <source>Valid</source>
+        <comment>content_verification_item_valid</comment>
+        <translation>Valido</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <comment>content_verification_item_invalid</comment>
+        <translation>Non valido</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Audio)</source>
+        <comment>disc_verify_audio_track</comment>
+        <translation>Traccia %1$d (audio)</translation>
+    </message>
+    <message>
+        <source>Track %1$d (Data)</source>
+        <comment>disc_verify_data_track</comment>
+        <translation>Traccia %1$d (dati)</translation>
+    </message>
+    <message>
+        <source>Start: %1$s | Length: %2$s</source>
+        <comment>disc_verify_track_times</comment>
+        <translation>Inizio: %1$s | Durata: %2$s</translation>
+    </message>
+    <message>
+        <source>Hash: %1$s</source>
+        <comment>disc_verify_track_hash</comment>
+        <translation>Hash: %1$s</translation>
+    </message>
+    <message>
+        <source>Search on redump.info</source>
+        <comment>disc_verify_search_redump</comment>
+        <translation>Cerca su redump.info</translation>
+    </message>
+    <message>
+        <source>Save State Compression</source>
+        <comment>settings_save_state_compression</comment>
+        <translation>Compressione dei salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Create Save State Backups</source>
+        <comment>settings_create_save_state_backups</comment>
+        <translation>Crea backup dei salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Logged in as %s</source>
+        <comment>setup_wizard_achievements_logged_in</comment>
+        <translation>Accesso effettuato come %s</translation>
+    </message>
+    <message>
+        <source>Screenshot saved.</source>
+        <comment>screenshot_saved</comment>
+        <translation>Screenshot salvato.</translation>
+    </message>
+    <message>
+        <source>Screenshot Format</source>
+        <comment>settings_screenshot_format</comment>
+        <translation>Formato screenshot</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode</source>
+        <comment>settings_fine_crop_mode</comment>
+        <translation>Modalità ritaglio preciso</translation>
+    </message>
+    <message>
+        <source>Left Crop</source>
+        <comment>settings_fine_crop_left</comment>
+        <translation>Ritaglio sinistro</translation>
+    </message>
+    <message>
+        <source>Adjusts the left crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_left</comment>
+        <translation>Regola il bordo sinistro del ritaglio in pixel.</translation>
+    </message>
+    <message>
+        <source>Top Crop</source>
+        <comment>settings_fine_crop_top</comment>
+        <translation>Ritaglio superiore</translation>
+    </message>
+    <message>
+        <source>Adjusts the top crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_top</comment>
+        <translation>Regola il bordo superiore del ritaglio in pixel.</translation>
+    </message>
+    <message>
+        <source>Right Crop</source>
+        <comment>settings_fine_crop_right</comment>
+        <translation>Ritaglio destro</translation>
+    </message>
+    <message>
+        <source>Adjusts the right crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_right</comment>
+        <translation>Regola il bordo destro del ritaglio in pixel.</translation>
+    </message>
+    <message>
+        <source>Bottom Crop</source>
+        <comment>settings_fine_crop_bottom</comment>
+        <translation>Ritaglio inferiore</translation>
+    </message>
+    <message>
+        <source>Adjusts the bottom crop edge in pixels.</source>
+        <comment>settings_summary_fine_crop_bottom</comment>
+        <translation>Regola il bordo inferiore del ritaglio in pixel.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep</source>
+        <comment>settings_pre_frame_sleep</comment>
+        <translation>Attesa prima del fotogramma</translation>
+    </message>
+    <message>
+        <source>Sleeps briefly before presenting each frame to reduce latency.</source>
+        <comment>settings_summary_pre_frame_sleep</comment>
+        <translation>Attende brevemente prima di presentare ciascun fotogramma per ridurre la latenza.</translation>
+    </message>
+    <message>
+        <source>Pre-Frame Sleep Buffer</source>
+        <comment>settings_pre_frame_sleep_buffer</comment>
+        <translation>Margine di attesa prima del fotogramma</translation>
+    </message>
+    <message>
+        <source>Time to sleep before presenting each frame, in milliseconds.</source>
+        <comment>settings_summary_pre_frame_sleep_buffer</comment>
+        <translation>Tempo di attesa prima di presentare ciascun fotogramma, in millisecondi.</translation>
+    </message>
+    <message>
+        <source>Disable Mailbox Presentation</source>
+        <comment>settings_disable_mailbox_presentation</comment>
+        <translation>Disabilita presentazione mailbox</translation>
+    </message>
+    <message>
+        <source>Forces the use of FIFO over mailbox presentation, which may be needed for some drivers.</source>
+        <comment>settings_summary_disable_mailbox_presentation</comment>
+        <translation>Forza l&apos;uso della presentazione FIFO anziché mailbox, che può essere necessario con alcuni driver.</translation>
+    </message>
+    <message>
+        <source>Time Stretching</source>
+        <comment>settings_category_time_stretching</comment>
+        <translation>Allungamento temporale</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>controller_type_none</comment>
+        <translation>Nessuno</translation>
+    </message>
+    <message>
+        <source>Fast Forward</source>
+        <comment>touchscreen_controller_fast_forward</comment>
+        <translation>Avanzamento veloce</translation>
+    </message>
+    <message>
+        <source>Switch View</source>
+        <comment>touchscreen_controller_switch_view</comment>
+        <translation>Cambia vista</translation>
+    </message>
+    <message>
+        <source>Open Pause Menu</source>
+        <comment>touchscreen_controller_open_pause_menu</comment>
+        <translation>Apri menu pausa</translation>
+    </message>
+    <message>
+        <source>Quick Load</source>
+        <comment>touchscreen_controller_quick_load</comment>
+        <translation>Caricamento rapido</translation>
+    </message>
+    <message>
+        <source>Quick Save</source>
+        <comment>touchscreen_controller_quick_save</comment>
+        <translation>Salvataggio rapido</translation>
+    </message>
+    <message>
+        <source>D-Pad</source>
+        <comment>touchscreen_controller_dpad</comment>
+        <translation>Tasti direzionali</translation>
+    </message>
+    <message>
+        <source>Left Stick</source>
+        <comment>touchscreen_controller_left_stick</comment>
+        <translation>Levetta sinistra</translation>
+    </message>
+    <message>
+        <source>Left Stick Button</source>
+        <comment>touchscreen_controller_left_stick_button</comment>
+        <translation>Pulsante levetta sinistra</translation>
+    </message>
+    <message>
+        <source>Right Stick</source>
+        <comment>touchscreen_controller_right_stick</comment>
+        <translation>Levetta destra</translation>
+    </message>
+    <message>
+        <source>Right Stick Button</source>
+        <comment>touchscreen_controller_right_stick_button</comment>
+        <translation>Pulsante levetta destra</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <comment>touchscreen_controller_start</comment>
+        <translation>START</translation>
+    </message>
+    <message>
+        <source>Macro 1</source>
+        <comment>touchscreen_controller_macro_1</comment>
+        <translation>Macro 1</translation>
+    </message>
+    <message>
+        <source>Macro 2</source>
+        <comment>touchscreen_controller_macro_2</comment>
+        <translation>Macro 2</translation>
+    </message>
+    <message>
+        <source>Macro 3</source>
+        <comment>touchscreen_controller_macro_3</comment>
+        <translation>Macro 3</translation>
+    </message>
+    <message>
+        <source>Macro 4</source>
+        <comment>touchscreen_controller_macro_4</comment>
+        <translation>Macro 4</translation>
+    </message>
+    <message>
+        <source>Type: %s</source>
+        <comment>content_list_filter_type_template</comment>
+        <translation>Tipo: %s</translation>
+    </message>
+    <message>
+        <source>Sort By: %s</source>
+        <comment>content_list_sort_template</comment>
+        <translation>Ordina per: %s</translation>
+    </message>
+    <message>
+        <source>Search…</source>
+        <comment>content_list_search</comment>
+        <translation>Cerca…</translation>
+    </message>
+    <message>
+        <source>Start File</source>
+        <comment>content_list_start_file</comment>
+        <translation>Avvia file</translation>
+    </message>
+    <message>
+        <source>Save State Manager</source>
+        <comment>content_list_save_state_manager</comment>
+        <translation>Gestore dei salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Download Covers</source>
+        <comment>content_list_download_covers</comment>
+        <translation>Scarica copertine</translation>
+    </message>
+    <message>
+        <source>Change Background</source>
+        <comment>content_list_change_background</comment>
+        <translation>Modifica sfondo</translation>
+    </message>
+    <message>
+        <source>Show Version</source>
+        <comment>content_list_show_version</comment>
+        <translation>Mostra versione</translation>
+    </message>
+    <message>
+        <source>App Version</source>
+        <comment>version_dialog_title</comment>
+        <translation>Versione dell’app</translation>
+    </message>
+    <message>
+        <source>Third-Party Notices</source>
+        <comment>content_list_third_party_notices</comment>
+        <translation>Avvisi di terze parti</translation>
+    </message>
+    <message>
+        <source>Show Grid</source>
+        <comment>content_list_show_grid</comment>
+        <translation>Mostra griglia</translation>
+    </message>
+    <message>
+        <source>Show List</source>
+        <comment>content_list_show_list</comment>
+        <translation>Mostra elenco</translation>
+    </message>
+    <message>
+        <source>Load State</source>
+        <comment>content_bottom_sheet_load_state</comment>
+        <translation>Carica stato</translation>
+    </message>
+    <message>
+        <source>Choose Cover Image</source>
+        <comment>content_bottom_sheet_choose_cover</comment>
+        <translation>Scegli immagine di copertina</translation>
+    </message>
+    <message>
+        <source>Delete Cover Image</source>
+        <comment>content_bottom_sheet_delete_cover</comment>
+        <translation>Cancella immagine di copertina</translation>
+    </message>
+    <message>
+        <source>Create Launcher Shortcut</source>
+        <comment>content_bottom_sheet_create_shortcut</comment>
+        <translation>Crea collegamento nel launcher</translation>
+    </message>
+    <message>
+        <source>Exclude From List</source>
+        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <translation>Escludi dalla lista</translation>
+    </message>
+    <message>
+        <source>Do you want to load the automatic save created %s?
+</source>
+        <comment>content_resume_summary</comment>
+        <translation>Vuoi caricare il salvataggio automatico creato %s?
+</translation>
+    </message>
+    <message>
+        <source>Clean Boot</source>
+        <comment>content_resume_clean_boot</comment>
+        <translation>Avvio da zero</translation>
+    </message>
+    <message>
+        <source>Delete State</source>
+        <comment>content_resume_delete_state</comment>
+        <translation>Elimina stato</translation>
+    </message>
+    <message>
+        <source>Do you want to clear or set a new background image?</source>
+        <comment>content_background_prompt</comment>
+        <translation>Vuoi rimuovere l&apos;immagine di sfondo o impostarne una nuova?</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <comment>content_background_change</comment>
+        <translation>Modifica</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <comment>content_background_clear</comment>
+        <translation>Svuota</translation>
+    </message>
+    <message>
+        <source>Shortcut created for %s.</source>
+        <comment>content_shortcut_created</comment>
+        <translation>Collegamento creato per %s.</translation>
+    </message>
+    <message>
+        <source>Cannot create shortcut. Make sure your launcher supports it.</source>
+        <comment>content_shortcut_failed</comment>
+        <translation>Impossibile creare il collegamento. Assicurati che il launcher lo supporti.</translation>
+    </message>
+    <message>
+        <source>Download</source>
+        <comment>content_download_covers_start</comment>
+        <translation>Scarica</translation>
+    </message>
+    <message>
+        <source>Digital</source>
+        <comment>touchscreen_layout_digital</comment>
+        <translation>Digitale</translation>
+    </message>
+    <message>
+        <source>Analog Stick</source>
+        <comment>touchscreen_layout_analog_stick</comment>
+        <translation>Levetta analogica</translation>
+    </message>
+    <message>
+        <source>Twin Analog Sticks</source>
+        <comment>touchscreen_layout_analog_sticks</comment>
+        <translation>Due levette analogiche</translation>
+    </message>
+    <message>
+        <source>Light Gun</source>
+        <comment>touchscreen_layout_lightgun</comment>
+        <translation>Pistola ottica</translation>
+    </message>
+    <message>
+        <source>Edit Layout</source>
+        <comment>settings_touchscreen_controller_edit_layout</comment>
+        <translation>Modifica disposizione</translation>
+    </message>
+    <message>
+        <source>Reposition, resize, and show or hide touchscreen buttons.</source>
+        <comment>settings_touchscreen_controller_edit_layout_summary</comment>
+        <translation>Sposta, ridimensiona e mostra o nascondi i pulsanti touchscreen.</translation>
+    </message>
+    <message>
+        <source>Folder Locations</source>
+        <comment>settings_folder_experimental_category</comment>
+        <translation>Posizioni delle cartelle</translation>
+    </message>
+    <message>
+        <source>This feature is experimental</source>
+        <comment>settings_folder_experimental_title</comment>
+        <translation>Questa funzionalità è sperimentale</translation>
+    </message>
+    <message>
+        <source>Changing folders may cause data loss. Make a backup first. Copy Files is recommended over Move Files because it preserves the original data.</source>
+        <comment>settings_folder_experimental_summary</comment>
+        <translation>Cambiare le cartelle può causare la perdita di dati. Crea prima un backup. Si consiglia Copia file anziché Sposta file perché conserva i dati originali.</translation>
+    </message>
+    <message>
+        <source>Folder Changes Unavailable</source>
+        <comment>settings_folder_unavailable_title</comment>
+        <translation>Modifica delle cartelle non disponibile</translation>
+    </message>
+    <message>
+        <source>Folder locations cannot be changed while a session is active.</source>
+        <comment>settings_folder_session_active</comment>
+        <translation>Le posizioni delle cartelle non possono essere modificate mentre una sessione è attiva.</translation>
+    </message>
+    <message>
+        <source>%1$s (Modified)</source>
+        <comment>settings_folder_modified_title</comment>
+        <translation>%1$s (modificata)</translation>
+    </message>
+    <message>
+        <source>Save States</source>
+        <comment>settings_folder_save_states</comment>
+        <translation>Salvataggi di stato</translation>
+    </message>
+    <message>
+        <source>Cheats</source>
+        <comment>settings_folder_cheats</comment>
+        <translation>Trucchi</translation>
+    </message>
+    <message>
+        <source>Covers</source>
+        <comment>settings_folder_covers</comment>
+        <translation>Copertine</translation>
+    </message>
+    <message>
+        <source>Choose New Location</source>
+        <comment>settings_folder_choose_location</comment>
+        <translation>Scegli nuova posizione</translation>
+    </message>
+    <message>
+        <source>Restore Default</source>
+        <comment>settings_folder_restore_default</comment>
+        <translation>Ripristina valore predefinito</translation>
+    </message>
+    <message>
+        <source>Transfer Existing Files?</source>
+        <comment>settings_folder_transfer_title</comment>
+        <translation>Trasferire i file esistenti?</translation>
+    </message>
+    <message>
+        <source>Copy Files is the safer, recommended choice because it preserves the old contents. Move Files copies first and removes copied originals only after the new setting is saved.</source>
+        <comment>settings_folder_transfer_summary</comment>
+        <translation>Copia file è la scelta più sicura e consigliata perché conserva i contenuti precedenti. Sposta file prima copia i file e rimuove gli originali copiati solo dopo il salvataggio della nuova impostazione.</translation>
+    </message>
+    <message>
+        <source>Copy Files (Recommended)</source>
+        <comment>settings_folder_copy_files</comment>
+        <translation>Copia file (consigliato)</translation>
+    </message>
+    <message>
+        <source>Move Files</source>
+        <comment>settings_folder_move_files</comment>
+        <translation>Sposta file</translation>
+    </message>
+    <message>
+        <source>Do Nothing</source>
+        <comment>settings_folder_do_nothing</comment>
+        <translation>Non fare nulla</translation>
+    </message>
+    <message>
+        <source>A file already exists at the destination:
+%1$s</source>
+        <comment>settings_folder_file_conflict</comment>
+        <translation>Esiste già un file nella destinazione:
+%1$s</translation>
+    </message>
+    <message>
+        <source>Overwrite</source>
+        <comment>settings_folder_overwrite</comment>
+        <translation>Sovrascrivi</translation>
+    </message>
+    <message>
+        <source>Keep Existing</source>
+        <comment>settings_folder_keep_existing</comment>
+        <translation>Mantieni esistente</translation>
+    </message>
+    <message>
+        <source>That location overlaps another managed folder: %1$s</source>
+        <comment>settings_folder_overlap_error</comment>
+        <translation>Questa posizione si sovrappone a un&apos;altra cartella gestita: %1$s</translation>
+    </message>
+    <message>
+        <source>Could not retain read and write access to that folder.</source>
+        <comment>settings_folder_permission_error</comment>
+        <translation>Impossibile mantenere l&apos;accesso in lettura e scrittura a questa cartella.</translation>
+    </message>
+    <message>
+        <source>This document provider does not expose a path-based folder and cannot be used here.</source>
+        <comment>settings_folder_provider_unsupported</comment>
+        <translation>Questo fornitore di documenti non espone una cartella accessibile tramite percorso e non può essere usato qui.</translation>
+    </message>
+    <message>
+        <source>Copying files</source>
+        <comment>settings_folder_copying</comment>
+        <translation>Copia dei file</translation>
+    </message>
+    <message>
+        <source>Removing old files</source>
+        <comment>settings_folder_removing</comment>
+        <translation>Rimozione dei vecchi file</translation>
+    </message>
+    <message>
+        <source>The files could not be transferred. The previous setting remains active.</source>
+        <comment>settings_folder_copy_error</comment>
+        <translation>Impossibile trasferire i file. L&apos;impostazione precedente rimane attiva.</translation>
+    </message>
+    <message>
+        <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
+        <comment>settings_folder_cleanup_warning</comment>
+        <translation>La nuova cartella è attiva, ma alcuni vecchi file non sono stati rimossi e rimangono come duplicati.</translation>
     </message>
 </context>
 </TS>
