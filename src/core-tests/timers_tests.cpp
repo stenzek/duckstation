@@ -522,3 +522,54 @@ TEST_F(TimersTest, DeferredReadsMatchUpdatedReads)
     ASSERT_EQ(accesses[0][i].value, accesses[1][i].value) << "access " << i << " at tick " << accesses[0][i].tick;
   }
 }
+
+// The CPU can read a timer after it has gone past an event which hasn't run yet. A gate change from that event can't
+// be allowed to change how the counter counted up to the read, otherwise the counter goes backwards when paused.
+TEST_F(TimersTest, ReadAfterOverdueGateChange)
+{
+  struct State
+  {
+    TimingEvent event;
+    bool gate;
+  };
+  static constexpr TimingEventCallback callback = [](void* param, TickCount) {
+    State* state = static_cast<State*>(param);
+    Timers::SetGate(1, state->gate);
+    state->event.Deactivate();
+  };
+
+  for (u32 sync_mode = 0; sync_mode < 4; sync_mode++)
+  {
+    for (const bool gate : {true, false})
+    {
+      u32 values[2][2];
+      for (u32 pass = 0; pass < 2; pass++)
+      {
+        Timers::Reset();
+        Timers::SetGate(1, !gate);
+        Timers::WriteRegister(TIMER1 + REG_MODE, MODE_SYNC_ENABLE | (sync_mode << 1));
+
+        State state = {.event = TimingEvent("Test Gate Event", 1, 1, callback, &state), .gate = gate};
+        state.event.Schedule(1000);
+
+        // The read happens 500 ticks after the gate change was due.
+        CPU::AddPendingTicks(1500);
+
+        // Writing a register always updates the counters, here without changing anything.
+        if (pass == 1)
+          Timers::WriteRegister(TIMER2 + REG_TARGET, 0);
+
+        values[pass][0] = Timers::ReadRegister(TIMER1 + REG_COUNTER);
+        TimingEvents::RunEvents();
+        Run(100);
+        values[pass][1] = Timers::ReadRegister(TIMER1 + REG_COUNTER);
+        ASSERT_FALSE(state.event.IsActive());
+      }
+
+      EXPECT_EQ(values[0][0], values[1][0]) << "sync mode " << sync_mode << " gate " << gate;
+      EXPECT_EQ(values[0][1], values[1][1]) << "sync mode " << sync_mode << " gate " << gate;
+      if (sync_mode == 0 && gate)
+        EXPECT_EQ(values[0][1], 1500u);
+    }
+  }
+}

@@ -90,6 +90,10 @@ void Shutdown();
 bool DoState(StateWrapper& sw);
 
 bool IsRunningEvents();
+
+// Returns true if an event is due at or before the current time, but hasn't run yet.
+bool IsAnyEventDue();
+
 void CancelRunningEvent();
 void RunEvents();
 void CommitLeftoverTicks();

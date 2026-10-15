@@ -313,6 +313,13 @@ bool TimingEvents::IsRunningEvents()
   return (s_state.current_event != nullptr);
 }
 
+bool TimingEvents::IsAnyEventDue()
+{
+  // Events are sorted, so the head is always the next to run.
+  return (s_state.active_events_head &&
+          s_state.active_events_head->m_next_run_time <= GetTimestampForNewEvent());
+}
+
 void TimingEvents::CancelRunningEvent()
 {
   TimingEvent* const event = s_state.current_event;

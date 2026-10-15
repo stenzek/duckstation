@@ -351,7 +351,9 @@ u32 Timers::UpdateForRead(u32 index, const CounterState& cs)
   // Updating the counters early only changes the counters themselves, unless one of them reaches its target or
   // overflows. The event isn't due until the first IRQ, so before then we only need to look at the timer being read,
   // and can work out its counter without updating anything. The remainder makes this harder when overclocking.
-  if (!g_settings.cpu_overclock_active && s_state.sysclk_event.GetTicksUntilNextExecution() > 0)
+  // The CPU can also be past events which haven't run yet, such as a gate change from the GPU. Updating stops them
+  // changing the counters before the time of this read, so they have to run first, including the sysclk event.
+  if (!g_settings.cpu_overclock_active && !TimingEvents::IsAnyEventDue())
   {
     u32 counter = cs.counter;
     if (cs.counting_enabled && (index == 2 || !cs.external_counting_enabled))
