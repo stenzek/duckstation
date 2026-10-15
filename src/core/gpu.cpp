@@ -3558,7 +3558,7 @@ bool GPU::HandleRenderPolyLineCommand()
 {
   // always read the first two vertices, we test for the terminator after that
   const GPURenderCommand rc{FifoPeek(0)};
-  const u32 min_words = rc.shading_enable ? 3 : 4;
+  const u32 min_words = rc.shading_enable ? 4 : 3;
   CHECK_COMMAND_SIZE(min_words);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
@@ -3574,8 +3574,6 @@ bool GPU::HandleRenderPolyLineCommand()
   s_locals.fifo.RemoveOne();
 
   const u32 words_to_pop = min_words - 1;
-  // m_blit_buffer.resize(words_to_pop);
-  // FifoPopRange(m_blit_buffer.data(), words_to_pop);
   s_locals.polyline_buffer.reserve(words_to_pop);
   for (u32 i = 0; i < words_to_pop; i++)
     s_locals.polyline_buffer.push_back(s_locals.fifo.Pop());
@@ -3593,113 +3591,129 @@ void GPU::FinishPolyline()
   const u32 num_vertices = GetPolyLineVertexCount();
   DebugAssert(num_vertices >= 2);
 
-  if (g_settings.gpu_pgxp_enable)
+  // Keep expanded line vertices within the backend's index/depth limits and command queue capacity.
+  static constexpr u32 MAX_SEGMENTS_PER_COMMAND = 1024;
+  for (u32 first_vertex = 0; first_vertex < num_vertices - 1; first_vertex += MAX_SEGMENTS_PER_COMMAND)
   {
-    GPUBackendDrawPreciseLineCommand* RESTRICT cmd = GPUBackend::NewDrawPreciseLineCommand((num_vertices - 1) * 2);
-    FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
-    cmd->palette.bits = 0;
-
-    u32 buffer_pos = 0;
-    u32 out_vertex_count = 0;
-    const bool shaded = s_locals.render_command.shading_enable;
-    bool valid_w = g_settings.gpu_pgxp_texture_correction;
-    GPUBackendDrawPreciseLineCommand::Vertex start, end;
-
-    const auto read_vertex = [&buffer_pos, &valid_w](GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT dest,
-                                                     u32 color) {
-      const u64 maddr_and_pos = s_locals.polyline_buffer[buffer_pos++];
-      const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
-      dest.native_x = s_locals.drawing_offset.x + vp.x;
-      dest.native_y = s_locals.drawing_offset.y + vp.y;
-      dest.color = color;
-      valid_w &=
-        CPU::PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, dest.native_x, dest.native_y,
-                                    s_locals.drawing_offset.x, s_locals.drawing_offset.y, &dest.x, &dest.y, &dest.w);
-    };
-
-    read_vertex(start, s_locals.render_command.color_for_first_vertex);
-
-    for (u32 i = 1; i < num_vertices; i++)
+    const u32 batch_vertices = std::min(num_vertices - first_vertex, MAX_SEGMENTS_PER_COMMAND + 1);
+    if (g_settings.gpu_pgxp_enable)
     {
-      const u32 color = (shaded ? Truncate32(s_locals.polyline_buffer[buffer_pos++]) : s_locals.render_command.bits) &
-                        UINT32_C(0x00FFFFFF);
-      read_vertex(end, color);
+      GPUBackendDrawPreciseLineCommand* RESTRICT cmd = GPUBackend::NewDrawPreciseLineCommand((batch_vertices - 1) * 2);
+      FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
+      cmd->palette.bits = 0;
 
-      const GSVector2i start_pos = GSVector2i::load<false>(&start.native_x);
-      const GSVector2i end_pos = GSVector2i::load<false>(&end.native_x);
-      const GSVector4i rect =
-        GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
-      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
+      u32 buffer_pos = first_vertex << BoolToUInt8(s_locals.render_command.shading_enable);
+      u32 out_vertex_count = 0;
+      const bool shaded = s_locals.render_command.shading_enable;
+      bool valid_w = g_settings.gpu_pgxp_texture_correction;
+      GPUBackendDrawPreciseLineCommand::Vertex start, end;
+
+      const auto read_vertex = [&buffer_pos, &valid_w](GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT dest,
+                                                       u32 color) {
+        const u64 maddr_and_pos = s_locals.polyline_buffer[buffer_pos++];
+        const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
+        dest.native_x = s_locals.drawing_offset.x + vp.x;
+        dest.native_y = s_locals.drawing_offset.y + vp.y;
+        dest.color = color;
+        valid_w &=
+          CPU::PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, dest.native_x, dest.native_y,
+                                      s_locals.drawing_offset.x, s_locals.drawing_offset.y, &dest.x, &dest.y, &dest.w);
+      };
+
+      const u32 first_color = (shaded && first_vertex > 0) ?
+                                (Truncate32(s_locals.polyline_buffer[buffer_pos - 1]) & 0x00FFFFFFu) :
+                                s_locals.render_command.color_for_first_vertex.GetValue();
+      read_vertex(start, first_color);
+
+      for (u32 i = 1; i < batch_vertices; i++)
       {
-        DEBUG_LOG("Culling too-large line: {} - {}", start_pos, end_pos);
+        const u32 color = (shaded ? Truncate32(s_locals.polyline_buffer[buffer_pos++]) : s_locals.render_command.bits) &
+                          UINT32_C(0x00FFFFFF);
+        read_vertex(end, color);
+
+        const GSVector2i start_pos = GSVector2i::load<false>(&start.native_x);
+        const GSVector2i end_pos = GSVector2i::load<false>(&end.native_x);
+        const GSVector4i rect =
+          GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
+        {
+          DEBUG_LOG("Culling too-large line: {} - {}", start_pos, end_pos);
+        }
+        else
+        {
+          AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
+
+          cmd->vertices[out_vertex_count++] = start;
+          cmd->vertices[out_vertex_count++] = end;
+        }
+
+        start = end;
       }
-      else
+
+      if (out_vertex_count > 0)
       {
-        AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
-
-        cmd->vertices[out_vertex_count++] = start;
-        cmd->vertices[out_vertex_count++] = end;
+        DebugAssert(out_vertex_count <= cmd->num_vertices);
+        cmd->num_vertices = Truncate16(out_vertex_count);
+        if (!(cmd->valid_w = valid_w))
+        {
+          for (u32 i = 0; i < out_vertex_count; i++)
+            cmd->vertices[i].w = 1.0f;
+        }
+        GPUBackend::PushCommand(cmd);
       }
-
-      start = end;
     }
-
-    if (out_vertex_count > 0)
+    else
     {
-      DebugAssert(out_vertex_count <= cmd->num_vertices);
-      cmd->num_vertices = Truncate16(out_vertex_count);
-      GPUBackend::PushCommand(cmd);
-    }
-  }
-  else
-  {
-    GPUBackendDrawLineCommand* RESTRICT cmd = GPUBackend::NewDrawLineCommand((num_vertices - 1) * 2);
-    FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
-    cmd->palette.bits = 0;
+      GPUBackendDrawLineCommand* RESTRICT cmd = GPUBackend::NewDrawLineCommand((batch_vertices - 1) * 2);
+      FillDrawCommand<GPUPrimitive::Line>(cmd, s_locals.render_command);
+      cmd->palette.bits = 0;
 
-    u32 buffer_pos = 0;
-    const GPUVertexPosition start_vp{Truncate32(s_locals.polyline_buffer[buffer_pos++])};
-    const GSVector2i draw_offset = GSVector2i::load<false>(&s_locals.drawing_offset.x);
-    GSVector2i start_pos = GSVector2i(start_vp.x, start_vp.y).add32(draw_offset);
-    u32 start_color = s_locals.render_command.color_for_first_vertex;
+      u32 buffer_pos = first_vertex << BoolToUInt8(s_locals.render_command.shading_enable);
+      const GPUVertexPosition start_vp{Truncate32(s_locals.polyline_buffer[buffer_pos++])};
+      const GSVector2i draw_offset = GSVector2i::load<false>(&s_locals.drawing_offset.x);
+      GSVector2i start_pos = GSVector2i(start_vp.x, start_vp.y).add32(draw_offset);
+      u32 start_color = (s_locals.render_command.shading_enable && first_vertex > 0) ?
+                          (Truncate32(s_locals.polyline_buffer[buffer_pos - 2]) & 0x00FFFFFFu) :
+                          s_locals.render_command.color_for_first_vertex.GetValue();
 
-    const bool shaded = s_locals.render_command.shading_enable;
-    u32 out_vertex_count = 0;
-    for (u32 i = 1; i < num_vertices; i++)
-    {
-      const u32 end_color = shaded ? (Truncate32(s_locals.polyline_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF))) :
-                                     s_locals.render_command.color_for_first_vertex;
-      const GPUVertexPosition vp{Truncate32(s_locals.polyline_buffer[buffer_pos++])};
-      const GSVector2i end_pos = GSVector2i(vp.x, vp.y).add32(draw_offset);
-
-      const GSVector4i rect =
-        GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
-      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
+      const bool shaded = s_locals.render_command.shading_enable;
+      u32 out_vertex_count = 0;
+      for (u32 i = 1; i < batch_vertices; i++)
       {
-        DEBUG_LOG("Culling too-large line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
-      }
-      else
-      {
-        AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
+        const u32 end_color = shaded ? (Truncate32(s_locals.polyline_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF))) :
+                                       s_locals.render_command.color_for_first_vertex;
+        const GPUVertexPosition vp{Truncate32(s_locals.polyline_buffer[buffer_pos++])};
+        const GSVector2i end_pos = GSVector2i(vp.x, vp.y).add32(draw_offset);
 
-        GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
-        out_vertex_count += 2;
+        const GSVector4i rect =
+          GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
+        {
+          DEBUG_LOG("Culling too-large line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
+        }
+        else
+        {
+          AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
 
-        GSVector2i::store<false>(&out_vertex[0].x, start_pos);
-        out_vertex[0].color = start_color;
-        GSVector2i::store<false>(&out_vertex[1].x, end_pos);
-        out_vertex[1].color = end_color;
+          GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
+          out_vertex_count += 2;
+
+          GSVector2i::store<false>(&out_vertex[0].x, start_pos);
+          out_vertex[0].color = start_color;
+          GSVector2i::store<false>(&out_vertex[1].x, end_pos);
+          out_vertex[1].color = end_color;
+        }
+
+        start_pos = end_pos;
+        start_color = end_color;
       }
 
-      start_pos = end_pos;
-      start_color = end_color;
-    }
-
-    if (out_vertex_count > 0)
-    {
-      DebugAssert(out_vertex_count <= cmd->num_vertices);
-      cmd->num_vertices = Truncate16(out_vertex_count);
-      GPUBackend::PushCommand(cmd);
+      if (out_vertex_count > 0)
+      {
+        DebugAssert(out_vertex_count <= cmd->num_vertices);
+        cmd->num_vertices = Truncate16(out_vertex_count);
+        GPUBackend::PushCommand(cmd);
+      }
     }
   }
 }
