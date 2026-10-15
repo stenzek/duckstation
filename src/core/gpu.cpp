@@ -530,6 +530,9 @@ void GPU::SoftReset()
   if (s_locals.blitter_state == BlitterState::WritingVRAM)
     FinishVRAMWrite();
 
+  s_locals.GPUSTAT.interrupt_request = false;
+  InterruptController::SetLineState(InterruptController::IRQ::GPU, false);
+
   s_locals.GPUSTAT.texture_page_x_base = 0;
   s_locals.GPUSTAT.texture_page_y_base = 0;
   s_locals.GPUSTAT.semi_transparency_mode = GPUTransparencyMode::HalfBackgroundPlusHalfForeground;
@@ -1962,6 +1965,7 @@ void GPU::WriteGP1(u32 value)
       s_locals.blit_remaining_words = 0;
       s_locals.pending_command_ticks = 0;
       s_locals.command_tick_event.Deactivate();
+      InvalidateCLUT();
       UpdateDMARequest();
       UpdateGPUIdle();
     }

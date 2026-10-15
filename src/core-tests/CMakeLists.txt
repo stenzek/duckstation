@@ -6,6 +6,7 @@ add_executable(core-tests
   cheats_tests.cpp
   cpu_disasm_tests.cpp
   gpu_sw_rasterizer_tests.cpp
+  gpu_tests.cpp
   gte_tests.cpp
   gte_timing_tests.cpp
   lightgun_controller_tests.cpp
