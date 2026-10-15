@@ -159,7 +159,6 @@ static void UpdateCRTCDisplayParameters(u16 old_vram_width, u16 old_vram_height)
 static void UpdateCRTCHBlankFlag();
 
 // Update ticks for this execution slice
-static void UpdateCRTCTickEvent();
 static void UpdateCommandTickEvent();
 static u8 UpdateOrGetGPUBusyPct();
 
@@ -1019,12 +1018,6 @@ void GPU::SynchronizeCRTC()
   s_locals.crtc_tick_event.InvokeEarlyNoReschedule();
 }
 
-void GPU::RescheduleCRTC()
-{
-  // Timer IRQ or gate might be needed sooner than what we're currently scheduled for.
-  UpdateCRTCTickEvent();
-}
-
 float GPU::ComputeHorizontalFrequency()
 {
   const CRTCState& cs = s_locals.crtc_state;
@@ -1257,7 +1250,7 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
   System::SetVideoFrameRate(ComputeVerticalFrequency());
 
   UpdateCRTCDisplayParameters(old_vram_width, old_vram_height);
-  UpdateCRTCTickEvent();
+  RescheduleCRTC();
 }
 
 void GPU::UpdateCRTCDisplayParameters()
@@ -1520,7 +1513,7 @@ ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
   return SystemTicksToGPUTicks(s_locals.command_tick_event.GetTicksSinceLastExecution());
 }
 
-void GPU::UpdateCRTCTickEvent()
+void GPU::RescheduleCRTC()
 {
   CRTCState& cs = s_locals.crtc_state;
 
@@ -1621,7 +1614,7 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
         Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
     }
 
-    UpdateCRTCTickEvent();
+    RescheduleCRTC();
     return;
   }
 
@@ -1729,7 +1722,7 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     s_locals.GPUSTAT.display_line_lsb = ConvertToBoolUnchecked((cs.regs.Y + cs.current_scanline) & u32(1));
   }
 
-  UpdateCRTCTickEvent();
+  RescheduleCRTC();
 
   if (frame_done)
   {
