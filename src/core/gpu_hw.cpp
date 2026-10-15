@@ -3110,6 +3110,8 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   const float depth = GetCurrentNormalizedVertexDepth();
   const u32 orig_tex_left = ZeroExtend32(Truncate8(cmd->texcoord));
   const u32 orig_tex_top = ZeroExtend32(cmd->texcoord) >> 8;
+  const bool flip_x = cmd->texture_enable && cmd->draw_mode.texture_x_flip;
+  const bool flip_y = cmd->texture_enable && cmd->draw_mode.texture_y_flip;
   const u32 rectangle_width = cmd->width;
   const u32 rectangle_height = cmd->height;
 
@@ -3117,35 +3119,43 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   u32 tex_top = orig_tex_top;
   for (u32 y_offset = 0; y_offset < rectangle_height;)
   {
-    const s32 quad_height = std::min(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
+    const s32 quad_height =
+      std::min(rectangle_height - y_offset, flip_y ? (tex_top + 1) : (TEXTURE_PAGE_HEIGHT - tex_top));
     const float quad_start_y = static_cast<float>(pos_y + static_cast<s32>(y_offset));
     const float quad_end_y = quad_start_y + static_cast<float>(quad_height);
-    const u32 tex_bottom = tex_top + quad_height;
+    const u32 tex_start_y = tex_top + BoolToUInt32(flip_y);
+    const u32 tex_bottom = flip_y ? (tex_start_y - quad_height) : (tex_top + quad_height);
 
     u32 tex_left = orig_tex_left;
     for (u32 x_offset = 0; x_offset < rectangle_width;)
     {
-      const s32 quad_width = std::min(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
+      const s32 quad_width =
+        std::min(rectangle_width - x_offset, flip_x ? (tex_left + 1) : (TEXTURE_PAGE_WIDTH - tex_left));
       const float quad_start_x = static_cast<float>(pos_x + static_cast<s32>(x_offset));
       const float quad_end_x = quad_start_x + static_cast<float>(quad_width);
-      const u32 tex_right = tex_left + quad_width;
-      const u32 uv_limits = BatchVertex::PackUVLimits(tex_left, tex_right - 1, tex_top, tex_bottom - 1);
+      const u32 tex_start_x = tex_left + BoolToUInt32(flip_x);
+      const u32 tex_right = flip_x ? (tex_start_x - quad_width) : (tex_left + quad_width);
+      const u32 min_u = std::min(tex_start_x, tex_right);
+      const u32 min_v = std::min(tex_start_y, tex_bottom);
+      const u32 max_u = std::max(tex_start_x, tex_right) - 1;
+      const u32 max_v = std::max(tex_start_y, tex_bottom) - 1;
+      const u32 uv_limits = BatchVertex::PackUVLimits(min_u, max_u, min_v, max_v);
 
       if (cmd->texture_enable && ShouldCheckForTexPageOverlap())
       {
-        CheckForTexPageOverlap(cmd, GSVector4i(static_cast<s32>(tex_left), static_cast<s32>(tex_top),
-                                               static_cast<s32>(tex_right) - 1, static_cast<s32>(tex_bottom) - 1));
+        CheckForTexPageOverlap(cmd, GSVector4i(static_cast<s32>(min_u), static_cast<s32>(min_v),
+                                               static_cast<s32>(max_u), static_cast<s32>(max_v)));
       }
 
       const u32 base_vertex = m_batch_vertex_count;
       (m_batch_vertex_ptr++)
-        ->Set(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_left), Truncate16(tex_top),
+        ->Set(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_start_x), Truncate16(tex_start_y),
               uv_limits);
       (m_batch_vertex_ptr++)
-        ->Set(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_right), Truncate16(tex_top),
+        ->Set(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_right), Truncate16(tex_start_y),
               uv_limits);
       (m_batch_vertex_ptr++)
-        ->Set(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, Truncate16(tex_left), Truncate16(tex_bottom),
+        ->Set(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, Truncate16(tex_start_x), Truncate16(tex_bottom),
               uv_limits);
       (m_batch_vertex_ptr++)
         ->Set(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, Truncate16(tex_right), Truncate16(tex_bottom),
@@ -3163,11 +3173,11 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
       m_batch_index_space -= 6;
 
       x_offset += quad_width;
-      tex_left = 0;
+      tex_left = flip_x ? (TEXTURE_PAGE_WIDTH - 1) : 0;
     }
 
     y_offset += quad_height;
-    tex_top = 0;
+    tex_top = flip_y ? (TEXTURE_PAGE_HEIGHT - 1) : 0;
   }
 
   AddDrawnRectangle(clamped_rect);

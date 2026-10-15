@@ -249,7 +249,12 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
   const auto [r, g, b] = UnpackColorRGB24(cmd->color);
   const auto [origin_texcoord_x, origin_texcoord_y] = UnpackTexcoord(cmd->texcoord);
 
-  for (u32 offset_y = 0; offset_y < cmd->height; offset_y++)
+  // 0xFF steps backwards, since the coordinates wrap at 8 bits.
+  const u32 texcoord_step_x = cmd->draw_mode.texture_x_flip ? 0xFFu : 1u;
+  const u32 texcoord_step_y = cmd->draw_mode.texture_y_flip ? 0xFFu : 1u;
+
+  u32 texcoord_y = origin_texcoord_y;
+  for (u32 offset_y = 0; offset_y < cmd->height; offset_y++, texcoord_y += texcoord_step_y)
   {
     const s32 y = origin_y + static_cast<s32>(offset_y);
     if (y < static_cast<s32>(g_drawing_area.top) || y > static_cast<s32>(g_drawing_area.bottom) ||
@@ -260,18 +265,16 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
     }
 
     const u32 draw_y = static_cast<u32>(y) & VRAM_HEIGHT_MASK;
-    const u8 texcoord_y = Truncate8(ZeroExtend32(origin_texcoord_y) + offset_y);
 
-    for (u32 offset_x = 0; offset_x < cmd->width; offset_x++)
+    u32 texcoord_x = origin_texcoord_x;
+    for (u32 offset_x = 0; offset_x < cmd->width; offset_x++, texcoord_x += texcoord_step_x)
     {
       const s32 x = origin_x + static_cast<s32>(offset_x);
       if (x < static_cast<s32>(g_drawing_area.left) || x > static_cast<s32>(g_drawing_area.right))
         continue;
 
-      const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
-
-      ShadePixel<modulation_mode, transparency_enable>(cmd, static_cast<u32>(x), draw_y, r, g, b, texcoord_x,
-                                                       texcoord_y);
+      ShadePixel<modulation_mode, transparency_enable>(cmd, static_cast<u32>(x), draw_y, r, g, b, Truncate8(texcoord_x),
+                                                       Truncate8(texcoord_y));
     }
   }
 }
@@ -816,7 +819,12 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
   const GSVectorNi rg = GSVectorNi::broadcast128(rgp.u8to16()); // R0G0 | R0G0 | R0G0 | R0G0
   const GSVectorNi ba = GSVectorNi::broadcast128(bap.u8to16()); // B0A0 | B0A0 | B0A0 | B0A0
 
-  const GSVectorNi texcoord_x = GSVectorNi(cmd->texcoord & 0xFF).add32(SPAN_OFFSET_VEC);
+  const GSVectorNi x_step =
+    cmd->draw_mode.texture_x_flip ? GSVectorNi::zero().sub32(PIXELS_PER_VEC_VEC) : PIXELS_PER_VEC_VEC;
+  const GSVectorNi y_step = GSVectorNi(cmd->draw_mode.texture_y_flip ? -1 : 1);
+  const GSVectorNi texcoord_x = cmd->draw_mode.texture_x_flip ?
+                                  GSVectorNi(cmd->texcoord & 0xFF).sub32(SPAN_OFFSET_VEC) :
+                                  GSVectorNi(cmd->texcoord & 0xFF).add32(SPAN_OFFSET_VEC);
   GSVectorNi texcoord_y = GSVectorNi(cmd->texcoord >> 8);
 
   const PixelVectors<texture_enable> pv(cmd);
@@ -829,9 +837,11 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
   // each vector are next to each other in VRAM, and can be loaded together instead of gathering them one by one.
   // That stops being the case when the coordinates wrap around within the vector, or for 4-bit, when the load would
   // run past the end of the row. 8-bit indices still have to be looked up one by one, so there is nothing to gain.
+  // X-flip decrements the coordinates instead, so it always has to gather.
   const u32 texture_base_x = cmd->draw_mode.GetTexturePageBaseX();
   u32 sequential_texcoord_end = 0;
-  if (cmd->window.and_x == 0xFF && cmd->window.or_x == 0x00 && texture_mode != GPUTextureMode::Palette8Bit)
+  if (cmd->window.and_x == 0xFF && cmd->window.or_x == 0x00 && texture_mode != GPUTextureMode::Palette8Bit &&
+      !cmd->draw_mode.texture_x_flip)
   {
     sequential_texcoord_end = (0x100u - PIXELS_PER_VEC) + 1;
     if (texture_mode == GPUTextureMode::Palette4Bit)
@@ -851,7 +861,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
     {
       const s32 draw_y = (y & VRAM_HEIGHT_MASK);
       const u32 texture_y = cmd->draw_mode.GetTexturePageBaseY() +
-                            ((((cmd->texcoord >> 8) + offset_y) & cmd->window.and_y) | cmd->window.or_y);
+                            ((static_cast<u32>(texcoord_y.extract32<0>()) & cmd->window.and_y) | cmd->window.or_y);
 
       GSVectorNi row_texcoord_x = texcoord_x;
       GSVectorNi xvec = GSVectorNi(origin_x).add32(SPAN_OFFSET_VEC);
@@ -900,12 +910,12 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
         wvec = wvec.sub32(PIXELS_PER_VEC_VEC);
 
         if constexpr (texture_enable)
-          row_texcoord_x = row_texcoord_x.add32(PIXELS_PER_VEC_VEC) & GSVectorNi::cxpr(0xFF);
+          row_texcoord_x = row_texcoord_x.add32(x_step) & GSVectorNi::cxpr(0xFF);
       }
     }
 
     if constexpr (texture_enable)
-      texcoord_y = texcoord_y.add32(GSVectorNi::cxpr(1)) & GSVectorNi::cxpr(0xFF);
+      texcoord_y = texcoord_y.add32(y_step) & GSVectorNi::cxpr(0xFF);
   }
 
 #ifdef CHECK_VECTOR

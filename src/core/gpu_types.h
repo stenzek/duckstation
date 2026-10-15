@@ -207,7 +207,7 @@ union GPUVertexPosition
 // bits in GP0(E1h) or texpage part of polygon
 union GPUDrawModeReg
 {
-  static constexpr u16 MASK = 0b1111111111111;
+  static constexpr u16 MASK = 0b11111111111111;
   static constexpr u16 TEXTURE_MODE_AND_PAGE_MASK = UINT16_C(0b0000000110011111);
 
   // Polygon texpage commands only affect bits 0-8, 11
