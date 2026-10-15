@@ -26,6 +26,10 @@ namespace {
 static constexpr u32 NUM_TIMERS = 3;
 static constexpr u32 TIMER_OVERFLOW = 0x10000;
 
+// On the system clock, the counter reads as the target on the tick it gets there, then is held at zero for two ticks.
+// Writes only hold it for one tick, so a full hold is only left after reaching the target.
+static constexpr u8 TARGET_RESET_DELAY = 2;
+
 enum class SyncMode : u8
 {
   PauseWhileGateActive = 0,
@@ -61,6 +65,7 @@ struct CounterState
   bool external_counting_enabled;
   bool counting_enabled;
   bool irq_done;
+  u8 counting_delay;
 };
 
 } // namespace
@@ -68,6 +73,7 @@ struct CounterState
 static void UpdateCountingEnabled(u32 index, CounterState& cs);
 static void CheckForIRQ(u32 index, u32 first_counter);
 static u32 UpdateForRead(u32 index, const CounterState& cs);
+static u32 GetReadCounter(const CounterState& cs, u32 counter, u32 delay);
 
 static void AddSysClkTicks(void*, TickCount sysclk_ticks);
 
@@ -111,6 +117,7 @@ void Timers::Reset()
     cs.external_counting_enabled = false;
     cs.counting_enabled = true;
     cs.irq_done = false;
+    cs.counting_delay = 0;
   }
 
   s_state.sysclk_event.Deactivate();
@@ -131,6 +138,7 @@ bool Timers::DoState(StateWrapper& sw)
     sw.Do(&cs.external_counting_enabled);
     sw.Do(&cs.counting_enabled);
     sw.Do(&cs.irq_done);
+    sw.DoEx(&cs.counting_delay, 88, static_cast<u8>(0));
   }
 
   sw.Do(&s_state.sysclk_ticks_carry);
@@ -220,11 +228,15 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer)
   TickCount ticks_until_irq = std::numeric_limits<TickCount>::max();
   if (cs.mode.irq_at_target)
   {
-    ticks_until_irq = (cs.counter < cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
-                                                 static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target);
+    ticks_until_irq = cs.counting_delay + ((cs.counter < cs.target) ?
+                                             static_cast<TickCount>(cs.target - cs.counter) :
+                                             static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target));
   }
   if (cs.mode.irq_on_overflow)
-    ticks_until_irq = std::min(ticks_until_irq, static_cast<TickCount>(TIMER_OVERFLOW - cs.counter));
+  {
+    ticks_until_irq =
+      std::min(ticks_until_irq, cs.counting_delay + static_cast<TickCount>(TIMER_OVERFLOW - cs.counter));
+  }
 
   return ticks_until_irq;
 }
@@ -232,6 +244,11 @@ TickCount Timers::GetTicksUntilIRQ(u32 timer)
 void Timers::AddTicks(u32 timer, TickCount count)
 {
   CounterState& cs = s_state.counters[timer];
+
+  // The counter doesn't increment for a few ticks after writes, or resetting at the target.
+  const TickCount delay = std::min<TickCount>(cs.counting_delay, count);
+  cs.counting_delay -= static_cast<u8>(delay);
+  count -= delay;
 
   // Nothing to check when the counter isn't reaching the target or overflowing, which is most of the time.
   const u32 new_counter = cs.counter + static_cast<u32>(count);
@@ -253,6 +270,10 @@ void Timers::AddTicks(u32 timer, TickCount count)
       cs.counter += add;
       count -= static_cast<TickCount>(add);
       CheckForIRQ(timer, old_counter + 1);
+
+      const TickCount reset_delay = std::min<TickCount>(cs.counting_delay, count);
+      cs.counting_delay -= static_cast<u8>(reset_delay);
+      count -= reset_delay;
     } while (count > 0);
   }
   else
@@ -294,7 +315,20 @@ void Timers::CheckForIRQ(u32 timer, u32 first_counter)
     // target is resetting below 0xFFFF, and the counter is incremented by a large amount. In this
     // second case, the overflow IRQ shouldn't trigger.
     if (cs.mode.reset_at_target && cs.target > 0 && cs.target != 0xFFFFu)
-      cs.counter %= cs.target;
+    {
+      if (cs.use_external_clock)
+      {
+        cs.counter %= cs.target;
+      }
+      else
+      {
+        // The system clock holds the counter at zero for two more ticks after resetting.
+        const u32 ticks_since_reset = (cs.counter - cs.target) % (cs.target + TARGET_RESET_DELAY);
+        cs.counter = (ticks_since_reset > TARGET_RESET_DELAY) ? (ticks_since_reset - TARGET_RESET_DELAY) : 0;
+        cs.counting_delay =
+          static_cast<u8>((ticks_since_reset < TARGET_RESET_DELAY) ? (TARGET_RESET_DELAY - ticks_since_reset) : 0);
+      }
+    }
   }
   if (cs.counter >= TIMER_OVERFLOW || wrapped_overflow)
   {
@@ -365,18 +399,33 @@ u32 Timers::UpdateForRead(u32 index, const CounterState& cs)
   if (!g_settings.cpu_overclock_active && !TimingEvents::IsAnyEventDue())
   {
     u32 counter = cs.counter;
+    u32 delay = cs.counting_delay;
     if (cs.counting_enabled && (index == 2 || !cs.external_counting_enabled))
     {
       const u32 ticks = static_cast<u32>(s_state.sysclk_event.GetTicksSinceLastExecution());
-      counter += cs.external_counting_enabled ? ((ticks + s_state.sysclk_div_8_carry) / 8) : ticks; // sysclk/8
+      if (cs.external_counting_enabled)
+      {
+        counter += (ticks + s_state.sysclk_div_8_carry) / 8; // sysclk/8
+      }
+      else
+      {
+        const u32 held_ticks = std::min(ticks, delay);
+        counter += ticks - held_ticks;
+        delay -= held_ticks;
+      }
     }
 
     if (counter < TIMER_OVERFLOW && (counter < cs.target || cs.counter >= cs.target))
-      return counter;
+      return GetReadCounter(cs, counter, delay);
   }
 
   s_state.sysclk_event.InvokeEarlyNoReschedule();
-  return cs.counter;
+  return GetReadCounter(cs, cs.counter, cs.counting_delay);
+}
+
+u32 Timers::GetReadCounter(const CounterState& cs, u32 counter, u32 delay)
+{
+  return (delay == TARGET_RESET_DELAY) ? cs.target : counter;
 }
 
 u32 Timers::ReadRegister(u32 offset)
@@ -458,6 +507,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
       // Writing the new counter does not compare against the target value.
       DEBUG_LOG("Timer {} write counter {}", timer_index, value);
       cs.counter = value & u32(0xFFFF);
+      cs.counting_delay = cs.use_external_clock ? 0 : 1;
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
     }
@@ -506,6 +556,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
       cs.use_external_clock = (clock_source & (timer_index == 2 ? 2 : 1)) != 0;
 
       cs.counter = 0;
+      cs.counting_delay = cs.use_external_clock ? 0 : 1;
       cs.irq_done = false;
       InterruptController::SetLineState(
         static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + timer_index), false);
@@ -588,8 +639,9 @@ TickCount Timers::GetTicksUntilNextInterrupt()
 
     if (cs.mode.irq_at_target)
     {
-      TickCount ticks = (cs.counter < cs.target) ? static_cast<TickCount>(cs.target - cs.counter) :
-                                                   static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target);
+      TickCount ticks = cs.counting_delay + ((cs.counter < cs.target) ?
+                                               static_cast<TickCount>(cs.target - cs.counter) :
+                                               static_cast<TickCount>((TIMER_OVERFLOW - cs.counter) + cs.target));
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
         ticks = (ticks * 8) - static_cast<TickCount>(s_state.sysclk_div_8_carry);
 
@@ -597,7 +649,7 @@ TickCount Timers::GetTicksUntilNextInterrupt()
     }
     if (cs.mode.irq_on_overflow)
     {
-      TickCount ticks = static_cast<TickCount>(TIMER_OVERFLOW - cs.counter);
+      TickCount ticks = cs.counting_delay + static_cast<TickCount>(TIMER_OVERFLOW - cs.counter);
       if (cs.external_counting_enabled) // sysclk/8 for timer 2
         ticks = (ticks * 8) - static_cast<TickCount>(s_state.sysclk_div_8_carry);
 

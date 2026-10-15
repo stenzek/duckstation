@@ -128,7 +128,8 @@ TEST_F(TimersTest, GateChangeDoesNotDelaySysClkIRQ)
       Timers::SetGate(1, gate);
     }
 
-    ASSERT_EQ(TakeIRQ(2), (tick % PERIOD) == 0) << "at tick " << tick;
+    // Held for a tick after the mode write, and for two ticks after each reset.
+    ASSERT_EQ(TakeIRQ(2), tick > PERIOD && ((tick - (PERIOD + 1)) % (PERIOD + 2)) == 0) << "at tick " << tick;
   }
 }
 
@@ -138,7 +139,8 @@ TEST_F(TimersTest, OverflowDoesNotReachTarget)
   Timers::WriteRegister(TIMER2 + REG_TARGET, 0x8000);
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
 
-  Timers::AddTicks(2, 0x8000);
+  // The counter is held for a tick after writing the mode or counter.
+  Timers::AddTicks(2, 1 + 0x8000);
   EXPECT_TRUE(TakeIRQ(2));
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
             MODE_REACHED_TARGET);
@@ -165,7 +167,7 @@ TEST_F(TimersTest, OverflowDoesNotReachTarget)
 
   // Passes the target, then wraps.
   Timers::WriteRegister(TIMER2 + REG_COUNTER, 0x7000);
-  Timers::AddTicks(2, 0x9010);
+  Timers::AddTicks(2, 1 + 0x9010);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 0x10u);
   EXPECT_TRUE(TakeIRQ(2));
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
@@ -179,20 +181,21 @@ TEST_F(TimersTest, OverflowWithCounterAboveResetTarget)
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET);
 
   Timers::WriteRegister(TIMER2 + REG_COUNTER, 200);
-  Timers::AddTicks(2, (0x10000 - 200) + 5);
+  Timers::AddTicks(2, 1 + (0x10000 - 200) + 5);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 5u);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
             MODE_REACHED_OVERFLOW);
 
+  // Held at zero for two ticks after resetting.
   Timers::AddTicks(2, 100);
-  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 5u);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 3u);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
             MODE_REACHED_TARGET);
 
   // Same thing, but getting to the target after wrapping in a single update.
   Timers::WriteRegister(TIMER2 + REG_COUNTER, 200);
-  Timers::AddTicks(2, (0x10000 - 200) + 250);
-  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 50u);
+  Timers::AddTicks(2, 1 + (0x10000 - 200) + 250);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), 46u);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
             MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW);
 }
@@ -203,7 +206,7 @@ TEST_F(TimersTest, ToggleModeDoesNotToggleOnOverflow)
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT | MODE_IRQ_TOGGLE);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, MODE_IRQ_N);
 
-  Timers::AddTicks(2, 0x100);
+  Timers::AddTicks(2, 1 + 0x100);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
   EXPECT_TRUE(TakeIRQ(2));
 
@@ -224,7 +227,7 @@ TEST_F(TimersTest, OneShotToggleModeOnlyTogglesOnce)
   Timers::WriteRegister(TIMER2 + REG_TARGET, 0x100);
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_TOGGLE);
 
-  Timers::AddTicks(2, 0x100);
+  Timers::AddTicks(2, 1 + 0x100);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
   EXPECT_TRUE(TakeIRQ(2));
 
@@ -237,18 +240,56 @@ TEST_F(TimersTest, OneShotToggleModeOnlyTogglesOnce)
 
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_TOGGLE);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, MODE_IRQ_N);
-  Timers::AddTicks(2, 0x100);
+  Timers::AddTicks(2, 1 + 0x100);
   EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
   EXPECT_TRUE(TakeIRQ(2));
+}
+
+// On the system clock, the counter is held for a tick after writing the mode or counter, and for two ticks after
+// resetting at the target, so the period is the target plus two.
+TEST_F(TimersTest, SysClkCounterHeldAfterWritesAndReset)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 3);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET);
+  for (const u32 expected : {0u, 0u, 1u, 2u, 3u, 0u, 0u, 1u, 2u, 3u})
+  {
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), expected);
+    Run(1);
+  }
+
+  Timers::WriteRegister(TIMER2 + REG_COUNTER, 1);
+  for (const u32 expected : {1u, 1u, 2u, 3u, 0u})
+  {
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), expected);
+    Run(1);
+  }
+
+  // The example from the documentation, with a target of 1.
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 1);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET);
+  for (const u32 expected : {0u, 0u, 1u, 0u, 0u, 1u})
+  {
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), expected);
+    Run(1);
+  }
+
+  // Reading after updating the counters gives the same values.
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_RESET_AT_TARGET);
+  for (const u32 expected : {0u, 0u, 1u, 0u, 0u, 1u})
+  {
+    Timers::WriteRegister(TIMER0 + REG_TARGET, 0);
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_COUNTER), expected);
+    Run(1);
+  }
 }
 
 // The sysclk event should run when the IRQ happens, and not before then.
 TEST_F(TimersTest, SysClkEventScheduledForIRQ)
 {
-  // Overflow is one tick after reaching 0xFFFF.
+  // Overflow is one tick after reaching 0xFFFF, and the counter is held for a tick after writing the mode.
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_ON_OVERFLOW | MODE_IRQ_REPEAT);
-  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
-  Run(0xFFFF);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10001);
+  Run(0x10000);
   EXPECT_FALSE(TakeIRQ(2));
   Run(1);
   EXPECT_TRUE(TakeIRQ(2));
@@ -257,8 +298,8 @@ TEST_F(TimersTest, SysClkEventScheduledForIRQ)
   // When free-running, the counter has to wrap around to reach the target again.
   Timers::WriteRegister(TIMER2 + REG_TARGET, 0x100);
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
-  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x100);
-  Run(0x100);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x101);
+  Run(0x101);
   EXPECT_TRUE(TakeIRQ(2));
   EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
   Run(0xFFFF);
@@ -318,8 +359,8 @@ TEST_F(TimersTest, OverclockedIRQNotAffectedByUpdates)
 
   SetOverclock(false);
 
-  // 1001 timer ticks is 3503.5 CPU ticks at 350%.
-  EXPECT_EQ(irq_ticks[0], (std::vector<u32>{3504, 7007, 10511, 14014, 17518}));
+  // 1003 timer ticks with the hold after resetting is 3510.5 CPU ticks at 350%, plus one for the mode write.
+  EXPECT_EQ(irq_ticks[0], (std::vector<u32>{3507, 7018, 10528, 14039, 17549}));
   EXPECT_EQ(irq_ticks[1], irq_ticks[0]);
 }
 
@@ -335,9 +376,9 @@ TEST_F(TimersTest, ZeroTarget)
     EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW),
               MODE_REACHED_TARGET);
 
-    // sysclk/8 adds zero ticks most of the time.
+    // sysclk/8 adds zero ticks most of the time. The counter is held for a tick after writing the mode.
     Timers::AddTicks(2, 0);
-    Timers::AddTicks(2, 100);
+    Timers::AddTicks(2, 1 + 100);
     EXPECT_FALSE(TakeIRQ(2));
     EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & (MODE_REACHED_TARGET | MODE_REACHED_OVERFLOW), 0u);
 
@@ -355,16 +396,16 @@ TEST_F(TimersTest, ZeroTargetIRQNotAffectedByUpdates)
   Timers::WriteRegister(TIMER2 + REG_TARGET, 0);
   Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
   EXPECT_TRUE(TakeIRQ(2));
-  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10000);
+  EXPECT_EQ(GetTicksUntilSysClkEvent(), 0x10001);
 
-  for (u32 tick = 1; tick <= 0x20000; tick++)
+  for (u32 tick = 1; tick <= 0x20001; tick++)
   {
     Run(1);
 
     if ((tick % 37) == 0)
       Timers::WriteRegister(TIMER0 + REG_TARGET, 0);
 
-    ASSERT_EQ(TakeIRQ(2), (tick % 0x10000) == 0) << "at tick " << tick;
+    ASSERT_EQ(TakeIRQ(2), tick > 1 && ((tick - 1) % 0x10000) == 0) << "at tick " << tick;
   }
 }
 
@@ -553,7 +594,7 @@ TEST_F(TimersTest, AddTicksMatchesSingleTicks)
 {
   static constexpr u32 targets[] = {0, 1, 100, 0xFFFF};
   static constexpr u32 counters[] = {0, 100, 101, 0xFFFF};
-  static constexpr u32 counts[] = {1, 150, 0x10000 + 150};
+  static constexpr u32 counts[] = {1, 2, 3, 150, 0x10000 + 150};
   static constexpr u32 irq_modes[] = {0, MODE_IRQ_AT_TARGET, MODE_IRQ_ON_OVERFLOW,
                                       MODE_IRQ_AT_TARGET | MODE_IRQ_ON_OVERFLOW};
 
@@ -654,8 +695,9 @@ TEST_F(TimersTest, ReadAfterOverdueGateChange)
 
       EXPECT_EQ(values[0][0], values[1][0]) << "sync mode " << sync_mode << " gate " << gate;
       EXPECT_EQ(values[0][1], values[1][1]) << "sync mode " << sync_mode << " gate " << gate;
+      // Paused at the time of the read, less the tick it's held for after writing the mode.
       if (sync_mode == 0 && gate)
-        EXPECT_EQ(values[0][1], 1500u);
+        EXPECT_EQ(values[0][1], 1499u);
     }
   }
 }
