@@ -101,7 +101,7 @@ enum class GP1Command : u8
   SetHorizontalDisplayRange = 0x06,
   SetVerticalDisplayRange = 0x07,
   SetDisplayMode = 0x08,
-  SetAllowTextureDisable = 0x09,
+  SetVRAMSize = 0x09,
 };
 
 // NOTE: Inclusive, not exclusive on the upper bounds.
@@ -162,7 +162,7 @@ union GPUSTATReg
   BitField<u32, bool, 12, 1> check_mask_before_draw;
   BitField<u32, u8, 13, 1> interlaced_field;
   BitField<u32, bool, 14, 1> reverse_flag;
-  BitField<u32, bool, 15, 1> texture_disable;
+  BitField<u32, bool, 15, 1> texture_page_y_base_2;
   BitField<u32, u8, 16, 1> horizontal_resolution_2;
   BitField<u32, u8, 17, 2> horizontal_resolution_1;
   BitField<u32, bool, 19, 1> vertical_resolution;
@@ -225,7 +225,7 @@ union GPUDrawModeReg
   BitField<u16, GPUTextureMode, 7, 2> texture_mode;
   BitField<u16, bool, 9, 1> dither_enable;
   BitField<u16, bool, 10, 1> draw_to_displayed_field;
-  BitField<u16, bool, 11, 1> texture_disable;
+  BitField<u16, bool, 11, 1> texture_page_y_base_2;
   BitField<u16, bool, 12, 1> texture_x_flip;
   BitField<u16, bool, 13, 1> texture_y_flip;
 

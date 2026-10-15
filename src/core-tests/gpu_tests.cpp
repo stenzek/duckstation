@@ -119,6 +119,33 @@ TEST_F(GPUFrontend, ProgressiveInterlaceUsesOneBeamLinePerDisplayLine)
   EXPECT_EQ(line, first_line + 100);
 }
 
+TEST_F(GPUFrontend, V2InternalRegisterQueries)
+{
+  GPU::WriteRegister(4, 0x10000007);
+  EXPECT_EQ(GPU::ReadRegister(0), 2u);
+  GPU::WriteRegister(4, 0x10000017);
+  EXPECT_EQ(GPU::ReadRegister(0), 2u);
+
+  GPU::WriteRegister(0, 0xE2001234);
+  GPU::WriteRegister(4, 0x10000002);
+  ASSERT_EQ(GPU::ReadRegister(0), 0x1234u);
+  GPU::WriteRegister(4, 0x1000000A); // Unsupported v2 indices do not mirror 0..7.
+  EXPECT_EQ(GPU::ReadRegister(0), 0x1234u);
+  GPU::WriteRegister(4, 0x10000008);
+  EXPECT_EQ(GPU::ReadRegister(0), 0u);
+}
+
+TEST_F(GPUFrontend, V2StatusReportsFieldAndUpperTextureAddress)
+{
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
+  GPU::WriteRegister(0, 0xE1000800);
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 15), 0u);
+  GPU::WriteRegister(4, 0x09000001);
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 15), 0u);
+  GPU::WriteRegister(4, 0x09000000);
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 15), 0u);
+}
+
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)
 {
   GSVector4i source, display, draw;

@@ -155,7 +155,7 @@ void GPUDump::Recorder::WriteGP1Packet(u32 value)
   const u32 command = (value >> 24) & 0x3F;
 
   // only in-range commands, no info
-  if (command > static_cast<u32>(GP1Command::SetAllowTextureDisable))
+  if (command > static_cast<u32>(GP1Command::SetVRAMSize))
     return;
 
   // filter DMA direction, we don't want to screw with that

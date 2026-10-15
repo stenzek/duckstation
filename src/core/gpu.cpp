@@ -324,7 +324,7 @@ struct Locals
   GPUSTATReg GPUSTAT = {};
 
   bool console_is_pal = false;
-  bool set_texture_disable_mask = false;
+  bool enable_upper_vram = false;
   bool drawing_area_changed = false;
   bool force_progressive_scan = false;
   bool texture_enable_mask = false;
@@ -500,7 +500,7 @@ std::pair<u32, u32> GPU::GetFullDisplayResolution()
 void GPU::Reset(bool clear_vram)
 {
   s_locals.GPUSTAT.bits = 0x14802000;
-  s_locals.set_texture_disable_mask = false;
+  s_locals.enable_upper_vram = false;
   s_locals.GPUREAD_latch = 0;
   s_locals.crtc_state.fractional_ticks = 0;
   s_locals.crtc_state.fractional_dot_ticks = 0;
@@ -543,7 +543,7 @@ void GPU::SoftReset()
   s_locals.GPUSTAT.set_mask_while_drawing = false;
   s_locals.GPUSTAT.check_mask_before_draw = false;
   s_locals.GPUSTAT.reverse_flag = false;
-  s_locals.GPUSTAT.texture_disable = false;
+  s_locals.GPUSTAT.texture_page_y_base_2 = false;
   s_locals.GPUSTAT.horizontal_resolution_2 = 0;
   s_locals.GPUSTAT.horizontal_resolution_1 = 0;
   s_locals.GPUSTAT.vertical_resolution = false;
@@ -620,7 +620,7 @@ bool GPU::DoState(StateWrapper& sw)
   if (sw.GetVersion() < 87) [[unlikely]]
     sw.SkipBytes(1); // console_is_pal
 
-  sw.Do(&s_locals.set_texture_disable_mask);
+  sw.Do(&s_locals.enable_upper_vram);
 
   sw.Do(&s_locals.crtc_state.regs.display_address_start);
   sw.Do(&s_locals.crtc_state.regs.horizontal_display_range);
@@ -752,7 +752,7 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
-  sw.Do(&s_locals.set_texture_disable_mask);
+  sw.Do(&s_locals.enable_upper_vram);
 
   sw.DoBytes(&s_locals.crtc_state, sizeof(s_locals.crtc_state));
 
@@ -1183,6 +1183,9 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
 {
   static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = s_locals.crtc_state;
+
+  if (!s_locals.GPUSTAT.vertical_interlace)
+    s_locals.GPUSTAT.interlaced_field = 1u;
 
   cs.vertical_total = s_locals.GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
   cs.horizontal_total = s_locals.GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
@@ -1708,7 +1711,7 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
       else
       {
         cs.interlaced_field = 0;
-        s_locals.GPUSTAT.interlaced_field = 0u; // new GPU = 1, old GPU = 0
+        s_locals.GPUSTAT.interlaced_field = 1u;
       }
     }
   }
@@ -2078,10 +2081,10 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case static_cast<u8>(GP1Command::SetAllowTextureDisable):
+    case static_cast<u8>(GP1Command::SetVRAMSize):
     {
-      s_locals.set_texture_disable_mask = ConvertToBoolUnchecked(param & 0x01);
-      DEBUG_LOG("Set texture disable mask <- {}", s_locals.set_texture_disable_mask ? "allowed" : "ignored");
+      s_locals.enable_upper_vram = ConvertToBoolUnchecked(param & 0x01);
+      DEBUG_LOG("Upper VRAM addressing <- {}", s_locals.enable_upper_vram ? "allowed" : "ignored");
     }
     break;
 
@@ -2114,14 +2117,28 @@ void GPU::WriteGP1(u32 value)
 
 void GPU::HandleGetGPUInfoCommand(u32 value)
 {
-  const u8 subcommand = Truncate8(value & 0x07);
+  const u8 subcommand = Truncate8(value & 0x0F);
   switch (subcommand)
   {
     case 0x00:
     case 0x01:
     case 0x06:
-    case 0x07:
+    case 0x09:
+    case 0x0A:
+    case 0x0B:
+    case 0x0C:
+    case 0x0D:
+    case 0x0E:
+    case 0x0F:
       // leave GPUREAD intact
+      break;
+
+    case 0x07: // GPU version (v2)
+      s_locals.GPUREAD_latch = 2;
+      break;
+
+    case 0x08:
+      s_locals.GPUREAD_latch = 0;
       break;
 
     case 0x02: // Get Texture Window
@@ -2155,9 +2172,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
     }
     break;
 
-    [[unlikely]] default:
-      WARNING_LOG("Unhandled GetGPUInfo(0x{:02X})", subcommand);
-      break;
+      DefaultCaseIsUnreachable();
   }
 }
 
@@ -2209,15 +2224,12 @@ GSVector4i GPU::GetClampedDrawingArea(const GPUDrawingArea& drawing_area)
 void GPU::SetDrawMode(u16 value)
 {
   GPUDrawModeReg new_mode_reg{static_cast<u16>(value & GPUDrawModeReg::MASK)};
-  if (!s_locals.set_texture_disable_mask)
-    new_mode_reg.texture_disable = false;
-
   s_locals.draw_mode_reg.bits = new_mode_reg.bits;
 
   // Bits 0..10 are returned in the GPU status register.
   s_locals.GPUSTAT.bits = (s_locals.GPUSTAT.bits & ~(GPUDrawModeReg::GPUSTAT_MASK)) |
                           (ZeroExtend32(new_mode_reg.bits) & GPUDrawModeReg::GPUSTAT_MASK);
-  s_locals.GPUSTAT.texture_disable = s_locals.draw_mode_reg.texture_disable;
+  s_locals.GPUSTAT.texture_page_y_base_2 = s_locals.draw_mode_reg.texture_page_y_base_2;
 }
 
 void GPU::SetTexturePalette(u16 value)
@@ -3009,7 +3021,8 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   else
     cmd->dither_enable = (dither_enable && (shading_enable || (texture_enable && !raw_texture_enable)));
 
-  cmd->draw_mode.bits = s_locals.draw_mode_reg.bits;
+  // Only the populated 1 MiB bank is passed to the renderer for now, until 2MB VRAM is supported.
+  cmd->draw_mode.bits = s_locals.draw_mode_reg.bits & ~(1u << 11);
   cmd->palette.bits = s_locals.texture_palette_reg.bits;
   cmd->window = s_locals.texture_window;
 }
@@ -3949,7 +3962,7 @@ void GPU::DrawDebugStateWindow(float scale)
     ImGui::Text("Draw Set Mask Bit: %s", s_locals.GPUSTAT.set_mask_while_drawing ? "Yes" : "No");
     ImGui::Text("Draw To Masked Pixels: %s", s_locals.GPUSTAT.check_mask_before_draw ? "Yes" : "No");
     ImGui::Text("Reverse Flag: %s", s_locals.GPUSTAT.reverse_flag ? "Yes" : "No");
-    ImGui::Text("Texture Disable: %s", s_locals.GPUSTAT.texture_disable ? "Yes" : "No");
+    ImGui::Text("Texture Page Upper Bank: %s", s_locals.GPUSTAT.texture_page_y_base_2 ? "Yes" : "No");
     ImGui::Text("PAL Mode: %s", s_locals.GPUSTAT.pal_mode ? "Yes" : "No");
     ImGui::Text("Interrupt Request: %s", s_locals.GPUSTAT.interrupt_request ? "Yes" : "No");
     ImGui::Text("DMA Request: %s", s_locals.GPUSTAT.dma_data_request ? "Yes" : "No");
@@ -4100,7 +4113,7 @@ void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump)
   dump->WriteGP1Command(GP1Command::SetDisplayStartAddress, s_locals.crtc_state.regs.display_address_start);
   dump->WriteGP1Command(GP1Command::SetHorizontalDisplayRange, s_locals.crtc_state.regs.horizontal_display_range);
   dump->WriteGP1Command(GP1Command::SetVerticalDisplayRange, s_locals.crtc_state.regs.vertical_display_range);
-  dump->WriteGP1Command(GP1Command::SetAllowTextureDisable, BoolToUInt32(s_locals.set_texture_disable_mask));
+  dump->WriteGP1Command(GP1Command::SetVRAMSize, BoolToUInt32(s_locals.enable_upper_vram));
 
   // display mode
   GP1SetDisplayMode dispmode = {};
