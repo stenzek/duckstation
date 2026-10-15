@@ -218,6 +218,30 @@ TEST_F(TimersTest, ToggleModeDoesNotToggleOnOverflow)
   EXPECT_TRUE(TakeIRQ(2));
 }
 
+// One-shot toggle mode leaves the request asserted, until it is rearmed by writing the mode.
+TEST_F(TimersTest, OneShotToggleModeOnlyTogglesOnce)
+{
+  Timers::WriteRegister(TIMER2 + REG_TARGET, 0x100);
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_TOGGLE);
+
+  Timers::AddTicks(2, 0x100);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
+  EXPECT_TRUE(TakeIRQ(2));
+
+  for (u32 i = 0; i < 2; i++)
+  {
+    Timers::AddTicks(2, 0x10000);
+    EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
+    EXPECT_FALSE(TakeIRQ(2));
+  }
+
+  Timers::WriteRegister(TIMER2 + REG_MODE, MODE_IRQ_AT_TARGET | MODE_IRQ_TOGGLE);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, MODE_IRQ_N);
+  Timers::AddTicks(2, 0x100);
+  EXPECT_EQ(Timers::ReadRegister(TIMER2 + REG_MODE) & MODE_IRQ_N, 0u);
+  EXPECT_TRUE(TakeIRQ(2));
+}
+
 // The sysclk event should run when the IRQ happens, and not before then.
 TEST_F(TimersTest, SysClkEventScheduledForIRQ)
 {

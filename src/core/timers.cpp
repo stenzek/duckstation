@@ -320,9 +320,10 @@ void Timers::CheckForIRQ(u32 timer, u32 first_counter)
       cs.irq_done = true;
       cs.mode.interrupt_request_n = true;
     }
-    else
+    else if (!cs.irq_done || cs.mode.irq_repeat)
     {
-      // TODO: How does the non-repeat mode work here?
+      // In one-shot mode, the request stays asserted until the next mode write.
+      cs.irq_done = true;
       cs.mode.interrupt_request_n ^= true;
       if (!cs.mode.interrupt_request_n)
         DEBUG_LOG("Raising timer {} alternate IRQ", timer);
