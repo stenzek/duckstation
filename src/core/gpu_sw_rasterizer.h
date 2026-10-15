@@ -91,10 +91,13 @@ ALWAYS_INLINE DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, 
   extern const DrawRectangleFunctionTable DrawRectangleFunctions;                                                      \
   extern const DrawTriangleFunctionTable DrawTriangleFunctions;                                                        \
   extern const DrawLineFunctionTable DrawLineFunctions;                                                                \
+  std::remove_pointer_t<FillVRAMFunction> FillVRAMImpl;                                                                \
+  std::remove_pointer_t<WriteVRAMFunction> WriteVRAMImpl;                                                              \
+  std::remove_pointer_t<CopyVRAMFunction> CopyVRAMImpl;                                                                \
   }
 
 // Have to define the symbols globally, because clang won't include them otherwise.
-#if defined(CPU_ARCH_SSE) && 0
+#if defined(CPU_ARCH_SSE)
 #define ALTERNATIVE_RASTERIZER_LIST() DECLARE_ALTERNATIVE_RASTERIZER(AVX2)
 #else
 #define ALTERNATIVE_RASTERIZER_LIST()

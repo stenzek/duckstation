@@ -59,6 +59,7 @@
     <ClCompile Include="lightgun_controller.cpp" />
     <ClCompile Include="gdb_server.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
+    <ClCompile Include="gpu_sw_rasterizer_avx2.cpp" />
     <ClCompile Include="gpu_hw_texture_cache.cpp" />
     <ClCompile Include="memory_scanner.cpp" />
     <ClCompile Include="gpu_dump.cpp" />

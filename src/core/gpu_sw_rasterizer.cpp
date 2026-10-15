@@ -107,9 +107,7 @@ void GPU_SW_Rasterizer::SelectImplementation()
 #if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
   const char* use_isa = std::getenv("SW_USE_ISA");
 
-  // AVX2/256-bit path still has issues, and I need to make sure that it's not ODR'ing any shared
-  // symbols on top of the base symbols.
-#if defined(CPU_ARCH_SSE) && defined(_MSC_VER) && 0
+#if defined(CPU_ARCH_SSE)
   if (cpuinfo_has_x86_avx2() && (!use_isa || StringUtil::Strcasecmp(use_isa, "AVX2") == 0))
   {
     SELECT_IMPLEMENTATION(AVX2);

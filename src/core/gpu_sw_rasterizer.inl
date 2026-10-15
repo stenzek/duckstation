@@ -1732,7 +1732,7 @@ constinit const DrawTriangleFunctionTable DrawTriangleFunctions = {
 };
 // clang-format on
 
-static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced, u8 active_line_lsb)
+void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced, u8 active_line_lsb)
 {
 #ifdef USE_VECTOR
   const u16 color16 = VRAMRGBA8888ToRGBA5551(color);
@@ -1850,8 +1850,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
 #endif
 }
 
-static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT data, bool set_mask,
-                          bool check_mask)
+void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT data, bool set_mask, bool check_mask)
 {
   // Fast path when the copy is not oversized.
   if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
@@ -1928,8 +1927,7 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTR
   }
 }
 
-static void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask,
-                         bool check_mask)
+void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask)
 {
   // Break up oversized copies. This behavior has not been verified on console.
   if ((src_x + width) > VRAM_WIDTH || (dst_x + width) > VRAM_WIDTH)
