@@ -72,6 +72,7 @@ struct CounterState
 
 static void UpdateCountingEnabled(u32 index, CounterState& cs);
 static void CheckForIRQ(u32 index, u32 first_counter);
+static void SynchronizeGPUForRead(u32 index, const CounterState& cs);
 static u32 UpdateForRead(u32 index, const CounterState& cs);
 static u32 GetReadCounter(const CounterState& cs, u32 counter, u32 delay);
 
@@ -389,6 +390,29 @@ void Timers::AddSysClkTicks(void*, TickCount sysclk_ticks)
   UpdateSysClkEvent();
 }
 
+void Timers::SynchronizeGPUForRead(u32 index, const CounterState& cs)
+{
+  if (index >= 2)
+    return;
+
+  // Timers 0/1 depend on the GPU when it's clocking them.
+  if (cs.external_counting_enabled)
+  {
+    if (index == 0 || GPU::IsCRTCScanlinePending())
+      GPU::SynchronizeCRTC();
+
+    return;
+  }
+
+  // With sync enabled, the GPU also changes the gate. The CRTC event runs at each blank start and end, but the CPU
+  // only runs events between instructions/blocks, so it can read the counter a few ticks after the gate changed,
+  // before the event has run. In reset modes, the read would then see the counter from before the reset, a whole
+  // line/frame off instead of a few ticks. Running the CRTC event first applies the gate change at the time of the
+  // read, so the counter is only off by those few ticks. This only happens when an event is overdue, so it's rare.
+  if (cs.mode.sync_enable && TimingEvents::IsAnyEventDue())
+    GPU::SynchronizeCRTC();
+}
+
 u32 Timers::UpdateForRead(u32 index, const CounterState& cs)
 {
   // Updating the counters early only changes the counters themselves, unless one of them reaches its target or
@@ -444,24 +468,14 @@ u32 Timers::ReadRegister(u32 offset)
   {
     case 0x00:
     {
-      if (timer_index < 2 && cs.external_counting_enabled)
-      {
-        // timers 0/1 depend on the GPU
-        if (timer_index == 0 || GPU::IsCRTCScanlinePending())
-          GPU::SynchronizeCRTC();
-      }
+      SynchronizeGPUForRead(timer_index, cs);
 
       return UpdateForRead(timer_index, cs);
     }
 
     case 0x04:
     {
-      if (timer_index < 2 && cs.external_counting_enabled)
-      {
-        // timers 0/1 depend on the GPU
-        if (timer_index == 0 || GPU::IsCRTCScanlinePending())
-          GPU::SynchronizeCRTC();
-      }
+      SynchronizeGPUForRead(timer_index, cs);
 
       UpdateForRead(timer_index, cs);
 
