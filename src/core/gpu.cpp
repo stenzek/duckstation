@@ -3804,7 +3804,7 @@ void GPU::FinishVRAMWrite()
 
   if (s_locals.blit_remaining_words == 0)
   {
-    if (g_settings.gpu_dump_cpu_to_vram_copies)
+    if (g_settings.gpu_dump_cpu_to_vram_copies) [[unlikely]]
     {
       DumpVRAMToFile(fmt::format("{}" FS_OSPATH_SEPARATOR_STR "cpu_to_vram_copy_{}.png", EmuFolders::DataRoot,
                                  ++s_locals.cpu_to_vram_dump_id),
@@ -3867,12 +3867,25 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   ReadVRAM(s_locals.vram_transfer.x, s_locals.vram_transfer.y, s_locals.vram_transfer.width,
            s_locals.vram_transfer.height);
 
-  if (g_settings.gpu_dump_vram_to_cpu_copies)
+  if (g_settings.gpu_dump_vram_to_cpu_copies) [[unlikely]]
   {
+    // GPUREAD wraps each coordinate independently. Build a contiguous image for the dump helper.
+    const u32 width = s_locals.vram_transfer.width;
+    const u32 height = s_locals.vram_transfer.height;
+    const u32 x = s_locals.vram_transfer.x;
+    const u32 first_width = std::min(width, VRAM_WIDTH - x);
+    std::vector<u16> pixels(width * height);
+    for (u32 row = 0; row < height; row++)
+    {
+      const u16* src = &g_vram[((s_locals.vram_transfer.y + row) & VRAM_HEIGHT_MASK) * VRAM_WIDTH];
+      u16* dst = &pixels[row * width];
+      std::memcpy(dst, src + x, first_width * sizeof(u16));
+      std::memcpy(dst + first_width, src, (width - first_width) * sizeof(u16));
+    }
+
     DumpVRAMToFile(fmt::format("{}" FS_OSPATH_SEPARATOR_STR "vram_to_cpu_copy_{}.png", EmuFolders::DataRoot,
                                ++s_locals.vram_to_cpu_dump_id),
-                   s_locals.vram_transfer.width, s_locals.vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
-                   &g_vram[s_locals.vram_transfer.y * VRAM_WIDTH + s_locals.vram_transfer.x], true);
+                   width, height, sizeof(u16) * width, pixels.data(), true);
   }
 
   // switch to pixel-by-pixel read state
@@ -4037,6 +4050,7 @@ void GPU::StopRecordingGPUDump()
       OSDMessageType::Error, "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
       fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to close GPU trace:"), error.GetDescription()));
     s_locals.gpu_dump.reset();
+    return;
   }
 
   // Are we compressing the dump?
