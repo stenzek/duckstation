@@ -6,6 +6,7 @@
 #include "core/gpu_sw_rasterizer.h"
 #include "core/interrupt_controller.h"
 #include "core/settings.h"
+#include "core/system.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
 
@@ -35,8 +36,12 @@ protected:
 
   void TearDown() override
   {
+    // Other suites see the GPU's static state, so put the beam back at the start of the frame.
+    CPU::g_state.pending_ticks = 0;
+    GPU::Reset(false);
     GPU::Shutdown();
     Timers::Shutdown();
+    CPU::g_state.pending_ticks = 0;
     g_settings = m_old_settings;
   }
 
@@ -48,6 +53,13 @@ protected:
         return event;
     }
     return nullptr;
+  }
+
+  // CPU ticks until the GPU clock reaches the given number of quarter ticks, rounded up.
+  static TickCount SystemTicksForGPUQuarterTicks(u64 quarter_ticks)
+  {
+    const u64 frequency = static_cast<u64>(GPU::GetCRTCFrequency()) * 4;
+    return static_cast<TickCount>((quarter_ticks * System::MASTER_CLOCK + frequency - 1) / frequency);
   }
 
   Settings m_old_settings;
@@ -313,6 +325,104 @@ TEST_F(GPUFrontend, V2StatusReportsFieldAndUpperTextureAddress)
   EXPECT_NE(GPU::ReadRegister(4) & (1u << 15), 0u);
   GPU::WriteRegister(4, 0x09000000);
   EXPECT_NE(GPU::ReadRegister(4) & (1u << 15), 0u);
+}
+
+TEST_F(GPUFrontend, BeamWaitAccountsForPendingFractionalPhase)
+{
+  GPU::WriteRegister(4, 0x070FFC00); // Keep the display range open while synchronizing.
+  const TickCount target_time = SystemTicksForGPUQuarterTicks(200 * 13650 + 123 * 4);
+  for (const TickCount pending_ticks : {1, 17, 100, 12345})
+  {
+    SCOPED_TRACE(pending_ticks);
+    CPU::g_state.pending_ticks = pending_ticks;
+    EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(123, 200), target_time - pending_ticks);
+    GPU::SynchronizeCRTC();
+    EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(123, 200), target_time - pending_ticks);
+  }
+}
+
+TEST_F(GPUFrontend, NTSCScanlinesDoNotDriftAcrossSynchronizations)
+{
+  GPU::WriteRegister(4, 0x070FFC00);
+  for (u32 expected_line = 1; expected_line <= 262; expected_line++)
+  {
+    SCOPED_TRACE(expected_line);
+    CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(expected_line * 13650);
+    u32 tick, line;
+    GPU::GetBeamPosition(&tick, &line);
+    EXPECT_EQ(line, expected_line);
+    EXPECT_LE(tick, 1u);
+
+    GPU::SynchronizeCRTC();
+    u32 synchronized_tick, synchronized_line;
+    GPU::GetBeamPosition(&synchronized_tick, &synchronized_line);
+    EXPECT_EQ(synchronized_tick, tick);
+    EXPECT_EQ(synchronized_line, line);
+  }
+}
+
+TEST_F(GPUFrontend, TimersCountDotsAndHBlanksAcrossFractionalScanlines)
+{
+  GPU::WriteRegister(4, 0x070FFC00);
+  Timers::WriteRegister(0x04, 1u << 8); // Timer 0 counts dots, at the default ten GPU ticks per dot.
+  Timers::WriteRegister(0x14, 1u << 8); // Timer 1 counts HBlanks.
+  // Synchronize on every line, so each update carries a fractional scanline end.
+  for (u32 expected_line = 1; expected_line <= 100; expected_line++)
+  {
+    SCOPED_TRACE(expected_line);
+    CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(expected_line * 13650);
+    const u64 expected_dots = (static_cast<u64>(CPU::g_state.pending_ticks) * GPU::GetCRTCFrequency()) /
+                              (static_cast<u64>(System::MASTER_CLOCK) * 10);
+    EXPECT_EQ(Timers::ReadRegister(0x00), expected_dots);
+    EXPECT_EQ(Timers::ReadRegister(0x10), expected_line);
+  }
+}
+
+TEST_F(GPUFrontend, GatedTimerAdvancesPastFractionalHBlankBoundaries)
+{
+  GPU::WriteRegister(4, 0x070FFC00);
+  Timers::WriteRegister(0x04, (1u << 8) | 1u); // Count dots outside HBlank.
+  for (const u32 line : {9u, 11u, 13u})
+  {
+    SCOPED_TRACE(line);
+    CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(line * 13650 + 488 * 4);
+    Timers::ReadRegister(0x00);
+    // The next event must advance time, rather than reschedule the boundary we just crossed.
+    EXPECT_GT(CPU::g_state.downcount, CPU::g_state.pending_ticks);
+  }
+}
+
+TEST_F(GPUFrontend, OverclockKeepsFractionalScanlines)
+{
+  g_settings.cpu_overclock_active = true;
+  g_settings.cpu_overclock_numerator = 10;
+  g_settings.cpu_overclock_denominator = 1;
+  GPU::CPUClockChanged();
+
+  const TickCount target_time = SystemTicksForGPUQuarterTicks(100 * 13650 * 10);
+  EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 100), target_time);
+  CPU::g_state.pending_ticks = target_time;
+  u32 tick, line;
+  GPU::GetBeamPosition(&tick, &line);
+  EXPECT_EQ(line, 100u);
+  EXPECT_LE(tick, 1u);
+}
+
+TEST_F(GPUFrontend, ForcedVideoTimingUsesTheSelectedLineLength)
+{
+  GPU::WriteRegister(4, 0x08000008); // PAL output on the fixture's NTSC console clock.
+  EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 100), SystemTicksForGPUQuarterTicks(100 * 13620));
+
+  Settings old_settings = g_settings;
+  g_settings.gpu_force_video_timing = ForceVideoTimingMode::NTSC;
+  GPU::UpdateSettings(old_settings);
+  EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 100), SystemTicksForGPUQuarterTicks(100 * 13650));
+
+  old_settings = g_settings;
+  g_settings.gpu_force_video_timing = ForceVideoTimingMode::PAL;
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000000);
+  EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 100), SystemTicksForGPUQuarterTicks(100 * 13620));
 }
 
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)

@@ -84,11 +84,15 @@ enum : u32
 
 enum : u16
 {
-  NTSC_TICKS_PER_LINE = 3413,
+  // Line lengths are in half GPU ticks, NTSC lines are 3412.5 ticks.
+  NTSC_HALF_TICKS_PER_LINE = 6825,
   NTSC_TOTAL_LINES = 263,
-  PAL_TICKS_PER_LINE = 3406,
+  PAL_HALF_TICKS_PER_LINE = 6810,
   PAL_TOTAL_LINES = 314,
 };
+
+// Positions within a GPU tick are in units of the CPU to GPU clock divider. Half and quarter ticks are exact.
+static constexpr u64 CRTC_SUBTICKS_PER_TICK = 451584;
 
 enum : u16
 {
@@ -121,8 +125,8 @@ static bool IsDisplayDisabled();
 /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
 static bool IsInterlacedRenderingEnabled();
 
-/// Returns the number of pending GPU ticks.
-static TickCount GetPendingCRTCTicks();
+/// Returns the number of pending GPU subticks.
+static u64 GetPendingCRTCSubTicks();
 static TickCount GetPendingCommandTicks();
 static TickCount GetTicksUntilLine(u32 line);
 
@@ -131,14 +135,18 @@ static bool IsCommandCompletionPending();
 
 static float ComputeHorizontalFrequency();
 static float ComputeVerticalFrequency();
+static u64 GetCRTCLineSubTicks();
+static u64 GetCRTCFieldSubTicks();
+static u64 GetCRTCBeamSubTicks();
 
 // Ticks for hblank/vblank.
 static void CRTCTickEvent(void*, TickCount ticks);
 static void CommandTickEvent(void*, TickCount ticks);
 static void FrameDoneEvent(void*, TickCount ticks);
 
-static TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks);
-static TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks);
+static u64 GetCRTCSubTicksPerSystemTick();
+static TickCount CRTCSubTicksToSystemTicks(u64 subticks);
+static std::pair<TickCount, TickCount> SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount fractional_ticks);
 
 static bool DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha,
                            Error* error = nullptr);
@@ -301,6 +309,7 @@ struct CRTCState
   u16 horizontal_active_end;
 
   u16 horizontal_total;
+  TickCount horizontal_total_fraction; // in subticks, for NTSC's half tick
   u16 vertical_total;
 
   u16 current_scanline;
@@ -765,6 +774,8 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.crtc_state.current_tick_in_scanline);
   s_locals.crtc_state.current_scanline = Truncate16(sw.DoValue(static_cast<u32>(s_locals.crtc_state.current_scanline)));
   sw.DoEx(&s_locals.crtc_state.fractional_dot_ticks, 46, 0);
+  if (sw.IsReading() && sw.GetVersion() < 98) [[unlikely]]
+    s_locals.crtc_state.fractional_dot_ticks *= static_cast<TickCount>(CRTC_SUBTICKS_PER_TICK); // was GPU ticks
   sw.Do(&s_locals.crtc_state.in_hblank);
   sw.Do(&s_locals.crtc_state.in_vblank);
   sw.Do(&s_locals.crtc_state.interlaced_field);
@@ -1133,24 +1144,25 @@ TickCount GPU::GetCRTCFrequency()
   return s_locals.console_is_pal ? 53203425 : 53693175;
 }
 
-TickCount GPU::CRTCTicksToSystemTicks(TickCount gpu_ticks, TickCount fractional_ticks)
+u64 GPU::GetCRTCSubTicksPerSystemTick()
 {
-  // convert to master clock, rounding up as we want to overshoot not undershoot
-  if (!s_locals.console_is_pal)
-    return static_cast<TickCount>((u64(gpu_ticks) * u64(451584) + fractional_ticks + u64(715908)) / u64(715909));
-  else
-    return static_cast<TickCount>((u64(gpu_ticks) * u64(451584) + fractional_ticks + u64(709378)) / u64(709379));
+  return s_locals.console_is_pal ? 709379 : 715909;
 }
 
-TickCount GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks)
+TickCount GPU::CRTCSubTicksToSystemTicks(u64 subticks)
 {
-  u64 mul = u64(sysclk_ticks);
-  mul *= !s_locals.console_is_pal ? u64(715909) : u64(709379);
-  mul += u64(*fractional_ticks);
+  // convert to master clock, rounding up as we want to overshoot not undershoot
+  // deliberately uses the if to enable optimization of the integer divide
+  if (!s_locals.console_is_pal)
+    return static_cast<TickCount>((subticks + (715909 - 1)) / 715909);
+  else
+    return static_cast<TickCount>((subticks + (709379 - 1)) / 709379);
+}
 
-  const TickCount ticks = static_cast<TickCount>(mul / u64(451584));
-  *fractional_ticks = static_cast<TickCount>(mul % u64(451584));
-  return ticks;
+std::pair<TickCount, TickCount> GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount fractional_ticks)
+{
+  const u64 mul = u64(sysclk_ticks) * GetCRTCSubTicksPerSystemTick() + u64(fractional_ticks);
+  return {static_cast<TickCount>(mul / CRTC_SUBTICKS_PER_TICK), static_cast<TickCount>(mul % CRTC_SUBTICKS_PER_TICK)};
 }
 
 void GPU::AddCommandTicks(TickCount ticks)
@@ -1165,23 +1177,27 @@ void GPU::SynchronizeCRTC()
   s_locals.crtc_tick_event.InvokeEarlyNoReschedule();
 }
 
-float GPU::ComputeHorizontalFrequency()
+u64 GPU::GetCRTCLineSubTicks()
 {
   const CRTCState& cs = s_locals.crtc_state;
-  TickCount fractional_ticks = 0;
-  return static_cast<float>(
-    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
-    static_cast<double>(cs.horizontal_total));
+  return u64(cs.horizontal_total) * CRTC_SUBTICKS_PER_TICK + u64(cs.horizontal_total_fraction);
+}
+
+u64 GPU::GetCRTCFieldSubTicks()
+{
+  return GetCRTCLineSubTicks() * s_locals.crtc_state.vertical_total;
+}
+
+float GPU::ComputeHorizontalFrequency()
+{
+  return static_cast<float>(static_cast<double>(u64(System::GetTicksPerSecond()) * GetCRTCSubTicksPerSystemTick()) /
+                            static_cast<double>(GetCRTCLineSubTicks()));
 }
 
 float GPU::ComputeVerticalFrequency()
 {
-  const CRTCState& cs = s_locals.crtc_state;
-  const TickCount ticks_per_frame = cs.horizontal_total * cs.vertical_total;
-  TickCount fractional_ticks = 0;
-  return static_cast<float>(
-    static_cast<double>(SystemTicksToCRTCTicks(System::GetTicksPerSecond(), &fractional_ticks)) /
-    static_cast<double>(ticks_per_frame));
+  return static_cast<float>(static_cast<double>(u64(System::GetTicksPerSecond()) * GetCRTCSubTicksPerSystemTick()) /
+                            static_cast<double>(GetCRTCFieldSubTicks()));
 }
 
 float GPU::ComputePixelAspectRatio()
@@ -1329,7 +1345,8 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
 
   const u16 old_vertical_total = cs.vertical_total;
   cs.vertical_total = s_locals.GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
-  cs.horizontal_total = s_locals.GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
+  u16 half_ticks_per_line = s_locals.GPUSTAT.pal_mode ? PAL_HALF_TICKS_PER_LINE : NTSC_HALF_TICKS_PER_LINE;
+  cs.horizontal_total = half_ticks_per_line / 2;
   cs.horizontal_active_start = s_locals.GPUSTAT.pal_mode ? PAL_HORIZONTAL_ACTIVE_START : NTSC_HORIZONTAL_ACTIVE_START;
   cs.horizontal_active_end = s_locals.GPUSTAT.pal_mode ? PAL_HORIZONTAL_ACTIVE_END : NTSC_HORIZONTAL_ACTIVE_END;
 
@@ -1346,11 +1363,11 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
   if (s_locals.GPUSTAT.pal_mode && g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC)
   {
     // scale to NTSC parameters
-    cs.horizontal_display_start =
-      static_cast<u16>((static_cast<u32>(cs.horizontal_display_start) * NTSC_TICKS_PER_LINE) / PAL_TICKS_PER_LINE);
+    cs.horizontal_display_start = static_cast<u16>(
+      (static_cast<u32>(cs.horizontal_display_start) * NTSC_HALF_TICKS_PER_LINE) / PAL_HALF_TICKS_PER_LINE);
     cs.horizontal_display_end = static_cast<u16>(
-      ((static_cast<u32>(cs.horizontal_display_end) * NTSC_TICKS_PER_LINE) + (PAL_TICKS_PER_LINE - 1)) /
-      PAL_TICKS_PER_LINE);
+      ((static_cast<u32>(cs.horizontal_display_end) * NTSC_HALF_TICKS_PER_LINE) + (PAL_HALF_TICKS_PER_LINE - 1)) /
+      PAL_HALF_TICKS_PER_LINE);
     cs.vertical_display_start =
       static_cast<u16>((static_cast<u32>(cs.vertical_display_start) * NTSC_TOTAL_LINES) / PAL_TOTAL_LINES);
     cs.vertical_display_end = static_cast<u16>(
@@ -1358,17 +1375,16 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
 
     cs.vertical_total = NTSC_TOTAL_LINES;
     cs.current_scanline %= NTSC_TOTAL_LINES;
-    cs.horizontal_total = NTSC_TICKS_PER_LINE;
-    cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
+    half_ticks_per_line = NTSC_HALF_TICKS_PER_LINE;
   }
   else if (!s_locals.GPUSTAT.pal_mode && g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL)
   {
     // scale to PAL parameters
-    cs.horizontal_display_start =
-      static_cast<u16>((static_cast<u32>(cs.horizontal_display_start) * PAL_TICKS_PER_LINE) / NTSC_TICKS_PER_LINE);
+    cs.horizontal_display_start = static_cast<u16>(
+      (static_cast<u32>(cs.horizontal_display_start) * PAL_HALF_TICKS_PER_LINE) / NTSC_HALF_TICKS_PER_LINE);
     cs.horizontal_display_end = static_cast<u16>(
-      ((static_cast<u32>(cs.horizontal_display_end) * PAL_TICKS_PER_LINE) + (NTSC_TICKS_PER_LINE - 1)) /
-      NTSC_TICKS_PER_LINE);
+      ((static_cast<u32>(cs.horizontal_display_end) * PAL_HALF_TICKS_PER_LINE) + (NTSC_HALF_TICKS_PER_LINE - 1)) /
+      NTSC_HALF_TICKS_PER_LINE);
     cs.vertical_display_start =
       static_cast<u16>((static_cast<u32>(cs.vertical_display_start) * PAL_TOTAL_LINES) / NTSC_TOTAL_LINES);
     cs.vertical_display_end = static_cast<u16>(
@@ -1376,8 +1392,7 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
 
     cs.vertical_total = PAL_TOTAL_LINES;
     cs.current_scanline %= PAL_TOTAL_LINES;
-    cs.horizontal_total = PAL_TICKS_PER_LINE;
-    cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
+    half_ticks_per_line = PAL_HALF_TICKS_PER_LINE;
   }
 
   cs.horizontal_display_start =
@@ -1388,9 +1403,21 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
     static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_active_start)));
   cs.horizontal_active_end =
     static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_active_end)));
-  cs.horizontal_total = static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_total)));
 
-  cs.current_tick_in_scanline %= cs.horizontal_total;
+  // Scale the whole line in subticks, so NTSC's half tick survives overclocking.
+  u64 line_subticks = u64(half_ticks_per_line) * (CRTC_SUBTICKS_PER_TICK / 2);
+  if (g_settings.cpu_overclock_active)
+  {
+    line_subticks = (line_subticks * g_settings.cpu_overclock_numerator + (g_settings.cpu_overclock_denominator - 1)) /
+                    g_settings.cpu_overclock_denominator;
+  }
+  cs.horizontal_total = static_cast<u16>(line_subticks / CRTC_SUBTICKS_PER_TICK);
+  cs.horizontal_total_fraction = static_cast<TickCount>(line_subticks % CRTC_SUBTICKS_PER_TICK);
+
+  const u64 position =
+    (u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks)) % line_subticks;
+  cs.current_tick_in_scanline = static_cast<TickCount>(position / CRTC_SUBTICKS_PER_TICK);
+  cs.fractional_ticks = static_cast<TickCount>(position % CRTC_SUBTICKS_PER_TICK);
   UpdateCRTCHBlankFlag();
 
   // The last line stays the last line, so the line before line 0 after GP1(00h) survives a mode change.
@@ -1413,7 +1440,7 @@ void GPU::UpdateCRTCDisplayParameters(u16 old_vram_width, u16 old_vram_height)
   CRTCState& cs = s_locals.crtc_state;
   const DisplayCropMode crop_mode = g_settings.display_crop_mode;
 
-  const u16 horizontal_total = s_locals.GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
+  const u16 horizontal_total = (s_locals.GPUSTAT.pal_mode ? PAL_HALF_TICKS_PER_LINE : NTSC_HALF_TICKS_PER_LINE) / 2;
   const u16 vertical_total = s_locals.GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
   const u16 horizontal_display_start =
     (std::min<u16>(cs.regs.X1, horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
@@ -1648,11 +1675,9 @@ bool GPU::IsInPALMode()
   return s_locals.GPUSTAT.pal_mode;
 }
 
-ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCRTCTicks()
+ALWAYS_INLINE_RELEASE u64 GPU::GetPendingCRTCSubTicks()
 {
-  const TickCount pending_sysclk_ticks = s_locals.crtc_tick_event.GetTicksSinceLastExecution();
-  TickCount fractional_ticks = s_locals.crtc_state.fractional_ticks;
-  return SystemTicksToCRTCTicks(pending_sysclk_ticks, &fractional_ticks);
+  return u64(s_locals.crtc_tick_event.GetTicksSinceLastExecution()) * GetCRTCSubTicksPerSystemTick();
 }
 
 ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
@@ -1685,30 +1710,34 @@ void GPU::RescheduleCRTC()
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
-  TickCount ticks_until_event = lines_until_event * cs.horizontal_total - cs.current_tick_in_scanline;
+  const u64 line_subticks = GetCRTCLineSubTicks();
+  const u64 position = u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks);
+  u64 subticks_until_event = u64(lines_until_event) * line_subticks - position;
   if (Timers::IsExternalIRQEnabled(DOT_TIMER_INDEX))
   {
     const TickCount dots_until_irq = Timers::GetTicksUntilIRQ(DOT_TIMER_INDEX);
-    const TickCount ticks_until_irq = (dots_until_irq * cs.dot_clock_divider) - cs.fractional_dot_ticks;
-    ticks_until_event = std::min(ticks_until_event, std::max<TickCount>(ticks_until_irq, 0));
+    const s64 subticks_until_irq =
+      s64(dots_until_irq) * cs.dot_clock_divider * s64(CRTC_SUBTICKS_PER_TICK) - cs.fractional_dot_ticks;
+    subticks_until_event = std::min(subticks_until_event, static_cast<u64>(std::max<s64>(subticks_until_irq, 0)));
   }
 
   if (Timers::IsSyncEnabled(DOT_TIMER_INDEX))
   {
     // This could potentially be optimized to skip the time the gate is active, if we're resetting and free running.
     // But realistically, I've only seen sync off (most games), or reset+pause on gate (Konami Lightgun games).
-    TickCount ticks_until_hblank_start_or_end;
+    u64 subticks_until_hblank_start_or_end;
     if (cs.current_tick_in_scanline >= cs.horizontal_active_end)
-      ticks_until_hblank_start_or_end = cs.horizontal_total - cs.current_tick_in_scanline + cs.horizontal_active_start;
+      subticks_until_hblank_start_or_end =
+        line_subticks - position + cs.horizontal_active_start * CRTC_SUBTICKS_PER_TICK;
     else if (cs.current_tick_in_scanline < cs.horizontal_active_start)
-      ticks_until_hblank_start_or_end = cs.horizontal_active_start - cs.current_tick_in_scanline;
+      subticks_until_hblank_start_or_end = cs.horizontal_active_start * CRTC_SUBTICKS_PER_TICK - position;
     else
-      ticks_until_hblank_start_or_end = cs.horizontal_active_end - cs.current_tick_in_scanline;
+      subticks_until_hblank_start_or_end = cs.horizontal_active_end * CRTC_SUBTICKS_PER_TICK - position;
 
-    ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
+    subticks_until_event = std::min(subticks_until_event, subticks_until_hblank_start_or_end);
   }
 
-  s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, cs.fractional_ticks));
+  s_locals.crtc_tick_event.Schedule(CRTCSubTicksToSystemTicks(subticks_until_event));
 }
 
 void GPU::SetVBlankEndCheatsEnabled(bool enabled)
@@ -1731,8 +1760,9 @@ bool GPU::IsCRTCScanlinePending()
 {
   // TODO: Most of these should be fields, not lines.
   CRTCState& cs = s_locals.crtc_state;
-  const TickCount ticks = (GetPendingCRTCTicks() + cs.current_tick_in_scanline);
-  return (ticks >= cs.horizontal_total);
+  const u64 position =
+    u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks) + GetPendingCRTCSubTicks();
+  return (position >= GetCRTCLineSubTicks());
 }
 
 ALWAYS_INLINE void GPU::UpdateCRTCHBlankFlag()
@@ -1796,19 +1826,24 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
 
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
   const TickCount prev_tick = cs.current_tick_in_scanline;
-  const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &cs.fractional_ticks);
+  const auto [gpu_ticks, fractional_ticks] = SystemTicksToCRTCTicks(ticks, cs.fractional_ticks);
+  cs.fractional_ticks = fractional_ticks;
   cs.current_tick_in_scanline += gpu_ticks;
 
   if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
   {
-    cs.fractional_dot_ticks += gpu_ticks;
-    const TickCount dots = cs.fractional_dot_ticks / cs.dot_clock_divider;
-    cs.fractional_dot_ticks = cs.fractional_dot_ticks % cs.dot_clock_divider;
+    // count dots from elapsed time, NTSC line wrapping moves fractional_ticks by half a tick
+    const u64 subticks_per_dot = u64(cs.dot_clock_divider) * CRTC_SUBTICKS_PER_TICK;
+    const u64 dot_subticks = u64(cs.fractional_dot_ticks) + u64(ticks) * GetCRTCSubTicksPerSystemTick();
+    const TickCount dots = static_cast<TickCount>(dot_subticks / subticks_per_dot);
+    cs.fractional_dot_ticks = static_cast<TickCount>(dot_subticks % subticks_per_dot);
     if (dots > 0)
       Timers::AddTicks(DOT_TIMER_INDEX, dots);
   }
 
-  if (cs.current_tick_in_scanline < cs.horizontal_total)
+  const u64 line_subticks = GetCRTCLineSubTicks();
+  u64 position = u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks);
+  if (position < line_subticks)
   {
     // short path when we execute <1 line.. this shouldn't occur often, except when gated (konami lightgun games).
     UpdateCRTCHBlankFlag();
@@ -1825,8 +1860,10 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     return;
   }
 
-  u32 lines_to_draw = cs.current_tick_in_scanline / cs.horizontal_total;
-  cs.current_tick_in_scanline %= cs.horizontal_total;
+  u32 lines_to_draw = static_cast<u32>(position / line_subticks);
+  position %= line_subticks;
+  cs.current_tick_in_scanline = static_cast<TickCount>(position / CRTC_SUBTICKS_PER_TICK);
+  cs.fractional_ticks = static_cast<TickCount>(position % CRTC_SUBTICKS_PER_TICK);
 #if 0
   WARNING_LOG("Old line: {}, new line: {}, drawing {}", cs.current_scanline, cs.current_scanline + lines_to_draw,
               lines_to_draw);
@@ -1952,8 +1989,7 @@ void GPU::UpdateCommandTickEvent()
   {
     // Wake up early to release the DMA request if a polygon is holding it.
     // Both are relative to the last execution, so take off the time that has passed since then.
-    const TickCount ticks =
-      (s_locals.dreq_hold_ticks > 0) ? s_locals.dreq_hold_ticks : s_locals.pending_command_ticks;
+    const TickCount ticks = (s_locals.dreq_hold_ticks > 0) ? s_locals.dreq_hold_ticks : s_locals.pending_command_ticks;
     s_locals.command_tick_event.SetIntervalAndSchedule(std::max(ticks - GetPendingCommandTicks(), 1));
   }
 }
@@ -1964,10 +2000,9 @@ u8 GPU::UpdateOrGetGPUBusyPct()
   if ((s_locals.GPUSTAT.pal_mode ? (frame_number % 50) : (frame_number % 60)) != 0) [[likely]]
     return s_locals.last_gpu_busy_pct;
 
-  const double busy_frac =
-    static_cast<double>(s_locals.active_ticks_since_last_update) /
-    (static_cast<double>(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
-     (ComputeVerticalFrequency() / (s_locals.GPUSTAT.pal_mode ? 50.0f : 60.0f)));
+  const double busy_frac = static_cast<double>(s_locals.active_ticks_since_last_update) /
+                           (static_cast<double>(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
+                            (ComputeVerticalFrequency() / (s_locals.GPUSTAT.pal_mode ? 50.0f : 60.0f)));
   const double usage_pct = busy_frac * 100.0;
 
   DEBUG_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", usage_pct,
@@ -2040,37 +2075,31 @@ bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_
   return true;
 }
 
+u64 GPU::GetCRTCBeamSubTicks()
+{
+  const CRTCState& cs = s_locals.crtc_state;
+  const u64 position = cs.current_scanline * GetCRTCLineSubTicks() +
+                       u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks) +
+                       GetPendingCRTCSubTicks();
+  return position % GetCRTCFieldSubTicks();
+}
+
 void GPU::GetBeamPosition(u32* out_ticks, u32* out_line)
 {
-  const u32 current_tick = (GetPendingCRTCTicks() + s_locals.crtc_state.current_tick_in_scanline);
-  *out_line = (s_locals.crtc_state.current_scanline + (current_tick / s_locals.crtc_state.horizontal_total)) %
-              s_locals.crtc_state.vertical_total;
-  *out_ticks = current_tick % s_locals.crtc_state.horizontal_total;
+  const u64 line_subticks = GetCRTCLineSubTicks();
+  const u64 position = GetCRTCBeamSubTicks();
+  *out_line = static_cast<u32>(position / line_subticks);
+  *out_ticks = static_cast<u32>((position % line_subticks) / CRTC_SUBTICKS_PER_TICK);
 }
 
 TickCount GPU::GetSystemTicksUntilTicksAndLine(u32 ticks, u32 line)
 {
-  u32 current_tick, current_line;
-  GetBeamPosition(&current_tick, &current_line);
+  const u64 current_position = GetCRTCBeamSubTicks();
+  u64 target_position = line * GetCRTCLineSubTicks() + u64(ticks) * CRTC_SUBTICKS_PER_TICK;
+  if (target_position < current_position)
+    target_position += GetCRTCFieldSubTicks();
 
-  u32 ticks_to_target;
-  if (ticks >= current_tick)
-  {
-    ticks_to_target = ticks - current_tick;
-  }
-  else
-  {
-    ticks_to_target = (s_locals.crtc_state.horizontal_total - current_tick) + ticks;
-    current_line = (current_line + 1) % s_locals.crtc_state.vertical_total;
-  }
-
-  const u32 lines_to_target =
-    (line >= current_line) ? (line - current_line) : ((s_locals.crtc_state.vertical_total - current_line) + line);
-
-  const TickCount total_ticks_to_target =
-    static_cast<TickCount>((lines_to_target * s_locals.crtc_state.horizontal_total) + ticks_to_target);
-
-  return CRTCTicksToSystemTicks(total_ticks_to_target, s_locals.crtc_state.fractional_ticks);
+  return CRTCSubTicksToSystemTicks(target_position - current_position);
 }
 
 u16 GPU::GetCRTCActiveStartLine()
@@ -4574,11 +4603,10 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
 
       // we _should_ be using the tick count for the event, but it breaks with looping.
       // instead, just add a fixed amount
-      const TickCount crtc_ticks_per_frame = static_cast<TickCount>(s_locals.crtc_state.horizontal_total) *
-                                             static_cast<TickCount>(s_locals.crtc_state.vertical_total);
       const TickCount system_ticks_per_frame =
-        CRTCTicksToSystemTicks(crtc_ticks_per_frame, s_locals.crtc_state.fractional_ticks);
-      SystemTicksToCRTCTicks(system_ticks_per_frame, &s_locals.crtc_state.fractional_ticks);
+        CRTCSubTicksToSystemTicks(GetCRTCFieldSubTicks() - u64(s_locals.crtc_state.fractional_ticks));
+      s_locals.crtc_state.fractional_ticks =
+        SystemTicksToCRTCTicks(system_ticks_per_frame, s_locals.crtc_state.fractional_ticks).second;
       TimingEvents::SetGlobalTickCounter(TimingEvents::GetGlobalTickCounter() +
                                          static_cast<GlobalTicks>(system_ticks_per_frame));
 
