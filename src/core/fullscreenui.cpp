@@ -1443,8 +1443,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", ImVec4()))
   {
     ImFont* const heading_font = UIStyle.Font;
-    const float heading_font_size = UIStyle.LargeFontSize;
-    const float heading_font_weight = UIStyle.BoldFontWeight;
+    static const float heading_font_size = UIStyle.LargeFontSize;
+    static constexpr const float& heading_font_weight = UIStyle.BoldFontWeight;
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     SmallString heading_str;
 
@@ -1484,18 +1484,41 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
       const auto lock = Achievements::GetLock();
       if (const std::string& username = Achievements::GetLoggedInUserName(); !username.empty())
       {
-        const ImVec2 name_size =
-          heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(username));
-        const ImVec2 name_pos =
-          ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
-        RenderShadowedTextClipped(dl, heading_font, heading_font_size, heading_font_weight, name_pos,
-                                  name_pos + name_size, text_color, username, &name_size);
+        // Drawn right-to-left from the time.
+        float right_x = time_pos.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING);
+        const auto draw_right_aligned = [&heading_font, &time_pos, &right_x, &dl](std::string_view text, u32 color) {
+          const ImVec2 size =
+            heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+          right_x -= size.x;
+          const ImVec2 pos = ImVec2(right_x, time_pos.y);
+          RenderShadowedTextClipped(dl, heading_font, heading_font_size, heading_font_weight, pos, pos + size, color,
+                                    text, &size);
+        };
+
+        // Casual points, followed by hardcore points in the accent colour.
+        const auto [casual_points, hardcore_points] = Achievements::GetLoggedInUserPoints();
+        draw_right_aligned(")", text_color);
+        heading_str.format("{}", hardcore_points);
+        draw_right_aligned(heading_str, ImGui::GetColorU32(UIStyle.SecondaryStrongColor));
+        heading_str.format("{} (", casual_points);
+        draw_right_aligned(heading_str, text_color);
+
+        // The trophy is drawn without a shadow, since it is a colour glyph and the shadow would be tinted.
+        const std::string_view trophy_icon = ICON_EMOJI_TROPHY;
+        const ImVec2 trophy_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
+                                                               IMSTR_START_END(trophy_icon));
+        right_x -= trophy_size.x + LayoutScale(4.0f);
+        dl->AddText(heading_font, heading_font_size, heading_font_weight, ImVec2(right_x, time_pos.y), text_color,
+                    IMSTR_START_END(trophy_icon));
+
+        right_x -= LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING);
+        draw_right_aligned(username, text_color);
 
         if (const std::string& badge_path = Achievements::GetLoggedInUserIconURL(); !badge_path.empty())
         {
           const ImVec2 badge_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
           const ImVec2 badge_pos =
-            ImVec2(name_pos.x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
+            ImVec2(right_x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 
           dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_pos,
                        badge_pos + badge_size);

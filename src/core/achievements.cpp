@@ -2281,6 +2281,15 @@ const std::string& Achievements::GetLoggedInUserIconURL()
   return s_state.logged_in_user_icon_url;
 }
 
+std::pair<u32, u32> Achievements::GetLoggedInUserPoints()
+{
+  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
+  if (!user) [[unlikely]]
+    return {};
+
+  return {user->score_softcore, user->score};
+}
+
 SmallString Achievements::GetLoggedInUserPointsSummary()
 {
   SmallString ret;

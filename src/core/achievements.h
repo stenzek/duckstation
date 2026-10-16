@@ -197,6 +197,10 @@ const std::string& GetLoggedInUserName();
 /// Should be called with the lock held.
 const std::string& GetLoggedInUserIconURL();
 
+/// Returns the user's casual and hardcore points.
+/// Should be called with the lock held.
+std::pair<u32, u32> GetLoggedInUserPoints();
+
 /// Returns a summary of the user's points.
 /// Should be called with the lock held.
 SmallString GetLoggedInUserPointsSummary();
