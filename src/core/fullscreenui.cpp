@@ -1504,6 +1504,9 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     }
   }
   EndFullscreenWindow();
+
+  // Like the heading, the footer is drawn directly over the background.
+  SetFullscreenFooterBackground(FooterBackground::None);
 }
 
 void FullscreenUI::DrawLandingWindow()
@@ -1570,20 +1573,21 @@ void FullscreenUI::DrawLandingWindow()
 
   if (IsGamepadInputSource())
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("About")),
-                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
-                                       std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Toggle Fullscreen")),
-                                       std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session"))},
+                            std::array{std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("About")),
+                                       std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Toggle Fullscreen")),
                                        std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Exit"))});
   }
   else
   {
-    SetFullscreenFooterText(std::array{
-      std::make_pair(ICON_PF_F1, FSUI_VSTR("About")), std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
-      std::make_pair(ICON_PF_F11, FSUI_VSTR("Toggle Fullscreen")),
-      std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
-      std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))});
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
+                                       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session"))},
+                            std::array{std::make_pair(ICON_PF_F1, FSUI_VSTR("About")),
+                                       std::make_pair(ICON_PF_F11, FSUI_VSTR("Toggle Fullscreen")),
+                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))});
   }
 }
 
@@ -1966,7 +1970,7 @@ void FullscreenUI::DrawPauseMenu()
 
   EndFullscreenWindow();
 
-  SetFullscreenFooterBlur(false);
+  SetFullscreenFooterBackground(FooterBackground::Solid);
 
   if (IsGamepadInputSource())
   {

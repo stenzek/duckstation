@@ -103,8 +103,8 @@ static void DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* 
 static void RenderGaussianBlur(GPUTexture* source, GPUTexture* intermediate, GPUTexture* output,
                                const GSVector4i& blur_rect);
 
-static void CreateFooterTextString(SmallStringBase& dest,
-                                   std::span<const std::pair<const char*, std::string_view>> items);
+static void AppendFooterTextItems(SmallStringBase& dest,
+                                  std::span<const std::pair<const char*, std::string_view>> items);
 
 static void BeginMenuButtonDrawSplit();
 static void EndMenuButtonDrawSplit();
@@ -530,8 +530,6 @@ struct WidgetsState
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
-  SmallString left_fullscreen_footer_text;
-  SmallString last_left_fullscreen_footer_text;
   std::span<const std::pair<const char*, const char*>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
 
@@ -545,7 +543,7 @@ struct WidgetsState
   bool rendered_menu_item_border = false;
   bool had_focus_reset = false;
   bool had_sound_effect = false;
-  bool fullscreen_footer_blur_allowed = false;
+  FooterBackground fullscreen_footer_background = FooterBackground::Blurred;
 
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
@@ -648,8 +646,6 @@ void FullscreenUI::ShutdownWidgets()
     s_state.background_progress_dialogs.clear();
     s_state.fullscreen_footer_text.clear();
     s_state.last_fullscreen_footer_text.clear();
-    s_state.left_fullscreen_footer_text.clear();
-    s_state.last_left_fullscreen_footer_text.clear();
     s_state.fullscreen_text_change_time = 0.0f;
     s_state.on_screen_keyboard = {};
     s_state.input_string_dialog.ClearState();
@@ -1938,7 +1934,7 @@ void FullscreenUI::BeginLayout()
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
   s_state.texture_cache.ManualEvict();
-  s_state.fullscreen_footer_blur_allowed = true;
+  s_state.fullscreen_footer_background = FooterBackground::Blurred;
   PushResetLayout();
 }
 
@@ -1958,8 +1954,8 @@ void FullscreenUI::EndLayout()
 #if 0
   if (HasActiveWindow())
   {
-    s_state.left_fullscreen_footer_text.append_format("FPS: {:.2f} ({:.3f} ms)", GImGui->IO.Framerate,
-                                                      1000.0f / GImGui->IO.Framerate);
+    s_state.fullscreen_footer_text.prepend_format("FPS: {:.2f} ({:.3f} ms)", GImGui->IO.Framerate,
+                                                  1000.0f / GImGui->IO.Framerate);
   }
 #endif
 
@@ -1967,7 +1963,6 @@ void FullscreenUI::EndLayout()
 
   PopResetLayout();
 
-  s_state.left_fullscreen_footer_text.clear();
   s_state.fullscreen_footer_text.clear();
 
   s_state.split_window_focus_change = SplitWindowFocusChange::None;
@@ -2492,42 +2487,40 @@ std::string_view FullscreenUI::GetControllerIconMapping(std::string_view icon)
   return icon;
 }
 
-void FullscreenUI::CreateFooterTextString(SmallStringBase& dest,
-                                          std::span<const std::pair<const char*, std::string_view>> items)
+void FullscreenUI::AppendFooterTextItems(SmallStringBase& dest,
+                                         std::span<const std::pair<const char*, std::string_view>> items)
 {
-  dest.clear();
+  // Tabs are expanded to a fixed width when drawing, so the spacing doesn't depend on the font.
+  bool first = true;
   for (const auto& [icon, text] : items)
   {
     if (!icon || text.empty())
       continue;
 
-    if (!dest.empty())
-      dest.append("     ");
+    if (!std::exchange(first, false))
+      dest.append("\t\t\t");
 
     dest.append(GetControllerIconMapping(icon));
-    dest.append("  ");
+    dest.append('\t');
     dest.append(text);
   }
 }
 
-void FullscreenUI::SetFullscreenFooterText(std::string_view text)
-{
-  s_state.fullscreen_footer_text.assign(text);
-}
-
 void FullscreenUI::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
 {
-  CreateFooterTextString(s_state.fullscreen_footer_text, items);
+  SetFullscreenFooterText({}, items);
 }
 
-void FullscreenUI::SetFullscreenStatusText(std::string_view text)
+void FullscreenUI::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> left_items,
+                                           std::span<const std::pair<const char*, std::string_view>> right_items)
 {
-  s_state.left_fullscreen_footer_text = text;
-}
-
-void FullscreenUI::SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items)
-{
-  CreateFooterTextString(s_state.left_fullscreen_footer_text, items);
+  // Left and right sides are separated by a carriage return.
+  s_state.fullscreen_footer_text.clear();
+  AppendFooterTextItems(s_state.fullscreen_footer_text, left_items);
+  s_state.fullscreen_footer_text.append('\r');
+  AppendFooterTextItems(s_state.fullscreen_footer_text, right_items);
+  if (s_state.fullscreen_footer_text.length() == 1)
+    s_state.fullscreen_footer_text.clear();
 }
 
 void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
@@ -2548,46 +2541,98 @@ void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
   }
 }
 
-void FullscreenUI::SetFullscreenFooterBlur(bool allowed)
+void FullscreenUI::SetFullscreenFooterBackground(FooterBackground background)
 {
-  s_state.fullscreen_footer_blur_allowed = allowed;
+  s_state.fullscreen_footer_background = background;
 }
 
 void FullscreenUI::DrawFullscreenFooter()
 {
   const ImGuiIO& io = ImGui::GetIO();
-  if (s_state.fullscreen_footer_text.empty() && s_state.left_fullscreen_footer_text.empty())
+  if (s_state.fullscreen_footer_text.empty())
   {
     s_state.last_fullscreen_footer_text.clear();
-    s_state.last_left_fullscreen_footer_text.clear();
     return;
   }
 
   static constexpr float TRANSITION_TIME = 0.15f;
+  static constexpr float TAB_WIDTH = 8.0f;
 
   const ImVec2 padding = LayoutScale(LAYOUT_FOOTER_X_PADDING, LAYOUT_FOOTER_Y_PADDING);
   const float height = LayoutScale(LAYOUT_FOOTER_HEIGHT);
+  const float tab_width = LayoutScale(TAB_WIDTH);
   const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
-  const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
-  const float bg_alpha = GetBackgroundAlpha();
+  const FooterBackground background = s_state.fullscreen_footer_background;
+  const u32 text_color =
+    ImGui::GetColorU32((background == FooterBackground::None) ? UIStyle.BackgroundTextColor : UIStyle.PrimaryTextColor);
 
   ImDrawList* const dl = ImGui::GetForegroundDrawList();
   const ImVec2 bb_min = ImVec2(0.0f, io.DisplaySize.y - height);
   const ImVec2& bb_max = io.DisplaySize;
-  if (UIStyle.BlurMenuBackground && s_state.fullscreen_footer_blur_allowed && BeginBlurBackground(dl, bb_min, bb_max))
+  if (background == FooterBackground::Blurred && UIStyle.BlurMenuBackground && BeginBlurBackground(dl, bb_min, bb_max))
   {
     dl->AddRectFilled(bb_min, bb_max, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, 1.0f)), 0.0f);
     EndBlurBackground(dl);
   }
-  else
+  else if (background != FooterBackground::None)
   {
-    dl->AddRectFilled(bb_min, bb_max, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
+    dl->AddRectFilled(bb_min, bb_max, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())), 0.0f);
   }
 
   ImFont* const font = UIStyle.Font;
   const float font_size = UIStyle.MediumFontSize;
   const float font_weight = UIStyle.BoldFontWeight;
-  const float max_width = io.DisplaySize.x - padding.x * 2.0f;
+  const float text_y = io.DisplaySize.y - font_size - padding.y;
+
+  const auto measure_text = [&font, &font_size, &font_weight, &tab_width](std::string_view text) {
+    float width = 0.0f;
+    for (std::string_view::size_type pos = 0; pos < text.length();)
+    {
+      if (text[pos] == '\t' || text[pos] == '\r')
+      {
+        width += (text[pos] == '\t') ? tab_width : 0.0f;
+        pos++;
+        continue;
+      }
+
+      const std::string_view::size_type epos = std::min(text.find_first_of("\t\r", pos), text.length());
+      width += font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, text.data() + pos, text.data() + epos).x;
+      pos = epos;
+    }
+    return width;
+  };
+
+  const auto draw_text = [&font, &font_size, &font_weight, &tab_width, &padding, &text_color, &measure_text, &text_y,
+                          &shadow_offset, &dl, &io](std::string_view text, float opacity) {
+    const u32 color = ModAlpha(text_color, opacity);
+    const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, opacity);
+    float x = padding.x;
+    for (std::string_view::size_type pos = 0; pos < text.length();)
+    {
+      if (text[pos] == '\t')
+      {
+        x += tab_width;
+        pos++;
+        continue;
+      }
+      else if (text[pos] == '\r')
+      {
+        // Switch to the right side, aligning the remaining text to the edge of the screen.
+        pos++;
+        x = io.DisplaySize.x - padding.x - measure_text(text.substr(pos));
+        continue;
+      }
+
+      const std::string_view::size_type epos = std::min(text.find_first_of("\t\r", pos), text.length());
+      const char* const start_ptr = text.data() + pos;
+      const char* const end_ptr = text.data() + epos;
+      if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
+        dl->AddText(font, font_size, font_weight, ImVec2(x, text_y) + shadow_offset, shadow_color, start_ptr, end_ptr);
+      dl->AddText(font, font_size, font_weight, ImVec2(x, text_y), color, start_ptr, end_ptr);
+      x += font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, start_ptr, end_ptr).x;
+      pos = epos;
+    }
+  };
 
   float prev_opacity = 0.0f;
   if (!s_state.last_fullscreen_footer_text.empty() &&
@@ -2603,37 +2648,7 @@ void FullscreenUI::DrawFullscreenFooter()
 
     prev_opacity = s_state.fullscreen_text_change_time * (1.0f / TRANSITION_TIME);
     if (prev_opacity > 0.0f)
-    {
-      const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, prev_opacity);
-      if (!s_state.last_fullscreen_footer_text.empty())
-      {
-        const ImVec2 text_size = font->CalcTextSizeA(font_size, font_weight, max_width, 0.0f,
-                                                     IMSTR_START_END(s_state.last_fullscreen_footer_text));
-        const ImVec2 text_pos =
-          ImVec2(io.DisplaySize.x - padding.x - text_size.x, io.DisplaySize.y - font_size - padding.y);
-        if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
-        {
-          dl->AddText(font, font_size, font_weight, text_pos + shadow_offset,
-                      MulAlpha(UIStyle.ShadowColor, prev_opacity),
-                      IMSTR_START_END(s_state.last_fullscreen_footer_text));
-        }
-        dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, prev_opacity),
-                    IMSTR_START_END(s_state.last_fullscreen_footer_text));
-      }
-
-      if (!s_state.last_left_fullscreen_footer_text.empty())
-      {
-        const ImVec2 text_pos = ImVec2(padding.x, io.DisplaySize.y - font_size - padding.y);
-        if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
-        {
-          dl->AddText(font, font_size, font_weight, text_pos + shadow_offset,
-                      MulAlpha(UIStyle.ShadowColor, prev_opacity),
-                      IMSTR_START_END(s_state.last_left_fullscreen_footer_text));
-        }
-        dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, prev_opacity),
-                    IMSTR_START_END(s_state.last_left_fullscreen_footer_text));
-      }
-    }
+      draw_text(s_state.last_fullscreen_footer_text, prev_opacity);
   }
   else if (s_state.last_fullscreen_footer_text.empty())
   {
@@ -2641,36 +2656,7 @@ void FullscreenUI::DrawFullscreenFooter()
   }
 
   if (prev_opacity < 1.0f)
-  {
-    const float opacity = 1.0f - prev_opacity;
-    const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, opacity);
-    if (!s_state.fullscreen_footer_text.empty())
-    {
-      const ImVec2 text_size =
-        font->CalcTextSizeA(font_size, font_weight, max_width, 0.0f, IMSTR_START_END(s_state.fullscreen_footer_text));
-      const ImVec2 text_pos =
-        ImVec2(io.DisplaySize.x - padding.x - text_size.x, io.DisplaySize.y - font_size - padding.y);
-      if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
-      {
-        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
-                    IMSTR_START_END(s_state.fullscreen_footer_text));
-      }
-      dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),
-                  IMSTR_START_END(s_state.fullscreen_footer_text));
-    }
-
-    if (!s_state.left_fullscreen_footer_text.empty())
-    {
-      const ImVec2 text_pos = ImVec2(padding.x, io.DisplaySize.y - font_size - padding.y);
-      if ((shadow_color >> IM_COL32_A_SHIFT) > 0)
-      {
-        dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
-                    IMSTR_START_END(s_state.left_fullscreen_footer_text));
-      }
-      dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),
-                  IMSTR_START_END(s_state.left_fullscreen_footer_text));
-    }
-  }
+    draw_text(s_state.fullscreen_footer_text, 1.0f - prev_opacity);
 }
 
 void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 0.0f */,

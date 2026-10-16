@@ -411,14 +411,20 @@ void EndFullscreenWindow(bool allow_wrap_x = false, bool allow_wrap_y = true);
 void SetWindowNavWrapping(bool allow_wrap_x = false, bool allow_wrap_y = true);
 bool BeginBlurWindow(const char* name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0, bool blur = true);
 
+enum class FooterBackground : u8
+{
+  None,
+  Solid,
+  Blurred,
+};
+
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
-void SetFullscreenFooterText(std::string_view text);
 void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> left_items,
+                             std::span<const std::pair<const char*, std::string_view>> right_items);
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
-void SetFullscreenFooterBlur(bool allowed);
-void SetFullscreenStatusText(std::string_view text);
-void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetFullscreenFooterBackground(FooterBackground background);
 void DrawFullscreenFooter();
 
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
