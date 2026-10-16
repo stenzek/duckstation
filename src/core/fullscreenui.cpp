@@ -1322,7 +1322,10 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
 
   shader.str(std::string());
   shadergen.WriteHeader(shader, false, false, false);
-  shadergen.DeclareUniformBuffer(shader, {"vec2 u_display_size", "vec2 u_rcp_display_size", "float u_time"}, true);
+  shadergen.DeclareUniformBuffer(
+    shader,
+    {"vec2 u_display_size", "vec2 u_rcp_display_size", "vec4 u_accent_color", "float u_time", "float u_light_theme"},
+    true);
   if (main_pos > 0)
     shader << std::string_view(shader_body.value()).substr(0, main_pos);
   shadergen.DeclareFragmentEntryPoint(shader, 0, 1);
@@ -1363,7 +1366,9 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
   {
     float u_display_size[2];
     float u_rcp_display_size[2];
+    float u_accent_color[4];
     float u_time;
+    float u_light_theme;
   };
 
   const GSVector2 display_size = GSVector2(g_gpu_device->GetMainSwapChain()->GetSizeVec());
@@ -1372,6 +1377,8 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
   GSVector2::store<true>(uniforms.u_rcp_display_size, GSVector2::cxpr(1.0f) / display_size);
   uniforms.u_time =
     static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.app_background_load_time));
+  uniforms.u_light_theme = UIStyle.IsDarkTheme ? 0.0f : 1.0f;
+  GSVector4::store<true>(uniforms.u_accent_color, GSVector4::load<false>(&UIStyle.SecondaryStrongColor.x));
 
   g_gpu_device->SetPipeline(s_locals.app_background_shader.get());
   g_gpu_device->SetTextureSampler(0, nullptr, nullptr);
@@ -1441,7 +1448,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     SmallString heading_str;
 
-    const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
+    const u32 text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor);
 
     // draw branding
     {
@@ -1703,7 +1710,7 @@ float FullscreenUI::GetBackgroundAlpha()
   }
   else
   {
-    return HasBackground() ? 0.5f : 1.0f;
+    return HasBackground() ? (UIStyle.IsDarkTheme ? 0.5f : 0.9f) : 1.0f;
   }
 }
 

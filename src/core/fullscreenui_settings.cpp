@@ -1940,6 +1940,11 @@ void FullscreenUI::DrawSettingsWindow()
   const float bg_alpha = GetBackgroundAlpha();
   const bool blur_background = CanBlurBackground() && s_settings_locals.settings_page != SettingsPage::PostProcessing;
 
+  // light themes draw directly over the menu background, rather than washing it out
+  const ImVec4 page_background = (UIStyle.IsDarkTheme || VideoThread::HasGPUBackend()) ?
+                                   ModAlpha(UIStyle.BackgroundColor, bg_alpha) :
+                                   GetTransparentBackgroundColor();
+
   static constexpr const SettingsPage global_pages[] = {
     SettingsPage::Interface, SettingsPage::GameList,     SettingsPage::BIOS,       SettingsPage::Console,
     SettingsPage::Emulation, SettingsPage::MemoryCards,  SettingsPage::Graphics,   SettingsPage::PostProcessing,
@@ -2025,8 +2030,7 @@ void FullscreenUI::DrawSettingsWindow()
       ImVec2(0.0f, heading_size.y),
       ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
       TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
-      ModAlpha(UIStyle.BackgroundColor, bg_alpha), 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0,
-      blur_background);
+      page_background, 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0, blur_background);
 
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
       ReturnToPreviousWindow(TransitionEffect::ZoomOut);
@@ -2038,7 +2042,7 @@ void FullscreenUI::DrawSettingsWindow()
       ImVec2(0.0f, heading_size.y),
       ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
       TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
-      ModAlpha(UIStyle.BackgroundColor, bg_alpha), 0.0f, ImVec2(), 0, true);
+      page_background, 0.0f, ImVec2(), 0, true);
 
     if (SplitWindowIsNavWindow() && WantsToCloseMenu())
       ReturnToPreviousWindow(TransitionEffect::ZoomOut);

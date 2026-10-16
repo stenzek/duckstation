@@ -5,10 +5,18 @@ void main()
   float time = u_time * 0.09;
   float pixel_width = u_rcp_display_size.y;
 
-  // A subdued blue gradient keeps menu text readable above the waves.
-  vec3 color = mix(vec3(0.008, 0.015, 0.035), vec3(0.025, 0.055, 0.105), v_tex0.y);
+  // Normalize the theme's accent so only its hue matters, and square it for a more saturated variant.
+  vec3 tint = u_accent_color.rgb / max(max(u_accent_color.r, u_accent_color.g), max(u_accent_color.b, 0.001));
+  vec3 deep_tint = tint * tint;
+
+  // A subdued gradient of the accent keeps menu text readable above the waves.
+  // Light themes use a pale gradient instead, with the ribbons tinting it.
   vec2 light_pos = pos - vec2(0.35, 0.12);
-  color += vec3(0.015, 0.035, 0.065) * exp(-dot(light_pos, light_pos) * 2.5);
+  float spot = exp(-dot(light_pos, light_pos) * 2.5);
+  vec3 color = deep_tint * (0.035 + 0.07 * v_tex0.y + 0.065 * spot);
+  vec3 light_color = vec3(0.95 - 0.02 * v_tex0.y) - (vec3(1.0) - tint) * (0.05 + 0.12 * v_tex0.y - 0.05 * spot);
+  vec3 rim_color = mix(vec3(1.0), tint, 0.7) * 0.85;
+  vec3 light_ribbon_color = vec3(1.0) - tint * 0.8;
 
   for (int i = 0; i < 6; i++)
   {
@@ -36,14 +44,19 @@ void main()
     // Fade the highlights at the folds, where the two edges meet.
     float fold = smoothstep(0.0, 0.025, half_width);
     float strength = 0.55 + layer * 0.075;
-    vec3 ribbon_color = mix(vec3(0.10, 0.28, 0.50), vec3(0.28, 0.48, 0.68), layer / 5.0);
-    color += ribbon_color * coverage * (0.055 + surface * 0.10) * strength;
-    color += vec3(0.48, 0.68, 0.85) * (upper_rim * 0.22 + lower_rim * 0.07) * fold * strength;
-    color += vec3(0.10, 0.25, 0.45) * glow * 0.08 * fold * strength;
+    float body = coverage * (0.055 + surface * 0.10) * strength;
+    float rim = (upper_rim * 0.22 + lower_rim * 0.07) * fold * strength;
+    float halo = glow * 0.08 * fold * strength;
+    vec3 ribbon_color = mix(deep_tint * 0.50, tint * 0.68, layer / 5.0);
+    color += ribbon_color * body + rim_color * rim + deep_tint * 0.45 * halo;
+    light_color -= light_ribbon_color * (body * 1.2 + rim * 0.55 + halo * 0.6);
   }
 
   // Gently darken the corners without changing the ribbons' proportions.
   vec2 vignette_pos = v_tex0 - vec2(0.5);
-  color *= 1.0 - dot(vignette_pos, vignette_pos) * 0.55;
+  float vignette = dot(vignette_pos, vignette_pos);
+  color *= 1.0 - vignette * 0.55;
+  light_color *= 1.0 - vignette * 0.20;
+  color = mix(color, light_color, u_light_theme);
   o_col0 = vec4(color, 1.0);
 }
