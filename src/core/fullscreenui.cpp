@@ -1353,6 +1353,7 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
   if (!s_locals.app_background_shader)
     return false;
 
+  s_locals.app_background_load_time = Timer::GetCurrentValue();
   return true;
 }
 
