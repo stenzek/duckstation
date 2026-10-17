@@ -68,6 +68,7 @@ bool ShouldPresentFrame(u64 present_time);
 void SetPresentSkipMode(PresentSkipMode mode);
 
 /// Limits presentation speed when running with no fixed rate, e.g. FullscreenUI open.
+/// With blocking vsync, delays the frame until shortly before vblank instead.
 void ThrottlePresentation();
 
 /// Main frame presenter - used both when a game is and is not running.

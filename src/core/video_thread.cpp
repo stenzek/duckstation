@@ -569,11 +569,8 @@ void VideoThread::DoRunIdle()
     return;
   }
 
-  if (!PresentFrameAndRestoreContext())
-    return;
-
-  if (g_gpu_device->HasMainSwapChain() && !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
-    VideoPresenter::ThrottlePresentation();
+  VideoPresenter::ThrottlePresentation();
+  PresentFrameAndRestoreContext();
 }
 
 bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
