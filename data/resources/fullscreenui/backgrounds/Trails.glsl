@@ -17,7 +17,8 @@ float background(vec2 pos) {
 vec2 trails(vec2 pos) {
   float cdist = length(pos) * SCALE;
   float rv = rand(ceil(cdist));
-  float rotation = u_time * rv * 0.005;
+  // Offset time so the rings start spread out, rather than aligned at zero.
+  float rotation = (u_time + 1000.0) * rv * 0.005;
   float nangle = atan(pos.y, pos.x) / PI;
   float intensity = smoothstep(rv, rv - 1.5, fract(nangle + rotation + rv * 0.1) * LENGTH) * step(0.1, cdist / SCALE);
   return vec2(intensity, rv);
