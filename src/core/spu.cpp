@@ -2652,7 +2652,10 @@ void SPU::UpdateEventInterval()
     return;
 
   // Ticks remaining before execution should be retained, just adjust the interval/downcount.
-  const TickCount new_downcount = interval_ticks - s_state.ticks_carry;
+  const TickCount carry_ticks = g_settings.cpu_overclock_active ?
+                                  (s_state.ticks_carry / static_cast<TickCount>(g_settings.cpu_overclock_denominator)) :
+                                  s_state.ticks_carry;
+  const TickCount new_downcount = interval_ticks - carry_ticks;
   s_state.tick_event.SetInterval(interval_ticks);
   s_state.tick_event.Schedule(new_downcount);
 }
