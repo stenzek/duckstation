@@ -1508,6 +1508,18 @@ void VideoPresenter::ThrottlePresentation()
   const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
   const u64 current_ts = Timer::GetCurrentValue();
 
+  // With blocking vsync, present already waited for vblank. Wait until half a refresh before the next vblank to
+  // start the next frame, instead of immediately after the last one, so that input is sampled later.
+  if (g_gpu_device && g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
+  {
+    const u64 vblank_time = s_locals.last_vblank_time.load(std::memory_order_relaxed);
+    if (vblank_time != 0 && (current_ts - vblank_time) < (sleep_period / 2))
+    {
+      Timer::SleepUntil(vblank_time + sleep_period / 2, false);
+      return;
+    }
+  }
+
   // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
   // allow time for the actual rendering.
   const u64 max_variance = sleep_period * 2;
@@ -1667,8 +1679,6 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
                      s_locals.present_gap_baseline + Timer::ConvertMillisecondsToValue(PRESENT_GAP_BASELINE_RISE_MS));
       }
     }
-
-    ImGuiManager::NewFrame(s_locals.last_present_time);
   }
   else
   {
@@ -1686,10 +1696,6 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     g_gpu_device->FlushCommands();
-
-    // Still need to kick ImGui or it gets cranky.
-    ImGui::EndFrame();
-    ImGuiManager::NewFrame(Timer::GetCurrentValue());
   }
 
   return true;

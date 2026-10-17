@@ -23,6 +23,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/threading.h"
+#include "common/timer.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
@@ -591,6 +592,8 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
     if (VideoPresenter::ShouldPresentFrame(cmd->present_time))
     {
       result = VideoPresenter::PresentFrame(this, cmd->present_time);
+      if (result)
+        ImGuiManager::NewFrame(Timer::GetCurrentValue());
       needs_restore = true;
     }
     else

@@ -569,11 +569,18 @@ void VideoThread::DoRunIdle()
     return;
   }
 
-  if (!PresentFrameAndRestoreContext())
+  if (s_state.gpu_backend)
+    s_state.gpu_backend->FlushRender();
+
+  if (!VideoPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
     return;
 
-  if (g_gpu_device->HasMainSwapChain() && !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
-    VideoPresenter::ThrottlePresentation();
+  // Wait before starting the next frame instead of before presenting it, so that input is sampled as late as possible.
+  VideoPresenter::ThrottlePresentation();
+  ImGuiManager::NewFrame(Timer::GetCurrentValue());
+
+  if (s_state.gpu_backend)
+    s_state.gpu_backend->RestoreDeviceContext();
 }
 
 bool VideoThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
@@ -1094,6 +1101,8 @@ bool VideoThread::PresentFrameAndRestoreContext()
   {
     if (!VideoPresenter::PresentFrame(s_state.gpu_backend.get(), 0))
       return false;
+
+    ImGuiManager::NewFrame(Timer::GetCurrentValue());
 
     if (s_state.gpu_backend)
       s_state.gpu_backend->RestoreDeviceContext();
