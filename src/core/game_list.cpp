@@ -2373,13 +2373,26 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
 
+  ret = ExtractMemoryCardIcon(custom_title, serial, path);
+  if (ret.empty())
+    ret = std::move(fallback_path);
+
+  return ret;
+}
+
+std::string GameList::ExtractMemoryCardIcon(std::string_view custom_title, std::string_view serial,
+                                            std::string_view path)
+{
+  if (serial.empty())
+    return {};
+
   MemoryCardType type;
   std::string memcard_path = System::GetGameMemoryCardPath(custom_title, serial, path, 0, &type);
   FILESYSTEM_STAT_DATA memcard_sd;
   if (memcard_path.empty() || type == MemoryCardType::Shared ||
       !FileSystem::StatFile(memcard_path.c_str(), &memcard_sd))
   {
-    return (ret = std::move(fallback_path));
+    return {};
   }
 
   const s64 timestamp = memcard_sd.ModificationTime;
@@ -2395,7 +2408,7 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
       // user might've deleted the file, so re-extract it if so
       // otherwise, card hasn't changed, still no icon
       if (it.memcard_timestamp == timestamp && !it.icon_was_extracted)
-        return (ret = std::move(fallback_path));
+        return {};
 
       cache_entry = &it;
       break;
@@ -2413,6 +2426,7 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   StringUtil::Strlcpy(cache_entry->serial, index_serial.view(), sizeof(cache_entry->serial));
 
   // Try extracting an icon.
+  std::string icon_path;
   Error error;
   std::unique_ptr<MemoryCardImage::DataArray> data = std::make_unique<MemoryCardImage::DataArray>();
   if (MemoryCardImage::LoadFromFile(data.get(), memcard_path.c_str(), &error))
@@ -2423,8 +2437,9 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
       const MemoryCardImage::FileInfo& fi = files.front();
       if (!fi.icon_frames.empty())
       {
+        icon_path = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
         INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
-                 Path::GetFileTitle(ret));
+                 Path::GetFileTitle(icon_path));
 
         static constexpr AnimatedImage::FrameDelay ICON_FRAME_DELAY = {1, 5}; // 200ms per frame
         AnimatedImage image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT,
@@ -2432,11 +2447,13 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
         for (size_t i = 0; i < fi.icon_frames.size(); i++)
           image.SetPixels(static_cast<u32>(i), fi.icon_frames[i].pixels, MemoryCardImage::ICON_WIDTH * sizeof(u32));
 
-        cache_entry->icon_was_extracted = image.SaveToFile(ret.c_str(), AnimatedImage::DEFAULT_SAVE_QUALITY, &error);
-        if (cache_entry->icon_was_extracted)
-          return ret;
-        else
-          ERROR_LOG("Failed to save memory card icon to {}: {}", Path::GetFileName(ret), error.GetDescription());
+        cache_entry->icon_was_extracted =
+          image.SaveToFile(icon_path.c_str(), AnimatedImage::DEFAULT_SAVE_QUALITY, &error);
+        if (!cache_entry->icon_was_extracted)
+        {
+          ERROR_LOG("Failed to save memory card icon to {}: {}", Path::GetFileName(icon_path), error.GetDescription());
+          icon_path = {};
+        }
       }
     }
   }
@@ -2446,7 +2463,7 @@ std::string GameList::GetGameIconPath(std::string_view custom_title, std::string
   }
 
   UpdateMemcardTimestampCache(*cache_entry);
-  return (ret = std::move(fallback_path));
+  return icon_path;
 }
 
 bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)

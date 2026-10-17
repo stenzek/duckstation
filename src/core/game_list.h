@@ -217,6 +217,10 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 std::string GetGameIconPath(std::string_view title, std::string_view serial, std::string_view path,
                             u32 achievements_game_id);
 std::string GetGameIconPath(const GameList::Entry* entry);
+
+/// Extracts the icon of the first save on the game's memory card to the game icons directory, consulting the
+/// memory card timestamp cache. Returns the path to the extracted icon, or an empty string. Requires the lock.
+std::string ExtractMemoryCardIcon(std::string_view title, std::string_view serial, std::string_view path);
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.
