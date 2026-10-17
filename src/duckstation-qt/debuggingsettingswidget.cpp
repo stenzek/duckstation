@@ -57,6 +57,7 @@ static QSpinBox* addIntRangeTweakOption(SettingsWindow* dialog, QTableWidget* ta
   cb->setMaximum(max_value);
   if (!suffix.isEmpty())
     cb->setSuffix(suffix);
+  QtUtils::FixSpinBoxTextMargins(cb);
 
   if (!section.empty() || !key.empty())
   {

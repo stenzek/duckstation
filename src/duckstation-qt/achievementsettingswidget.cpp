@@ -28,6 +28,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
   setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable, Settings::ACHIEVEMENTS_SECTION_NAME, "Enabled", false);

@@ -997,6 +997,8 @@ static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_w
 
     layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
   }
+
+  QtUtils::FixSpinBoxTextMargins(parent_widget);
 }
 
 static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const SettingInfo> settings)

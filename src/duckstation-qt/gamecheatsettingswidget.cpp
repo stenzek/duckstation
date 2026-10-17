@@ -81,7 +81,11 @@ QWidget* CheatListOptionDelegate::createEditor(QWidget* parent, const QStyleOpti
   if (data.typeId() == QMetaType::QString)
     return new QComboBox(parent);
   else if (data.typeId() == QMetaType::UInt)
-    return new QSpinBox(parent);
+  {
+    QSpinBox* sb = new QSpinBox(parent);
+    QtUtils::FixSpinBoxTextMargins(sb);
+    return sb;
+  }
   else
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
@@ -808,6 +812,7 @@ CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Ch
   : QDialog(parent), m_parent(parent), m_code(std::move(code))
 {
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
   setupAdditionalUi(group_names);
   fillUi();
 

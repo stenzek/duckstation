@@ -543,6 +543,7 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
 
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, Settings::BORDER_OVERLAY_SECTION_NAME,
                                                  "ImagePath");

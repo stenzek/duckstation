@@ -59,6 +59,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
   removePlatformSpecificUi();
 
   // Rendering Tab
@@ -1286,6 +1287,7 @@ TextureReplacementSettingsDialog::TextureReplacementSettingsDialog(SettingsWindo
   : QDialog(parent)
 {
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
   m_ui.icon->setPixmap(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s).pixmap(32));
 
   constexpr Settings::TextureReplacementSettings::Configuration default_replacement_config;

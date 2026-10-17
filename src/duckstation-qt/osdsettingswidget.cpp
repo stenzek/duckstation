@@ -21,6 +21,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* dialog, QWidget* parent) : 
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
   setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, Settings::DISPLAY_SECTION_NAME, "OSDScale",

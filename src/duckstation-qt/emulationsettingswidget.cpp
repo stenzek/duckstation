@@ -123,6 +123,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, Settings::DISPLAY_SECTION_NAME, "VSync", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, Settings::INTERFACE_SECTION_NAME,

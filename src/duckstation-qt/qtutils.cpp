@@ -29,6 +29,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
@@ -412,6 +413,15 @@ void QtUtils::StyleChildMenus(QWidget* widget)
 {
   for (QMenu* menu : widget->findChildren<QMenu*>())
     StylePopupMenu(menu);
+}
+
+void QtUtils::FixSpinBoxTextMargins(QWidget* widget)
+{
+  if (!QtHost::HasGlobalStylesheet())
+    return;
+
+  for (QLineEdit* line_edit : widget->findChildren<QLineEdit*>(u"qt_spinbox_lineedit"_s))
+    line_edit->setTextMargins(6, 0, 0, 0);
 }
 
 QMenu* QtUtils::NewPopupMenu(QWidget* parent, bool delete_on_close /*= true*/)

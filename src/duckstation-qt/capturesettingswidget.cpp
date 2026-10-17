@@ -18,6 +18,7 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.screenshotSize, Settings::DISPLAY_SECTION_NAME, "ScreenshotMode", &Settings::ParseDisplayScreenshotMode,

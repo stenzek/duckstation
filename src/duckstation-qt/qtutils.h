@@ -162,6 +162,13 @@ void AsyncMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& tit
 void StylePopupMenu(QMenu* menu);
 void StyleChildMenus(QWidget* widget);
 
+/// Works around a Qt 6.12.0 bug where the stylesheet left padding/border of spin boxes is ignored, placing the text
+/// against the left edge. Applies the missing padding as a text margin to all spin boxes in/including the widget.
+/// Introduced by https://github.com/qt/qtbase/commit/2ca7911257feee44f48a45941feb11256a1f2664
+/// Fixed by https://github.com/qt/qtbase/commit/142ab4f2ca9cf266605f4e1994d1b706f0e513ac
+/// Remove once we no longer ship 6.12.0.
+void FixSpinBoxTextMargins(QWidget* widget);
+
 /// Creates a new popup menu, styled for the current theme.
 QMenu* NewPopupMenu(QWidget* parent, bool delete_on_close = true);
 

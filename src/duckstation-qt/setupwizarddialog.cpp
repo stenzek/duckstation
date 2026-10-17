@@ -159,6 +159,7 @@ void SetupWizardDialog::confirmCancel()
 void SetupWizardDialog::setupUi()
 {
   m_ui.setupUi(this);
+  QtUtils::FixSpinBoxTextMargins(this);
 
   const QPixmap app_logo = QtHost::GetAppLogo();
   setWindowIcon(app_logo);
