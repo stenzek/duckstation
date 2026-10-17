@@ -1326,6 +1326,7 @@ void SPU::TriggerRAMIRQ()
   DebugAssert(IsRAMIRQTriggerable());
   s_state.SPUSTAT.irq9_flag = true;
   InterruptController::SetLineState(InterruptController::IRQ::SPU, true);
+  UpdateEventInterval();
 }
 
 void SPU::CheckForLateRAMIRQs()
@@ -2653,7 +2654,7 @@ void SPU::UpdateEventInterval()
   const u32 max_slice_frames = s_state.audio_stream.GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
-  const u32 interval = (s_state.SPUCNT.enable && s_state.SPUCNT.irq9_enable) ? 1 : max_slice_frames;
+  const u32 interval = (s_state.SPUCNT.enable && IsRAMIRQTriggerable()) ? 1 : max_slice_frames;
   const TickCount interval_ticks = static_cast<TickCount>(interval) * s_state.cpu_ticks_per_spu_tick;
   if (s_state.tick_event.IsActive() && s_state.tick_event.GetInterval() == interval_ticks)
     return;
