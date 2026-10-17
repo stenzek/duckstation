@@ -1444,7 +1444,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", ImVec4()))
   {
     ImFont* const heading_font = UIStyle.Font;
-    static const float heading_font_size = UIStyle.LargeFontSize;
+    static constexpr const float& heading_font_size = UIStyle.LargeFontSize;
     static constexpr const float& heading_font_weight = UIStyle.BoldFontWeight;
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     SmallString heading_str;
