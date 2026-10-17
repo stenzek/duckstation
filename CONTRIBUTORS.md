@@ -32,6 +32,7 @@ The following people have contributed to the project in some way, and are credit
 
 - @kamfretoz
 - @maxihplay (MBee)
+- @ANK-dev
 
 ## Cheat Database
 
