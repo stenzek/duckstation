@@ -70,6 +70,8 @@ struct Entry
   bool is_runtime_populated : 1 = false;
   GameDatabase::Language custom_language = GameDatabase::Language::MaxCount;
 
+  u16 num_achievements = 0;
+
   std::string path;
   std::string serial;
   std::string title;
@@ -85,7 +87,6 @@ struct Entry
 
   std::array<u8, 16> achievements_hash = {};
   u32 achievements_game_id = 0;
-  u16 num_achievements = 0;
   u16 unlocked_achievements = 0;
   u16 unlocked_achievements_hc = 0;
 
