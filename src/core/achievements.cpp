@@ -121,6 +121,7 @@ static DynamicHeapArray<u8> SaveStateToBuffer();
 static void LoadStateFromBuffer(std::span<const u8> data, std::unique_lock<Threading::Mutex>& lock);
 static bool SaveStateToBuffer(std::span<u8> data);
 static std::string GetImageURL(const char* image_name, u32 type);
+static std::string GetUserAvatarURL(const rc_client_user_t* user);
 static void PrefetchNextAchievementBadge();
 static void PrefetchNextAchievementBadge(const rc_client_achievement_t* const last_cheevo);
 static void PrefetchAllAchievementBadges();
@@ -2072,6 +2073,12 @@ std::string Achievements::GetUserBadgeURL(const char* username)
   return GetImageURL(username, RC_IMAGE_TYPE_USER);
 }
 
+std::string Achievements::GetUserAvatarURL(const rc_client_user_t* user)
+{
+  return (user->avatar_url && user->avatar_url[0] != '\0') ? std::string(user->avatar_url) :
+                                                             GetImageURL(user->username, RC_IMAGE_TYPE_USER);
+}
+
 std::string Achievements::GetSubsetBadgeURL(const rc_client_subset_t* subset)
 {
   if (!subset->badge_url)
@@ -2144,6 +2151,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
     {
       data.username = user->username;
       data.encrypted_token = EncryptLoginToken(user->token, user->username).view();
+      data.avatar_url = GetUserAvatarURL(user);
       data.timestamp = static_cast<s64>(std::time(nullptr));
       s_state.has_saved_credentials = true;
       callback_result = true;
@@ -2195,6 +2203,7 @@ void Achievements::SaveLoginSettings(SettingsInterface& si, const LoginResult& r
 {
   si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username", result.username.c_str());
   si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token", result.encrypted_token.c_str());
+  si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL", result.avatar_url.c_str());
   si.SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp", fmt::format("{}", result.timestamp).c_str());
 }
 
@@ -2202,6 +2211,7 @@ void Achievements::ClearLoginSettings(SettingsInterface& si)
 {
   si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
   si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token");
+  si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL");
   si.DeleteValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp");
 }
 
@@ -2236,6 +2246,21 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
 
   // Should be active here.
   DebugAssert(client == s_state.client);
+
+  // Update the saved avatar URL, in case it changed or the credentials were saved by an older version.
+  // Must happen before FinishLogin(), since the UI refreshes its login state on success.
+  if (const rc_client_user_t* const user = rc_client_get_user_info(client))
+  {
+    const std::string avatar_url = GetUserAvatarURL(user);
+    const auto settings_lock = Core::GetSettingsLock();
+    SettingsInterface* const si = Core::GetBaseSettingsLayer();
+    if (si->GetStringViewValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL") != avatar_url)
+    {
+      si->SetStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL", avatar_url);
+      Host::CommitBaseSettingChanges();
+    }
+  }
+
   FinishLogin();
 
   // Triggered through FinishInitialize(), which didn't load the game yet, so we need to do it here.
@@ -2250,9 +2275,7 @@ void Achievements::FinishLogin()
     return;
 
   s_state.logged_in_username = user->username ? std::string(user->username) : std::string();
-  s_state.logged_in_user_icon_url = (user->avatar_url && user->avatar_url[0] != '\0') ?
-                                      std::string(user->avatar_url) :
-                                      GetImageURL(user->username, RC_IMAGE_TYPE_USER);
+  s_state.logged_in_user_icon_url = GetUserAvatarURL(user);
 
   FetchGameListIfOutdated();
   FetchAllProgressIfMissing();
@@ -2287,20 +2310,7 @@ std::pair<u32, u32> Achievements::GetLoggedInUserPoints()
   if (!user) [[unlikely]]
     return {};
 
-  return {user->score_softcore, user->score};
-}
-
-SmallString Achievements::GetLoggedInUserPointsSummary()
-{
-  SmallString ret;
-
-  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
-  if (!user) [[unlikely]]
-    return ret;
-
-  //: Score summary, shown in Big Picture mode.
-  ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)"), user->score, user->score_softcore);
-  return ret;
+  return {user->score, user->score_softcore};
 }
 
 std::string Achievements::GetProfileURL(std::string_view username)
@@ -2360,6 +2370,7 @@ void Achievements::Logout()
   s_state.has_saved_credentials = false;
   Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
   Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token");
+  Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL");
   Core::DeleteBaseSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "LoginTimestamp");
   Host::CommitBaseSettingChanges();
 

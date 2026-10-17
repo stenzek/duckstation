@@ -43,6 +43,7 @@ struct LoginResult
 {
   std::string username;
   std::string encrypted_token;
+  std::string avatar_url;
   s64 timestamp;
 };
 
@@ -197,13 +198,9 @@ const std::string& GetLoggedInUserName();
 /// Should be called with the lock held.
 const std::string& GetLoggedInUserIconURL();
 
-/// Returns the user's casual and hardcore points.
+/// Returns the user's points and casual points.
 /// Should be called with the lock held.
 std::pair<u32, u32> GetLoggedInUserPoints();
-
-/// Returns a summary of the user's points.
-/// Should be called with the lock held.
-SmallString GetLoggedInUserPointsSummary();
 
 /// Returns a URL for the given user's profile.
 std::string GetProfileURL(std::string_view username);

@@ -1510,12 +1510,12 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
                                     text, &size);
         };
 
-        // Casual points, followed by hardcore points in the accent colour.
-        const auto [casual_points, hardcore_points] = Achievements::GetLoggedInUserPoints();
+        // Points, followed by casual points in the accent colour.
+        const auto [points, casual_points] = Achievements::GetLoggedInUserPoints();
         draw_right_aligned(")", text_color);
-        heading_str.format("{}", hardcore_points);
+        heading_str.format("{}", casual_points);
         draw_right_aligned(heading_str, ImGui::GetColorU32(UIStyle.SecondaryStrongColor));
-        heading_str.format("{} (", casual_points);
+        heading_str.format("{} (", points);
         draw_right_aligned(heading_str, text_color);
 
         // The trophy is drawn without a shadow, since it is a colour glyph and the shadow would be tinted.

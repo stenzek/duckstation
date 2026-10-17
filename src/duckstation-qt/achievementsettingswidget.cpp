@@ -300,22 +300,10 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 void AchievementSettingsWidget::updateLoginState()
 {
   m_ui.userBadge->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-generic-user.png", true)));
+  QtUtils::SetLabelPixmapPathOrURL(
+    m_ui.userBadge, Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL"), true);
 
-  std::string username;
-
-  {
-    const auto lock = Achievements::GetLock();
-    if (Achievements::IsLoggedIn())
-    {
-      username = Achievements::GetLoggedInUserName();
-      QtUtils::SetLabelPixmapPathOrURL(m_ui.userBadge, Achievements::GetLoggedInUserIconURL(), true);
-    }
-    else
-    {
-      username = Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
-    }
-  }
-
+  const std::string username = Core::GetBaseStringSettingValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
   const bool logged_in = !username.empty();
 
   if (logged_in)

@@ -5644,37 +5644,36 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi,
   SmallString sstr;
 
   const ImVec2 pos_backup = ImGui::GetCursorPos();
-  const bool logged_in = (bsi->ContainsValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token"));
+  const SettingsInterface* const base_si = Core::GetBaseSettingsLayer();
+  const bool logged_in = (base_si->ContainsValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Token"));
   {
+    std::string_view badge_path = base_si->GetStringViewValue(Settings::ACHIEVEMENTS_SECTION_NAME, "AvatarURL");
+    if (badge_path.empty())
+      badge_path = "images/ra-generic-user.png";
+
+    if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
+    {
+      const ImRect badge_rect = CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
+      dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
+    }
+
+    pos.x += badge_size + LayoutScale(15.0f);
+
+    if (logged_in)
+      tstr = base_si->GetStringViewValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
+    else
+      tstr = FSUI_VSTR("Not Logged In");
+
     // avoid locking order issues
     settings_lock.unlock();
     {
       const auto lock = Achievements::GetLock();
-      std::string_view badge_path = Achievements::GetLoggedInUserIconURL();
-      if (badge_path.empty())
-        badge_path = "images/ra-generic-user.png";
 
-      if (Achievements::IsLoggedIn())
-      {
-        std::string_view username_sv = Achievements::GetLoggedInUserName();
-        if (!username_sv.empty())
-          tstr = username_sv;
-      }
-      else if (Achievements::IsLoggedInOrLoggingIn())
-      {
+      if (!Achievements::IsLoggedIn() && Achievements::IsLoggedInOrLoggingIn())
         tstr = FSUI_VSTR("Logging In...");
-      }
-      else if (!logged_in)
-      {
-        tstr = FSUI_VSTR("Not Logged In");
-      }
-      else
-      {
-        // client not active
-        tstr = bsi->GetTinyStringValue(Settings::ACHIEVEMENTS_SECTION_NAME, "Username");
-      }
 
-      sstr = Achievements::GetLoggedInUserPointsSummary();
+      const auto [points, casual_points] = Achievements::GetLoggedInUserPoints();
+      sstr.format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)"), points, casual_points);
       if (sstr.empty())
       {
         if (logged_in)
@@ -5682,14 +5681,6 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi,
         else
           sstr = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
       }
-
-      if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
-      {
-        const ImRect badge_rect = CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
-        dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
-      }
-
-      pos.x += badge_size + LayoutScale(15.0f);
 
       RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, pos,
                                 pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
