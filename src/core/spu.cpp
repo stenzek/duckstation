@@ -35,6 +35,9 @@ LOG_CHANNEL(SPU);
 // Enable to dump all voices of the SPU audio individually.
 // #define SPU_DUMP_ALL_VOICES 1
 
+// Enable to check that IRQs are not triggered before the predicted frame.
+// #define SPU_VERIFY_IRQ_PREDICTION 1
+
 // VU meter is only enabled in devel builds due to speed impact.
 #if defined(_DEBUG) || defined(_DEVEL)
 #define SPU_ENABLE_VU_METER 1
@@ -432,6 +435,11 @@ struct SPUState
 #ifdef SPU_DUMP_ALL_VOICES
   // +1 for reverb output
   std::array<std::unique_ptr<WAVWriter>, NUM_VOICES + 1> s_voice_dump_writers;
+#endif
+
+#ifdef SPU_VERIFY_IRQ_PREDICTION
+  u32 verify_predicted_frames = 0;
+  u32 verify_executed_frames = 0;
 #endif
 
 #ifdef SPU_ENABLE_VU_METER
@@ -907,6 +915,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       DEBUG_LOG("SPU key on low <- 0x{:04X}", value);
       GeneratePendingSamples();
       s_state.key_on_register = (s_state.key_on_register & 0xFFFF0000) | ZeroExtend32(value);
+      UpdateEventInterval();
     }
     break;
 
@@ -915,6 +924,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       DEBUG_LOG("SPU key on high <- 0x{:04X}", value);
       GeneratePendingSamples();
       s_state.key_on_register = (s_state.key_on_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
+      UpdateEventInterval();
     }
     break;
 
@@ -940,6 +950,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       s_state.pitch_modulation_enable_register =
         (s_state.pitch_modulation_enable_register & 0xFFFF0000) | ZeroExtend32(value);
       DEBUG_LOG("SPU pitch modulation enable register <- 0x{:08X}", s_state.pitch_modulation_enable_register);
+      UpdateEventInterval();
     }
     break;
 
@@ -949,6 +960,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       s_state.pitch_modulation_enable_register =
         (s_state.pitch_modulation_enable_register & 0x0000FFFF) | (ZeroExtend32(value) << 16);
       DEBUG_LOG("SPU pitch modulation enable register <- 0x{:08X}", s_state.pitch_modulation_enable_register);
+      UpdateEventInterval();
     }
     break;
 
@@ -1003,6 +1015,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       if (IsRAMIRQTriggerable())
         CheckForLateRAMIRQs();
 
+      UpdateEventInterval();
       return;
     }
 
@@ -1289,6 +1302,9 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     }
     break;
   }
+
+  // Sample rate and repeat address change when the next block is read.
+  UpdateEventInterval();
 }
 
 bool SPU::IsVoiceReverbEnabled(u32 i)
@@ -2514,6 +2530,16 @@ void SPU::Execute(void* param, TickCount ticks)
     const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
     for (u32 i = 0; i < frames_in_this_batch; i++)
     {
+#ifdef SPU_VERIFY_IRQ_PREDICTION
+      const bool verify_irq = (s_state.SPUCNT.enable && IsRAMIRQTriggerable());
+      s_state.verify_executed_frames++;
+      if (verify_irq && s_state.verify_executed_frames > s_state.verify_predicted_frames)
+      {
+        ERROR_LOG("IRQ prediction overrun: frame {} of {}", s_state.verify_executed_frames,
+                  s_state.verify_predicted_frames);
+      }
+#endif
+
       s32 left_sum = 0;
       s32 right_sum = 0;
       s32 reverb_in_left = 0;
@@ -2609,6 +2635,14 @@ void SPU::Execute(void* param, TickCount ticks)
       WriteToCaptureBuffers(cd_audio_left, cd_audio_right, static_cast<s16>(Clamp16(s_state.voices[1].last_volume)),
                             static_cast<s16>(Clamp16(s_state.voices[3].last_volume)));
 
+#ifdef SPU_VERIFY_IRQ_PREDICTION
+      if (verify_irq && !IsRAMIRQTriggerable() && s_state.verify_executed_frames < s_state.verify_predicted_frames)
+      {
+        ERROR_LOG("IRQ triggered early: frame {} of {}", s_state.verify_executed_frames,
+                  s_state.verify_predicted_frames);
+      }
+#endif
+
       // Key off/on voices after the first frame.
       if (i == 0 && (s_state.key_off_register != 0 || s_state.key_on_register != 0))
       {
@@ -2644,6 +2678,8 @@ void SPU::Execute(void* param, TickCount ticks)
       s_state.audio_stream.EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
+
+  UpdateEventInterval();
 }
 
 void SPU::UpdateEventInterval()
@@ -2653,17 +2689,90 @@ void SPU::UpdateEventInterval()
   // the SPU state.
   const u32 max_slice_frames = s_state.audio_stream.GetBufferSize();
 
-  // TODO: Make this predict how long until the interrupt will be hit instead...
-  const u32 interval = (s_state.SPUCNT.enable && IsRAMIRQTriggerable()) ? 1 : max_slice_frames;
+  // If the IRQ can fire, stop at the first frame that accesses RAM in a way that could hit the IRQ address.
+  u32 interval = max_slice_frames;
+  const bool predict_irq = (s_state.SPUCNT.enable && IsRAMIRQTriggerable());
+  if (predict_irq)
+  {
+    const u32 irq_address = ZeroExtend32(s_state.irq_address) * 8;
+
+    // Capture buffers are written every frame.
+    if (irq_address < (CAPTURE_BUFFER_SIZE_PER_CHANNEL * 4))
+    {
+      interval = std::min(
+        interval, (((irq_address - s_state.capture_buffer_position) & (CAPTURE_BUFFER_SIZE_PER_CHANNEL - 1)) / 2) + 1);
+    }
+
+    // Key on is applied after the first frame, and the voice reads its first block in the second.
+    if (s_state.key_on_register != 0)
+      interval = std::min(interval, 2u);
+
+    // Voices read a block on the frame after crossing the end of the previous block. Only the address of the next
+    // block is known, so if that doesn't match, stop at the read after it.
+    static constexpr u32 BLOCK_END = NUM_SAMPLES_PER_ADPCM_BLOCK << 12;
+    for (u32 i = 0; i < NUM_VOICES && interval > 1; i++)
+    {
+      const Voice& voice = s_state.voices[i];
+
+      // Pitch modulation can change the step every frame, so assume the maximum.
+      const bool pitch_modulated = IsPitchModulationEnabled(i);
+      const u32 step = pitch_modulated ? 0x3FFFu : std::min<u32>(voice.regs.adpcm_sample_rate, 0x3FFFu);
+
+      u32 frames, counter;
+      u16 address;
+      if (!voice.has_samples)
+      {
+        frames = 1;
+        counter = voice.counter.bits;
+        address = voice.current_address;
+      }
+      else
+      {
+        if (step == 0)
+          continue;
+
+        const u32 frames_to_end = (BLOCK_END - voice.counter.bits + step - 1) / step;
+        frames = frames_to_end + 1;
+        counter = pitch_modulated ? (step - 1) : (voice.counter.bits + frames_to_end * step - BLOCK_END);
+        address = voice.current_block_flags.loop_end ? (voice.regs.adpcm_repeat_address & ~u16(1)) :
+                                                       static_cast<u16>(voice.current_address + 2);
+      }
+
+      const u32 ram_address = (ZeroExtend32(address) * 8) & RAM_MASK;
+      if (CheckRAMIRQ(ram_address) || CheckRAMIRQ((ram_address + 8) & RAM_MASK))
+        interval = std::min(interval, frames);
+      else if (step != 0)
+        interval = std::min(interval, frames + ((BLOCK_END - counter + step - 1) / step));
+    }
+
+#ifdef SPU_VERIFY_IRQ_PREDICTION
+    s_state.verify_predicted_frames = interval;
+    s_state.verify_executed_frames = 0;
+#endif
+  }
+
   const TickCount interval_ticks = static_cast<TickCount>(interval) * s_state.cpu_ticks_per_spu_tick;
-  if (s_state.tick_event.IsActive() && s_state.tick_event.GetInterval() == interval_ticks)
+  if (!predict_irq && s_state.tick_event.IsActive() && s_state.tick_event.GetInterval() == interval_ticks)
     return;
 
   // Ticks remaining before execution should be retained, just adjust the interval/downcount.
-  const TickCount carry_ticks = g_settings.cpu_overclock_active ?
-                                  (s_state.ticks_carry / static_cast<TickCount>(g_settings.cpu_overclock_denominator)) :
-                                  s_state.ticks_carry;
-  const TickCount new_downcount = interval_ticks - carry_ticks;
+  TickCount new_downcount;
+  if (g_settings.cpu_overclock_active)
+  {
+    const u32 denominator = g_settings.cpu_overclock_denominator;
+    new_downcount = static_cast<TickCount>(((static_cast<u64>(interval) * static_cast<u32>(s_state.cpu_tick_divider)) -
+                                            static_cast<u32>(s_state.ticks_carry) + (denominator - 1)) /
+                                           denominator);
+  }
+  else
+  {
+    new_downcount = interval_ticks - s_state.ticks_carry;
+  }
+
+  // Carry and voice state are from the last execution, which may not be now if no frames were pending.
+  if (s_state.tick_event.IsActive())
+    new_downcount = std::max<TickCount>(new_downcount - s_state.tick_event.GetTicksSinceLastExecution(), 0);
+
   s_state.tick_event.SetInterval(interval_ticks);
   s_state.tick_event.Schedule(new_downcount);
 }
