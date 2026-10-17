@@ -393,8 +393,10 @@ void SettingsInterface::CopySection(const SettingsInterface& si, const char* sec
   if (&si == this) [[unlikely]]
     return;
 
-  ClearSection(section);
-
-  for (const auto& [key, value] : si.GetKeyValueList(section))
-    SetStringValue(section, key.c_str(), value);
+  // must copy as a list, otherwise repeated keys get collapsed
+  const KeyValueList items = si.GetKeyValueList(section);
+  if (!items.empty())
+    SetKeyValueList(section, items);
+  else
+    ClearSection(section);
 }
