@@ -11,6 +11,7 @@
 #include "common/gsvector.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 
 #include "fmt/format.h"
 
@@ -182,6 +183,86 @@ bool D3DCommon::SupportsAllowTearing(IDXGIFactory5* factory)
   HRESULT hr = factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
                                             sizeof(allow_tearing_supported));
   return (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+}
+
+HANDLE D3DCommon::GetFrameLatencyWaitableObject(IDXGISwapChain1* swap_chain)
+{
+  Microsoft::WRL::ComPtr<IDXGISwapChain2> swap_chain2;
+  HRESULT hr = swap_chain->QueryInterface(IID_PPV_ARGS(swap_chain2.GetAddressOf()));
+  if (FAILED(hr) || FAILED(hr = swap_chain2->SetMaximumFrameLatency(1)))
+  {
+    WARNING_LOG("Failed to set maximum frame latency: {:08X}", static_cast<unsigned>(hr));
+    return nullptr;
+  }
+
+  return swap_chain2->GetFrameLatencyWaitableObject();
+}
+
+HRESULT D3DCommon::PresentSwapChain(IDXGISwapChain1* swap_chain, HANDLE frame_latency_waitable,
+                                    IDXGIOutput* fullscreen_output, UINT sync_interval, UINT flags)
+{
+  // By default, DXGI lets up to three presents queue up, and Present() only blocks once that queue is full. With vsync,
+  // if a frame misses its vblank, the frames after it sit in that queue for an extra vblank each, and since nothing
+  // blocks, we can't tell that it happened. Vulkan FIFO with two images doesn't have this problem: acquiring the next
+  // image blocks until the frame just presented has flipped.
+  //
+  // The frame latency waitable object is a semaphore which DXGI signals each time a queued present completes, i.e. the
+  // frame is displayed. With a maximum latency of one, waiting on it right after Present() gives the Vulkan behaviour:
+  // we return at the vblank where this frame is shown. VideoPresenter takes that time as the vblank timestamp, which
+  // the throttler locks its phase to (see System::LockThrottlerToVBlank()), and uses it to detect and drop late frames.
+  //
+  // Exclusive fullscreen can't use the waitable object. Instead, we wait for vblanks on the output until the frame
+  // statistics say this frame has been displayed. Waiting for a single vblank isn't enough: if a frame missed its
+  // vblank, DXGI would still have it queued, and we'd keep presenting one frame per vblank behind it without noticing.
+  //
+  // Only used for vsync'ed presents.
+  if (sync_interval == 0 || (!frame_latency_waitable && !fullscreen_output))
+    return swap_chain->Present(sync_interval, flags);
+
+  if (!frame_latency_waitable)
+  {
+    const HRESULT hr = swap_chain->Present(sync_interval, flags);
+    UINT present_count;
+    if (hr != S_OK || FAILED(swap_chain->GetLastPresentCount(&present_count)))
+      return hr;
+
+    // Cap the number of vblanks, so that bad statistics can't stall us. Three covers a full DXGI queue.
+    static constexpr u32 MAX_VBLANK_WAITS = 3;
+    for (u32 i = 0; i < MAX_VBLANK_WAITS; i++)
+    {
+      if (FAILED(fullscreen_output->WaitForVBlank()))
+        break;
+
+      // Statistics can lag slightly behind the vblank, so check again shortly after before waiting another vblank.
+      // If they're unavailable (e.g. disjoint after a mode change), or don't make sense, we've waited for one vblank.
+      DXGI_FRAME_STATISTICS stats;
+      if (FAILED(swap_chain->GetFrameStatistics(&stats)) || (present_count - stats.PresentCount) > MAX_VBLANK_WAITS)
+        break;
+      if (stats.PresentCount == present_count)
+        break;
+
+      Timer::NanoSleep(500000);
+      if (FAILED(swap_chain->GetFrameStatistics(&stats)) || stats.PresentCount == present_count)
+        break;
+    }
+
+    return hr;
+  }
+
+  // Consume signals that are already pending: the initial signal, or frames that were presented without waiting, e.g.
+  // with vsync off or mailbox. Otherwise the wait below would return immediately for an older frame, instead of when
+  // this frame is displayed.
+  while (WaitForSingleObjectEx(frame_latency_waitable, 0, FALSE) == WAIT_OBJECT_0)
+    ;
+
+  const HRESULT hr = swap_chain->Present(sync_interval, flags);
+
+  // Occluded frames won't be displayed, so don't wait on them. The timeout stops us hanging if a frame never
+  // completes for some other reason, e.g. the window is minimized.
+  if (hr == S_OK)
+    WaitForSingleObjectEx(frame_latency_waitable, 100, FALSE);
+
+  return hr;
 }
 
 bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, const D3D_FEATURE_LEVEL* feature_levels,
