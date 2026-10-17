@@ -472,6 +472,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_show_cpu_usage = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowCPU", false);
   display_show_gpu_usage = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowGPU", false);
   display_show_frame_times = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameTimes", false);
+  display_show_frame_number = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameNumber", false);
   display_show_status_indicators = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue(DISPLAY_SECTION_NAME, "ShowEnhancements", false);
@@ -861,6 +862,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowCPU", display_show_cpu_usage);
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowGPU", display_show_gpu_usage);
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameTimes", display_show_frame_times);
+    si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowFrameNumber", display_show_frame_number);
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowStatusIndicators", display_show_status_indicators);
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowInputs", display_show_inputs);
     si.SetBoolValue(DISPLAY_SECTION_NAME, "ShowEnhancements", display_show_enhancements);

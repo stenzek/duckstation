@@ -2865,6 +2865,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WAVE_SQUARE, "Show Frame Times"),
                     FSUI_VSTR("Shows a visual history of frame times in the upper-left corner of the display."),
                     Settings::DISPLAY_SECTION_NAME, "ShowFrameTimes", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FILM, "Show Frame Number"),
+                    FSUI_VSTR("Shows the number of the current frame in the top-right corner of the display."),
+                    Settings::DISPLAY_SECTION_NAME, "ShowFrameNumber", false);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_EXPAND, "Show Resolution"),
     FSUI_VSTR("Shows the current rendering resolution of the system in the top-right corner of the display."),

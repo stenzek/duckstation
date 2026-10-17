@@ -120,13 +120,20 @@
        </widget>
       </item>
       <item row="0" column="1">
+       <widget class="QCheckBox" name="showFrameNumber">
+        <property name="text">
+         <string>Show Frame Number</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QCheckBox" name="richPresenceMonitor">
         <property name="text">
          <string>Rich Presence Monitor</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="1">
        <widget class="QCheckBox" name="useRAIntegration">
         <property name="text">
          <string>Enable RAIntegration</string>

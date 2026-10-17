@@ -376,7 +376,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
         g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_latency_stats ||
         g_gpu_settings.display_show_cpu_usage || g_gpu_settings.display_show_gpu_usage ||
-        g_gpu_settings.display_show_frame_times ||
+        g_gpu_settings.display_show_frame_times || g_gpu_settings.display_show_frame_number ||
         (g_gpu_settings.display_show_status_indicators &&
          (VideoThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
@@ -386,9 +386,9 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   const float status_size = std::ceil(50.0f * scale);
   ImFont* const fixed_font = ImGuiManager::GetFixedFont();
   const float fixed_font_size = ImGuiManager::GetFixedFontSize();
-  ImFont* ui_font = ImGuiManager::GetTextFont();
+  ImFont* const ui_font = ImGuiManager::GetTextFont();
   const float rbound = ImGui::GetIO().DisplaySize.x - margin;
-  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+  ImDrawList* const dl = ImGui::GetBackgroundDrawList();
   SmallString text;
 
   const bool paused = VideoThread::IsSystemPaused();
@@ -543,10 +543,18 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
       position_y += spacing;
     }
-
-    if (g_gpu_settings.display_show_frame_times)
-      DrawFrameTimeOverlay(position_y, scale, margin, spacing);
   }
+
+  if (g_gpu_settings.display_show_frame_number)
+  {
+    gpu->GetFrameNumberString(text);
+    DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, rbound, text);
+    position_y += spacing;
+    text.clear();
+  }
+
+  if (!paused && g_gpu_settings.display_show_frame_times)
+    DrawFrameTimeOverlay(position_y, scale, margin, spacing);
 
   if (g_gpu_settings.display_show_status_indicators)
     DrawStatusIndicators(dl, position_y, ui_font, status_size, rbound, text, paused);

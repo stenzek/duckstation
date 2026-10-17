@@ -57,6 +57,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
           &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.richPresenceMonitor, Settings::ACHIEVEMENTS_SECTION_NAME,
                                                "RichPresenceMonitor", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameNumber, Settings::DISPLAY_SECTION_NAME,
+                                               "ShowFrameNumber", false);
 
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
@@ -89,6 +91,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.richPresenceMonitor, tr("Rich Presence Monitor"), tr("Unchecked"),
     tr("Always displays the current RetroAchievements rich presence string in the indicator area."));
+  dialog->registerWidgetHelp(m_ui.showFrameNumber, tr("Show Frame Number"), tr("Unchecked"),
+                             tr("Shows the number of the current frame in the top-right corner of the display."));
 
   dialog->registerWidgetHelp(m_ui.cacheDirectory, tr("Cache Directory"), tr("Default"),
                              tr("Specifies the directory where compiled shaders and game list data will be stored."));

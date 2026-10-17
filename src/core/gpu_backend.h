@@ -95,6 +95,7 @@ public:
 
   void GetStatsString(SmallStringBase& str) const;
   void GetMemoryStatsString(SmallStringBase& str) const;
+  void GetFrameNumberString(SmallStringBase& str) const;
 
   void ResetStatistics();
   void UpdateStatistics(u32 frame_count);
@@ -144,6 +145,9 @@ protected:
     u32 host_num_copies;
     u32 host_num_downloads;
     u32 host_num_uploads;
+
+    u32 frame_number;
+    u32 internal_frame_number;
 
     u8 gpu_busy_pct;
   };

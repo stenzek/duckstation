@@ -117,6 +117,7 @@ struct GPUSettings
   bool display_show_cpu_usage : 1 = false;
   bool display_show_gpu_usage : 1 = false;
   bool display_show_frame_times : 1 = false;
+  bool display_show_frame_number : 1 = false;
   bool display_show_status_indicators : 1 = true;
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;

@@ -4713,6 +4713,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_show_cpu_usage != old_settings.display_show_cpu_usage ||
              g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage ||
              g_settings.display_show_frame_times != old_settings.display_show_frame_times ||
+             g_settings.display_show_frame_number != old_settings.display_show_frame_number ||
              g_settings.display_show_status_indicators != old_settings.display_show_status_indicators ||
              g_settings.display_show_inputs != old_settings.display_show_inputs ||
              g_settings.display_show_enhancements != old_settings.display_show_enhancements ||

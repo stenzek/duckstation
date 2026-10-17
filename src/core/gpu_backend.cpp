@@ -571,6 +571,9 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   if (cmd->media_capture || cmd->present_frame)
     FlushRender();
 
+  s_stats.frame_number = cmd->frame_number;
+  s_stats.internal_frame_number = cmd->internal_frame_number;
+
   // For regtest.
   Host::FrameDoneOnVideoThread(this, cmd->frame_number);
 
@@ -652,6 +655,11 @@ void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
              "{} " BOLD("TC") DOT_SEP "{} " BOLD("TU"),
              vram_usage_mb, stream_kb, s_stats.host_num_barriers, s_stats.host_num_render_passes,
              s_stats.host_num_copies, s_stats.host_num_uploads);
+}
+
+void GPUBackend::GetFrameNumberString(SmallStringBase& str) const
+{
+  str.format(BOLD("Frame:") " {} ({})", s_stats.frame_number, s_stats.internal_frame_number);
 
 #undef DOT_SEP
 #undef BOLD
