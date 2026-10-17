@@ -337,6 +337,8 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
                              D3DCommon::SupportsAllowTearing(D3D11Device::GetDXGIFactory()));
     if (m_using_allow_tearing)
       swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    if (m_using_flip_model_swap_chain)
+      swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     hr = dxgi_factory->CreateSwapChainForHwnd(d3d_device, window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                               m_swap_chain.ReleaseAndGetAddressOf());
   }
@@ -367,6 +369,10 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
   }
 
+  // Waitable object can't be used with exclusive fullscreen.
+  if (m_using_flip_model_swap_chain && !IsExclusiveFullscreen())
+    m_frame_latency_waitable = D3DCommon::GetFrameLatencyWaitableObject(m_swap_chain.Get());
+
   return true;
 }
 
@@ -374,6 +380,12 @@ void D3D11SwapChain::DestroySwapChain()
 {
   if (!m_swap_chain)
     return;
+
+  if (m_frame_latency_waitable)
+  {
+    CloseHandle(m_frame_latency_waitable);
+    m_frame_latency_waitable = nullptr;
+  }
 
   // switch out of fullscreen before destroying
   BOOL is_fullscreen;
@@ -435,8 +447,10 @@ bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
   m_swap_chain_rtv.Reset();
 
   // Flags have to match what the swap chain was created with.
-  const UINT flags = IsExclusiveFullscreen() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
-                                               (m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  const UINT flags = IsExclusiveFullscreen() ?
+                       DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
+                       ((m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) |
+                        (m_using_flip_model_swap_chain ? DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT : 0));
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, flags);
   if (FAILED(hr)) [[unlikely]]
   {
@@ -779,7 +793,8 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-  const HRESULT hr = SC->GetSwapChain()->Present(sync_interval, flags);
+  const HRESULT hr = D3DCommon::PresentSwapChain(SC->GetSwapChain(), SC->GetFrameLatencyWaitable(),
+                                                 SC->GetFullscreenOutput(), sync_interval, flags);
   if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) [[unlikely]]
   {
     ERROR_LOG("Present() failed, device lost: {:08X}", static_cast<unsigned>(hr));

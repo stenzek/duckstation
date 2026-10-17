@@ -27,6 +27,7 @@ struct IDXGIFactory5;
 struct IDXGIAdapter;
 struct IDXGIAdapter1;
 struct IDXGIOutput;
+struct IDXGISwapChain1;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D12Debug;
@@ -46,6 +47,17 @@ D3D_FEATURE_LEVEL GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter);
 // create a dxgi factory
 Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
 bool SupportsAllowTearing(IDXGIFactory5* factory);
+
+// sets a maximum frame latency of one, and returns the waitable object, or nullptr on failure
+// the swap chain must have been created with DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT, which is only
+// allowed for windowed flip model swap chains, the handle must be closed with CloseHandle()
+HANDLE GetFrameLatencyWaitableObject(IDXGISwapChain1* swap_chain);
+
+// presents, and waits for the frame to be displayed if synchronized and either frame_latency_waitable (windowed) or
+// fullscreen_output (exclusive fullscreen) is provided
+// this makes vsync'ed presents block until vblank, which VideoPresenter relies on for vblank timing
+HRESULT PresentSwapChain(IDXGISwapChain1* swap_chain, HANDLE frame_latency_waitable, IDXGIOutput* fullscreen_output,
+                         UINT sync_interval, UINT flags);
 
 // create a D3D device
 bool CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, const D3D_FEATURE_LEVEL* feature_levels,

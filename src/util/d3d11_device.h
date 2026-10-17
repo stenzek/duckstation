@@ -244,6 +244,11 @@ public:
   ALWAYS_INLINE ID3D11RenderTargetView* GetRTV() const { return m_swap_chain_rtv.Get(); }
   ALWAYS_INLINE ID3D11RenderTargetView* const* GetRTVArray() const { return m_swap_chain_rtv.GetAddressOf(); }
   ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
+  ALWAYS_INLINE HANDLE GetFrameLatencyWaitable() const { return m_frame_latency_waitable; }
+  ALWAYS_INLINE IDXGIOutput* GetFullscreenOutput() const
+  {
+    return m_fullscreen_mode.has_value() ? m_fullscreen_output.Get() : nullptr;
+  }
 
   bool ResizeBuffers(u32 new_width, u32 new_height, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, Error* error) override;
@@ -262,6 +267,7 @@ private:
 
   ComPtr<IDXGISwapChain1> m_swap_chain;
   ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
+  HANDLE m_frame_latency_waitable = nullptr;
 
   ComPtr<IDXGIOutput> m_fullscreen_output;
   std::optional<DXGI_MODE_DESC> m_fullscreen_mode;

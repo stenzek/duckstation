@@ -950,6 +950,7 @@ bool D3D12SwapChain::CreateSwapChain(D3D12Device& dev, Error* error)
     m_using_allow_tearing = D3DCommon::SupportsAllowTearing(dev.GetDXGIFactory());
     if (m_using_allow_tearing)
       swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     hr = dev.GetDXGIFactory()->CreateSwapChainForHwnd(dev.GetCommandQueue(), window_hwnd, &swap_chain_desc, nullptr,
                                                       nullptr, m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
@@ -962,6 +963,10 @@ bool D3D12SwapChain::CreateSwapChain(D3D12Device& dev, Error* error)
   hr = dev.GetDXGIFactory()->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
+
+  // Waitable object can't be used with exclusive fullscreen.
+  if (!IsExclusiveFullscreen())
+    m_frame_latency_waitable = D3DCommon::GetFrameLatencyWaitableObject(m_swap_chain.Get());
 
   return true;
 }
@@ -1047,6 +1052,12 @@ void D3D12SwapChain::DestroySwapChain()
   if (!m_swap_chain)
     return;
 
+  if (m_frame_latency_waitable)
+  {
+    CloseHandle(m_frame_latency_waitable);
+    m_frame_latency_waitable = nullptr;
+  }
+
   // switch out of fullscreen before destroying
   BOOL is_fullscreen;
   if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
@@ -1093,8 +1104,10 @@ bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 
   DestroyRTVs();
 
-  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-                                           m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+  HRESULT hr =
+    m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
+                                (m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) |
+                                  (IsExclusiveFullscreen() ? 0 : DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT));
   if (FAILED(hr))
     ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
@@ -1272,7 +1285,8 @@ void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-  SC->GetSwapChain()->Present(sync_interval, flags);
+  D3DCommon::PresentSwapChain(SC->GetSwapChain(), SC->GetFrameLatencyWaitable(), SC->GetFullscreenOutput(),
+                              sync_interval, flags);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

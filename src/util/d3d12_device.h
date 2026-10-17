@@ -404,6 +404,11 @@ public:
   ALWAYS_INLINE IDXGISwapChain1* GetSwapChain() const { return m_swap_chain.Get(); }
   ALWAYS_INLINE const BufferPair& GetCurrentBuffer() const { return m_swap_chain_buffers[m_current_swap_chain_buffer]; }
   ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
+  ALWAYS_INLINE HANDLE GetFrameLatencyWaitable() const { return m_frame_latency_waitable; }
+  ALWAYS_INLINE IDXGIOutput* GetFullscreenOutput() const
+  {
+    return m_fullscreen_mode.has_value() ? m_fullscreen_output.Get() : nullptr;
+  }
 
   void AdvanceBuffer()
   {
@@ -429,6 +434,7 @@ private:
   ComPtr<IDXGISwapChain1> m_swap_chain;
   std::vector<BufferPair> m_swap_chain_buffers;
   u32 m_current_swap_chain_buffer = 0;
+  HANDLE m_frame_latency_waitable = nullptr;
   bool m_using_allow_tearing = false;
 
   ComPtr<IDXGIOutput> m_fullscreen_output;
