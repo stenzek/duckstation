@@ -785,9 +785,11 @@ u16 SPU::ReadRegister(u32 offset)
       return Truncate16(s_state.reverb_on_register >> 16);
 
     case 0x1F801D9C - SPU_BASE:
+      GeneratePendingSamples();
       return Truncate16(s_state.endx_register);
 
     case 0x1F801D9E - SPU_BASE:
+      GeneratePendingSamples();
       return Truncate16(s_state.endx_register >> 16);
 
     case 0x1F801DA2 - SPU_BASE:
@@ -1477,6 +1479,9 @@ void SPU::ManualTransferWrite(u16 value)
     if (s_state.SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped)
       ExecuteTransfer(nullptr, std::numeric_limits<s32>::max());
   }
+
+  // Pending samples need to read the old data.
+  InternalGeneratePendingSamples();
 
   std::memcpy(&s_ram[s_state.transfer_address], &value, sizeof(u16));
   s_state.transfer_address = (s_state.transfer_address + sizeof(u16)) & RAM_MASK;
