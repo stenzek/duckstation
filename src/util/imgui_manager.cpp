@@ -733,10 +733,13 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
     const ImDrawList* cmd_list = draw_data->CmdLists[n];
     static_assert(sizeof(ImDrawIdx) == sizeof(GPUDevice::DrawIndex));
 
-    u32 base_vertex, base_index;
-    g_gpu_device->UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size,
-                                     &base_vertex);
-    g_gpu_device->UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
+    u32 base_vertex = 0, base_index = 0;
+    if (!cmd_list->IdxBuffer.empty())
+    {
+      g_gpu_device->UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size,
+                                       &base_vertex);
+      g_gpu_device->UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
+    }
 
     for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
     {
@@ -1687,8 +1690,11 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 
 bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_has_context.load(std::memory_order_acquire) || key.data < static_cast<u32>(InputPointerAxis::WheelX))
+  if (!s_state.imgui_has_context.load(std::memory_order_acquire) ||
+      key.data < static_cast<u32>(InputPointerAxis::WheelX))
+  {
     return false;
+  }
 
   // still update state anyway
   const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
