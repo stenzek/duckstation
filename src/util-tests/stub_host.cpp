@@ -2,10 +2,14 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core/core.h"
+#include "core/settings.h"
 
 #include "util/translation.h"
 
 #include "common/time_helpers.h"
+
+// CDImageDevice references this
+const char* const Settings::CDROM_SECTION_NAME = "CDROM";
 
 bool Core::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
 {
