@@ -105,6 +105,9 @@ SystemBootParameters::~SystemBootParameters() = default;
 namespace System {
 
 static constexpr float PRE_FRAME_SLEEP_UPDATE_INTERVAL = 1.0f;
+static constexpr double VSYNC_PRESENT_MARGIN_MS = 2.0; // Initial target gap between a frame's present time and vblank.
+static constexpr double VSYNC_PRESENT_MARGIN_STEP_MS = 1.0; // Margin increase for each missed vblank.
+static constexpr double VSYNC_PHASE_LOCK_TIMEOUT = 1.0;     // Ignore vblank times older than this, in seconds.
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
 static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
@@ -178,6 +181,11 @@ static void ResetThrottler();
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle(Timer::Value current_time, Timer::Value sleep_until);
 static void AccumulatePreFrameSleepTime(Timer::Value current_time);
+
+/// Adjusts the throttler so that frames are presented shortly before vblank, when using blocking vsync.
+/// See the comment above the implementation for how this works.
+static void LockThrottlerToVBlank(Timer::Value current_time);
+
 static void UpdateDisplayVSync();
 static void InhibitScreensaver(bool inhibit);
 
@@ -243,6 +251,10 @@ struct StateVars
   bool optimal_frame_pacing = false;
   bool skip_presenting_duplicate_frames = false;
   bool pre_frame_sleep = false;
+  bool vsync_phase_lock = false;
+  bool vsync_phase_snap = false;
+  u32 vsync_missed_vblank_count = 0;
+  Timer::Value vsync_present_margin = 0;
 
   bool can_sync_to_host = false;
   bool syncing_to_host = false;
@@ -2205,6 +2217,10 @@ void System::FrameDone()
     PauseSystem(true);
   }
 
+  // Keep the frame schedule in phase with vblank. This has to happen before the pre-frame sleep calculation below,
+  // since that uses next_frame_time, and it covers every path that advances next_frame_time.
+  LockThrottlerToVBlank(current_time);
+
   // pre-frame sleep accounting (input lag reduction)
   const Timer::Value pre_frame_sleep_until = s_state.next_frame_time + s_state.pre_frame_sleep_time;
   s_state.last_active_frame_time = current_time - s_state.frame_start_time;
@@ -2342,8 +2358,14 @@ void System::UpdateThrottlePeriod()
 
 void System::ResetThrottler()
 {
-  s_state.next_frame_time = Timer::GetCurrentValue() + s_state.frame_period;
+  const Timer::Value current_time = Timer::GetCurrentValue();
+  s_state.next_frame_time = current_time + s_state.frame_period;
   s_state.pre_frame_sleep_time = 0;
+
+  // The new schedule is relative to now, which is a random phase relative to vblank. Snap it into phase immediately,
+  // otherwise the first frames could be presented up to a frame later than necessary.
+  s_state.vsync_phase_snap = true;
+  LockThrottlerToVBlank(current_time);
 }
 
 void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
@@ -2385,6 +2407,98 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
 #endif
 
   s_state.next_frame_time += s_state.frame_period;
+}
+
+void System::LockThrottlerToVBlank(Timer::Value current_time)
+{
+  // VSync phase lock
+  // ================
+  //
+  // With optimal frame pacing, each frame is queued to the video thread with present_time = next_frame_time, i.e. the
+  // time the core thread starts the following frame. The video thread renders it, sleeps until present_time, and then
+  // presents. With blocking (FIFO) vsync the present call doesn't return until the frame has flipped, so
+  // VideoPresenter records the time it returns as the time of the most recent vblank
+  // (VideoPresenter::GetLastVBlankTime). On D3D11/D3D12, the frame latency waitable object, or waiting for vblank in
+  // exclusive fullscreen, provides the same blocking, see D3DCommon::PresentSwapChain().
+  //
+  // When syncing to the host refresh rate, frame_period is the host refresh period, so emulation and display run at the
+  // same rate, but the throttler's schedule starts at an arbitrary point (ResetThrottler() uses the current time). The
+  // offset between present_time (P below) and the following vblank can be anywhere in the period, and every frame waits
+  // that long to be displayed. If it's very small, a little jitter makes a frame miss its vblank:
+  //
+  //                 vblank                          vblank
+  //                   |                               |
+  //    wanted:        |                        P----->|  displayed after the margin
+  //    random phase:  |   P-------------------------->|  displayed after most of a period
+  //    just missed:   |                               |P------------------------------> next vblank, a period late
+  //
+  // This function shifts next_frame_time so that present_time lands vsync_present_margin before a vblank. Because
+  // the periods match, only the phase needs correcting: the error is taken modulo the period and wrapped to
+  // [-period/2, period/2), so the schedule moves whichever way is shorter. When resetting the throttler, the full
+  // correction is applied at once, since nothing is running yet. Every frame after that, a small fraction is applied,
+  // clamped to period/64, to track drift between the reported and actual host refresh rates without audibly changing
+  // emulation speed.
+  //
+  // If there's no recent vblank time when resetting, e.g. at boot, or after a pause where nothing was presented, the
+  // full correction is applied on the first frame that has one instead. Slewing there from a random phase would be
+  // unsafe: moving earlier across a vblank shifts frames to the following vblank one fraction at a time, so the gap
+  // from present_time to vblank grows gradually instead of jumping, and VideoPresenter can't tell that a frame has
+  // been queued.
+  //
+  // This doesn't recover from a missed vblank by itself. A frame that misses keeps the video thread blocked past the
+  // next frame's present_time, and from then on every frame is displayed one vblank late, because the queue never
+  // drains at matched rates. VideoPresenter::ShouldPresentFrame() detects that and drops one frame. Since we're still
+  // in phase, the frame after that makes its vblank again.
+  //
+  // The margin is how long the frame has to be rendered and displayed. It starts at VSYNC_PRESENT_MARGIN_MS, which is
+  // enough for most setups, but some need longer, e.g. exclusive fullscreen on D3D. If a frame which was presented on
+  // time still misses its vblank, the margin is increased by VSYNC_PRESENT_MARGIN_STEP_MS, up to a quarter of a period.
+  // Frames which were presented late, e.g. because emulation or rendering took too long, don't count, since a larger
+  // margin wouldn't have helped them. It resets when the speed limiter settings are updated.
+  //
+  // Only enabled when syncing to host (the periods must match), with optimal frame pacing (we need present_time), and
+  // with vsync enabled (we need blocking presents for vblank times).
+
+  if (!s_state.vsync_phase_lock)
+    return;
+
+  // Don't use stale vblank times, e.g. if the window was hidden.
+  const Timer::Value vblank_time = VideoPresenter::GetLastVBlankTime();
+  if (vblank_time == 0 || static_cast<s64>(current_time - vblank_time) >
+                            static_cast<s64>(Timer::ConvertSecondsToValue(VSYNC_PHASE_LOCK_TIMEOUT)))
+  {
+    s_state.vsync_phase_snap = true;
+    return;
+  }
+
+  const u32 missed_vblank_count = VideoPresenter::GetMissedVBlankCount();
+  if (missed_vblank_count != s_state.vsync_missed_vblank_count)
+  {
+    s_state.vsync_missed_vblank_count = missed_vblank_count;
+    s_state.vsync_present_margin =
+      std::max(s_state.vsync_present_margin,
+               std::min(s_state.vsync_present_margin + Timer::ConvertMillisecondsToValue(VSYNC_PRESENT_MARGIN_STEP_MS),
+                        s_state.frame_period / 4));
+    DEV_LOG("Frame missed vblank, increasing present margin to {:.2f} ms",
+            Timer::ConvertValueToMilliseconds(s_state.vsync_present_margin));
+  }
+
+  // Frames are presented at the next frame time, we want that to be just before vblank. Any vblank works as a
+  // reference, since they're all a multiple of the period apart. Wrap the error to within half a period, so we
+  // move in whichever direction is closer.
+  const s64 period = static_cast<s64>(s_state.frame_period);
+  const s64 target_time = static_cast<s64>(vblank_time) - static_cast<s64>(s_state.vsync_present_margin);
+  s64 error = (target_time - static_cast<s64>(s_state.next_frame_time)) % period;
+  if (error >= (period / 2))
+    error -= period;
+  else if (error < -(period / 2))
+    error += period;
+
+  // Unless snapping, only nudge it, so that emulation speed changes by less than 2%.
+  if (!std::exchange(s_state.vsync_phase_snap, false))
+    error = std::clamp<s64>(error / 8, -(period / 64), period / 64);
+
+  s_state.next_frame_time = static_cast<Timer::Value>(static_cast<s64>(s_state.next_frame_time) + error);
 }
 
 void System::SingleStepCPU()
@@ -3697,6 +3811,11 @@ void System::UpdateSpeedLimiterState()
         s_state.target_speed = ratio;
     }
   }
+
+  // Throttler is only locked to vblank when the frame rate matches the host refresh rate.
+  s_state.vsync_phase_lock = (s_state.syncing_to_host && s_state.optimal_frame_pacing && g_settings.display_vsync);
+  s_state.vsync_missed_vblank_count = VideoPresenter::GetMissedVBlankCount();
+  s_state.vsync_present_margin = Timer::ConvertMillisecondsToValue(VSYNC_PRESENT_MARGIN_MS);
 
   VERBOSE_LOG("Target speed: {}%", s_state.target_speed * 100.0f);
   VERBOSE_LOG("Preset timing: {}", s_state.optimal_frame_pacing ? "consistent" : "immediate");

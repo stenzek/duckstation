@@ -49,6 +49,7 @@ static constexpr u32 DEINTERLACE_BUFFER_COUNT = 4;
 static constexpr u32 MAX_SKIPPED_PRESENT_COUNT = 50;
 static constexpr double MIN_VBLANK_WAIT_MS = 0.5;
 static constexpr double PRESENT_GAP_BASELINE_RISE_MS = 0.25;
+static constexpr double ON_TIME_PRESENT_TOLERANCE_MS = 0.5;
 
 namespace VideoPresenter {
 
@@ -108,6 +109,8 @@ struct Locals
   u64 last_present_gap = 0;
   u64 present_gap_baseline = 0;
   std::atomic<u64> last_vblank_time{0};
+  std::atomic<u32> missed_vblank_count{0};
+  bool last_present_on_time = false;
   u8 skipped_present_count = 0;
   PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;
 
@@ -1461,6 +1464,11 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
                 Timer::ConvertValueToMilliseconds(s_locals.present_gap_baseline));
         s_locals.last_present_gap = s_locals.present_gap_baseline;
         s_locals.skipped_present_count++;
+
+        // If the previous frame was presented on time, the throttler's margin wasn't enough to display it.
+        if (s_locals.last_present_on_time)
+          s_locals.missed_vblank_count.fetch_add(1, std::memory_order_release);
+
         return false;
       }
     }
@@ -1650,6 +1658,8 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
       {
         const u64 gap = (current_time > present_time) ? (current_time - present_time) : 0;
         s_locals.last_present_gap = gap;
+        s_locals.last_present_on_time =
+          (present_start_time <= (present_time + Timer::ConvertMillisecondsToValue(ON_TIME_PRESENT_TOLERANCE_MS)));
         s_locals.present_gap_baseline =
           (gap <= s_locals.present_gap_baseline) ?
             gap :
@@ -1688,6 +1698,11 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 u64 VideoPresenter::GetLastVBlankTime()
 {
   return s_locals.last_vblank_time.load(std::memory_order_acquire);
+}
+
+u32 VideoPresenter::GetMissedVBlankCount()
+{
+  return s_locals.missed_vblank_count.load(std::memory_order_acquire);
 }
 
 bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
