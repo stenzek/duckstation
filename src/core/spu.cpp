@@ -1176,8 +1176,9 @@ u16 SPU::ReadVoiceRegister(u32 offset)
   Assert(voice_index < 24);
 
   // ADSR volume needs to be updated when reading. A voice might be off as well, but key on is pending.
+  // Off voices still read blocks when IRQs are enabled, which can change the repeat address.
   const Voice& voice = s_state.voices[voice_index];
-  if (reg_index >= 6 && (voice.IsOn() || s_state.key_on_register & (1u << voice_index)))
+  if (reg_index >= 6 && (voice.IsOn() || s_state.key_on_register & (1u << voice_index) || s_state.SPUCNT.irq9_enable))
     GeneratePendingSamples();
 
   TRACE_LOG("Read voice {} register {} -> 0x{:02X}", voice_index, reg_index, voice.regs.index[reg_index]);
@@ -1191,8 +1192,9 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
   const u32 voice_index = (offset / 0x10);
   DebugAssert(voice_index < 24);
 
+  // Off voices still read blocks when IRQs are enabled, so pending samples need to use the old values.
   Voice& voice = s_state.voices[voice_index];
-  if (voice.IsOn() || s_state.key_on_register & (1u << voice_index))
+  if (voice.IsOn() || s_state.key_on_register & (1u << voice_index) || s_state.SPUCNT.irq9_enable)
     GeneratePendingSamples();
 
   switch (reg_index)
