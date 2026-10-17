@@ -1513,6 +1513,9 @@ void VideoPresenter::ThrottlePresentation()
 
 bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
 {
+  // Start the frame here instead of after presenting, so that input is sampled as late as possible.
+  ImGuiManager::NewFrame(Timer::GetCurrentValue());
+
   FullscreenUI::UploadAsyncTextures();
 
   ImGuiManager::RenderDebugWindows();
@@ -1657,8 +1660,6 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
                      s_locals.present_gap_baseline + Timer::ConvertMillisecondsToValue(PRESENT_GAP_BASELINE_RISE_MS));
       }
     }
-
-    ImGuiManager::NewFrame(s_locals.last_present_time);
   }
   else
   {
@@ -1676,10 +1677,6 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     g_gpu_device->FlushCommands();
-
-    // Still need to kick ImGui or it gets cranky.
-    ImGui::EndFrame();
-    ImGuiManager::NewFrame(Timer::GetCurrentValue());
   }
 
   return true;

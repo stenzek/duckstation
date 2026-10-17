@@ -422,8 +422,6 @@ bool ImGuiManager::Initialize(Error* error)
   if (!CreateFontAtlas(error) || !CompilePipelines(error) || !FullscreenUI::InitializeWidgets(error))
     return false;
 
-  NewFrame(Timer::GetCurrentValue());
-
   CreateSoftwareCursorTextures();
 
   s_state.imgui_has_context.store(true, std::memory_order_release);
