@@ -59,7 +59,13 @@ protected:
     Timers::Initialize();
   }
 
-  void TearDown() override { Timers::Shutdown(); }
+  void TearDown() override
+  {
+    Timers::Shutdown();
+
+    // Writes to GPU-clocked timers reschedule the CRTC event, which would otherwise be left active.
+    DeactivateAllEvents();
+  }
 
   static void DeactivateAllEvents()
   {
@@ -88,6 +94,15 @@ protected:
       if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
         TimingEvents::RunEvents();
     }
+  }
+
+  /// Returns the CRTC event, or null if it isn't active.
+  static TimingEvent* FindCRTCEvent()
+  {
+    TimingEvent* event = *TimingEvents::GetHeadEventPtr();
+    while (event && std::strcmp(event->GetName(), "GPU CRTC Tick") != 0)
+      event = event->next;
+    return event;
   }
 
   /// Returns the number of ticks until the sysclk event runs next, it is the only active event.
@@ -441,9 +456,7 @@ TEST_F(TimersTest, GPUClockedTimerWriteReschedulesCRTC)
   // Brings back the CRTC event, at the end of the frame. It's fine as long as it doesn't get to run.
   System::UpdateOverclock();
 
-  const TimingEvent* crtc_event = *TimingEvents::GetHeadEventPtr();
-  while (crtc_event && std::strcmp(crtc_event->GetName(), "GPU CRTC Tick") != 0)
-    crtc_event = crtc_event->next;
+  const TimingEvent* crtc_event = FindCRTCEvent();
   ASSERT_NE(crtc_event, nullptr);
   const TickCount ticks_per_frame = crtc_event->GetTicksUntilNextExecution();
 
@@ -463,8 +476,6 @@ TEST_F(TimersTest, GPUClockedTimerWriteReschedulesCRTC)
   // Back to sysclk, the CRTC doesn't have to do anything for it.
   Timers::WriteRegister(TIMER1 + REG_MODE, 0);
   EXPECT_EQ(crtc_event->GetTicksUntilNextExecution(), ticks_per_frame);
-
-  DeactivateAllEvents();
 }
 
 // When the callback reschedules the event, it should end up the same as it does with InvokeEarly().
@@ -553,6 +564,10 @@ TEST_F(TimersTest, DeferredReadsMatchUpdatedReads)
     Timers::WriteRegister(TIMER2 + REG_TARGET, 1000);
     Timers::WriteRegister(TIMER2 + REG_MODE,
                           MODE_CLOCK_SOURCE_2 | MODE_RESET_AT_TARGET | MODE_IRQ_AT_TARGET | MODE_IRQ_REPEAT);
+
+    // The mode writes to timers 0/1 reschedule the CRTC event. It isn't needed with them on sysclk, and it can't be
+    // allowed to run, because the GPU starts a frame when it reaches vblank and there's no video thread to take it.
+    FindCRTCEvent()->Deactivate();
 
     u32 rng = 0x12345678u;
     for (u32 tick = 1; tick <= 200000; tick++)
@@ -675,6 +690,11 @@ TEST_F(TimersTest, ReadAfterOverdueGateChange)
         Timers::Reset();
         Timers::SetGate(1, !gate);
         Timers::WriteRegister(TIMER1 + REG_MODE, MODE_SYNC_ENABLE | (sync_mode << 1));
+
+        // The mode write reschedules the CRTC event, and the overdue read would then synchronize it. The gate comes
+        // from the test event instead, and the CRTC can't be allowed to run, because the GPU starts a frame when it
+        // reaches vblank and there's no video thread to take it.
+        FindCRTCEvent()->Deactivate();
 
         State state = {.event = TimingEvent("Test Gate Event", 1, 1, callback, &state), .gate = gate};
         state.event.Schedule(1000);
