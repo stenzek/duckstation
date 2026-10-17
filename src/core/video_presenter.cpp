@@ -40,12 +40,15 @@
 #include "common/threading.h"
 #include "common/timer.h"
 
+#include <atomic>
 #include <numbers>
 
 LOG_CHANNEL(GPU);
 
 static constexpr u32 DEINTERLACE_BUFFER_COUNT = 4;
 static constexpr u32 MAX_SKIPPED_PRESENT_COUNT = 50;
+static constexpr double MIN_VBLANK_WAIT_MS = 0.5;
+static constexpr double PRESENT_GAP_BASELINE_RISE_MS = 0.25;
 
 namespace VideoPresenter {
 
@@ -102,6 +105,9 @@ struct Locals
 
   u64 last_present_time = 0;
   u64 next_throttle_time = 0;
+  u64 last_present_gap = 0;
+  u64 present_gap_baseline = 0;
+  std::atomic<u64> last_vblank_time{0};
   u8 skipped_present_count = 0;
   PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;
 
@@ -1437,6 +1443,28 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
       (s_locals.present_skip_mode == PresentSkipMode::WhenVSyncBlocks &&
        !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking()))
   {
+    // If the previous frame was displayed a vblank later than usual, and its present blocked past this frame's
+    // scheduled time, this frame will also be displayed late. Drop it, otherwise every following frame is too.
+    if (present_time != 0 && s_locals.skipped_present_count == 0 &&
+        g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking() &&
+        s_locals.last_vblank_time.load(std::memory_order_relaxed) > present_time &&
+        s_locals.last_present_gap > s_locals.present_gap_baseline)
+    {
+      const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
+      const float refresh_rate =
+        (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
+      if ((s_locals.last_present_gap - s_locals.present_gap_baseline) >
+          Timer::ConvertSecondsToValue(0.5 / static_cast<double>(refresh_rate))) [[unlikely]]
+      {
+        DEV_LOG("Dropping late frame, previous frame displayed {:.2f} ms after scheduled time (expected {:.2f} ms)",
+                Timer::ConvertValueToMilliseconds(s_locals.last_present_gap),
+                Timer::ConvertValueToMilliseconds(s_locals.present_gap_baseline));
+        s_locals.last_present_gap = s_locals.present_gap_baseline;
+        s_locals.skipped_present_count++;
+        return false;
+      }
+    }
+
     s_locals.skipped_present_count = 0;
     return true;
   }
@@ -1593,6 +1621,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
       Timer::SleepUntil(present_time, true);
     }
 
+    Timer::Value present_start_time = Timer::GetCurrentValue();
     g_gpu_device->EndPresent(swap_chain, explicit_present, timed_present ? present_time : 0);
 
     if (g_gpu_device->IsGPUTimingEnabled())
@@ -1601,11 +1630,34 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     if (explicit_present)
     {
       Timer::SleepUntil(present_time, true);
+      present_start_time = Timer::GetCurrentValue();
       g_gpu_device->SubmitPresent(swap_chain);
     }
 
     const Timer::Value current_time = Timer::GetCurrentValue();
     s_locals.last_present_time = scheduled_present ? std::max(current_time, present_time) : current_time;
+
+    // With blocking vsync, present returns once the frame is displayed, so use that as the vblank time.
+    // Unless it didn't actually block, in which case it's just the time we submitted the frame.
+    if (swap_chain->IsVSyncModeBlocking() &&
+        (current_time - present_start_time) >= Timer::ConvertMillisecondsToValue(MIN_VBLANK_WAIT_MS))
+    {
+      s_locals.last_vblank_time.store(current_time, std::memory_order_release);
+
+      // Track how long after the scheduled time frames get displayed. The baseline is a running minimum which slowly
+      // rises, so it can adapt to swap chains which consistently release a vblank later.
+      if (scheduled_present)
+      {
+        const u64 gap = (current_time > present_time) ? (current_time - present_time) : 0;
+        s_locals.last_present_gap = gap;
+        s_locals.present_gap_baseline =
+          (gap <= s_locals.present_gap_baseline) ?
+            gap :
+            std::min(gap,
+                     s_locals.present_gap_baseline + Timer::ConvertMillisecondsToValue(PRESENT_GAP_BASELINE_RISE_MS));
+      }
+    }
+
     ImGuiManager::NewFrame(s_locals.last_present_time);
   }
   else
@@ -1631,6 +1683,11 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
   }
 
   return true;
+}
+
+u64 VideoPresenter::GetLastVBlankTime()
+{
+  return s_locals.last_vblank_time.load(std::memory_order_acquire);
 }
 
 bool VideoPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
