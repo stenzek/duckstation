@@ -1777,6 +1777,9 @@ bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_mi
   // mark it so we can check in EndPopBackgroundTexture
   DebugAssert(curr_cmd->ElemCount == 0);
   curr_cmd->UserCallback = &DrawWithBlurTexture;
+
+  // use vertex rounding because we don't have the imgui texture..
+  dl->PushDrawFlag(ImDrawFlags_UseTexForRoundCorners, false);
   return true;
 }
 
@@ -1796,6 +1799,8 @@ void FullscreenUI::EndBlurBackground(ImDrawList* const dl)
     // flush the blurred draw
     dl->AddDrawCmd();
   }
+
+  dl->PopDrawFlag();
 }
 
 void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
@@ -2268,11 +2273,10 @@ void FullscreenUI::PopPrimaryColor()
 void FullscreenUI::DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max,
                                            ImU32 col_left, ImU32 col_right, float rounding)
 {
-  dl->AddRectFilled(pos_min, ImVec2(pos_min.x + rounding, pos_max.y), col_left, rounding, ImDrawFlags_RoundCornersLeft);
+  dl->AddRectFilled(pos_min, ImVec2(pos_min.x + rounding, pos_max.y), col_left, rounding, ImDrawFlags_RoundLeft);
   dl->AddRectFilledMultiColor(ImVec2(pos_min.x + rounding, pos_min.y), ImVec2(pos_max.x - rounding, pos_max.y),
                               col_left, col_right, col_right, col_left);
-  dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos_min.y), pos_max, col_right, rounding,
-                    ImDrawFlags_RoundCornersRight);
+  dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos_min.y), pos_max, col_right, rounding, ImDrawFlags_RoundRight);
 }
 
 void FullscreenUI::DrawSpinner(ImDrawList* const dl, const ImVec2& pos, ImU32 color, float size, float thickness)
@@ -2290,7 +2294,7 @@ void FullscreenUI::DrawSpinner(ImDrawList* const dl, const ImVec2& pos, ImU32 co
     dl->PathLineTo(ImVec2(center.x + ImCos(static_cast<float>(a + GImGui->Time * 8.0f)) * radius,
                           center.y + ImSin(static_cast<float>(a + GImGui->Time * 8.0f)) * radius));
   }
-  dl->PathStroke(color, false, thickness);
+  dl->PathStroke(color, thickness, 0);
 }
 
 bool FullscreenUI::BeginFullscreenColumns(const char* title, float pos_y, bool expand_to_screen_width, bool footer)
@@ -8091,7 +8095,7 @@ void FullscreenUI::DrawOnScreenKeyboard()
   ImDrawList* const dl = window->DrawList;
   dl->AddRectFilled(window->Pos, window->Pos + window->Size,
                     ImGui::GetColorU32(MulAlpha(ModAlpha(UIStyle.PopupBackgroundColor, 0.98f), alpha)),
-                    window_padding.y, ImDrawFlags_RoundCornersTop);
+                    window_padding.y, ImDrawFlags_RoundTop);
 
   ImVec2 content_pos = ImGui::GetCursorScreenPos();
   ImVec2 content_size = ImGui::GetContentRegionAvail();

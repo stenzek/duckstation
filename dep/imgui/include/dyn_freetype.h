@@ -33,7 +33,8 @@ class Error;
   X(FT_Set_Var_Design_Coordinates)                                                                                     \
   X(FT_Request_Size)                                                                                                   \
   X(FT_Done_Size)                                                                                                      \
-  X(FT_Render_Glyph)
+  X(FT_Render_Glyph)                                                                                                   \
+  X(FT_Library_Version)
 
 struct DynFreeType
 {

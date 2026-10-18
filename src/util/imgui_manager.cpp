@@ -693,7 +693,7 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
 
   UpdateTextures(draw_data);
 
-  if (draw_data->CmdListsCount == 0)
+  if (draw_data->CmdLists.empty())
     return;
 
   const GSVector2i window_size = GSVector2i(static_cast<s32>(window_width), static_cast<s32>(window_height));
@@ -728,7 +728,7 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
 
   // Render command lists
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();
-  for (int n = 0; n < draw_data->CmdListsCount; n++)
+  for (int n = 0; n < draw_data->CmdLists.Size; n++)
   {
     const ImDrawList* cmd_list = draw_data->CmdLists[n];
     static_assert(sizeof(ImDrawIdx) == sizeof(GPUDevice::DrawIndex));
@@ -851,7 +851,7 @@ void ImGuiManager::DestroyTextures(bool recycle)
     if (tex->Status == ImTextureStatus_Destroyed)
       continue;
 
-    std::unique_ptr<GPUTexture> gtex(tex->GetTexID());
+    std::unique_ptr<GPUTexture> gtex(std::exchange(tex->TexID, nullptr));
     if (gtex)
     {
       DEV_LOG("Destroy {}x{} ImGui texture", gtex->GetWidth(), gtex->GetHeight());
