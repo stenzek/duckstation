@@ -950,15 +950,12 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   D3D12_TEXTURE_COPY_LOCATION dstloc;
   dstloc.pResource = m_buffer.Get();
   dstloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-  dstloc.PlacedFootprint.Offset = dst_y * m_current_pitch;
+  dstloc.PlacedFootprint.Offset = 0;
   dstloc.PlacedFootprint.Footprint.Format = src12->GetDXGIFormat();
   dstloc.PlacedFootprint.Footprint.Width = use_transfer_pitch ? width : m_width;
   dstloc.PlacedFootprint.Footprint.Height = use_transfer_pitch ? height : m_height;
   dstloc.PlacedFootprint.Footprint.Depth = 1;
   dstloc.PlacedFootprint.Footprint.RowPitch = m_current_pitch;
-
-  // Has to be 512-byte aligned.
-  Assert(Common::IsAlignedPow2(dstloc.PlacedFootprint.Offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT));
 
   const D3D12_RESOURCE_STATES old_layout = src12->GetResourceState();
   const u32 src_subresource = src12->CalculateSubresource(src_layer, src_level);
