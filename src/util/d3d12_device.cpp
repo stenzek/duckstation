@@ -1103,12 +1103,16 @@ bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
 
   DestroyRTVs();
 
-  HRESULT hr =
-    m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
-                                (m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) |
-                                  (IsExclusiveFullscreen() ? 0 : DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT));
-  if (FAILED(hr))
-    ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
+  // Flags have to match what the swap chain was created with.
+  const UINT flags = IsExclusiveFullscreen() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
+                                               ((m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) |
+                                                DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT);
+  HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, flags);
+  if (FAILED(hr)) [[unlikely]]
+  {
+    Error::SetHResult(error, "ResizeBuffers() failed: ", hr);
+    return false;
+  }
 
   return CreateRTV(D3D12Device::GetInstance(), error);
 }
@@ -1200,6 +1204,10 @@ GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
 
   if (m_device_was_lost) [[unlikely]]
     return GPUPresentResult::DeviceLost;
+
+  // Buffers are released if resizing or recreating the swap chain failed.
+  if (SC->m_swap_chain_buffers.empty()) [[unlikely]]
+    return GPUPresentResult::SkipPresent;
 
   // TODO: Check if the device was lost.
 
