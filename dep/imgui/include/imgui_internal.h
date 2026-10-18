@@ -445,10 +445,21 @@ enum ImDrawTextFlags_
     ImDrawTextFlags_CpuFineClip         = 1 << 0,    // Must be == 1/true for legacy with 'bool cpu_fine_clip' arg to RenderText()
     ImDrawTextFlags_WrapKeepBlanks      = 1 << 1,
     ImDrawTextFlags_StopOnNewLine       = 1 << 2,
+    ImDrawTextFlags_NoBidi              = 1 << 3,    // Draw right-to-left text in logical order (for text editing)
 };
 IMGUI_API ImVec2        ImFontCalcTextSizeEx(ImFont* font, float size, float weight, float max_width, float wrap_width, const char* text_begin, const char* text_end_display, const char* text_end, const char** out_remaining, ImVec2* out_offset, ImDrawTextFlags flags);
 IMGUI_API const char*   ImFontCalcWordWrapPositionEx(ImFont* font, float size, float weight, const char* text, const char* text_end, float wrap_width, ImDrawTextFlags flags = 0);
 IMGUI_API const char*   ImTextCalcWordWrapNextLineStart(const char* text, const char* text_end, ImDrawTextFlags flags = 0); // trim trailing space and find beginning of next line
+
+// Bidirectional text: visual X offset and (mirrored) codepoint for each character in a line, in logical order.
+struct ImFontBidiChar
+{
+    unsigned int c;
+    float        advance;
+    float        x;
+    int          level;
+};
+IMGUI_API bool          ImFontBuildBidiLine(ImFontBaked* baked, float scale, const char* text_begin, const char* line_begin, const char* line_end, ImVector<ImFontBidiChar>& chars, ImVector<int>& order); // returns false if line contains no RTL characters
 
 // Character classification for word-wrapping logic
 enum ImWcharClass

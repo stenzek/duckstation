@@ -3227,15 +3227,43 @@ begin:
   (*idx_write++) = (ImDrawIdx)(vtx_index + 3);                                                                         \
   vtx_index += 4;
 
+  // Right-to-left lines are drawn at their reordered positions, x still advances in logical order.
+  ImVector<ImFontBidiChar> bidi_chars;
+  ImVector<int> bidi_order;
+  const char* bidi_line_end = nullptr;
+  int bidi_index = 0;
+  const auto update_bidi_line = [&](const char* line_start) {
+    bidi_line_end = nullptr;
+    if (!(font->Flags & ImFontFlags_Bidi))
+      return;
+    const char* line_end = static_cast<const char*>(std::memchr(line_start, '\n', text_end - line_start));
+    line_end = line_end ? line_end : text_end;
+    if (ImFontBuildBidiLine(baked, scale, text.data(), line_start, line_end, bidi_chars, bidi_order))
+    {
+      bidi_line_end = line_end;
+      bidi_index = 0;
+    }
+  };
+  const auto get_bidi_glyph_x = [&](const char* char_start, unsigned int& c) {
+    if (!bidi_line_end || char_start >= bidi_line_end)
+      return x;
+    const ImFontBidiChar& bc = bidi_chars[bidi_index++];
+    c = bc.c;
+    return origin_x + bc.x;
+  };
+
   // outline pass
+  update_bidi_line(s);
   while (s < text_end)
   {
     // Decode and advance source
+    const char* char_start = s;
     unsigned int c = (unsigned int)*s;
     if (c < 0x80)
       s += 1;
     else
       s += ImTextCharFromUtf8(&c, s, text_end);
+    const float glyph_x = get_bidi_glyph_x(char_start, c);
 
     if (c < 32)
     {
@@ -3243,6 +3271,7 @@ begin:
       {
         x = origin_x;
         y += line_height;
+        update_bidi_line(s);
         continue;
       }
       if (c == '\r')
@@ -3253,8 +3282,8 @@ begin:
     const float char_width = glyph->AdvanceX * scale;
     if (glyph->Visible)
     {
-      const float x1 = x + glyph->X0 * scale;
-      const float x2 = x + glyph->X1 * scale;
+      const float x1 = glyph_x + glyph->X0 * scale;
+      const float x2 = glyph_x + glyph->X1 * scale;
       const float y1 = y + glyph->Y0 * scale;
       const float y2 = y + glyph->Y1 * scale;
       constexpr ImU32 outline_col = IM_COL32(0, 0, 0, 35);
@@ -3285,14 +3314,17 @@ begin:
   y = IM_TRUNC(pos.y);
   s = text.data();
 
+  update_bidi_line(s);
   while (s < text_end)
   {
     // Decode and advance source
+    const char* char_start = s;
     unsigned int c = (unsigned int)*s;
     if (c < 0x80)
       s += 1;
     else
       s += ImTextCharFromUtf8(&c, s, text_end);
+    const float glyph_x = get_bidi_glyph_x(char_start, c);
 
     if (c < 32)
     {
@@ -3300,6 +3332,7 @@ begin:
       {
         x = origin_x;
         y += line_height;
+        update_bidi_line(s);
         continue;
       }
       if (c == '\r')
@@ -3310,8 +3343,8 @@ begin:
     const float char_width = glyph->AdvanceX * scale;
     if (glyph->Visible)
     {
-      const float x1 = x + glyph->X0 * scale;
-      const float x2 = x + glyph->X1 * scale;
+      const float x1 = glyph_x + glyph->X0 * scale;
+      const float x2 = glyph_x + glyph->X1 * scale;
       const float y1 = y + glyph->Y0 * scale;
       const float y2 = y + glyph->Y1 * scale;
       const float u1 = glyph->U0;

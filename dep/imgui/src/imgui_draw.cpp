@@ -7383,6 +7383,193 @@ void ImFont::RenderChar(ImDrawList* draw_list, float size, float weight, const I
     draw_list->PrimRectUV(ImVec2(x1, y1), ImVec2(x2, y2), ImVec2(u1, v1), ImVec2(u2, v2), col);
 }
 
+// Minimal bidirectional text support: visually reorders right-to-left runs within each line, without changing the
+// line width or layout. This is a simplified subset of the Unicode Bidirectional Algorithm (UAX #9): no explicit
+// embeddings/isolates, digits are treated as strong LTR, neutrals take the direction of their surrounding strong
+// characters (or the paragraph direction if they differ), and paired brackets are mirrored in RTL runs.
+static bool ImTextIsRtlChar(unsigned int c)
+{
+    return (c >= 0x0590 && c <= 0x08FF) || (c >= 0xFB1D && c <= 0xFDFF) || (c >= 0xFE70 && c <= 0xFEFE) ||
+           (c >= 0x10800 && c <= 0x10FFF) || (c >= 0x1E800 && c <= 0x1EFFF);
+}
+
+// Icon fonts use the private use area, or symbols/emoji ranges.
+static bool ImTextIsBidiIcon(unsigned int c)
+{
+    return (c >= 0xE000 && c <= 0xF8FF) || c >= 0x1F000;
+}
+
+static bool ImTextIsBidiNeutral(unsigned int c)
+{
+    if (c < 0x80)
+        return !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+    return (c == 0xA0 || (c >= 0x2000 && c <= 0x206F) || c == 0x3000 || ImTextIsBidiIcon(c));
+}
+
+static unsigned int ImTextBidiMirrorChar(unsigned int c)
+{
+    switch (c)
+    {
+    case '(': return ')';
+    case ')': return '(';
+    case '[': return ']';
+    case ']': return '[';
+    case '{': return '}';
+    case '}': return '{';
+    case '<': return '>';
+    case '>': return '<';
+    case 0xAB: return 0xBB;
+    case 0xBB: return 0xAB;
+    default:   return c;
+    }
+}
+
+static bool ImTextContainsRtl(const char* s, const char* s_end)
+{
+    while (s < s_end)
+    {
+        if ((unsigned char)*s < 0xD6) // lead bytes below U+0580, or continuation bytes
+        {
+            s++;
+            continue;
+        }
+        unsigned int c;
+        s += ImTextCharFromUtf8(&c, s, s_end);
+        if (ImTextIsRtlChar(c))
+            return true;
+    }
+    return false;
+}
+
+// Computes the visual X offset of each character in [line_begin, line_end). Returns false if the line contains no RTL characters.
+bool ImFontBuildBidiLine(ImFontBaked* baked, float scale, const char* text_begin, const char* line_begin, const char* line_end, ImVector<ImFontBidiChar>& chars, ImVector<int>& order)
+{
+    if (!ImTextContainsRtl(line_begin, line_end))
+        return false;
+
+    // Paragraph direction is determined by the first strong character in the paragraph, which may be on a previous wrapped line.
+    const char* p = line_begin;
+    while (p > text_begin && p[-1] != '\n')
+        p--;
+    bool rtl = false;
+    while (p < line_end)
+    {
+        unsigned int c;
+        p += ImTextCharFromUtf8(&c, p, line_end);
+        if (ImTextIsRtlChar(c))
+        {
+            rtl = true;
+            break;
+        }
+        if (!ImTextIsBidiNeutral(c))
+            break;
+    }
+
+    // Classify characters. Level holds the class temporarily: 0 = neutral, 1 = LTR, 2 = RTL.
+    chars.resize(0);
+    for (const char* s = line_begin; s < line_end;)
+    {
+        ImFontBidiChar bc;
+        s += ImTextCharFromUtf8(&bc.c, s, line_end);
+        bc.advance = (bc.c == '\r') ? 0.0f : baked->FindGlyph((ImWchar)bc.c)->AdvanceX * scale; // same as RenderText()
+        bc.x = 0.0f;
+        bc.level = ImTextIsRtlChar(bc.c) ? 2 : (ImTextIsBidiNeutral(bc.c) ? 0 : 1);
+        chars.push_back(bc);
+    }
+
+    // Number terminators (e.g. % or currency) adjacent to digits stay with the number (UAX #9 W5).
+    const int count = chars.Size;
+    static constexpr auto is_digit = [](unsigned int c) { return (c >= '0' && c <= '9'); };
+    static constexpr auto is_terminator = [](unsigned int c) {
+        return (c == '%' || c == '$' || c == '#' || c == '+' || (c >= 0xA2 && c <= 0xA5) || c == 0xB0 ||
+                c == 0x2030 || c == 0x2031 || (c >= 0x20A0 && c <= 0x20CF));
+    };
+    for (int i = 0; i < count;)
+    {
+        if (!is_terminator(chars[i].c))
+        {
+            i++;
+            continue;
+        }
+        int run_end = i;
+        while (run_end < count && is_terminator(chars[run_end].c))
+            run_end++;
+        if ((i > 0 && is_digit(chars[i - 1].c)) || (run_end < count && is_digit(chars[run_end].c)))
+        {
+            for (int j = i; j < run_end; j++)
+                chars[j].level = 1;
+        }
+        i = run_end;
+    }
+
+    // Resolve neutrals, then assign embedding levels.
+    const int base_class = rtl ? 2 : 1;
+    for (int i = 0; i < count;)
+    {
+        if (chars[i].level != 0)
+        {
+            i++;
+            continue;
+        }
+        int run_end = i;
+        while (run_end < count && chars[run_end].level == 0)
+            run_end++;
+        const int prev_class = (i > 0) ? chars[i - 1].level : base_class;
+        const int next_class = (run_end < count) ? chars[run_end].level : base_class;
+        const int resolved = (prev_class == next_class) ? prev_class : base_class;
+        for (; i < run_end; i++)
+            chars[i].level = -resolved; // negative so it isn't confused with an unresolved neutral
+    }
+    int max_level = 0;
+    for (int i = 0; i < count; i++)
+    {
+        const int cls = ImAbs(chars[i].level);
+        chars[i].level = rtl ? ((cls == 2) ? 1 : 2) : ((cls == 2) ? 1 : 0);
+        max_level = ImMax(max_level, chars[i].level);
+    }
+
+    // Leading/trailing blanks and icons (private use area, symbols/emoji) stay at the line edges, since the line is
+    // still positioned left-to-right, e.g. dropdown arrows after a value.
+    static constexpr auto is_edge_char = [](unsigned int c) { return ImCharIsBlankW(c) || ImTextIsBidiIcon(c); };
+    for (int i = 0; i < count && is_edge_char(chars[i].c); i++)
+        chars[i].level = 0;
+    for (int i = count - 1; i >= 0 && is_edge_char(chars[i].c); i--)
+        chars[i].level = 0;
+
+    // Reverse runs from the highest level down to the lowest odd level (UAX #9 L2).
+    order.resize(count);
+    for (int i = 0; i < count; i++)
+        order[i] = i;
+    for (int level = max_level; level >= 1; level--)
+    {
+        for (int i = 0; i < count;)
+        {
+            if (chars[order[i]].level < level)
+            {
+                i++;
+                continue;
+            }
+            int run_end = i;
+            while (run_end < count && chars[order[run_end]].level >= level)
+                run_end++;
+            for (int a = i, b = run_end - 1; a < b; a++, b--)
+                ImSwap(order[a], order[b]);
+            i = run_end;
+        }
+    }
+
+    float x = 0.0f;
+    for (int i = 0; i < count; i++)
+    {
+        ImFontBidiChar& bc = chars[order[i]];
+        if (bc.level & 1)
+            bc.c = ImTextBidiMirrorChar(bc.c);
+        bc.x = x;
+        x += bc.advance;
+    }
+    return true;
+}
+
 // Note: as with every ImDrawList drawing function, this expects that the font atlas texture is bound.
 // DO NOT CALL DIRECTLY THIS WILL CHANGE WILDLY IN 2026. Use ImDrawList::AddText().
 void ImFont::RenderText(ImDrawList* draw_list, float size, float weight, const ImVec2& pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width, ImDrawTextFlags flags)
@@ -7462,6 +7649,12 @@ begin:
     const ImU32 col_untinted = col | ~IM_COL32_A_MASK;
     const char* word_wrap_eol = NULL;
 
+    ImVector<ImFontBidiChar> bidi_chars;
+    ImVector<int> bidi_order;
+    const char* bidi_line_end = NULL;
+    int bidi_index = 0;
+    bool line_start = true;
+
     while (s < text_end)
     {
         if (word_wrap_enabled)
@@ -7477,22 +7670,52 @@ begin:
                 if (y > clip_rect.w)
                     break; // break out of main loop
                 word_wrap_eol = NULL;
+                line_start = true;
                 s = ImTextCalcWordWrapNextLineStart(s, text_end, flags); // Wrapping skips upcoming blanks
                 continue;
             }
         }
 
+        if (line_start)
+        {
+            line_start = false;
+            bidi_line_end = NULL;
+            if ((Flags & ImFontFlags_Bidi) && !(flags & ImDrawTextFlags_NoBidi))
+            {
+                const char* line_end = (const char*)ImMemchr(s, '\n', text_end - s);
+                line_end = line_end ? line_end : text_end;
+                if (word_wrap_eol && word_wrap_eol < line_end)
+                    line_end = word_wrap_eol;
+                if (ImFontBuildBidiLine(baked, scale, text_begin, s, line_end, bidi_chars, bidi_order))
+                {
+                    bidi_line_end = line_end;
+                    bidi_index = 0;
+                }
+            }
+        }
+
         // Decode and advance source
+        const char* char_start = s;
         unsigned int c = (unsigned int)*s;
         if (c < 0x80)
             s += 1;
         else
             s += ImTextCharFromUtf8(&c, s, text_end);
 
+        // Bidi lines place glyphs at their reordered position, but still advance x in logical order.
+        float glyph_x = x;
+        if (bidi_line_end && char_start < bidi_line_end)
+        {
+            const ImFontBidiChar& bc = bidi_chars[bidi_index++];
+            c = bc.c;
+            glyph_x = origin_x + bc.x;
+        }
+
         if (c < 32)
         {
             if (c == '\n')
             {
+                line_start = true;
                 x = origin_x;
                 y += line_height;
                 if (y > clip_rect.w)
@@ -7511,8 +7734,8 @@ begin:
         if (glyph->Visible)
         {
             // We don't do a second finer clipping test on the Y axis as we've already skipped anything before clip_rect.y and exit once we pass clip_rect.w
-            float x1 = x + glyph->X0 * scale;
-            float x2 = x + glyph->X1 * scale;
+            float x1 = glyph_x + glyph->X0 * scale;
+            float x2 = glyph_x + glyph->X1 * scale;
             float y1 = y + glyph->Y0 * scale;
             float y2 = y + glyph->Y1 * scale;
             if (x1 <= clip_rect.z && x2 >= clip_rect.x)

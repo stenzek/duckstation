@@ -5752,7 +5752,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
             text_col, clip_rect.AsVec4(),
             line_index->get_line_begin(buf_display, line_visible_n0),
             line_index->get_line_end(buf_display, line_visible_n1 - 1),
-            wrap_width, ImDrawTextFlags_WrapKeepBlanks | ImDrawTextFlags_CpuFineClip);
+            wrap_width, ImDrawTextFlags_WrapKeepBlanks | ImDrawTextFlags_CpuFineClip | (is_displaying_hint ? ImDrawTextFlags_None : ImDrawTextFlags_NoBidi));
 
     // Render blinking cursor
     if (render_cursor)

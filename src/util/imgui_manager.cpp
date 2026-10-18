@@ -1014,6 +1014,8 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   // Remaining fonts are added after the icon font, otherwise the wrong glyphs will be used in the UI.
   const LanguageFont first_font = s_state.text_font_order.front();
   StringUtil::Strlcpy(text_cfg.Name, "TextFont", std::size(text_cfg.Name));
+  if (std::ranges::find(s_state.text_font_order, LanguageFont::Hebrew) != s_state.text_font_order.end())
+    text_cfg.Flags |= ImFontFlags_Bidi;
   auto& first_font_data = s_state.text_fonts_data[static_cast<size_t>(first_font)];
   Assert(!first_font_data.empty());
   s_state.text_font =

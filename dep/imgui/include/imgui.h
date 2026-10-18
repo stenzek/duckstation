@@ -4025,6 +4025,7 @@ enum ImFontFlags_
     ImFontFlags_NoLoadGlyphs            = 1 << 2,   // [Internal] Disable loading new glyphs.
     ImFontFlags_LockBakedSizes          = 1 << 3,   // [Internal] Disable loading new baked sizes, disable garbage collecting current ones. e.g. if you want to lock a font to a single size. Important: if you use this to preload given sizes, consider the possibility of multiple font density used on Retina display.
     ImFontFlags_ImplicitRefSize         = 1 << 4,   // [Internal] Reference size was not set explicitly.
+    ImFontFlags_Bidi                    = 1 << 5,   // Visually reorder right-to-left text when rendering. Layout remains left-to-right.
 };
 
 // Font runtime data and rendering
