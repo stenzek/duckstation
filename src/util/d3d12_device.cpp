@@ -2048,10 +2048,8 @@ bool D3D12Device::IsRenderTargetBound(const GPUTexture* tex) const
 void D3D12Device::InvalidateCachedState()
 {
   DebugAssert(!m_in_render_pass);
-  m_dirty_flags = ALL_DIRTY_STATE & ((m_current_pipeline_layout == GPUPipeline::Layout::HWImageBatch ||
-                                      IsComputeLayout(m_current_pipeline_layout)) ?
-                                       ~0u :
-                                       ~DIRTY_FLAG_RT_UAVS);
+  m_dirty_flags = ALL_DIRTY_STATE &
+                  ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
 }
 
 void D3D12Device::SetInitialPipelineState()
