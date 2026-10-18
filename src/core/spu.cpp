@@ -2118,15 +2118,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
   if (!voice.IsOn() && !irq9_enabled)
   {
     voice.last_volume = 0;
-
-#ifdef SPU_DUMP_ALL_VOICES
-    if (s_state.s_voice_dump_writers[voice_index])
-    {
-      const s16 dump_samples[2] = {0, 0};
-      s_state.s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
-    }
-#endif
-
     return {};
   }
 
@@ -2225,14 +2216,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
 #ifdef SPU_ENABLE_VU_METER
   if (IsVUMeterActive())
     UpdateDebugPeaks(s_state.voice_peaks[voice_index], left, right);
-#endif
-
-#ifdef SPU_DUMP_ALL_VOICES
-  if (s_state.s_voice_dump_writers[voice_index])
-  {
-    const s16 dump_samples[2] = {static_cast<s16>(Clamp16(left)), static_cast<s16>(Clamp16(right))};
-    s_state.s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
-  }
 #endif
 
   return std::make_tuple(left, right);
@@ -2559,6 +2542,14 @@ void SPU::Execute(void* param, TickCount ticks)
                       ConvertToBoolUnchecked(pitch_modulation_enable & 1u), irq9_enabled, previous_voice_last_volume);
         left_sum += left;
         right_sum += right;
+
+#ifdef SPU_DUMP_ALL_VOICES
+        if (s_state.s_voice_dump_writers[voice_index])
+        {
+          const s16 dump_samples[2] = {static_cast<s16>(Clamp16(left)), static_cast<s16>(Clamp16(right))};
+          s_state.s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
+        }
+#endif
 
         if (reverb_on_register & 1u)
         {
