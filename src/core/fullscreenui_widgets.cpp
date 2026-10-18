@@ -755,69 +755,19 @@ GPUTexture* FullscreenUI::GetPlaceholderTexture()
 
 std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height)
 {
-  std::optional<Image> image;
+  // relative paths are resources
+  const std::string full_path =
+    Path::IsAbsolute(path) ? std::string(path) : EmuFolders::GetOverridableResourcePath(path);
+
   Error error;
-
-  if (StringUtil::EqualNoCase(Path::GetExtension(path), "svg"))
+  const std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(full_path.c_str(), &error);
+  if (!data.has_value())
   {
-    std::optional<DynamicHeapArray<u8>> svg_data;
-    if (Path::IsAbsolute(path))
-      svg_data = FileSystem::ReadBinaryFile(std::string(path).c_str(), &error);
-    else
-      svg_data = FileSystem::ReadBinaryFile(EmuFolders::GetOverridableResourcePath(path).c_str(), &error);
-
-    if (svg_data.has_value())
-    {
-      image = Image();
-      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height, true, &error))
-      {
-        ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", path, error.GetDescription());
-        image.reset();
-      }
-    }
-    else
-    {
-      ERROR_LOG("Failed to read SVG texture file '{}': {}", path, error.GetDescription());
-    }
-  }
-  else if (Path::IsAbsolute(path))
-  {
-    std::string path_str(path);
-    auto fp = FileSystem::OpenManagedCFile(path_str.c_str(), "rb", &error);
-    if (fp)
-    {
-      image = Image();
-      if (!image->LoadFromFile(path_str.c_str(), fp.get(), &error))
-      {
-        ERROR_LOG("Failed to read texture file '{}': {}", path, error.GetDescription());
-        image.reset();
-      }
-    }
-    else
-    {
-      ERROR_LOG("Failed to open texture file '{}': {}", path, error.GetDescription());
-    }
-  }
-  else
-  {
-    std::optional<DynamicHeapArray<u8>> data =
-      FileSystem::ReadBinaryFile(EmuFolders::GetOverridableResourcePath(path).c_str(), &error);
-    if (data.has_value())
-    {
-      image = Image();
-      if (!image->LoadFromBuffer(path, data->cspan(), &error))
-      {
-        ERROR_LOG("Failed to read texture resource '{}': {}", path, error.GetDescription());
-        image.reset();
-      }
-    }
-    else
-    {
-      ERROR_LOG("Failed to open texture resource '{}: {}'", path, error.GetDescription());
-    }
+    ERROR_LOG("Failed to read texture file '{}': {}", path, error.GetDescription());
+    return std::nullopt;
   }
 
-  return image;
+  return LoadTextureImage(path, data->cspan(), svg_width, svg_height);
 }
 
 std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view filename, std::span<const u8> buffer,
