@@ -461,6 +461,26 @@ protected:
 
   static u16 Envelope() { return SPU::ReadRegister(0x1C); }
 
+  // Keys on voices 1 and 2 on the silent looping block, which has a loop start flag, then writes their repeat
+  // addresses on the last sample that hardware overwrites and the first sample that latches.
+  static void CheckRepeatAddressLatch(u32 samples_before_cutoff)
+  {
+    for (u32 voice = 1; voice <= 2; voice++)
+    {
+      SPU::WriteRegister(voice * 0x10 + 0x04, 0x1000);
+      SPU::WriteRegister(voice * 0x10 + 0x06, 0x200);
+      SPU::WriteRegister(voice * 0x10 + 0x0E, 0x200);
+    }
+    SPU::WriteRegister(0x188, 6);
+    RunSamples(samples_before_cutoff);
+    SPU::WriteRegister(0x1E, 0x300);
+    RunSamples(1);
+    SPU::WriteRegister(0x2E, 0x300);
+    RunSamples(8);
+    EXPECT_EQ(SPU::ReadRegister(0x1E), 0x200u);
+    EXPECT_EQ(SPU::ReadRegister(0x2E), 0x300u);
+  }
+
   template<size_t N>
   static void CheckCapture(const std::array<u8, 14>& adpcm, u16 pitch, const std::array<s16, N>& golden)
   {
@@ -537,6 +557,19 @@ TEST_F(SPUHardwareTest, KeyOffDuringKeyOnDelay)
   RunSamples(2);
   EXPECT_NE(SPU::ReadRegister(0x1AE) & 0x40, 0u);
   EXPECT_EQ(Envelope(), 0u);
+}
+
+TEST_F(SPUHardwareTest, RepeatAddressLatchCutoff)
+{
+  // Hardware fetches the first header on the three samples after KON is serviced, so a write four samples after KON
+  // is still overwritten, while a write five samples after latches.
+  CheckRepeatAddressLatch(4);
+}
+
+TEST_F(SPUHardwareTest, RepeatAddressLatchCutoffOnOddSample)
+{
+  RunSamples(1);
+  CheckRepeatAddressLatch(3);
 }
 
 TEST_F(SPUHardwareTest, UnityPitchCaptureMatchesHardware)

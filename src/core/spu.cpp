@@ -261,7 +261,6 @@ struct Voice
   ADSRPhase adsr_phase;
   bool has_samples;
   bool ignore_loop_address;
-  bool is_first_block;
   u8 key_on_delay;
 
   VoiceRegisters regs;
@@ -602,7 +601,6 @@ void SPU::Reset()
     std::fill_n(v.regs.index, NUM_VOICE_REGISTERS, u16(0));
     v.counter.bits = 0;
     v.current_block_flags.bits = 0;
-    v.is_first_block = 0;
     v.current_block_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
     v.adsr_envelope.Reset(0, 0, false, false, false);
@@ -715,9 +713,10 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
     sw.Do(&v.counter.bits);
     sw.Do(&v.current_block_flags.bits);
     if constexpr (COMPATIBILITY)
-      sw.DoEx(&v.is_first_block, 47, false);
-    else
-      sw.Do(&v.is_first_block);
+    {
+      if (sw.GetVersion() >= 47 && sw.GetVersion() < 90)
+        sw.SkipBytes(sizeof(bool)); // is_first_block, removed in version 90
+    }
     sw.DoArray(&v.current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK], NUM_SAMPLES_PER_ADPCM_BLOCK);
     sw.DoArray(&v.current_block_samples[0], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK);
     sw.Do(&v.adpcm_last_samples);
@@ -749,7 +748,7 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
 
 bool SPU::DoState(StateWrapper& sw)
 {
-  if (sw.GetVersion() < 89) [[unlikely]]
+  if (sw.GetVersion() < 90) [[unlikely]]
     return DoCompatibleState<true>(sw);
   else
     return DoCompatibleState<false>(sw);
@@ -1280,18 +1279,17 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
 
     case 0x0E: // repeat address
     {
-      // There is a short window of time here between the voice being keyed on and the first block finishing decoding
-      // where setting the repeat address will *NOT* ignore the block/loop start flag.
-      //
-      // We always set this flag if the voice is off, because IRQs will keep the voice reading regardless, and we don't
-      // want the address that we just set to get wiped out by the IRQ looping.
+      // Writing the repeat address stops loop start flags from overwriting it until the next key on. The exception is
+      // the start of the key on delay, where the voice fetches the first block's header on each of three samples to
+      // prime interpolation. A write before the last fetch is overwritten by its loop start flag and does not latch.
+      // Voices that are off have no delay, so writes to them always latch.
       //
       // Games sensitive to this are:
       //  - The Misadventures of Tron Bonne
       //  - Re-Loaded - The Hardcore Sequel (repeated sound effects)
       //  - Valkyrie Profile
 
-      const bool ignore_loop_address = !voice.IsOn() || !voice.is_first_block;
+      const bool ignore_loop_address = (voice.key_on_delay <= 1);
       DEBUG_LOG("SPU voice {} ADPCM repeat address <- 0x{:04X}", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
       voice.ignore_loop_address |= ignore_loop_address;
@@ -1725,7 +1723,6 @@ void SPU::Voice::KeyOn()
               static_cast<s16>(0));
 
   has_samples = false;
-  is_first_block = true;
   ignore_loop_address = false;
   // The voice is silent for four samples before the first attack tick.
   key_on_delay = 4;
@@ -2210,7 +2207,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
     // next block
     voice.counter.sample_index -= NUM_SAMPLES_PER_ADPCM_BLOCK;
     voice.has_samples = false;
-    voice.is_first_block = false;
     voice.current_address += 2;
 
     // handle flags
