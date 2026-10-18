@@ -484,7 +484,7 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
 bool D3D12Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer, u32 level)
 {
   // TODO: linear textures for dynamic?
-  if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer > m_layers || level > m_levels)
+  if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer >= m_layers || level >= m_levels)
   {
     return false;
   }
@@ -494,8 +494,8 @@ bool D3D12Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
     CommitClear(GetCommandBufferForUpdate());
 
   // see note in Update() for the reason why.
-  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  const u32 req_size = CalcUploadSize(m_height, aligned_pitch);
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
   D3D12StreamBuffer& buffer = dev.GetTextureUploadBuffer();
   if (req_size >= (buffer.GetSize() / 2))
     return false;
@@ -524,7 +524,7 @@ void D3D12Texture::Unmap()
 {
   D3D12Device& dev = D3D12Device::GetInstance();
   D3D12StreamBuffer& sb = dev.GetTextureUploadBuffer();
-  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_map_width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
   const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
