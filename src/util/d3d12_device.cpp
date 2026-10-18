@@ -2156,9 +2156,8 @@ void D3D12Device::UnbindTexture(D3D12Texture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        if (InRenderPass())
-          EndRenderPass();
-        m_current_render_targets[i] = nullptr;
+        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        break;
       }
     }
   }
