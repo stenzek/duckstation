@@ -1169,6 +1169,18 @@ static std::string GetCacheFile()
   return Path::Combine(EmuFolders::Cache, "gamedb.cache");
 }
 
+static u64 GetResourceTimestamp(const char* name)
+{
+  FILESYSTEM_STAT_DATA sd;
+  if (!FileSystem::StatFile(Path::Combine(EmuFolders::Resources, name).c_str(), &sd))
+  {
+    ERROR_LOG("Failed to stat resource file '{}'", name);
+    return 0;
+  }
+
+  return static_cast<u64>(sd.ModificationTime);
+}
+
 bool GameDatabase::LoadFromCache()
 {
   Error error;
@@ -1180,8 +1192,8 @@ bool GameDatabase::LoadFromCache()
   }
 
   BinarySpanReader reader(db_data->cspan());
-  const u64 gamedb_ts = static_cast<u64>(Host::GetResourceFileTimestamp(GAMEDB_YAML_FILENAME, false).value_or(0));
-  const u64 discsets_ts = static_cast<u64>(Host::GetResourceFileTimestamp(DISCSETS_YAML_FILENAME, false).value_or(0));
+  const u64 gamedb_ts = GetResourceTimestamp(GAMEDB_YAML_FILENAME);
+  const u64 discsets_ts = GetResourceTimestamp(DISCSETS_YAML_FILENAME);
 
   u32 signature, version, num_disc_set_entries, num_entries, num_codes;
   u64 file_gamedb_ts, file_discsets_ts;
@@ -1304,8 +1316,8 @@ bool GameDatabase::LoadFromCache()
 
 bool GameDatabase::SaveToCache()
 {
-  const u64 gamedb_ts = static_cast<u64>(Host::GetResourceFileTimestamp(GAMEDB_YAML_FILENAME, false).value_or(0));
-  const u64 discsets_ts = static_cast<u64>(Host::GetResourceFileTimestamp(DISCSETS_YAML_FILENAME, false).value_or(0));
+  const u64 gamedb_ts = GetResourceTimestamp(GAMEDB_YAML_FILENAME);
+  const u64 discsets_ts = GetResourceTimestamp(DISCSETS_YAML_FILENAME);
 
   Error error;
   FileSystem::AtomicRenamedFile file = FileSystem::CreateAtomicRenamedFile(GetCacheFile(), &error);
@@ -1416,14 +1428,16 @@ bool GameDatabase::SaveToCache()
 bool GameDatabase::LoadGameDBYaml()
 {
   Error error;
-  std::optional<DynamicHeapArray<u8>> gamedb_data = Host::ReadResourceFile(GAMEDB_YAML_FILENAME, false, &error);
+  std::optional<DynamicHeapArray<u8>> gamedb_data =
+    FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILENAME).c_str(), &error);
   if (!gamedb_data.has_value())
   {
     ERROR_LOG("Failed to read game database: {}", error.GetDescription());
     return false;
   }
 
-  std::optional<DynamicHeapArray<u8>> disc_set_data = Host::ReadResourceFile(DISCSETS_YAML_FILENAME, false, &error);
+  std::optional<DynamicHeapArray<u8>> disc_set_data =
+    FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, DISCSETS_YAML_FILENAME).c_str(), &error);
   if (!disc_set_data.has_value())
   {
     ERROR_LOG("Failed to read disc set database: {}", error.GetDescription());
@@ -1867,7 +1881,8 @@ bool GameDatabase::LoadTrackHashes(Error* error)
 {
   Timer load_timer;
 
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, error));
+  std::optional<std::string> gamedb_data(
+    FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, DISCDB_YAML_FILENAME).c_str(), error));
   if (!gamedb_data.has_value())
   {
     Error::AddPrefix(error, "Failed to read disc database: ");

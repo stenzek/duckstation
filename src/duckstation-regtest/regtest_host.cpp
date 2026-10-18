@@ -225,37 +225,6 @@ void Host::CommitBaseSettingChanges()
   // noop, in memory
 }
 
-bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
-{
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
-  return FileSystem::FileExists(path.c_str());
-}
-
-std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override, Error* error)
-{
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
-  return FileSystem::ReadBinaryFile(path.c_str(), error);
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override, Error* error)
-{
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
-  return FileSystem::ReadFileToString(path.c_str(), error);
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)
-{
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(path.c_str(), &sd))
-  {
-    ERROR_LOG("Failed to stat resource file '{}'", filename);
-    return std::nullopt;
-  }
-
-  return sd.ModificationTime;
-}
-
 void Host::OnSystemStarting()
 {
   //

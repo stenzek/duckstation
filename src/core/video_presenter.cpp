@@ -2038,7 +2038,8 @@ bool VideoPresenter::LoadOverlayPreset(Error* error, Image* image)
   }
   else
   {
-    yaml_data = Host::ReadResourceFileToString(fmt::format("overlays/{}", filename), false, error);
+    yaml_data = FileSystem::ReadFileToString(
+      Path::Combine(EmuFolders::Resources, TinyString::from_format("overlays/{}", filename)).c_str(), error);
   }
   if (!yaml_data.has_value())
     return false;
@@ -2068,8 +2069,10 @@ bool VideoPresenter::LoadOverlayPreset(Error* error, Image* image)
   }
 
   std::optional<DynamicHeapArray<u8>> image_data =
-    is_disk_path ? FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Overlays, image_filename).c_str(), error) :
-                   Host::ReadResourceFile(fmt::format("overlays/{}", image_filename), false, error);
+    is_disk_path ?
+      FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Overlays, image_filename).c_str(), error) :
+      FileSystem::ReadBinaryFile(
+        Path::Combine(EmuFolders::Resources, TinyString::from_format("overlays/{}", image_filename)).c_str(), error);
   if (!image_data.has_value() || !image->LoadFromBuffer(image_filename, image_data.value(), error))
     return false;
 

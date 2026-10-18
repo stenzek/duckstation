@@ -124,7 +124,8 @@ public:
     const char* name = cheats ? "cheats.zip" : "patches.zip";
 
     Error error;
-    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false, &error);
+    std::optional<DynamicHeapArray<u8>> data =
+      FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, name).c_str(), &error);
     if (!data.has_value())
     {
       ERROR_LOG("Failed to read cheat archive {}: {}", name, error.GetDescription());

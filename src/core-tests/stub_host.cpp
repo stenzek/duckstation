@@ -35,26 +35,6 @@ void Host::CommitBaseSettingChanges()
 {
 }
 
-bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
-{
-  return false;
-}
-
-std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override, Error* error)
-{
-  return std::nullopt;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override, Error* error)
-{
-  return std::nullopt;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)
-{
-  return std::nullopt;
-}
-
 void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
   ERROR_LOG("ReportFatalError: {}", message);

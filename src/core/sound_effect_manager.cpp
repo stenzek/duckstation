@@ -11,6 +11,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/gsvector.h"
 #include "common/heap_array.h"
 #include "common/log.h"
@@ -224,7 +225,8 @@ void SoundEffectManager::EnqueueSoundEffect(std::string_view name)
 
 bool SoundEffectManager::LoadCachedEffect(const std::string& resource_name, const CachedEffectPtr& effect, Error* error)
 {
-  std::optional<DynamicHeapArray<u8>> resource_data = Host::ReadResourceFile(resource_name, true, error);
+  std::optional<DynamicHeapArray<u8>> resource_data =
+    FileSystem::ReadBinaryFile(EmuFolders::GetOverridableResourcePath(resource_name).c_str(), error);
   if (!resource_data.has_value())
     return false;
 

@@ -939,7 +939,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   }
 
   filename = fmt::format("shaders/reshade/Shaders/{}.fx", shader_name);
-  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
+  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
   if (resource_str.has_value())
   {
     std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
@@ -953,7 +953,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   }
 
   filename = fmt::format("shaders/slang/{}.slangp", shader_name);
-  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
+  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
   if (resource_str.has_value())
   {
     std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
@@ -967,7 +967,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   }
 
   filename = fmt::format("shaders/{}.glsl", shader_name);
-  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
+  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
   if (resource_str.has_value())
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();

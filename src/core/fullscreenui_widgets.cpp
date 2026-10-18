@@ -764,7 +764,7 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
     if (Path::IsAbsolute(path))
       svg_data = FileSystem::ReadBinaryFile(std::string(path).c_str(), &error);
     else
-      svg_data = Host::ReadResourceFile(path, true, &error);
+      svg_data = FileSystem::ReadBinaryFile(EmuFolders::GetOverridableResourcePath(path).c_str(), &error);
 
     if (svg_data.has_value())
     {
@@ -800,7 +800,8 @@ std::optional<Image> FullscreenUI::LoadTextureImage(std::string_view path, u32 s
   }
   else
   {
-    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(path, true, &error);
+    std::optional<DynamicHeapArray<u8>> data =
+      FileSystem::ReadBinaryFile(EmuFolders::GetOverridableResourcePath(path).c_str(), &error);
     if (data.has_value())
     {
       image = Image();

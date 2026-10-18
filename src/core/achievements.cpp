@@ -2862,7 +2862,8 @@ bool Achievements::CreateGameDatabaseFromSeedDatabase(Error* error)
 {
   Timer timer;
 
-  std::optional<std::string> yaml_data = Host::ReadResourceFileToString("achievement_hashlib.yaml", false, error);
+  std::optional<std::string> yaml_data =
+    FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, "achievement_hashlib.yaml").c_str(), error);
   if (!yaml_data.has_value())
   {
     Error::SetStringView(error, "Seed database is missing.");

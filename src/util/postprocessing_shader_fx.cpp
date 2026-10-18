@@ -43,7 +43,7 @@ static bool PreprocessorFileExistsCallback(const std::string& path)
   if (Path::IsAbsolute(path))
     return FileSystem::FileExists(Path::ToNativePath(path).c_str());
 
-  return Host::ResourceFileExists(path.c_str(), true);
+  return FileSystem::FileExists(Path::Combine(EmuFolders::Resources, path).c_str());
 }
 
 static bool PreprocessorReadFileCallback(const std::string& path, std::string& data)
@@ -52,7 +52,7 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
   if (Path::IsAbsolute(path))
     rdata = FileSystem::ReadFileToString(Path::ToNativePath(path).c_str());
   else
-    rdata = Host::ReadResourceFileToString(path.c_str(), true);
+    rdata = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, path).c_str());
   if (!rdata.has_value())
     return false;
 
@@ -1138,7 +1138,8 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTextureFormat backbuffer_f
       {
         // Might be a base file/resource instead.
         const std::string resource_name = Path::Combine("shaders/reshade/Textures", source);
-        if (std::optional<DynamicHeapArray<u8>> resdata = Host::ReadResourceFile(resource_name.c_str(), true, error);
+        if (std::optional<DynamicHeapArray<u8>> resdata =
+              FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, resource_name).c_str(), error);
             !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->cspan(), error))
         {
           Error::AddPrefixFmt(error, "Failed to load image '{}' (from '{}'): ", source, image_path);

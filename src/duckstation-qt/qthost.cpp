@@ -3027,44 +3027,6 @@ const QFont& QtHost::GetFixedFont()
   return s_state.fixed_font;
 }
 
-bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
-{
-  const std::string path = QtHost::GetResourcePath(filename, allow_override);
-  return FileSystem::FileExists(path.c_str());
-}
-
-std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override, Error* error)
-{
-  const std::string path = QtHost::GetResourcePath(filename, allow_override);
-  const std::optional<DynamicHeapArray<u8>> ret = FileSystem::ReadBinaryFile(path.c_str(), error);
-  if (!ret.has_value())
-    Error::AddPrefixFmt(error, "Failed to read resource file '{}': ", filename);
-  return ret;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override, Error* error)
-{
-  const std::string path = QtHost::GetResourcePath(filename, allow_override);
-  const std::optional<std::string> ret = FileSystem::ReadFileToString(path.c_str(), error);
-  if (!ret.has_value())
-    Error::AddPrefixFmt(error, "Failed to read resource file '{}': ", filename);
-  return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)
-{
-  const std::string path = QtHost::GetResourcePath(filename, allow_override);
-
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(path.c_str(), &sd))
-  {
-    ERROR_LOG("Failed to stat resource file '{}'", filename);
-    return std::nullopt;
-  }
-
-  return sd.ModificationTime;
-}
-
 void Host::CommitBaseSettingChanges()
 {
   QtHost::QueueSettingsSave();

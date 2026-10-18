@@ -8,7 +8,7 @@
 #include "shadergen.h"
 #include "spirv_module.h"
 
-#include "core/host.h" // TODO: Remove after removing ReadResourceFile()
+#include "core/settings.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -280,7 +280,8 @@ inline bool PostProcessing::SlangPresetParser::ParsePresetReference(const std::s
 
   std::optional<std::string> reference_contents;
   if (!Path::IsAbsolute(reference_path))
-    reference_contents = Host::ReadResourceFileToString(reference_path, true, error);
+    reference_contents =
+      FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, reference_path).c_str(), error);
   else
     reference_contents = FileSystem::ReadFileToString(reference_path.c_str(), error);
   if (!reference_contents.has_value())
