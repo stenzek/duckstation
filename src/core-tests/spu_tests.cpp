@@ -559,6 +559,35 @@ TEST_F(SPUHardwareTest, KeyOffDuringKeyOnDelay)
   EXPECT_EQ(Envelope(), 0u);
 }
 
+TEST_F(SPUHardwareTest, KeyOnClearsEndxWithFirstFetch)
+{
+  // Set ENDX by playing the looping block, then release the voice.
+  KeyOn(0x000F, 0x1FC0);
+  RunSamples(64);
+  SPU::WriteRegister(0x1A, 0);
+  SPU::WriteRegister(0x18C, 2);
+  RunSamples(8);
+  SPU::WriteRegister(0x18C, 0);
+  ASSERT_EQ(Envelope(), 0u);
+  ASSERT_NE(SPU::ReadRegister(0x19C) & 2u, 0u);
+
+  // Hardware clears ENDX four samples before the first attack tick, not when KON is serviced.
+  SPU::WriteRegister(0x1A, 0x1FC0);
+  SPU::WriteRegister(0x188, 2);
+  u32 endx_cleared = 0;
+  u32 attack = 0;
+  for (u32 sample = 1; sample <= 16 && attack == 0; sample++)
+  {
+    RunSamples(1);
+    if (endx_cleared == 0 && (SPU::ReadRegister(0x19C) & 2u) == 0)
+      endx_cleared = sample;
+    if (Envelope() != 0)
+      attack = sample;
+  }
+  ASSERT_NE(endx_cleared, 0u);
+  EXPECT_EQ(attack, endx_cleared + 4);
+}
+
 TEST_F(SPUHardwareTest, RepeatAddressLatchCutoff)
 {
   // Hardware fetches the first header on the three samples after KON is serviced, so a write four samples after KON

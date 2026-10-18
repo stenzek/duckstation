@@ -2147,6 +2147,10 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
     // be checked here.
     if (voice.key_on_delay > 0)
     {
+      // ENDX clears on the first sample of the delay, along with the first header fetch.
+      if (voice.key_on_delay == 4)
+        s_state.endx_register &= ~(u32(1) << voice_index);
+
       voice.key_on_delay--;
       voice.last_volume = 0;
       return {};
@@ -2679,10 +2683,7 @@ void SPU::Execute(void* param, TickCount ticks)
           key_off_register >>= 1;
 
           if (key_on_register & 1u)
-          {
-            s_state.endx_register &= ~(1u << voice);
             s_state.voices[voice].KeyOn();
-          }
           key_on_register >>= 1;
         }
       }
