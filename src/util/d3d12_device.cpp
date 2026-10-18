@@ -1946,7 +1946,10 @@ void D3D12Device::BeginRenderPass()
   }
 
   DebugAssert(rt_desc_p || ds_desc_p || (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages));
-  cmdlist->BeginRenderPass(num_rt_descs, rt_desc_p, ds_desc_p, D3D12_RENDER_PASS_FLAG_NONE);
+  cmdlist->BeginRenderPass(num_rt_descs, rt_desc_p, ds_desc_p,
+                           (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ?
+                             D3D12_RENDER_PASS_FLAG_ALLOW_UAV_WRITES :
+                             D3D12_RENDER_PASS_FLAG_NONE);
 
   // TODO: Stats
   m_in_render_pass = true;
