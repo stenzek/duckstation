@@ -250,7 +250,8 @@ private:
 
   struct PIPELINE_CACHE_HEADER
   {
-    u64 adapter_luid;
+    u32 vendor_id;
+    u32 device_id;
     u32 render_api_version;
     u32 unused;
   };

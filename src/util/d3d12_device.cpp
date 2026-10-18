@@ -323,8 +323,12 @@ void D3D12Device::DestroyDevice()
 
 void D3D12Device::GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr)
 {
-  const LUID adapter_luid = m_device->GetAdapterLuid();
-  std::memcpy(&hdr->adapter_luid, &adapter_luid, sizeof(hdr->adapter_luid));
+  // LUIDs change on reboot, so don't use them. CreatePipelineLibrary() rejects other adapters/drivers.
+  DXGI_ADAPTER_DESC desc = {};
+  if (m_adapter)
+    m_adapter->GetDesc(&desc);
+  hdr->vendor_id = desc.VendorId;
+  hdr->device_id = desc.DeviceId;
   hdr->render_api_version = m_render_api_version;
   hdr->unused = 0;
 }
