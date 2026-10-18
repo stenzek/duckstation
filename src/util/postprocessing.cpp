@@ -891,93 +891,52 @@ GPUPresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTextur
 std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const std::string& shader_name,
                                                                          bool only_config, Error* error)
 {
-  std::string filename;
-  std::optional<std::string> resource_str;
   Error local_error;
   if (!error)
     error = &local_error;
 
-  // Try reshade first.
-  filename = Path::Combine(
-    EmuFolders::Shaders,
-    fmt::format("reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name));
-  if (FileSystem::FileExists(filename.c_str()))
+  // Try the user directory first, then resources.
+  for (const std::string& dir : {EmuFolders::Shaders, Path::Combine(EmuFolders::Resources, "shaders")})
   {
-    std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
-    if (!shader->LoadFromFile(shader_name, filename.c_str(), only_config, error))
+    // Try reshade first.
+    std::string filename = Path::Combine(
+      dir, fmt::format("reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name));
+    if (FileSystem::FileExists(filename.c_str()))
     {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
-    }
-    return shader;
-  }
-
-  filename = Path::Combine(EmuFolders::Shaders, fmt::format("slang" FS_OSPATH_SEPARATOR_STR "{}.slangp", shader_name));
-  if (FileSystem::FileExists(filename.c_str()))
-  {
-    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
-    if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
-    {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
+      std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
+      if (!shader->LoadFromFile(shader_name, filename.c_str(), only_config, error))
+      {
+        ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+        shader.reset();
+      }
+      return shader;
     }
 
-    return shader;
-  }
-
-  filename = Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name));
-  if (FileSystem::FileExists(filename.c_str()))
-  {
-    std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
-    if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+    filename = Path::Combine(dir, fmt::format("slang" FS_OSPATH_SEPARATOR_STR "{}.slangp", shader_name));
+    if (FileSystem::FileExists(filename.c_str()))
     {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
+      std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
+      if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+      {
+        ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+        shader.reset();
+      }
+
+      return shader;
     }
 
-    return shader;
-  }
-
-  filename = fmt::format("shaders/reshade/Shaders/{}.fx", shader_name);
-  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
-  if (resource_str.has_value())
-  {
-    std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
-    if (!shader->LoadFromString(shader_name, std::move(filename), std::move(resource_str.value()), only_config, error))
+    filename = Path::Combine(dir, fmt::format("{}.glsl", shader_name));
+    if (FileSystem::FileExists(filename.c_str()))
     {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
+      std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
+      if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+      {
+        ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+        shader.reset();
+      }
+
+      return shader;
     }
-
-    return shader;
-  }
-
-  filename = fmt::format("shaders/slang/{}.slangp", shader_name);
-  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
-  if (resource_str.has_value())
-  {
-    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
-    if (!shader->LoadFromString(shader_name, filename, std::move(resource_str.value()), error))
-    {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
-    }
-
-    return shader;
-  }
-
-  filename = fmt::format("shaders/{}.glsl", shader_name);
-  resource_str = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str(), error);
-  if (resource_str.has_value())
-  {
-    std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
-    if (!shader->LoadFromString(shader_name, std::move(resource_str.value()), error))
-    {
-      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
-      shader.reset();
-    }
-
-    return shader;
   }
 
   Error::SetStringFmt(error, "Failed to locate shader '{}'", shader_name);

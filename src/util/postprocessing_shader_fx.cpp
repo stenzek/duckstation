@@ -40,19 +40,12 @@ static constexpr s32 DEFAULT_BUFFER_HEIGHT = 2160;
 
 static bool PreprocessorFileExistsCallback(const std::string& path)
 {
-  if (Path::IsAbsolute(path))
-    return FileSystem::FileExists(Path::ToNativePath(path).c_str());
-
-  return FileSystem::FileExists(Path::Combine(EmuFolders::Resources, path).c_str());
+  return FileSystem::FileExists(Path::ToNativePath(path).c_str());
 }
 
 static bool PreprocessorReadFileCallback(const std::string& path, std::string& data)
 {
-  std::optional<std::string> rdata;
-  if (Path::IsAbsolute(path))
-    rdata = FileSystem::ReadFileToString(Path::ToNativePath(path).c_str());
-  else
-    rdata = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, path).c_str());
+  std::optional<std::string> rdata = FileSystem::ReadFileToString(Path::ToNativePath(path).c_str());
   if (!rdata.has_value())
     return false;
 
@@ -406,21 +399,11 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   reshadefx::preprocessor pp;
   pp.set_include_callbacks(PreprocessorFileExistsCallback, PreprocessorReadFileCallback);
 
-  if (Path::IsAbsolute(m_filename))
-  {
-    // we're a real file, so include that directory
-    pp.add_include_path(std::string(Path::GetDirectory(m_filename)));
-  }
-  else
-  {
-    // we're a resource, include the resource subdirectory, if there is one
-    if (std::string_view resdir = Path::GetDirectory(m_filename); !resdir.empty())
-      pp.add_include_path(std::string(resdir));
-  }
-
-  // root of the user directory, and resources
+  // directory of the shader, root of the user directory, and resources
+  pp.add_include_path(std::string(Path::GetDirectory(m_filename)));
   pp.add_include_path(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
-  pp.add_include_path("shaders/reshade/Shaders");
+  pp.add_include_path(Path::Combine(EmuFolders::Resources,
+                                    "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
 
   pp.add_macro_definition("__RESHADE__", "50901");
   pp.add_macro_definition("BUFFER_WIDTH", StringUtil::ToChars(buffer_width)); // TODO: can we make these uniforms?
@@ -1137,10 +1120,10 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTextureFormat backbuffer_f
           !image.LoadFromFile(image_path.c_str()))
       {
         // Might be a base file/resource instead.
-        const std::string resource_name = Path::Combine("shaders/reshade/Textures", source);
-        if (std::optional<DynamicHeapArray<u8>> resdata =
-              FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, resource_name).c_str(), error);
-            !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->cspan(), error))
+        if (const std::string resource_path = Path::Combine(
+              EmuFolders::Resources,
+              Path::Combine("shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
+            !image.LoadFromFile(resource_path.c_str(), error))
         {
           Error::AddPrefixFmt(error, "Failed to load image '{}' (from '{}'): ", source, image_path);
           return false;

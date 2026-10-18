@@ -8,8 +8,6 @@
 #include "shadergen.h"
 #include "spirv_module.h"
 
-#include "core/settings.h"
-
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"
@@ -278,12 +276,7 @@ inline bool PostProcessing::SlangPresetParser::ParsePresetReference(const std::s
   std::string reference_path = Path::BuildRelativePath(path, reference_unquoted_path);
   Path::ToNativePath(&reference_path);
 
-  std::optional<std::string> reference_contents;
-  if (!Path::IsAbsolute(reference_path))
-    reference_contents =
-      FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, reference_path).c_str(), error);
-  else
-    reference_contents = FileSystem::ReadFileToString(reference_path.c_str(), error);
+  std::optional<std::string> reference_contents = FileSystem::ReadFileToString(reference_path.c_str(), error);
   if (!reference_contents.has_value())
   {
     Error::AddPrefixFmt(error, "Failed to read referenced preset {}: ", reference_unquoted_path);
