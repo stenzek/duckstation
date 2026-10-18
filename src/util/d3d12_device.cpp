@@ -1227,7 +1227,10 @@ GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   for (u32 i = 0; i < num_textures; i++)
   {
     if (m_current_textures[i])
+    {
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+      m_current_textures[i]->SetUseFenceValue(GetCurrentFenceValue());
+    }
   }
 
   D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
@@ -1942,7 +1945,10 @@ void D3D12Device::BeginRenderPass()
   for (u32 i = 0; i < num_textures; i++)
   {
     if (m_current_textures[i])
+    {
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+      m_current_textures[i]->SetUseFenceValue(GetCurrentFenceValue());
+    }
   }
 
   DebugAssert(rt_desc_p || ds_desc_p || (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages));
@@ -2109,17 +2115,17 @@ void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   {
     m_current_textures[slot] = T;
     m_dirty_flags |= DIRTY_FLAG_TEXTURES;
+  }
 
-    if (T)
+  if (T)
+  {
+    T->CommitClear();
+    T->SetUseFenceValue(GetCurrentFenceValue());
+    if (T->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
     {
-      T->CommitClear();
-      T->SetUseFenceValue(GetCurrentFenceValue());
-      if (T->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
-      {
-        if (InRenderPass())
-          EndRenderPass();
-        T->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-      }
+      if (InRenderPass())
+        EndRenderPass();
+      T->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     }
   }
 
@@ -2435,7 +2441,10 @@ void D3D12Device::PreDispatchCheck()
   for (u32 i = 0; i < num_textures; i++)
   {
     if (m_current_textures[i])
+    {
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+      m_current_textures[i]->SetUseFenceValue(GetCurrentFenceValue());
+    }
   }
 
   if (m_num_current_render_targets > 0 && (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))
