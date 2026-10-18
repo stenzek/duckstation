@@ -1391,10 +1391,11 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.raster_order_views = false;
   if (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
   {
+    // ROV shaders load from RGBA8 UAVs.
     D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
     m_features.raster_order_views =
       SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options))) &&
-      options.ROVsSupported;
+      options.ROVsSupported && options.TypedUAVLoadAdditionalFormats;
   }
 
   m_features.dxt_textures =
