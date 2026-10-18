@@ -1706,7 +1706,8 @@ CoreAudioStream& SPU::GetOutputStream()
 void SPU::Voice::KeyOn()
 {
   current_address = regs.adpcm_start_address & ~u16(1);
-  counter.bits = 0;
+  // The decoder primes the four-sample interpolation window before output begins.
+  counter.bits = 3u << 12; // interpolation_index = 0, sample_index = 3
   regs.adsr_volume = 0;
   adpcm_last_samples.fill(0);
 

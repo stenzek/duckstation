@@ -514,4 +514,30 @@ TEST_F(SPUHardwareTest, FractionalPitchCaptureMatchesHardware)
   CheckCapture(adpcm, 0x1300, golden);
 }
 
+TEST_F(SPUHardwareTest, PrimedInterpolationAtDoublePitchMatchesHardware)
+{
+  static constexpr std::array<u8, 14> adpcm = {0x10, 0x43, 0x76, 0x77, 0x77, 0x46, 0x13,
+                                               0xE0, 0xBC, 0x89, 0x88, 0x88, 0xB9, 0xEC};
+  // Periodic tail of nugget tests/spu/sine_pitch_2000.test.pcm, captured on hardware.
+  static constexpr std::array<s16, 14> golden = {
+    8467, 13978, 14278, 13974, 8455, 2335, -4088, -10508, -16020, -16320, -16016, -10497, -4073, 2347,
+  };
+  CheckCapture(adpcm, 0x2000, golden);
+}
+
+TEST_F(SPUHardwareTest, PrimedInterpolationAtFractionalPitchMatchesHardware)
+{
+  static constexpr std::array<u8, 14> adpcm = {0x10, 0x43, 0x76, 0x77, 0x77, 0x46, 0x13,
+                                               0xE0, 0xBC, 0x89, 0x88, 0x88, 0xB9, 0xEC};
+  // Periodic tail of nugget tests/spu/sine_pitch_1500.test.pcm, captured on hardware.
+  static constexpr std::array<s16, 64> golden = {
+    -16320, -16303, -14672, -10310, -6566,  -1349,  2347,   6685,   10668,  13910,  14278,  14278,  14086,
+    11320,  7134,   2944,   -708,   -5857,  -9804,  -14171, -16263, -16319, -16320, -15593, -11771, -8039,
+    -3055,  1175,   5424,   9076,   13210,  14278,  14278,  14262,  12631,  8268,   4534,   556,    -4088,
+    -8726,  -12709, -15952, -16320, -16319, -16128, -13362, -9175,  -4837,  69,     3855,   7763,   12129,
+    14221,  14278,  14278,  13551,  9729,   5998,   1632,   -2320,  -7466,  -11118, -15251, -16319,
+  };
+  CheckCapture(adpcm, 0x1500, golden);
+}
+
 } // namespace
