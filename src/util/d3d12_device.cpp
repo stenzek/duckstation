@@ -1255,8 +1255,9 @@ void D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
 {
   D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   DebugAssert(present_time == 0);
-  DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
-  EndRenderPass();
+  DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
+  if (InRenderPass())
+    EndRenderPass();
 
   DebugAssert(SC == m_current_swap_chain);
   m_current_swap_chain = nullptr;
