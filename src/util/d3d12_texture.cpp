@@ -813,6 +813,7 @@ bool D3D12TextureBuffer::Create(D3D12Device& dev, Error* error)
 void D3D12TextureBuffer::Destroy(bool defer)
 {
   D3D12Device& dev = D3D12Device::GetInstance();
+  dev.UnbindTextureBuffer(this);
   if (m_descriptor)
   {
     if (defer)
