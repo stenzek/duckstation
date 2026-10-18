@@ -262,6 +262,7 @@ struct Voice
   bool has_samples;
   bool ignore_loop_address;
   bool is_first_block;
+  u8 key_on_delay;
 
   VoiceRegisters regs;
   VoiceCounter counter;
@@ -609,6 +610,7 @@ void SPU::Reset()
     v.adsr_target = 0;
     v.has_samples = false;
     v.ignore_loop_address = false;
+    v.key_on_delay = 0;
   }
 
   s_state.tick_event.Deactivate();
@@ -727,6 +729,10 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
     sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
     sw.Do(&v.ignore_loop_address);
+    if constexpr (COMPATIBILITY)
+      sw.DoEx(&v.key_on_delay, 89, static_cast<u8>(0));
+    else
+      sw.Do(&v.key_on_delay);
   }
 
   sw.Do(&s_state.transfer_fifo);
@@ -743,7 +749,7 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
 
 bool SPU::DoState(StateWrapper& sw)
 {
-  if (sw.GetVersion() < 70) [[unlikely]]
+  if (sw.GetVersion() < 89) [[unlikely]]
     return DoCompatibleState<true>(sw);
   else
     return DoCompatibleState<false>(sw);
@@ -1721,6 +1727,8 @@ void SPU::Voice::KeyOn()
   has_samples = false;
   is_first_block = true;
   ignore_loop_address = false;
+  // The voice is silent for four samples before the first attack tick.
+  key_on_delay = 4;
   adsr_phase = ADSRPhase::Attack;
   UpdateADSREnvelope();
 }
@@ -1736,6 +1744,7 @@ void SPU::Voice::KeyOff()
 
 void SPU::Voice::ForceOff()
 {
+  key_on_delay = 0;
   if (adsr_phase == ADSRPhase::Off)
     return;
 
@@ -2137,6 +2146,15 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
 
   if (!voice.has_samples)
   {
+    // Key on clears has_samples, and the first block isn't read until the delay elapses, so the delay only needs to
+    // be checked here.
+    if (voice.key_on_delay > 0)
+    {
+      voice.key_on_delay--;
+      voice.last_volume = 0;
+      return {};
+    }
+
     ADPCMBlock block;
     ReadADPCMBlock(voice.current_address, &block);
     voice.DecodeBlock(block);
@@ -2648,8 +2666,9 @@ void SPU::Execute(void* param, TickCount ticks)
       }
 #endif
 
-      // Key off/on voices after the first frame.
-      if (i == 0 && (s_state.key_off_register != 0 || s_state.key_on_register != 0))
+      // Key off/on is only processed on every second sample.
+      if ((s_state.capture_buffer_position & 2u) == 0 &&
+          (s_state.key_off_register != 0 || s_state.key_on_register != 0))
       {
         u32 key_off_register = s_state.key_off_register;
         s_state.key_off_register = 0;
@@ -2708,7 +2727,7 @@ void SPU::UpdateEventInterval()
         interval, (((irq_address - s_state.capture_buffer_position) & (CAPTURE_BUFFER_SIZE_PER_CHANNEL - 1)) / 2) + 1);
     }
 
-    // Key on is applied after the first frame, and the voice reads its first block in the second.
+    // A pending key on can replace a voice's current address within two frames.
     if (s_state.key_on_register != 0)
       interval = std::min(interval, 2u);
 
@@ -2727,7 +2746,8 @@ void SPU::UpdateEventInterval()
       u16 address;
       if (!voice.has_samples)
       {
-        frames = 1;
+        // Voices don't read their first block until the key on delay has elapsed.
+        frames = static_cast<u32>(voice.key_on_delay) + 1;
         counter = voice.counter.bits;
         address = voice.current_address;
       }

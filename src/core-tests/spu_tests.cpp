@@ -19,6 +19,7 @@
 #include <cstring>
 #include <limits>
 #include <random>
+#include <vector>
 
 namespace {
 
@@ -496,6 +497,45 @@ TEST_F(SPUHardwareTest, DecayCrossesSustainThreshold)
   EXPECT_EQ(Envelope(), 0x7FF7u);
   SPU::WriteRegister(0x18C, 2);
   RunSamples(8192);
+  EXPECT_EQ(Envelope(), 0u);
+}
+
+TEST_F(SPUHardwareTest, KeyOnEnvelopeLatency)
+{
+  // Hardware only processes KON on every second sample, so ENVX first changes
+  // six or seven samples after the write, depending on which sample it lands on.
+  KeyOn(0x000F, 0x1FC0);
+  for (u32 sample = 1; sample <= 6; sample++)
+  {
+    RunSamples(1);
+    EXPECT_EQ(Envelope(), 0u) << sample;
+  }
+  RunSamples(1);
+  EXPECT_EQ(Envelope(), 0x3800u);
+}
+
+TEST_F(SPUHardwareTest, KeyOnLatencyOnOddSample)
+{
+  RunSamples(1);
+  KeyOn(0x000F, 0x1FC0);
+  RunSamples(5);
+  EXPECT_EQ(Envelope(), 0u);
+  RunSamples(1);
+  EXPECT_EQ(Envelope(), 0x3800u);
+}
+
+TEST_F(SPUHardwareTest, KeyOffDuringKeyOnDelay)
+{
+  // Key off during the delay must not let the voice read its first block early.
+  SPU::WriteRegister(0x1A4, 0x200);  // IRQ address
+  SPU::WriteRegister(0x1AA, 0xC040); // SPU enable, IRQ9 enable
+  KeyOn(0x000F, 0x1FC0);
+  RunSamples(2);
+  SPU::WriteRegister(0x18C, 2); // KOF voice 1
+  RunSamples(3);
+  EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x40, 0u);
+  RunSamples(2);
+  EXPECT_NE(SPU::ReadRegister(0x1AE) & 0x40, 0u);
   EXPECT_EQ(Envelope(), 0u);
 }
 
