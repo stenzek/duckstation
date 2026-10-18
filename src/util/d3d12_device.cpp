@@ -2267,11 +2267,15 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
   // we need a temporary SRV and RTV for each mip level
   // Safe to use the init buffer after exec, because everything will be done with the texture.
   D3D12DescriptorHandle rtv_handle;
-  while (!GetRTVHeapManager().Allocate(&rtv_handle))
+  if (!GetRTVHeapManager().Allocate(&rtv_handle))
   {
-    SubmitCommandList(false, "Allocate RTV for RenderTextureMipmap()");
-    if (m_device_was_lost)
+    // Wait for deferred RTVs to be released.
+    SubmitCommandList(true, "Allocate RTV for RenderTextureMipmap()");
+    if (!GetRTVHeapManager().Allocate(&rtv_handle))
+    {
+      ERROR_LOG("Failed to allocate RTV for RenderTextureMipmap()");
       return;
+    }
   }
 
   D3D12DescriptorHandle srv_handle;
@@ -2345,6 +2349,9 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
 
   cmdlist->EndRenderPass();
 
+  // RTVs are read at record time, so it can be released immediately.
+  GetRTVHeapManager().Free(&rtv_handle);
+
   if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
   {
     texture->TransitionSubresourceToState(cmdlist, texture->CalculateSubresource(layer, src_level),
@@ -2356,9 +2363,6 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
                                           D3D12_RESOURCE_STATE_RENDER_TARGET, texture->GetResourceState());
   }
 
-  // Must destroy after current cmdlist.
-  DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
-
   // Restore for next normal draw.
   SetViewport(cmdlist);
   SetScissor(cmdlist);
@@ -2367,6 +2371,10 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
     cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
     if (m_current_pipeline->GetTopology() != D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
       cmdlist->IASetPrimitiveTopology(m_current_pipeline->GetTopology());
+  }
+  else
+  {
+    m_current_topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
   }
 
   m_dirty_flags |= ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE;
