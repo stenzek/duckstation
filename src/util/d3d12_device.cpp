@@ -590,7 +590,9 @@ ID3D12GraphicsCommandList4* D3D12Device::GetInitCommandList()
 
 void D3D12Device::SubmitCommandList(bool wait_for_completion)
 {
-  DebugAssert(!InRenderPass());
+  if (InRenderPass())
+    EndRenderPass();
+
   if (m_device_was_lost) [[unlikely]]
     return;
 
