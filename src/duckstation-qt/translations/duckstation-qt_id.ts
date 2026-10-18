@@ -1061,6 +1061,10 @@ Sesi ini akan dimulai dalam mode offline.</translation>
         <translation>Selalu menampilkan string rich presence RetroAchievements saat ini di area indikator.</translation>
     </message>
     <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Menampilkan nomor frame saat ini di sudut kanan atas layar.</translation>
+    </message>
+    <message>
         <source>Default</source>
         <translation>Bawaan</translation>
     </message>
@@ -1119,6 +1123,10 @@ Sesi ini akan dimulai dalam mode offline.</translation>
     <message>
         <source>Interface Settings</source>
         <translation>Pengaturan Antarmuka</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Tampilkan Nomor Frame</translation>
     </message>
     <message>
         <source>Rich Presence Monitor</source>
@@ -3427,6 +3435,21 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Jalankan BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Mulai Mode Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Mulai dalam Mode Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Membuka antarmuka layar penuh yang mudah digunakan dengan kontroler saat aplikasi dimulai.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3767,6 +3790,16 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Menampilkan riwayat visual waktu bingkai di sudut kiri atas layar.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Tampilkan Nomor Frame</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Menampilkan nomor frame saat ini di sudut kanan atas layar.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Rendering Berutas</translation>
@@ -3845,6 +3878,46 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Tampilan Game</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Tampilan</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Daftar Game</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Utamakan Ikon Pencapaian</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Mengutamakan lencana game yang digunakan untuk RetroAchievements daripada ikon kartu memori.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Tampilkan Keterangan Kisi</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Menampilkan judul setiap game di bawah sampulnya dalam tampilan kisi.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Tampilkan Judul Terlokalisasi</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Menggunakan judul game yang dilokalkan dari basis data sebagai pengganti judul bahasa Inggris, jika tersedia.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4243,6 +4316,26 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Meneruskan getaran dari game ke motor getar perangkat Anda, jika tersedia.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Gaya Tombol</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Memilih apakah tombol kontroler layar sentuh digambar sebagai garis tepi atau dengan isian.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Garis Tepi</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Berisi</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4879,6 +4972,11 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Menonaktifkan setiap patch yang saat ini aktif untuk game ini.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Pembuat: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Tidak tersedia saat mode hardcore RetroAchievements aktif.</translation>
@@ -5269,9 +5367,24 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Tambah Direktori Game</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favorit</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Jalankan Game</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Tambahkan ke Favorit</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Hapus dari Favorit</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5282,6 +5395,16 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Apakah Anda yakin ingin menghapus gambar sampul untuk game ini? Gambar tidak dapat dipulihkan.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Sampul Sudah Ada</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Gambar sampul untuk game ini sudah ada, apakah Anda ingin menggantinya?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -12602,6 +12725,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Tampilkan Pengaturan Penyempurnaan</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Tampilkan Nomor Frame</translation>
+    </message>
+    <message>
         <source>Show GPU Statistics</source>
         <translation>Tampilkan Statistik GPU</translation>
     </message>
@@ -12644,6 +12771,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Menampilkan jumlah bingkai (atau v-sync) yang ditampilkan per detik oleh sistem di sudut kanan atas layar.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Menampilkan nomor frame saat ini di sudut kanan atas layar.</translation>
     </message>
     <message>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>

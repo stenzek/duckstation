@@ -1106,6 +1106,10 @@ Oxunmayan mesajlar: {}</translation>
         <translation>Arayüz Quruluşları</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Kadr Nömrəsini Göstər</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Genişləndirilmiş Mövcudluq İzləyicisi</translation>
     </message>
@@ -1168,6 +1172,10 @@ Oxunmayan mesajlar: {}</translation>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Göstərici sahəsində həmişə cari RetroAchievements genişləndirilmiş mövcudluq mətnini göstərir.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Cari kadrın nömrəsini ekranın üst-sağ küncündə göstərir.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3451,6 +3459,21 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <translation>BIOS&apos;u Başlat</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Böyük Görüntü Durumunu Başlat</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Böyük Görüntü Durumunda Başlat</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Tətbiq başladıqda yönəldənlə işlətmək üçün uyğun tam ekran interfeysini açır.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3791,6 +3814,16 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <translation>Kadr vaxtlarının görüntü keçmişini ekranın üst-sol küncündə göstərir.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Kadr Nömrəsini Göstər</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Cari kadrın nömrəsini ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Axınlanmış İşləniş</translation>
@@ -3869,6 +3902,46 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Oyun Ekranı</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Üz Görünüşü</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Oyun Sıralığı</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Uğur Nişanlarına Üstünlük Ver</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Yaddaş kartı nişanları əvəzinə oyunun RetroAchievements üçün işlədilən nişanlarına üstünlük verir.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Tor Görünüşündə Başlıqları Göstər</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Tor görünüşündə hər oyunun başlığını örtüyünün altında göstərir.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Yerliləşdirilmiş Başlıqları Göstər</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Varsa, ingiliscə başlıqlar əvəzinə verilənlər bazasındakı yerliləşdirilmiş oyun başlıqlarını işlədir.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4268,6 +4341,26 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Oyundakı titrəyişi qurğunuzun titrəyiş mühərrikinə, varsa, ötürür.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Düymə Üslubu</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Toxunma ekranı yönəldəninin düymələrinin kontur və ya içi dolu şəkildə çəkilməsini seçir.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Kontur</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>İçi Dolu</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4905,6 +4998,11 @@ Davam etmək istəyirsiniz?</translation>
         <translation>Bu oyun üçün hazırda qoşulmuş bütün yamaqları söndürür.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Müəllif: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>RetroAchievements möhkəm modu etkin olduqda əlçatan deyil.</translation>
@@ -5295,9 +5393,24 @@ Davam etmək istəyirsiniz?</translation>
         <translation>Oyun Qovluğu Əlavə Et</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Sevimli</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Oyunu Başlat</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Sevimlilərə Əlavə Et</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Sevimlilərdən Çıxar</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5308,6 +5421,16 @@ Davam etmək istəyirsiniz?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Bu oyunun örtük şəklini silmək istəyirsiniz? Onu bərpa etmək olmaz.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Örtük Artıq Var</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Bu oyun üçün örtük şəkli artıq var, onu dəyişdirmək istəyirsiniz?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -13415,6 +13538,10 @@ Yanlış: {}
         <translation>KSAN&apos;ı Göstər</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Kadr Nömrəsini Göstər</translation>
+    </message>
+    <message>
         <source>Show Frame Times</source>
         <translation>Kadr Vaxtlarını Göstər</translation>
     </message>
@@ -13505,6 +13632,10 @@ Yanlış: {}
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Sistemin saniyə başı göstərdiyi kadrların (ya da v-sinxlərin) sayını ekranın üst-sağ küncündə göstərir.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Cari kadrın nömrəsini ekranın üst-sağ küncündə göstərir.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

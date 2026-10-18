@@ -1054,6 +1054,10 @@ Messages non lus : {}</translation>
         <translation>Paramètres de l&apos;interface</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Afficher le numéro de trame</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Moniteur de présence enrichie</translation>
     </message>
@@ -1168,6 +1172,10 @@ Messages non lus : {}</translation>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Affiche toujours la chaîne de présence enrichie RetroAchievements actuelle dans la zone des indicateurs.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Affiche le numéro de la trame actuelle dans le coin supérieur droit de l&apos;écran.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3451,6 +3459,21 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <translation>Démarrer le BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Démarrer en mode Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Démarrer en mode Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Ouvre l&apos;interface plein écran adaptée à la manette au démarrage de l&apos;application.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3791,6 +3814,16 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <translation>Affiche un historique visuel des temps de rendu des images dans le coin supérieur gauche de l&apos;écran.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Afficher le numéro de trame</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Affiche le numéro de la trame actuelle dans le coin supérieur droit de l&apos;écran.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Rendu multithread</translation>
@@ -3869,6 +3902,46 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Affichage du jeu</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Apparence</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Liste des jeux</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Privilégier les icônes de succès</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Donne la priorité aux badges du jeu utilisés par RetroAchievements par rapport aux icônes de carte mémoire.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Afficher les légendes dans la vue en grille</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Affiche le titre de chaque jeu sous sa jaquette dans la vue en grille.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Afficher les titres localisés</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Utilise les titres de jeux localisés de la base de données à la place des titres anglais, lorsqu&apos;ils sont disponibles.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4268,6 +4341,26 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Transmet les vibrations du jeu au moteur de vibration de votre appareil, s&apos;il en possède un.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Style des boutons</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Détermine si les boutons de la manette tactile sont dessinés en contour ou remplis.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Contour</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Rempli</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4905,6 +4998,11 @@ Voulez-vous vraiment continuer ?</translation>
         <translation>Désactive tous les correctifs actuellement activés pour ce jeu.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Auteur : %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Indisponible lorsque le mode Hardcore de RetroAchievements est actif.</translation>
@@ -5295,9 +5393,24 @@ Voulez-vous vraiment continuer ?</translation>
         <translation>Ajouter un répertoire de jeux</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favori</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Démarrer le jeu</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Ajouter aux favoris</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Retirer des favoris</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5308,6 +5421,16 @@ Voulez-vous vraiment continuer ?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Voulez-vous vraiment supprimer l&apos;image de jaquette de ce jeu ? Elle ne pourra pas être récupérée.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>La couverture existe déjà</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Une image de couverture existe déjà pour ce jeu, souhaitez-vous la remplacer ?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -14270,6 +14393,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Afficher les FPS</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Afficher le numéro de trame</translation>
+    </message>
+    <message>
         <source>Show Frame Times</source>
         <translation>Afficher les temps de trame</translation>
     </message>
@@ -14344,6 +14471,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Affiche le nombre d&apos;images (ou de v-syncs) affichées par seconde par le système dans le coin supérieur droit de l&apos;écran.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Affiche le numéro de la trame actuelle dans le coin supérieur droit de l&apos;écran.</translation>
     </message>
     <message>
         <source>Simulates the region check present in original, unmodified consoles.</source>

@@ -1041,6 +1041,10 @@ This session will start in offline mode.</source>
         <translation>インターフェース設定</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>フレーム番号を表示</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>リッチプレゼンスモニター</translation>
     </message>
@@ -1147,6 +1151,10 @@ This session will start in offline mode.</source>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>現在のRetroAchievementsリッチプレゼンス文字列を常にインジケーター領域に表示します。</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>現在のフレーム番号を画面右上に表示します。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3427,6 +3435,21 @@ Do you want to %1$s anyway?</source>
         <translation>BIOSを起動</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>ビッグピクチャーモードを開始</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>ビッグピクチャーモードで起動</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>アプリの起動時に、コントローラーで操作しやすい全画面インターフェースを開きます。</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3767,6 +3790,16 @@ Do you want to %1$s anyway?</source>
         <translation>ディスプレイの左上にフレーム時間の履歴を視覚的に表示します。</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>フレーム番号を表示</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>現在のフレーム番号を画面右上に表示します。</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>スレッド化レンダリング</translation>
@@ -3845,6 +3878,46 @@ Do you want to %1$s anyway?</source>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>ゲーム表示</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>外観</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>ゲームリスト</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>実績アイコンを優先</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>メモリーカードのアイコンよりも、RetroAchievements で使用されるゲームのバッジを優先します。</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>グリッドのキャプションを表示</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>グリッド表示で各ゲームのカバーの下にタイトルを表示します。</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>ローカライズされたタイトルを表示</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>データベースにローカライズされたゲームタイトルがある場合、英語のタイトルの代わりに使用します。</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4243,6 +4316,26 @@ Do you want to %1$s anyway?</source>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>端末に振動モーターがある場合、ゲームの振動をそのモーターに伝えます。</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>ボタンのスタイル</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>タッチスクリーンコントローラーのボタンを輪郭のみで描画するか、塗りつぶして描画するかを選択します。</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>輪郭のみ</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>塗りつぶし</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4879,6 +4972,11 @@ Are you sure you want to continue?</source>
         <translation>このゲームで現在有効なすべてのパッチを無効にします。</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>作者: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>RetroAchievements のハードコアモードが有効な間は利用できません。</translation>
@@ -5269,9 +5367,24 @@ Are you sure you want to continue?</source>
         <translation>ゲームディレクトリを追加</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>お気に入り</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>ゲーム起動</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>お気に入りに追加</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>お気に入りから削除</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5282,6 +5395,16 @@ Are you sure you want to continue?</source>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>このゲームのカバー画像を削除してもよろしいですか？復元することはできません。</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>カバーはすでに存在します</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>このゲームのカバー画像はすでに存在しますが、置き換えますか？</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -12688,6 +12811,10 @@ You cannot undo this action.</source>
         <translation>設定をデフォルトに戻しました。</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>フレーム番号を表示</translation>
+    </message>
+    <message>
         <source>Show Localized Titles</source>
         <translation>ローカライズされたタイトルを表示</translation>
     </message>
@@ -12706,6 +12833,10 @@ You cannot undo this action.</source>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>各システムスレッドによるホスト CPU 使用率を画面右上に表示します。</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>現在のフレーム番号を画面右上に表示します。</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

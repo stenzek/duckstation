@@ -1051,6 +1051,10 @@ This session will start in offline mode.</source>
         <translation>Налаштування інтерфейсу</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Показати номер кадру</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Монітор Rich Presence</translation>
     </message>
@@ -1181,6 +1185,10 @@ This session will start in offline mode.</source>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Завжди відображає поточний рядок Rich Presence RetroAchievements в області індикаторів.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Відображає номер поточного кадру у верхньому правому кутку екрана.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3475,6 +3483,21 @@ Do you want to %1$s anyway?</source>
         <translation>Запустити BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Запустити режим Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Запускати в режимі Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Відкриває повноекранний інтерфейс, зручний для керування контролером, під час запуску застосунку.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3815,6 +3838,16 @@ Do you want to %1$s anyway?</source>
         <translation>Відображає візуальну історію часу кадрів у верхньому лівому кутку екрана.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Показати номер кадру</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Відображає номер поточного кадру у верхньому правому кутку екрана.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Багатопотоковий рендеринг</translation>
@@ -3893,6 +3926,46 @@ Do you want to %1$s anyway?</source>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Відображення гри</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Зовнішній вигляд</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Список ігор</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Надавати перевагу значкам досягнень</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Надає перевагу значкам гри з RetroAchievements перед значками з карти пам’яті.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Показати підписи в сітці</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Відображає назву кожної гри під її обкладинкою в режимі сітки.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Показати локалізовані назви</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Використовує локалізовані назви ігор із бази даних замість англійських, якщо вони доступні.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4293,6 +4366,26 @@ Do you want to %1$s anyway?</source>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Передає вібрацію з гри на вібромотор вашого пристрою, якщо він є.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Стиль кнопок</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Визначає, чи відображатимуться кнопки сенсорного контролера як контури чи із заливкою.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Контурні</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Із заливкою</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4931,6 +5024,11 @@ Are you sure you want to continue?</source>
         <translation>Вимикає всі патчі, які наразі ввімкнено для цієї гри.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Автор: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Недоступно, поки активний режим «Хардкор» RetroAchievements.</translation>
@@ -5321,9 +5419,24 @@ Are you sure you want to continue?</source>
         <translation>Додати каталог ігор</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Обране</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Запустити гру</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Додати до обраного</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Вилучити з обраного</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5334,6 +5447,16 @@ Are you sure you want to continue?</source>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Ви впевнені, що хочете видалити зображення обкладинки цієї гри? Його неможливо буде відновити.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Обкладинка вже існує</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Обкладинка для цієї гри вже існує, ви хочете замінити її?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -14364,6 +14487,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Показати FPS</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Показати номер кадру</translation>
+    </message>
+    <message>
         <source>Show Frame Times</source>
         <translation>Показати час кадрів</translation>
     </message>
@@ -14430,6 +14557,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>Показує кількість кадрів (або вертикальної синхронізації), що відображаються системою в секунду, у верхньому правому кутку екрана.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Відображає номер поточного кадру у верхньому правому кутку екрана.</translation>
     </message>
     <message>
         <source>Simulates the region check present in original, unmodified consoles.</source>

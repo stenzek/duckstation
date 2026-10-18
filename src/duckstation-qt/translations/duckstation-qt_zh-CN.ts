@@ -1041,6 +1041,10 @@ Unread messages: {}</source>
         <translation>始终在指示区域显示当前的 RetroAchievements 富状态字符串。</translation>
     </message>
     <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>在显示区域右上角显示当前帧的编号。</translation>
+    </message>
+    <message>
         <source>Default</source>
         <translation>默认</translation>
     </message>
@@ -1091,6 +1095,10 @@ Unread messages: {}</source>
     <message>
         <source>Interface Settings</source>
         <translation>界面设置</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>显示帧编号</translation>
     </message>
     <message>
         <source>Rich Presence Monitor</source>
@@ -3427,6 +3435,21 @@ Do you want to %1$s anyway?</source>
         <translation>启动BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>启动大视画模式</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>启动时进入大视画模式</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>应用启动时打开适合使用控制器操作的全屏界面。</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3767,6 +3790,16 @@ Do you want to %1$s anyway?</source>
         <translation>在显示左上角显示帧时间的可视历史记录。</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>显示帧编号</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>在显示区域右上角显示当前帧的编号。</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>线程渲染</translation>
@@ -3845,6 +3878,46 @@ Do you want to %1$s anyway?</source>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>游戏显示</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>外观</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>游戏列表</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>优先使用成就图标</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>优先使用游戏在RetroAchievements上的徽章，而非记忆卡图标。</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>显示网格标题</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>在网格视图中，在各游戏封面下方显示游戏标题。</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>显示本地化标题</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>如果数据库中有本地化游戏标题，则使用本地化标题代替英文标题。</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4243,6 +4316,26 @@ Do you want to %1$s anyway?</source>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>将游戏的震动反馈传递到设备的振动马达（如果有）。</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>按钮样式</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>选择触摸屏控制器按钮的绘制样式：轮廓或填充。</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>轮廓</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>填充</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4879,6 +4972,11 @@ Are you sure you want to continue?</source>
         <translation>禁用此游戏当前启用的所有补丁。</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>作者：%1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>RetroAchievements 硬核模式启用时不可用。</translation>
@@ -5269,9 +5367,24 @@ Are you sure you want to continue?</source>
         <translation>添加游戏目录</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>收藏</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>启动游戏</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>收藏</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>取消收藏</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5282,6 +5395,16 @@ Are you sure you want to continue?</source>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>确定要删除此游戏的封面图像吗？删除后无法恢复。</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>封面已经存在</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>此游戏的封面图片已经存在，您想要替换它吗？</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -14166,6 +14289,10 @@ Please check your username and password, and try again.</source>
         <translation>显示成就奖杯图标</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>显示帧编号</translation>
+    </message>
+    <message>
         <source>Show GPU Statistics</source>
         <translation>显示GPU统计信息</translation>
     </message>
@@ -14204,6 +14331,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>在显示右上角显示本机各系统线程的CPU占用率。</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>在显示区域右上角显示当前帧的编号。</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

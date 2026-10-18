@@ -1031,6 +1031,10 @@ Error: {}</source>
         <translation>인터페이스 설정</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>프레임 번호 표시</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>리치 프레즌스 모니터</translation>
     </message>
@@ -1161,6 +1165,10 @@ Error: {}</source>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>항상 표시기 영역에 현재 RetroAchievements 리치 프레즌스 문자열을 표시합니다.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>화면 오른쪽 상단에 현재 프레임 번호를 표시합니다.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3433,6 +3441,21 @@ Do you want to %1$s anyway?</source>
         <translation>바이오스 시작</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>빅피처 모드 시작</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>빅피처 모드로 시작</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>앱을 시작할 때 컨트롤러로 사용하기 편리한 전체 화면 인터페이스를 엽니다.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3773,6 +3796,16 @@ Do you want to %1$s anyway?</source>
         <translation>디스플레이의 왼쪽 상단 모서리에 프레임 시간의 시각적 기록을 표시합니다.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>프레임 번호 표시</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>화면 오른쪽 상단에 현재 프레임 번호를 표시합니다.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>스레드 렌더링</translation>
@@ -3851,6 +3884,46 @@ Do you want to %1$s anyway?</source>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>게임 화면</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>모양</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>게임 목록</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>도전 과제 아이콘 우선 사용</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>메모리 카드 아이콘보다 RetroAchievements에 사용되는 게임 배지를 우선합니다.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>그리드 캡션 표시</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>격자 보기에서 각 게임의 커버 아래에 타이틀을 표시합니다.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>현지화 타이틀 표시</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>데이터베이스에 현지화된 게임 타이틀이 있으면 영어 타이틀 대신 사용합니다.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4249,6 +4322,26 @@ Do you want to %1$s anyway?</source>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>기기에 진동 모터가 있는 경우 게임의 진동을 해당 모터로 전달합니다.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>버튼 스타일</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>터치스크린 컨트롤러 버튼을 윤곽선으로 표시할지 내부를 채워 표시할지 선택합니다.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>윤곽선</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>채우기</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4885,6 +4978,11 @@ Are you sure you want to continue?</source>
         <translation>이 게임에 현재 활성화된 모든 패치를 비활성화합니다.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>작성자: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>RetroAchievements 하드코어 모드가 활성화된 동안에는 사용할 수 없습니다.</translation>
@@ -5275,9 +5373,24 @@ Are you sure you want to continue?</source>
         <translation>게임 디렉터리 추가</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>즐겨찾기</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>게임 시작</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>즐겨찾기</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>즐겨찾기 해제</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5288,6 +5401,16 @@ Are you sure you want to continue?</source>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>이 게임의 표지 이미지를 삭제하시겠습니까? 복구할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>이미 존재하는 커버</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>이 게임의 커버 이미지가 이미 존재합니다, 교체하시겠습니까?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -12274,6 +12397,10 @@ Please check your username and password, and try again.</source>
         <translation>모두 표시</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>프레임 번호 표시</translation>
+    </message>
+    <message>
         <source>Show Messages</source>
         <translation>메시지 표시</translation>
     </message>
@@ -12304,6 +12431,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>화면 우측 상단에 각 시스템 스레드의 호스트 CPU 사용량이 표시됩니다.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>화면 오른쪽 상단에 현재 프레임 번호를 표시합니다.</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>

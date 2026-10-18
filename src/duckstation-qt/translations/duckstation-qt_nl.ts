@@ -1055,6 +1055,10 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>Interface-instellingen</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Framenummer tonen</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Rich Presence-monitor</translation>
     </message>
@@ -1169,6 +1173,10 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Geeft de huidige rich-presence-tekenreeks van RetroAchievements altijd weer in het indicatiegebied.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Toont het nummer van het huidige frame in de rechterbovenhoek van het scherm.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3452,6 +3460,21 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>BIOS starten</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Big Picture-modus starten</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Starten in Big Picture-modus</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Opent de schermvullende interface die geschikt is voor controllers wanneer de app wordt gestart.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3792,6 +3815,16 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Toont een visuele geschiedenis van frametijden in de linkerbovenhoek van het scherm.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Framenummer tonen</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Toont het nummer van het huidige frame in de rechterbovenhoek van het scherm.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Rendering met threads</translation>
@@ -3870,6 +3903,46 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Gameweergave</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Uiterlijk</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Spellenlijst</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Voorkeur geven aan prestatiepictogrammen</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Geeft voorrang aan de badges van het spel die voor RetroAchievements worden gebruikt boven geheugenkaartpictogrammen.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Bijschriften in rasterweergave tonen</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Toont de titel van elk spel onder de cover in de rasterweergave.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Gelokaliseerde titels tonen</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Gebruikt gelokaliseerde speltitels uit de database in plaats van de Engelse titels, indien beschikbaar.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4269,6 +4342,26 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Stuurt trillingen van de game door naar de trilmotor van je apparaat, indien aanwezig.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Knopstijl</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Bepaalt of de knoppen van de touchscreencontroller als omtrek of opgevuld worden getekend.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Omtrek</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Opgevuld</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4906,6 +4999,11 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <translation>Schakelt alle momenteel ingeschakelde patches voor deze game uit.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Auteur: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Niet beschikbaar wanneer de hardcoremodus van RetroAchievements actief is.</translation>
@@ -5296,9 +5394,24 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <translation>Gamemap toevoegen</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favoriet</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Game starten</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Toevoegen aan favorieten</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Verwijderen uit favorieten</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5309,6 +5422,16 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Weet je zeker dat je de hoesafbeelding voor deze game wilt verwijderen? Deze kan niet worden hersteld.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Cover Bestaat Al</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Er is al een coverafbeelding voor dit spel, wil je deze vervangen?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -13393,6 +13516,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Instellingen teruggezet naar de standaardwaarden.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Framenummer tonen</translation>
+    </message>
+    <message>
         <source>Show Grid View Titles</source>
         <translation>Titels in rasterweergave tonen</translation>
     </message>
@@ -13427,6 +13554,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>Toont het CPU-gebruik van elke systeemthread van de host in de rechterbovenhoek van het scherm.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Toont het nummer van het huidige frame in de rechterbovenhoek van het scherm.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

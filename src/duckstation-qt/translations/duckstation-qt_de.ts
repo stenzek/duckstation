@@ -1054,6 +1054,10 @@ Diese Sitzung startet im Offline-Modus.</translation>
         <translation>Schnittstelleneinstellungen</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Framenummer anzeigen</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Rich-Presence-Monitor</translation>
     </message>
@@ -1168,6 +1172,10 @@ Diese Sitzung startet im Offline-Modus.</translation>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Zeigt im Anzeigebereich stets den aktuellen Rich-Presence-String von RetroAchievements an.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Zeigt die Nummer des aktuellen Frames in der oberen rechten Ecke des Bildschirms an.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3451,6 +3459,21 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <translation>BIOS starten</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Großbildmodus starten</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Im Großbildmodus starten</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Öffnet beim Start der App die für Controller geeignete Vollbildoberfläche.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3791,6 +3814,16 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <translation>Zeigt eine visuelle Historie der Framezeiten in der oberen linken Ecke des Bildschirms an.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Framenummer anzeigen</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Zeigt die Nummer des aktuellen Frames in der oberen rechten Ecke des Bildschirms an.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Thread-Rendering</translation>
@@ -3869,6 +3902,46 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Spielanzeige</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Erscheinungsbild</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Spieleliste</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Achievement-Symbole bevorzugen</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Bevorzugt die Spielabzeichen von RetroAchievements gegenüber den Memory-Card-Symbolen.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Beschriftungen in der Rasteransicht anzeigen</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Zeigt in der Rasteransicht den Titel jedes Spiels unter seinem Cover an.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Lokalisierte Titel anzeigen</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Verwendet lokalisierte Spieltitel aus der Datenbank anstelle der englischen Titel, sofern verfügbar.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4268,6 +4341,26 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Leitet die Vibration des Spiels an den Vibrationsmotor Ihres Geräts weiter, sofern vorhanden.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Tastenstil</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Legt fest, ob die Tasten des Touchscreen-Controllers als Umrisse oder ausgefüllt dargestellt werden.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Umrisse</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Ausgefüllt</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4905,6 +4998,11 @@ Möchten Sie wirklich fortfahren?</translation>
         <translation>Deaktiviert jeden derzeit für dieses Spiel aktivierten Patch.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Autor: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Nicht verfügbar, solange der RetroAchievements-Hardcore-Modus aktiv ist.</translation>
@@ -5295,9 +5393,24 @@ Möchten Sie wirklich fortfahren?</translation>
         <translation>Spieleverzeichnis hinzufügen</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favorit</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Spiel starten</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Zu Favoriten hinzufügen</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Aus Favoriten entfernen</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5308,6 +5421,16 @@ Möchten Sie wirklich fortfahren?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Möchten Sie das Cover-Bild für dieses Spiel wirklich löschen? Es kann nicht wiederhergestellt werden.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Cover ist bereits vorhanden</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Für dieses Spiel existiert bereits ein Cover. Möchtest du es ersetzen?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -13396,6 +13519,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Einstellungen auf Standardwerte zurückgesetzt.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Framenummer anzeigen</translation>
+    </message>
+    <message>
         <source>Show Grid View Titles</source>
         <translation>Titel in der Rasteransicht anzeigen</translation>
     </message>
@@ -13430,6 +13557,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>Zeigt die CPU-Auslastung jedes System-Threads in der oberen rechten Ecke des Bildschirms an.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Zeigt die Nummer des aktuellen Frames in der oberen rechten Ecke des Bildschirms an.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

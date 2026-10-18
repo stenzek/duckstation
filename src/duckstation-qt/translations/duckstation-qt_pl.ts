@@ -1068,6 +1068,10 @@ Ta sesja rozpocznie się w trybie offline.</translation>
         <translation>Ustawienia interfejsu</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Pokazuj numer klatki</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>Monitor Rich Presence</translation>
     </message>
@@ -1182,6 +1186,10 @@ Ta sesja rozpocznie się w trybie offline.</translation>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>Zawsze wyświetla bieżący ciąg Rich Presence RetroAchievements w obszarze wskaźników.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Pokazuje numer bieżącej klatki w prawym górnym rogu ekranu.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3476,6 +3484,21 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <translation>Uruchom BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Uruchom tryb Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Uruchamiaj w trybie Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Otwiera pełnoekranowy interfejs dostosowany do obsługi kontrolerem podczas uruchamiania aplikacji.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3816,6 +3839,16 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <translation>Pokazuje wizualną historię czasów klatek w lewym górnym rogu wyświetlacza.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Pokazuj numer klatki</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Pokazuje numer bieżącej klatki w prawym górnym rogu ekranu.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>Renderowanie wątkowe</translation>
@@ -3894,6 +3927,46 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Ekran gry</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Wygląd</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Lista gier</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Preferuj ikony osiągnięć</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Daje pierwszeństwo odznakom gry używanym w RetroAchievements przed ikonami kart pamięci.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Pokazuj podpisy w siatce</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Pokazuje tytuł każdej gry pod jej okładką w widoku siatki.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Pokaż zlokalizowane tytuły</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Używa zlokalizowanych tytułów gier z bazy danych zamiast tytułów angielskich, jeśli są dostępne.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4294,6 +4367,26 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>Przekazuje wibracje z gry do silnika wibracyjnego urządzenia, jeśli jest dostępny.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Styl przycisków</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Określa, czy przyciski kontrolera na ekranie dotykowym mają być wyświetlane jako kontury czy wypełnione.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Kontury</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Wypełnione</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4932,6 +5025,11 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Wyłącza wszystkie łatki obecnie włączone dla tej gry.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Autor: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Niedostępne, gdy aktywny jest tryb Hardcore RetroAchievements.</translation>
@@ -5322,9 +5420,24 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Dodaj katalog gier</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Ulubione</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>Rozpocznij grę</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Dodaj do ulubionych</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Usuń z ulubionych</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5335,6 +5448,16 @@ Czy na pewno chcesz kontynuować?</translation>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>Czy na pewno chcesz usunąć obraz okładki tej gry? Nie można go odzyskać.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Okładka już istnieje</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Grafika okładki tej gry już istnieje, czy chcesz ją zastąpić?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -12531,6 +12654,10 @@ Spowodowany błąd:</translation>
         <translation>Pokaż wszystkie</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>Pokazuj numer klatki</translation>
+    </message>
+    <message>
         <source>Show Grid View Titles</source>
         <translation>Pokaż tytuły w widoku siatki</translation>
     </message>
@@ -12569,6 +12696,10 @@ Spowodowany błąd:</translation>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>Pokazuje użycie procesora gospodarza przez każdy wątek systemowy w prawym górnym rogu ekranu.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Pokazuje numer bieżącej klatki w prawym górnym rogu ekranu.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>

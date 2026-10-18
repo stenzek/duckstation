@@ -1058,6 +1058,10 @@ This session will start in offline mode.</source>
         <translation>הצגת תפריט ניפוי באגים</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>הצגת מספר הפריים</translation>
+    </message>
+    <message>
         <source>Rich Presence Monitor</source>
         <translation>מעקב Rich Presence</translation>
     </message>
@@ -1168,6 +1172,10 @@ This session will start in offline mode.</source>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <translation>מציג תמיד את מחרוזת ה־Rich Presence הנוכחית של RetroAchievements באזור המחוונים.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>מציג את מספר הפריים הנוכחי בפינה הימנית העליונה של התצוגה.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -3451,6 +3459,21 @@ Do you want to %1$s anyway?</source>
         <translation>הפעלת BIOS</translation>
     </message>
     <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>הפעלת מצב תמונה גדולה</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>הפעלה במצב תמונה גדולה</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>פותח את הממשק במסך מלא המותאם לבקרים עם הפעלת היישום.</translation>
+    </message>
+    <message>
         <source>DuckStation</source>
         <comment>app_name</comment>
         <translation>DuckStation</translation>
@@ -3791,6 +3814,16 @@ Do you want to %1$s anyway?</source>
         <translation>מציג היסטוריה חזותית של זמני הפריימים בפינה השמאלית העליונה של התצוגה.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>הצגת מספר הפריים</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>מציג את מספר הפריים הנוכחי בפינה הימנית העליונה של התצוגה.</translation>
+    </message>
+    <message>
         <source>Threaded Rendering</source>
         <comment>settings_use_thread</comment>
         <translation>רינדור בתהליכון נפרד</translation>
@@ -3869,6 +3902,46 @@ Do you want to %1$s anyway?</source>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>תצוגת משחק</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>מראה</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>רשימת משחקים</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>העדפת סמלי הישגים</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>מעדיף את תגי המשחק המשמשים ב־RetroAchievements על פני סמלי כרטיסי הזיכרון.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>הצגת כותרות בתצוגת רשת</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>מציג את הכותרת של כל משחק מתחת לתמונת העטיפה שלו בתצוגת הרשת.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>הצגת כותרות מתורגמות</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>משתמש בכותרות משחקים מתורגמות ממסד הנתונים במקום בכותרות באנגלית, כאשר הן זמינות.</translation>
     </message>
     <message>
         <source>Basic Rendering</source>
@@ -4268,6 +4341,26 @@ Do you want to %1$s anyway?</source>
         <source>Forwards vibration from the game to your device&apos;s vibration motor, if present.</source>
         <comment>settings_summary_touchscreen_enable_vibration</comment>
         <translation>מעביר את הרטט מהמשחק למנוע הרטט של המכשיר שלך, אם קיים.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>סגנון לחצנים</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>קובע אם לחצני בקר מסך המגע יוצגו כקווי מתאר או בצבע מלא.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>קווי מתאר</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>מילוי</translation>
     </message>
     <message>
         <source>Global Save %d</source>
@@ -4905,6 +4998,11 @@ Are you sure you want to continue?</source>
         <translation>משבית את כל התיקונים המופעלים כעת למשחק זה.</translation>
     </message>
     <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>יוצר: %1$s</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcode mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>לא זמין כאשר מצב Hardcore של RetroAchievements פעיל.</translation>
@@ -5295,9 +5393,24 @@ Are you sure you want to continue?</source>
         <translation>הוספת תיקיית משחקים</translation>
     </message>
     <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>מועדף</translation>
+    </message>
+    <message>
         <source>Start Game</source>
         <comment>content_bottom_sheet_start</comment>
         <translation>הפעלת משחק</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>הוספה למועדפים</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>הסרה מהמועדפים</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -5308,6 +5421,16 @@ Are you sure you want to continue?</source>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
         <comment>content_bottom_sheet_delete_cover_message</comment>
         <translation>האם למחוק את תמונת העטיפה של משחק זה? לא ניתן לשחזר אותה.</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>תמונת העטיפה כבר קיימת</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>תמונת עטיפה למשחק זה כבר קיימת, האם ברצונך להחליף אותה?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -13391,6 +13514,10 @@ Please check your username and password, and try again.</source>
         <translation>ההגדרות אופסו לברירת המחדל.</translation>
     </message>
     <message>
+        <source>Show Frame Number</source>
+        <translation>הצגת מספר הפריים</translation>
+    </message>
+    <message>
         <source>Show Grid View Titles</source>
         <translation>הצגת כותרות בתצוגת רשת</translation>
     </message>
@@ -13425,6 +13552,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>מציג את השימוש של ה־CPU במארח עבור כל הליך מערכת בפינה הימנית העליונה של התצוגה.</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>מציג את מספר הפריים הנוכחי בפינה הימנית העליונה של התצוגה.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>
