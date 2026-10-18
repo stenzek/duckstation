@@ -2450,6 +2450,7 @@ void D3D12Device::PreDispatchCheck()
   if (m_num_current_render_targets > 0 && (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))
   {
     // Still need to clear the RTs.
+    std::array<D3D12_RESOURCE_BARRIER, MAX_RENDER_TARGETS> barriers;
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
       D3D12Texture* const rt = m_current_render_targets[i];
@@ -2457,21 +2458,14 @@ void D3D12Device::PreDispatchCheck()
       rt->CommitClear(cmdlist);
       rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->SetState(GPUTexture::State::Dirty);
-    }
 
-    for (u32 i = 0; i < m_num_current_render_targets; i++)
-    {
-      D3D12Texture* const rt = m_current_render_targets[i];
-      if (!rt)
-        continue;
-
-      const D3D12_RESOURCE_BARRIER barrier = {
+      barriers[i] = {
         .Type = D3D12_RESOURCE_BARRIER_TYPE_UAV,
         .Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
         .UAV = {.pResource = rt->GetResource()},
       };
-      cmdlist->ResourceBarrier(1, &barrier);
     }
+    cmdlist->ResourceBarrier(m_num_current_render_targets, barriers.data());
   }
 
   // If this is a new command buffer, bind the pipeline and such.
