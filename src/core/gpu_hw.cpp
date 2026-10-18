@@ -1114,8 +1114,7 @@ void GPU_HW::DestroyBuffers()
 }
 
 ShaderCompileProgressTracker::ShaderCompileProgressTracker(u32 total)
-  : m_image(System::GetImageForLoadingScreen(VideoThread::GetGamePath())),
-    m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
+  : m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
     m_start_time(Timer::GetCurrentValue()), m_total(total)
 {
 }
@@ -1161,6 +1160,10 @@ void ShaderCompileProgressTracker::UpdateProgressScreen()
   {
     m_last_progress = m_progress;
     m_last_update_time = tv;
+
+    // Looked up on first display, since compiles that finish before the screen appears never need it.
+    if (m_image.empty())
+      m_image = System::GetImageForLoadingScreen(VideoThread::GetGamePath());
 
     FullscreenUI::RenderLoadingScreen(
       m_image, TRANSLATE_SV("GPU_HW", "Compiling Shaders..."),
