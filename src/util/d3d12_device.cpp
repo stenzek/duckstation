@@ -2392,6 +2392,9 @@ void D3D12Device::SetScissor(const GSVector4i rc)
 
 void D3D12Device::PreDrawCheck()
 {
+  if (!InRenderPass())
+    BeginRenderPass();
+
   // TODO: Flushing cmdbuffer because of descriptor OOM will lose push constants.
 
   DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
@@ -2419,9 +2422,6 @@ void D3D12Device::PreDrawCheck()
       }
     }
   }
-
-  if (!InRenderPass())
-    BeginRenderPass();
 }
 
 void D3D12Device::PreDispatchCheck()
