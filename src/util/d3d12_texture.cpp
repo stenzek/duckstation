@@ -163,8 +163,10 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   {
     if (!CreateUAVDescriptor(resource.Get(), layers, samples, fm.srv_format, &uav_descriptor, error))
     {
-      if (write_descriptor_type != D3D12Texture::WriteDescriptorType::None)
-        m_descriptor_heap_manager.Free(&write_descriptor);
+      if (write_descriptor_type == D3D12Texture::WriteDescriptorType::RTV)
+        m_rtv_heap_manager.Free(&write_descriptor);
+      else if (write_descriptor_type == D3D12Texture::WriteDescriptorType::DSV)
+        m_dsv_heap_manager.Free(&write_descriptor);
 
       m_descriptor_heap_manager.Free(&srv_descriptor);
       return {};
