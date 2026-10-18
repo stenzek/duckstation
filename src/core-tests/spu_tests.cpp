@@ -484,6 +484,21 @@ protected:
   Settings m_old_settings;
 };
 
+TEST_F(SPUHardwareTest, DecayCrossesSustainThreshold)
+{
+  // nugget-tests/spu: decay at the lowest sustain level settles at 07FFh,
+  // and even the maximum sustain level must perform a decay step (7FF7h).
+  KeyOn(0x04A0, 0x5FC0);
+  RunSamples(8192);
+  EXPECT_EQ(Envelope(), 0x07FFu);
+  KeyOn(0x04FF, 0x1FCC);
+  RunSamples(512);
+  EXPECT_EQ(Envelope(), 0x7FF7u);
+  SPU::WriteRegister(0x18C, 2);
+  RunSamples(8192);
+  EXPECT_EQ(Envelope(), 0u);
+}
+
 TEST_F(SPUHardwareTest, UnityPitchCaptureMatchesHardware)
 {
   static constexpr std::array<u8, 14> adpcm = {0x10, 0x43, 0x76, 0x77, 0x77, 0x46, 0x13,

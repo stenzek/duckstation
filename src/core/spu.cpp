@@ -1925,8 +1925,11 @@ void SPU::Voice::TickADSR()
 
   if (adsr_phase != ADSRPhase::Sustain)
   {
-    const bool reached_target =
-      adsr_envelope.decreasing ? (regs.adsr_volume <= adsr_target) : (regs.adsr_volume >= adsr_target);
+    // Decay continues through the sustain threshold, including at the maximum
+    // sustain level. Release still ends as soon as the envelope reaches zero.
+    const bool reached_target = (adsr_phase == ADSRPhase::Decay) ? (regs.adsr_volume < adsr_target) :
+                                adsr_envelope.decreasing         ? (regs.adsr_volume <= adsr_target) :
+                                                                   (regs.adsr_volume >= adsr_target);
     if (reached_target)
     {
       adsr_phase = GetNextADSRPhase(adsr_phase);
