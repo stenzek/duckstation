@@ -94,7 +94,7 @@ public:
   bool Allocate(u32 num_handles, D3D12DescriptorHandle* out_base_handle);
   void Reset();
 
-private:
+protected:
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_descriptor_heap;
   u32 m_descriptor_increment_size = 0;
   u32 m_num_descriptors = 0;
@@ -258,5 +258,5 @@ bool D3D12GroupedSamplerAllocator<NumSamplers>::ShouldReset() const
 {
   // We only reset the sampler heap if more than half of the descriptors are used.
   // This saves descriptor copying when there isn't a large number of sampler configs per frame.
-  return m_groups.size() >= (D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE / 2);
+  return (m_current_offset >= (m_num_descriptors / 2));
 }

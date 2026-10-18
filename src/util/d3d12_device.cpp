@@ -2201,6 +2201,10 @@ void D3D12Device::UnbindSampler(D3D12Sampler* sampler)
       m_dirty_flags |= DIRTY_FLAG_SAMPLERS;
     }
   }
+
+  // Groups are keyed by descriptor index, which can be reused by a new sampler.
+  for (CommandList& res : m_command_lists)
+    res.sampler_allocator.InvalidateCache();
 }
 
 void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_level, u32 dst_width, u32 dst_height,
