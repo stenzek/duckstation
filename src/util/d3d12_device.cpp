@@ -683,14 +683,11 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion, const std::string_
 
 void D3D12Device::SubmitCommandListAndRestartRenderPass(const std::string_view reason)
 {
-  if (InRenderPass())
-    EndRenderPass();
-
-  D3D12Pipeline* pl = m_current_pipeline;
+  const bool in_render_pass = InRenderPass();
   SubmitCommandList(false, reason);
 
-  SetPipeline(pl);
-  BeginRenderPass();
+  if (in_render_pass)
+    BeginRenderPass();
 }
 
 void D3D12Device::WaitForFence(u64 fence)
@@ -1955,7 +1952,7 @@ void D3D12Device::BeginRenderPass()
   s_stats.num_render_passes++;
 
   // If this is a new command buffer, bind the pipeline and such.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
+  if ((m_dirty_flags & DIRTY_FLAG_INITIAL) && m_current_pipeline)
     SetInitialPipelineState();
 }
 
