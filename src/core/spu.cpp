@@ -431,6 +431,10 @@ struct SPUState
 
   InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> transfer_fifo;
 
+  // Unused registers at 1F801DBCh and 1F801E60h, these read back what was written.
+  std::array<u16, 2> unused_registers_dbc = {};
+  std::array<u16, 16> unused_registers_e60 = {};
+
   CoreAudioStream audio_stream;
 
 #ifdef SPU_DUMP_ALL_VOICES
@@ -575,6 +579,8 @@ void SPU::Reset()
   s_state.cd_audio_volume_right = 0;
   s_state.external_volume_left = 0;
   s_state.external_volume_right = 0;
+  s_state.unused_registers_dbc = {};
+  s_state.unused_registers_e60 = {};
   s_state.key_on_register = 0;
   s_state.key_off_register = 0;
   s_state.endx_register = 0;
@@ -737,6 +743,18 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
   }
 
   sw.Do(&s_state.transfer_fifo);
+
+  if (!COMPATIBILITY || sw.GetVersion() >= 92)
+  {
+    sw.Do(&s_state.unused_registers_dbc);
+    sw.Do(&s_state.unused_registers_e60);
+  }
+  else
+  {
+    s_state.unused_registers_dbc = {};
+    s_state.unused_registers_e60 = {};
+  }
+
   sw.DoBytes(s_ram.data(), RAM_SIZE);
 
   if (sw.IsReading())
@@ -750,7 +768,7 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
 
 bool SPU::DoState(StateWrapper& sw)
 {
-  if (sw.GetVersion() < 91) [[unlikely]]
+  if (sw.GetVersion() < 92) [[unlikely]]
     return DoCompatibleState<true>(sw);
   else
     return DoCompatibleState<false>(sw);
@@ -858,6 +876,10 @@ u16 SPU::ReadRegister(u32 offset)
       GeneratePendingSamples();
       return s_state.main_volume_right.current_level;
 
+    case 0x1F801DBC - SPU_BASE:
+    case 0x1F801DBE - SPU_BASE:
+      return s_state.unused_registers_dbc[(offset - (0x1F801DBC - SPU_BASE)) / 2];
+
     default:
     {
       if (offset < (0x1F801D80 - SPU_BASE))
@@ -875,6 +897,9 @@ u16 SPU::ReadRegister(u32 offset)
         else
           return s_state.voices[voice_index].left_volume.current_level;
       }
+
+      if (offset >= (0x1F801E60 - SPU_BASE) && offset < (0x1F801E80 - SPU_BASE))
+        return s_state.unused_registers_e60[(offset - (0x1F801E60 - SPU_BASE)) / 2];
 
       DEV_LOG("Unknown SPU register read: offset 0x{:X} (address 0x{:08X})", offset, offset | SPU_BASE);
       return UINT16_C(0xFFFF);
@@ -1164,6 +1189,13 @@ void SPU::WriteRegister(u32 offset, u16 value)
     }
     break;
 
+    case 0x1F801DBC - SPU_BASE:
+    case 0x1F801DBE - SPU_BASE:
+    {
+      s_state.unused_registers_dbc[(offset - (0x1F801DBC - SPU_BASE)) / 2] = value;
+      return;
+    }
+
       // read-only registers
     case 0x1F801DAE - SPU_BASE:
     {
@@ -1184,6 +1216,12 @@ void SPU::WriteRegister(u32 offset, u16 value)
         DEBUG_LOG("SPU reverb register {} <- 0x{:04X}", reg, value);
         GeneratePendingSamples();
         s_state.reverb_registers.rev[reg] = value;
+        return;
+      }
+
+      if (offset >= (0x1F801E60 - SPU_BASE) && offset < (0x1F801E80 - SPU_BASE))
+      {
+        s_state.unused_registers_e60[(offset - (0x1F801E60 - SPU_BASE)) / 2] = value;
         return;
       }
 
