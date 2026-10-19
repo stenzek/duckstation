@@ -2707,7 +2707,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>Cd-rom-emulering</translation>
+        <translation>CD-ROM-emulering</translation>
     </message>
     <message>
         <source>Read Speedup:</source>
@@ -2739,7 +2739,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>Seek Speedup:</source>
-        <translation>Sök snabbare:</translation>
+        <translation>Högre sökhastighet:</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
@@ -6132,7 +6132,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>Cd-rom-emulering</translation>
+        <translation>CD-ROM-emulering</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -7478,7 +7478,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Seek Speedup</source>
-        <translation>Snabba upp sökning</translation>
+        <translation>Högre sökhastighet</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
