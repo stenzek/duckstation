@@ -517,6 +517,9 @@ void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float hei
 
   ImGui::GetMainViewport()->Size = ImGui::GetIO().DisplaySize = ImVec2(width, height);
 
+  // Rotating with prerotation keeps the framebuffer size the same, so the blur texture won't be reallocated.
+  FullscreenUI::InvalidateBlurBackground();
+
   // Scale might have changed as a result of window resize.
   RequestScaleUpdate();
 }
