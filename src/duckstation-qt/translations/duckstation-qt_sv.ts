@@ -488,15 +488,15 @@ Token genererades %2</translation>
     </message>
     <message>
         <source>Your Time: {0} (Best: {1})</source>
-        <translation>Din tid: {0} (Bästa: {1})</translation>
+        <translation>Din tid: {0} (bästa: {1})</translation>
     </message>
     <message>
         <source>Your Score: {0} (Best: {1})</source>
-        <translation>Dina poäng: {0} (Bästa: {1})</translation>
+        <translation>Dina poäng: {0} (bästa: {1})</translation>
     </message>
     <message>
         <source>Your Value: {0} (Best: {1})</source>
-        <translation>Ditt värde: {0} (Bästa: {1})</translation>
+        <translation>Ditt värde: {0} (bästa: {1})</translation>
     </message>
     <message>
         <source>Leaderboard Position: {0} of {1}</source>
@@ -546,7 +546,7 @@ Fel: {}</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
-        <translation> (Hardcore-läge)</translation>
+        <translation> (hardcore-läge)</translation>
     </message>
     <message numerus="yes">
         <source>You have unlocked all achievements and earned %n points!</source>
@@ -2609,7 +2609,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>Automatic (Frame End)</source>
-        <translation>Automatisk (Frame End)</translation>
+        <translation>Automatiskt (frame end)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -2687,7 +2687,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Aktivera 8 MB RAM (Utvecklarkonsol)</translation>
+        <translation>Aktivera 8 MB RAM (utvecklarkonsol)</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -5135,7 +5135,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
-        <translation>Vertikal sync (VSync)</translation>
+        <translation>Vertikal sync (V-sync)</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -7890,7 +7890,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
-        <translation>Vertikal sync (VSync)</translation>
+        <translation>Vertikal sync (V-sync)</translation>
     </message>
     <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
@@ -8475,7 +8475,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
-        <translation>Maximalt (Säkrare)</translation>
+        <translation>Maximalt (säkrare)</translation>
     </message>
     <message>
         <source>Save State On Game Close</source>
@@ -11376,7 +11376,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>1x Native (Default)</source>
-        <translation>1x inbyggd (Standard)</translation>
+        <translation>1x inbyggd (standard)</translation>
     </message>
     <message>
         <source>3x Native (for 720p)</source>
@@ -12166,19 +12166,19 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Fast Forward (Hold)</source>
-        <translation>Snabbspola (Håll)</translation>
+        <translation>Snabbspola (håll)</translation>
     </message>
     <message>
         <source>Fast Forward (Toggle)</source>
-        <translation>Snabbspola (Växla)</translation>
+        <translation>Snabbspola (växla)</translation>
     </message>
     <message>
         <source>Turbo (Hold)</source>
-        <translation>Turbo (Håll)</translation>
+        <translation>Turbo (håll)</translation>
     </message>
     <message>
         <source>Turbo (Toggle)</source>
-        <translation>Turbo (Växla)</translation>
+        <translation>Turbo (växla)</translation>
     </message>
     <message>
         <source>Free Camera</source>
@@ -12241,7 +12241,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Extract (Raw)</source>
-        <translation>Extrahera (Raw)</translation>
+        <translation>Extrahera (rådata)</translation>
     </message>
     <message>
         <source>Close</source>
@@ -13398,7 +13398,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Game Save %1 (Empty)</source>
-        <translation>Sparat spel %1 (Tom)</translation>
+        <translation>Sparat spel %1 (tom)</translation>
     </message>
     <message>
         <source>Global Save %1 (%2)</source>
@@ -13406,7 +13406,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Global Save %1 (Empty)</source>
-        <translation>Globalt sparat spel %1 (Tom)</translation>
+        <translation>Globalt sparat spel %1 (tom)</translation>
     </message>
     <message>
         <source>Select Cheats...</source>
@@ -13642,11 +13642,11 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Dark Fusion (Gray)</source>
-        <translation>Dark Fusion (Grå)</translation>
+        <translation>Dark Fusion (grå)</translation>
     </message>
     <message>
         <source>Dark Fusion (Blue)</source>
-        <translation>Dark Fusion (Blå)</translation>
+        <translation>Dark Fusion (blå)</translation>
     </message>
     <message>
         <source>Cobalt Sky</source>
@@ -15452,11 +15452,11 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>Steering (Twist) Left</source>
-        <translation>Styrning (Trist) vänster</translation>
+        <translation>Styrning (twist) vänster</translation>
     </message>
     <message>
         <source>Steering (Twist) Right</source>
-        <translation>Styrning (Twist) höger</translation>
+        <translation>Styrning (twist) höger</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
@@ -17240,7 +17240,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>JINC2 (Långsam, ingen kantblandning)</translation>
+        <translation>JINC2 (långsam, ingen kantblandning)</translation>
     </message>
     <message>
         <source>Monotonic Cubic (Very Slow)</source>
@@ -17310,7 +17310,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Triangles (Aggressive)</source>
         <comment>GPULineDetectMode</comment>
-        <translation>Trianglar (Aggressiv)</translation>
+        <translation>Trianglar (aggressiv)</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -17720,7 +17720,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>Oskalad (Shader-blandning)</translation>
+        <translation>Oskalad (shader-blandning)</translation>
     </message>
     <message>
         <source>Scaled</source>
@@ -17730,7 +17730,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>Skalad (Shader-blandning)</translation>
+        <translation>Skalad (shader-blandning)</translation>
     </message>
     <message>
         <source>True Color</source>
@@ -17740,7 +17740,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>True Color (Fullständig)</translation>
+        <translation>True Color (fullständig)</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -17775,17 +17775,17 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Scale3x (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Scale3x (Långsam)</translation>
+        <translation>Scale3x (långsam)</translation>
     </message>
     <message>
         <source>MMPX (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>MMPX (Långsam)</translation>
+        <translation>MMPX (långsam)</translation>
     </message>
     <message>
         <source>MMPX Enhanced (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>MMPX förbättrad (Långsam)</translation>
+        <translation>MMPX förbättrad (långsam)</translation>
     </message>
     <message>
         <source>NTSC (60 Hz)</source>
@@ -17835,7 +17835,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Bilinear (Hybrid)</source>
         <comment>DisplayScalingMode</comment>
-        <translation>Bilinjär (Hybrid)</translation>
+        <translation>Bilinjär (hybrid)</translation>
     </message>
     <message>
         <source>PAR 1:1</source>
@@ -18180,7 +18180,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>NTSC-U/C (US/Canada):</source>
-        <translation>NTSC-U/C (US, Kanada):</translation>
+        <translation>NTSC-U/C (USA, Kanada):</translation>
     </message>
     <message>
         <source>PAL (Europe, Australia):</source>
@@ -19546,7 +19546,7 @@ Av juridiska skäl måste du skaffa ett BIOS från en faktisk PS1-/PS2-enhet som
     <message>
         <source>Vertical Sync (VSync)</source>
         <comment>settings_video_sync</comment>
-        <translation>Vertikal sync (VSync)</translation>
+        <translation>Vertikal sync (V-sync)</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host.
