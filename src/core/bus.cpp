@@ -2028,7 +2028,19 @@ template<MemoryAccessSize size>
 void Bus::HWHandlers::DMAWrite(PhysicalMemoryAddress address, u32 value)
 {
   const u32 offset = address & DMA_MASK;
-  DMA::WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
+  value = FIXUP_WORD_WRITE_VALUE(size, offset, value);
+
+  // Block control is the only register that honours the byte enables of 8-bit and 16-bit writes.
+  if constexpr (size != MemoryAccessSize::Word)
+  {
+    if ((offset & 0x0Cu) == 0x04u && offset < 0x70u)
+    {
+      const u32 mask = ((size == MemoryAccessSize::Byte) ? 0xFFu : 0xFFFFu) << ((offset & 3u) * 8u);
+      value = (DMA::ReadRegister(FIXUP_WORD_OFFSET(size, offset)) & ~mask) | (value & mask);
+    }
+  }
+
+  DMA::WriteRegister(FIXUP_WORD_OFFSET(size, offset), value);
 }
 
 #undef BUS_CYCLES
