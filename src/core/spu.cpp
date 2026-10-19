@@ -266,8 +266,6 @@ struct Voice
   VoiceRegisters regs;
   VoiceCounter counter;
 
-  s32 last_volume;
-
   VolumeSweep left_volume;
   VolumeSweep right_volume;
 
@@ -354,9 +352,9 @@ static void CheckForLateRAMIRQs();
 static void WriteToCaptureBuffers(s16 cd_left, s16 cd_right, s16 voice_1, s16 voice_3);
 
 static void ReadADPCMBlock(u16 address, ADPCMBlock* block);
-static std::tuple<s32, s32> SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
-                                        bool pitch_modulation_enabled, bool irq9_enabled,
-                                        s32 previous_voice_last_volume);
+static std::tuple<s32, s32, s32> SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
+                                             bool pitch_modulation_enabled, bool irq9_enabled,
+                                             s32 previous_voice_last_volume);
 
 static void UpdateNoise();
 
@@ -720,7 +718,11 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
     sw.DoArray(&v.current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK], NUM_SAMPLES_PER_ADPCM_BLOCK);
     sw.DoArray(&v.current_block_samples[0], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK);
     sw.Do(&v.adpcm_last_samples);
-    sw.Do(&v.last_volume);
+    if constexpr (COMPATIBILITY)
+    {
+      if (sw.GetVersion() < 91)
+        sw.SkipBytes(sizeof(s32)); // last_volume, removed in version 91
+    }
     do_compatible_volume_sweep(sw, &v.left_volume);
     do_compatible_volume_sweep(sw, &v.right_volume);
     do_compatible_volume_envelope(sw, &v.adsr_envelope);
@@ -748,7 +750,7 @@ bool SPU::DoCompatibleState(StateWrapper& sw)
 
 bool SPU::DoState(StateWrapper& sw)
 {
-  if (sw.GetVersion() < 90) [[unlikely]]
+  if (sw.GetVersion() < 91) [[unlikely]]
     return DoCompatibleState<true>(sw);
   else
     return DoCompatibleState<false>(sw);
@@ -2131,15 +2133,12 @@ void SPU::ReadADPCMBlock(u16 address, ADPCMBlock* block)
   }
 }
 
-ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
-                                                            bool pitch_modulation_enabled, bool irq9_enabled,
-                                                            s32 previous_voice_last_volume)
+ALWAYS_INLINE_RELEASE std::tuple<s32, s32, s32> SPU::SampleVoice(Voice& voice, u32 voice_index, bool noise_enabled,
+                                                                 bool pitch_modulation_enabled, bool irq9_enabled,
+                                                                 s32 previous_voice_last_volume)
 {
   if (!voice.IsOn() && !irq9_enabled)
-  {
-    voice.last_volume = 0;
     return {};
-  }
 
   if (!voice.has_samples)
   {
@@ -2152,7 +2151,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
         s_state.endx_register &= ~(u32(1) << voice_index);
 
       voice.key_on_delay--;
-      voice.last_volume = 0;
       return {};
     }
 
@@ -2185,8 +2183,6 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
   {
     volume = 0;
   }
-
-  voice.last_volume = volume;
 
   if (voice.adsr_phase != ADSRPhase::Off)
     voice.TickADSR();
@@ -2250,7 +2246,7 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(Voice& voice, u32 vo
     UpdateDebugPeaks(s_state.voice_peaks[voice_index], left, right);
 #endif
 
-  return std::make_tuple(left, right);
+  return std::make_tuple(left, right, volume);
 }
 
 void SPU::UpdateNoise()
@@ -2564,12 +2560,14 @@ void SPU::Execute(void* param, TickCount ticks)
       u32 pitch_modulation_enable = s_state.pitch_modulation_enable_register & ~1u;
       u32 reverb_on_register = s_state.reverb_on_register;
       s32 previous_voice_last_volume = 0;
+      s32 capture_voice1_volume = 0;
+      s32 capture_voice3_volume = 0;
       const bool irq9_enabled = s_state.SPUCNT.irq9_enable;
 
       u32 voice_index = 0;
       for (Voice& voice : s_state.voices)
       {
-        const auto [left, right] =
+        const auto [left, right, volume] =
           SampleVoice(voice, voice_index, ConvertToBoolUnchecked(noise_mode & 1u),
                       ConvertToBoolUnchecked(pitch_modulation_enable & 1u), irq9_enabled, previous_voice_last_volume);
         left_sum += left;
@@ -2588,7 +2586,9 @@ void SPU::Execute(void* param, TickCount ticks)
           reverb_in_left += left;
           reverb_in_right += right;
         }
-        previous_voice_last_volume = voice.last_volume;
+        capture_voice1_volume = (voice_index == 1) ? volume : capture_voice1_volume;
+        capture_voice3_volume = (voice_index == 3) ? volume : capture_voice3_volume;
+        previous_voice_last_volume = volume;
         noise_mode >>= 1;
         pitch_modulation_enable >>= 1;
         reverb_on_register >>= 1;
@@ -2655,8 +2655,8 @@ void SPU::Execute(void* param, TickCount ticks)
       s_state.main_volume_right.Tick();
 
       // Write to capture buffers.
-      WriteToCaptureBuffers(cd_audio_left, cd_audio_right, static_cast<s16>(Clamp16(s_state.voices[1].last_volume)),
-                            static_cast<s16>(Clamp16(s_state.voices[3].last_volume)));
+      WriteToCaptureBuffers(cd_audio_left, cd_audio_right, static_cast<s16>(Clamp16(capture_voice1_volume)),
+                            static_cast<s16>(Clamp16(capture_voice3_volume)));
 
 #ifdef SPU_VERIFY_IRQ_PREDICTION
       if (verify_irq && !IsRAMIRQTriggerable() && s_state.verify_executed_frames < s_state.verify_predicted_frames)
