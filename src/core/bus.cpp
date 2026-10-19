@@ -1723,7 +1723,11 @@ void Bus::HWHandlers::MemCtrlWrite(PhysicalMemoryAddress address, u32 value)
 
   value = FIXUP_WORD_WRITE_VALUE(size, offset, value);
 
-  const u32 write_mask = (index < 2) ? 0xFFFFFFFFu : ((index == 8) ? COMDELAY::WRITE_MASK : MEMDELAY::WRITE_MASK);
+  // Bits 24-31 of the base addresses are fixed at 1Fh, and only the DEV0 delay register has a writable wait bit.
+  const u32 write_mask =
+    (index < 2) ?
+      0x00FFFFFFu :
+      ((index == 8) ? COMDELAY::WRITE_MASK : (MEMDELAY::WRITE_MASK & ((index == 2) ? 0xFFFFFFFFu : 0x7FFFFFFFu)));
   const u32 new_value = (s_locals.MEMCTRL.regs[index] & ~write_mask) | (value & write_mask);
   if (s_locals.MEMCTRL.regs[index] != new_value)
   {
