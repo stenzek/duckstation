@@ -2052,7 +2052,12 @@ restart_instruction:
     BEGIN_INSTRUCTION(lwc1)
     BEGIN_INSTRUCTION(lwc3)
     {
-      // todo: check enable
+      if (!((g_state.cop0_regs.sr.bits >> (28 + inst.cop.cop_n)) & 1u))
+      {
+        RaiseException(Exception::CpU);
+        return;
+      }
+
       // lwc0/1/3 should still perform the memory read, but discard the result
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
@@ -2070,8 +2075,12 @@ restart_instruction:
     BEGIN_INSTRUCTION(swc1)
     BEGIN_INSTRUCTION(swc3)
     {
-      // todo: check enable
-      // lwc0/1/3 should still perform the memory read, but discard the result
+      if (!((g_state.cop0_regs.sr.bits >> (28 + inst.cop.cop_n)) & 1u))
+      {
+        RaiseException(Exception::CpU);
+        return;
+      }
+
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
@@ -2079,7 +2088,12 @@ restart_instruction:
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
-      WriteMemoryWord(addr, 0);
+      // Nothing drives the data bus, so whatever was last on it gets stored. In uncached,
+      // code, that's the next instruction, which was fetched before this one executed.
+      u32 value;
+      if (!SafeReadInstruction(g_state.pc, &value))
+        value = 0;
+      WriteMemoryWord(addr, value);
     }
     END_INSTRUCTION()
 

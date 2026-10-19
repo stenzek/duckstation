@@ -1331,15 +1331,19 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
     case InstructionOp::lwc2: CompileLoadStoreTemplate(&Recompiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_READS_S); break;
     case InstructionOp::swc2: CompileLoadStoreTemplate(&Recompiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
 
-      // swc0/lwc0/cop1/cop3 are essentially no-ops
+      // cop1/cop3 are essentially no-ops, their branches are left to the interpreter
     case InstructionOp::cop1:
     case InstructionOp::cop3:
+      break;
+
+      // lwc0/swc0 need the coprocessor enable check, and swc0 stores the next instruction
     case InstructionOp::lwc0:
     case InstructionOp::lwc1:
     case InstructionOp::lwc3:
     case InstructionOp::swc0:
     case InstructionOp::swc1:
     case InstructionOp::swc3:
+      Compile_Fallback();
       break;
 
     default: Compile_Fallback(); InvalidateSpeculativeValues(); TruncateBlock(); break;
