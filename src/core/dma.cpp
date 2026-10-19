@@ -127,7 +127,7 @@ union DPCRRegister
 };
 static_assert(std::is_trivially_copyable_v<DPCRRegister>, "DPCRRegister is trivially copyable");
 
-static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'01111111;
+static constexpr u32 DICR_WRITE_MASK = 0b00000000'11111111'10000000'00111111;
 static constexpr u32 DICR_RESET_MASK = 0b01111111'00000000'00000000'00000000;
 union DICRRegister
 {
