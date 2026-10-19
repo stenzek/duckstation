@@ -13,6 +13,7 @@
     <ClCompile Include="spu_tests.cpp" />
     <ClCompile Include="lightgun_controller_tests.cpp" />
     <ClCompile Include="negcon_base_tests.cpp" />
+    <ClCompile Include="psxdiag_tests.cpp" />
     <ClCompile Include="mdec_tests.cpp" />
     <ClCompile Include="timers_tests.cpp" />
   </ItemGroup>

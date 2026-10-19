@@ -12,6 +12,7 @@ add_executable(core-tests
   lightgun_controller_tests.cpp
   mdec_tests.cpp
   negcon_base_tests.cpp
+  psxdiag_tests.cpp
   spu_tests.cpp
   stub_host.cpp
   timers_tests.cpp
