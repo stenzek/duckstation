@@ -226,6 +226,11 @@ void CPU::Recompiler::Recompiler::UpdateLoadDelay()
       ClearConstantReg(static_cast<Reg>(i));
     }
 
+    // a load to the same register cancels the incoming load delay, so hang on to the old value, it'll overwrite
+    // the incoming value if it's for the same register, and is the same value otherwise
+    if (m_next_load_delay_register != Reg::count)
+      AllocateHostReg(HR_MODE_READ | HR_MODE_WRITE, HR_TYPE_CPU_REG, m_next_load_delay_register);
+
     Flush(FLUSH_LOAD_DELAY_FROM_STATE);
   }
 

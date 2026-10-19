@@ -555,6 +555,40 @@ TEST_P(PsxDiag, CopMemAccessJmp)
   CPU::g_state.cop0_regs.sr.bits = old_sr;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Not from psxdiag
+//////////////////////////////////////////////////////////////////////////
+
+TEST_P(PsxDiag, DoubleLoadDelayAcrossBlocks)
+{
+  // A second load to the same register discards the first one's value, even when the first one is in a branch delay
+  // slot and the second one starts the next block.
+  for (const bool taken : {false, true})
+  {
+    Program prog;
+    prog.LoadImmediate(Reg::T0, RAM_TEST_ADDR);
+    prog.LoadImmediate(Reg::T2, 0xAAAAAAAAu);
+    prog.Emit(sw(Reg::T2, 0, Reg::T0));
+    prog.LoadImmediate(Reg::T2, 0xBBBBBBBBu);
+    prog.Emit(sw(Reg::T2, 4, Reg::T0));
+    prog.LoadImmediate(Reg::T1, 0x12345678u);
+    prog.LoadImmediate(Reg::A2, taken ? 0x12345678u : 0u);
+
+    // Either way ends up at the instruction after the delay slot.
+    prog.Emit(beq(Reg::A2, Reg::T1, 4));
+    prog.Emit(lw(Reg::T1, 0, Reg::T0));
+    prog.Emit(lw(Reg::T1, 4, Reg::T0));
+    prog.Emit(addu(Reg::A0, Reg::T1, Reg::R0));
+    prog.Emit(addu(Reg::A1, Reg::T1, Reg::R0));
+    const u32 before = prog.StoreResult(Reg::A0);
+    const u32 after = prog.StoreResult(Reg::A1);
+    prog.Run();
+
+    EXPECT_EQ(prog.Result(before), 0x12345678u) << (taken ? "taken" : "not taken");
+    EXPECT_EQ(prog.Result(after), 0xBBBBBBBBu) << (taken ? "taken" : "not taken");
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, PsxDiag,
                          ::testing::Values(CPUExecutionMode::Interpreter, CPUExecutionMode::CachedInterpreter,
                                            CPUExecutionMode::Recompiler),
