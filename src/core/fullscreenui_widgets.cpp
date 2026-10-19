@@ -1348,7 +1348,17 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
   const float transition_alpha = s_state.transition_remaining_time / s_state.transition_total_time;
   GPUTexture* textures[2];
   GPUPipeline* pipeline;
-  float uniforms[3];
+  float uniforms[4];
+
+  // The textures are in framebuffer orientation, so the slide direction needs to follow the prerotation.
+  const auto set_slide_offset = [&uniforms, swap_chain](float offset) {
+    static constexpr const float slide_axis[8][2] = {{1.0f, 0.0f},  {0.0f, 1.0f},  {-1.0f, 0.0f}, {0.0f, -1.0f},
+                                                     {-1.0f, 0.0f}, {0.0f, -1.0f}, {1.0f, 0.0f},  {0.0f, 1.0f}};
+    const float* const axis = slide_axis[static_cast<size_t>(swap_chain->GetPreRotation())];
+    uniforms[2] = offset * axis[0];
+    uniforms[3] = offset * axis[1];
+  };
+
   switch (s_state.transition_effect)
   {
     case TransitionEffect::Fade:
@@ -1356,6 +1366,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
       uniforms[0] = 1.0f - transition_alpha;
       uniforms[1] = transition_alpha;
       uniforms[2] = 0.0f;
+      uniforms[3] = 0.0f;
       textures[0] = transition_texture;
       textures[1] = s_state.transition_prev_texture.get();
       pipeline = s_state.transition_blend_pipeline.get();
@@ -1368,6 +1379,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
       uniforms[1] = Easing::InCubic(transition_alpha);
       uniforms[0] = 1.0f - uniforms[1];
       uniforms[2] = START_SCALE + ((1.0f - START_SCALE) * uniforms[0]);
+      uniforms[3] = uniforms[2];
       textures[0] = transition_texture;
       textures[1] = s_state.transition_prev_texture.get();
       pipeline = s_state.transition_zoom_pipeline.get();
@@ -1380,6 +1392,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
       uniforms[0] = Easing::InCubic(transition_alpha);
       uniforms[1] = 1.0f - uniforms[0];
       uniforms[2] = 1.0f + ((END_SCALE - 1.0f) * uniforms[1]);
+      uniforms[3] = uniforms[2];
       textures[0] = s_state.transition_prev_texture.get();
       textures[1] = transition_texture;
       pipeline = s_state.transition_zoom_pipeline.get();
@@ -1391,7 +1404,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
       static constexpr float START_POSITION = 0.95f;
       uniforms[1] = Easing::InCubic(transition_alpha);
       uniforms[0] = 1.0f - uniforms[1];
-      uniforms[2] = (1.0f - START_POSITION) * (1.0f - uniforms[0]);
+      set_slide_offset((1.0f - START_POSITION) * (1.0f - uniforms[0]));
       textures[0] = transition_texture;
       textures[1] = s_state.transition_prev_texture.get();
       pipeline = s_state.transition_blend_pipeline.get();
@@ -1403,7 +1416,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
       static constexpr float START_POSITION = 0.95f;
       uniforms[1] = Easing::InCubic(transition_alpha);
       uniforms[0] = 1.0f - uniforms[1];
-      uniforms[2] = -((1.0f - START_POSITION) * (1.0f - uniforms[0]));
+      set_slide_offset(-((1.0f - START_POSITION) * (1.0f - uniforms[0])));
       textures[0] = transition_texture;
       textures[1] = s_state.transition_prev_texture.get();
       pipeline = s_state.transition_blend_pipeline.get();
@@ -1418,7 +1431,7 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain, GPUTexture* c
   g_gpu_device->SetTextureSampler(1, textures[1], g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
 
-  const GSVector2i size = swap_chain->GetSizeVec();
+  const GSVector2i size = swap_chain->GetPostRotatedSizeVec();
   const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
                                                                   GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
   VideoPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, size, DisplayRotation::Normal,
