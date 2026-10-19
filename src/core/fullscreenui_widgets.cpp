@@ -6761,7 +6761,7 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
     GPUTexture* const blur_target = GetBlurRenderTexture(swap_chain);
     if (blur_target)
     {
-      VideoPresenter::RenderDisplay(blur_target, blur_target->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
+      VideoPresenter::RenderDisplay(blur_target, swap_chain->GetSizeVec(), swap_chain->GetPostRotatedSizeVec(),
                                     swap_chain->GetPreRotation(), false, true);
       RenderBlur(swap_chain, blur_target);
     }
