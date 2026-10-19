@@ -529,7 +529,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
     case 0x04:
     {
-      static constexpr u32 WRITE_MASK = 0b1110001111111111;
+      static constexpr u32 WRITE_MASK = 0b0000001111111111;
 
       DEBUG_LOG("Timer {} write mode register 0x{:04X}", timer_index, value);
       cs.mode.bits = (value & WRITE_MASK) | (cs.mode.bits & ~WRITE_MASK);
