@@ -1084,6 +1084,7 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 
   bool changed =
     (m_num_current_render_targets != num_rts || m_current_depth_target != DS || m_current_render_pass_flags != flags);
+  const bool unbind_images = (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages);
   m_current_render_pass_flags = flags;
   m_current_depth_target = DS;
   if (ds)
@@ -1138,9 +1139,20 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     for (u32 i = 0; i < m_num_current_render_targets; i++)
       rtvs[i] = m_current_render_targets[i]->GetD3DRTV();
 
-    m_context->OMSetRenderTargets(m_num_current_render_targets,
-                                  (m_num_current_render_targets > 0) ? rtvs.data() : nullptr,
-                                  m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr);
+    // OMSetRenderTargets() leaves the UAVs bound, so they have to be cleared explicitly when leaving ROV mode.
+    if (unbind_images)
+    {
+      m_context->OMSetRenderTargetsAndUnorderedAccessViews(
+        m_num_current_render_targets, (m_num_current_render_targets > 0) ? rtvs.data() : nullptr,
+        m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, m_num_current_render_targets, 0, nullptr,
+        nullptr);
+    }
+    else
+    {
+      m_context->OMSetRenderTargets(m_num_current_render_targets,
+                                    (m_num_current_render_targets > 0) ? rtvs.data() : nullptr,
+                                    m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr);
+    }
   }
 }
 
