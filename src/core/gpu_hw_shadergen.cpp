@@ -3517,16 +3517,21 @@ uint SampleVRAM(uint2 coords)
 
 std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo,
                                                               GPUTextureFilter texture_filter, bool write_mask_as_depth,
-                                                              bool write_depth_as_rt) const
+                                                              bool write_depth_as_rt, bool check_mask, bool use_rov,
+                                                              bool msaa) const
 {
   Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+  Assert(!check_mask || !write_mask_as_depth);
+  Assert(!use_rov || check_mask);
 
   std::stringstream ss;
-  WriteHeader(ss);
+  WriteHeader(ss, use_rov, check_mask && !use_rov);
   WriteColorConversionFunctions(ss);
 
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
+  DefineMacro(ss, "CHECK_MASK", check_mask);
+  DefineMacro(ss, "USE_ROV", use_rov);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
   const bool filtering = (texture_filter != GPUTextureFilter::Nearest);
   if (filtering)
@@ -3589,7 +3594,17 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits)
     WriteBatchTextureFilter(ss, texture_filter);
   }
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth);
+  if (use_rov)
+  {
+    DeclareImage(ss, "rov_color", 0, "unorm float4", "rgba8");
+    if (write_depth_as_rt)
+      DeclareImage(ss, "rov_depth", 1, "float", "r32f");
+  }
+
+  // MSAA is only needed for the subpass input. Centroid inputs wouldn't match the screen vertex shader on OpenGL.
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, use_rov ? 0 : (1 + BoolToUInt32(write_depth_as_rt)), false,
+                            write_mask_as_depth, msaa && (IsVulkan() || IsMetal()), false, false, false,
+                            check_mask && !use_rov, use_rov);
   ss << R"(
 {
   float2 native_coords = v_pos.xy / u_resolution_scale;
@@ -3601,6 +3616,14 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits)
   {
     discard;
   }
+
+#if USE_ROV
+  float4 o_col0;
+#elif CHECK_MASK
+  // don't overwrite pixels with the mask bit set
+  if (LAST_FRAG_COLOR.a != 0.0)
+    discard;
+#endif
 
   // find offset from the start of the row/column
   float2 offset;
@@ -3639,7 +3662,17 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits)
   }
 
   ss << R"(
-#if WRITE_MASK_AS_DEPTH
+#if USE_ROV
+  BEGIN_ROV_REGION;
+  if (ROV_LOAD(rov_color, v_pos.xy).a == 0.0)
+  {
+    ROV_STORE(rov_color, v_pos.xy, o_col0);
+  #if WRITE_DEPTH_AS_RT
+    ROV_STORE_SCALAR(rov_depth, v_pos.xy, 1.0f);
+  #endif
+  }
+  END_ROV_REGION;
+#elif WRITE_MASK_AS_DEPTH
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
 #elif WRITE_DEPTH_AS_RT
   o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -3649,27 +3682,41 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits)
   return std::move(ss).str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt,
+                                                             bool check_mask, bool use_rov, bool msaa) const
 {
   Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+  Assert(!check_mask || !write_mask_as_depth);
+  Assert(!use_rov || check_mask);
 
   // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
-  const bool msaa = false;
+  const bool msaa_copy = false;
 
   std::stringstream ss;
-  WriteHeader(ss);
+  WriteHeader(ss, use_rov, check_mask && !use_rov);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
-  DefineMacro(ss, "MSAA_COPY", msaa);
+  DefineMacro(ss, "CHECK_MASK", check_mask);
+  DefineMacro(ss, "USE_ROV", use_rov);
+  DefineMacro(ss, "MSAA_COPY", msaa_copy);
 
   DeclareUniformBuffer(ss,
                        {"float2 u_src_coords", "float2 u_dst_coords", "float2 u_end_coords", "float2 u_vram_size",
                         "float u_resolution_scale", "bool u_set_mask_bit", "float u_depth_value"},
                        false);
 
-  DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth, false,
-                            false, msaa);
+  DeclareTexture(ss, "samp0", 0, msaa_copy);
+  if (use_rov)
+  {
+    DeclareImage(ss, "rov_color", 0, "unorm float4", "rgba8");
+    if (write_depth_as_rt)
+      DeclareImage(ss, "rov_depth", 1, "float", "r32f");
+  }
+
+  // MSAA is only needed for the subpass input. Centroid inputs wouldn't match the screen vertex shader on OpenGL.
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, use_rov ? 0 : (1 + BoolToUInt32(write_depth_as_rt)), false,
+                            write_mask_as_depth, msaa && (IsVulkan() || IsMetal()), false, msaa_copy, false,
+                            check_mask && !use_rov, use_rov);
   ss << R"(
 {
   float2 dst_coords = floor(v_pos.xy);
@@ -3680,6 +3727,14 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
   {
     discard;
   }
+
+#if USE_ROV
+  float4 o_col0;
+#elif CHECK_MASK
+  // don't overwrite pixels with the mask bit set
+  if (LAST_FRAG_COLOR.a != 0.0)
+    discard;
+#endif
 
   // find offset from the start of the row/column
   float2 offset;
@@ -3697,7 +3752,17 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
   float4 color = LOAD_TEXTURE(samp0, int2(src_coords), 0);
 #endif
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
-#if WRITE_MASK_AS_DEPTH
+#if USE_ROV
+  BEGIN_ROV_REGION;
+  if (ROV_LOAD(rov_color, v_pos.xy).a == 0.0)
+  {
+    ROV_STORE(rov_color, v_pos.xy, o_col0);
+  #if WRITE_DEPTH_AS_RT
+    ROV_STORE_SCALAR(rov_depth, v_pos.xy, 1.0f);
+  #endif
+  }
+  END_ROV_REGION;
+#elif WRITE_MASK_AS_DEPTH
   o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
 #elif WRITE_DEPTH_AS_RT
   o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);

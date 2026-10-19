@@ -109,6 +109,28 @@ void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_siz
   g_gpu_device->Draw(4, base_vertex);
 }
 
+void GPUBackend::DrawScreenQuadWithBarrier(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                                           const void* uniform_data, u32 uniform_data_size)
+{
+  const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
+
+  ScreenVertex* vertices;
+  u32 space;
+  u32 base_vertex;
+  g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
+
+  vertices[0].Set(xy.xy(), uv_bounds.xy());
+  vertices[1].Set(xy.zyzw().xy(), uv_bounds.zyzw().xy());
+  vertices[2].Set(xy.xwzw().xy(), uv_bounds.xwzw().xy());
+  vertices[3].Set(xy.zw(), uv_bounds.zw());
+
+  g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
+
+  if (uniform_data_size > 0)
+    g_gpu_device->UploadUniformBuffer(uniform_data, uniform_data_size);
+  g_gpu_device->DrawWithBarrier(4, base_vertex, GPUDevice::DrawBarrier::One);
+}
+
 bool GPUBackend::Initialize(bool clear_vram, Error* error)
 {
   m_clamped_drawing_area = GPU::GetClampedDrawingArea(GPU_SW_Rasterizer::g_drawing_area);

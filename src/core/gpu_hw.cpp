@@ -1370,11 +1370,11 @@ bool GPU_HW::CompilePipelines(Error* error)
   const u32 total_items =
     total_vertex_shaders + total_fragment_shaders +
     ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * num_active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
-     (1 + BoolToUInt32(!force_progressive_scan))) +              // batch pipelines
-    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) + // wireframe
-    (2 * 2) +                                                    // vram fill
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                  // vram copy
-    ((1 + BoolToUInt32(m_write_mask_as_depth)) *
+     (1 + BoolToUInt32(!force_progressive_scan))) +                     // batch pipelines
+    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +        // wireframe
+    (2 * 2) +                                                           // vram fill
+    (1 + BoolToUInt32(m_write_mask_as_depth || m_allow_shader_blend)) + // vram copy
+    ((1 + BoolToUInt32(m_write_mask_as_depth || m_allow_shader_blend)) *
      (1 + BoolToUInt32(framebuffer_upload_filter != GPUTextureFilter::Nearest))) + // vram write
     1 +                                                                            // vram write replacement
     (m_write_mask_as_depth ? 1 : 0) +                                              // mask -> depth
@@ -1872,6 +1872,24 @@ bool GPU_HW::CompilePipelines(Error* error)
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTextureFormat::Unknown;
 
+  // Without the mask in the depth buffer, VRAM copies/writes check it by reading the destination, like shader blending.
+  const bool shader_check_mask = (!m_write_mask_as_depth && m_allow_shader_blend);
+  GPUPipeline::GraphicsConfig check_mask_plconfig = plconfig;
+  check_mask_plconfig.depth = needs_real_depth_buffer ? GPUPipeline::DepthState::GetAlwaysWriteState() :
+                                                        GPUPipeline::DepthState::GetNoTestsState();
+  if (m_use_rov_for_shader_blend)
+  {
+    check_mask_plconfig.layout = GPUPipeline::Layout::HWImageBatch;
+    check_mask_plconfig.render_pass_flags = GPUPipeline::BindRenderTargetsAsImages;
+    check_mask_plconfig.SetTargetFormats(GPUTextureFormat::Unknown);
+    check_mask_plconfig.blend.write_mask = 0;
+  }
+  else if (needs_feedback_loop)
+  {
+    check_mask_plconfig.render_pass_flags =
+      static_cast<GPUPipeline::RenderPassFlag>(GPUPipeline::ColorFeedbackLoop | GPUPipeline::ColorFeedbackLoopActive);
+  }
+
   // VRAM fill
   for (u8 wrapped = 0; wrapped < 2; wrapped++)
   {
@@ -1901,7 +1919,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth, needs_rov_depth), error);
+      shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth, needs_rov_depth, false, false, false), error);
     if (!fs)
       return false;
 
@@ -1923,6 +1941,26 @@ bool GPU_HW::CompilePipelines(Error* error)
       if (!progress.Increment(1, error)) [[unlikely]]
         return false;
     }
+
+    if (shader_check_mask)
+    {
+      if (!(fs = g_gpu_device->CreateShader(
+              GPUShaderStage::Fragment, shadergen.GetLanguage(),
+              shadergen.GenerateVRAMCopyFragmentShader(false, needs_rov_depth, true, m_use_rov_for_shader_blend, msaa),
+              error)))
+      {
+        return false;
+      }
+
+      check_mask_plconfig.fragment_shader = fs.get();
+      if (!(m_vram_copy_pipelines[1] = g_gpu_device->CreatePipeline(check_mask_plconfig, error)))
+        return false;
+
+      GL_OBJECT_NAME(m_vram_copy_pipelines[1], "VRAM Copy Pipeline, check mask");
+
+      if (!progress.Increment(1, error)) [[unlikely]]
+        return false;
+    }
   }
 
   // VRAM write
@@ -1937,7 +1975,8 @@ bool GPU_HW::CompilePipelines(Error* error)
       const GPUTextureFilter filter = filtered ? framebuffer_upload_filter : GPUTextureFilter::Nearest;
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
-        shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, filter, m_write_mask_as_depth, needs_rov_depth),
+        shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, filter, m_write_mask_as_depth, needs_rov_depth,
+                                                  false, false, false),
         error);
       if (!fs)
         return false;
@@ -1957,6 +1996,28 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         GL_OBJECT_NAME_FMT(m_vram_write_pipelines[filtered][depth_test], "VRAM Write Pipeline, filter={}, depth={}",
                            Settings::GetTextureFilterName(filter), depth_test);
+
+        if (!progress.Increment(1, error)) [[unlikely]]
+          return false;
+      }
+
+      if (shader_check_mask)
+      {
+        if (!(fs = g_gpu_device->CreateShader(
+                GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, filter, false, needs_rov_depth, true,
+                                                          m_use_rov_for_shader_blend, msaa),
+                error)))
+        {
+          return false;
+        }
+
+        check_mask_plconfig.fragment_shader = fs.get();
+        if (!(m_vram_write_pipelines[filtered][1] = g_gpu_device->CreatePipeline(check_mask_plconfig, error)))
+          return false;
+
+        GL_OBJECT_NAME_FMT(m_vram_write_pipelines[filtered][1], "VRAM Write Pipeline, filter={}, check mask",
+                           Settings::GetTextureFilterName(filter));
 
         if (!progress.Increment(1, error)) [[unlikely]]
           return false;
@@ -3841,7 +3902,15 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
 void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
                              bool check_mask, const GSVector4i bounds, bool allow_filtering)
 {
-  DeactivateROV();
+  // Without the mask in the depth buffer, the shader checks it by reading the destination, via ROV if available.
+  const bool shader_check_mask = (check_mask && !m_write_mask_as_depth && m_allow_shader_blend);
+  const bool use_rov = (shader_check_mask && m_use_rov_for_shader_blend);
+  if (m_rov_active != use_rov)
+  {
+    GL_INS(use_rov ? "Activating ROV." : "Deactivating ROV.");
+    m_rov_active = use_rov;
+    BindVRAMRenderTarget();
+  }
 
   GPUDevice::AutoRecycleTexture upload_texture;
   u32 map_index;
@@ -3900,13 +3969,18 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
     (allow_filtering && width >= g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_width &&
      height >= g_gpu_settings.gpu_filter_framebuffer_uploads_minimum_height && m_resolution_scale > 1 &&
      g_gpu_settings.gpu_filter_framebuffer_uploads && m_sprite_texture_filtering != GPUTextureFilter::Nearest);
-  g_gpu_device->SetPipeline(
-    m_vram_write_pipelines[BoolToUInt8(filter_upload)][BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
+  const u8 check_mask_index = BoolToUInt8((check_mask && m_write_mask_as_depth) || shader_check_mask);
+  g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(filter_upload)][check_mask_index].get());
 
   if (upload_texture)
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
 
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
+  // Feedback loops without FBFetch need a barrier to read the destination.
+  if (shader_check_mask && !use_rov && !m_supports_framebuffer_fetch)
+    DrawScreenQuadWithBarrier(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms,
+                              sizeof(uniforms));
+  else
+    DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
 
   // Only need to restore scissor/uniforms on the fast path.
   if (upload_texture)
@@ -3975,7 +4049,15 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
     AddUnclampedDrawnRectangle(dst_bounds);
 
-    DeactivateROV();
+    // Without the mask in the depth buffer, the shader checks it by reading the destination, via ROV if available.
+    const bool shader_check_mask = (check_mask && !m_write_mask_as_depth && m_allow_shader_blend);
+    const bool use_rov = (shader_check_mask && m_use_rov_for_shader_blend);
+    if (m_rov_active != use_rov)
+    {
+      GL_INS(use_rov ? "Activating ROV." : "Deactivating ROV.");
+      m_rov_active = use_rov;
+      BindVRAMRenderTarget();
+    }
 
     struct VRAMCopyUBOData
     {
@@ -4005,7 +4087,8 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                                       GetCurrentNormalizedVertexDepth(),
                                       0u};
 
-    g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
+    g_gpu_device->SetPipeline(
+      m_vram_copy_pipelines[BoolToUInt8((check_mask && m_write_mask_as_depth) || shader_check_mask)].get());
 
     const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
     g_gpu_device->SetScissor(dst_bounds_scaled);
@@ -4013,8 +4096,17 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     // Ensure the VRAM read texture is bound, because texture cache can leave another texture bound.
     BindVRAMReadTexture();
 
-    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), &uniforms,
-                   sizeof(uniforms));
+    // Feedback loops without FBFetch need a barrier to read the destination.
+    if (shader_check_mask && !use_rov && !m_supports_framebuffer_fetch)
+    {
+      DrawScreenQuadWithBarrier(dst_bounds_scaled, m_vram_texture->GetSizeVec(),
+                                GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), &uniforms, sizeof(uniforms));
+    }
+    else
+    {
+      DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f),
+                     &uniforms, sizeof(uniforms));
+    }
 
     // Only need to restore scissor/uniforms.
     m_batch_ubo_dirty = true;

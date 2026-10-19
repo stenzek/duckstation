@@ -119,6 +119,8 @@ public:
 
   static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
                              const void* uniform_data = nullptr, u32 uniform_data_size = 0);
+  static void DrawScreenQuadWithBarrier(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                                        const void* uniform_data = nullptr, u32 uniform_data_size = 0);
 
 protected:
   enum : u32
