@@ -363,7 +363,7 @@ Vill du aktivera hardcore-läget?</translation>
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100 %</translation>
     </message>
     <message>
         <source>Sets the custom scale percentage for achievement notifications.</source>
@@ -1358,7 +1358,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130 % och 140 % rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
@@ -1577,7 +1577,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130 % och 140 % rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
@@ -1628,7 +1628,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100 %</translation>
     </message>
     <message>
         <source>Fast Forward Volume:</source>
@@ -1732,7 +1732,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>Vid körning utanför 100% hastighet justeras tempot på ljudet istället för att släppa bildrutor. Ger mycket finare ljud vid snabbspolning framåt/hastighetssänkning till en liten bekostnad av prestandan.</translation>
+        <translation>Vid körning utanför 100 % hastighet justeras tempot på ljudet istället för att släppa bildrutor. Ger mycket finare ljud vid snabbspolning framåt/hastighetssänkning till en liten bekostnad av prestandan.</translation>
     </message>
     <message>
         <source>Resets volume back to the global/inherited setting.</source>
@@ -2811,7 +2811,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100 %</translation>
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
@@ -2915,7 +2915,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
-        <translation>Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
+        <translation>Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17 % snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -2931,11 +2931,11 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
-        <translation>Maximalt (Säkrare)</translation>
+        <translation>Maximalt (säkrare)</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
-        <translation>100% (33.87MHz)</translation>
+        <translation>100 % (33,87MHz)</translation>
     </message>
 </context>
 <context>
@@ -3786,7 +3786,7 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100 %</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -4113,7 +4113,7 @@ Denna fil är ungefär 206 kB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Video: %1 FPS (%2%)</source>
-        <translation>Video: %1 bilder/s (%2%)</translation>
+        <translation>Video: %1 bilder/s (%2 %)</translation>
     </message>
     <message>
         <source>State saved to %1.</source>
@@ -4275,7 +4275,7 @@ Denna fil är ungefär 206 kB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130 % och 140 % rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Power Transition Frames</source>
@@ -5175,7 +5175,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Justerar emuleringshastigheten så att konsolens uppdateringsfrekvens matchar värdens uppdateringsfrekvens när VSync är aktiverat. Detta ger så mjuka animeringar som möjligt, till priset av en potentiell ökning av emuleringshastigheten med mindre än 1%. Synkronisering med värddatorns uppdateringsfrekvens fungerar inte om konsolens uppdateringsfrekvens ligger för långt från värddatorns uppdateringsfrekvens. Användare med skärmar med variabel uppdateringsfrekvens bör inaktivera det här alternativet.</translation>
+        <translation>Justerar emuleringshastigheten så att konsolens uppdateringsfrekvens matchar värdens uppdateringsfrekvens när VSync är aktiverat. Detta ger så mjuka animeringar som möjligt, till priset av en potentiell ökning av emuleringshastigheten med mindre än 1 %. Synkronisering med värddatorns uppdateringsfrekvens fungerar inte om konsolens uppdateringsfrekvens ligger för långt från värddatorns uppdateringsfrekvens. Användare med skärmar med variabel uppdateringsfrekvens bör inaktivera det här alternativet.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -5243,7 +5243,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>Use Global Setting [%1%]</source>
-        <translation>Använd global inställning [%1%]</translation>
+        <translation>Använd global inställning [%1 %]</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -6352,7 +6352,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
-        <translation>Bestämmer kvaliteten på ljudet när det inte körs på 100% hastighet.</translation>
+        <translation>Bestämmer kvaliteten på ljudet när det inte körs på 100 % hastighet.</translation>
     </message>
     <message>
         <source>Determines that field that the game list will be sorted by.</source>
@@ -10378,11 +10378,11 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Cover scale: %1%</source>
-        <translation>Omslagsskala: %1%</translation>
+        <translation>Omslagsskala: %1 %</translation>
     </message>
     <message>
         <source>Icon size: %1%</source>
-        <translation>Ikonstorlek: %1%</translation>
+        <translation>Ikonstorlek: %1 %</translation>
     </message>
 </context>
 <context>
@@ -11232,7 +11232,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>-1.00px (Disabled)</source>
-        <translation>-1.00px (Inaktiverad)</translation>
+        <translation>-1,00 px (inaktiverad)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -12308,7 +12308,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100 %</translation>
     </message>
     <message>
         <source>Deadzone:</source>
@@ -12807,7 +12807,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130 % och 140 % rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
@@ -16364,7 +16364,7 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, an image with alpha of 0.75 will draw the game image at 25% brightness.</source>
-        <translation>Om den är markerad kommer spelbilden att blandas med den omvända mängden alfa i överläggsbilden. Till exempel kommer en bild med alfa på 0,75 att rita spelbilden med 25% ljusstyrka.</translation>
+        <translation>Om den är markerad kommer spelbilden att blandas med den omvända mängden alfa i överläggsbilden. Till exempel kommer en bild med alfa på 0,75 att rita spelbilden med 25 % ljusstyrka.</translation>
     </message>
     <message>
         <source>Select Image</source>
@@ -21309,7 +21309,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <comment>settings_summary_stretch_mode</comment>
-        <translation>Bestämmer kvaliteten på ljudet när det inte körs på 100% hastighet.</translation>
+        <translation>Bestämmer kvaliteten på ljudet när det inte körs på 100 % hastighet.</translation>
     </message>
     <message>
         <source>Output Volume</source>
