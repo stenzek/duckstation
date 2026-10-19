@@ -1304,13 +1304,18 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
   }
 
   const ShaderGen shadergen(g_gpu_device->GetRenderAPI(), GPUShaderLanguage::GLSLVK, false, false);
+  const auto uniforms = {"vec2 u_display_size", "vec2 u_rcp_display_size", "vec4 u_accent_color", "vec4 u_prerotation",
+                         "float u_time",        "float u_light_theme"};
 
+  // Prerotation is applied to the position, so v_tex0 is always in the window's orientation.
   std::stringstream shader;
   shadergen.WriteHeader(shader);
+  shadergen.DeclareUniformBuffer(shader, uniforms, true);
   shadergen.DeclareVertexEntryPoint(shader, {}, 0, 1, {}, true);
   shader << R"( {
     v_tex0 = vec2(float((v_id << 1) & 2u), float(v_id & 2u));
     v_pos = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
+    v_pos.xy = u_prerotation.xy * v_pos.x + u_prerotation.zw * v_pos.y;
     #if API_VULKAN
       v_pos.y = -v_pos.y;
     #endif
@@ -1322,10 +1327,7 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
 
   shader.str(std::string());
   shadergen.WriteHeader(shader, false, false, false);
-  shadergen.DeclareUniformBuffer(
-    shader,
-    {"vec2 u_display_size", "vec2 u_rcp_display_size", "vec4 u_accent_color", "float u_time", "float u_light_theme"},
-    true);
+  shadergen.DeclareUniformBuffer(shader, uniforms, true);
   if (main_pos > 0)
     shader << std::string_view(shader_body.value()).substr(0, main_pos);
   shadergen.DeclareFragmentEntryPoint(shader, 0, 1);
@@ -1368,11 +1370,20 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
     float u_display_size[2];
     float u_rcp_display_size[2];
     float u_accent_color[4];
+    float u_prerotation[4];
     float u_time;
     float u_light_theme;
   };
 
-  const GSVector2 display_size = GSVector2(g_gpu_device->GetMainSwapChain()->GetSizeVec());
+  // Clip space matrix for the prerotation, same as ImGui's projection: horizontal mirror, then Z rotation.
+  // Stored as the two columns, i.e. the transformed X and Y axes.
+  static constexpr const float prerotation_matrices[8][4] = {
+    {1.0f, 0.0f, 0.0f, 1.0f},  {0.0f, -1.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f, -1.0f}, {0.0f, 1.0f, -1.0f, 0.0f},
+    {-1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f},  {1.0f, 0.0f, 0.0f, -1.0f},  {0.0f, -1.0f, -1.0f, 0.0f},
+  };
+
+  const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  const GSVector2 display_size = GSVector2(swap_chain->GetSizeVec());
   Uniforms uniforms;
   GSVector2::store<true>(uniforms.u_display_size, display_size);
   GSVector2::store<true>(uniforms.u_rcp_display_size, GSVector2::cxpr(1.0f) / display_size);
@@ -1380,6 +1391,9 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
     static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.app_background_load_time));
   uniforms.u_light_theme = UIStyle.IsDarkTheme ? 0.0f : 1.0f;
   GSVector4::store<true>(uniforms.u_accent_color, GSVector4::load<false>(&UIStyle.SecondaryStrongColor.x));
+  GSVector4::store<true>(
+    uniforms.u_prerotation,
+    GSVector4::load<false>(prerotation_matrices[static_cast<size_t>(swap_chain->GetPreRotation())]));
 
   g_gpu_device->SetPipeline(s_locals.app_background_shader.get());
   g_gpu_device->SetTextureSampler(0, nullptr, nullptr);
