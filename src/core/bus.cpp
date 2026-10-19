@@ -1786,6 +1786,14 @@ u32 Bus::HWHandlers::PADRead(PhysicalMemoryAddress address)
 
   u32 value = Pad::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
   value = FIXUP_HALFWORD_READ_VALUE(size, offset, value);
+
+  // 32-bit reads of the 16-bit registers return both halves.
+  if constexpr (size == MemoryAccessSize::Word)
+  {
+    if (offset & 8u)
+      value = (value & 0xFFFFu) | (Pad::ReadRegister(offset + 2) << 16);
+  }
+
   BUS_CYCLES(2);
   return value;
 }
@@ -1803,6 +1811,14 @@ u32 Bus::HWHandlers::SIORead(PhysicalMemoryAddress address)
   const u32 offset = address & SIO_MASK;
   u32 value = SIO::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
   value = FIXUP_HALFWORD_READ_VALUE(size, offset, value);
+
+  // 32-bit reads of the 16-bit registers return both halves.
+  if constexpr (size == MemoryAccessSize::Word)
+  {
+    if (offset & 8u)
+      value = (value & 0xFFFFu) | (SIO::ReadRegister(offset + 2) << 16);
+  }
+
   BUS_CYCLES(2);
   return value;
 }
