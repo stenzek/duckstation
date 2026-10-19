@@ -3474,6 +3474,8 @@ bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u
   GL_SCOPE_FMT("BlitVRAMReplacementTexture() {}x{} to {},{} => {},{} ({}x{})", tex->GetWidth(), tex->GetHeight(), dst_x,
                dst_y, dst_x + width, dst_y + height, width, height);
 
+  DeactivateROV();
+
   g_gpu_device->SetTextureSampler(0, tex, g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
 
