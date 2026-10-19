@@ -35,6 +35,9 @@ union SIO_CTRL
   BitField<u16, bool, 10, 1> TXINTEN;
   BitField<u16, bool, 11, 1> RXINTEN;
   BitField<u16, bool, 12, 1> ACKINTEN;
+
+  // Acknowledge and reset are write-only, bits 13-15 always read as zero.
+  static constexpr u16 READ_MASK = 0b00011111'10101111;
 };
 
 union SIO_STAT
@@ -63,6 +66,8 @@ union SIO_MODE
   BitField<u16, bool, 4, 1> parity_enable;
   BitField<u16, u8, 5, 1> parity_type;
   BitField<u16, u8, 6, 2> stop_bit_length;
+
+  static constexpr u16 WRITE_MASK = 0b00000000'11111111;
 };
 } // namespace
 
@@ -122,7 +127,7 @@ u32 SIO::ReadRegister(u32 offset)
       return ZeroExtend32(s_SIO_MODE.bits);
 
     case 0x0A: // SIO_CTRL
-      return ZeroExtend32(s_SIO_CTRL.bits);
+      return ZeroExtend32(s_SIO_CTRL.bits & SIO_CTRL::READ_MASK);
 
     case 0x0E: // SIO_BAUD
       return ZeroExtend32(s_SIO_BAUD);
@@ -161,7 +166,7 @@ void SIO::WriteRegister(u32 offset, u32 value)
     case 0x08: // SIO_MODE
     {
       DEBUG_LOG("SIO_MODE <- 0x{:08X}", value);
-      s_SIO_MODE.bits = Truncate16(value);
+      s_SIO_MODE.bits = Truncate16(value) & SIO_MODE::WRITE_MASK;
       return;
     }
 

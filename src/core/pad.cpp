@@ -59,6 +59,9 @@ union JOYCTRLRegister
   BitField<u16, bool, 11, 1> RXINTEN;
   BitField<u16, bool, 12, 1> ACKINTEN;
   BitField<u16, u8, 13, 1> SLOT;
+
+  // Acknowledge and reset are write-only, bits 7/14/15 always read as zero.
+  static constexpr u16 READ_MASK = 0b00111111'00101111;
 };
 
 union JOYSTATRegister
@@ -82,6 +85,8 @@ union JOYMODERegister
   BitField<u16, bool, 4, 1> parity_enable;
   BitField<u16, u8, 5, 1> parity_type;
   BitField<u16, u8, 8, 1> clk_polarity;
+
+  static constexpr u16 WRITE_MASK = 0b00000001'00111111;
 };
 
 static bool CanTransfer();
@@ -580,7 +585,7 @@ u32 Pad::ReadRegister(u32 offset)
       return ZeroExtend32(s_state.JOY_MODE.bits);
 
     case 0x0A: // JOY_CTRL
-      return ZeroExtend32(s_state.JOY_CTRL.bits);
+      return ZeroExtend32(s_state.JOY_CTRL.bits & JOYCTRLRegister::READ_MASK);
 
     case 0x0E: // JOY_BAUD
       return ZeroExtend32(s_state.JOY_BAUD);
@@ -650,7 +655,7 @@ void Pad::WriteRegister(u32 offset, u32 value)
     case 0x08: // JOY_MODE
     {
       DEBUG_LOG("JOY_MODE <- 0x{:08X}", value);
-      s_state.JOY_MODE.bits = Truncate16(value);
+      s_state.JOY_MODE.bits = Truncate16(value) & JOYMODERegister::WRITE_MASK;
       return;
     }
 
