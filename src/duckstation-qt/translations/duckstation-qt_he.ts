@@ -639,7 +639,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>ניקוד: {} ({} במצב רגיל)</translation>
     </message>
     <message>
@@ -3145,11 +3144,6 @@ Do you want to %1$s anyway?</source>
         <translation>יש לבחור ערכת נושא ושפה, ואז להקיש על הבא כדי להתחיל.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>תיקיות תוכן</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>יש לחבר בקר ולהשתמש במיפוי אוטומטי עבור אחד השחקנים. ניתן לשנות מיפויים מפורטים מאוחר יותר בהגדרות הקלט.</translation>
@@ -4658,6 +4652,11 @@ Do you want to %1$s anyway?</source>
         <translation>נדרשים רק כמה שלבי הגדרה לפני שתוכל להפעיל משחקים.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>תיקיות משחקים</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation יזהה אוטומטית משחקים בתיקיות שתציין כאן. יש להוסיף לפחות תיקייה אחת לסריקה. אין להוסיף את תיקיית השורש של אמצעי האחסון שלך, אחרת הסריקה תימשך זמן רב מאוד.</translation>
@@ -4668,6 +4667,11 @@ Do you want to %1$s anyway?</source>
         <translation>הגדרת בקר</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>פורמטים נתמכים: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>לא נבחרו תיקיות משחקים</translation>
@@ -4676,6 +4680,40 @@ Do you want to %1$s anyway?</source>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>רשימת המשחקים תהיה ריקה עד שתוסיף תיקייה. האם להמשיך בכל זאת?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>בחירת ממשק</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>בחרו את הממשק שיוצג בעת הפעלת DuckStation. מצב רגיל מיועד למסכי מגע, ואילו מצב תמונה גדולה הוא ממשק במסך מלא המיועד לניווט באמצעות בקר.
+
+ניתן לשנות זאת בהמשך באמצעות האפשרות &quot;הפעלה במצב תמונה גדולה&quot; בהגדרות הממשק.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>מצב רגיל</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>מצב תמונה גדולה</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>מצב תמונה גדולה אינו מומלץ לטלפונים</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>הוא מיועד לטלוויזיות ולמכשירי משחק ניידים שבהם משתמשים עם בקר. נכון לעכשיו, הוא צורך יותר סוללה ממצב רגיל.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5386,6 +5424,36 @@ Are you sure you want to continue?</source>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>לא נמצאו משחקים. הוסף תיקייה עם משחקים כדי להתחיל.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (גיליונות Cue)
+.iso (תמונת רצועה יחידה)
+.ecm (תמונת מודל קוד שגיאה)
+.mds (קובץ צד מתאר מדיה)
+.ccd (תמונת CloneCD)
+.chd (נתונים דחוסים)
+.pbp (PlayStation Portable, לאחר פענוח בלבד)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>הפורמטים הנתמכים הם:
+
+%s
+
+כדי להפעיל משחקים מרובי רצועות בפורמט bin, נדרש גיליון Cue‏ (.cue).</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20840,18 +20908,6 @@ Error: {1}</source>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>תבנית חיפוש לא חוקית. היא צריכה להכיל ספרות הקסדצימליות או סימני שאלה.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>התבנית לא נמצאה בזיכרון.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>התבנית נמצאה ב־0x%1 (מעבר לסוף הזיכרון).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>התבנית נמצאה ב־0x%1.</translation>
     </message>
 </context>
 <context>

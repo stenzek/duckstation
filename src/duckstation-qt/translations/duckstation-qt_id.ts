@@ -601,7 +601,6 @@ Pesan belum dibaca: {}</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Skor: {} ({} kasual)</translation>
     </message>
     <message>
@@ -3122,11 +3121,6 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Pilih tema dan bahasa, lalu ketuk Berikutnya untuk memulai.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Folder Konten</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Hubungkan kontroler dan gunakan pemetaan otomatis untuk salah satu pemain. Penetapan tombol secara terperinci dapat diubah nanti di Pengaturan Input.</translation>
@@ -4633,6 +4627,11 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Hanya beberapa langkah penyiapan yang diperlukan sebelum Anda dapat menjalankan game.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Folder Game</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation akan mendeteksi game secara otomatis di folder yang Anda tentukan di sini. Anda harus menambahkan setidaknya satu folder untuk dipindai. Jangan tambahkan direktori teratas volume penyimpanan Anda, karena pemindaian akan memakan waktu sangat lama.</translation>
@@ -4643,6 +4642,11 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Pengaturan Kontroler</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Format yang didukung: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>Tidak Ada Folder Game yang Dipilih</translation>
@@ -4651,6 +4655,40 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>Daftar game akan kosong hingga Anda menambahkan folder. Tetap lanjutkan?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Pemilihan Antarmuka</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Pilih antarmuka yang harus ditampilkan DuckStation saat dimulai. Mode Standar dirancang untuk layar sentuh, sedangkan Mode Big Picture merupakan antarmuka layar penuh yang dirancang untuk navigasi menggunakan kontroler.
+
+Anda dapat mengubahnya nanti melalui opsi &quot;Mulai dalam Mode Big Picture&quot; di Pengaturan Antarmuka.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Mode Standar</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Mode Big Picture</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>Mode Big Picture tidak disarankan untuk ponsel</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Mode ini ditujukan untuk TV dan perangkat game genggam yang digunakan dengan kontroler. Saat ini, mode ini menggunakan lebih banyak daya baterai daripada Mode Standar.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5360,6 +5398,36 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>Tidak ditemukan game. Tambahkan direktori berisi game untuk memulai.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Lembar Cue)
+.iso (Citra Satu Trek)
+.ecm (Citra Error Code Modeling)
+.mds (Sidecar Media Descriptor)
+.ccd (Citra CloneCD)
+.chd (Citra Compressed Hunks of Data)
+.pbp (PlayStation Portable, Hanya yang Didekripsi)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Format yang didukung:
+
+%s
+
+Game dengan beberapa trek dalam format bin memerlukan lembar cue (.cue) agar dapat dijalankan.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20781,18 +20849,6 @@ Kesalahan: {1}</translation>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Pola pencarian tidak valid. Pola harus berisi digit heksadesimal atau tanda tanya.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Pola tidak ditemukan dalam memori.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Pola ditemukan di 0x%1 (melewati akhir memori).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Pola ditemukan di 0x%1.</translation>
     </message>
 </context>
 <context>

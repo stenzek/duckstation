@@ -782,7 +782,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>得分：{}（{} 休闲模式）</translation>
     </message>
     <message>
@@ -3122,11 +3121,6 @@ Do you want to %1$s anyway?</source>
         <translation>请选择主题和语言，然后轻触“下一步”开始设置。</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>内容文件夹</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>连接控制器，然后为任一玩家使用自动映射。之后可以在输入设置中更改详细绑定。</translation>
@@ -4633,6 +4627,11 @@ Do you want to %1$s anyway?</source>
         <translation>只需完成几个设置步骤，即可运行游戏。</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>游戏文件夹</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation 将自动检测您在此指定的文件夹中的游戏。请至少添加一个要扫描的文件夹。请勿添加存储卷的根目录，否则扫描将耗时很长。</translation>
@@ -4643,6 +4642,11 @@ Do you want to %1$s anyway?</source>
         <translation>控制器设置</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>支持的格式：%s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>未选择游戏文件夹</translation>
@@ -4651,6 +4655,40 @@ Do you want to %1$s anyway?</source>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>添加文件夹之前，游戏列表将为空。仍要继续吗？</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>界面选择</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>选择DuckStation启动时应显示的界面。标准模式专为触摸屏而设计，大视画模式则是专为使用控制器导航而设计的全屏界面。
+
+您可以稍后在界面设置中通过“以大视画模式启动”选项更改此设置。</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>标准模式</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>大视画模式</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>不建议在手机上使用大视画模式</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>此模式适用于配合控制器使用的电视和掌上游戏设备。目前，其耗电量高于标准模式。</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5360,6 +5398,36 @@ Are you sure you want to continue?</source>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>未找到游戏。请先添加包含游戏的目录。</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue（提示单）
+.iso（单轨镜像）
+.ecm（错误代码建模镜像）
+.mds（媒体描述符附属文件）
+.ccd（CloneCD镜像）
+.chd（压缩数据块）
+.pbp（PlayStation Portable，仅解密版）</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>支持的格式：
+
+%s
+
+bin格式的多轨游戏需要提示单（.cue）才能启动。</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20781,18 +20849,6 @@ Error: {1}</source>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>无效的搜索模式。它应当包含十六进制数字或问号。</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>内存中未找到模式。</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>在0x%1找到了模式 (通过了内存的末端)。</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>在0x%1找到了模式。</translation>
     </message>
 </context>
 <context>

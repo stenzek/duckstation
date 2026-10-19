@@ -1203,25 +1203,17 @@ Esta sesión se iniciará en modo sin conexión.</translation>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
         <translation>Fuerza el fallo de todas las llamadas al servidor, lo que resulta útil para probar el modo sin conexión.</translation>
     </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostrar número de fotograma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Muestra el número del fotograma actual en la esquina superior derecha de la imagen.</translation>
+    </message>
 </context>
 <context>
     <name>AnalogController</name>
-    <message>
-        <source>Controller {} switched to analog mode.</source>
-        <translation>Mando {} cambiado a modo analógico.</translation>
-    </message>
-    <message>
-        <source>Controller {} switched to digital mode.</source>
-        <translation>Mando {} cambiado a modo digital.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to analog mode by the game.</source>
-        <translation>Mando {} bloqueado en modo analógico por el juego.</translation>
-    </message>
-    <message>
-        <source>Controller {} is locked to digital mode by the game.</source>
-        <translation>Mando {} bloqueado en modo digital por el juego.</translation>
-    </message>
     <message>
         <source>D-Pad Up</source>
         <translation>Botón de dirección hacia arriba</translation>
@@ -1457,10 +1449,6 @@ Esta sesión se iniciará en modo sin conexión.</translation>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Invierte la dirección del joystick analógico derecho.</translation>
-    </message>
-    <message>
-        <source>Mode LED</source>
-        <translation>Led de modo</translation>
     </message>
 </context>
 <context>
@@ -3043,10 +3031,6 @@ Esta advertencia se mostrará solo una vez.</translation>
         <translation>Error en la asignación automática</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo &quot;%1&quot;. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
-    </message>
-    <message>
         <source>Axes</source>
         <translation>Ejes</translation>
     </message>
@@ -3677,10 +3661,6 @@ Esta advertencia se mostrará solo una vez.</translation>
         <translation>Cambia los ajustes de las luces LED para aquellos mandos que tengan LED configurables.</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activa el origen de entrada y la detección de mandos mediante SDL.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite el uso de la vibración y los efectos del indicador de jugador en mandos DualShock 4/DualSense funcionando en modo Bluetooth. No es necesario activar esta opción si se conectan por cable.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Si activas el control mejorado, tu mando podría dejar de funcionar en otras aplicaciones hasta que lo apagues y lo vuelvas a encender.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -4180,10 +4160,6 @@ El archivo pesa aproximadamente 206&#xa0;KB. ¿Deseas descargarlo?</translation>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <translation>DuckStation puede descargar automáticamente las carátulas de aquellos juegos que no tengan una asociada. No alojamos ninguna imagen de carátulas, así que debe proveerlas el usuario.</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Las carátulas de los juegos podrían estar sujetas a derechos de autor&lt;/span&gt; según la jurisdicción en la que te encuentres. Solo se te autoriza a utilizar esta herramienta &lt;span style=&quot; font-weight:700;&quot;&gt;con tus servidores e imágenes propias&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Introduce en el siguiente formulario las direcciones URL de las que descargar las carátulas, a una dirección por línea. Se pueden utilizar las siguientes variables:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; el título del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; el título de juego, incluyendo el sufijo de región.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; el título localizado (es decir, en el idioma nativo) del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; el nombre del archivo del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; el número de serie del juego.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ejemplo:&lt;/span&gt; https://www.ejemplo-de-un-dominio-ficticio.com/caratulas/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -5524,10 +5500,6 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
         <translation>Notificaciones sobre logros</translation>
     </message>
     <message>
-        <source>Achievement Unlock/Count</source>
-        <translation>Recuento de logros desbloqueados</translation>
-    </message>
-    <message>
         <source>Achievements</source>
         <translation>Logros</translation>
     </message>
@@ -5726,10 +5698,6 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <source>Automatic mapping completed for {}.</source>
         <translation>Asignación automática de {} completada.</translation>
-    </message>
-    <message>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>Error en la asignación automática de {}.</translation>
     </message>
     <message>
         <source>Automatic mapping failed, no devices are available.</source>
@@ -6110,10 +6078,6 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     <message>
         <source>Default Value</source>
         <translation>Valor predeterminado</translation>
-    </message>
-    <message>
-        <source>Default View</source>
-        <translation>Vista predeterminada</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -7162,10 +7126,6 @@ El error ha sido el siguiente:</translation>
         <translation>Selecciona el tipo de mando emulado de este puerto.</translation>
     </message>
     <message>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>Selecciona la vista con la que se abrirá la lista de juegos.</translation>
-    </message>
-    <message>
         <source>Serial (*)</source>
         <translation>Número de serie (*)</translation>
     </message>
@@ -7369,10 +7329,6 @@ El error ha sido el siguiente:</translation>
     <message>
         <source>Trigger</source>
         <translation>Desencadenador</translation>
-    </message>
-    <message>
-        <source>Uncompressed Size</source>
-        <translation>Tamaño sin comprimir</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -7769,14 +7725,6 @@ Esta acción no puede deshacerse.</translation>
         <translation>Volumen de avance rápido</translation>
     </message>
     <message>
-        <source>File Size</source>
-        <translation>Tamaño de archivo</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Título de archivo</translation>
-    </message>
-    <message>
         <source>Fine Crop Amount</source>
         <translation>Recorte preciso</translation>
     </message>
@@ -7963,10 +7911,6 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <source>Language: </source>
         <translation>Idioma:</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Última partida</translation>
     </message>
     <message>
         <source>Launch a game by selecting a file/disc image.</source>
@@ -9070,10 +9014,6 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
         <translation>Renderizado multihilo</translation>
     </message>
     <message>
-        <source>Time Played</source>
-        <translation>Tiempo jugado</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>Título</translation>
     </message>
@@ -9308,6 +9248,14 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
         <translation>El búfer de rebobinado es demasiado pequeño para contener un solo estado.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostrar número de fotograma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Muestra el número del fotograma actual en la esquina superior derecha de la imagen.</translation>
     </message>
 </context>
 <context>
@@ -10336,70 +10284,6 @@ Cualquier truco de la base de datos seguirá cargado y presente, a menos que des
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 desbloqueado en modo hardcore</translation>
     </message>
-    <message>
-        <source>Icon</source>
-        <translation>Icono</translation>
-    </message>
-    <message>
-        <source>Serial</source>
-        <translation>N.º serie</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation>Título</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Título de archivo</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation>Desarrolladora</translation>
-    </message>
-    <message>
-        <source>Publisher</source>
-        <translation>Distribuidora</translation>
-    </message>
-    <message>
-        <source>Genre</source>
-        <translation>Género</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>Año</translation>
-    </message>
-    <message>
-        <source>Players</source>
-        <translation>Jugadores</translation>
-    </message>
-    <message>
-        <source>Data Size</source>
-        <translation>Tamaño de dato</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation>Logros</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Tiempo jugado</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Última partida</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation>Tamaño</translation>
-    </message>
-    <message>
-        <source>Region</source>
-        <translation>Región</translation>
-    </message>
-    <message>
-        <source>Compatibility</source>
-        <translation>Compatibilidad</translation>
-    </message>
 </context>
 <context>
     <name>GameListSearchDirectoriesModel</name>
@@ -11098,11 +10982,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <source>Minimum Size:</source>
         <translatorcomment>Abbreviated because of space constraints on the QT window.</translatorcomment>
         <translation>Tamaño mín.:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translatorcomment>Abbreviated because of space constraints on the QT window.</translatorcomment>
-        <translation>Recorte de modul. texturas (GPU &quot;v0/primera&quot;)</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
@@ -15299,18 +15178,6 @@ Error: {1}</translation>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>El patrón de búsqueda no es válido, debería contener dígitos hexadecimales o signos de interrogación.</translation>
     </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>No se ha encontrado el patrón en memoria.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Patrón encontrado en 0x%1 (pasó el final de la memoria).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Patrón encontrado en 0x%1.</translation>
-    </message>
 </context>
 <context>
     <name>MemoryScannerWindow</name>
@@ -15581,10 +15448,6 @@ Error: {1}</translation>
         <translation>Error en la asignación automática</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo &quot;%1&quot;. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
-    </message>
-    <message>
         <source>No devices were selected.</source>
         <translation>No se han seleccionado dispositivos.</translation>
     </message>
@@ -15814,104 +15677,6 @@ Error: {1}</translation>
 </context>
 <context>
     <name>NeGconRumble</name>
-    <message>
-        <source>D-Pad Up</source>
-        <translation>Botón de dirección hacia arriba</translation>
-    </message>
-    <message>
-        <source>D-Pad Right</source>
-        <translation>Botón de dirección hacia la derecha</translation>
-    </message>
-    <message>
-        <source>D-Pad Down</source>
-        <translation>Botón de dirección hacia abajo</translation>
-    </message>
-    <message>
-        <source>D-Pad Left</source>
-        <translation>Botón de dirección hacia la izquierda</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation>START</translation>
-    </message>
-    <message>
-        <source>A Button</source>
-        <translation>Botón A</translation>
-    </message>
-    <message>
-        <source>B Button</source>
-        <translation>Botón B</translation>
-    </message>
-    <message>
-        <source>I Button</source>
-        <translation>Botón I</translation>
-    </message>
-    <message>
-        <source>II Button</source>
-        <translation>Botón II</translation>
-    </message>
-    <message>
-        <source>Left Trigger</source>
-        <translation>Gatillo izquierdo</translation>
-    </message>
-    <message>
-        <source>Right Trigger</source>
-        <translation>Gatillo derecho</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Left</source>
-        <translation>Dirección (torcer) hacia la izquierda</translation>
-    </message>
-    <message>
-        <source>Steering (Twist) Right</source>
-        <translation>Dirección (torcer) hacia la derecha</translation>
-    </message>
-    <message>
-        <source>Analog Toggle</source>
-        <translation>Alternar función analógica</translation>
-    </message>
-    <message>
-        <source>Disable Simultaneous Opposing Cardinal Directions</source>
-        <translation>Desactivar direcciones cardinales opuestas a la vez</translation>
-    </message>
-    <message>
-        <source>Prevents concurrent left/right or up/down inputs from being presented to the game.</source>
-        <translation>Evita presentar al juego pulsaciones simultáneas a izquierda/derecha o hacia arriba/abajo.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Deadzone</source>
-        <translation>Zona muerta del eje de dirección</translation>
-    </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation>Establece el tamaño de la zona muerta del eje de dirección.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation>Sensibilidad del eje de dirección</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation>Establece el factor de escalado del eje de dirección.</translation>
-    </message>
-    <message>
-        <source>Large Motor Vibration Bias</source>
-        <translation>Margen de error de la vibración del motor grande</translation>
-    </message>
-    <message>
-        <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translatorcomment>Needs decoupling for Big Picture UI so the text can be summarized there.</translatorcomment>
-        <translation>Establece el margen de error para la vibración del motor grande. Si en algunos juegos la vibración es muy débil o no funciona, prueba a aumentar este valor. Un valor negativo reducirá la intensidad de la vibración.</translation>
-    </message>
-    <message>
-        <source>Small Motor Vibration Bias</source>
-        <translation>Margen de error de la vibración del motor pequeño</translation>
-    </message>
-    <message>
-        <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
-        <translatorcomment>Needs decoupling for Big Picture UI so the text can be summarized there.</translatorcomment>
-        <translation>Establece el margen de error para la vibración del motor pequeño. Si en algunos juegos la vibración es muy débil o no funciona, prueba a aumentar este valor. Un valor negativo reducirá la intensidad de la vibración.</translation>
-    </message>
 </context>
 <context>
     <name>OSDMessage</name>
@@ -17485,11 +17250,6 @@ Do you want to create this directory?</source>
         <translation>Desactivado (lo más lento)</translation>
     </message>
     <message>
-        <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <comment>CPUFastmemMode</comment>
-        <translation>MMap (por hardware, el más rápido, solo para 64 bits)</translation>
-    </message>
-    <message>
         <source>LUT (Faster)</source>
         <comment>CPUFastmemMode</comment>
         <translation>LUT (más rápido)</translation>
@@ -18837,14 +18597,6 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que es
     <message>
         <source>No devices available</source>
         <translation>No hay dispositivos disponibles</translation>
-    </message>
-    <message>
-        <source>Automatic Binding Failed</source>
-        <translation>Error en la asignación automática</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>No se han podido generar asociaciones genéricas para el dispositivo &quot;%1&quot;. El mando/dispositivo de origen podría no ser compatible con las asociaciones automáticas.</translation>
     </message>
     <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
@@ -21169,11 +20921,6 @@ Do you want to %1$s anyway?</source>
         <source>Please choose a theme and language, then tap Next to get started.</source>
         <comment>setup_wizard_welcome_second_paragraph</comment>
         <translation>Elige un tema y un idioma, y toca Siguiente para empezar.</translation>
-    </message>
-    <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Carpetas de contenido</translation>
     </message>
     <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
@@ -25226,6 +24973,195 @@ Would you like to import one now?</source>
         <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
         <comment>settings_folder_cleanup_warning</comment>
         <translation>La nueva carpeta está activa, pero no se han podido eliminar algunos archivos antiguos y permanecen como duplicados.</translation>
+    </message>
+    <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Iniciar Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Iniciar en modo Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Abre la interfaz a pantalla completa adaptada a mandos al iniciar la aplicación.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Mostrar número de fotograma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Muestra el número del fotograma actual en la esquina superior derecha de la imagen.</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Apariencia</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Lista de juegos</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Preferir iconos de logros</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Da prioridad a las insignias del juego utilizadas en RetroAchievements frente a los iconos de las tarjetas de memoria.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Mostrar títulos en la cuadrícula</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Muestra el título de cada juego debajo de su carátula en la vista de cuadrícula.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Mostrar títulos localizados</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Utiliza los títulos localizados de los juegos de la base de datos en lugar de los títulos en inglés, cuando están disponibles.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Estilo de los botones</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Selecciona si los botones del mando táctil se dibujan con contorno o rellenos.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Contorno</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Relleno</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Carpetas de juegos</translation>
+    </message>
+    <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Formatos compatibles: %s</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Selección de interfaz</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Elige la interfaz que DuckStation debe mostrar al iniciarse. El modo estándar está diseñado para pantallas táctiles, mientras que el modo Big Picture es una interfaz a pantalla completa diseñada para navegar con un mando.
+
+Puedes cambiarlo más adelante con la opción «Iniciar en modo Big Picture» en los ajustes de interfaz.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Modo estándar</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Modo Big Picture</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>El modo Big Picture no se recomienda para teléfonos</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Está pensado para televisores y dispositivos de juego portátiles que se utilizan con un mando. Actualmente consume más batería que el modo estándar.</translation>
+    </message>
+    <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Autor: %1$s</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (hojas Cue)
+.iso (imagen de una sola pista)
+.ecm (imagen de modelado de códigos de error)
+.mds (archivo complementario de Media Descriptor)
+.ccd (imagen de CloneCD)
+.chd (fragmentos de datos comprimidos)
+.pbp (PlayStation Portable, solo archivos desencriptados)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Los formatos compatibles son:
+
+%s
+
+Los juegos con varias pistas en formato bin necesitan una hoja Cue (.cue) para iniciarse.</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favorito</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Añadir a favoritos</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Quitar de favoritos</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>La carátula ya existe</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Ya existe una carátula para este juego, ¿quieres reemplazarla?</translation>
     </message>
 </context>
 </TS>

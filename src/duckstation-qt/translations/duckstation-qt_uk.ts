@@ -512,7 +512,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Рахунок: {} ({} у звичайному режимі)</translation>
     </message>
     <message>
@@ -3168,11 +3167,6 @@ Do you want to %1$s anyway?</source>
         <translation>Виберіть тему й мову, а потім натисніть «Далі», щоб почати.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Каталоги вмісту</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Підключіть контролер і скористайтеся автоматичним призначенням для будь-якого гравця. Детальні прив&apos;язки можна змінити пізніше в налаштуваннях введення.</translation>
@@ -4683,6 +4677,11 @@ Do you want to %1$s anyway?</source>
         <translation>Перш ніж запускати ігри, потрібно виконати лише кілька кроків налаштування.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Каталоги ігор</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation автоматично виявлятиме ігри у вказаних тут каталогах. Потрібно додати щонайменше один каталог для сканування. Не додавайте кореневий каталог сховища, інакше сканування триватиме дуже довго.</translation>
@@ -4693,6 +4692,11 @@ Do you want to %1$s anyway?</source>
         <translation>Налаштування контролера</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Підтримувані формати: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>Не вибрано каталогів ігор</translation>
@@ -4701,6 +4705,40 @@ Do you want to %1$s anyway?</source>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>Список ігор буде порожнім, доки ви не додасте каталог. Усе одно продовжити?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Вибір інтерфейсу</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Виберіть інтерфейс, який DuckStation має показувати під час запуску. Стандартний режим призначено для сенсорних екранів, тоді як режим Big Picture — це повноекранний інтерфейс для навігації за допомогою контролера.
+
+Це можна змінити пізніше за допомогою параметра «Запускати в режимі Big Picture» в налаштуваннях інтерфейсу.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Стандартний режим</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Режим Big Picture</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>Режим Big Picture не рекомендовано для телефонів</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Його призначено для телевізорів і портативних ігрових пристроїв, якими керують за допомогою контролера. Наразі він споживає більше заряду батареї, ніж стандартний режим.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5412,6 +5450,36 @@ Are you sure you want to continue?</source>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>Ігор не знайдено. Щоб почати, додайте каталог з іграми.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (файли CUE)
+.iso (однодоріжковий образ)
+.ecm (образ Error Code Modeling)
+.mds (супутній файл Media Descriptor)
+.ccd (образ CloneCD)
+.chd (стиснені блоки даних)
+.pbp (PlayStation Portable, лише розшифровані)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Підтримувані формати:
+
+%s
+
+Для запуску багатодоріжкових ігор у форматі bin потрібен файл CUE (.cue).</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20896,18 +20964,6 @@ Error: {1}</source>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Неправильний шаблон пошуку. Він має містити шістнадцяткові цифри або знаки питання.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Шаблон не знайдено в пам&apos;яті.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Шаблон знайдено в 0x%1 (поза межами пам&apos;яті).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Шаблон знайдено в 0x%1.</translation>
     </message>
 </context>
 <context>

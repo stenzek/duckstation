@@ -918,7 +918,6 @@ Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Puan: {} ({} günlük)</translation>
     </message>
     <message>
@@ -3122,11 +3121,6 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Lütfen bir tema ve dil seçin, ardından başlamak için İleri&apos;ye dokunun.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>İçerik Klasörleri</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Bir oyun kolu bağlayın ve oyunculardan biri için otomatik eşlemeyi kullanın. Ayrıntılı atamalar daha sonra Girdi Ayarları&apos;ndan değiştirilebilir.</translation>
@@ -4633,6 +4627,11 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Oyunları çalıştırabilmeniz için yalnızca birkaç kurulum adımı gereklidir.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Oyun Klasörleri</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation, burada belirttiğiniz klasörlerdeki oyunları otomatik olarak algılar. Taranacak en az bir klasör eklemelisiniz. Lütfen depolama biriminizin kök dizinini eklemeyin; aksi halde tarama çok uzun sürer.</translation>
@@ -4643,6 +4642,11 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Kol Ayarlama</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Desteklenen biçimler: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>Oyun Klasörü Seçilmedi</translation>
@@ -4651,6 +4655,40 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>Bir klasör ekleyene kadar oyun listesi boş kalacak. Yine de devam edilsin mi?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Arayüz Seçimi</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>DuckStation başlatıldığında gösterilecek arayüzü seçin. Standart Mod dokunmatik ekranlar için tasarlanmıştır; Büyük Resim Modu ise kolla gezinmek için tasarlanmış bir tam ekran arayüzüdür.
+
+Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Tam Ekran Modunda Başlat&quot; seçeneğiyle değiştirebilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Standart Mod</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Büyük Resim Modu</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>Büyük Resim Modu telefonlar için önerilmez</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Kolla kullanılan TV&apos;ler ve el tipi oyun cihazları için tasarlanmıştır. Şu anda Standart Moddan daha fazla pil tüketir.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5360,6 +5398,36 @@ Devam etmek istediğinize emin misiniz?</translation>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>Oyun bulunamadı. Başlamak için oyun içeren bir dizin ekleyin.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Cue Sayfaları)
+.iso (Tek Parçalı Görüntü)
+.ecm (Hata Kodu Modelleme Görüntüsü)
+.mds (Medya Tanımlayıcı Yan Dosyası)
+.ccd (CloneCD Görüntüsü)
+.chd (Sıkıştırılmış Parçalar Görüntüsü)
+.pbp (PlayStation Portable, Yalnızca Şifresi Çözülmüş)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Desteklenen biçimler:
+
+%s
+
+bin biçimindeki çok parçalı oyunları başlatmak için bir cue dosyası (.cue) gerekir.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20782,18 +20850,6 @@ Hata: {1}</translation>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Geçersiz arama deseni. Onaltılık rakamlar veya soru işaretleri içermelidir.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Desen bellekte bulunamadı.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Desen 0x%1 konumunda bulundu (belleğin sonunu geçti).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Desen 0x%1 konumunda bulundu.</translation>
     </message>
 </context>
 <context>

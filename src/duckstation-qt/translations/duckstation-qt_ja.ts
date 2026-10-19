@@ -886,7 +886,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>スコア: {}（{} カジュアル）</translation>
     </message>
     <message>
@@ -3122,11 +3121,6 @@ Do you want to %1$s anyway?</source>
         <translation>テーマと言語を選択し、「次へ」をタップして開始してください。</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>コンテンツフォルダ</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>コントローラを接続し、いずれかのプレイヤーに自動割り当てを行ってください。詳細な割り当ては後で入力設定から変更できます。</translation>
@@ -4633,6 +4627,11 @@ Do you want to %1$s anyway?</source>
         <translation>ゲームを実行する前に、いくつかの設定が必要です。</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>ゲームフォルダ</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation は、ここで指定したフォルダ内のゲームを自動的に検出します。スキャンするフォルダを少なくとも 1 つ追加してください。スキャンに非常に長い時間がかかるため、ストレージの最上位フォルダは追加しないでください。</translation>
@@ -4643,6 +4642,11 @@ Do you want to %1$s anyway?</source>
         <translation>コントローラーのセットアップ</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>サポートされている形式: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>ゲームフォルダが選択されていません</translation>
@@ -4651,6 +4655,40 @@ Do you want to %1$s anyway?</source>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>フォルダを追加するまでゲーム一覧は空のままです。それでも続行しますか？</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>インターフェイスの選択</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>DuckStation の起動時に表示するインターフェイスを選択してください。標準モードはタッチスクリーンでの使用向けで、ビッグピクチャーモードはコントローラーでの操作向けの全画面インターフェイスです。
+
+後からインターフェイス設定の「ビッグピクチャーモードで起動」で変更できます。</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>標準モード</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>ビッグピクチャーモード</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>スマートフォンではビッグピクチャーモードは推奨されません</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>コントローラーを接続して使用するテレビや携帯型ゲーム機向けです。現在は標準モードよりもバッテリーを多く消費します。</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5360,6 +5398,36 @@ Are you sure you want to continue?</source>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>ゲームが見つかりませんでした。ゲームが含まれるディレクトリを追加してください。</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue（キューシート）
+.iso（シングルトラックイメージ）
+.ecm（エラーコードモデリングイメージ）
+.mds（メディアディスクリプタサイドカー）
+.ccd（クローンCDイメージ）
+.chd（圧縮データ）
+.pbp（PlayStation Portable、復号化済みのみ）</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>サポートされている形式は以下の通りです:
+
+%s
+
+bin 形式のマルチトラックゲームを起動するには、キューシート (.cue) が必要です。</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20785,18 +20853,6 @@ Error: {1}</source>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>無効な検索パターン。16進数または疑問符を含める必要があります。</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>メモリ内にパターンが見つかりません。</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>0x%1 でパターンが見つかりました (メモリ終端に到達したため先頭から再検索しました)。</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>0x%1 でパターンが見つかりました。</translation>
     </message>
 </context>
 <context>

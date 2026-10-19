@@ -1197,6 +1197,14 @@ Esta sessão será iniciada no modo offline.</translation>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
         <translation>Força a falha de todas as chamadas ao servidor, útil para testar o modo offline.</translation>
     </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostrar número do quadro</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Mostra o número do quadro atual no canto superior direito da tela.</translation>
+    </message>
 </context>
 <context>
     <name>AnalogController</name>
@@ -3007,10 +3015,6 @@ This warning will only be shown once.</source>
         <translation>Falha no mapeamento automático</translation>
     </message>
     <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
-    </message>
-    <message>
         <source>Controller %1 %2</source>
         <translation>Controle %1 %2</translation>
     </message>
@@ -4136,10 +4140,6 @@ Esse arquivo tem aproximadamente 206 KB. Deseja baixa-lo agora?</translation>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <translation>O DuckStation pode baixar automaticamente capas para jogos que ainda não possuem suas capas definidas. Não hospedamos nenhuma imagem de capa, o usuário deve fornecer sua própria fonte de imagens.</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Bem-vindo ao DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Este assistente ajudará a guiá-lo através das etapas de configuração necessárias para usar o aplicativo. Se esta for a primeira vez que você instala o emulador, recomendamos que consulte o guia de configuração em &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Por padrão, o DuckStation se conectará ao site &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; para verificar se há atualizações disponíveis. Se você não deseja que o DuckStation faça nenhuma conexão de rede na inicialização, você deverá desmarcar a opção Atualizações Automáticas. A configuração de atualização automática pode ser alteradas posteriormente nas configurações da interface.&lt;/p&gt;&lt;p&gt;Escolha um idioma e um tema para começar..&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -5589,10 +5589,6 @@ Clicar em Redefinir restaurará o número de série para o valor lido da imagem 
         <translation>Notificações de conquistas</translation>
     </message>
     <message>
-        <source>Achievement Unlock/Count</source>
-        <translation>Desbloqueio/contagem das conquistas</translation>
-    </message>
-    <message>
         <source>Achievements</source>
         <translation>Conquistas</translation>
     </message>
@@ -5731,10 +5727,6 @@ Esta ação não pode ser desfeita.</translation>
     <message>
         <source>Automatic mapping completed for {}.</source>
         <translation>Mapeamento automático concluído para {}.</translation>
-    </message>
-    <message>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>Falha ao realizar o mapeamento automático para {}.</translation>
     </message>
     <message>
         <source>Automatic mapping failed, no devices are available.</source>
@@ -6103,10 +6095,6 @@ Esta ação não pode ser desfeita.</translation>
     <message>
         <source>Default Value</source>
         <translation>Valor padrão</translation>
-    </message>
-    <message>
-        <source>Default View</source>
-        <translation>Exibição padrão</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -6552,10 +6540,6 @@ Error was:</source>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
         <translation>Avança rapidamente durante o processo de carregamento inicial, economizando tempo. Os resultados podem variar entre os jogos.</translation>
-    </message>
-    <message>
-        <source>File Size</source>
-        <translation>Tamanho do arquivo</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads</source>
@@ -7058,10 +7042,6 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
         <translation>Gatilho</translation>
     </message>
     <message>
-        <source>Uncompressed Size</source>
-        <translation>Tamanho sem compressão</translation>
-    </message>
-    <message>
         <source>Ungrouped</source>
         <translation>Não agrupado</translation>
     </message>
@@ -7390,10 +7370,6 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
         <translation>Volume do avanço rápido</translation>
     </message>
     <message>
-        <source>File Title</source>
-        <translation>Título do jogo (na pasta)</translation>
-    </message>
-    <message>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>Força uma nova varredura completa de todos os jogos identificados anteriormente.</translation>
     </message>
@@ -7568,10 +7544,6 @@ Deseja excluir o save state e iniciar o jogo mesmo assim?</translation>
     <message>
         <source>Interface Settings</source>
         <translation>Configurações de interface</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Jogou pela última vez</translation>
     </message>
     <message>
         <source>Latency Control</source>
@@ -8742,10 +8714,6 @@ Deseja {1} mesmo assim?</translation>
         <translation>Seleciona a resolução a ser usada nos modos de tela cheia.</translation>
     </message>
     <message>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>Seleciona o modo de exibição na qual a lista de jogos será aberta.</translation>
-    </message>
-    <message>
         <source>Serial</source>
         <translation>Serial</translation>
     </message>
@@ -9018,10 +8986,6 @@ Deseja {1} mesmo assim?</translation>
         <translation>Renderização sequencial</translation>
     </message>
     <message>
-        <source>Time Played</source>
-        <translation>Tempo de jogo</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>Título</translation>
     </message>
@@ -9252,6 +9216,14 @@ Deseja fazer {0} mesmo assim?</translation>
     <message>
         <source>Automatic Mapping Failed</source>
         <translation>Falha no mapeamento automático</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostrar número do quadro</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Mostra o número do quadro atual no canto superior direito da tela.</translation>
     </message>
 </context>
 <context>
@@ -10281,70 +10253,6 @@ CD de áudio</translation>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 desbloqueado no modo hardcore</translation>
     </message>
-    <message>
-        <source>Icon</source>
-        <translation>Ícone</translation>
-    </message>
-    <message>
-        <source>Serial</source>
-        <translation>Serial</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation>Título</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Título do jogo (na pasta)</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation>Desenvolvido por</translation>
-    </message>
-    <message>
-        <source>Publisher</source>
-        <translation>Publicado por</translation>
-    </message>
-    <message>
-        <source>Genre</source>
-        <translation>Genêro</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>Ano</translation>
-    </message>
-    <message>
-        <source>Players</source>
-        <translation>Jogadores</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation>Conquistas</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Tempo de jogo</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Jogou pela última vez</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation>Tamanho</translation>
-    </message>
-    <message>
-        <source>Region</source>
-        <translation>Região</translation>
-    </message>
-    <message>
-        <source>Data Size</source>
-        <translation>Tamanho</translation>
-    </message>
-    <message>
-        <source>Compatibility</source>
-        <translation>Compatibilidade</translation>
-    </message>
 </context>
 <context>
     <name>GameListSearchDirectoriesModel</name>
@@ -11052,10 +10960,6 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <source>Minimum Size:</source>
         <translation>Tamanho minímo:</translation>
-    </message>
-    <message>
-        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
-        <translation>Recorte da modulação de textura (GPU &quot;Antigo/v0&quot;)</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
@@ -15223,18 +15127,6 @@ Erro: {1}</translation>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Padrão de busca inválido! Os valores devem conter digitos em hexadecimal ou pontos de exclamação.</translation>
     </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Padrão não encontrado na memória.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Padrão encontrado em 0x%1. (além do endereço de memória).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Padrão encontrado em 0x%1.</translation>
-    </message>
 </context>
 <context>
     <name>MemoryScannerWindow</name>
@@ -15500,10 +15392,6 @@ Erro: {1}</translation>
     <message>
         <source>Automatic Mapping Failed</source>
         <translation>Falha no mapeamento automático</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
     <message>
         <source>No devices were selected.</source>
@@ -17284,11 +17172,6 @@ Deseja criar esse diretório?</translation>
         <translation>Desativado (Lento)</translation>
     </message>
     <message>
-        <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <comment>CPUFastmemMode</comment>
-        <translation>MMap (hardware, mais rápido)</translation>
-    </message>
-    <message>
         <source>LUT (Faster)</source>
         <comment>CPUFastmemMode</comment>
         <translation>LUT (rápido)</translation>
@@ -18644,10 +18527,6 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Múltiplos dispositivos...</translation>
     </message>
     <message>
-        <source>Automatic Binding Failed</source>
-        <translation>Falha no mapeamento automático</translation>
-    </message>
-    <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
         <translation>PGXP não está ativado. Aumentar a resolução sem ativar o PGXP resultará em falhas visíveis nos polígonos.</translation>
     </message>
@@ -18668,10 +18547,6 @@ Token gerado em %2</translation>
     <message>
         <source>No devices available</source>
         <translation>Nenhum dispositivo disponível</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
     <message>
         <source>Automatic Mapping Failed</source>
@@ -20977,11 +20852,6 @@ Deseja %1$s mesmo assim?</translation>
         <source>Please choose a theme and language, then tap Next to get started.</source>
         <comment>setup_wizard_welcome_second_paragraph</comment>
         <translation>Escolha um tema e um idioma e toque em Próximo para começar.</translation>
-    </message>
-    <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Pastas de conteúdo</translation>
     </message>
     <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
@@ -25034,6 +24904,195 @@ Deseja importar uma agora?</translation>
         <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
         <comment>settings_folder_cleanup_warning</comment>
         <translation>A nova pasta está ativa, mas alguns arquivos antigos não puderam ser removidos e permanecem como duplicatas.</translation>
+    </message>
+    <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Iniciar em modo tela grande</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Iniciar em modo tela grande</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Abre a interface de tela cheia adaptada para controles ao iniciar o aplicativo.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Mostrar número do quadro</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Mostra o número do quadro atual no canto superior direito da tela.</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Aparência</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Lista de jogos</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Preferir ícones de conquistas</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Prioriza os emblemas do jogo usados no RetroAchievements em vez dos ícones do cartão de memória.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Mostrar legendas na grade</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Mostra o título de cada jogo abaixo de sua capa na visualização em grade.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Mostrar títulos localizados</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Usa os títulos localizados dos jogos do banco de dados em vez dos títulos em inglês, quando disponíveis.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Estilo dos botões</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Seleciona se os botões do controle na tela sensível ao toque são desenhados com contornos ou preenchidos.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Contorno</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Preenchido</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Pastas de jogos</translation>
+    </message>
+    <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Formatos compatíveis: %s</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Seleção da interface</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Escolha a interface que o DuckStation deve exibir ao iniciar. O modo padrão foi projetado para telas sensíveis ao toque, enquanto o modo tela grande é uma interface de tela cheia projetada para navegação com um controle.
+
+Você pode alterar isso depois com a opção &quot;Iniciar em modo tela grande&quot; nas configurações de interface.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Modo padrão</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Modo tela grande</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>O modo tela grande não é recomendado para celulares</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Ele se destina a TVs e dispositivos portáteis de jogos usados com um controle. Atualmente, consome mais bateria que o modo padrão.</translation>
+    </message>
+    <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Autor: %1$s</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Folhas de referência)
+.iso (Imagem de faixa única)
+.ecm (Imagem Error Code Modeling)
+.mds (Arquivo auxiliar de descrição de mídia)
+.ccd (Imagem CloneCD)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, somente descriptografado)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Os formatos compatíveis são:
+
+%s
+
+Jogos com várias faixas em formato bin precisam de uma folha de referência (.cue) para iniciar.</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favorito</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Adicionar aos favoritos</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Remover dos favoritos</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Capa já existe</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Uma imagem de capa para este jogo já existe. Deseja substituí-la?</translation>
     </message>
 </context>
 </TS>

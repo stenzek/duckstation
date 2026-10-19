@@ -1197,6 +1197,14 @@ Den här sessionen startar i offlineläge.</translation>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
         <translation>Tvingar alla serveranrop att misslyckas, vilket är användbart för att testa offlineläget.</translation>
     </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Visa bildrutenummer</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Visar numret på den aktuella bildrutan i övre högra hörnet av skärmen.</translation>
+    </message>
 </context>
 <context>
     <name>AnalogController</name>
@@ -6051,10 +6059,6 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
         <translation>Automatisk mappning färdigställd för {}.</translation>
     </message>
     <message>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>Automatisk mappning misslyckades för {}.</translation>
-    </message>
-    <message>
         <source>Automatic mapping failed, no devices are available.</source>
         <translation>Automatisk mappning misslyckades, inga enheter tillgängliga.</translation>
     </message>
@@ -9216,6 +9220,14 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
         <translation>Tillbakaspolningsbufferten är för liten för att rymma ett enda tillstånd.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Visa bildrutenummer</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Visar numret på den aktuella bildrutan i övre högra hörnet av skärmen.</translation>
     </message>
 </context>
 <context>
@@ -15121,18 +15133,6 @@ Fel: {1}</translation>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Ogiltigt sökmönster. Det bör innehålla hexadecimala siffror eller frågetecken.</translation>
     </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Mönstret hittades inte i minnet.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Mönster hittades vid 0x%1 (passerat minnets slut).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Mönster hittades vid 0x%1.</translation>
-    </message>
 </context>
 <context>
     <name>MemoryScannerWindow</name>
@@ -20863,11 +20863,6 @@ Vill du %1$s ändå?</translation>
         <translation>Välj ett tema och språk och tryck sedan på Nästa för att komma igång.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Innehållsmappar</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Anslut en handkontroll och använd automatisk mappning för valfri spelare. Detaljerade bindningar kan ändras senare i inmatningsinställningarna.</translation>
@@ -24918,6 +24913,195 @@ Vill du importera en nu?</translation>
         <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
         <comment>settings_folder_cleanup_warning</comment>
         <translation>Den nya mappen är aktiv, men vissa gamla filer kunde inte tas bort och finns kvar som dubbletter.</translation>
+    </message>
+    <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Starta storbildsläge</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Starta i storbildsläge</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Öppnar det handkontrollsanpassade helskärmsgränssnittet när appen startas.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Visa bildrutenummer</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Visar numret på den aktuella bildrutan i övre högra hörnet av skärmen.</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Utseende</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Spellista</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Föredra prestationsikoner</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Prioriterar spelmärken som används för RetroAchievements framför minneskortsikoner.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Visa rutnätstexter</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Visar varje spels titel under dess omslag i rutnätsvyn.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Visa lokalanpassade titlar</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Använder lokalanpassade speltitlar från databasen i stället för de engelska titlarna, när sådana finns.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Knappstil</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Väljer om knapparna för pekskärmskontrollen ritas som konturer eller fyllda.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Konturer</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Fyllda</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Spelmappar</translation>
+    </message>
+    <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Format som stöds: %s</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Val av gränssnitt</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Välj vilket gränssnitt DuckStation ska visa vid start. Standardläget är avsett för pekskärmar, medan storbildsläget är ett helskärmsgränssnitt avsett för navigering med en handkontroll.
+
+Du kan ändra detta senare med alternativet &quot;Starta i storbildsläge&quot; i gränssnittsinställningarna.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Standardläge</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Storbildsläge</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>Storbildsläge rekommenderas inte för telefoner</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Det är avsett för TV-apparater och bärbara spelenheter som används med en handkontroll. Det förbrukar för närvarande mer batteri än standardläget.</translation>
+    </message>
+    <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Upphovsperson: %1$s</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Cue-ark)
+.iso (enspårsavbild)
+.ecm (Error Code Modeling-avbild)
+.mds (Media Descriptor-sidofil)
+.ccd (CloneCD-avbild)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, endast dekrypterad)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Följande format stöds:
+
+%s
+
+Spel med flera spår i bin-format kräver en cuesheet (.cue) för att starta.</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Favorit</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Lägg till som favorit</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Ta bort som favorit</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Omslaget finns redan</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>En omslagsbild för detta spel finns redan. Vill du ersätta den?</translation>
     </message>
 </context>
 </TS>

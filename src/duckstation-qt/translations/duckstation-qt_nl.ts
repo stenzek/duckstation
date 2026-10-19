@@ -639,7 +639,6 @@ Ongelezen berichten: {}</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Score: {} ({} casual)</translation>
     </message>
     <message>
@@ -3146,11 +3145,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Kies een thema en taal en tik vervolgens op Volgende om te beginnen.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Inhoudsmappen</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Sluit een controller aan en gebruik automatische toewijzing voor een van de spelers. Afzonderlijke toewijzingen kunnen later worden gewijzigd in Invoerinstellingen.</translation>
@@ -4659,6 +4653,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Er zijn slechts enkele configuratiestappen nodig voordat je games kunt uitvoeren.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Gamemappen</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation detecteert automatisch games in de mappen die je hier opgeeft. Voeg minstens één map toe om te scannen. Voeg de hoofdmap van je opslagvolume niet toe, anders duurt het scannen erg lang.</translation>
@@ -4669,6 +4668,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Controllerconfiguratie</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Ondersteunde formaten: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>Geen gamemappen geselecteerd</translation>
@@ -4677,6 +4681,40 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>De gamelijst blijft leeg totdat je een map toevoegt. Toch doorgaan?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Interfaceselectie</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Kies welke interface DuckStation bij het opstarten moet tonen. De standaardmodus is ontworpen voor aanraakschermen, terwijl de Grotebeeldmodus een interface op volledig scherm is die is ontworpen voor navigatie met een controller.
+
+U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; in de Interface-instellingen.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Standaardmodus</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Grotebeeldmodus</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>De Grotebeeldmodus wordt niet aanbevolen voor telefoons</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Deze modus is bedoeld voor tv&apos;s en draagbare spelcomputers die met een controller worden gebruikt. De modus verbruikt momenteel meer accustroom dan de standaardmodus.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5387,6 +5425,36 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>Geen games gevonden. Voeg een map met games toe om te beginnen.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Cue-sheets)
+.iso (Schijfkopie met één track)
+.ecm (Error Code Modeling-schijfkopie)
+.mds (Sidecar voor media descriptor)
+.ccd (CloneCD-schijfkopie)
+.chd (Gecomprimeerde gegevensblokken)
+.pbp (PlayStation Portable, alleen ontsleuteld)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>De ondersteunde formaten zijn:
+
+%s
+
+Games met meerdere tracks in bin-formaat hebben een cuesheet (.cue) nodig om te starten.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20842,18 +20910,6 @@ Fout: {1}</translation>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Ongeldig zoekpatroon. Het moet hexadecimale cijfers of vraagtekens bevatten.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Patroon niet gevonden in geheugen.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Patroon gevonden op 0x%1 (voorbij het einde van het geheugen).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Patroon gevonden op 0x%1.</translation>
     </message>
 </context>
 <context>

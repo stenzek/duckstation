@@ -1211,6 +1211,14 @@ Questa sessione verrà avviata in modalità offline.</translation>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
         <translation>Forza il fallimento di tutte le chiamate al server, utile per testare la modalità offline.</translation>
     </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostra numero del fotogramma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Mostra il numero del fotogramma corrente nell&apos;angolo in alto a destra dello schermo.</translation>
+    </message>
 </context>
 <context>
     <name>AnalogController</name>
@@ -3035,10 +3043,6 @@ Questo avvertimento verrà mostrato solo una volta.</translation>
     <message>
         <source>Automatic Mapping Failed</source>
         <translation>Mappatura automatica non riuscita</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nessuna associazione generica è stata generata per il dispositivo &quot;%1&quot;. Il controller o la sorgente potrebbero non supportare la mappatura automatica.</translation>
     </message>
     <message>
         <source>Axes</source>
@@ -5587,10 +5591,6 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
         <translation>Mappatura automatica completata per {}.</translation>
     </message>
     <message>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>Mappatura automatica non riuscita per {}.</translation>
-    </message>
-    <message>
         <source>Automatic mapping failed, no devices are available.</source>
         <translation>Mappatura automatica non riuscita, nessun dispositivo è disponibile.</translation>
     </message>
@@ -5797,10 +5797,6 @@ Facendo clic su Ripristina, il seriale verrà ripristinato al valore rilevato da
     <message>
         <source>Default Boot</source>
         <translation>Avvio normale</translation>
-    </message>
-    <message>
-        <source>Default View</source>
-        <translation>Vista predefinita</translation>
     </message>
     <message>
         <source>Default: Disabled</source>
@@ -6061,14 +6057,6 @@ L&apos;errore è:</translation>
         <translation>Volume avanzamento veloce</translation>
     </message>
     <message>
-        <source>File Size</source>
-        <translation>Dimensione file</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Titolo del file</translation>
-    </message>
-    <message>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>Forza una rianalisi completa di tutti i giochi precedentemente identificati.</translation>
     </message>
@@ -6211,10 +6199,6 @@ L&apos;errore è:</translation>
     <message>
         <source>Interface Settings</source>
         <translation>Impostazioni interfaccia</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Ultima partita</translation>
     </message>
     <message>
         <source>Launch a game by selecting a file/disc image.</source>
@@ -6407,10 +6391,6 @@ Vuoi eliminare il salvataggio di stato e avviare comunque il gioco?</translation
     <message>
         <source>AMOLED</source>
         <translation>AMOLED</translation>
-    </message>
-    <message>
-        <source>Achievement Unlock/Count</source>
-        <translation>Obiettivi sbloccati/totali</translation>
     </message>
     <message>
         <source>Achievement Unlocks Unconfirmed</source>
@@ -8576,10 +8556,6 @@ Vuoi comunque {1}?</translation>
         <translation>Seleziona il tipo di controller emulato per questa porta.</translation>
     </message>
     <message>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>Seleziona la visualizzazione su cui la lista giochi si aprirà.</translation>
-    </message>
-    <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Seleziona la posizione sullo schermo in cui visualizzare i messaggi.</translation>
     </message>
@@ -8952,10 +8928,6 @@ Vuoi comunque {1}?</translation>
         <translation>Rendering con thread</translation>
     </message>
     <message>
-        <source>Time Played</source>
-        <translation>Tempo giocato</translation>
-    </message>
-    <message>
         <source>Timing out in {:.0f} seconds...</source>
         <translation>Tempo scaduto fra {:.0f} secondi...</translation>
     </message>
@@ -8998,10 +8970,6 @@ Vuoi comunque {1}?</translation>
     <message>
         <source>Type</source>
         <translation>Tipo</translation>
-    </message>
-    <message>
-        <source>Uncompressed Size</source>
-        <translation>Dimensione non compressa</translation>
     </message>
     <message>
         <source>Undo Load State</source>
@@ -9290,6 +9258,14 @@ Vuoi comunque {0}?</translation>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
         <translation>Il buffer di riavvolgimento è troppo piccolo per contenere un singolo stato.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <translation>Mostra numero del fotogramma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <translation>Mostra il numero del fotogramma corrente nell&apos;angolo in alto a destra dello schermo.</translation>
     </message>
 </context>
 <context>
@@ -10308,58 +10284,6 @@ Sei sicuro di voler continuare?</translation>
 <context>
     <name>GameListModel</name>
     <message>
-        <source>Serial</source>
-        <translation>Seriale</translation>
-    </message>
-    <message>
-        <source>Icon</source>
-        <translation>Icona</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation>Titolo</translation>
-    </message>
-    <message>
-        <source>File Title</source>
-        <translation>Titolo del file</translation>
-    </message>
-    <message>
-        <source>Developer</source>
-        <translation>Sviluppatore</translation>
-    </message>
-    <message>
-        <source>Publisher</source>
-        <translation>Editore</translation>
-    </message>
-    <message>
-        <source>Genre</source>
-        <translation>Genere</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>Anno</translation>
-    </message>
-    <message>
-        <source>Players</source>
-        <translation>Giocatori</translation>
-    </message>
-    <message>
-        <source>Time Played</source>
-        <translation>Tempo giocato</translation>
-    </message>
-    <message>
-        <source>Last Played</source>
-        <translation>Ultima partita</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation>Dimensione</translation>
-    </message>
-    <message>
-        <source>Data Size</source>
-        <translation>Dimensione dati</translation>
-    </message>
-    <message>
         <source>No Achievements</source>
         <translation>Nessun obiettivo</translation>
     </message>
@@ -10370,18 +10294,6 @@ Sei sicuro di voler continuare?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 sbloccati in modalità hardcore</translation>
-    </message>
-    <message>
-        <source>Region</source>
-        <translation>Regione</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation>Obiettivi</translation>
-    </message>
-    <message>
-        <source>Compatibility</source>
-        <translation>Compatibilità</translation>
     </message>
 </context>
 <context>
@@ -15273,18 +15185,6 @@ Errore: {1}</translation>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Pattern di ricerca non valido. Deve contenere cifre esadecimali o punti di domanda.</translation>
     </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Pattern non trovato nella memoria.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Pattern trovato a 0x%1 (oltre la fine della memoria).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Pattern trovato a 0x%1.</translation>
-    </message>
 </context>
 <context>
     <name>MemoryScannerWindow</name>
@@ -15550,10 +15450,6 @@ Errore: {1}</translation>
     <message>
         <source>Automatic Mapping Failed</source>
         <translation>Mappatura automatica non riuscita</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nessuna associazione generica è stata generata per il dispositivo &quot;%1&quot;. Il controller o la sorgente potrebbero non supportare la mappatura automatica.</translation>
     </message>
     <message>
         <source>No devices were selected.</source>
@@ -17349,11 +17245,6 @@ Vuoi creare la cartella?</translation>
         <translation>Disabilitato (lento)</translation>
     </message>
     <message>
-        <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
-        <comment>CPUFastmemMode</comment>
-        <translation>MMap (hardware, molto veloce, solo 64 bit)</translation>
-    </message>
-    <message>
         <source>LUT (Faster)</source>
         <comment>CPUFastmemMode</comment>
         <translation>LUT (veloce)</translation>
@@ -18702,10 +18593,6 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
         <translation>Dispositivi multipli...</translation>
     </message>
     <message>
-        <source>Automatic Binding Failed</source>
-        <translation>Mappatura automatica non riuscita</translation>
-    </message>
-    <message>
         <source>PGXP is not enabled. Increasing the resolution without enabling PGXP will result in visible polygon glitches.</source>
         <translation>PGXP non è abilitato. Aumentare la risoluzione senza abilitare PGXP causerà difetti visibili sui poligoni.</translation>
     </message>
@@ -18722,10 +18609,6 @@ Token generato %2</translation>
     <message>
         <source>No devices available</source>
         <translation>Nessun dispositivo disponibile</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
-        <translation>Nessuna associazione generica è stata generata per il dispositivo &quot;%1&quot;. Il controller o la sorgente potrebbero non supportare la mappatura automatica.</translation>
     </message>
     <message>
         <source>Automatic Mapping Failed</source>
@@ -21031,11 +20914,6 @@ Vuoi comunque eseguire l&apos;azione %1$s?</translation>
         <source>Please choose a theme and language, then tap Next to get started.</source>
         <comment>setup_wizard_welcome_second_paragraph</comment>
         <translation>Scegli un tema e una lingua, poi tocca Avanti per iniziare.</translation>
-    </message>
-    <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Cartelle dei contenuti</translation>
     </message>
     <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
@@ -25088,6 +24966,195 @@ Vuoi importarne una ora?</translation>
         <source>The new folder is active, but some old files could not be removed and remain as duplicates.</source>
         <comment>settings_folder_cleanup_warning</comment>
         <translation>La nuova cartella è attiva, ma alcuni vecchi file non sono stati rimossi e rimangono come duplicati.</translation>
+    </message>
+    <message>
+        <source>Start Big Picture Mode</source>
+        <comment>content_list_start_fullscreen_ui</comment>
+        <translation>Avvia modalità Big Picture</translation>
+    </message>
+    <message>
+        <source>Start in Big Picture Mode</source>
+        <comment>settings_start_fullscreen_ui</comment>
+        <translation>Avvia in modalità Big Picture</translation>
+    </message>
+    <message>
+        <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
+        <comment>settings_summary_start_fullscreen_ui</comment>
+        <translation>Apre l&apos;interfaccia a schermo intero ottimizzata per il controller all&apos;avvio dell&apos;app.</translation>
+    </message>
+    <message>
+        <source>Show Frame Number</source>
+        <comment>settings_show_frame_number</comment>
+        <translation>Mostra numero del fotogramma</translation>
+    </message>
+    <message>
+        <source>Shows the number of the current frame in the top-right corner of the display.</source>
+        <comment>settings_summary_show_frame_number</comment>
+        <translation>Mostra il numero del fotogramma corrente nell&apos;angolo in alto a destra dello schermo.</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <comment>settings_category_appearance</comment>
+        <translation>Aspetto</translation>
+    </message>
+    <message>
+        <source>Game List</source>
+        <comment>settings_category_content_list</comment>
+        <translation>Lista giochi</translation>
+    </message>
+    <message>
+        <source>Prefer Achievement Icons</source>
+        <comment>settings_prefer_achievement_icons</comment>
+        <translation>Preferisci icone degli obiettivi</translation>
+    </message>
+    <message>
+        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
+        <comment>settings_summary_prefer_achievement_icons</comment>
+        <translation>Dà la priorità agli emblemi del gioco utilizzati per RetroAchievements rispetto alle icone delle schede di memoria.</translation>
+    </message>
+    <message>
+        <source>Show Grid Captions</source>
+        <comment>settings_show_grid_captions</comment>
+        <translation>Mostra didascalie nella griglia</translation>
+    </message>
+    <message>
+        <source>Shows the title of each game below its cover in the grid view.</source>
+        <comment>settings_summary_show_grid_captions</comment>
+        <translation>Mostra il titolo di ogni gioco sotto la relativa copertina nella visualizzazione a griglia.</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <comment>settings_show_localized_titles</comment>
+        <translation>Mostra titoli localizzati</translation>
+    </message>
+    <message>
+        <source>Uses localized game titles from the database instead of the English titles, when available.</source>
+        <comment>settings_summary_show_localized_titles</comment>
+        <translation>Utilizza i titoli localizzati dei giochi presenti nel database al posto dei titoli in inglese, quando disponibili.</translation>
+    </message>
+    <message>
+        <source>Button Style</source>
+        <comment>settings_touchscreen_controller_theme</comment>
+        <translation>Stile dei pulsanti</translation>
+    </message>
+    <message>
+        <source>Selects whether the touchscreen controller buttons are drawn as outlines or filled.</source>
+        <comment>settings_summary_touchscreen_controller_theme</comment>
+        <translation>Seleziona se i pulsanti del controller touchscreen vengono disegnati come contorni o riempiti.</translation>
+    </message>
+    <message>
+        <source>Outline</source>
+        <comment>touchscreen_controller_theme_outline</comment>
+        <translation>Contorno</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <comment>touchscreen_controller_theme_filled</comment>
+        <translation>Riempito</translation>
+    </message>
+    <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Cartelle dei giochi</translation>
+    </message>
+    <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Formati supportati: %s</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Selezione interfaccia</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Scegli l&apos;interfaccia che DuckStation deve mostrare all&apos;avvio. La modalità standard è progettata per gli schermi touch, mentre la modalità Big Picture è un&apos;interfaccia a schermo intero progettata per la navigazione con un controller.
+
+Puoi modificare questa scelta in seguito con l&apos;opzione &quot;Avvia in modalità Big Picture&quot; nelle impostazioni dell&apos;interfaccia.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Modalità standard</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Modalità Big Picture</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>La modalità Big Picture non è consigliata per i telefoni</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>È pensata per televisori e dispositivi di gioco portatili utilizzati con un controller. Attualmente consuma più batteria rispetto alla modalità standard.</translation>
+    </message>
+    <message>
+        <source>Author: %1$s</source>
+        <comment>patch_codes_author</comment>
+        <translation>Autore: %1$s</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (File metadati CUE)
+.iso (Immagine a traccia singola)
+.ecm (Immagine Error Code Modeling)
+.mds (Media Descriptor Sidecar)
+.ccd (Immagine CloneCD)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, solo decrittato)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>I formati supportati sono:
+
+%s
+
+I giochi multitraccia in formato bin richiedono un file cuesheet (.cue) per essere avviati.</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_list_favorite</comment>
+        <translation>Preferito</translation>
+    </message>
+    <message>
+        <source>Favorite</source>
+        <comment>content_bottom_sheet_favorite</comment>
+        <translation>Aggiungi ai preferiti</translation>
+    </message>
+    <message>
+        <source>Unfavorite</source>
+        <comment>content_bottom_sheet_unfavorite</comment>
+        <translation>Rimuovi dai preferiti</translation>
+    </message>
+    <message>
+        <source>Cover Already Exists</source>
+        <comment>content_replace_cover_title</comment>
+        <translation>Copertina già esistente</translation>
+    </message>
+    <message>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <comment>content_replace_cover_message</comment>
+        <translation>Un&apos;immagine di copertina esiste già per questo gioco, vuoi sostituirla?</translation>
     </message>
 </context>
 </TS>

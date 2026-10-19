@@ -559,7 +559,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>점수: {} ({} 캐주얼)</translation>
     </message>
     <message>
@@ -3128,11 +3127,6 @@ Do you want to %1$s anyway?</source>
         <translation>테마와 언어를 선택한 후 다음을 눌러 시작하세요.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>콘텐츠 폴더</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>컨트롤러를 연결하고 원하는 플레이어에 자동 매핑을 사용하세요. 세부 할당은 나중에 입력 설정에서 변경할 수 있습니다.</translation>
@@ -4639,6 +4633,11 @@ Do you want to %1$s anyway?</source>
         <translation>게임을 실행하기 전에 몇 가지 설정만 하면 됩니다.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>게임 폴더</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>DuckStation은 여기에서 지정한 폴더의 게임을 자동으로 감지합니다. 검색할 폴더를 하나 이상 추가하세요. 저장 장치의 최상위 폴더를 추가하면 검색에 매우 오랜 시간이 걸리므로 추가하지 마세요.</translation>
@@ -4649,6 +4648,11 @@ Do you want to %1$s anyway?</source>
         <translation>컨트롤러 설정</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>지원 형식: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>선택한 게임 폴더 없음</translation>
@@ -4657,6 +4661,40 @@ Do you want to %1$s anyway?</source>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>폴더를 추가할 때까지 게임 목록이 비어 있게 됩니다. 그래도 계속하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>인터페이스 선택</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>DuckStation을 시작할 때 표시할 인터페이스를 선택하세요. 표준 모드는 터치스크린 사용에 적합하며, 빅피처 모드는 컨트롤러로 탐색하도록 설계된 전체 화면 인터페이스입니다.
+
+나중에 인터페이스 설정의 &quot;빅피처 모드로 시작&quot; 옵션에서 변경할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>표준 모드</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>빅피처 모드</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>휴대폰에서는 빅피처 모드를 권장하지 않습니다</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>이 모드는 컨트롤러와 함께 사용하는 TV 및 휴대용 게임 기기를 위한 모드입니다. 현재 표준 모드보다 배터리를 더 많이 소모합니다.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5366,6 +5404,36 @@ Are you sure you want to continue?</source>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>게임을 찾지 못했습니다. 시작하려면 게임이 있는 디렉터리를 추가하세요.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (큐 시트)
+.iso (단일 트랙 이미지)
+.ecm (오류 코드 모델링 이미지)
+.mds (미디어 설명자 사이드카)
+.ccd (CloneCD 이미지)
+.chd (압축 헝크 데이터)
+.pbp (PlayStation Portable, 복호화된 파일만)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>지원 형식:
+
+%s
+
+bin 형식의 멀티트랙 게임을 시작하려면 큐 시트(.cue)가 필요합니다.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20838,18 +20906,6 @@ Error: {1}</source>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>유효하지 않은 검색 패턴입니다. 16진수 또는 물음표가 포함되어야 합니다.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>메모리에서 패턴을 찾지 못했습니다.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>0x%1에서 패턴을 찾았습니다(메모리 종단에 도달하여 처음부터 다시 검색했습니다).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>0x%1에서 패턴을 찾았습니다.</translation>
     </message>
 </context>
 <context>

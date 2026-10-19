@@ -625,7 +625,6 @@ Mensagens não lidas: {}</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Pontuação: {} ({} casual)</translation>
     </message>
     <message>
@@ -3147,11 +3146,6 @@ Pretende %1$s mesmo assim?</translation>
         <translation>Escolha um tema e um idioma e toque em Seguinte para começar.</translation>
     </message>
     <message>
-        <source>Content Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
-        <translation>Pastas de conteúdo</translation>
-    </message>
-    <message>
         <source>Connect a controller and use automatic mapping for either player. Detailed bindings can be changed later in Input Settings.</source>
         <comment>setup_wizard_input_setup_message</comment>
         <translation>Ligue um comando e utilize o mapeamento automático para qualquer um dos jogadores. Pode alterar as atribuições detalhadas mais tarde nas Definições de entrada.</translation>
@@ -4660,6 +4654,11 @@ Pretende %1$s mesmo assim?</translation>
         <translation>São necessários apenas alguns passos de configuração antes de poder executar jogos.</translation>
     </message>
     <message>
+        <source>Game Folders</source>
+        <comment>setup_wizard_content_folders_title</comment>
+        <translation>Pastas de Jogos</translation>
+    </message>
+    <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
         <comment>setup_wizard_content_folders_message</comment>
         <translation>O DuckStation irá detetar automaticamente os jogos nas pastas que especificar aqui. Deve adicionar pelo menos uma pasta para pesquisar. Não adicione a raiz do volume de armazenamento, caso contrário a pesquisa demorará muito tempo.</translation>
@@ -4670,6 +4669,11 @@ Pretende %1$s mesmo assim?</translation>
         <translation>Configuração do Comando</translation>
     </message>
     <message>
+        <source>Supported formats: %s</source>
+        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <translation>Formatos suportados: %s</translation>
+    </message>
+    <message>
         <source>No Game Folders Selected</source>
         <comment>setup_wizard_no_directories_title</comment>
         <translation>Nenhuma Pasta de Jogos Selecionada</translation>
@@ -4678,6 +4682,40 @@ Pretende %1$s mesmo assim?</translation>
         <source>The game list will be empty until you add a folder. Continue anyway?</source>
         <comment>setup_wizard_no_directories_message</comment>
         <translation>A lista de jogos ficará vazia até adicionar uma pasta. Continuar mesmo assim?</translation>
+    </message>
+    <message>
+        <source>Interface Selection</source>
+        <comment>setup_wizard_interface_title</comment>
+        <translation>Seleção da Interface</translation>
+    </message>
+    <message>
+        <source>Choose the interface DuckStation should show when it starts. Standard Mode is designed for touchscreens, while Big Picture Mode is a fullscreen interface designed for navigation with a controller.
+
+You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
+        <comment>setup_wizard_interface_message</comment>
+        <translation>Escolha a interface que o DuckStation deve apresentar ao iniciar. O Modo Normal foi concebido para ecrãs táteis, enquanto o Modo Big Picture é uma interface de ecrã inteiro concebida para navegação com um comando.
+
+Pode alterar esta opção mais tarde através da opção &quot;Iniciar no Modo Big Picture&quot; nas Definições da Interface.</translation>
+    </message>
+    <message>
+        <source>Standard Mode</source>
+        <comment>setup_wizard_standard_mode</comment>
+        <translation>Modo Normal</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode</source>
+        <comment>setup_wizard_big_picture_mode</comment>
+        <translation>Modo Big Picture</translation>
+    </message>
+    <message>
+        <source>Big Picture Mode is not recommended for phones</source>
+        <comment>setup_wizard_big_picture_warning_title</comment>
+        <translation>O Modo Big Picture não é recomendado para telemóveis</translation>
+    </message>
+    <message>
+        <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
+        <comment>setup_wizard_big_picture_warning_message</comment>
+        <translation>Destina-se a televisores e consolas portáteis utilizados com um comando. Atualmente, consome mais bateria do que o Modo Normal.</translation>
     </message>
     <message>
         <source>Choose how games should be displayed in the main list.</source>
@@ -5388,6 +5426,36 @@ Tem a certeza de que pretende continuar?</translation>
         <source>No games were found. Please add a directory with games to begin.</source>
         <comment>content_list_empty_title</comment>
         <translation>Não foram encontrados jogos. Adicione um diretório com jogos para começar.</translation>
+    </message>
+    <message>
+        <source>.cue (Cue Sheets)
+.iso (Single Track Image)
+.ecm (Error Code Modeling Image)
+.mds (Media Descriptor Sidecar)
+.ccd (CloneCD Image)
+.chd (Compressed Hunks of Data)
+.pbp (PlayStation Portable, Only Decrypted)</source>
+        <comment>content_list_supported_formats</comment>
+        <translation>.cue (Folhas Cue)
+.iso (Imagem de Faixa Única)
+.ecm (Imagem Error Code Modeling)
+.mds (Ficheiro Auxiliar de Descrição do Suporte)
+.ccd (Imagem CloneCD)
+.chd (Blocos de Dados Comprimidos)
+.pbp (PlayStation Portable, Apenas Desencriptado)</translation>
+    </message>
+    <message>
+        <source>Supported formats are:
+
+%s
+
+Multi-track games in bin format require a cuesheet (.cue) to start.</source>
+        <comment>content_list_empty_supported_formats</comment>
+        <translation>Os formatos suportados são:
+
+%s
+
+Os jogos com várias faixas no formato bin requerem uma folha cue (.cue) para iniciar.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
@@ -20844,18 +20912,6 @@ Erro: {1}</translation>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>Padrão de pesquisa inválido. Deve conter dígitos hexadecimais ou pontos de interrogação.</translation>
-    </message>
-    <message>
-        <source>Pattern not found in memory.</source>
-        <translation>Padrão não encontrado na memória.</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Padrão encontrado em 0x%1 (ultrapassou o fim da memória).</translation>
-    </message>
-    <message>
-        <source>Pattern found at 0x%1.</source>
-        <translation>Padrão encontrado em 0x%1.</translation>
     </message>
 </context>
 <context>
