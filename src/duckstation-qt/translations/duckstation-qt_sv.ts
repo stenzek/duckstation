@@ -13634,7 +13634,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Classic Windows</source>
-        <translation>Classic Windows</translation>
+        <translation>Windows klassisk</translation>
     </message>
     <message>
         <source>Fusion</source>
