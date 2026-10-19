@@ -275,7 +275,7 @@ Vill du aktivera hardcore-läget?</translation>
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation> %</translation>
     </message>
     <message>
         <source>Progress Tracking</source>
@@ -1047,7 +1047,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Enable RAIntegration</source>
-        <translation>Aktivera RAIntegration</translation>
+        <translation>Aktivera RA-integration</translation>
     </message>
     <message>
         <source>Cache Directory</source>
@@ -1163,11 +1163,11 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Enable RAIntegration (Development Only)</source>
-        <translation>Aktivera RAIntegration (endast för utveckling)</translation>
+        <translation>Aktivera RA-integration (endast för utveckling)</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
-        <translation>När den är aktiverad läser DuckStation in RAIntegration DLL vilket möjliggör utveckling av prestationer.&lt;br&gt;Filen RA_Integration.dll måste placeras i samma katalog som DuckStations-körbara fil.</translation>
+        <translation>När den är aktiverad läser DuckStation in RA-integrations-DLL vilket möjliggör utveckling av prestationer.&lt;br&gt;Filen RA_Integration.dll måste placeras i samma katalog som DuckStations-körbara fil.</translation>
     </message>
     <message>
         <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
@@ -1358,7 +1358,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när senare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
@@ -1577,7 +1577,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när senare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
@@ -1640,7 +1640,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
-        <translation>Tysta cd-ljud</translation>
+        <translation>Tysta CD-ljud</translation>
     </message>
     <message>
         <source>Output Latency:</source>
@@ -1672,7 +1672,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation> %</translation>
     </message>
     <message>
         <source> ms</source>
@@ -1720,7 +1720,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation>Tvingar både CD-DA och XA-ljud från cd-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
+        <translation>Tvingar både CD-DA och XA-ljud från CD-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -2030,7 +2030,7 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
     </message>
     <message>
         <source>NTSC-U/C (US/Canada):</source>
-        <translation>NTSC-U/C (US, Kanada):</translation>
+        <translation>NTSC-U/C (USA, Kanada):</translation>
     </message>
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
@@ -2196,7 +2196,7 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
     <message>
         <source>Mode 1/Raw</source>
         <comment>TrackMode</comment>
-        <translation>Läge 1/Rå</translation>
+        <translation>Läge 1/rådata</translation>
     </message>
     <message>
         <source>Mode 2</source>
@@ -2206,22 +2206,22 @@ Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan 
     <message>
         <source>Mode 2/Form 1</source>
         <comment>TrackMode</comment>
-        <translation>Läge 2/Form 1</translation>
+        <translation>Läge 2/form 1</translation>
     </message>
     <message>
         <source>Mode 2/Form 2</source>
         <comment>TrackMode</comment>
-        <translation>Läge 2/Form 2</translation>
+        <translation>Läge 2/form 2</translation>
     </message>
     <message>
         <source>Mode 2/Mix</source>
         <comment>TrackMode</comment>
-        <translation>Läge 2/Mix</translation>
+        <translation>Läge 2/mix</translation>
     </message>
     <message>
         <source>Mode 2/Raw</source>
         <comment>TrackMode</comment>
-        <translation>Läge 2/Rå</translation>
+        <translation>Läge 2/rådata</translation>
     </message>
     <message numerus="yes">
         <source>%n tracks covering {0} MB ({1} MB on disk)</source>
@@ -2304,7 +2304,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation> %</translation>
     </message>
     <message>
         <source>File Name Format:</source>
@@ -2349,7 +2349,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     <message>
         <source> kbps</source>
         <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
-        <translation> kbps</translation>
+        <translation> kbit/s</translation>
     </message>
     <message>
         <source>Resolution:</source>
@@ -2445,7 +2445,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     </message>
     <message>
         <source>%1 (Unknown)</source>
-        <translation>%1 (Okänd)</translation>
+        <translation>%1 (okänd)</translation>
     </message>
     <message>
         <source>Specifies the directory where media capture (video/audio) will be saved.</source>
@@ -2465,7 +2465,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     </message>
     <message>
         <source>%1 kbps</source>
-        <translation>%1 kbps</translation>
+        <translation>%1 kbit/s</translation>
     </message>
     <message>
         <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
@@ -2615,7 +2615,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
-            <numerusform>%n spelpatch är aktiva.</numerusform>
+            <numerusform>%n spelpatch är aktiv.</numerusform>
             <numerusform>%n spelpatchar är aktiva.</numerusform>
         </translation>
     </message>
@@ -2687,7 +2687,7 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Aktivera 8MB RAM (Utvecklarkonsol)</translation>
+        <translation>Aktivera 8 MB RAM (Utvecklarkonsol)</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -2715,11 +2715,11 @@ Om du försöker använda denna fuskkod kommer den inte att fungera som förvän
     </message>
     <message>
         <source>None (Double Speed)</source>
-        <translation>Ingen (dubbel hastighet)</translation>
+        <translation>Ingen (2x hastighet)</translation>
     </message>
     <message>
         <source>2x (Quad Speed)</source>
-        <translation>2x (fyrdubbel hastighet)</translation>
+        <translation>2x (4x hastighet)</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
@@ -2883,7 +2883,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>%1% (%2MHz)</source>
-        <translation>%1% (%2MHz)</translation>
+        <translation>%1 % (%2 MHz)</translation>
     </message>
     <message>
         <source>Fast Boot</source>
@@ -2997,7 +2997,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
-        <translation>Är du säker på att du vill tömma alla mappningar för denna handkontroller? Denna åtgärd går inte att ångra.</translation>
+        <translation>Är du säker på att du vill tömma alla mappningar för denna handkontroll? Denna åtgärd går inte att ångra.</translation>
     </message>
     <message>
         <source>Controller %1 %2</source>
@@ -3593,7 +3593,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
-        <translation>Användning av rå inmatning förbättrar precisionen när du binder kontrollerspakar till muspekaren. Gör också att flera möss kan användas.</translation>
+        <translation>Användning av rå inmatning förbättrar precisionen när du binder kontrollspakar till muspekaren. Gör också att flera möss kan användas.</translation>
     </message>
     <message>
         <source>Horizontal Sensitivity:</source>
@@ -3666,7 +3666,7 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>&lt;strong&gt;Controller LED Settings&lt;/strong&gt;&lt;br&gt;
 The &quot;alternate&quot; color is used when analog mode is active.</source>
-        <translation>&lt;strong&gt;Inställningar för kontrollerns LED-lampor&lt;/strong&gt;&lt;br&gt;
+        <translation>&lt;strong&gt;Inställningar för handkontrollens LED-lampor&lt;/strong&gt;&lt;br&gt;
 Den ”alternativa” färgen används när analogt läge är aktivt.</translation>
     </message>
     <message>
@@ -3687,7 +3687,7 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tillåter vibrationer och LED-effekter för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Det här alternativet krävs inte för kabelanslutningar. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Om du aktiverar förbättrade rapporter kan det hända att din kontroller inte går att använda i andra program förrän du stänger av och slår på den igen.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tillåter vibrationer och LED-effekter för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Det här alternativet krävs inte för kabelanslutningar. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Om du aktiverar förbättrade rapporter kan det hända att din handkontroll inte går att använda i andra program förrän du stänger av och slår på den igen.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>DualShock 4 / DualSense Enhanced Mode (Bluetooth Only)</source>
@@ -3695,11 +3695,11 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-ingångskällan stöder de flesta kontroller och är det rekommenderade alternativet. Förbättrat läge kan krävas för vibrations-/LED-funktionen hos DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;avancerade alternativ&lt;/span&gt;&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-ingångskällan stöder de flesta handkontroller och är det rekommenderade alternativet. Förbättrat läge kan krävas för vibrations-/LED-funktionen hos DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;avancerade alternativ&lt;/span&gt;&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>LEDs</source>
-        <translation>Lysdioder</translation>
+        <translation>LED</translation>
     </message>
     <message>
         <source>Enables the SDL input source and detection of controllers.</source>
@@ -3723,7 +3723,7 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>The DirectInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL is recommended instead.</source>
-        <translation>DirectInput-källan ger stöd för äldre kontroller som inte stöder XInput. Istället rekommenderas att du använder SDL för att komma åt dessa kontroller.</translation>
+        <translation>DirectInput-källan ger stöd för äldre handkontroller som inte stöder XInput. Istället rekommenderas att du använder SDL för att komma åt dessa handkontroller.</translation>
     </message>
     <message>
         <source>Enable DirectInput Source</source>
@@ -3822,7 +3822,7 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>%1%</source>
-        <translation>%1%</translation>
+        <translation>%1 %</translation>
     </message>
     <message>
         <source>Set Frequency</source>
@@ -3839,8 +3839,8 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     <message numerus="yes">
         <source>Macro will toggle buttons every %n frame(s).</source>
         <translation>
-            <numerusform>Makrot kommer att växla knappar var %n bildruta.</numerusform>
-            <numerusform>Makrot kommer att växla knappar var %n bildrutor.</numerusform>
+            <numerusform>Makrot kommer att växla knappar varje bildruta.</numerusform>
+            <numerusform>Makrot kommer att växla knappar var %n:e bildrutor.</numerusform>
         </translation>
     </message>
 </context>
@@ -3893,15 +3893,15 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>DuckStation Controller Presets</source>
-        <translation>Handkontrollerförval för DuckStation</translation>
+        <translation>Handkontrollförval för DuckStation</translation>
     </message>
     <message>
         <source>Create Controller Preset</source>
-        <translation>Skapa handkontrollerförval</translation>
+        <translation>Skapa handkontrollförval</translation>
     </message>
     <message>
         <source>Enter the name for the new controller preset:</source>
-        <translation>Ange namnet för det nya handkontrollerförvalet:</translation>
+        <translation>Ange namnet för det nya handkontrollförvalet:</translation>
     </message>
     <message>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
@@ -3913,11 +3913,11 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     </message>
     <message>
         <source>Do you want to copy the current hotkey bindings from global settings to the new controller preset?</source>
-        <translation>Vill du kopiera de aktuella snabbtangentsbindningarna från globala inställningar till det nya handkontrollerförvalet?</translation>
+        <translation>Vill du kopiera de aktuella snabbtangentsbindningarna från globala inställningar till det nya handkontrollförvalet?</translation>
     </message>
     <message>
         <source>Load Controller Preset</source>
-        <translation>Läs in handkontrollerförval</translation>
+        <translation>Läs in handkontrollförval</translation>
     </message>
     <message>
         <source>Are you sure you want to apply the controller preset named &apos;%1&apos;?
@@ -3925,7 +3925,7 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>Är du säker på att du vill tillämpa handkontrollerförvalet med namnet &apos;%1&apos;?
+        <translation>Är du säker på att du vill tillämpa handkontrollförvalet med namnet &apos;%1&apos;?
 
 Alla aktuella globala bindningar kommer att tas bort och förvalsbindningarna att läsas in.
 
@@ -3933,13 +3933,13 @@ Du kan inte ångra denna åtgärd.</translation>
     </message>
     <message>
         <source>Delete Controller Preset</source>
-        <translation>Ta bort handkontrollerförval</translation>
+        <translation>Ta bort handkontrollförval</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation>Är du säker på att du vill ta bort handkontrollerförvalet med namnet &apos;%1&apos;?
+        <translation>Är du säker på att du vill ta bort handkontrollförvalet med namnet &apos;%1&apos;?
 
 Du kan inte ångra denna åtgärd.</translation>
     </message>
@@ -3953,7 +3953,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Controller preset reset to global settings.</source>
-        <translation>Handkontrollerförval nollställdes till globala inställningar.</translation>
+        <translation>Handkontrollförval nollställdes till globala inställningar.</translation>
     </message>
     <message>
         <source>Global Settings</source>
@@ -3971,18 +3971,18 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
-        <translation>Handkontrollerförvalet med namnet &apos;%1&apos; kan inte hittas.</translation>
+        <translation>Handkontrollförvalet med namnet &apos;%1&apos; kan inte hittas.</translation>
     </message>
     <message>
         <source>DuckStation Controller Settings</source>
-        <translation>Handkontrollerinställningar för DuckStation</translation>
+        <translation>Handkontrollinställningar för DuckStation</translation>
     </message>
 </context>
 <context>
     <name>ControllerType</name>
     <message>
         <source>Analog Controller</source>
-        <translation>Analog handkontroller</translation>
+        <translation>Analog handkontroll</translation>
     </message>
     <message>
         <source>Analog Joystick</source>
@@ -3994,11 +3994,11 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Digital Controller</source>
-        <translation>Digital handkontroller</translation>
+        <translation>Digital handkontroll</translation>
     </message>
     <message>
         <source>Pop&apos;n Controller</source>
-        <translation>Pop&apos;n Controller</translation>
+        <translation>Pop&apos;n controller</translation>
     </message>
     <message>
         <source>Densha de Go! Controller</source>
@@ -4014,7 +4014,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>NeGcon (Rumble)</source>
-        <translation>NeGcon (Rumble)</translation>
+        <translation>NeGcon (rumble)</translation>
     </message>
     <message>
         <source>Mouse</source>
@@ -4097,7 +4097,7 @@ Vill du %2 ändå?</translation>
 This file is approximately 206KB, do you want to download it now?</source>
         <translation>Din DuckStation-installation har inte padtest-programmet tillgängligt.
 
-Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
+Denna fil är ungefär 206 kB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Failed to save state: %1</source>
@@ -4275,7 +4275,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när senare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Power Transition Frames</source>
@@ -5067,7 +5067,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation> %</translation>
     </message>
     <message>
         <source>Reset Normal Speed</source>
@@ -5143,7 +5143,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>% (Normal Speed)</source>
-        <translation>% (normal hastighet)</translation>
+        <translation> % (normal hastighet)</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
@@ -5277,14 +5277,14 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
         <translation>
             <numerusform>Spola tillbaka %n bildruta, varaktighet %1 sekund(er) kommer kräva %2MB RAM och %3MB VRAM.</numerusform>
-            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kommer kräva %2MB RAM och %3MB VRAM.</numerusform>
+            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kommer kräva %2 MB RAM och %3 MB VRAM.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
         <translation>
             <numerusform>Spola tillbaka %n bildruta, varaktighet %1 sekund(er) kräver %2MB RAM.</numerusform>
-            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kräver %2MB RAM.</numerusform>
+            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kräver %2 MB RAM.</numerusform>
         </translation>
     </message>
     <message>
@@ -5305,7 +5305,7 @@ Om du klickar på Återställ återställs serienumret till värdet som lästes 
     </message>
     <message>
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>En tillbakaspolningsbuffert på %1MB rymmer %n tillstånd och låter dig spola tillbaka upp till %2 sekund(er).</translation>
+        <translation>En tillbakaspolningsbuffert på %1 MB rymmer %n tillstånd och låter dig spola tillbaka upp till %2 sekund(er).</translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -5756,19 +5756,19 @@ Vill du {1} ändå?</translation>
     </message>
     <message>
         <source>Enter the name of the controller preset you wish to create.</source>
-        <translation>Ange namnet på det kontrollerförval som du vill skapa.</translation>
+        <translation>Ange namnet på det kontrollförval som du vill skapa.</translation>
     </message>
     <message>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
-        <translation>Misslyckades med att spara kontrollerförvalet &apos;{}&apos;.</translation>
+        <translation>Misslyckades med att spara kontrollförvalet &apos;{}&apos;.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
-        <translation>Ersätter dessa inställningar med ett tidigare sparat förval för kontrollern.</translation>
+        <translation>Ersätter dessa inställningar med ett tidigare sparat förval för handkontrollen.</translation>
     </message>
     <message>
         <source>Reset Controller Settings</source>
-        <translation>Nollställ kontrollerinställningar</translation>
+        <translation>Nollställ kontrollinställningar</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -5860,7 +5860,7 @@ Vill du {1} ändå?</translation>
     </message>
     <message>
         <source>2x (Quad Speed)</source>
-        <translation>2x (fyrdubbel hastighet)</translation>
+        <translation>2x (4x hastighet)</translation>
     </message>
     <message>
         <source>3x</source>
@@ -5960,7 +5960,7 @@ Vill du {1} ändå?</translation>
     </message>
     <message>
         <source>All Time: {}</source>
-        <translation>All tid: {}</translation>
+        <translation>Total tid: {}</translation>
     </message>
     <message>
         <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
@@ -6002,7 +6002,7 @@ Vill du {1} ändå?</translation>
         <source>Are you sure you want to clear all mappings for this controller?
 
 You cannot undo this action.</source>
-        <translation>Är du säker på att du vill tömma alla mappningar för den här kontrollern?
+        <translation>Är du säker på att du vill tömma alla mappningar för den här handkontrollen?
 
 Du kan inte ångra den här åtgärden.</translation>
     </message>
@@ -6204,7 +6204,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Controller mapping cleared.</source>
-        <translation>Kontrollerns mappning tömdes.</translation>
+        <translation>Kontrollens mappning tömdes.</translation>
     </message>
     <message>
         <source>Controller preset &apos;{}&apos; loaded.</source>
@@ -6252,7 +6252,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
-        <translation>Kunde inte hitta några cd/dvd-rom-enheter. Försäkra dig om att du har en enhet ansluten och tillräcklig behörighet att komma åt den.</translation>
+        <translation>Kunde inte hitta några CD/DVD-ROM-enheter. Försäkra dig om att du har en enhet ansluten och tillräcklig behörighet att komma åt den.</translation>
     </message>
     <message>
         <source>Cover Settings</source>
@@ -6476,7 +6476,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Enable 8MB RAM</source>
-        <translation>Aktivera 8MB RAM</translation>
+        <translation>Aktivera 8 MB RAM</translation>
     </message>
     <message>
         <source>Enable Discord Presence</source>
@@ -6564,7 +6564,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
-        <translation>Aktiverar ytterligare tre kontrollerplatser på varje port. Stöds inte i alla spel.</translation>
+        <translation>Aktiverar ytterligare tre kontrollplatser på varje port. Stöds inte i alla spel.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement.</source>
@@ -6686,7 +6686,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation>Tvingar både CD-DA och XA-ljud från cd-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
+        <translation>Tvingar både CD-DA och XA-ljud från CD-ROM att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
     </message>
     <message>
         <source>Frame Time Buffer</source>
@@ -7030,7 +7030,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
-        <translation>Tysta cd-ljud</translation>
+        <translation>Tysta CD-ljud</translation>
     </message>
     <message>
         <source>No Game Selected</source>
@@ -7074,7 +7074,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
-        <translation>Ingen (dubbel hastighet)</translation>
+        <translation>Ingen (2x hastighet)</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
@@ -7178,7 +7178,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>Pausar emulatorn när en handkontroller med bindningar kopplas från.</translation>
+        <translation>Pausar emulatorn när en handkontroll med bindningar kopplas från.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
@@ -7218,7 +7218,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Port {} Controller Type</source>
-        <translation>Port {} kontrollertyp</translation>
+        <translation>Port {} kontrolltyp</translation>
     </message>
     <message>
         <source>Post-Processing Settings</source>
@@ -7266,7 +7266,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>Tryck på en knapp eller spak på handkontrollern nu.</translation>
+        <translation>Tryck på en knapp eller spak på handkontrollen nu.</translation>
     </message>
     <message>
         <source>Quick Save</source>
@@ -7334,7 +7334,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Removes all bindings for this controller port.</source>
-        <translation>Tar bort alla bindningar för den här kontrollerporten.</translation>
+        <translation>Tar bort alla bindningar för den här kontrollporten.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -7430,7 +7430,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Save Controller Preset</source>
-        <translation>Spara kontrollerförval</translation>
+        <translation>Spara kontrollförval</translation>
     </message>
     <message>
         <source>Save Preset</source>
@@ -7518,7 +7518,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Selects the type of emulated controller for this port.</source>
-        <translation>Väljer typ av emulerad kontroller för den här porten.</translation>
+        <translation>Väljer typ av emulerad handkontroll för den här porten.</translation>
     </message>
     <message>
         <source>Session: {}</source>
@@ -7574,7 +7574,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Show Controller Input</source>
-        <translation>Visa kontrollerinmatning</translation>
+        <translation>Visa kontrollinmatning</translation>
     </message>
     <message>
         <source>Show Enhancement Settings</source>
@@ -7758,7 +7758,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers.</source>
-        <translation>SDL-inmatningskällan har stöd för de flesta kontroller.</translation>
+        <translation>SDL-inmatningskällan har stöd för de flesta handkontroller.</translation>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
@@ -7930,7 +7930,7 @@ Vill du {0} ändå?</translation>
     </message>
     <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
-        <translation>När denna funktion är aktiverad skrivs minneskort och kontroller över när sparade tillstånd läses in.</translation>
+        <translation>När denna funktion är aktiverad skrivs minneskort och handkontroller över när sparade tillstånd läses in.</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -8202,7 +8202,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Green Giant</source>
-        <translation>Gröna jätten</translation>
+        <translation>Green Giant</translation>
     </message>
     <message>
         <source>Last Played: </source>
@@ -8735,7 +8735,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Dark Ocean</source>
-        <translation>Mörkt hav</translation>
+        <translation>Dark Ocean</translation>
     </message>
     <message>
         <source>Database updated.</source>
@@ -8899,7 +8899,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>No controller presets available.</source>
-        <translation>Inga kontrollerförval tillgängliga.</translation>
+        <translation>Inga kontrollförval tillgängliga.</translation>
     </message>
     <message>
         <source>No devices with LEDs were detected.</source>
@@ -9273,8 +9273,8 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
-            <numerusform>%n replacement texture found.</numerusform>
-            <numerusform>%n replacement textures found.</numerusform>
+            <numerusform>%n ersättningstextur hittad.</numerusform>
+            <numerusform>%n ersättningstexturer hittade.</numerusform>
         </translation>
     </message>
     <message>
@@ -10081,7 +10081,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     </message>
     <message>
         <source>Please configure a supported controller from the following list:</source>
-        <translation>Konfigurera en handkontroller som stöds från följande lista:</translation>
+        <translation>Konfigurera en handkontroll som stöds från följande lista:</translation>
     </message>
     <message>
         <source>Controller in Port {0} ({1}) is not supported for this game.</source>
@@ -10369,7 +10369,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
         <translation>.cue (Cue-ark)
-.iso (enkelspårsavbild)
+.iso (enspårsavbild)
 .ecm (Error Code Modeling-avbild)
 .mds (Media Descriptor-sidofil)
 .ccd (CloneCD-avbild)
@@ -10451,11 +10451,11 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Controllers:</source>
-        <translation>Handkontroller:</translation>
+        <translation>Handkontroll:</translation>
     </message>
     <message>
         <source>Controller Preset:</source>
-        <translation>Handkontrollerförval:</translation>
+        <translation>Handkontrollförval:</translation>
     </message>
     <message>
         <source>Release Info:</source>
@@ -12277,7 +12277,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>%1 KB</source>
-        <translation>%1 KB</translation>
+        <translation>%1 kB</translation>
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
@@ -12300,7 +12300,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>Bindningar för Kontroller0/ButtonCircle</translation>
+        <translation>Bindningar för Controller0/ButtonCircle</translation>
     </message>
     <message>
         <source>Sensitivity:</source>
@@ -12336,7 +12336,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>%1%</source>
-        <translation>%1%</translation>
+        <translation>%1 %</translation>
     </message>
     <message>
         <source>Reset Sensitivity</source>
@@ -12455,7 +12455,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>System paused because controller {} was disconnected.</source>
-        <translation>Systemet pausade därför att kontroller {} kopplades från.</translation>
+        <translation>Systemet pausade därför att handkontroll {} kopplades från.</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;{}&apos;. The controller/source may not support automatic mapping.</source>
@@ -12807,7 +12807,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när senare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när nyare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
@@ -13078,7 +13078,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>Fe&amp;lsök</translation>
+        <translation>&amp;Felsök</translation>
     </message>
     <message>
         <source>Switch GPU Renderer</source>
@@ -13110,11 +13110,11 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>C&amp;onsole</source>
-        <translation>K&amp;onsol</translation>
+        <translation>&amp;Konsol</translation>
     </message>
     <message>
         <source>View Third-Party Notices...</source>
-        <translation>Tredjepartslicenser...</translation>
+        <translation>&amp;Tredjepartslicenser...</translation>
     </message>
     <message>
         <source>&amp;About DuckStation...</source>
@@ -13154,7 +13154,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Show CD-ROM State</source>
-        <translation>Visa cd-rom-tillstånd</translation>
+        <translation>Visa CD-ROM-tillstånd</translation>
     </message>
     <message>
         <source>Show SPU State</source>
@@ -13182,11 +13182,11 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
-        <translation>Minneskorts&amp;redigerare</translation>
+        <translation>&amp;Minneskortsredigerare</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
-        <translation>CPU-felsöka&amp;re</translation>
+        <translation>CPU-&amp;felsökare</translation>
     </message>
     <message>
         <source>Big Picture</source>
@@ -13194,7 +13194,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Memory &amp;Scanner</source>
-        <translation>Minness&amp;kanner</translation>
+        <translation>Minnes&amp;skanner</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
@@ -13214,15 +13214,15 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>&amp;Tools</source>
-        <translation>Ver&amp;ktyg</translation>
+        <translation>&amp;Verktyg</translation>
     </message>
     <message>
         <source>Start &amp;File...</source>
-        <translation>Starta &amp;fil...</translation>
+        <translation>Starta f&amp;il...</translation>
     </message>
     <message>
         <source>Start &amp;Disc...</source>
-        <translation>Starta s&amp;kiva...</translation>
+        <translation>Starta &amp;skiva...</translation>
     </message>
     <message>
         <source>Start &amp;BIOS</source>
@@ -13230,7 +13230,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>&amp;Rescan All Games</source>
-        <translation>Sök ig&amp;enom alla spel igen</translation>
+        <translation>Sök &amp;igenom alla spel igen</translation>
     </message>
     <message>
         <source>&amp;Pause</source>
@@ -13238,15 +13238,15 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
-        <translation>Avs&amp;luta</translation>
+        <translation>&amp;Avsluta</translation>
     </message>
     <message>
         <source>&amp;Controllers</source>
-        <translation>Handko&amp;ntroller</translation>
+        <translation>&amp;Handkontroller</translation>
     </message>
     <message>
         <source>&amp;Graphics</source>
-        <translation>&amp;Grafik</translation>
+        <translation>Gra&amp;fik</translation>
     </message>
     <message>
         <source>&amp;GitHub Repository...</source>
@@ -13258,11 +13258,11 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Check for &amp;Updates...</source>
-        <translation>Leta e&amp;fter uppdateringar...</translation>
+        <translation>Leta efter &amp;uppdateringar...</translation>
     </message>
     <message>
         <source>About &amp;Qt...</source>
-        <translation>Om &amp;Qt...</translation>
+        <translation>O&amp;m Qt...</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -13270,31 +13270,31 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>From File...</source>
-        <translation>Från fil...</translation>
+        <translation>Från &amp;fil...</translation>
     </message>
     <message>
         <source>From Device...</source>
-        <translation>Från enhet...</translation>
+        <translation>Från &amp;enhet...</translation>
     </message>
     <message>
         <source>From Game List...</source>
-        <translation>Från spellista...</translation>
+        <translation>Från &amp;spellista...</translation>
     </message>
     <message>
         <source>Remove Disc</source>
-        <translation>Ta bort skiva</translation>
+        <translation>&amp;Ta bort skiva</translation>
     </message>
     <message>
         <source>&amp;Screenshot</source>
-        <translation>&amp;Skärmbild</translation>
+        <translation>Skär&amp;mbild</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
-        <translation>Minn&amp;eskort</translation>
+        <translation>&amp;Minneskort</translation>
     </message>
     <message>
         <source>&amp;Toolbar</source>
-        <translation>Ve&amp;rktygsrad</translation>
+        <translation>&amp;Verktygsrad</translation>
     </message>
     <message>
         <source>Lock Toolbar</source>
@@ -13302,19 +13302,19 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>&amp;Status Bar</source>
-        <translation>Statusra&amp;d</translation>
+        <translation>&amp;Statusrad</translation>
     </message>
     <message>
         <source>Game &amp;List</source>
-        <translation>Spellis&amp;ta</translation>
+        <translation>&amp;Spellista</translation>
     </message>
     <message>
         <source>System &amp;Display</source>
-        <translation>Systemskä&amp;rm</translation>
+        <translation>Systemskär&amp;m</translation>
     </message>
     <message>
         <source>Game &amp;Properties</source>
-        <translation>Spele&amp;genskaper</translation>
+        <translation>Spelegenskape&amp;r</translation>
     </message>
     <message>
         <source>Game &amp;Grid</source>
@@ -13370,7 +13370,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation>Kunde inte hitta några cd-rom-enheter. Försäkra dig om att du har en cd-rom-enhet ansluten och tillräckliga rättigheter att komma åt den.</translation>
+        <translation>Kunde inte hitta några CD-ROM-enheter. Försäkra dig om att du har en CD-ROM-enhet ansluten och tillräckliga rättigheter att komma åt den.</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -13658,7 +13658,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Dark Ocean</source>
-        <translation>Mörkt hav</translation>
+        <translation>Dark Ocean</translation>
     </message>
     <message>
         <source>Dark Ruby</source>
@@ -13682,7 +13682,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Green Giant</source>
-        <translation>Gröna jätten</translation>
+        <translation>Green Giant</translation>
     </message>
     <message>
         <source>Images (*.jpg *.jpeg *.png *.webp)</source>
@@ -13694,7 +13694,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
-        <translation>Uppdatera prestationsfra&amp;msteg</translation>
+        <translation>Uppdatera prestations&amp;framsteg</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
@@ -13778,11 +13778,11 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Sort B&amp;y</source>
-        <translation>Sortera e&amp;fter</translation>
+        <translation>Sortera &amp;efter</translation>
     </message>
     <message>
         <source>Cha&amp;nge Disc</source>
-        <translation>&amp;Byt skiva</translation>
+        <translation>Byt s&amp;kiva</translation>
     </message>
     <message>
         <source>&amp;Cheats</source>
@@ -13790,7 +13790,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Sa&amp;ve State</source>
-        <translation>Spara &amp;tillstånd</translation>
+        <translation>Spa&amp;ra tillstånd</translation>
     </message>
     <message>
         <source>Allows you to record audio and/or video from the content.</source>
@@ -13798,7 +13798,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Media Capt&amp;ure</source>
-        <translation>Mediafån&amp;gst</translation>
+        <translation>Mediaf&amp;ångst</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
@@ -13814,7 +13814,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Scan &amp;For New Games</source>
-        <translation>Sök &amp;efter nya spel</translation>
+        <translation>Sök efter n&amp;ya spel</translation>
     </message>
     <message>
         <source>Searches for new games added since the last refresh.</source>
@@ -13830,7 +13830,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Restart Game</source>
-        <translation>&amp;Starta om spelet</translation>
+        <translation>Starta &amp;om spelet</translation>
     </message>
     <message>
         <source>Restart</source>
@@ -13874,7 +13874,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Configures options and bindings for the emulated controllers.</source>
-        <translation>Konfigurerar alternativ och bindningar för de emulerade kontrollerna.</translation>
+        <translation>Konfigurerar alternativ och bindningar för de emulerade handkontrollerna.</translation>
     </message>
     <message>
         <source>Hot&amp;keys</source>
@@ -13898,7 +13898,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>On-&amp;Screen Display</source>
-        <translation>&amp;Skärmvisning</translation>
+        <translation>Skärm&amp;visning</translation>
     </message>
     <message>
         <source>These options determine the behavior of the messages that are displayed while content is running.</source>
@@ -13906,7 +13906,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Capt&amp;ure</source>
-        <translation>Fån&amp;ga</translation>
+        <translation>F&amp;ånga</translation>
     </message>
     <message>
         <source>These options determine how screenshots and videos are captured by the application.</source>
@@ -13962,7 +13962,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Ac&amp;hievements</source>
-        <translation>Pres&amp;tationer</translation>
+        <translation>&amp;Prestationer</translation>
     </message>
     <message>
         <source>Configures options related to RetroAchievements.</source>
@@ -13986,7 +13986,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Add Game Director&amp;y...</source>
-        <translation>Lägg till spel&amp;katalog...</translation>
+        <translation>L&amp;ägg till spelkatalog...</translation>
     </message>
     <message>
         <source>Adds a new directory that will be searched for game files.</source>
@@ -14026,7 +14026,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Loc&amp;k Toolbar</source>
-        <translation>Lå&amp;s verktygsrad</translation>
+        <translation>&amp;Lås verktygsrad</translation>
     </message>
     <message>
         <source>Controls whether the toolbar can be moved.</source>
@@ -14082,11 +14082,11 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Clear List Backgro&amp;und</source>
-        <translation>Töm listbakgr&amp;und</translation>
+        <translation>T&amp;öm listbakgrund</translation>
     </message>
     <message>
         <source>Refresh &amp;Achievement Database</source>
-        <translation>Uppdatera &amp;prestationsdatabas</translation>
+        <translation>Uppdatera prestations&amp;databas</translation>
     </message>
     <message>
         <source>&amp;Animate Game Icons</source>
@@ -14094,7 +14094,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Föredra prestations&amp;ikoner</translation>
+        <translation>Föredra prestationsik&amp;oner</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -14102,7 +14102,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
-        <translation>Starta &amp;fångst</translation>
+        <translation>&amp;Starta fångst</translation>
     </message>
     <message>
         <source>Starts recording audio and video.</source>
@@ -14146,11 +14146,11 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Ad&amp;vanced</source>
-        <translation>Avance&amp;rat</translation>
+        <translation>&amp;Avancerat</translation>
     </message>
     <message>
         <source>&amp;Debugging</source>
-        <translation>&amp;Felsökning</translation>
+        <translation>Fels&amp;ökning</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -14158,7 +14158,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Res&amp;ume</source>
-        <translation>Återup&amp;pta</translation>
+        <translation>&amp;Återuppta</translation>
     </message>
     <message>
         <source>&amp;Show Toolbar</source>
@@ -14166,7 +14166,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>S&amp;mall Icons</source>
-        <translation>S&amp;må ikoner</translation>
+        <translation>&amp;Små ikoner</translation>
     </message>
     <message>
         <source>Show &amp;Labels</source>
@@ -14190,7 +14190,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Refresh Grid Covers</source>
-        <translation>&amp;Uppdatera rutnätsomslag</translation>
+        <translation>Upp&amp;datera rutnätsomslag</translation>
     </message>
     <message>
         <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
@@ -14214,7 +14214,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Öppnar eller stänger det kontrollerbaserade ”storbildsläget”.</translation>
+        <translation>Öppnar eller stänger det kontrollbaserade ”storbildsläget”.</translation>
     </message>
     <message>
         <source>Cover &amp;Downloader</source>
@@ -14238,7 +14238,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Open Te&amp;xture Directory...</source>
-        <translation>Öppna te&amp;xturkatalog...</translation>
+        <translation>Öppna &amp;texturkatalog...</translation>
     </message>
     <message>
         <source>Opens the directory used to store texture replacements.</source>
@@ -14270,7 +14270,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Free Camera</source>
-        <translation>&amp;Fri kamera</translation>
+        <translation>Fri &amp;kamera</translation>
     </message>
     <message>
         <source>Allows you to freely move the camera in supported games.</source>
@@ -14278,23 +14278,23 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Controller &amp;Test</source>
-        <translation>Handkontroller&amp;test</translation>
+        <translation>&amp;Handkontrolltest</translation>
     </message>
     <message>
         <source>Allows you to test emulated controller mappings.</source>
-        <translation>Gör det möjligt att testa emulerade kontrollermappningar.</translation>
+        <translation>Gör det möjligt att testa emulerade kontrollmappningar.</translation>
     </message>
     <message>
         <source>Controller Prese&amp;ts</source>
-        <translation>Handkontrollsför&amp;val</translation>
+        <translation>Han&amp;dkontrollförval</translation>
     </message>
     <message>
         <source>Creates or edits controller presets that can be applied to games.</source>
-        <translation>Skapar eller redigerar förval för kontroller som kan användas i spel.</translation>
+        <translation>Skapar eller redigerar förval för handkontroller som kan användas i spel.</translation>
     </message>
     <message>
         <source>&amp;Change List Background...</source>
-        <translation>Ä&amp;ndra listbakgrund...</translation>
+        <translation>&amp;Ändra listbakgrund...</translation>
     </message>
     <message>
         <source>Changes the background image shown in the game list/grid.</source>
@@ -14314,7 +14314,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Show Locali&amp;zed Titles</source>
-        <translation>Visa lokalan&amp;passade titlar</translation>
+        <translation>Visa lo&amp;kalanpassade titlar</translation>
     </message>
     <message>
         <source>Shows titles for games in their native language.</source>
@@ -14322,7 +14322,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Ascending</source>
-        <translation>S&amp;tigande</translation>
+        <translation>&amp;Stigande</translation>
     </message>
     <message>
         <source>&amp;Descending</source>
@@ -14334,7 +14334,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Memory &amp;Editor</source>
-        <translation>Minnesr&amp;edigerare</translation>
+        <translation>Minnes&amp;redigerare</translation>
     </message>
     <message>
         <source>Opens the memory editor window.</source>
@@ -14354,7 +14354,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Cl&amp;ose Game</source>
-        <translation>S&amp;täng spel</translation>
+        <translation>St&amp;äng spel</translation>
     </message>
     <message>
         <source>Close</source>
@@ -15393,7 +15393,7 @@ Fel: {1}</translation>
     <name>MultipleDeviceAutobindDialog</name>
     <message>
         <source>Select the devices from the list below that you want to bind to this controller.</source>
-        <translation>Välj de enheter i listan nedan som du vill binda till den här kontrollern.</translation>
+        <translation>Välj de enheter i listan nedan som du vill binda till den här handkontrollen.</translation>
     </message>
     <message>
         <source>Automatic Mapping Failed</source>
@@ -15608,7 +15608,7 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Lägeslysdiod</translation>
+        <translation>LED-läge</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -15753,11 +15753,11 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
-        <translation>Förinläsning av cd-avbild är inte tillgängligt för flerskivsavbilden &apos;{}&apos;</translation>
+        <translation>Förinläsning av CD-avbild är inte tillgängligt för flerskivsavbilden &apos;{}&apos;</translation>
     </message>
     <message>
         <source>Precaching CD image failed, it may be unreliable.</source>
-        <translation>Förcachning av cd-avbild misslyckades, kan orsaka något problem.</translation>
+        <translation>Förcachning av CD-avbild misslyckades, kan orsaka något problem.</translation>
     </message>
     <message>
         <source>Disabling PCDrv because no root directory is specified.</source>
@@ -15846,7 +15846,7 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>%</source>
-        <translation>%</translation>
+        <translation> %</translation>
     </message>
     <message>
         <source>Display Margins:</source>
@@ -15950,7 +15950,7 @@ Fel: {1}</translation>
     </message>
     <message>
         <source>Show Controller Input</source>
-        <translation>Visa kontrollerinmatning</translation>
+        <translation>Visa kontrollinmatning</translation>
     </message>
     <message>
         <source>Show Settings</source>
@@ -16077,7 +16077,7 @@ Fel: {1}</translation>
     <name>Pad</name>
     <message>
         <source>Save state contains controller type {0} in Port {1}.</source>
-        <translation>Sparat tillstånd innehåller kontrollertypen {0} i Port {1}.</translation>
+        <translation>Sparat tillstånd innehåller kontrolltypen {0} i port {1}.</translation>
     </message>
     <message>
         <source>Leaving {0} connected.</source>
@@ -16877,7 +16877,7 @@ Detta hindrar sannolikt DuckStation från att fungera korrekt. Ändra miljön s�
     </message>
     <message>
         <source>Allows the use of GCController/MFI for controller handling.</source>
-        <translation>Tillåter användning av GCController/MFI för hantering av kontroller.</translation>
+        <translation>Tillåter användning av GCController/MFI för hantering av handkontroller.</translation>
     </message>
     <message>
         <source>Force Digital Hat Inputs</source>
@@ -18232,7 +18232,7 @@ Du kan ändra detta senare med verktygsfältet i skrivbordsläget eller snabbkom
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Konfigurationen är färdig!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Du är nu klar för att starta spel.&lt;/p&gt;&lt;p&gt;Ytterligare alternativ finns tillgängliga i inställningsmenyn. Du kan även använda Storbildsläget för att navigera helt med en handkontroller.&lt;/p&gt;&lt;p&gt;Vi hoppas att du har kul med DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Konfigurationen är färdig!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Du är nu klar för att starta spel.&lt;/p&gt;&lt;p&gt;Ytterligare alternativ finns tillgängliga i inställningsmenyn. Du kan även använda Storbildsläget för att navigera helt med en handkontroll.&lt;/p&gt;&lt;p&gt;Vi hoppas att du har kul med DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>BIOS Directory:</source>
@@ -18292,7 +18292,7 @@ Du kan ändra detta senare med verktygsfältet i skrivbordsläget eller snabbkom
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Som standard mappar DuckStation tangentbordet till den virtuella handkontrollen. &lt;span style=&quot; font-weight:700;&quot;&gt;För att använda en extern handkontroll måste du först mappa den. &lt;/span&gt;På den här skärmen kan du automatiskt mappa en ansluten handkontroll. Om handkontrollen inte är ansluten kan du ansluta den nu.&lt;/p&gt;&lt;p&gt;Om du vill ändra handkontrollsbindningarna mer ingående eller använda multitap öppnar du menyn Inställningar och väljer Handkontroller när du har slutfört installationsguiden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Som standard mappar DuckStation tangentbordet till den virtuella handkontrollen. &lt;span style=&quot; font-weight:700;&quot;&gt;För att använda en extern handkontroll måste du först mappa den. &lt;/span&gt;På den här skärmen kan du automatiskt mappa en ansluten handkontroll. Om handkontrollen inte är ansluten kan du ansluta den nu.&lt;/p&gt;&lt;p&gt;Om du vill ändra handkontrollbindningarna mer ingående eller använda multitap öppnar du menyn Inställningar och väljer Handkontroller när du har slutfört installationsguiden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Default (Keyboard)</source>
@@ -18362,7 +18362,7 @@ Any changes have been saved, and the wizard will run again next time you start D
         <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
         <comment>BIOS Count</comment>
         <translation>
-            <numerusform>%n BIOS-avbilder hittades. Du kan installera ytterligare BIOS-avbilder om du vill.</numerusform>
+            <numerusform>%n BIOS-avbild hittades. Du kan installera ytterligare BIOS-avbilder om du vill.</numerusform>
             <numerusform>%n BIOS-avbilder hittades. Du kan installera ytterligare BIOS-avbilder om du vill.</numerusform>
         </translation>
     </message>
@@ -18591,7 +18591,7 @@ Token genererades %2</translation>
     <message>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Misslyckades med att öppna cd-avbilden &apos;{}&apos; som används av sparat tillstånd:
+        <translation>Misslyckades med att öppna CD-avbilden &apos;{}&apos; som används av sparat tillstånd:
 </translation>
     </message>
     <message>
@@ -18707,7 +18707,7 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
     </message>
     <message>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB RAM är aktiverat och detta kan vara inkompatibelt med vissa spel.</translation>
+        <translation>8 MB RAM är aktiverat och detta kan vara inkompatibelt med vissa spel.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
@@ -18735,7 +18735,7 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
     </message>
     <message>
         <source>8MB RAM disabled.</source>
-        <translation>8MB RAM inaktiverat.</translation>
+        <translation>8 MB RAM inaktiverat.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -19366,7 +19366,7 @@ Av juridiska skäl måste du skaffa ett BIOS från en faktisk PS1-/PS2-enhet som
     <message>
         <source>Dark Ocean</source>
         <comment>settings_theme_entries[3]</comment>
-        <translation>Mörkt hav</translation>
+        <translation>Dark Ocean</translation>
     </message>
     <message>
         <source>Touchscreen Press</source>
@@ -20055,7 +20055,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>%1$.1f%% of players have this achievement</source>
         <comment>achievement_rarity_format_string</comment>
-        <translation>%1$.1f%% av spelarna har den här prestationen</translation>
+        <translation>%1$.1f %% av spelarna har den här prestationen</translation>
     </message>
     <message>
         <source>%s (Hardcore Mode)</source>
@@ -20540,7 +20540,7 @@ Vill du %1$s ändå?</translation>
         <comment>edit_macro_button_repeat</comment>
         <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
         <translation>
-            <numerusform>Makrot växlar varje %d bildruta.</numerusform>
+            <numerusform>Makrot växlar varje bildruta.</numerusform>
             <numerusform>Makrot växlar var %d:e bildruta.</numerusform>
         </translation>
     </message>
@@ -20559,7 +20559,7 @@ Vill du %1$s ändå?</translation>
         <comment>edit_macro_button_summary_repeat</comment>
         <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
         <translation>
-            <numerusform>%1$s utlöser %2$s varje %3$d bildruta.</numerusform>
+            <numerusform>%1$s utlöser %2$s varje bildruta.</numerusform>
             <numerusform>%1$s utlöser %2$s var %3$d:e bildruta.</numerusform>
         </translation>
     </message>
@@ -21089,7 +21089,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>Green Giant</source>
         <comment>settings_theme_entries[9]</comment>
-        <translation>Gröna jätten</translation>
+        <translation>Green Giant</translation>
     </message>
     <message>
         <source>Pinky Pals</source>
@@ -21099,12 +21099,12 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>None (Double Speed)</source>
         <comment>settings_cdrom_read_speedup_entries[0]</comment>
-        <translation>Ingen (dubbel hastighet)</translation>
+        <translation>Ingen (2x hastighet)</translation>
     </message>
     <message>
         <source>2x (Quad Speed)</source>
         <comment>settings_cdrom_read_speedup_entries[1]</comment>
-        <translation>2x (fyrdubbel hastighet)</translation>
+        <translation>2x (4x hastighet)</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
@@ -21239,7 +21239,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <comment>settings_summary_pause_on_controller_disconnection</comment>
-        <translation>Pausar emulatorn när en handkontroller med bindningar kopplas från.</translation>
+        <translation>Pausar emulatorn när en handkontroll med bindningar kopplas från.</translation>
     </message>
     <message>
         <source>Game Screen Orientation</source>
@@ -21868,7 +21868,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
-        <translation>Visa kontrollerinmatning</translation>
+        <translation>Visa kontrollinmatning</translation>
     </message>
     <message>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
@@ -22073,7 +22073,7 @@ Vill du %1$s ändå?</translation>
     <message>
         <source>%.1f KB</source>
         <comment>memory_card_editor_file_size</comment>
-        <translation>%.1f KB</translation>
+        <translation>%.1f kB</translation>
     </message>
     <message>
         <source>%s (Deleted)</source>
@@ -23477,7 +23477,7 @@ Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     <message>
         <source>Enable 8MB RAM</source>
         <comment>settings_enable_8mb_ram</comment>
-        <translation>Aktivera 8MB RAM</translation>
+        <translation>Aktivera 8 MB RAM</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
@@ -23561,7 +23561,7 @@ Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     <message>
         <source>%1$d%% (%2$d MHz)</source>
         <comment>settings_cpu_overclock_value_format</comment>
-        <translation>%1$d%% (%2$d MHz)</translation>
+        <translation>%1$d %% (%2$d MHz)</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -23649,12 +23649,12 @@ Vill du importera en nu?</translation>
     <message>
         <source>Mute CD Audio</source>
         <comment>settings_mute_cd_audio</comment>
-        <translation>Tysta cd-ljud</translation>
+        <translation>Tysta CD-ljud</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <comment>settings_summary_mute_cd_audio</comment>
-        <translation>Tvingar både CD-DA och XA-ljud från cd-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
+        <translation>Tvingar både CD-DA och XA-ljud från CD-ROM att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
     </message>
     <message>
         <source>Crop Mode</source>
