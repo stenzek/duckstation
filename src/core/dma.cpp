@@ -333,13 +333,13 @@ u32 DMA::ReadRegister(u32 offset)
         return s_state.channels[channel_index].block_control.bits;
       }
       case 0x08:
+      case 0x0C: // mirror of channel control
       {
         TRACE_LOG("DMA[{}] channel control -> 0x{:08X}", static_cast<Channel>(channel_index),
                   s_state.channels[channel_index].channel_control.bits);
         return s_state.channels[channel_index].channel_control.bits;
       }
-      default:
-        break;
+        DefaultCaseIsUnreachable();
     }
   }
   else
@@ -382,6 +382,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
       }
 
       case 0x08:
+      case 0x0C: // mirror of channel control
       {
         // HACK: Due to running DMA in slices, we can't wait for the current halt time to finish before running the
         // first block of a new channel. This affects games like FF8, where they kick a SPU transfer while a GPU
@@ -431,8 +432,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         return;
       }
 
-      default:
-        break;
+        DefaultCaseIsUnreachable();
     }
   }
   else
