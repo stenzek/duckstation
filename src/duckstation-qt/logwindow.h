@@ -45,7 +45,35 @@ private:
   ALIGN_TO_CACHE_LINE std::atomic_int m_lines_pending{0};
 };
 
-class LogWindow : public QMainWindow
+class LogWindowBase : public QMainWindow
+{
+  Q_OBJECT
+
+protected:
+  LogWindowBase(const char* size_key_prefix, const QIcon& icon);
+  ~LogWindowBase();
+
+  void setWindowTitleForGame(const QString& title, const QString& game_title_format);
+  void destroyWindow();
+
+  void closeEvent(QCloseEvent* event) override;
+
+  bool m_destroying = false;
+
+private:
+  static constexpr int DEFAULT_WIDTH = 750;
+  static constexpr int DEFAULT_HEIGHT = 400;
+
+  void onSaveTriggered();
+
+  void saveSize();
+  void restoreSize();
+
+  LogWidget* m_log_widget;
+  const char* m_size_key_prefix;
+};
+
+class LogWindow : public LogWindowBase
 {
   Q_OBJECT
 
@@ -64,29 +92,14 @@ public:
 
   static void populateFilterMenu(QMenu* menu);
 
-protected:
-  void closeEvent(QCloseEvent* event) override;
-
 private:
-  static constexpr int DEFAULT_WIDTH = 750;
-  static constexpr int DEFAULT_HEIGHT = 400;
-  static constexpr int MAX_LINES = 1000;
-  static constexpr int BLOCK_UPDATES_THRESHOLD = 100;
-
   void createUi();
   void updateLogLevelUi();
   void setLogLevel(Log::Level level);
 
-  void onSaveTriggered();
-
-  void saveSize();
-  void restoreSize();
-
-  LogWidget* m_log_widget;
   QMenu* m_level_menu;
 
   bool m_attached_to_main_window = true;
-  bool m_destroying = false;
 };
 
 extern LogWindow* g_log_window;

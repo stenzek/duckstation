@@ -299,9 +299,120 @@ void LogWidget::logCallback(void* pUserParam, Log::MessageCategory cat, const ch
   }
 }
 
-LogWindow::LogWindow(bool attach_to_main) : QMainWindow(), m_attached_to_main_window(attach_to_main)
+LogWindowBase::LogWindowBase(const char* size_key_prefix, const QIcon& icon)
+  : QMainWindow(), m_size_key_prefix(size_key_prefix)
 {
+  setWindowIcon(icon);
   restoreSize();
+
+  m_log_widget = new LogWidget(this);
+  setCentralWidget(m_log_widget);
+
+  QMenu* log_menu = menuBar()->addMenu("&Log");
+  QtUtils::StylePopupMenu(log_menu);
+  QAction* action = log_menu->addAction(QCoreApplication::translate("LogWindow", "&Clear"));
+  connect(action, &QAction::triggered, m_log_widget, &LogWidget::clear);
+  action = log_menu->addAction(QCoreApplication::translate("LogWindow", "&Save..."));
+  connect(action, &QAction::triggered, this, &LogWindowBase::onSaveTriggered);
+}
+
+LogWindowBase::~LogWindowBase() = default;
+
+void LogWindowBase::setWindowTitleForGame(const QString& title, const QString& game_title_format)
+{
+  const QString& serial = QtHost::GetCurrentGameSerial();
+
+  if (QtHost::IsSystemValid() && !serial.isEmpty())
+  {
+    const QFileInfo fi(QtHost::GetCurrentGamePath());
+    setWindowTitle(game_title_format.arg(serial).arg(fi.fileName()));
+  }
+  else
+  {
+    setWindowTitle(title);
+  }
+}
+
+void LogWindowBase::destroyWindow()
+{
+  m_destroying = true;
+  close();
+  deleteLater();
+}
+
+void LogWindowBase::onSaveTriggered()
+{
+  const QString path =
+    QFileDialog::getSaveFileName(this, QCoreApplication::translate("LogWindow", "Select Log File"), QString(),
+                                 QCoreApplication::translate("LogWindow", "Log Files (*.txt)"));
+  if (path.isEmpty())
+    return;
+
+  QFile file(path);
+  if (!file.open(QFile::WriteOnly | QFile::Text))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s, u"Failed to open file for writing."_s);
+    return;
+  }
+
+  file.write(m_log_widget->toPlainText().toUtf8());
+  file.close();
+
+  m_log_widget->appendMessage(QLatin1StringView("LogWindow"),
+                              Log::PackCategory(Log::Channel::Host, Log::Level::Info, Log::Color::Default),
+                              QCoreApplication::translate("LogWindow", "Log was written to %1.\n").arg(path));
+}
+
+void LogWindowBase::closeEvent(QCloseEvent* event)
+{
+  if (!m_destroying)
+  {
+    event->ignore();
+    return;
+  }
+
+  saveSize();
+
+  QMainWindow::closeEvent(event);
+}
+
+void LogWindowBase::saveSize()
+{
+  const TinyString width_key = TinyString::from_format("{}Width", m_size_key_prefix);
+  const TinyString height_key = TinyString::from_format("{}Height", m_size_key_prefix);
+  const int current_width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, width_key, DEFAULT_WIDTH);
+  const int current_height = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, height_key, DEFAULT_HEIGHT);
+  const QSize wsize = size();
+
+  bool changed = false;
+  if (current_width != wsize.width())
+  {
+    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, width_key, wsize.width());
+    changed = true;
+  }
+  if (current_height != wsize.height())
+  {
+    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, height_key, wsize.height());
+    changed = true;
+  }
+
+  if (changed)
+    Host::CommitBaseSettingChanges();
+}
+
+void LogWindowBase::restoreSize()
+{
+  const int width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME,
+                                                 TinyString::from_format("{}Width", m_size_key_prefix), DEFAULT_WIDTH);
+  const int height = Core::GetBaseIntSettingValue(
+    Settings::UI_SECTION_NAME, TinyString::from_format("{}Height", m_size_key_prefix), DEFAULT_HEIGHT);
+  resize(width, height);
+}
+
+LogWindow::LogWindow(bool attach_to_main)
+  : LogWindowBase("LogWindow", QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s)),
+    m_attached_to_main_window(attach_to_main)
+{
   createUi();
 }
 
@@ -331,12 +442,9 @@ void LogWindow::updateSettings(bool defer_show)
     if (!defer_show)
       g_log_window->deferredShow();
   }
-  else if (g_log_window)
+  else
   {
-    g_log_window->m_destroying = true;
-    g_log_window->close();
-    g_log_window->deleteLater();
-    g_log_window = nullptr;
+    destroy();
   }
 }
 
@@ -345,9 +453,7 @@ void LogWindow::destroy()
   if (!g_log_window)
     return;
 
-  g_log_window->m_destroying = true;
-  g_log_window->close();
-  g_log_window->deleteLater();
+  g_log_window->destroyWindow();
   g_log_window = nullptr;
 }
 
@@ -381,46 +487,18 @@ bool LogWindow::deferredShow()
 
 void LogWindow::updateWindowTitle()
 {
-  QString title;
-
-  const QString& serial = QtHost::GetCurrentGameSerial();
-
-  if (QtHost::IsSystemValid() && !serial.isEmpty())
-  {
-    const QFileInfo fi(QtHost::GetCurrentGamePath());
-    title = tr("Log Window - %1 [%2]").arg(serial).arg(fi.fileName());
-  }
-  else
-  {
-    title = tr("Log Window");
-  }
-
-  setWindowTitle(title);
+  setWindowTitleForGame(tr("Log Window"), tr("Log Window - %1 [%2]"));
 }
 
 void LogWindow::createUi()
 {
-  setWindowIcon(QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s));
   setWindowFlag(Qt::CustomizeWindowHint, true);
   setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();
 
-  m_log_widget = new LogWidget(this);
-  setCentralWidget(m_log_widget);
-
   QAction* action;
 
-  QMenuBar* menu = new QMenuBar(this);
-  setMenuBar(menu);
-
-  QMenu* log_menu = menu->addMenu("&Log");
-  QtUtils::StylePopupMenu(log_menu);
-  action = log_menu->addAction(tr("&Clear"));
-  connect(action, &QAction::triggered, m_log_widget, &LogWidget::clear);
-  action = log_menu->addAction(tr("&Save..."));
-  connect(action, &QAction::triggered, this, &LogWindow::onSaveTriggered);
-
-  QMenu* settings_menu = menu->addMenu(tr("&Settings"));
+  QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));
   QtUtils::StylePopupMenu(settings_menu);
 
   action = settings_menu->addAction(tr("Log To &System Console"));
@@ -458,7 +536,7 @@ void LogWindow::createUi()
   }
   updateLogLevelUi();
 
-  QMenu* filters_menu = menu->addMenu(tr("&Channels"));
+  QMenu* filters_menu = menuBar()->addMenu(tr("&Channels"));
   QtUtils::StylePopupMenu(filters_menu);
   connect(filters_menu, &QMenu::aboutToShow, this, [filters_menu]() {
     filters_menu->clear();
@@ -497,67 +575,4 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
     action->setCheckable(true);
     action->setChecked(enabled);
   }
-}
-
-void LogWindow::onSaveTriggered()
-{
-  const QString path = QFileDialog::getSaveFileName(this, tr("Select Log File"), QString(), tr("Log Files (*.txt)"));
-  if (path.isEmpty())
-    return;
-
-  QFile file(path);
-  if (!file.open(QFile::WriteOnly | QFile::Text))
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, u"Error"_s, u"Failed to open file for writing."_s);
-    return;
-  }
-
-  file.write(m_log_widget->toPlainText().toUtf8());
-  file.close();
-
-  m_log_widget->appendMessage(QLatin1StringView("LogWindow"),
-                              Log::PackCategory(Log::Channel::Host, Log::Level::Info, Log::Color::Default),
-                              tr("Log was written to %1.\n").arg(path));
-}
-
-void LogWindow::closeEvent(QCloseEvent* event)
-{
-  if (!m_destroying)
-  {
-    event->ignore();
-    return;
-  }
-
-  saveSize();
-
-  QMainWindow::closeEvent(event);
-}
-
-void LogWindow::saveSize()
-{
-  const int current_width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", DEFAULT_WIDTH);
-  const int current_height = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", DEFAULT_HEIGHT);
-  const QSize wsize = size();
-
-  bool changed = false;
-  if (current_width != wsize.width())
-  {
-    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", wsize.width());
-    changed = true;
-  }
-  if (current_height != wsize.height())
-  {
-    Core::SetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", wsize.height());
-    changed = true;
-  }
-
-  if (changed)
-    Host::CommitBaseSettingChanges();
-}
-
-void LogWindow::restoreSize()
-{
-  const int width = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowWidth", DEFAULT_WIDTH);
-  const int height = Core::GetBaseIntSettingValue(Settings::UI_SECTION_NAME, "LogWindowHeight", DEFAULT_HEIGHT);
-  resize(width, height);
 }
