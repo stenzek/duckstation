@@ -122,11 +122,16 @@ public:
 
   ALWAYS_INLINE static GSVector2i cast(const GSVector2& v);
 
-  ALWAYS_INLINE void operator=(const GSVector2i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
-  ALWAYS_INLINE void operator=(s32 i)
+  ALWAYS_INLINE GSVector2i& operator=(const GSVector2i& v)
+  {
+    std::memcpy(S32, v.S32, sizeof(S32));
+    return *this;
+  }
+  ALWAYS_INLINE GSVector2i& operator=(s32 i)
   {
     x = i;
     y = i;
+    return *this;
   }
 
   ALWAYS_INLINE GSVector2i sat_s8(const GSVector2i& min, const GSVector2i& max) const
@@ -593,7 +598,11 @@ public:
 
   ALWAYS_INLINE static GSVector2 cast(const GSVector2i& v);
 
-  ALWAYS_INLINE void operator=(float f) { x = y = f; }
+  ALWAYS_INLINE GSVector2& operator=(float f)
+  {
+    x = y = f;
+    return *this;
+  }
 
   GSVector2 abs() const { return GSVector2(std::fabs(x), std::fabs(y)); }
 
@@ -952,13 +961,18 @@ public:
 
   ALWAYS_INLINE static GSVector4i cast(const GSVector4& v);
 
-  ALWAYS_INLINE void operator=(const GSVector4i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
-  ALWAYS_INLINE void operator=(s32 i)
+  ALWAYS_INLINE GSVector4i& operator=(const GSVector4i& v)
+  {
+    std::memcpy(S32, v.S32, sizeof(S32));
+    return *this;
+  }
+  ALWAYS_INLINE GSVector4i& operator=(s32 i)
   {
     x = i;
     y = i;
     z = i;
     w = i;
+    return *this;
   }
 
   // rect
@@ -1050,7 +1064,7 @@ public:
     ALL_LANES_32(ret.S32[i] = (S16[i * 2] * v.S16[i * 2]) + (S16[i * 2 + 1] * v.S16[i * 2 + 1]));
   }
 
-  GSVector4i addp_s32() const { return GSVector4i(x + y, z + w, 0, 0); }
+  GSVector4i addp_s32() const { return GSVector4i(x + y, z + w, x + y, z + w); }
 
   s32 addv_s32() const { return (S32[0] + S32[1] + S32[2] + S32[3]); }
 
@@ -1416,7 +1430,7 @@ public:
 
   GSVector4i mul16l(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] * v.S16[i]); }
 
-  GSVector4i mul16hrs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = ((S16[i] * v.S16[i]) >> 14) + 1); }
+  GSVector4i mul16hrs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (((S16[i] * v.S16[i]) >> 14) + 1) >> 1); }
 
   GSVector4i mul32l(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] * v.S32[i]); }
 
@@ -1829,7 +1843,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE void operator=(float f) { x = y = z = w = f; }
+  ALWAYS_INLINE GSVector4& operator=(float f)
+  {
+    x = y = z = w = f;
+    return *this;
+  }
 
   u32 rgba32() const { return GSVector4i(*this).rgba32(); }
 
@@ -1916,9 +1934,9 @@ public:
                      (mask.U32[2] & 0x80000000u) ? v.z : z, (mask.U32[3] & 0x80000000u) ? v.w : w);
   }
 
-  GSVector4 upl(const GSVector4& v) const { return GSVector4(x, y, v.x, v.y); }
+  GSVector4 upl(const GSVector4& v) const { return GSVector4(x, v.x, y, v.y); }
 
-  GSVector4 uph(const GSVector4& v) const { return GSVector4(z, w, v.z, v.w); }
+  GSVector4 uph(const GSVector4& v) const { return GSVector4(z, v.z, w, v.w); }
 
   GSVector4 upld(const GSVector4& v) const
   {
