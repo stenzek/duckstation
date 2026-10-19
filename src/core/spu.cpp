@@ -258,23 +258,26 @@ enum class ADSRPhase : u8
 
 struct Voice
 {
-  u16 current_address;
+  ADSRPhase adsr_phase;
+  bool has_samples;
+  bool ignore_loop_address;
+  bool is_first_block;
+
   VoiceRegisters regs;
   VoiceCounter counter;
-  ADPCMFlags current_block_flags;
-  bool is_first_block;
-  std::array<s16, NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
-  std::array<s16, 2> adpcm_last_samples;
+
   s32 last_volume;
 
   VolumeSweep left_volume;
   VolumeSweep right_volume;
 
   VolumeEnvelope adsr_envelope;
-  ADSRPhase adsr_phase;
   s16 adsr_target;
-  bool has_samples;
-  bool ignore_loop_address;
+  u16 current_address;
+  ADPCMFlags current_block_flags;
+
+  std::array<s16, NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK> current_block_samples;
+  std::array<s16, 2> adpcm_last_samples;
 
   bool IsOn() const { return adsr_phase != ADSRPhase::Off; }
 
