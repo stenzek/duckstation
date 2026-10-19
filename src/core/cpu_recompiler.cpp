@@ -492,6 +492,9 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
             if (rd != Reg::zero && rd == opcode_rt)
               goto is_unsafe;
             break;
+
+          case CopCommonInstruction::bcnc: // BCnF/BCnT
+            goto is_unsafe;
         }
       }
       else

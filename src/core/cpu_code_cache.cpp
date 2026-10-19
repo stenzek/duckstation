@@ -1017,6 +1017,15 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
       break;
     }
 
+    // Coprocessor branches are left to the interpreter, nothing uses them.
+    if (IsCoprocessorBranchInstruction(instruction))
+    {
+      if (is_branch_delay_slot)
+        instructions->pop_back();
+
+      break;
+    }
+
     InstructionInfo info;
     std::memset(&info, 0, sizeof(info));
 
@@ -1360,6 +1369,9 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
             case CopCommonInstruction::mtcn:
             case CopCommonInstruction::ctcn:
               BackpropSetReads(rt);
+              break;
+
+            case CopCommonInstruction::bcnc:
               break;
           }
         }

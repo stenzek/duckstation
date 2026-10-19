@@ -43,6 +43,7 @@ enum class ExecutionBreakType
 static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
 
 static void UpdateLoadDelay();
+static void ExecuteCopBranch(const Instruction inst);
 static void Branch(u32 target);
 static void FlushLoadDelay();
 static void FlushPipeline();
@@ -458,6 +459,21 @@ ALWAYS_INLINE_RELEASE void CPU::UpdateLoadDelay()
   g_state.load_delay_reg = g_state.next_load_delay_reg;
   g_state.load_delay_value = g_state.next_load_delay_value;
   g_state.next_load_delay_reg = Reg::count;
+}
+
+void CPU::ExecuteCopBranch(const Instruction inst)
+{
+  // Coprocessor branches need the coprocessor enabled, even cop0 in kernel mode.
+  if (!((g_state.cop0_regs.sr.bits >> (28 + inst.cop.cop_n)) & 1u))
+  {
+    RaiseException(Exception::CpU);
+    return;
+  }
+
+  // None of the coprocessors drive the condition input, so bcNf always branches and bcNt never does.
+  g_state.next_instruction_is_branch_delay_slot = true;
+  if (!(static_cast<u8>(inst.i.rt.GetValue()) & 1u))
+    Branch(g_state.pc + (inst.i.imm_sext32() << 2));
 }
 
 ALWAYS_INLINE_RELEASE void CPU::FlushLoadDelay()
@@ -1878,6 +1894,10 @@ restart_instruction:
           }
           break;
 
+          case CopCommonInstruction::bcnc:
+            ExecuteCopBranch(inst);
+            break;
+
           [[unlikely]] default:
             ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc, inst.bits);
             break;
@@ -1969,9 +1989,13 @@ restart_instruction:
           }
           break;
 
+          case static_cast<u8>(CopCommonInstruction::bcnc):
+            ExecuteCopBranch(inst);
+            break;
+
             // clang-format off
           [[unlikely]] case 1: [[unlikely]] case 3: [[unlikely]] case 5: [[unlikely]] case 7:
-          [[unlikely]] case 8: [[unlikely]] case 9: [[unlikely]] case 10: [[unlikely]] case 11:
+          [[unlikely]] case 9: [[unlikely]] case 10: [[unlikely]] case 11:
           [[unlikely]] case 12: [[unlikely]] case 13: [[unlikely]] case 14: [[unlikely]] case 15:
             // clang-format on
             ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc, inst.bits);
@@ -2041,10 +2065,12 @@ restart_instruction:
     }
     break;
 
-    // cop1/cop3 are essentially no-ops
+    // cop1/cop3 are essentially no-ops, except for branches
     BEGIN_INSTRUCTION(cop1)
     BEGIN_INSTRUCTION(cop3)
     {
+      if (inst.cop.IsCommonInstruction() && inst.cop.CommonOp() == CopCommonInstruction::bcnc)
+        ExecuteCopBranch(inst);
     }
     END_INSTRUCTION()
 

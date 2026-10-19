@@ -149,6 +149,7 @@ enum class CopCommonInstruction : u32
   cfcn = 0b0010,
   mtcn = 0b0100,
   ctcn = 0b0110,
+  bcnc = 0b1000,
 };
 
 enum class Cop0Instruction : u32
@@ -216,6 +217,7 @@ union Instruction
 // Instruction helpers.
 bool IsNopInstruction(const Instruction instruction);
 bool IsBranchInstruction(const Instruction instruction);
+bool IsCoprocessorBranchInstruction(const Instruction instruction);
 bool IsUnconditionalBranchInstruction(const Instruction instruction);
 bool IsDirectBranchInstruction(const Instruction instruction);
 VirtualMemoryAddress GetDirectBranchTarget(const Instruction instruction, VirtualMemoryAddress instruction_pc);

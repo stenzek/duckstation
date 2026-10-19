@@ -49,9 +49,21 @@ bool CPU::IsBranchInstruction(const Instruction instruction)
       }
     }
 
+    case InstructionOp::cop0:
+    case InstructionOp::cop1:
+    case InstructionOp::cop2:
+    case InstructionOp::cop3:
+      return IsCoprocessorBranchInstruction(instruction);
+
     default:
       return false;
   }
+}
+
+bool CPU::IsCoprocessorBranchInstruction(const Instruction instruction)
+{
+  return ((instruction.bits >> 28) == 0b0100 && instruction.cop.IsCommonInstruction() &&
+          instruction.cop.CommonOp() == CopCommonInstruction::bcnc);
 }
 
 bool CPU::IsUnconditionalBranchInstruction(const Instruction instruction)
