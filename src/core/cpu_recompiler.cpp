@@ -120,8 +120,8 @@ const void* CPU::Recompiler::Recompiler::CompileBlock(CodeCache::Block* block, u
     {
       if (!m_block_ended)
       {
-        // Block was truncated. Link it.
-        EndBlock(m_compiler_pc, false);
+        // Block was truncated. Link it, events are still checked between blocks like the interpreters.
+        EndBlock(m_compiler_pc, true);
       }
 
       break;
