@@ -3816,6 +3816,29 @@ VkImageMemoryBarrier VulkanDevice::GetColorBufferBarrier(const VulkanTexture* rt
           {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
 }
 
+void VulkanDevice::DrawWithBarrier(u32 vertex_count, u32 base_vertex, DrawBarrier type)
+{
+  // Non-indexed draws are only used for screen quads, which don't overlap themselves, so there's no per-primitive mode.
+  DebugAssert(m_current_pipeline->GetRenderPassFlags() & GPUPipeline::ColorFeedbackLoopActive);
+  DebugAssert(type != DrawBarrier::Full);
+  PreDrawCheck();
+
+  if (type == DrawBarrier::One)
+  {
+    DebugAssert(m_num_current_render_targets == 1);
+    s_stats.num_barriers++;
+
+    const VkImageMemoryBarrier barrier =
+      GetColorBufferBarrier(static_cast<VulkanTexture*>(m_current_render_targets[0]));
+    vkCmdPipelineBarrier(m_current_command_buffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
+                         &barrier);
+  }
+
+  s_stats.num_draws++;
+  vkCmdDraw(m_current_command_buffer, vertex_count, 1, base_vertex, 0);
+}
+
 void VulkanDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   PreDrawCheck();

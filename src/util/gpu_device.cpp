@@ -837,6 +837,11 @@ void GPUDevice::SetViewportAndScissor(const GSVector4i rc)
   SetScissor(rc);
 }
 
+void GPUDevice::DrawWithBarrier(u32 vertex_count, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barrier draws are not supported on this API.");
+}
+
 void GPUDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   Panic("Barrier draws are not supported on this API.");

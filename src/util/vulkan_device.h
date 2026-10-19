@@ -143,6 +143,7 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex, const void* push_constants,
                                     u32 push_constants_size) override;
+  void DrawWithBarrier(u32 vertex_count, u32 base_vertex, DrawBarrier type) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
   void DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
                                                const void* push_constants, u32 push_constants_size,

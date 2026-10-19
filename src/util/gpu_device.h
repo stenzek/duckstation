@@ -851,6 +851,7 @@ public:
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
   virtual void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
                                             const void* push_constants, u32 push_constants_size) = 0;
+  virtual void DrawWithBarrier(u32 vertex_count, u32 base_vertex, DrawBarrier type);
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type);
   virtual void DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
                                                        const void* push_constants, u32 push_constants_size,
