@@ -150,11 +150,7 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QLineEdit" name="dataInspectorUnsignedWord">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorUnsignedWord"/>
       </item>
       <item row="12" column="1">
        <widget class="QLineEdit" name="dataInspectorUTF8String">
@@ -164,11 +160,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="dataInspectorUnsignedHalfword">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorUnsignedHalfword"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_4">
@@ -178,11 +170,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="dataInspectorSignedByte">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorSignedByte"/>
       </item>
       <item row="14" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -290,11 +278,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="dataInspectorUnsignedByte">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorUnsignedByte"/>
       </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="dataInspectorAddress">
@@ -311,32 +295,16 @@
        </widget>
       </item>
       <item row="7" column="1">
-       <widget class="QLineEdit" name="dataInspectorUnsignedDoubleWord">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorUnsignedDoubleWord"/>
       </item>
       <item row="9" column="1">
-       <widget class="QLineEdit" name="dataInspectorFloat32">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorFloat32"/>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="dataInspectorSignedHalfword">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorSignedHalfword"/>
       </item>
       <item row="6" column="1">
-       <widget class="QLineEdit" name="dataInspectorSignedWord">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorSignedWord"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
@@ -346,11 +314,7 @@
        </widget>
       </item>
       <item row="10" column="1">
-       <widget class="QLineEdit" name="dataInspectorFloat64">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorFloat64"/>
       </item>
       <item row="12" column="0">
        <widget class="QLabel" name="label_12">
@@ -367,11 +331,7 @@
        </widget>
       </item>
       <item row="11" column="1">
-       <widget class="QLineEdit" name="dataInspectorASCIICharacter">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorASCIICharacter"/>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_8">
@@ -415,11 +375,7 @@
        </widget>
       </item>
       <item row="8" column="1">
-       <widget class="QLineEdit" name="dataInspectorSignedDoubleWord">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="dataInspectorSignedDoubleWord"/>
       </item>
      </layout>
     </widget>

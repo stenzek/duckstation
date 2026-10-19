@@ -53,6 +53,10 @@ private:
   void onDataInspectorEndianButtonToggled(QAbstractButton*, bool checked);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
+  void onDataInspectorIntegerEdited(QLineEdit* widget, int byte_size, bool is_signed);
+  void onDataInspectorFloatEdited(QLineEdit* widget, int byte_size);
+  void onDataInspectorCharacterEdited();
+  void writeDataInspectorValue(u64 value, int byte_size);
 
   QString formatNumber(u64 value, bool is_signed, int byte_size) const;
 

@@ -17,6 +17,7 @@
 #include <QtWidgets/QAbstractScrollArea>
 #include <QtWidgets/QFileDialog>
 #include <bit>
+#include <cstring>
 
 #include "moc_memoryeditorwindow.cpp"
 
@@ -241,6 +242,129 @@ void MemoryEditorWindow::onMemorySearchStringChanged(const QString&)
   m_next_memory_search_address = 0;
 }
 
+void MemoryEditorWindow::onDataInspectorIntegerEdited(QLineEdit* widget, int byte_size, bool is_signed)
+{
+  if (!widget->isModified())
+    return;
+
+  widget->setModified(false);
+
+  QString text = widget->text().trimmed();
+  const bool negative = text.startsWith(QChar('-'));
+  if (negative)
+    text = text.mid(1);
+
+  int base;
+  if (text.startsWith(QStringLiteral("0x")) || text.startsWith(QStringLiteral("0X")))
+  {
+    base = 16;
+    text = text.mid(2);
+  }
+  else if (m_ui.dataInspectorHexadecimal->isChecked())
+  {
+    base = 16;
+  }
+  else if (m_ui.dataInspectorOctal->isChecked() || (text.length() > 1 && text.startsWith(QChar('0'))))
+  {
+    base = 8;
+  }
+  else
+  {
+    base = 10;
+  }
+
+  const std::string text_str = text.toStdString();
+  std::string_view remaining;
+  const std::optional<u64> parsed = StringUtil::FromChars<u64>(text_str, base, &remaining);
+  if (parsed.has_value() && remaining.empty())
+  {
+    const u32 bits = static_cast<u32>(byte_size) * 8;
+    if (is_signed)
+    {
+      // positive values must fit in the signed range, negative values can go one further
+      const u64 limit = u64(1) << (bits - 1);
+      if (negative ? (parsed.value() <= limit) : (parsed.value() < limit))
+        writeDataInspectorValue(negative ? (u64(0) - parsed.value()) : parsed.value(), byte_size);
+    }
+    else if (!negative && (bits == 64 || parsed.value() < (u64(1) << bits)))
+    {
+      writeDataInspectorValue(parsed.value(), byte_size);
+    }
+  }
+
+  // reverts the text if invalid, the write completion will refresh it again
+  updateDataInspector();
+}
+
+void MemoryEditorWindow::onDataInspectorFloatEdited(QLineEdit* widget, int byte_size)
+{
+  if (!widget->isModified())
+    return;
+
+  widget->setModified(false);
+
+  bool ok;
+  const QString text = widget->text().trimmed();
+  if (byte_size == 4)
+  {
+    const float value = text.toFloat(&ok);
+    if (ok)
+      writeDataInspectorValue(std::bit_cast<u32>(value), byte_size);
+  }
+  else
+  {
+    const double value = text.toDouble(&ok);
+    if (ok)
+      writeDataInspectorValue(std::bit_cast<u64>(value), byte_size);
+  }
+
+  updateDataInspector();
+}
+
+void MemoryEditorWindow::onDataInspectorCharacterEdited()
+{
+  QLineEdit* const widget = m_ui.dataInspectorASCIICharacter;
+  if (!widget->isModified())
+    return;
+
+  widget->setModified(false);
+
+  // accepts the same format as is displayed, with or without quotes
+  QString text = widget->text().trimmed();
+  if (text.length() >= 2 && text.startsWith(QChar('\'')) && text.endsWith(QChar('\'')))
+    text = text.mid(1, text.length() - 2);
+
+  if (text.startsWith(QStringLiteral("\\x")))
+  {
+    const std::string text_str = text.mid(2).toStdString();
+    std::string_view remaining;
+    if (const std::optional<u8> value = StringUtil::FromChars<u8>(text_str, 16, &remaining);
+        value.has_value() && remaining.empty())
+    {
+      writeDataInspectorValue(value.value(), 1);
+    }
+  }
+  else if (text.length() == 1 && text[0].unicode() >= 0x20 && text[0].unicode() <= 0x7E)
+  {
+    writeDataInspectorValue(static_cast<u8>(text[0].unicode()), 1);
+  }
+
+  updateDataInspector();
+}
+
+void MemoryEditorWindow::writeDataInspectorValue(u64 value, int byte_size)
+{
+  const size_t address = m_ui.memoryView->selectedAddress();
+  if (address == MemoryViewWidget::INVALID_SELECTED_ADDRESS)
+    return;
+
+  if (m_ui.dataInspectorBigEndian->isChecked())
+    value = ByteSwap(value) >> (64 - byte_size * 8);
+
+  m_ui.memoryView->writeData(address - m_ui.memoryView->addressOffset(), &value, static_cast<size_t>(byte_size),
+                             [this]() { updateDataInspector(); });
+}
+
 QString MemoryEditorWindow::formatAddress(VirtualMemoryAddress address)
 {
   return QString::asprintf("0x%08X", static_cast<uint>(address));
@@ -248,7 +372,8 @@ QString MemoryEditorWindow::formatAddress(VirtualMemoryAddress address)
 
 void MemoryEditorWindow::setIfChanged(QLineEdit* const widget, const QString& text)
 {
-  if (widget->text() == text)
+  // don't clobber the value while the user is editing it
+  if (widget->text() == text || (widget->hasFocus() && widget->isModified()))
     return;
 
   widget->setText(text);
@@ -422,6 +547,29 @@ void MemoryEditorWindow::connectSignals()
   connect(m_ui.baseButtonGroup, &QButtonGroup::buttonToggled, this,
           &MemoryEditorWindow::onDataInspectorBaseButtonToggled);
 
+  connect(m_ui.dataInspectorUnsignedByte, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorUnsignedByte, 1, false); });
+  connect(m_ui.dataInspectorSignedByte, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorSignedByte, 1, true); });
+  connect(m_ui.dataInspectorUnsignedHalfword, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorUnsignedHalfword, 2, false); });
+  connect(m_ui.dataInspectorSignedHalfword, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorSignedHalfword, 2, true); });
+  connect(m_ui.dataInspectorUnsignedWord, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorUnsignedWord, 4, false); });
+  connect(m_ui.dataInspectorSignedWord, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorSignedWord, 4, true); });
+  connect(m_ui.dataInspectorUnsignedDoubleWord, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorUnsignedDoubleWord, 8, false); });
+  connect(m_ui.dataInspectorSignedDoubleWord, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorIntegerEdited(m_ui.dataInspectorSignedDoubleWord, 8, true); });
+  connect(m_ui.dataInspectorFloat32, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorFloatEdited(m_ui.dataInspectorFloat32, 4); });
+  connect(m_ui.dataInspectorFloat64, &QLineEdit::editingFinished, this,
+          [this]() { onDataInspectorFloatEdited(m_ui.dataInspectorFloat64, 8); });
+  connect(m_ui.dataInspectorASCIICharacter, &QLineEdit::editingFinished, this,
+          &MemoryEditorWindow::onDataInspectorCharacterEdited);
+
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &MemoryEditorWindow::onMemorySearchTriggered);
   connect(m_ui.memorySearchString, &QLineEdit::textChanged, this, &MemoryEditorWindow::onMemorySearchStringChanged);
 
@@ -532,6 +680,15 @@ void MemoryEditorWindow::updateMemoryViewRegion()
   const MemoryViewWidget::EditCallback edit_callback =
     ((region == Bus::MemoryRegion::RAM) ? static_cast<MemoryViewWidget::EditCallback>(edit_ram_callback) : nullptr);
   m_ui.memoryView->setData(start, mem_ptr, end - start, mem_writable, edit_callback);
+
+  for (QLineEdit* const widget :
+       {m_ui.dataInspectorUnsignedByte, m_ui.dataInspectorSignedByte, m_ui.dataInspectorUnsignedHalfword,
+        m_ui.dataInspectorSignedHalfword, m_ui.dataInspectorUnsignedWord, m_ui.dataInspectorSignedWord,
+        m_ui.dataInspectorUnsignedDoubleWord, m_ui.dataInspectorSignedDoubleWord, m_ui.dataInspectorFloat32,
+        m_ui.dataInspectorFloat64, m_ui.dataInspectorASCIICharacter})
+  {
+    widget->setReadOnly(!mem_writable);
+  }
 }
 
 void MemoryEditorWindow::updateDataInspector()
@@ -555,27 +712,23 @@ void MemoryEditorWindow::updateDataInspector()
     return;
   }
 
-  u8 value8 = 0;
-  u16 value16 = 0;
-  u32 value32 = 0;
-  u32 value64_high = 0;
-  u64 value64 = 0;
-  CPU::SafeReadMemoryWord(static_cast<VirtualMemoryAddress>(address), &value32);
-  CPU::SafeReadMemoryWord(static_cast<VirtualMemoryAddress>(address), &value64_high);
-  value64 = (ZeroExtend64(value64_high) << 32) | ZeroExtend64(value32);
+  // read through the view, so that VRAM/SPU RAM work too
+  const size_t offset = address - m_ui.memoryView->addressOffset();
+  u8 buf[8] = {};
+  m_ui.memoryView->readData(offset, buf, sizeof(buf));
+
+  u64 value64;
+  std::memcpy(&value64, buf, sizeof(value64));
+  u8 value8 = Truncate8(value64);
+  u16 value16 = Truncate16(value64);
+  u32 value32 = Truncate32(value64);
 
   const bool big_endian = m_ui.dataInspectorBigEndian->isChecked();
   if (big_endian)
   {
-    value8 = Truncate8(value32);
-    value16 = ByteSwap(Truncate16(value32));
+    value16 = ByteSwap(value16);
     value32 = ByteSwap(value32);
     value64 = ByteSwap(value64);
-  }
-  else
-  {
-    value8 = Truncate8(value32);
-    value16 = Truncate16(value32);
   }
 
   setIfChanged(m_ui.dataInspectorAddress, formatAddress(static_cast<VirtualMemoryAddress>(address)));
@@ -592,30 +745,18 @@ void MemoryEditorWindow::updateDataInspector()
 
   if (value8 >= 0x20 && value8 <= 0x7E)
   {
-    m_ui.dataInspectorASCIICharacter->setText(QStringLiteral("'%1'").arg(static_cast<QChar>(value8)));
+    setIfChanged(m_ui.dataInspectorASCIICharacter, QStringLiteral("'%1'").arg(static_cast<QChar>(value8)));
 
-    SmallString str;
-    CPU::SafeReadMemoryCString(static_cast<VirtualMemoryAddress>(address), &str, 32);
+    char str[32];
+    const size_t str_length = m_ui.memoryView->readData(offset, str, sizeof(str));
 
-    // only display printable characters
-    for (size_t i = 0; i < str.length(); i++)
-    {
-      if (str[i] < 0x20 || str[i] > 0x7E)
-      {
-        str.resize(static_cast<u32>(i));
-        break;
-      }
-    }
-    if (!str.empty())
-    {
-      str.prepend('\"');
-      str.append('\"');
-      setIfChanged(m_ui.dataInspectorUTF8String, QtUtils::StringViewToQString(str));
-    }
-    else
-    {
-      m_ui.dataInspectorUTF8String->clear();
-    }
+    // only display printable characters, first is always printable
+    size_t length = 1;
+    while (length < str_length && str[length] >= 0x20 && str[length] <= 0x7E)
+      length++;
+
+    setIfChanged(m_ui.dataInspectorUTF8String,
+                 QStringLiteral("\"%1\"").arg(QString::fromLatin1(str, static_cast<qsizetype>(length))));
   }
   else
   {

@@ -1,10 +1,15 @@
 #include "memoryviewwidget.h"
 #include "qthost.h"
 
+#include "core/host.h"
+#include "core/system.h"
+
+#include <QtCore/QPointer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QScrollBar>
+#include <array>
 #include <cstring>
 
 #include "moc_memoryviewwidget.cpp"
@@ -73,6 +78,46 @@ void MemoryViewWidget::setData(size_t address_offset, void* data_ptr, size_t dat
   m_last_data.clear();
   adjustContent();
   saveCurrentData();
+}
+
+size_t MemoryViewWidget::readData(size_t offset, void* dst, size_t size) const
+{
+  if (!m_data || offset >= m_data_size)
+    return 0;
+
+  const size_t count = std::min(size, m_data_size - offset);
+  std::memcpy(dst, static_cast<const u8*>(m_data) + offset, count);
+  return count;
+}
+
+bool MemoryViewWidget::writeData(size_t offset, const void* src, size_t size,
+                                 std::function<void()> on_complete /* = {} */)
+{
+  std::array<u8, 8> bytes;
+  if (!m_data || !m_data_editable || size > bytes.size() || offset >= m_data_size || size > (m_data_size - offset))
+    return false;
+
+  std::memcpy(bytes.data(), src, size);
+  Host::RunOnCoreThread([widget = QPointer(this), dst = static_cast<u8*>(m_data) + offset, bytes, offset, size,
+                         edit_callback = m_edit_callback, on_complete = std::move(on_complete)]() mutable {
+    if (!System::IsValid())
+      return;
+
+    std::memcpy(dst, bytes.data(), size);
+    if (edit_callback)
+      edit_callback(offset, size);
+
+    Host::RunOnUIThread([widget = std::move(widget), on_complete = std::move(on_complete)]() {
+      if (!widget)
+        return;
+
+      widget->forceRefresh();
+      if (on_complete)
+        on_complete();
+    });
+  });
+
+  return true;
 }
 
 void MemoryViewWidget::setHighlightRange(size_t start, size_t end)
