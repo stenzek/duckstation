@@ -127,6 +127,7 @@ void MemoryEditorWindow::onDataInspectorEndianButtonToggled(QAbstractButton*, bo
 void MemoryEditorWindow::onMemorySearchTriggered()
 {
   m_ui.memoryView->clearHighlightRange();
+  m_ui.memorySearchString->setStyleSheet(QString());
 
   const QString pattern_str = m_ui.memorySearchString->text();
   if (pattern_str.isEmpty())
@@ -203,18 +204,18 @@ void MemoryEditorWindow::onMemorySearchTriggered()
 
   std::optional<PhysicalMemoryAddress> found_address =
     Bus::SearchMemory(m_next_memory_search_address, pattern.data(), mask.data(), static_cast<u32>(pattern.size()));
-  bool wrapped_around = false;
   if (!found_address.has_value())
-  {
     found_address = Bus::SearchMemory(0, pattern.data(), mask.data(), static_cast<u32>(pattern.size()));
-    if (!found_address.has_value())
-    {
-      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(), tr("Pattern not found in memory."));
-      return;
-    }
 
-    wrapped_around = true;
-  }
+  // tint the search box green/red depending on the result, blending with the theme's base colour
+  const QColor base_color = m_ui.memorySearchString->palette().color(QPalette::Base);
+  const QColor tint_color = found_address.has_value() ? QColor(0, 200, 0) : QColor(220, 0, 0);
+  const QColor color = QColor::fromRgbF((base_color.redF() + tint_color.redF()) * 0.5f,
+                                        (base_color.greenF() + tint_color.greenF()) * 0.5f,
+                                        (base_color.blueF() + tint_color.blueF()) * 0.5f);
+  m_ui.memorySearchString->setStyleSheet(QStringLiteral("QLineEdit { background-color: %1; }").arg(color.name()));
+  if (!found_address.has_value())
+    return;
 
   m_next_memory_search_address = found_address.value() + 1;
   if (scrollToMemoryAddress(found_address.value()))
@@ -222,24 +223,12 @@ void MemoryEditorWindow::onMemorySearchTriggered()
     const size_t highlight_offset = found_address.value() - m_ui.memoryView->addressOffset();
     m_ui.memoryView->setHighlightRange(highlight_offset, highlight_offset + pattern.size());
   }
-
-  if (wrapped_around)
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Information, windowTitle(),
-                             tr("Pattern found at 0x%1 (passed the end of memory).")
-                               .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
-  }
-  else
-  {
-    QtUtils::AsyncMessageBox(
-      this, QMessageBox::Information, windowTitle(),
-      tr("Pattern found at 0x%1.").arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
-  }
 }
 
 void MemoryEditorWindow::onMemorySearchStringChanged(const QString&)
 {
   m_next_memory_search_address = 0;
+  m_ui.memorySearchString->setStyleSheet(QString());
 }
 
 void MemoryEditorWindow::onDataInspectorIntegerEdited(QLineEdit* widget, int byte_size, bool is_signed)
