@@ -11,8 +11,10 @@
 #include <type_traits>
 
 #if defined(CPU_ARCH_X86) || defined(CPU_ARCH_X64)
+#ifndef DISABLE_SIMD
 #define CPU_ARCH_SIMD 1
 #define CPU_ARCH_SSE 1
+#endif
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
@@ -29,8 +31,10 @@
 #define CPU_ARCH_SSE41 1
 #endif
 #elif defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64)
+#ifndef DISABLE_SIMD
 #define CPU_ARCH_SIMD 1
 #define CPU_ARCH_NEON 1
+#endif
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <arm64_neon.h>
 #else

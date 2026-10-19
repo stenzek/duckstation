@@ -73,3 +73,11 @@ reduced performance. You should not enable this option
 unless you have a pre-2008 CPU.
 *******************************************************")
 endif()
+
+if(DISABLE_SIMD)
+  message(WARNING "*********************** WARNING ***********************
+SIMD code paths are disabled. This will result in
+SIGNIFICANTLY reduced performance. This option is only
+intended for testing the scalar fallback code paths.
+*******************************************************")
+endif()

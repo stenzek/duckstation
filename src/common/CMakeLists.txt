@@ -118,6 +118,9 @@ elseif(DEFINED HOST_PAGE_SIZE)
     "-DOVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE}"
   )
 endif()
+if(DISABLE_SIMD)
+  target_compile_definitions(common PUBLIC "DISABLE_SIMD=1")
+endif()
 if(DEFINED HOST_CACHE_LINE_SIZE)
 	target_compile_definitions(common PUBLIC
     "-DOVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE}"
