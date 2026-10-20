@@ -320,9 +320,11 @@ LogWindowBase::LogWindowBase(const char* size_key_prefix, const QIcon& icon,
 
   QMenu* log_menu = menuBar()->addMenu("&Log");
   QtUtils::StylePopupMenu(log_menu);
-  QAction* action = log_menu->addAction(QCoreApplication::translate("LogWindow", "&Clear"));
+  QAction* action = log_menu->addAction(QIcon(u":/icons/monochrome/svg/eraser-line.svg"_s),
+                                        QCoreApplication::translate("LogWindow", "&Clear"));
   connect(action, &QAction::triggered, m_log_widget, &LogWidget::clear);
-  action = log_menu->addAction(QCoreApplication::translate("LogWindow", "&Save..."));
+  action = log_menu->addAction(QIcon(u":/icons/monochrome/svg/save-3-line.svg"_s),
+                               QCoreApplication::translate("LogWindow", "&Save..."));
   connect(action, &QAction::triggered, this, &LogWindowBase::onSaveTriggered);
 }
 
@@ -511,32 +513,33 @@ void LogWindow::createUi()
   QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));
   QtUtils::StylePopupMenu(settings_menu);
 
-  action = settings_menu->addAction(tr("Log To &System Console"));
+  action = settings_menu->addAction(QIcon(u":/icons/monochrome/svg/terminal-line.svg"_s), tr("Log To &System Console"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToConsole", false);
 
-  action = settings_menu->addAction(tr("Log To &Debug Console"));
+  action = settings_menu->addAction(QIcon(u":/icons/monochrome/svg/code-box-line.svg"_s), tr("Log To &Debug Console"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToDebug", false);
 
-  action = settings_menu->addAction(tr("Log To &File"));
+  action = settings_menu->addAction(QIcon(u":/icons/monochrome/svg/file-text-line.svg"_s), tr("Log To &File"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogToFile", false);
 
   settings_menu->addSeparator();
 
-  action = settings_menu->addAction(tr("Attach To &Main Window"));
+  action =
+    settings_menu->addAction(QIcon(u":/icons/monochrome/svg/layout-right-line.svg"_s), tr("Attach To &Main Window"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME,
                                                "AttachLogWindowToMainWindow", true);
 
-  action = settings_menu->addAction(tr("Show &Timestamps"));
+  action = settings_menu->addAction(QIcon(u":/icons/monochrome/svg/time-line.svg"_s), tr("Show &Timestamps"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogTimestamps", true);
 
   settings_menu->addSeparator();
 
-  m_level_menu = settings_menu->addMenu(tr("&Log Level"));
+  m_level_menu = settings_menu->addMenu(QIcon(u":/icons/monochrome/svg/stack-line.svg"_s), tr("&Log Level"));
   QtUtils::StylePopupMenu(m_level_menu);
   for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
   {
@@ -646,11 +649,12 @@ void TTYWindow::createUi()
   QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));
   QtUtils::StylePopupMenu(settings_menu);
 
-  QAction* action = settings_menu->addAction(tr("Enable BIOS &TTY Logging"));
+  QAction* action =
+    settings_menu->addAction(QIcon(u":/icons/monochrome/svg/chip-line.svg"_s), tr("Enable BIOS &TTY Logging"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::BIOS_SECTION_NAME, "TTYLogging", false);
 
-  action = settings_menu->addAction(tr("Show &Timestamps"));
+  action = settings_menu->addAction(QIcon(u":/icons/monochrome/svg/time-line.svg"_s), tr("Show &Timestamps"));
   action->setCheckable(true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogTimestamps", true);
 }
