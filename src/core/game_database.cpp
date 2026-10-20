@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 35,
+  GAME_DATABASE_CACHE_VERSION = 36,
 };
 
 /// Map of track hashes for image verification
@@ -155,6 +155,7 @@ static constexpr const std::array s_trait_names = {
   "IsLibCryptProtected",
   "DisableUpscaledDirectTextures",
   "FilterFramebufferUploads",
+  "ForceMidFrameScanout",
 };
 static_assert(s_trait_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -195,6 +196,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaled Direct Textures", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Filter Framebuffer Uploads", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Mid-Frame Scanout", "GameDatabase::Trait"),
 };
 static_assert(s_trait_display_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -713,6 +715,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
                settings.gpu_filter_framebuffer_uploads_minimum_width,
                settings.gpu_filter_framebuffer_uploads_minimum_height);
     }
+  }
+
+  if (HasTrait(Trait::ForceMidFrameScanout))
+  {
+    settings.gpu_mid_frame_scanout = true;
   }
 
   if (HasTrait(Trait::ForceDeinterlacing))

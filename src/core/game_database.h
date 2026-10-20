@@ -70,6 +70,7 @@ enum class Trait : u32
   IsLibCryptProtected,
   DisableUpscaledDirectTextures,
   FilterFramebufferUploads,
+  ForceMidFrameScanout,
 
   MaxCount
 };

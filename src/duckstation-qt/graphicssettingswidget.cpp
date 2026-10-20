@@ -223,6 +223,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaledDirectTextures));
   SettingWidgetBinder::SetForceEnabled(m_ui.filterFramebufferUploads,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::FilterFramebufferUploads));
+  SettingWidgetBinder::SetForceEnabled(m_ui.midFrameScanout,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::ForceMidFrameScanout));
 
   // PGXP Tab
 
