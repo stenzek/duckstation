@@ -704,6 +704,7 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -dumpdir: Set frame dump base directory (will be dumped to basedir/gametitle).\n");
   std::fprintf(stderr, "  -dumpinterval: Dumps every N frames.\n");
   std::fprintf(stderr, "  -frames: Sets the number of frames to execute.\n");
+  std::fprintf(stderr, "  -state <path>: Loads the specified save state after booting.\n");
   std::fprintf(stderr, "  -log <level>: Sets the log level. Defaults to verbose.\n");
   std::fprintf(stderr, "  -console: Enables console logging output.\n");
   std::fprintf(stderr, "  -pgxp: Enables PGXP.\n");
@@ -764,6 +765,11 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-state"))
+      {
+        AutoBoot(autoboot)->save_state = argv[++i];
         continue;
       }
       else if (CHECK_ARG_PARAM("-frames"))
