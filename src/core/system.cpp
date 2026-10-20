@@ -654,7 +654,8 @@ std::string System::GetGameIconPath(bool allow_achievements_badge)
   return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?
                                      std::string_view(s_state.running_game_title) :
                                      std::string_view(),
-                                   s_state.running_game_serial, s_state.running_game_path, achievements_game_id);
+                                   s_state.running_game_serial, s_state.running_game_path, achievements_game_id,
+                                   GameList::IconSource::MemoryCard);
 }
 
 bool System::IsUsingKnownPS1BIOS()

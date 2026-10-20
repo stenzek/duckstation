@@ -31,12 +31,14 @@
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
 #include <QtCore/QSortFilterProxyModel>
+#include <QtGui/QActionGroup>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QToolTip>
@@ -227,7 +229,7 @@ GameListModel::GameListModel(GameListWidget* parent)
   loadCommonImages();
   loadCoverScaleDependentPixmaps();
 
-  if (m_show_game_icons)
+  if (hasMemoryCardIcons())
     GameList::ReloadMemcardTimestampCache();
 
   connect(g_core_thread, &CoreThread::gameListRowsChanged, this, &GameListModel::rowsChanged);
@@ -244,7 +246,10 @@ void GameListModel::loadSettings()
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
   m_show_titles_for_covers = Core::GetBaseBoolSettingValue(
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
-  m_show_game_icons = Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", true);
+  m_icon_source = GameList::ParseIconSourceName(
+                    Core::GetBaseTinyStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_ICON_SOURCE,
+                                                        GameList::GetIconSourceName(GameList::DEFAULT_ICON_SOURCE)))
+                    .value_or(GameList::DEFAULT_ICON_SOURCE);
 }
 
 void GameListModel::reloadSettings()
@@ -256,7 +261,10 @@ void GameListModel::reloadSettings()
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES));
   setShowCoverTitles(Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES,
                                                    GameList::DEFAULT_COVER_TITLES));
-  setShowGameIcons(Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", true));
+  setIconSource(GameList::ParseIconSourceName(
+                  Core::GetBaseTinyStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_ICON_SOURCE,
+                                                      GameList::GetIconSourceName(GameList::DEFAULT_ICON_SOURCE)))
+                  .value_or(GameList::DEFAULT_ICON_SOURCE));
 }
 
 bool GameListModel::getShowLocalizedTitles() const
@@ -504,7 +512,7 @@ void GameListModel::coverLoaded(const std::string& path, const QImage& image, fl
 void GameListModel::rowsChanged(const QList<int>& rows)
 {
   QList<int> roles_changed{Qt::DisplayRole, Qt::ToolTipRole};
-  if (m_show_game_icons)
+  if (m_icon_source != GameList::IconSource::None)
     roles_changed.append(Qt::DecorationRole);
 
   // try to collapse multiples
@@ -550,6 +558,10 @@ void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true
       m_cover_pixmap_cache.Clear();
       if (QtHost::IsFullscreenUIStarted())
         Host::RunOnCoreThread([]() { FullscreenUI::InvalidateCoverCache(); });
+
+      // icons are covers too in this mode
+      if (m_icon_source == GameList::IconSource::Cover)
+        invalidateColumn(Column_Icon, invalidate_cache);
     }
     else if (column == Column_Title)
     {
@@ -578,6 +590,10 @@ void GameListModel::invalidateColumnForPath(const std::string& path, int column,
       m_cover_pixmap_cache.Remove(path);
       if (QtHost::IsFullscreenUIStarted())
         Host::RunOnCoreThread([path]() mutable { FullscreenUI::InvalidateCoverCache(std::move(path)); });
+
+      // icons are covers too in this mode
+      if (m_icon_source == GameList::IconSource::Cover)
+        invalidateColumnForPath(path, Column_Icon, invalidate_cache);
     }
   }
 
@@ -643,8 +659,20 @@ const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 
 const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
 {
+  if (m_icon_source == GameList::IconSource::Cover)
+  {
+    // Covers are per-path, not per-serial.
+    if (const QPixmap* item = m_icon_pixmap_cache.Lookup(ge->path))
+      return item->isNull() ? nullptr : item;
+
+    // Insert an empty pixmap so we don't repeatedly queue loading jobs for this game.
+    m_icon_pixmap_cache.Insert(ge->path, {});
+    const_cast<GameListModel*>(this)->loadCoverIcon(ge);
+    return nullptr;
+  }
+
   // We only do this for discs/disc sets for now.
-  if (m_show_game_icons && !ge->serial.empty() && ge->IsDiscOrDiscSet())
+  if (hasMemoryCardIcons() && !ge->serial.empty() && ge->IsDiscOrDiscSet())
   {
     QPixmap* item = m_icon_pixmap_cache.Lookup(ge->serial);
     if (item)
@@ -655,7 +683,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge);
+      const std::string path = GameList::GetGameIconPath(ge, m_icon_source);
       if (HTTPCache::IsHTTPURL(path))
       {
         if (AsyncPixmapLoader::isQueueNeeded(path))
@@ -739,31 +767,83 @@ const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) c
   return it->second;
 }
 
-bool GameListModel::getShowGameIcons() const
+GameList::IconSource GameListModel::getIconSource() const
 {
-  return m_show_game_icons;
+  return m_icon_source;
 }
 
-void GameListModel::setShowGameIcons(bool enabled)
+void GameListModel::setIconSource(GameList::IconSource source)
 {
-  m_show_game_icons = enabled;
+  if (m_icon_source == source)
+    return;
 
-  if (enabled)
+  m_icon_source = source;
+
+  if (hasMemoryCardIcons())
     GameList::ReloadMemcardTimestampCache();
 
   invalidateColumn(Column_Icon);
+}
+
+bool GameListModel::hasMemoryCardIcons() const
+{
+  return (m_icon_source == GameList::IconSource::MemoryCard || m_icon_source == GameList::IconSource::Achievements);
+}
+
+void GameListModel::loadCoverIcon(const GameList::Entry* ge)
+{
+  QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
+                             is_custom_title = ge->has_custom_title, list = this, icon_size = m_icon_size,
+                             dpr = m_device_pixel_ratio]() mutable {
+    QImage image;
+    const std::string cover_path = GameList::GetCoverImagePath(path, serial, save_title, is_custom_title);
+    if (!cover_path.empty() && image.load(QString::fromStdString(cover_path)))
+    {
+      const int device_size = static_cast<int>(static_cast<qreal>(icon_size) * dpr);
+      resizeImage(&image, QSize(device_size, device_size));
+      image.setDevicePixelRatio(dpr);
+    }
+
+    return [path = std::move(path), image = std::move(image), list, icon_size]() {
+      list->coverIconLoaded(path, image, icon_size);
+    };
+  });
+}
+
+void GameListModel::coverIconLoaded(const std::string& path, const QImage& image, int icon_size)
+{
+  // old request before mode or icon size change?
+  if (m_icon_source != GameList::IconSource::Cover || m_icon_size != icon_size || image.isNull() ||
+      !m_icon_pixmap_cache.Lookup(path))
+  {
+    return;
+  }
+
+  m_icon_pixmap_cache.Insert(path, QPixmap::fromImage(image));
+  invalidateColumnForPath(path, Column_Icon, false);
 }
 
 QIcon GameListModel::getIconForGame(const QString& path)
 {
   QIcon ret;
 
-  if (!m_show_game_icons || path.isEmpty())
+  if (m_icon_source == GameList::IconSource::None || path.isEmpty())
     return ret;
 
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
-  if (!entry || entry->serial.empty() || !entry->IsDiscOrDiscSet())
+  if (!entry)
+    return ret;
+
+  if (m_icon_source == GameList::IconSource::Cover)
+  {
+    if (const std::string cover_path = GameList::GetCoverImagePathForEntry(entry); !cover_path.empty())
+      ret = QIcon(QString::fromStdString(cover_path));
+
+    return ret;
+  }
+
+  if (entry->serial.empty() || !entry->IsDiscOrDiscSet())
     return ret;
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
@@ -779,7 +859,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
   }
 
   // If it's not a HTTP URL, this is straightforward.
-  const std::string icon_path = GameList::GetGameIconPath(entry);
+  const std::string icon_path = GameList::GetGameIconPath(entry, m_icon_source);
   if (HTTPCache::IsHTTPURL(icon_path))
   {
     // Can't really download here since it's not asynchronous. But we can still check the cache.
@@ -1099,7 +1179,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
   if (orientation == Qt::Horizontal && role == Qt::DisplayRole && section >= 0 && section <= Column_LastVisible)
-    return QString::fromUtf8(GameList::GetColumnDisplayName(static_cast<GameList::Column>(section)));
+  {
+    // need to special case type, it's shown as the icon
+    const GameList::Column column = static_cast<GameList::Column>(section);
+    return (column == GameList::Column::Type) ? tr("Icon") : QString::fromUtf8(GameList::GetColumnDisplayName(column));
+  }
 
   return {};
 }
@@ -1464,7 +1548,7 @@ public:
   {
     DebugAssert(source_row >= 0);
 
-    const std::string icon_path = GameList::GetGameIconPath(entry);
+    const std::string icon_path = GameList::GetGameIconPath(entry, m_model->getIconSource());
     if (icon_path.empty() || HTTPCache::IsHTTPURL(icon_path))
     {
       clearEntry();
@@ -1654,9 +1738,9 @@ private:
 } // namespace
 
 GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
-                               QAction* action_merge_disc_sets, QAction* action_show_list_icons,
-                               QAction* action_animate_list_icons, QAction* action_prefer_achievement_game_icons,
-                               QAction* action_show_grid_titles, QAction* action_show_localized_titles)
+                               QAction* action_merge_disc_sets, QMenu* menu_icon_source,
+                               QAction* action_animate_list_icons, QAction* action_show_grid_titles,
+                               QAction* action_show_localized_titles)
   : QWidget(parent)
 {
   m_model = new GameListModel(this);
@@ -1698,7 +1782,6 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   m_ui.viewGameList->setDefaultAction(action_view_list);
   m_ui.viewGameGrid->setDefaultAction(action_view_grid);
   m_ui.mergeDiscSets->setDefaultAction(action_merge_disc_sets);
-  m_ui.showGameIcons->setDefaultAction(action_show_list_icons);
   m_ui.showGridTitles->setDefaultAction(action_show_grid_titles);
   m_ui.showLocalizedTitles->setDefaultAction(action_show_localized_titles);
 
@@ -1733,15 +1816,12 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
 
   action_merge_disc_sets->setChecked(m_sort_model->isMergingDiscSets());
   action_show_localized_titles->setChecked(m_model->getShowLocalizedTitles());
-  action_show_list_icons->setChecked(m_model->getShowGameIcons());
   action_animate_list_icons->setChecked(m_list_view->isAnimatingGameIcons());
-  action_prefer_achievement_game_icons->setChecked(
-    Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
-                                  GameList::DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS));
+  populateIconSourceMenu(menu_icon_source);
   action_show_grid_titles->setChecked(m_model->getShowCoverTitles());
   onIconSizeChanged(m_model->getIconSize());
 
-  reloadViewModeFromSettings();
+  reloadViewModeFromSettings(true);
   updateBackground(true);
 }
 
@@ -1754,14 +1834,34 @@ QString GameListWidget::getSupportedFormatsString()
 
 void GameListWidget::reloadSettings()
 {
+  const GameList::IconSource prev_icon_source = m_model->getIconSource();
+  const int prev_icon_size = m_model->getIconSize();
+
   m_model->reloadSettings();
   m_sort_model->reloadSettings();
   m_list_view->loadColumnSortSettings();
   m_ui.mergeDiscSets->defaultAction()->setChecked(m_sort_model->isMergingDiscSets());
   m_ui.showLocalizedTitles->defaultAction()->setChecked(m_model->getShowLocalizedTitles());
   m_ui.showGridTitles->defaultAction()->setChecked(m_model->getShowCoverTitles());
+
+  const bool source_changed = (prev_icon_source != m_model->getIconSource());
+  if (source_changed)
+    updateIconSourceMenu();
+
   m_grid_view->updateLayout(true);
-  reloadViewModeFromSettings();
+
+  const bool view_updated = reloadViewModeFromSettings();
+  if (!view_updated && isShowingGameList() && (source_changed || prev_icon_size != m_model->getIconSize()))
+  {
+    // model can't update this itself
+    if (m_model->hasMemoryCardIcons())
+      m_list_view->updateAnimatedGameIconDelegate();
+    else
+      m_list_view->clearAnimatedGameIconDelegate();
+  }
+
+  if (source_changed)
+    emit iconSourceChanged(m_model->getIconSource());
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1945,7 +2045,7 @@ void GameListWidget::onRefreshComplete()
   if (m_model->rowCount() == 0)
     setViewMode(VIEW_MODE_NO_GAMES);
   else
-    reloadViewModeFromSettings();
+    reloadViewModeFromSettings(true);
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -2043,15 +2143,23 @@ void GameListWidget::showGameGrid()
   setViewMode(VIEW_MODE_GRID);
 }
 
-void GameListWidget::reloadViewModeFromSettings()
+bool GameListWidget::reloadViewModeFromSettings(bool force /* = false */)
 {
   const bool grid_view = Core::GetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_GRID_VIEW,
                                                        GameList::DEFAULT_GRID_VIEW);
+
   m_ui.viewGameList->defaultAction()->setChecked(!grid_view);
   m_ui.viewGameGrid->defaultAction()->setChecked(grid_view);
 
-  if (m_model->rowCount() > 0 || m_ui.stack->currentIndex() != VIEW_MODE_NO_GAMES)
-    setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
+  if (m_ui.stack->currentWidget() == m_empty_widget && m_model->rowCount() == 0)
+    return false;
+
+  const int view_mode = grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST;
+  if (!force && m_ui.stack->currentIndex() == view_mode)
+    return false;
+
+  setViewMode(view_mode);
+  return true;
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)
@@ -2074,21 +2182,70 @@ void GameListWidget::setShowLocalizedTitles(bool enabled)
   m_model->setShowLocalizedTitles(enabled);
 }
 
-void GameListWidget::setShowGameIcons(bool enabled)
+void GameListWidget::populateIconSourceMenu(QMenu* menu)
 {
-  if (m_model->getShowGameIcons() == enabled)
+  // why this mess? because we need to use the same menu for menu bar and toolbar, and we want
+  // to avoid duplicating the strings so we use the GameList translation function instead
+  static constexpr std::array<const char*, static_cast<size_t>(GameList::IconSource::MaxCount)> icons = {{
+    ":/icons/monochrome/svg/disc-line.svg",
+    ":/icons/monochrome/svg/image-fill.svg",
+    ":/icons/monochrome/svg/memcard-line.svg",
+    ":/icons/monochrome/svg/trophy-line.svg",
+  }};
+
+  m_icon_source_menu = menu;
+
+  QActionGroup* const group = new QActionGroup(menu);
+  for (u32 i = 0; i < static_cast<u32>(GameList::IconSource::MaxCount); i++)
+  {
+    const GameList::IconSource source = static_cast<GameList::IconSource>(i);
+    QAction* const action = new QAction(QIcon(QString::fromLatin1(icons[i])),
+                                        QString::fromUtf8(GameList::GetIconSourceDisplayName(source)), group);
+    action->setCheckable(true);
+    action->setData(i);
+    menu->addAction(action);
+    connect(action, &QAction::triggered, this, [this, source]() { setIconSource(source); });
+  }
+
+  m_ui.iconSource->setMenu(menu);
+  m_ui.iconSource->setPopupMode(QToolButton::InstantPopup);
+  updateIconSourceMenu();
+}
+
+void GameListWidget::updateIconSourceMenu()
+{
+  const u32 source = static_cast<u32>(m_model->getIconSource());
+  for (QAction* const action : m_icon_source_menu->actions())
+  {
+    if (action->data().toUInt() != source)
+      continue;
+
+    action->setChecked(true);
+    m_ui.iconSource->setIcon(action->icon());
+    m_ui.iconSource->setToolTip(tr("Game List Icons: %1").arg(action->text()));
+    break;
+  }
+}
+
+void GameListWidget::setIconSource(GameList::IconSource source)
+{
+  if (m_model->getIconSource() == source)
     return;
 
-  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, "GameListShowGameIcons", enabled);
+  Core::SetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_ICON_SOURCE,
+                                  GameList::GetIconSourceName(source));
   Host::CommitBaseSettingChanges();
-  m_model->setShowGameIcons(enabled);
+  m_model->setIconSource(source);
+  updateIconSourceMenu();
   if (isShowingGameList() && m_list_view->isAnimatingGameIcons())
   {
-    if (enabled)
+    if (m_model->hasMemoryCardIcons())
       m_list_view->updateAnimatedGameIconDelegate();
     else
       m_list_view->clearAnimatedGameIconDelegate();
   }
+
+  emit iconSourceChanged(source);
 }
 
 void GameListWidget::setAnimateGameIcons(bool enabled)
@@ -2101,18 +2258,6 @@ void GameListWidget::setAnimateGameIcons(bool enabled)
   m_list_view->setAnimateGameIcons(enabled);
   if (isShowingGameList())
     m_list_view->updateAnimatedGameIconDelegate();
-}
-
-void GameListWidget::setPreferAchievementGameIcons(bool enabled)
-{
-  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
-                                enabled);
-  Host::CommitBaseSettingChanges();
-
-  if (!enabled)
-    GameList::ReloadMemcardTimestampCache();
-
-  m_model->invalidateColumn(GameListModel::Column_Icon);
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
@@ -2165,7 +2310,7 @@ void GameListWidget::setViewMode(int stack_index)
   m_ui.viewGameGrid->setEnabled(has_games);
   m_ui.mergeDiscSets->setEnabled(has_games);
   m_ui.showLocalizedTitles->setEnabled(has_games);
-  m_ui.showGameIcons->setEnabled(has_games);
+  m_ui.iconSource->setEnabled(has_games);
   m_ui.showGridTitles->setEnabled(has_games);
   m_ui.scale->setEnabled(has_games);
   m_ui.filterType->setEnabled(has_games);
@@ -2173,7 +2318,7 @@ void GameListWidget::setViewMode(int stack_index)
   m_ui.searchText->setEnabled(has_games);
 
   const bool is_grid_view = isShowingGameGrid();
-  m_ui.showGameIcons->setVisible(!is_grid_view);
+  m_ui.iconSource->setVisible(!is_grid_view);
   m_ui.showGridTitles->setVisible(is_grid_view);
 
   QSignalBlocker sb(m_ui.scale);
@@ -2525,7 +2670,7 @@ void GameListListView::setAnimateGameIcons(bool enabled)
 
 void GameListListView::updateAnimatedGameIconDelegate()
 {
-  if (!m_animated_game_icon_delegate || !m_model->getShowGameIcons())
+  if (!m_animated_game_icon_delegate || !m_model->hasMemoryCardIcons())
     return;
 
   const QModelIndexList selected = selectionModel()->selectedIndexes();

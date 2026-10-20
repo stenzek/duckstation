@@ -53,6 +53,17 @@ enum class Column : u8
   MaxCount,
 };
 
+/// Source of the per-game image shown in list views.
+enum class IconSource : u8
+{
+  None,
+  Cover,
+  MemoryCard,
+  Achievements,
+
+  MaxCount,
+};
+
 struct Entry
 {
   Entry();
@@ -134,6 +145,10 @@ std::optional<Column> ParseColumnName(std::string_view name);
 bool CompareEntryLessThan(const Entry* left, const Entry* right, Column column);
 bool CompareEntryTitlesLessThan(const Entry* left, const Entry* right);
 
+const char* GetIconSourceName(IconSource source);
+const char* GetIconSourceDisplayName(IconSource source);
+std::optional<IconSource> ParseIconSourceName(std::string_view name);
+
 bool IsScannableFilename(std::string_view path);
 
 /// Populates a game list entry struct with information from the specified path.
@@ -211,16 +226,19 @@ bool SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRe
 bool SaveCustomLanguageForPath(const std::string& path, const std::optional<GameDatabase::Language> custom_language);
 std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 
-/// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
-/// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
-/// timestamp of the memory card has changed.
+/// Returns the memory card icon or achievements badge for a game, in the order selected by source. Returns an empty
+/// string for the None and Cover sources, covers are looked up separately with GetCoverImagePath().
 std::string GetGameIconPath(std::string_view title, std::string_view serial, std::string_view path,
-                            u32 achievements_game_id);
-std::string GetGameIconPath(const GameList::Entry* entry);
+                            u32 achievements_game_id, IconSource source);
+std::string GetGameIconPath(const GameList::Entry* entry, IconSource source);
 
 /// Extracts the icon of the first save on the game's memory card to the game icons directory, consulting the
 /// memory card timestamp cache. Returns the path to the extracted icon, or an empty string. Requires the lock.
 std::string ExtractMemoryCardIcon(std::string_view title, std::string_view serial, std::string_view path);
+
+/// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
+/// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
+/// timestamp of the memory card has changed.
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.
@@ -234,7 +252,7 @@ extern const char* const UI_SECTION_NAME;
 extern const char* const SETTING_KEY_LOCALIZED_TITLES;
 extern const char* const SETTING_KEY_SORT_COLUMN;
 extern const char* const SETTING_KEY_SORT_REVERSED;
-extern const char* const SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS;
+extern const char* const SETTING_KEY_ICON_SOURCE;
 extern const char* const SETTING_KEY_MERGE_DISC_SETS;
 extern const char* const SETTING_KEY_GRID_VIEW;
 extern const char* const SETTING_KEY_FULLSCREENUI_GRID_VIEW;
@@ -242,7 +260,7 @@ extern const char* const SETTING_KEY_COVER_TITLES;
 inline constexpr bool DEFAULT_LOCALIZED_TITLES = true;
 inline constexpr Column DEFAULT_SORT_COLUMN = Column::Title;
 inline constexpr bool DEFAULT_SORT_REVERSED = false;
-inline constexpr bool DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS = false;
+inline constexpr IconSource DEFAULT_ICON_SOURCE = IconSource::MemoryCard;
 inline constexpr bool DEFAULT_MERGE_DISC_SETS = true;
 inline constexpr bool DEFAULT_GRID_VIEW = false;
 inline constexpr bool DEFAULT_FULLSCREENUI_GRID_VIEW = true;

@@ -26,6 +26,7 @@
 
 Q_DECLARE_METATYPE(const GameList::Entry*);
 
+class QMenu;
 class QStyledItemDelegate;
 
 class GameListSortModel;
@@ -102,8 +103,9 @@ public:
   int getIconSizeWithPadding() const;
   void setIconSize(int size);
 
-  bool getShowGameIcons() const;
-  void setShowGameIcons(bool enabled);
+  GameList::IconSource getIconSource() const;
+  void setIconSource(GameList::IconSource source);
+  bool hasMemoryCardIcons() const;
   QIcon getIconForGame(const QString& path);
 
   float getCoverScale() const;
@@ -145,6 +147,8 @@ private:
   void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
+  void loadCoverIcon(const GameList::Entry* ge);
+  void coverIconLoaded(const std::string& path, const QImage& image, int icon_size);
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                   qreal dpr, const std::string& path, const std::string& serial,
@@ -165,7 +169,7 @@ private:
   int m_icon_size = 0;
   bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
-  bool m_show_game_icons = false;
+  GameList::IconSource m_icon_source = GameList::DEFAULT_ICON_SOURCE;
 
   std::array<QPixmap, static_cast<int>(GameList::EntryType::MaxCount)> m_type_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
@@ -258,9 +262,9 @@ class GameListWidget final : public QWidget
 
 public:
   explicit GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
-                          QAction* action_merge_disc_sets, QAction* action_show_list_icons,
-                          QAction* action_animate_list_icons, QAction* action_prefer_achievement_game_icons,
-                          QAction* action_show_grid_titles, QAction* action_show_localized_titles);
+                          QAction* action_merge_disc_sets, QMenu* menu_icon_source,
+                          QAction* action_animate_list_icons, QAction* action_show_grid_titles,
+                          QAction* action_show_localized_titles);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }
@@ -283,12 +287,11 @@ public:
 
   void showGameList();
   void showGameGrid();
-  void reloadViewModeFromSettings();
+  bool reloadViewModeFromSettings(bool force = false);
   void setMergeDiscSets(bool enabled);
   void setShowLocalizedTitles(bool enabled);
-  void setShowGameIcons(bool enabled);
+  void setIconSource(GameList::IconSource source);
   void setAnimateGameIcons(bool enabled);
-  void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
   void setCoverScale(float scale);
   void setIconSize(int size);
@@ -298,6 +301,8 @@ public:
   static QString getSupportedFormatsString();
 
 Q_SIGNALS:
+  void iconSourceChanged(GameList::IconSource source);
+
   void refreshProgress(const QString& status, int current, int total);
   void refreshComplete();
 
@@ -312,6 +317,8 @@ protected:
 
 private:
   void setViewMode(int stack_index);
+  void populateIconSourceMenu(QMenu* menu);
+  void updateIconSourceMenu();
   void updateBackground(bool reload_image);
 
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
@@ -339,6 +346,7 @@ private:
   GameListGridView* m_grid_view = nullptr;
 
   QWidget* m_empty_widget = nullptr;
+  QMenu* m_icon_source_menu = nullptr;
 
   QImage m_background_image;
 

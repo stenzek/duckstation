@@ -120,7 +120,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="showGameIcons">
+      <widget class="QToolButton" name="iconSource">
        <property name="minimumSize">
         <size>
          <width>32</width>
@@ -128,10 +128,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Show Game Icons</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
+        <string>Game List Icons</string>
        </property>
        <property name="autoRaise">
         <bool>true</bool>

@@ -2875,6 +2875,11 @@ void FullscreenUI::DrawGameListSettingsPage()
                     GameList::SETTING_KEY_SORT_COLUMN, GameList::DEFAULT_SORT_COLUMN, &GameList::ParseColumnName,
                     &GameList::GetColumnName, &GameList::GetColumnDisplayName, GameList::Column::MaxCount, true, false,
                     &FullscreenUI::ReloadGameListSettings);
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_IMAGE, "List Icons"),
+                    FSUI_VSTR("Determines the image shown next to each game in the list view."),
+                    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_ICON_SOURCE, GameList::DEFAULT_ICON_SOURCE,
+                    &GameList::ParseIconSourceName, &GameList::GetIconSourceName, &GameList::GetIconSourceDisplayName,
+                    GameList::IconSource::MaxCount, true, false, &FullscreenUI::ReloadGameListSettings);
     settings_changed |= DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_ARROW_DOWN_Z_A, "Sort Reversed"),
       FSUI_VSTR("Reverses the game list sort order from the default (usually ascending to descending)."),

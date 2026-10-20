@@ -170,8 +170,7 @@ const char* const GameList::UI_SECTION_NAME = "UI";
 constexpr const char* const GameList::SETTING_KEY_LOCALIZED_TITLES = "GameListShowLocalizedTitles";
 constexpr const char* const GameList::SETTING_KEY_SORT_COLUMN = "GameListSortColumn";
 constexpr const char* const GameList::SETTING_KEY_SORT_REVERSED = "GameListSortReversed";
-constexpr const char* const GameList::SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS =
-  "GameListPreferAchievementContentIcons";
+constexpr const char* const GameList::SETTING_KEY_ICON_SOURCE = "GameListIconSource";
 constexpr const char* const GameList::SETTING_KEY_MERGE_DISC_SETS = "GameListMergeDiscSets";
 constexpr const char* const GameList::SETTING_KEY_GRID_VIEW = "GameListGridView";
 constexpr const char* const GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW = "GameListFullscreenUIGridView";
@@ -329,6 +328,46 @@ std::optional<GameList::Column> GameList::ParseColumnName(std::string_view name)
   {
     if (name == s_column_names[i])
       return static_cast<Column>(i);
+  }
+
+  return std::nullopt;
+}
+
+static constexpr std::array<const char*, static_cast<size_t>(GameList::IconSource::MaxCount)> s_icon_source_names = {{
+  "None",
+  "Cover",
+  "MemoryCard",
+  "Achievements",
+}};
+
+static constexpr std::array<const char*, static_cast<size_t>(GameList::IconSource::MaxCount)>
+  s_icon_source_display_names = {{
+    TRANSLATE_DISAMBIG_NOOP("GameList", "None", "IconSource"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "Cover", "IconSource"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "Memory Cards", "IconSource"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "RetroAchievements", "IconSource"),
+  }};
+
+const char* GameList::GetIconSourceName(IconSource source)
+{
+  return (static_cast<size_t>(source) < s_icon_source_names.size()) ? s_icon_source_names[static_cast<size_t>(source)] :
+                                                                      "";
+}
+
+const char* GameList::GetIconSourceDisplayName(IconSource source)
+{
+  return (static_cast<size_t>(source) < s_icon_source_display_names.size()) ?
+           Host::TranslateToCString("GameList", s_icon_source_display_names[static_cast<size_t>(source)],
+                                    "IconSource") :
+           "";
+}
+
+std::optional<GameList::IconSource> GameList::ParseIconSourceName(std::string_view name)
+{
+  for (size_t i = 0; i < s_icon_source_names.size(); i++)
+  {
+    if (name == s_icon_source_names[i])
+      return static_cast<IconSource>(i);
   }
 
   return std::nullopt;
@@ -2343,41 +2382,38 @@ void GameList::ReloadMemcardTimestampCache()
     entry.serial[sizeof(entry.serial) - 1] = 0;
 }
 
-std::string GameList::GetGameIconPath(const GameList::Entry* entry)
+std::string GameList::GetGameIconPath(const GameList::Entry* entry, IconSource source)
 {
-  return GetGameIconPath(entry->title, entry->serial, entry->path, entry->achievements_game_id);
+  return GetGameIconPath(entry->title, entry->serial, entry->path, entry->achievements_game_id, source);
 }
 
 std::string GameList::GetGameIconPath(std::string_view custom_title, std::string_view serial, std::string_view path,
-                                      u32 achievements_game_id)
+                                      u32 achievements_game_id, IconSource source)
 {
-  std::string ret;
+  if (source != IconSource::MemoryCard && source != IconSource::Achievements)
+    return {};
 
-  std::string fallback_path;
+  std::string achievements_icon_path;
   if (achievements_game_id != 0)
   {
-    fallback_path = Achievements::GetGameBadgeURL(achievements_game_id);
-    if (!fallback_path.empty() &&
-        Core::GetBaseBoolSettingValue(UI_SECTION_NAME, SETTING_KEY_PREFER_ACHIEVEMENT_CONTENT_ICONS,
-                                      DEFAULT_PREFER_ACHIEVEMENT_CONTENT_ICONS))
-    {
-      return (ret = std::move(fallback_path));
-    }
+    achievements_icon_path = Achievements::GetGameBadgeURL(achievements_game_id);
+    if (!achievements_icon_path.empty() && source == IconSource::Achievements)
+      return achievements_icon_path;
   }
 
   if (serial.empty())
-    return (ret = std::move(fallback_path));
+    return achievements_icon_path;
 
   // might exist already, or the user used a custom icon
-  ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
+  std::string ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
 
   ret = ExtractMemoryCardIcon(custom_title, serial, path);
   if (ret.empty())
-    ret = std::move(fallback_path);
-
-  return ret;
+    return achievements_icon_path;
+  else
+    return ret;
 }
 
 std::string GameList::ExtractMemoryCardIcon(std::string_view custom_title, std::string_view serial,

@@ -179,6 +179,9 @@ void FullscreenUI::Initialize()
 
   s_locals.initialized = true;
 
+  // needed for the icon source, which the pause menu can use without the game list ever being opened
+  ReloadGameListSettings();
+
   // in case we open the pause menu while the game is running
   if (s_locals.current_main_window == MainWindowType::None && !VideoThread::HasGPUBackend() &&
       !VideoThread::IsGPUBackendRequested())
