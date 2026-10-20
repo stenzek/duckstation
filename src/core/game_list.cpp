@@ -59,7 +59,7 @@ namespace {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C48,
-  GAME_LIST_CACHE_VERSION = 40,
+  GAME_LIST_CACHE_VERSION = 41,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -564,7 +564,7 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     return false;
   }
 
-  const GameHash hash = System::GetGameHashFromBuffer(path, data->cspan());
+  const GameHash hash = System::GetGameHashFromBuffer(Path::GetFileName(path), data->cspan());
   entry->serial = hash ? System::GetGameHashId(hash) : std::string();
   return true;
 }
