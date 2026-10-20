@@ -55,13 +55,14 @@ private:
   static constexpr GPUTextureFormat FORMAT_FOR_24BIT = GPUTextureFormat::RGBA8; // RGBA8 always supported.
 
   template<GPUTextureFormat display_format>
-  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip);
+  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row);
 
-  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip);
+  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row);
 
-  bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit);
+  bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit, u32 start_row,
+               u32 end_row);
 
-  GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format);
+  GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format, u32& start_row);
 
   FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_upload_buffer;
   GPUTextureFormat m_16bit_display_format = GPUTextureFormat::Unknown;

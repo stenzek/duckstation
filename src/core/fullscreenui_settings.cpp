@@ -4893,6 +4893,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                               "particularly with the software renderer, and is safe to use."),
                     Settings::GPU_SECTION_NAME, "UseThread", true);
 
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES, "Mid-Frame Scanout"),
+                    FSUI_VSTR("Applies changes to the displayed framebuffer partway through a frame. Needed for "
+                              "split-screen effects in some games, but causes tearing in others."),
+                    Settings::GPU_SECTION_NAME, "MidFrameScanout", false);
+
   if (is_hardware)
   {
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES_VERTICAL, "Line Detection"),

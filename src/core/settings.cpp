@@ -388,6 +388,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseForceVideoTimingName(si.GetStringViewValue(GPU_SECTION_NAME, "ForceVideoTiming",
                                                     GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)))
       .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
+  gpu_mid_frame_scanout = si.GetBoolValue(GPU_SECTION_NAME, "MidFrameScanout", false);
   gpu_disable_textures = si.GetBoolValue(GPU_SECTION_NAME, "DisableTextures", false);
   gpu_disable_vertex_lighting = si.GetBoolValue(GPU_SECTION_NAME, "DisableVertexLighting", false);
   gpu_widescreen_rendering = gpu_widescreen_hack = si.GetBoolValue(GPU_SECTION_NAME, "WidescreenHack", false);
@@ -802,6 +803,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetUIntValue(GPU_SECTION_NAME, "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue(GPU_SECTION_NAME, "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetStringValue(GPU_SECTION_NAME, "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
+  si.SetBoolValue(GPU_SECTION_NAME, "MidFrameScanout", gpu_mid_frame_scanout);
   si.SetBoolValue(GPU_SECTION_NAME, "DisableTextures", gpu_disable_textures);
   si.SetBoolValue(GPU_SECTION_NAME, "DisableVertexLighting", gpu_disable_vertex_lighting);
   si.SetBoolValue(GPU_SECTION_NAME, "WidescreenHack", gpu_widescreen_rendering);

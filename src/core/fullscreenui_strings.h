@@ -98,6 +98,7 @@ TRANSLATE_NOOP("FullscreenUI", "Animates windows opening/closing and changes bet
 TRANSLATE_NOOP("FullscreenUI", "Appearance");
 TRANSLATE_NOOP("FullscreenUI", "Applies a blur effect to the background behind on-screen messages to improve readability.");
 TRANSLATE_NOOP("FullscreenUI", "Applies a blur effect to the background when a menu is open to improve readability.");
+TRANSLATE_NOOP("FullscreenUI", "Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.");
 TRANSLATE_NOOP("FullscreenUI", "Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action.");
@@ -521,6 +522,7 @@ TRANSLATE_NOOP("FullscreenUI", "Menu Borders");
 TRANSLATE_NOOP("FullscreenUI", "Merge Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Merges multi-disc games into one item in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Message Location");
+TRANSLATE_NOOP("FullscreenUI", "Mid-Frame Scanout");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Minimum Framebuffer Upload Height");
 TRANSLATE_NOOP("FullscreenUI", "Minimum Framebuffer Upload Width");

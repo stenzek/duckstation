@@ -205,6 +205,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, Settings::GPU_SECTION_NAME,
                                                "UseSoftwareRendererForReadbacks", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.midFrameScanout, Settings::GPU_SECTION_NAME, "MidFrameScanout",
+                                               false);
 
   connect(m_ui.displayFineCropMode, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::onFineCropModeChanged);
@@ -514,6 +516,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.disableUpscaledDirectTextures, tr("Disable Upscaled Direct Textures"), tr("Unchecked"),
     tr("Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of "
        "FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects."));
+  dialog->registerWidgetHelp(
+    m_ui.midFrameScanout, tr("Mid-Frame Scanout"), tr("Unchecked"),
+    tr("Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next "
+       "frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch "
+       "framebuffers mid-frame, so only enable it for games that need it."));
   dialog->registerWidgetHelp(
     m_ui.filterFramebufferUploads, tr("Filter Framebuffer Uploads"), tr("Unchecked"),
     tr("Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some "

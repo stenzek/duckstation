@@ -295,6 +295,7 @@ struct Settings : public GPUSettings
 
   bool gpu_dump_cpu_to_vram_copies : 1 = false;
   bool gpu_dump_vram_to_cpu_copies : 1 = false;
+  bool gpu_mid_frame_scanout : 1 = false;
 
   bool mdec_use_old_routines : 1 = false;
   bool mdec_disable_cdrom_speedup : 1 = false;

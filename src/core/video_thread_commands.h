@@ -173,6 +173,10 @@ struct GPUBackendUpdateDisplayCommand : public VideoThreadCommand
 
   u16 X; // TODO: Can we get rid of this?
 
+  // Rows of the display area to scan out. Rows before the start were sent by partial updates earlier in the frame.
+  u16 scanout_start_row;
+  u16 scanout_end_row;
+
   u8 gpu_busy_pct;
 
   bool interlaced_display_enabled : 1;
@@ -182,7 +186,7 @@ struct GPUBackendUpdateDisplayCommand : public VideoThreadCommand
   bool display_24bit : 1;
   bool display_disabled : 1;
   bool submit_frame : 1;
-  bool : 1;
+  bool partial_scanout : 1; // Display start address changed mid-frame, more rows will follow.
 
   GPUBackendFramePresentationParameters frame;
 };

@@ -4438,12 +4438,15 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   GL_SCOPE("UpdateDisplay()");
 
-  GPUTextureCache::Compact();
+  if (!cmd->partial_scanout)
+  {
+    GPUTextureCache::Compact();
 
-  // If this is a 480i single buffer game, then rendering should complete within one vblank.
-  // Therefore we should clear the depth buffer, because the drawing area may not change.
-  if (m_pgxp_depth_buffer && cmd->interleaved_480i_mode)
-    CopyAndClearDepthBuffer(true);
+    // If this is a 480i single buffer game, then rendering should complete within one vblank.
+    // Therefore we should clear the depth buffer, because the drawing area may not change.
+    if (m_pgxp_depth_buffer && cmd->interleaved_480i_mode)
+      CopyAndClearDepthBuffer(true);
+  }
 
   if (g_gpu_settings.gpu_show_vram)
   {
@@ -4483,8 +4486,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     return;
   }
-  else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() &&
-           (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
+  else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() && cmd->scanout_start_row == 0 &&
+           !cmd->partial_scanout && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
            (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
            (!m_internal_postfx || !m_internal_postfx->IsActive()))
   {
@@ -4506,6 +4509,13 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   }
   else
   {
+    // Rows before the start were extracted by partial scanouts earlier in the frame, unless the size has changed.
+    const bool keep_previous_rows = (cmd->scanout_start_row > 0 && m_vram_extract_texture &&
+                                     m_vram_extract_texture->GetWidth() == scaled_display_width &&
+                                     m_vram_extract_texture->GetHeight() == scaled_display_height);
+    const u32 scaled_start_row = keep_previous_rows ? (cmd->scanout_start_row * resolution_scale) : 0;
+    const u32 scaled_end_row = cmd->scanout_end_row * resolution_scale;
+
     if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, scaled_display_height,
                                      GPUTexture::Type::RenderTarget, GPUTextureFormat::RGBA8, GPUTexture::Flags::None))
       [[unlikely]]
@@ -4514,55 +4524,74 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       return;
     }
 
-    m_vram_texture->MakeReadyForSampling();
-    g_gpu_device->InvalidateRenderTarget(m_vram_extract_texture.get());
-
     // Don't bother grabbing depth if postfx doesn't need it.
     GPUTexture* depth_source =
       (!cmd->display_24bit && m_pgxp_depth_buffer && m_internal_postfx && m_internal_postfx->NeedsDepthBuffer()) ?
         (m_depth_was_copied ? m_vram_depth_copy_texture.get() : m_vram_depth_texture.get()) :
         nullptr;
-    if (depth_source &&
-        g_gpu_device->ResizeTexture(&m_vram_extract_depth_texture, scaled_display_width, scaled_display_height,
-                                    GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None))
+
+    // Nothing left to extract if partial scanouts already covered every row.
+    if (scaled_start_row < scaled_end_row)
     {
-      depth_source->MakeReadyForSampling();
-      g_gpu_device->InvalidateRenderTarget(m_vram_extract_depth_texture.get());
+      m_vram_texture->MakeReadyForSampling();
+      if (!keep_previous_rows)
+        g_gpu_device->InvalidateRenderTarget(m_vram_extract_texture.get());
 
-      GPUTexture* targets[] = {m_vram_extract_texture.get(), m_vram_extract_depth_texture.get()};
-      g_gpu_device->SetRenderTargets(targets, static_cast<u32>(std::size(targets)), nullptr);
-      g_gpu_device->SetPipeline(m_vram_extract_pipeline[2].get());
+      if (depth_source &&
+          g_gpu_device->ResizeTexture(&m_vram_extract_depth_texture, scaled_display_width, scaled_display_height,
+                                      GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None))
+      {
+        depth_source->MakeReadyForSampling();
+        if (!keep_previous_rows)
+          g_gpu_device->InvalidateRenderTarget(m_vram_extract_depth_texture.get());
 
-      g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetTextureSampler(1, depth_source, g_gpu_device->GetNearestSampler());
+        GPUTexture* targets[] = {m_vram_extract_texture.get(), m_vram_extract_depth_texture.get()};
+        g_gpu_device->SetRenderTargets(targets, static_cast<u32>(std::size(targets)), nullptr);
+        g_gpu_device->SetPipeline(m_vram_extract_pipeline[2].get());
+
+        g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
+        g_gpu_device->SetTextureSampler(1, depth_source, g_gpu_device->GetNearestSampler());
+      }
+      else
+      {
+        g_gpu_device->SetRenderTarget(m_vram_extract_texture.get());
+        g_gpu_device->SetPipeline(m_vram_extract_pipeline[BoolToUInt8(cmd->display_24bit)].get());
+        g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
+      }
+
+      g_gpu_device->SetViewport(0, 0, scaled_display_width, scaled_display_height);
+      g_gpu_device->SetScissor(0, scaled_start_row, scaled_display_width, scaled_end_row - scaled_start_row);
+
+      const u32 reinterpret_start_x = cmd->X * resolution_scale;
+      const u32 skip_x = (cmd->display_vram_left - cmd->X) * resolution_scale;
+      GL_INS_FMT("VRAM extract, depth = {}, 24bpp = {}, skip_x = {}, line_skip = {}, rows = {}-{}",
+                 depth_source ? "yes" : "no", cmd->display_24bit, skip_x, line_skip, scaled_start_row, scaled_end_row);
+      GL_INS_FMT("Source: {},{} => {},{} ({}x{})", reinterpret_start_x, scaled_vram_offset_y,
+                 reinterpret_start_x + scaled_display_width,
+                 (scaled_vram_offset_y + scaled_display_height) << line_skip, scaled_display_width,
+                 scaled_display_height);
+
+      struct ExtractUniforms
+      {
+        u32 vram_offset_x;
+        u32 vram_offset_y;
+        float skip_x;
+        float line_skip;
+      };
+      const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
+                                        static_cast<float>(line_skip ? 2 : 1)};
+      g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     }
-    else
+
+    // The rest of the frame is extracted later, so leave the targets as they are until then.
+    if (cmd->partial_scanout)
     {
-      g_gpu_device->SetRenderTarget(m_vram_extract_texture.get());
-      g_gpu_device->SetPipeline(m_vram_extract_pipeline[BoolToUInt8(cmd->display_24bit)].get());
-      g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
+      if (depth_source)
+        g_gpu_device->SetTextureSampler(1, nullptr, nullptr);
+
+      RestoreDeviceContext();
+      return;
     }
-
-    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
-
-    const u32 reinterpret_start_x = cmd->X * resolution_scale;
-    const u32 skip_x = (cmd->display_vram_left - cmd->X) * resolution_scale;
-    GL_INS_FMT("VRAM extract, depth = {}, 24bpp = {}, skip_x = {}, line_skip = {}", depth_source ? "yes" : "no",
-               cmd->display_24bit, skip_x, line_skip);
-    GL_INS_FMT("Source: {},{} => {},{} ({}x{})", reinterpret_start_x, scaled_vram_offset_y,
-               reinterpret_start_x + scaled_display_width, (scaled_vram_offset_y + scaled_display_height) << line_skip,
-               scaled_display_width, scaled_display_height);
-
-    struct ExtractUniforms
-    {
-      u32 vram_offset_x;
-      u32 vram_offset_y;
-      float skip_x;
-      float line_skip;
-    };
-    const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
-                                      static_cast<float>(line_skip ? 2 : 1)};
-    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
 
     m_vram_extract_texture->MakeReadyForSampling();
     if (depth_source)

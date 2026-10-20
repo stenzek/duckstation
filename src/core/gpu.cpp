@@ -150,6 +150,8 @@ static bool DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, 
 
 static void SoftReset();
 static void ClearDisplay();
+static void FillUpdateDisplayCommand(GPUBackendUpdateDisplayCommand* cmd);
+static void UpdatePartialDisplay();
 
 // Sets dots per scanline
 static void UpdateCRTCConfig();
@@ -313,6 +315,9 @@ struct CRTCState
 
   /// 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
   u8 active_line_lsb;
+
+  /// Display rows already sent to the backend this frame, because the display start address changed mid-frame.
+  u16 scanout_start_row;
 };
 
 struct Locals
@@ -510,6 +515,7 @@ void GPU::Reset(bool clear_vram)
   s_locals.crtc_state.in_vblank = false;
   s_locals.crtc_state.interlaced_field = 0;
   s_locals.crtc_state.interlaced_display_field = 0;
+  s_locals.crtc_state.scanout_start_row = 0;
 
   // Cancel VRAM writes.
   s_locals.blitter_state = BlitterState::Idle;
@@ -2015,6 +2021,11 @@ void GPU::WriteGP1(u32 value)
       if (s_locals.crtc_state.regs.display_address_start != new_value)
       {
         SynchronizeCRTC();
+
+        // Lines that were already displayed this frame came from the old address.
+        if (g_settings.gpu_mid_frame_scanout && !s_locals.crtc_state.in_vblank) [[unlikely]]
+          UpdatePartialDisplay();
+
         s_locals.crtc_state.regs.display_address_start = new_value;
         UpdateCRTCDisplayParameters();
         GPUBackend::PushCommand(GPUBackend::NewBufferSwappedCommand());
@@ -2471,12 +2482,35 @@ void GPU::ClearDisplay()
   GPUBackend::PushCommand(GPUBackend::NewClearDisplayCommand());
 }
 
-void GPU::UpdateDisplay(bool submit_frame)
+void GPU::FillUpdateDisplayCommand(GPUBackendUpdateDisplayCommand* cmd)
 {
   const bool interlaced = IsInterlacedDisplayEnabled();
   const u8 interlaced_field = s_locals.crtc_state.interlaced_field;
   const bool line_skip = (interlaced && s_locals.GPUSTAT.vertical_resolution);
 
+  cmd->display_width = s_locals.crtc_state.display_width;
+  cmd->display_height = s_locals.crtc_state.display_height;
+  cmd->display_origin_left = s_locals.crtc_state.display_origin_left;
+  cmd->display_origin_top = s_locals.crtc_state.display_origin_top;
+  cmd->display_vram_left = s_locals.crtc_state.display_vram_left;
+  cmd->display_vram_top = s_locals.crtc_state.display_vram_top;
+  cmd->display_vram_width = s_locals.crtc_state.display_vram_width;
+  cmd->display_vram_height = s_locals.crtc_state.display_vram_height >> BoolToUInt8(interlaced);
+  cmd->X = s_locals.crtc_state.regs.X;
+  cmd->scanout_start_row = std::min(s_locals.crtc_state.scanout_start_row, cmd->display_vram_height);
+  cmd->scanout_end_row = cmd->display_vram_height;
+  cmd->interlaced_display_enabled = interlaced;
+  cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
+  cmd->interlaced_display_interleaved = line_skip;
+  cmd->interleaved_480i_mode = s_locals.GPUSTAT.InInterleaved480iMode();
+  cmd->display_24bit = s_locals.GPUSTAT.display_area_color_depth_24;
+  cmd->display_disabled = IsDisplayDisabled();
+  cmd->partial_scanout = false;
+  cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
+}
+
+void GPU::UpdateDisplay(bool submit_frame)
+{
   // NOTE: Must be split out, since this can push commands itself (e.g. media capture).
   GPUBackendFramePresentationParameters frame;
   submit_frame = (submit_frame && System::GetFramePresentationParameters(&frame));
@@ -2485,22 +2519,7 @@ void GPU::UpdateDisplay(bool submit_frame)
   cmd->gpu_busy_pct = g_settings.display_show_gpu_stats ? UpdateOrGetGPUBusyPct() : 0;
   if (!g_settings.gpu_show_vram) [[likely]]
   {
-    cmd->display_width = s_locals.crtc_state.display_width;
-    cmd->display_height = s_locals.crtc_state.display_height;
-    cmd->display_origin_left = s_locals.crtc_state.display_origin_left;
-    cmd->display_origin_top = s_locals.crtc_state.display_origin_top;
-    cmd->display_vram_left = s_locals.crtc_state.display_vram_left;
-    cmd->display_vram_top = s_locals.crtc_state.display_vram_top;
-    cmd->display_vram_width = s_locals.crtc_state.display_vram_width;
-    cmd->display_vram_height = s_locals.crtc_state.display_vram_height >> BoolToUInt8(interlaced);
-    cmd->X = s_locals.crtc_state.regs.X;
-    cmd->interlaced_display_enabled = interlaced;
-    cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
-    cmd->interlaced_display_interleaved = line_skip;
-    cmd->interleaved_480i_mode = s_locals.GPUSTAT.InInterleaved480iMode();
-    cmd->display_24bit = s_locals.GPUSTAT.display_area_color_depth_24;
-    cmd->display_disabled = IsDisplayDisabled();
-    cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
+    FillUpdateDisplayCommand(cmd);
   }
   else
   {
@@ -2513,14 +2532,20 @@ void GPU::UpdateDisplay(bool submit_frame)
     cmd->display_vram_width = VRAM_WIDTH;
     cmd->display_vram_height = VRAM_HEIGHT;
     cmd->X = 0;
+    cmd->scanout_start_row = 0;
+    cmd->scanout_end_row = VRAM_HEIGHT;
     cmd->interlaced_display_enabled = false;
     cmd->interlaced_display_field = false;
     cmd->interlaced_display_interleaved = false;
     cmd->interleaved_480i_mode = false;
     cmd->display_24bit = false;
     cmd->display_disabled = false;
+    cmd->partial_scanout = false;
     cmd->display_pixel_aspect_ratio = 1.0f;
   }
+
+  // Next frame starts from the top.
+  s_locals.crtc_state.scanout_start_row = 0;
 
   if ((cmd->submit_frame = submit_frame))
   {
@@ -2535,6 +2560,37 @@ void GPU::UpdateDisplay(bool submit_frame)
   {
     VideoThread::PushCommand(cmd);
   }
+}
+
+void GPU::UpdatePartialDisplay()
+{
+  CRTCState& cs = s_locals.crtc_state;
+
+  // GPU dumps don't record the beam position, so the split would be in the wrong place.
+  if (IsDisplayDisabled() || g_settings.gpu_show_vram || System::IsReplayingGPUDump())
+    return;
+
+  // The address is read at the start of each line, so the current line uses the new address if it hasn't started yet.
+  // Rows of the display area that the beam has passed are scanned out now, the remainder is sent at vblank.
+  const u32 line = cs.current_scanline + BoolToUInt32(cs.current_tick_in_scanline >= cs.horizontal_display_start);
+  const u32 first_line = std::max(cs.vertical_display_start, cs.vertical_visible_start);
+  const u8 row_shift = BoolToUInt8(s_locals.force_progressive_scan && s_locals.GPUSTAT.InInterleaved480iMode());
+  const u32 height = cs.display_vram_height >> BoolToUInt8(IsInterlacedDisplayEnabled());
+  const u32 end_row = std::min((line > first_line) ? ((line - first_line) << row_shift) : 0u, height);
+  if (end_row <= cs.scanout_start_row)
+    return;
+
+  DEV_LOG("Partial scanout of rows {}-{} at line {}", cs.scanout_start_row, end_row, cs.current_scanline);
+
+  GPUBackendUpdateDisplayCommand* cmd = GPUBackend::NewUpdateDisplayCommand();
+  FillUpdateDisplayCommand(cmd);
+  cmd->scanout_end_row = Truncate16(end_row);
+  cmd->gpu_busy_pct = s_locals.last_gpu_busy_pct;
+  cmd->submit_frame = false;
+  cmd->partial_scanout = true;
+  VideoThread::PushCommand(cmd);
+
+  cs.scanout_start_row = Truncate16(end_row);
 }
 
 void GPU::QueuePresentCurrentFrame()
