@@ -1781,7 +1781,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         if (m_ui.menuDebug->menuAction()->isVisible())
         {
           menu->addAction(
-            QIcon(u":/icons/monochrome/svg/code-line.svg"_s), tr("Boot and Debug"), [this, qpath]() mutable {
+            QIcon(u":/icons/monochrome/svg/bug-line.svg"_s), tr("Boot and Debug"), [this, qpath]() mutable {
               openCPUDebugger();
 
               std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());

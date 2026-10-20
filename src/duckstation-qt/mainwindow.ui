@@ -128,30 +128,54 @@
      <property name="title">
       <string>Switch GPU Renderer</string>
      </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/image-fill.svg</normaloff>:/icons/monochrome/svg/image-fill.svg</iconset>
+     </property>
     </widget>
     <widget class="QMenu" name="menuCPUExecutionMode">
      <property name="title">
       <string>Switch CPU Emulation Mode</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/cpu-line.svg</normaloff>:/icons/monochrome/svg/cpu-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuCropMode">
      <property name="title">
       <string>Switch Crop Mode</string>
      </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/crop-line.svg</normaloff>:/icons/monochrome/svg/crop-line.svg</iconset>
+     </property>
     </widget>
     <widget class="QMenu" name="menuLogLevel">
      <property name="title">
       <string>Log Level</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/stack-line.svg</normaloff>:/icons/monochrome/svg/stack-line.svg</iconset>
      </property>
     </widget>
     <widget class="QMenu" name="menuLogChannels">
      <property name="title">
       <string>Log Channels</string>
      </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/filter-line.svg</normaloff>:/icons/monochrome/svg/filter-line.svg</iconset>
+     </property>
     </widget>
     <widget class="QMenu" name="menuCDROMLidState">
      <property name="title">
       <string>CD-ROM Lid Control</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/disc-eject-line.svg</normaloff>:/icons/monochrome/svg/disc-eject-line.svg</iconset>
      </property>
      <addaction name="actionCDROMLidStateAutomatic"/>
      <addaction name="actionCDROMLidStateClosed"/>
@@ -214,6 +238,10 @@
     <widget class="QMenu" name="menuToolbar">
      <property name="title">
       <string>&amp;Toolbar</string>
+     </property>
+     <property name="icon">
+      <iconset resource="resources/duckstation-qt.qrc">
+       <normaloff>:/icons/monochrome/svg/layout-top-line.svg</normaloff>:/icons/monochrome/svg/layout-top-line.svg</iconset>
      </property>
      <addaction name="actionViewShowToolbar"/>
      <addaction name="actionViewLockToolbar"/>
@@ -837,6 +865,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/image-line.svg</normaloff>:/icons/monochrome/svg/image-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Show VRAM</string>
    </property>
@@ -844,6 +876,10 @@
   <action name="actionDebugDumpCPUtoVRAMCopies">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/upload-line.svg</normaloff>:/icons/monochrome/svg/upload-line.svg</iconset>
    </property>
    <property name="text">
     <string>Dump CPU to VRAM Copies</string>
@@ -853,6 +889,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/download-line.svg</normaloff>:/icons/monochrome/svg/download-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Dump VRAM to CPU Copies</string>
    </property>
@@ -861,21 +901,37 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/shield-check-line.svg</normaloff>:/icons/monochrome/svg/shield-check-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Enable &amp;Safe Mode</string>
    </property>
   </action>
   <action name="actionDumpRAM">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/ram-2-line.svg</normaloff>:/icons/monochrome/svg/ram-2-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Dump RAM...</string>
    </property>
   </action>
   <action name="actionDumpVRAM">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-image-line.svg</normaloff>:/icons/monochrome/svg/file-image-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Dump VRAM...</string>
    </property>
   </action>
   <action name="actionDumpSPURAM">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-music-line.svg</normaloff>:/icons/monochrome/svg/file-music-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Dump SPU RAM...</string>
    </property>
@@ -883,6 +939,10 @@
   <action name="actionDebugShowGPUState">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/shapes-line.svg</normaloff>:/icons/monochrome/svg/shapes-line.svg</iconset>
    </property>
    <property name="text">
     <string>Show GPU State</string>
@@ -892,6 +952,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/disc-line.svg</normaloff>:/icons/monochrome/svg/disc-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Show CD-ROM State</string>
    </property>
@@ -899,6 +963,10 @@
   <action name="actionDebugShowSPUState">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/volume-up-line.svg</normaloff>:/icons/monochrome/svg/volume-up-line.svg</iconset>
    </property>
    <property name="text">
     <string>Show SPU State</string>
@@ -908,6 +976,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/timer-line.svg</normaloff>:/icons/monochrome/svg/timer-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Show Timers State</string>
    </property>
@@ -916,6 +988,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/film-line.svg</normaloff>:/icons/monochrome/svg/film-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Show MDEC State</string>
    </property>
@@ -923,6 +999,10 @@
   <action name="actionDebugShowDMAState">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/swap-line.svg</normaloff>:/icons/monochrome/svg/swap-line.svg</iconset>
    </property>
    <property name="text">
     <string>Show DMA State</string>
@@ -968,6 +1048,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/eye-line.svg</normaloff>:/icons/monochrome/svg/eye-line.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Show Toolbar</string>
    </property>
@@ -978,6 +1062,10 @@
   <action name="actionViewLockToolbar">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/lock-line.svg</normaloff>:/icons/monochrome/svg/lock-line.svg</iconset>
    </property>
    <property name="text">
     <string>Loc&amp;k Toolbar</string>
@@ -990,6 +1078,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/collapse-diagonal-line.svg</normaloff>:/icons/monochrome/svg/collapse-diagonal-line.svg</iconset>
+   </property>
    <property name="text">
     <string>S&amp;mall Icons</string>
    </property>
@@ -1001,6 +1093,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/text.svg</normaloff>:/icons/monochrome/svg/text.svg</iconset>
+   </property>
    <property name="text">
     <string>Show &amp;Labels</string>
    </property>
@@ -1011,6 +1107,10 @@
   <action name="actionViewToolbarLabelsBesideIcons">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/toolbar-labels-beside-line.svg</normaloff>:/icons/monochrome/svg/toolbar-labels-beside-line.svg</iconset>
    </property>
    <property name="text">
     <string>Show Labels &amp;Beside Icons</string>
@@ -1025,6 +1125,10 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/layout-bottom-line.svg</normaloff>:/icons/monochrome/svg/layout-bottom-line.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Status Bar</string>
@@ -1096,7 +1200,7 @@
   <action name="actionCPUDebugger">
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
+     <normaloff>:/icons/monochrome/svg/bug-line.svg</normaloff>:/icons/monochrome/svg/bug-line.svg</iconset>
    </property>
    <property name="text">
     <string>CPU D&amp;ebugger</string>
@@ -1111,7 +1215,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
+     <normaloff>:/icons/monochrome/svg/terminal-box-line.svg</normaloff>:/icons/monochrome/svg/terminal-box-line.svg</iconset>
    </property>
    <property name="text">
     <string>TTY Window</string>
@@ -1358,6 +1462,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/time-line.svg</normaloff>:/icons/monochrome/svg/time-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Log Timestamps</string>
    </property>
@@ -1365,6 +1473,10 @@
   <action name="actionLogFileTimestamps">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-history-line.svg</normaloff>:/icons/monochrome/svg/file-history-line.svg</iconset>
    </property>
    <property name="text">
     <string>Log File Timestamps</string>
@@ -1374,6 +1486,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/terminal-line.svg</normaloff>:/icons/monochrome/svg/terminal-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Log To System Console</string>
    </property>
@@ -1382,6 +1498,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-list-line.svg</normaloff>:/icons/monochrome/svg/file-list-line.svg</iconset>
+   </property>
    <property name="text">
     <string>Log To Window</string>
    </property>
@@ -1389,6 +1509,10 @@
   <action name="actionLogToFile">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-text-line.svg</normaloff>:/icons/monochrome/svg/file-text-line.svg</iconset>
    </property>
    <property name="text">
     <string>Log To File</string>

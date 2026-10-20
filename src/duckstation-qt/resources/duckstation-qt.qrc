@@ -66,6 +66,7 @@
 		<file>icons/monochrome/svg/arrow-left-right-line.svg</file>
 		<file>icons/monochrome/svg/arrow-up-line.svg</file>
 		<file>icons/monochrome/svg/artboard-2-line.svg</file>
+		<file>icons/monochrome/svg/bug-line.svg</file>
 		<file>icons/monochrome/svg/camera-switch-line.svg</file>
 		<file>icons/monochrome/svg/chat-history-line.svg</file>
 		<file>icons/monochrome/svg/chat-off-line.svg</file>
@@ -75,10 +76,13 @@
 		<file>icons/monochrome/svg/chip-line.svg</file>
 		<file>icons/monochrome/svg/close-line.svg</file>
 		<file>icons/monochrome/svg/code-line.svg</file>
+		<file>icons/monochrome/svg/collapse-diagonal-line.svg</file>
 		<file>icons/monochrome/svg/controller-digital-line.svg</file>
 		<file>icons/monochrome/svg/controller-line.svg</file>
 		<file>icons/monochrome/svg/controller-strike-line.svg</file>
 		<file>icons/monochrome/svg/controllers-line.svg</file>
+		<file>icons/monochrome/svg/cpu-line.svg</file>
+		<file>icons/monochrome/svg/crop-line.svg</file>
 		<file>icons/monochrome/svg/debug-step-into-line.svg</file>
 		<file>icons/monochrome/svg/debug-step-out-line.svg</file>
 		<file>icons/monochrome/svg/debug-step-over-line.svg</file>
@@ -96,22 +100,28 @@
 		<file>icons/monochrome/svg/discord.svg</file>
 		<file>icons/monochrome/svg/door-open-line.svg</file>
 		<file>icons/monochrome/svg/download-2-line.svg</file>
+		<file>icons/monochrome/svg/download-line.svg</file>
 		<file>icons/monochrome/svg/edit-box-line.svg</file>
 		<file>icons/monochrome/svg/eject-line.svg</file>
 		<file>icons/monochrome/svg/emulation-line.svg</file>
 		<file>icons/monochrome/svg/error-warning-line.svg</file>
 		<file>icons/monochrome/svg/export-line.svg</file>
+		<file>icons/monochrome/svg/eye-line.svg</file>
 		<file>icons/monochrome/svg/file-add-line.svg</file>
 		<file>icons/monochrome/svg/file-check-line.svg</file>
 		<file>icons/monochrome/svg/file-copy-line.svg</file>
 		<file>icons/monochrome/svg/file-forbid-line.svg</file>
+		<file>icons/monochrome/svg/file-history-line.svg</file>
+		<file>icons/monochrome/svg/file-image-line.svg</file>
 		<file>icons/monochrome/svg/file-line.svg</file>
 		<file>icons/monochrome/svg/file-list-line.svg</file>
 		<file>icons/monochrome/svg/file-music-line.svg</file>
 		<file>icons/monochrome/svg/file-reduce-line.svg</file>
 		<file>icons/monochrome/svg/file-search-line.svg</file>
 		<file>icons/monochrome/svg/file-settings-line.svg</file>
+		<file>icons/monochrome/svg/file-text-line.svg</file>
 		<file>icons/monochrome/svg/file-unknow-line.svg</file>
+		<file>icons/monochrome/svg/film-line.svg</file>
 		<file>icons/monochrome/svg/filter-line.svg</file>
 		<file>icons/monochrome/svg/flashlight-line.svg</file>
 		<file>icons/monochrome/svg/folder-add-line.svg</file>
@@ -126,14 +136,18 @@
 		<file>icons/monochrome/svg/guncon-line.svg</file>
 		<file>icons/monochrome/svg/id-card-line.svg</file>
 		<file>icons/monochrome/svg/image-fill.svg</file>
+		<file>icons/monochrome/svg/image-line.svg</file>
 		<file>icons/monochrome/svg/import-line.svg</file>
 		<file>icons/monochrome/svg/information-line.svg</file>
 		<file>icons/monochrome/svg/joystick-line.svg</file>
 		<file>icons/monochrome/svg/keyboard-line.svg</file>
 		<file>icons/monochrome/svg/language.svg</file>
+		<file>icons/monochrome/svg/layout-bottom-line.svg</file>
 		<file>icons/monochrome/svg/layout-grid-line.svg</file>
+		<file>icons/monochrome/svg/layout-top-line.svg</file>
 		<file>icons/monochrome/svg/lightbulb-line.svg</file>
 		<file>icons/monochrome/svg/list-check.svg</file>
+		<file>icons/monochrome/svg/lock-line.svg</file>
 		<file>icons/monochrome/svg/login-box-line.svg</file>
 		<file>icons/monochrome/svg/logout-box-line.svg</file>
 		<file>icons/monochrome/svg/mag-line.svg</file>
@@ -152,6 +166,7 @@
 		<file>icons/monochrome/svg/play-list-2-line.svg</file>
 		<file>icons/monochrome/svg/price-tag-3-line.svg</file>
 		<file>icons/monochrome/svg/pushpin-line.svg</file>
+		<file>icons/monochrome/svg/ram-2-line.svg</file>
 		<file>icons/monochrome/svg/refresh-line.svg</file>
 		<file>icons/monochrome/svg/restart-line.svg</file>
 		<file>icons/monochrome/svg/ruler-line.svg</file>
@@ -161,16 +176,27 @@
 		<file>icons/monochrome/svg/shader-glsl.svg</file>
 		<file>icons/monochrome/svg/shader-reshade.svg</file>
 		<file>icons/monochrome/svg/shader-slang.svg</file>
+		<file>icons/monochrome/svg/shapes-line.svg</file>
+		<file>icons/monochrome/svg/shield-check-line.svg</file>
 		<file>icons/monochrome/svg/shut-down-line.svg</file>
 		<file>icons/monochrome/svg/sort-alphabet-asc.svg</file>
 		<file>icons/monochrome/svg/sort-asc.svg</file>
 		<file>icons/monochrome/svg/sort-desc.svg</file>
 		<file>icons/monochrome/svg/sparkle-fill.svg</file>
 		<file>icons/monochrome/svg/sparkling-line.svg</file>
+		<file>icons/monochrome/svg/stack-line.svg</file>
 		<file>icons/monochrome/svg/sun-fill.svg</file>
+		<file>icons/monochrome/svg/swap-line.svg</file>
+		<file>icons/monochrome/svg/terminal-box-line.svg</file>
+		<file>icons/monochrome/svg/terminal-line.svg</file>
+		<file>icons/monochrome/svg/text.svg</file>
+		<file>icons/monochrome/svg/time-line.svg</file>
+		<file>icons/monochrome/svg/timer-line.svg</file>
+		<file>icons/monochrome/svg/toolbar-labels-beside-line.svg</file>
 		<file>icons/monochrome/svg/trash-fill.svg</file>
 		<file>icons/monochrome/svg/trophy-line.svg</file>
 		<file>icons/monochrome/svg/tv-2-line.svg</file>
+		<file>icons/monochrome/svg/upload-line.svg</file>
 		<file>icons/monochrome/svg/user-add-line.svg</file>
 		<file>icons/monochrome/svg/video-off-line.svg</file>
 		<file>icons/monochrome/svg/video-on-line.svg</file>

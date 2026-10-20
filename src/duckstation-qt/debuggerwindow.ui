@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources/duckstation-qt.qrc">
-    <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
+    <normaloff>:/icons/monochrome/svg/bug-line.svg</normaloff>:/icons/monochrome/svg/bug-line.svg</iconset>
   </property>
   <property name="dockNestingEnabled">
    <bool>true</bool>

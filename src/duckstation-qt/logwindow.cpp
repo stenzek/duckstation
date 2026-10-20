@@ -587,7 +587,8 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
   }
 }
 
-TTYWindow::TTYWindow() : LogWindowBase("TTYWindow", QIcon(u":/icons/monochrome/svg/code-line.svg"_s), Log::Channel::TTY)
+TTYWindow::TTYWindow()
+  : LogWindowBase("TTYWindow", QIcon(u":/icons/monochrome/svg/terminal-box-line.svg"_s), Log::Channel::TTY)
 {
   createUi();
 }
