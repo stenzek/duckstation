@@ -375,6 +375,15 @@ enum class ForceVideoTimingMode : u8
   Count,
 };
 
+enum class SettingOverrideMode : u8
+{
+  Automatic,
+  Enabled,
+  Disabled,
+
+  Count,
+};
+
 enum class PIODeviceType : u8
 {
   None,

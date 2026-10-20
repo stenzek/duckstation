@@ -4975,25 +4975,29 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       bsi, FSUI_ICONVSTR(ICON_FA_DRAW_POLYGON, "Preserve Projection Precision"),
       FSUI_VSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."),
       Settings::GPU_SECTION_NAME, "PGXPPreserveProjFP", false, pgxp_enabled);
-
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "CPU Mode"),
-                      FSUI_VSTR("Uses PGXP for all instructions, not just memory operations."),
-                      Settings::GPU_SECTION_NAME, "PGXPCPU", false, pgxp_enabled);
-
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_NODES, "Vertex Cache"),
-                      FSUI_VSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."),
-                      Settings::GPU_SECTION_NAME, "PGXPVertexCache", false, pgxp_enabled);
-
     DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_SQUARE_MINUS, "Disable on 2D Polygons"),
       FSUI_VSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
                 "fix misaligned UI in some games, but otherwise should be left disabled."),
       Settings::GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", false, pgxp_enabled);
-
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER, "Depth Test Transparent Polygons"),
                       FSUI_VSTR("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
                                 "and tend to clip through the ground when depth testing is enabled."),
                       Settings::GPU_SECTION_NAME, "PGXPTransparentDepthTest", false, pgxp_enabled);
+
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "CPU Mode"),
+                    FSUI_VSTR("Uses PGXP for all instructions, not just memory operations. Automatic uses the game "
+                              "database setting."),
+                    Settings::GPU_SECTION_NAME, "PGXPCPU", SettingOverrideMode::Automatic,
+                    &Settings::ParseSettingOverrideModeName, &Settings::GetSettingOverrideModeName,
+                    &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Count, pgxp_enabled);
+
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_NODES, "Vertex Cache"),
+                    FSUI_VSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games. "
+                              "Automatic uses the game database setting."),
+                    Settings::GPU_SECTION_NAME, "PGXPVertexCache", SettingOverrideMode::Automatic,
+                    &Settings::ParseSettingOverrideModeName, &Settings::GetSettingOverrideModeName,
+                    &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Count, pgxp_enabled);
 
     DrawFloatRangeSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_PENTAGON, "Geometry Tolerance"),

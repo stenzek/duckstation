@@ -847,7 +847,8 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       {
         INFO_LOG("Enabling PGXP CPU mode.");
         Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPEnable", true);
-        Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPCPU", true);
+        Core::SetBaseStringSettingValue(Settings::GPU_SECTION_NAME, "PGXPCPU",
+                                        Settings::GetSettingOverrideModeName(SettingOverrideMode::Enabled));
         continue;
       }
       else if (CHECK_ARG("--"))

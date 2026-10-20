@@ -692,8 +692,16 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   gpu_pgxp_culling = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", true);
   gpu_pgxp_color_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", false);
-  gpu_pgxp_vertex_cache = si.GetBoolValue(GPU_SECTION_NAME, "PGXPVertexCache", false);
-  gpu_pgxp_cpu = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCPU", false);
+  gpu_pgxp_vertex_cache_mode =
+    ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPVertexCache",
+                                                       GetSettingOverrideModeName(SettingOverrideMode::Automatic)))
+      .value_or(SettingOverrideMode::Automatic);
+  gpu_pgxp_vertex_cache = (gpu_pgxp_vertex_cache_mode == SettingOverrideMode::Enabled);
+  gpu_pgxp_cpu_mode =
+    ParseSettingOverrideModeName(
+      si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPCPU", GetSettingOverrideModeName(SettingOverrideMode::Automatic)))
+      .value_or(SettingOverrideMode::Automatic);
+  gpu_pgxp_cpu = (gpu_pgxp_cpu_mode == SettingOverrideMode::Enabled);
   gpu_pgxp_preserve_proj_fp = si.GetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", false);
   gpu_pgxp_tolerance = si.GetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", -1.0f);
   gpu_pgxp_depth_buffer = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", false);
@@ -804,8 +812,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPCulling", gpu_pgxp_culling);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", gpu_pgxp_texture_correction);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", gpu_pgxp_color_correction);
-  si.SetBoolValue(GPU_SECTION_NAME, "PGXPVertexCache", gpu_pgxp_vertex_cache);
-  si.SetBoolValue(GPU_SECTION_NAME, "PGXPCPU", gpu_pgxp_cpu);
+  si.SetStringValue(GPU_SECTION_NAME, "PGXPVertexCache", GetSettingOverrideModeName(gpu_pgxp_vertex_cache_mode));
+  si.SetStringValue(GPU_SECTION_NAME, "PGXPCPU", GetSettingOverrideModeName(gpu_pgxp_cpu_mode));
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", gpu_pgxp_tolerance);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
@@ -2346,6 +2354,42 @@ const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
   return Host::TranslateToCString("Settings", s_display_scaling_display_names[static_cast<size_t>(mode)],
                                   "DisplayScalingMode");
+}
+
+static constexpr const std::array s_setting_override_mode_names = {
+  "Automatic",
+  "Enabled",
+  "Disabled",
+};
+static constexpr const std::array s_setting_override_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Automatic", "SettingOverrideMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Enabled", "SettingOverrideMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "SettingOverrideMode"),
+};
+
+std::optional<SettingOverrideMode> Settings::ParseSettingOverrideModeName(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_setting_override_mode_names)
+  {
+    if (str == name)
+      return static_cast<SettingOverrideMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetSettingOverrideModeName(SettingOverrideMode mode)
+{
+  return s_setting_override_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetSettingOverrideModeDisplayName(SettingOverrideMode mode)
+{
+  return Host::TranslateToCString("Settings", s_setting_override_mode_display_names[static_cast<size_t>(mode)],
+                                  "SettingOverrideMode");
 }
 
 static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {

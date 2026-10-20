@@ -911,7 +911,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "Use This Directory");
 TRANSLATE_NOOP("FullscreenUI", "User Name");
 TRANSLATE_NOOP("FullscreenUI", "Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.");
-TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
+TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.");
 TRANSLATE_NOOP("FullscreenUI", "Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.");
@@ -921,7 +921,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses localized (native language) titles in the g
 TRANSLATE_NOOP("FullscreenUI", "Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
-TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.");
 TRANSLATE_NOOP("FullscreenUI", "Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.");
 TRANSLATE_NOOP("FullscreenUI", "Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Utilizes the chosen frame rate regardless of the game's setting.");

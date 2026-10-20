@@ -781,7 +781,27 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="2" column="0">
+           <widget class="QLabel" name="pgxpCPULabel">
+            <property name="text">
+             <string>CPU Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="pgxpCPU"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="pgxpVertexCacheLabel">
+            <property name="text">
+             <string>Vertex Cache:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="pgxpVertexCache"/>
+          </item>
+          <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0">
              <widget class="QCheckBox" name="pgxpTextureCorrection">
@@ -812,27 +832,13 @@
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QCheckBox" name="pgxpCPU">
-              <property name="text">
-               <string>CPU Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="pgxpVertexCache">
-              <property name="text">
-               <string>Vertex Cache</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
              <widget class="QCheckBox" name="pgxpDisableOn2DPolygons">
               <property name="text">
                <string>Disable on 2D Polygons</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="2" column="1">
              <widget class="QCheckBox" name="pgxpTransparentDepthTest">
               <property name="text">
                <string>Depth Test Transparent Polygons</string>

@@ -876,12 +876,23 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::ForcePGXPVertexCache))
   {
-    if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_vertex_cache)
-      append_message(TRANSLATE_SV("GameDatabase", "PGXP vertex cache enabled."));
+    if (settings.gpu_pgxp_vertex_cache_mode == SettingOverrideMode::Automatic)
+    {
+      if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_vertex_cache)
+        append_message(TRANSLATE_SV("GameDatabase", "PGXP vertex cache enabled."));
 
-    settings.gpu_pgxp_vertex_cache = settings.gpu_pgxp_enable;
+      settings.gpu_pgxp_vertex_cache = settings.gpu_pgxp_enable;
+    }
+    else
+    {
+      Host::AddIconOSDMessage(
+        OSDMessageType::Warning, "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
+        TRANSLATE_STR(
+          "GameDatabase",
+          "PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors."));
+    }
   }
-  else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
+  else if (!HasTrait(Trait::ForcePGXPVertexCache) && settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Warning, "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
@@ -892,12 +903,22 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::ForcePGXPCPUMode))
   {
-    if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_cpu)
-      append_message(TRANSLATE_SV("GameDatabase", "PGXP CPU mode enabled."));
+    if (settings.gpu_pgxp_cpu_mode == SettingOverrideMode::Automatic)
+    {
+      if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_cpu)
+        append_message(TRANSLATE_SV("GameDatabase", "PGXP CPU mode enabled."));
 
-    settings.gpu_pgxp_cpu = settings.gpu_pgxp_enable;
+      settings.gpu_pgxp_cpu = settings.gpu_pgxp_enable;
+    }
+    else
+    {
+      Host::AddIconOSDMessage(
+        OSDMessageType::Warning, "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
+        TRANSLATE_STR("GameDatabase",
+                      "PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors."));
+    }
   }
-  else if (settings.UsingPGXPCPUMode())
+  else if (!HasTrait(Trait::ForcePGXPCPUMode) && settings.UsingPGXPCPUMode())
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Warning, "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
