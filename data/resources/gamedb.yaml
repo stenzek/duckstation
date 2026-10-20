@@ -70081,8 +70081,9 @@ SLES-01222:
   name: "Golden Goal 98"
   saveName: "Golden Goal 98 (Europe) (En,Fr,De,Es,It)"
   controllers:
-    - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Reduces chances of CD read errors.
   metadata:
     publisher: "BMG Interactive"
     developer: "Z-Axis, Ltd"
