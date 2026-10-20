@@ -24,8 +24,10 @@ using namespace Qt::StringLiterals;
 // TODO: Since log callbacks are synchronized, no mutex is needed here.
 // But once I get rid of that, there will be.
 LogWindow* g_log_window;
+TTYWindow* g_tty_window;
 
-LogWidget::LogWidget(QWidget* parent) : QPlainTextEdit(parent)
+LogWidget::LogWidget(QWidget* parent, Log::Channel channel_filter /* = Log::Channel::MaxCount */)
+  : QPlainTextEdit(parent), m_channel_filter(channel_filter)
 {
   setReadOnly(true);
   setUndoRedoEnabled(false);
@@ -247,17 +249,22 @@ void LogWidget::realAppendMessage(const QLatin1StringView& channel, quint32 cat,
       temp_cursor.insertText(qtimestamp);
     }
 
-    const Log::Level level = Log::UnpackLevel(static_cast<Log::MessageCategory>(cat));
-    const Log::Color color = (Log::UnpackColor(static_cast<Log::MessageCategory>(cat)) == Log::Color::Default) ?
-                               Log::GetColorForLevel(level) :
-                               Log::UnpackColor(static_cast<Log::MessageCategory>(cat));
-    const QString qchannel =
-      (level <= Log::Level::Warning) ?
-        QStringLiteral("%1(%2): ").arg(level_characters[static_cast<size_t>(level)]).arg(channel) :
-        QStringLiteral("%1/%2: ").arg(level_characters[static_cast<size_t>(level)]).arg(channel);
-    format.setForeground(QBrush(m_channel_color));
-    temp_cursor.setCharFormat(format);
-    temp_cursor.insertText(qchannel);
+    // filtered widgets only show a single channel, so the prefix and colour would be redundant
+    Log::Color color = Log::Color::Default;
+    if (m_channel_filter == Log::Channel::MaxCount)
+    {
+      const Log::Level level = Log::UnpackLevel(static_cast<Log::MessageCategory>(cat));
+      color = (Log::UnpackColor(static_cast<Log::MessageCategory>(cat)) == Log::Color::Default) ?
+                Log::GetColorForLevel(level) :
+                Log::UnpackColor(static_cast<Log::MessageCategory>(cat));
+      const QString qchannel =
+        (level <= Log::Level::Warning) ?
+          QStringLiteral("%1(%2): ").arg(level_characters[static_cast<size_t>(level)]).arg(channel) :
+          QStringLiteral("%1/%2: ").arg(level_characters[static_cast<size_t>(level)]).arg(channel);
+      format.setForeground(QBrush(m_channel_color));
+      temp_cursor.setCharFormat(format);
+      temp_cursor.insertText(qchannel);
+    }
 
     // message has \n already
     format.setForeground(QBrush(m_message_colors[static_cast<size_t>(color)]));
@@ -274,6 +281,8 @@ void LogWidget::logCallback(void* pUserParam, Log::MessageCategory cat, const ch
                             std::string_view message)
 {
   LogWidget* this_ptr = static_cast<LogWidget*>(pUserParam);
+  if (this_ptr->m_channel_filter != Log::Channel::MaxCount && Log::UnpackChannel(cat) != this_ptr->m_channel_filter)
+    return;
 
   // TODO: Split message based on lines.
   // I don't like the memory allocations here either...
@@ -299,13 +308,14 @@ void LogWidget::logCallback(void* pUserParam, Log::MessageCategory cat, const ch
   }
 }
 
-LogWindowBase::LogWindowBase(const char* size_key_prefix, const QIcon& icon)
+LogWindowBase::LogWindowBase(const char* size_key_prefix, const QIcon& icon,
+                             Log::Channel channel_filter /* = Log::Channel::MaxCount */)
   : QMainWindow(), m_size_key_prefix(size_key_prefix)
 {
   setWindowIcon(icon);
   restoreSize();
 
-  m_log_widget = new LogWidget(this);
+  m_log_widget = new LogWidget(this, channel_filter);
   setCentralWidget(m_log_widget);
 
   QMenu* log_menu = menuBar()->addMenu("&Log");
@@ -575,4 +585,86 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
     action->setCheckable(true);
     action->setChecked(enabled);
   }
+}
+
+TTYWindow::TTYWindow() : LogWindowBase("TTYWindow", QIcon(u":/icons/monochrome/svg/code-line.svg"_s), Log::Channel::TTY)
+{
+  createUi();
+}
+
+TTYWindow::~TTYWindow() = default;
+
+void TTYWindow::updateSettings(bool defer_show)
+{
+  const bool new_enabled = Core::GetBoolSettingValue(Settings::LOGGING_SECTION_NAME, "ShowTTYWindow", false);
+  const bool curr_enabled = (g_tty_window != nullptr);
+  if (new_enabled == curr_enabled)
+    return;
+
+  if (new_enabled)
+  {
+    g_tty_window = new TTYWindow();
+    if (!defer_show)
+      g_tty_window->deferredShow();
+  }
+  else
+  {
+    destroy();
+  }
+}
+
+void TTYWindow::destroy()
+{
+  if (!g_tty_window)
+    return;
+
+  g_tty_window->destroyWindow();
+  g_tty_window = nullptr;
+}
+
+bool TTYWindow::deferredShow()
+{
+  if (!g_tty_window)
+    return false;
+
+  if (!g_tty_window->isVisible())
+    g_tty_window->show();
+
+  return true;
+}
+
+void TTYWindow::updateWindowTitle()
+{
+  setWindowTitleForGame(tr("TTY Window"), tr("TTY Window - %1 [%2]"));
+}
+
+void TTYWindow::createUi()
+{
+  updateWindowTitle();
+
+  QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));
+  QtUtils::StylePopupMenu(settings_menu);
+
+  QAction* action = settings_menu->addAction(tr("Enable BIOS &TTY Logging"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::BIOS_SECTION_NAME, "TTYLogging", false);
+
+  action = settings_menu->addAction(tr("Show &Timestamps"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, Settings::LOGGING_SECTION_NAME, "LogTimestamps", true);
+}
+
+void TTYWindow::closeEvent(QCloseEvent* event)
+{
+  if (!m_destroying)
+  {
+    // Closed by the user, turn the setting off and let the settings reload destroy us.
+    event->ignore();
+    Core::SetBaseBoolSettingValue(Settings::LOGGING_SECTION_NAME, "ShowTTYWindow", false);
+    Host::CommitBaseSettingChanges();
+    g_core_thread->applySettings();
+    return;
+  }
+
+  LogWindowBase::closeEvent(event);
 }

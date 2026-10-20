@@ -172,6 +172,7 @@
     <addaction name="actionLogFileTimestamps"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
+    <addaction name="actionTTYWindow"/>
     <addaction name="separator"/>
     <addaction name="actionDumpRAM"/>
     <addaction name="actionDumpVRAM"/>
@@ -1102,6 +1103,18 @@
    </property>
    <property name="toolTip">
     <string>Opens the debugger for the emulated CPU.</string>
+   </property>
+  </action>
+  <action name="actionTTYWindow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/code-line.svg</normaloff>:/icons/monochrome/svg/code-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>TTY Window</string>
    </property>
   </action>
   <action name="actionViewGameGrid">

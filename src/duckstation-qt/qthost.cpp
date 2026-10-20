@@ -3621,6 +3621,7 @@ int main(int argc, char* argv[])
   // We want to catch the early messages, but if the window is shown the Windows taskbar will use
   // the log window icon as the application icon because it's the first window shown.
   LogWindow::updateSettings(true);
+  TTYWindow::updateSettings(true);
 
   // Now we can actually start the CPU thread.
   HookSignals();
@@ -3642,6 +3643,7 @@ int main(int argc, char* argv[])
   if (IsRunningOnWayland())
   {
     LogWindow::deferredShow();
+    TTYWindow::deferredShow();
     QApplication::sync();
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
   }
@@ -3668,8 +3670,9 @@ int main(int argc, char* argv[])
   if (autoboot)
     g_core_thread->bootSystem(std::move(autoboot));
 
-  // Bring the log window up last, so that its icon does not take precedence.
-  if (LogWindow::deferredShow())
+  // Bring the log/TTY windows up last, so that their icon does not take precedence.
+  if (const bool log_window_shown = LogWindow::deferredShow(), tty_window_shown = TTYWindow::deferredShow();
+      log_window_shown || tty_window_shown)
   {
     // But ensure the main window still has focus.
     QtUtils::RaiseWindow(g_main_window);

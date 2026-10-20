@@ -18,7 +18,8 @@ class ALIGN_TO_CACHE_LINE LogWidget : public QPlainTextEdit
   Q_OBJECT
 
 public:
-  explicit LogWidget(QWidget* parent);
+  // Only messages from channel_filter are shown, without the channel prefix or colours. MaxCount shows all channels.
+  explicit LogWidget(QWidget* parent, Log::Channel channel_filter = Log::Channel::MaxCount);
   ~LogWidget();
 
   void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
@@ -36,6 +37,7 @@ private:
   static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
                           std::string_view message);
 
+  Log::Channel m_channel_filter;
   int m_lines_to_skip = 0;
 
   std::array<QColor, static_cast<size_t>(Log::Color::MaxCount)> m_message_colors;
@@ -50,7 +52,7 @@ class LogWindowBase : public QMainWindow
   Q_OBJECT
 
 protected:
-  LogWindowBase(const char* size_key_prefix, const QIcon& icon);
+  LogWindowBase(const char* size_key_prefix, const QIcon& icon, Log::Channel channel_filter = Log::Channel::MaxCount);
   ~LogWindowBase();
 
   void setWindowTitleForGame(const QString& title, const QString& game_title_format);
@@ -102,4 +104,26 @@ private:
   bool m_attached_to_main_window = true;
 };
 
+class TTYWindow : public LogWindowBase
+{
+  Q_OBJECT
+
+public:
+  TTYWindow();
+  ~TTYWindow();
+
+  static void updateSettings(bool defer_show);
+  static bool deferredShow();
+  static void destroy();
+
+  void updateWindowTitle();
+
+protected:
+  void closeEvent(QCloseEvent* event) override;
+
+private:
+  void createUi();
+};
+
 extern LogWindow* g_log_window;
+extern TTYWindow* g_tty_window;

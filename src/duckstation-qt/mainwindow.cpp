@@ -839,6 +839,7 @@ void MainWindow::recreate()
 
   // Recreate log window as well. Then make sure we're still on top.
   LogWindow::updateSettings(true);
+  TTYWindow::updateSettings(true);
 
   // Qt+XCB will ignore the raise request of the settings window if we raise the main window.
   // So skip that if we're going to be re-opening the settings window.
@@ -851,6 +852,7 @@ void MainWindow::recreate()
   }
 
   LogWindow::deferredShow();
+  TTYWindow::deferredShow();
 
   if (was_display_created)
   {
@@ -906,6 +908,7 @@ void MainWindow::destroySubWindows()
   SettingsWindow::closeGamePropertiesDialogs();
 
   LogWindow::destroy();
+  TTYWindow::destroy();
 }
 
 void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu)
@@ -2429,6 +2432,8 @@ void MainWindow::updateWindowTitle()
 
   if (g_log_window)
     g_log_window->updateWindowTitle();
+  if (g_tty_window)
+    g_tty_window->updateWindowTitle();
 }
 
 void MainWindow::updateDisplayWindowTitle()
@@ -2784,6 +2789,8 @@ void MainWindow::connectSignals()
                                                "LogTimestamps", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogFileTimestamps, Settings::LOGGING_SECTION_NAME,
                                                "LogFileTimestamps", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionTTYWindow, Settings::LOGGING_SECTION_NAME,
+                                               "ShowTTYWindow", false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSafeMode, Settings::INTERFACE_SECTION_NAME,
                                                "DisableAllEnhancements", false);
@@ -3307,6 +3314,7 @@ void MainWindow::onSettingsReloaded()
   }
 
   LogWindow::updateSettings(false);
+  TTYWindow::updateSettings(false);
 
   // don't refresh window state while setup wizard is running, i.e. no game and hidden
   if (isVisible() || s_locals.system_valid || s_locals.system_starting)
