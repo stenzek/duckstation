@@ -238,7 +238,7 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width,
   const bool mapped = texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height);
 
   // Fast path when not wrapping around.
-  if ((src_x + width) <= VRAM_WIDTH && (src_y + height) <= VRAM_HEIGHT)
+  if ((src_x + width) <= VRAM_WIDTH && (src_y + (height << line_skip)) <= VRAM_HEIGHT)
   {
     [[maybe_unused]] constexpr u32 pixels_per_vec = 8;
     [[maybe_unused]] const u32 aligned_width = Common::AlignDownPow2(width, pixels_per_vec);
