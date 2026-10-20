@@ -189,8 +189,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, Settings::GPU_SECTION_NAME, "UseThread", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, Settings::GPU_SECTION_NAME, "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, Settings::GPU_SECTION_NAME,
-                                               "EnableModulationCrop", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, Settings::GPU_SECTION_NAME,
                                                "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableUpscaledDirectTextures, Settings::GPU_SECTION_NAME,
@@ -343,6 +341,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "DisableTextures", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDisableVertexLighting, Settings::GPU_SECTION_NAME,
                                                "DisableVertexLighting", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, Settings::GPU_SECTION_NAME,
+                                               "EnableModulationCrop", false);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.gpuDumpCompressionMode, Settings::GPU_SECTION_NAME, "DumpCompressionMode",

@@ -638,23 +638,23 @@
              </layout>
             </item>
             <item row="2" column="0">
-             <widget class="QCheckBox" name="modulationCrop">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
               <property name="text">
-               <string>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</string>
+               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QCheckBox" name="scaledInterlacing">
+             <widget class="QCheckBox" name="midFrameScanout">
               <property name="text">
-               <string>Scaled Interlacing</string>
+               <string>Mid-Frame Scanout</string>
               </property>
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+             <widget class="QCheckBox" name="scaledInterlacing">
               <property name="text">
-               <string>Software Renderer Readbacks</string>
+               <string>Scaled Interlacing</string>
               </property>
              </widget>
             </item>
@@ -662,13 +662,6 @@
              <widget class="QCheckBox" name="disableUpscaledDirectTextures">
               <property name="text">
                <string>Disable Upscaled Direct Textures</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="midFrameScanout">
-              <property name="text">
-               <string>Mid-Frame Scanout</string>
               </property>
              </widget>
             </item>
@@ -1110,6 +1103,13 @@
              <widget class="QCheckBox" name="gpuDisableVertexLighting">
               <property name="text">
                <string>Disable Vertex Lighting</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="modulationCrop">
+              <property name="text">
+               <string>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</string>
               </property>
              </widget>
             </item>

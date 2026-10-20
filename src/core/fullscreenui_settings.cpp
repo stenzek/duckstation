@@ -4948,11 +4948,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         filter_framebuffer_upload_sizes_enabled);
     }
 
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SWATCHBOOK, "Texture Modulation Cropping (\"Old/v0\" GPU)"),
-                      FSUI_VSTR("Crops vertex colours to 5:5:5 before modulating with the texture colour, which "
-                                "typically results in more visible banding."),
-                      Settings::GPU_SECTION_NAME, "EnableModulationCrop", false);
-
     DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
       FSUI_VSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in "
@@ -6215,6 +6210,10 @@ void FullscreenUI::DrawAdvancedSettingsPage()
     bsi, FSUI_VSTR("Disable Vertex Lighting"),
     FSUI_VSTR("Disables vertex lighting in the GPU, forcing all primitives to only show raw texture colours."),
     Settings::GPU_SECTION_NAME, "DisableVertexLighting", false);
+  DrawToggleSetting(bsi, FSUI_VSTR("Texture Modulation Cropping (\"Old/v0\" GPU)"),
+                    FSUI_VSTR("Crops vertex colours to 5:5:5 before modulating with the texture colour, which "
+                              "typically results in more visible banding."),
+                    Settings::GPU_SECTION_NAME, "EnableModulationCrop", false);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 
