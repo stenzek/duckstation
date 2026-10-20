@@ -711,6 +711,7 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -pgxp-cpu: Forces PGXP CPU mode.\n");
   std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Default to software.\n");
   std::fprintf(stderr, "  -upscale <multiplier>: Enables upscaled rendering at the specified multiplier.\n");
+  std::fprintf(stderr, "  -setting <section>/<key>:<value>: Sets a setting, e.g. GPU/ResolutionScale:2.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -855,6 +856,24 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         Core::SetBaseBoolSettingValue(Settings::GPU_SECTION_NAME, "PGXPEnable", true);
         Core::SetBaseStringSettingValue(Settings::GPU_SECTION_NAME, "PGXPCPU",
                                         Settings::GetSettingOverrideModeName(SettingOverrideMode::Enabled));
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-setting"))
+      {
+        const std::string_view setting = argv[++i];
+        const std::string_view::size_type key_pos = setting.find('/');
+        const std::string_view::size_type value_pos = setting.find('=', key_pos);
+        if (key_pos == 0 || value_pos == std::string_view::npos || value_pos == (key_pos + 1))
+        {
+          ERROR_LOG("Invalid setting '{}', expected <section>/<key>=<value>.", setting);
+          return false;
+        }
+
+        const std::string section(setting.substr(0, key_pos));
+        const std::string key(setting.substr(key_pos + 1, value_pos - key_pos - 1));
+        const std::string value(setting.substr(value_pos + 1));
+        INFO_LOG("Setting {}/{} to '{}'.", section, key, value);
+        Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), value.c_str());
         continue;
       }
       else if (CHECK_ARG("--"))
