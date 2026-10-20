@@ -71,7 +71,7 @@ BEGIN
             VALUE "FileDescription", "DuckStation PS1 Emulator"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "duckstation-qt.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2020-2024 Stenzek and collaborators"
+            VALUE "LegalCopyright", "Copyright (C) 2020-2026 Stenzek and collaborators"
             VALUE "OriginalFilename", "duckstation-qt.exe"
             VALUE "ProductName", "DuckStation"
             VALUE "ProductVersion", "1.0.0.1"

@@ -101,7 +101,7 @@ jobs:
         cd src\scmversion
         call update_rc_version.bat
         cd ..\..
-        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
+        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc src/installer/installer.rc src/uninstaller/uninstaller.rc
 
     - name: Compile ${{ matrix.name }} Release Build
       shell: cmd

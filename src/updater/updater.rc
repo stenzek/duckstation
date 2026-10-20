@@ -71,7 +71,7 @@ BEGIN
             VALUE "FileDescription", "DuckStation Update Installer"
             VALUE "FileVersion", "1.0.0.0"
             VALUE "InternalName", "updater.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2020-2024 Stenzek and collaborators"
+            VALUE "LegalCopyright", "Copyright (C) 2020-2026 Stenzek and collaborators"
             VALUE "OriginalFilename", "updater.exe"
             VALUE "ProductName", "DuckStation"
             VALUE "ProductVersion", "1.0.0.0"
