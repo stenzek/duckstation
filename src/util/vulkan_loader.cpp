@@ -41,12 +41,13 @@ static bool LoadVulkanLibrary(WindowInfoType wtype, Error* error);
 static bool LoadInstanceFunctions(VkInstance instance, Error* error);
 static void UnloadVulkanLibrary();
 
-static bool LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, Error* error);
+static bool LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, bool gpu_validation,
+                                       Error* error);
 static void LockedReleaseVulkanInstance();
 static void LockedDestroyVulkanInstance();
 
 static bool SelectInstanceExtensions(VulkanDevice::ExtensionList* extension_list, WindowInfoType wtype,
-                                     bool debug_instance, Error* error);
+                                     bool debug_instance, bool gpu_validation, Error* error);
 
 VKAPI_ATTR static VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
                                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -63,6 +64,7 @@ struct Locals
   OptionalExtensions optional_extensions{};
   WindowInfoType window_type = WindowInfoType::Surfaceless;
   bool is_debug_instance = false;
+  bool is_gpu_validation_instance = false;
 
   Threading::Mutex mutex;
 };
@@ -190,10 +192,13 @@ void VulkanLoader::ResetDeviceFunctions()
   DynamicLibrary::ClearSymbols(s_vulkan_device_entry_points);
 }
 
-bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, Error* error)
+bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* request_debug_instance, bool gpu_validation,
+                                              Error* error)
 {
   if (s_locals.instance != VK_NULL_HANDLE &&
-      ((request_debug_instance && *request_debug_instance != s_locals.is_debug_instance) ||
+      ((request_debug_instance &&
+        (*request_debug_instance != s_locals.is_debug_instance ||
+         (*request_debug_instance && gpu_validation != s_locals.is_gpu_validation_instance))) ||
        s_locals.window_type != wtype))
   {
     // Different debug setting, need to recreate the instance.
@@ -216,8 +221,10 @@ bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* reques
   bool debug_instance = request_debug_instance ? *request_debug_instance : g_settings.gpu_use_debug_device;
   INFO_LOG("Creating new Vulkan instance (debug {}, wtype {})...", debug_instance, static_cast<u32>(wtype));
 
+  gpu_validation = (debug_instance && gpu_validation);
+
   VulkanDevice::ExtensionList enabled_extensions;
-  if (!SelectInstanceExtensions(&enabled_extensions, wtype, debug_instance, error))
+  if (!SelectInstanceExtensions(&enabled_extensions, wtype, debug_instance, gpu_validation, error))
     return false;
 
   u32 maxApiVersion = VK_API_VERSION_1_0;
@@ -263,12 +270,24 @@ bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* reques
   instance_create_info.enabledLayerCount = 0;
   instance_create_info.ppEnabledLayerNames = nullptr;
 
+  // GPU-assisted and synchronization validation are enabled through the validation layer's settings.
+  static constexpr VkBool32 layer_setting_enabled = VK_TRUE;
+  static constexpr VkLayerSettingEXT gpu_validation_layer_settings[] = {
+    {"VK_LAYER_KHRONOS_validation", "gpuav_enable", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &layer_setting_enabled},
+    {"VK_LAYER_KHRONOS_validation", "validate_sync", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &layer_setting_enabled},
+  };
+  const VkLayerSettingsCreateInfoEXT layer_settings_info = {VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
+                                                            static_cast<u32>(std::size(gpu_validation_layer_settings)),
+                                                            gpu_validation_layer_settings};
+
   // Enable debug layer on debug builds
   if (debug_instance)
   {
     static const char* layer_names[] = {"VK_LAYER_KHRONOS_validation"};
     instance_create_info.enabledLayerCount = 1;
     instance_create_info.ppEnabledLayerNames = layer_names;
+    if (gpu_validation)
+      instance_create_info.pNext = &layer_settings_info;
   }
 
   DebugAssert(s_locals.instance == VK_NULL_HANDLE && s_locals.reference_count == 0);
@@ -280,8 +299,10 @@ bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* reques
     {
       LOG_VULKAN_ERROR(res, "vkCreateInstance() failed, trying without debug layers: ");
       debug_instance = false;
-      if (SelectInstanceExtensions(&enabled_extensions, wtype, false, error))
+      gpu_validation = false;
+      if (SelectInstanceExtensions(&enabled_extensions, wtype, false, false, error))
       {
+        instance_create_info.pNext = nullptr;
         instance_create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
         instance_create_info.ppEnabledExtensionNames = enabled_extensions.data();
         instance_create_info.enabledLayerCount = 0;
@@ -307,6 +328,7 @@ bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* reques
   s_locals.reference_count = 1;
   s_locals.window_type = wtype;
   s_locals.is_debug_instance = debug_instance;
+  s_locals.is_gpu_validation_instance = gpu_validation;
   if (request_debug_instance)
     *request_debug_instance = debug_instance;
 
@@ -341,7 +363,7 @@ bool VulkanLoader::LockedCreateVulkanInstance(WindowInfoType wtype, bool* reques
 }
 
 bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extension_list, WindowInfoType wtype,
-                                            bool debug_instance, Error* error)
+                                            bool debug_instance, bool gpu_validation, Error* error)
 {
   u32 extension_count = 0;
   VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -360,6 +382,17 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   std::vector<VkExtensionProperties> available_extension_list(extension_count);
   res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, available_extension_list.data());
   DebugAssert(res == VK_SUCCESS);
+
+  // VK_EXT_layer_settings is provided by the validation layer, so it isn't in the implementation's list.
+  u32 layer_extension_count = 0;
+  if (gpu_validation && vkEnumerateInstanceExtensionProperties("VK_LAYER_KHRONOS_validation", &layer_extension_count,
+                                                               nullptr) == VK_SUCCESS)
+  {
+    available_extension_list.resize(extension_count + layer_extension_count);
+    vkEnumerateInstanceExtensionProperties("VK_LAYER_KHRONOS_validation", &layer_extension_count,
+                                           &available_extension_list[extension_count]);
+    available_extension_list.resize(extension_count + layer_extension_count);
+  }
 
   const auto SupportsExtension = [&available_extension_list, &extension_list](const char* name, bool required) {
     if (std::find_if(available_extension_list.begin(), available_extension_list.end(),
@@ -410,6 +443,10 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   // VK_EXT_debug_utils
   if (debug_instance && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
     WARNING_LOG("Vulkan: Debug report requested, but extension is not available.");
+
+  // VK_EXT_layer_settings
+  if (gpu_validation && !SupportsExtension(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME, false))
+    WARNING_LOG("Vulkan: GPU validation requested, but layer settings extension is not available.");
 
   s_locals.optional_extensions.vk_khr_get_surface_capabilities2 =
     (wtype != WindowInfoType::Surfaceless &&
@@ -465,10 +502,11 @@ void VulkanLoader::LockedDestroyVulkanInstance()
   DynamicLibrary::ClearSymbols(s_vulkan_instance_entry_points);
 }
 
-bool VulkanLoader::CreateVulkanInstance(WindowInfoType window_type, bool* request_debug_instance, Error* error)
+bool VulkanLoader::CreateVulkanInstance(WindowInfoType window_type, bool* request_debug_instance, bool gpu_validation,
+                                        Error* error)
 {
   const std::lock_guard lock(s_locals.mutex);
-  return LockedCreateVulkanInstance(window_type, request_debug_instance, error);
+  return LockedCreateVulkanInstance(window_type, request_debug_instance, gpu_validation, error);
 }
 
 VkInstance VulkanLoader::GetVulkanInstance()
@@ -684,7 +722,7 @@ std::optional<GPUDevice::AdapterInfoList> VulkanLoader::GetAdapterList(WindowInf
     {
       // Otherwise we need to create a temporary instance.
       // Hold the lock for both creation and querying, otherwise the UI thread could race creation.
-      if (!LockedCreateVulkanInstance(window_type, nullptr, error))
+      if (!LockedCreateVulkanInstance(window_type, nullptr, g_settings.gpu_use_debug_device_gpu_validation, error))
         return std::nullopt;
 
       gpus = EnumerateGPUs(error);

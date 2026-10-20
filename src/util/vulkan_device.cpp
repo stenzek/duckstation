@@ -1699,7 +1699,8 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  if (!VulkanLoader::CreateVulkanInstance(wi.type, &m_debug_device, error))
+  if (!VulkanLoader::CreateVulkanInstance(wi.type, &m_debug_device,
+                                          HasCreateFlag(create_flags, CreateFlags::EnableGPUValidation), error))
   {
     Error::AddPrefix(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?\n");
     return false;

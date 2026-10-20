@@ -29,9 +29,10 @@ struct OptionalExtensions
 /// Creates the shared Vulkan instance. If debug_instance is changed, the instance will be recreated.
 /// @param window_type Window type for selecting required extensions.
 /// @param request_debug_instance Set to true if a debug instance is requested. May be modified to reflect actual state.
+/// @param gpu_validation Enables GPU-assisted and synchronization validation, if a debug instance is created.
 /// @param error Error information if the instance could not be created.
 /// @return The Vulkan instance, or VK_NULL_HANDLE on failure.
-bool CreateVulkanInstance(WindowInfoType window_type, bool* request_debug_instance, Error* error);
+bool CreateVulkanInstance(WindowInfoType window_type, bool* request_debug_instance, bool gpu_validation, Error* error);
 
 /// Returns the shared Vulkan instance.
 VkInstance GetVulkanInstance();
