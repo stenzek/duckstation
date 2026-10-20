@@ -48642,6 +48642,8 @@ SLES-00714:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceMidFrameScanout # Fixes character select screen.
   metadata:
     publisher: "Cryo Interactive"
     developer: "Cryo Interactive Entertainment"
