@@ -500,6 +500,18 @@ void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
   SXYP.flags = VALID_ALL;
   PushScreenXYFIFO();
 
+#ifdef LOG_VALUES
+  LogInstruction(g_state.current_instruction_pc, g_state.current_instruction);
+  const GTE::Regs& regs = g_state.gte_regs;
+  std::fprintf(s_log,
+               " V0=(%d,%d,%d) V1=(%d,%d,%d) V2=(%d,%d,%d)"
+               " RT=[%d,%d,%d;%d,%d,%d;%d,%d,%d] TR=(%d,%d,%d) H=%u SZ3=%u",
+               regs.V0[0], regs.V0[1], regs.V0[2], regs.V1[0], regs.V1[1], regs.V1[2], regs.V2[0], regs.V2[1],
+               regs.V2[2], regs.RT[0][0], regs.RT[0][1], regs.RT[0][2], regs.RT[1][0], regs.RT[1][1], regs.RT[1][2],
+               regs.RT[2][0], regs.RT[2][1], regs.RT[2][2], regs.TR[0], regs.TR[1], regs.TR[2], regs.H, regs.SZ3);
+  LogValue("sxy2", value, &SXYP);
+#endif
+
   if (g_settings.gpu_pgxp_vertex_cache)
     CacheVertex(value, SXYP);
 }
@@ -1664,7 +1676,6 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
     y = HIWORD_S16(dY);
   else
     y = y / static_cast<double>(1 << sh);
-
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
