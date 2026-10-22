@@ -199,6 +199,9 @@ template<typename F>
 static void EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
                               bool load_from_disk, bool load_from_database, const F& f);
 
+/// Parses a setting override key into the metadata. Returns false if the key is not a setting override.
+static bool ParseSettingOverride(CodeMetadata* metadata, const std::string_view key, const std::string_view value,
+                                 u32 line_number);
 static std::optional<CodeOption> ParseOption(const std::string_view value);
 static bool ParseOptionRange(const std::string_view value, u16* out_range_start, u16* out_range_end);
 static void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
@@ -245,7 +248,7 @@ ALIGN_TO_CACHE_LINE static ArchiveLocals s_archive_locals;
 
 } // namespace Cheats
 
-Cheats::CheatCode::CheatCode(Metadata metadata) : m_metadata(std::move(metadata))
+Cheats::CheatCode::CheatCode(CodeMetadata metadata) : m_metadata(std::move(metadata))
 {
 }
 
@@ -624,6 +627,19 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
   {
     fmt::format_to(appender, "OptionRange = {}:{}\n", code.option_range_start, code.option_range_end);
   }
+  if (code.override_aspect_ratio.has_value())
+  {
+    fmt::format_to(appender, "OverrideAspectRatio = {}\n",
+                   Settings::GetDisplayAspectRatioName(code.override_aspect_ratio.value()));
+  }
+  if (code.override_cpu_overclock.has_value())
+    fmt::format_to(appender, "OverrideCPUOverclock = {}\n", code.override_cpu_overclock.value());
+  if (code.disable_widescreen_rendering)
+    fmt::format_to(appender, "DisableWidescreenRendering = true\n");
+  if (code.enable_8mb_ram)
+    fmt::format_to(appender, "Enable8MBRAM = true\n");
+  if (code.disallow_for_achievements)
+    fmt::format_to(appender, "DisallowForAchievements = true\n");
 
   // remove trailing whitespace
   std::string_view code_body = code.body;
@@ -789,7 +805,7 @@ bool Cheats::ValidateCodeBody(std::string_view name, CodeType type, CodeActivati
                               Error* error)
 {
   // don't need the full metadata, only enough to get through
-  CheatCode::Metadata metadata = {};
+  CodeMetadata metadata = {};
   metadata.name = name;
   metadata.type = type;
   metadata.activation = activation;
@@ -1457,13 +1473,13 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
           }
         }
       }
-      else if (key == "DisallowForAchievements")
-      {
-        current_code.disallow_for_achievements = StringUtil::FromChars<bool>(value).value_or(false);
-      }
       else if (key == "Ignore")
       {
         ignore_this_code = StringUtil::FromChars<bool>(value).value_or(false);
+      }
+      else
+      {
+        ParseSettingOverride(&current_code, key, value, reader.GetCurrentLineNumber());
       }
 
       // ignore other keys when we're only grabbing info
@@ -1510,7 +1526,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
   CheatFileReader reader(file_contents);
 
   std::string_view next_code_group;
-  CheatCode::Metadata next_code_metadata = {};
+  CodeMetadata next_code_metadata = {};
   bool next_code_ignored = false;
   std::optional<size_t> code_body_start;
 
@@ -1652,35 +1668,6 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
         else
           next_code_metadata.activation = activation.value();
       }
-      else if (key == "OverrideAspectRatio")
-      {
-        const std::optional<DisplayAspectRatio> aspect_ratio =
-          Settings::ParseDisplayAspectRatio(TinyString(value).c_str());
-        if (!aspect_ratio.has_value())
-          WARNING_LOG("Unknown aspect ratio at line {}: {}", reader.GetCurrentLineNumber(), line);
-        else
-          next_code_metadata.override_aspect_ratio = aspect_ratio;
-      }
-      else if (key == "OverrideCPUOverclock")
-      {
-        const std::optional<u32> ocvalue = StringUtil::FromChars<u32>(value);
-        if (!ocvalue.has_value() || ocvalue.value() == 0)
-          WARNING_LOG("Invalid CPU overclock at line {}: {}", reader.GetCurrentLineNumber(), line);
-        else
-          next_code_metadata.override_cpu_overclock = ocvalue.value();
-      }
-      else if (key == "DisableWidescreenRendering")
-      {
-        next_code_metadata.disable_widescreen_rendering = StringUtil::FromChars<bool>(value).value_or(false);
-      }
-      else if (key == "Enable8MBRAM")
-      {
-        next_code_metadata.enable_8mb_ram = StringUtil::FromChars<bool>(value).value_or(false);
-      }
-      else if (key == "DisallowForAchievements")
-      {
-        next_code_metadata.disallow_for_achievements = StringUtil::FromChars<bool>(value).value_or(false);
-      }
       else if (key == "Option" || key == "OptionRange")
       {
         // we don't care about the actual values, we load them from the config
@@ -1694,7 +1681,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       {
         next_code_ignored = StringUtil::FromChars<bool>(value).value_or(false);
       }
-      else
+      else if (!ParseSettingOverride(&next_code_metadata, key, value, reader.GetCurrentLineNumber()))
       {
         WARNING_LOG("Unknown parameter {} at line {}", key, reader.GetCurrentLineNumber());
       }
@@ -1707,6 +1694,45 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
   }
 
   finish_code();
+}
+
+bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view key, const std::string_view value,
+                                  u32 line_number)
+{
+  if (key == "OverrideAspectRatio")
+  {
+    const std::optional<DisplayAspectRatio> aspect_ratio = Settings::ParseDisplayAspectRatio(value);
+    if (!aspect_ratio.has_value())
+      WARNING_LOG("Unknown aspect ratio at line {}: {}", line_number, value);
+    else
+      metadata->override_aspect_ratio = aspect_ratio;
+  }
+  else if (key == "OverrideCPUOverclock")
+  {
+    const std::optional<u32> ocvalue = StringUtil::FromChars<u32>(value);
+    if (!ocvalue.has_value() || ocvalue.value() == 0)
+      WARNING_LOG("Invalid CPU overclock at line {}: {}", line_number, value);
+    else
+      metadata->override_cpu_overclock = ocvalue.value();
+  }
+  else if (key == "DisableWidescreenRendering")
+  {
+    metadata->disable_widescreen_rendering = StringUtil::FromChars<bool>(value).value_or(false);
+  }
+  else if (key == "Enable8MBRAM")
+  {
+    metadata->enable_8mb_ram = StringUtil::FromChars<bool>(value).value_or(false);
+  }
+  else if (key == "DisallowForAchievements")
+  {
+    metadata->disallow_for_achievements = StringUtil::FromChars<bool>(value).value_or(false);
+  }
+  else
+  {
+    return false;
+  }
+
+  return true;
 }
 
 std::optional<Cheats::CodeOption> Cheats::ParseOption(const std::string_view value)
@@ -2173,7 +2199,7 @@ bool Cheats::ImportOldChtFile(const std::string_view serial)
 // Gameshark codes
 //////////////////////////////////////////////////////////////////////////
 
-Cheats::GamesharkCheatCode::GamesharkCheatCode(Metadata metadata) : CheatCode(std::move(metadata))
+Cheats::GamesharkCheatCode::GamesharkCheatCode(CodeMetadata metadata) : CheatCode(std::move(metadata))
 {
 }
 
@@ -2230,7 +2256,7 @@ static std::optional<u32> ParseHexOptionMask(const std::string_view str, u8* out
   return parsed;
 }
 
-std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Metadata metadata,
+std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(CodeMetadata metadata,
                                                                               const std::string_view data, Error* error)
 {
   std::unique_ptr<GamesharkCheatCode> code = std::make_unique<GamesharkCheatCode>(std::move(metadata));
@@ -4446,14 +4472,14 @@ bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
 // Assembly codes
 //////////////////////////////////////////////////////////////////////////
 
-Cheats::AssemblyCheatCode::AssemblyCheatCode(Metadata metadata) : CheatCode(std::move(metadata))
+Cheats::AssemblyCheatCode::AssemblyCheatCode(CodeMetadata metadata) : CheatCode(std::move(metadata))
 {
 }
 
 Cheats::AssemblyCheatCode::~AssemblyCheatCode() = default;
 
-std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(Metadata metadata, std::string_view data,
-                                                                            Error* error)
+std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(CodeMetadata metadata,
+                                                                            std::string_view data, Error* error)
 {
   if (metadata.activation != CodeActivation::EndFrame)
   {
@@ -4702,8 +4728,7 @@ bool Cheats::AssemblyCheatCode::HasRestorableOnDisableEffects() const
   return true;
 }
 
-std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadata, const std::string_view data,
-                                                     Error* error)
+std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CodeMetadata metadata, const std::string_view data, Error* error)
 {
   std::unique_ptr<Cheats::CheatCode> ret;
 

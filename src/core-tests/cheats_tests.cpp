@@ -79,6 +79,36 @@ TEST(Cheats, ParseCodeInfo)
             ".org 0x80010000\naddiu t0, zero, 1\n");
 }
 
+TEST(Cheats, ParseAndFormatCodeInfoOverrides)
+{
+  static constexpr std::string_view input = "[Widescreen]\n"
+                                            "Type = Gameshark\n"
+                                            "Activation = EndFrame\n"
+                                            "OverrideAspectRatio = 16:9\n"
+                                            "OverrideCPUOverclock = 200\n"
+                                            "DisableWidescreenRendering = true\n"
+                                            "Enable8MBRAM = true\n"
+                                            "DisallowForAchievements = true\n"
+                                            "80010000 0001\n";
+
+  Cheats::CodeInfoList codes;
+  Error error;
+  ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+    << error.GetDescription();
+  ASSERT_EQ(codes.size(), 1u);
+
+  const Cheats::CodeInfo& code = codes.front();
+  ASSERT_TRUE(code.override_aspect_ratio.has_value());
+  EXPECT_EQ(code.override_aspect_ratio.value(), (DisplayAspectRatio{16, 9}));
+  EXPECT_EQ(code.override_cpu_overclock, 200u);
+  EXPECT_TRUE(code.disable_widescreen_rendering);
+  EXPECT_TRUE(code.enable_8mb_ram);
+  EXPECT_TRUE(code.disallow_for_achievements);
+
+  // writing the code back out should preserve the overrides
+  EXPECT_EQ(Cheats::FormatCodeForFile(code), input);
+}
+
 TEST(Cheats, ParseCodeInfoLegacyIgnoreAndReplacement)
 {
   static constexpr std::string_view input = "#group=Legacy\n"

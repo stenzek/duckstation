@@ -10,6 +10,7 @@
 
 #include "core/cheats.h"
 #include "core/core.h"
+#include "core/settings.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -819,7 +820,12 @@ CheatCodeEditorDialog::CheatCodeEditorDialog(QWidget* parent, SettingsWindow* di
   m_ui.setupUi(this);
   QtUtils::FixSpinBoxTextMargins(this);
   if (!cheats)
+  {
+    // wider, to fit the setting overrides
     setWindowTitle(tr("Patch Editor"));
+    resize(640, 520);
+  }
+  m_ui.overrides->setVisible(!cheats);
   setupAdditionalUi();
   fillUi();
 
@@ -974,6 +980,20 @@ void CheatCodeEditorDialog::saveClicked()
     m_code.option_range_end = static_cast<u16>(m_ui.rangeMax->value());
   }
 
+  // setting overrides only apply to patches
+  if (!m_cheats)
+  {
+    const QVariant ar = m_ui.overrideAspectRatio->currentData();
+    m_code.override_aspect_ratio =
+      ar.isNull() ? std::nullopt : Settings::ParseDisplayAspectRatio(ar.toString().toStdString());
+    m_code.override_cpu_overclock = (m_ui.overrideCPUOverclock->value() != 0) ?
+                                      std::optional<u32>(static_cast<u32>(m_ui.overrideCPUOverclock->value())) :
+                                      std::nullopt;
+    m_code.disable_widescreen_rendering = m_ui.disableWidescreenRendering->isChecked();
+    m_code.enable_8mb_ram = m_ui.enable8MBRAM->isChecked();
+    m_code.disallow_for_achievements = m_ui.disallowForAchievements->isChecked();
+  }
+
   if (!Cheats::UpdateCodeInFile(GameCheatSettingsWidget::getPathForSavingCodes(m_dialog, m_cheats, old_name).c_str(),
                                 old_name, &m_code, &error))
   {
@@ -1036,6 +1056,17 @@ void CheatCodeEditorDialog::setupAdditionalUi()
   m_ui.group->addItem(tr("New..."));
 
   m_ui.instructions->setFont(QtHost::GetFixedFont());
+
+  m_ui.overrideAspectRatio->addItem(tr("None"));
+  for (const DisplayAspectRatio& ar : Settings::GetPredefinedDisplayAspectRatios())
+  {
+    // auto would be a no-op
+    if (ar != DisplayAspectRatio::Auto())
+    {
+      m_ui.overrideAspectRatio->addItem(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(ar)),
+                                        QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ar)));
+    }
+  }
 }
 
 void CheatCodeEditorDialog::fillUi()
@@ -1073,6 +1104,24 @@ void CheatCodeEditorDialog::fillUi()
   m_new_options = m_code.options;
 
   m_ui.optionsType->setCurrentIndex(m_code.HasOptionRange() ? 2 : (m_code.HasOptionChoices() ? 1 : 0));
+
+  if (m_code.override_aspect_ratio.has_value())
+  {
+    const QString ar_name =
+      QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(m_code.override_aspect_ratio.value()));
+    int index = m_ui.overrideAspectRatio->findData(ar_name);
+    if (index < 0)
+    {
+      // custom ratio not in the predefined list
+      m_ui.overrideAspectRatio->addItem(ar_name, ar_name);
+      index = m_ui.overrideAspectRatio->count() - 1;
+    }
+    m_ui.overrideAspectRatio->setCurrentIndex(index);
+  }
+  m_ui.overrideCPUOverclock->setValue(static_cast<int>(m_code.override_cpu_overclock.value_or(0)));
+  m_ui.disableWidescreenRendering->setChecked(m_code.disable_widescreen_rendering);
+  m_ui.enable8MBRAM->setChecked(m_code.enable_8mb_ram);
+  m_ui.disallowForAchievements->setChecked(m_code.disallow_for_achievements);
   onCodeTypeChanged(m_ui.type->currentIndex());
   onOptionTypeChanged(m_ui.optionsType->currentIndex());
 }

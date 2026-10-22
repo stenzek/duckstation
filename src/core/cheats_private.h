@@ -17,25 +17,10 @@ namespace Cheats {
 class CheatCode
 {
 public:
-  /// Additional metadata to a cheat code, present for all types.
-  struct Metadata
-  {
-    std::string name;
-    CodeType type = CodeType::Gameshark;
-    CodeActivation activation = CodeActivation::EndFrame;
-    std::optional<u32> override_cpu_overclock;
-    std::optional<DisplayAspectRatio> override_aspect_ratio;
-    bool has_options : 1;
-    bool disable_widescreen_rendering : 1;
-    bool enable_8mb_ram : 1;
-    bool disallow_for_achievements : 1;
-  };
-
-public:
-  explicit CheatCode(Metadata metadata);
+  explicit CheatCode(CodeMetadata metadata);
   virtual ~CheatCode();
 
-  ALWAYS_INLINE const Metadata& GetMetadata() const { return m_metadata; }
+  ALWAYS_INLINE const CodeMetadata& GetMetadata() const { return m_metadata; }
   ALWAYS_INLINE const std::string& GetName() const { return m_metadata.name; }
   ALWAYS_INLINE CodeActivation GetActivation() const { return m_metadata.activation; }
   ALWAYS_INLINE bool IsManuallyActivated() const { return (m_metadata.activation == CodeActivation::Manual); }
@@ -52,7 +37,7 @@ public:
   virtual bool HasRestorableOnDisableEffects() const = 0;
 
 protected:
-  Metadata m_metadata;
+  CodeMetadata m_metadata;
 };
 
 class GamesharkCheatCode final : public CheatCode
@@ -143,10 +128,10 @@ public:
     BitField<u64, u8, 0, 8> value8;
   };
 
-  explicit GamesharkCheatCode(Metadata metadata);
+  explicit GamesharkCheatCode(CodeMetadata metadata);
   ~GamesharkCheatCode() override;
 
-  static std::unique_ptr<GamesharkCheatCode> Parse(Metadata metadata, const std::string_view data, Error* error);
+  static std::unique_ptr<GamesharkCheatCode> Parse(CodeMetadata metadata, const std::string_view data, Error* error);
 
   std::span<const Instruction> GetInstructions() const;
 
@@ -179,10 +164,10 @@ public:
   };
   static_assert(std::is_trivially_copyable_v<Instruction>);
 
-  explicit AssemblyCheatCode(Metadata metadata);
+  explicit AssemblyCheatCode(CodeMetadata metadata);
   ~AssemblyCheatCode() override;
 
-  static std::unique_ptr<AssemblyCheatCode> Parse(Metadata metadata, std::string_view data, Error* error);
+  static std::unique_ptr<AssemblyCheatCode> Parse(CodeMetadata metadata, std::string_view data, Error* error);
 
   std::span<const Instruction> GetInstructions() const;
 
@@ -198,6 +183,6 @@ private:
   std::vector<std::tuple<u32, u8, u8>> option_instruction_values;
 };
 
-std::unique_ptr<CheatCode> ParseCode(CheatCode::Metadata metadata, std::string_view data, Error* error);
+std::unique_ptr<CheatCode> ParseCode(CodeMetadata metadata, std::string_view data, Error* error);
 
 } // namespace Cheats
