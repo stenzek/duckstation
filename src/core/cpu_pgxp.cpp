@@ -1107,12 +1107,12 @@ void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
   prtVal.x += static_cast<float>(LOWORD_U16(immVal));
 
   // carry on over/underflow
-  const float of = (prtVal.x > USHRT_MAX) ? 1.0f : (prtVal.x < 0.0f) ? -1.0f : 0.0f;
+  const float of = (prtVal.x >= (USHRT_MAX + 1)) ? 1.0f : (prtVal.x < 0.0f) ? -1.0f : 0.0f;
   prtVal.x = static_cast<float>(f16Sign(prtVal.x));
   prtVal.y += HIWORD_S16(immVal) + of;
 
   // truncate on overflow/underflow
-  prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
+  prtVal.y += (prtVal.y >= (SHRT_MAX + 1)) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
   prtVal.value = rsVal + immVal;
 
@@ -1290,12 +1290,12 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
     const double x = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    const float of = (x > USHRT_MAX) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
+    const float of = (x >= (USHRT_MAX + 1)) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
     prdVal.x = static_cast<float>(f16Sign(x));
     prdVal.y = prsVal.GetValidY(rsVal) + prtVal.GetValidY(rtVal) + of;
 
     // truncate on overflow/underflow
-    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
+    prdVal.y += (prdVal.y >= (SHRT_MAX + 1)) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
     prdVal.value = rsVal + rtVal;
 
@@ -1329,12 +1329,12 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
     const double x = f16Unsign(prsVal.GetValidX(rsVal)) - f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    const float of = (x > USHRT_MAX) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
+    const float of = (x >= (USHRT_MAX + 1)) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
     prdVal.x = static_cast<float>(f16Sign(x));
     prdVal.y = prsVal.GetValidY(rsVal) - (prtVal.GetValidY(rtVal) - of);
 
     // truncate on overflow/underflow
-    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
+    prdVal.y += (prdVal.y >= (SHRT_MAX + 1)) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
     prdVal.value = rsVal - rtVal;
 
