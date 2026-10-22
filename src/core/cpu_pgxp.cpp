@@ -247,7 +247,7 @@ ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Unsign(double val)
 
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double val)
 {
-  return static_cast<double>(static_cast<s64>(val) >> 16);
+  return std::floor(val / static_cast<double>(USHRT_MAX + 1));
 }
 
 ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetRdValue(Instruction instr)
