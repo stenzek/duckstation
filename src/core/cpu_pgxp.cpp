@@ -1566,12 +1566,14 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
   const double vs = f16Unsign(prsVal.GetValidX(rsVal)) + prsVal.GetValidY(rsVal) * static_cast<double>(1 << 16);
   const double vt = f16Unsign(prtVal.GetValidX(rtVal)) + prtVal.GetValidY(rtVal) * static_cast<double>(1 << 16);
 
-  const double lo = vs / vt;
+  // There's no precise result for a zero divisor, the native values are used instead.
+  const bool zero_divisor = (rtVal == 0 || vt == 0.0);
+  const double lo = zero_divisor ? 0.0 : (vs / vt);
   ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
   ploVal.x = static_cast<float>(f16Sign(lo));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
-  const double hi = std::fmod(vs, vt);
+  const double hi = zero_divisor ? 0.0 : std::fmod(vs, vt);
   phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
   phiVal.x = static_cast<float>(f16Sign(hi));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
@@ -1593,6 +1595,14 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
   {
     ploVal.value = static_cast<u32>(static_cast<s32>(rsVal) / static_cast<s32>(rtVal));
     phiVal.value = static_cast<u32>(static_cast<s32>(rsVal) % static_cast<s32>(rtVal));
+  }
+
+  if (zero_divisor)
+  {
+    ploVal.x = static_cast<float>(LOWORD_S16(ploVal.value));
+    ploVal.y = static_cast<float>(HIWORD_S16(ploVal.value));
+    phiVal.x = static_cast<float>(LOWORD_S16(phiVal.value));
+    phiVal.y = static_cast<float>(HIWORD_S16(phiVal.value));
   }
 }
 
@@ -1618,12 +1628,14 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   const double vt =
     f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << 16);
 
-  const double lo = vs / vt;
+  // There's no precise result for a zero divisor, the native values are used instead.
+  const bool zero_divisor = (rtVal == 0 || vt == 0.0);
+  const double lo = zero_divisor ? 0.0 : (vs / vt);
   ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
   ploVal.x = static_cast<float>(f16Sign(lo));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
-  const double hi = std::fmod(vs, vt);
+  const double hi = zero_divisor ? 0.0 : std::fmod(vs, vt);
   phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
   phiVal.x = static_cast<float>(f16Sign(hi));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
@@ -1638,6 +1650,14 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   {
     ploVal.value = rsVal / rtVal;
     phiVal.value = rsVal % rtVal;
+  }
+
+  if (zero_divisor)
+  {
+    ploVal.x = static_cast<float>(LOWORD_S16(ploVal.value));
+    ploVal.y = static_cast<float>(HIWORD_S16(ploVal.value));
+    phiVal.x = static_cast<float>(LOWORD_S16(phiVal.value));
+    phiVal.y = static_cast<float>(HIWORD_S16(phiVal.value));
   }
 }
 
