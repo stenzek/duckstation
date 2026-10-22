@@ -78,7 +78,7 @@ $slider-handle: #808080 !default;
 $slider-handle-hover: #909090 !default;
 $slider-handle-pressed: #a0a0a0 !default;
 
-// Checkbox icon style — "white" or "black" icon set
+// Control icon style — "white" or "black" icon set for checkboxes and arrows
 $checkbox-icon-style: "white" !default;
 
 // Theme brightness — "dark" or "light"
@@ -244,6 +244,14 @@ QCheckBox {
   padding: 2px 0;
 }
 
+// Keep native group-box geometry so titles remain above the frame.
+QGroupBox {
+  font-weight: 700;
+}
+QGroupBox::title {
+  padding-bottom: 2px;
+}
+
 QCheckBox::indicator {
   width: 14px;
   height: 14px;
@@ -305,10 +313,10 @@ QAbstractSpinBox::up-button {
 QAbstractSpinBox::up-arrow {
   width: 8px;
   height: 8px;
-  image: url(":/qdarkstyle/arrow_up.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-up.svg");
 }
 QAbstractSpinBox::up-arrow:disabled {
-  image: url(":/qdarkstyle/arrow_up_disabled.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-up-disabled.svg");
 }
 QAbstractSpinBox::down-button {
   subcontrol-position: bottom right; /* position at the top right corner */
@@ -316,10 +324,10 @@ QAbstractSpinBox::down-button {
 QAbstractSpinBox::down-arrow {
   width: 8px;
   height: 8px;
-  image: url(":/qdarkstyle/arrow_down.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-down.svg");
 }
 QAbstractSpinBox::down-arrow:disabled {
-  image: url(":/qdarkstyle/arrow_down_disabled.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-down-disabled.svg");
 }
 
 QComboBox {
@@ -349,10 +357,10 @@ QComboBox::drop-down {
 QComboBox::down-arrow {
   width: 10px;
   height: 10px;
-  image: url(":/qdarkstyle/arrow_down.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-down.svg");
 }
 QComboBox::down-arrow:disabled {
-  image: url(":/qdarkstyle/arrow_down_disabled.png");
+  image: url(":/icons/#{$checkbox-icon-style}/svg/arrow-down-disabled.svg");
 }
 QScrollBar {
   background: $bg-control;
@@ -393,6 +401,9 @@ QHeaderView::section:hover {
 }
 QHeaderView::section:pressed {
   background-color: $bg-pressed;
+}
+QTabBar {
+  qproperty-drawBase: false;
 }
 QTabBar::tab {
   background: $bg-surface;

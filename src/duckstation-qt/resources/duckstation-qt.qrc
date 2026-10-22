@@ -4,6 +4,10 @@
 		<file>icons/UpdateDuck.png</file>
 		<file>icons/applications-system.png</file>
 		<file>icons/applications-system@2x.png</file>
+		<file>icons/black/svg/arrow-down-disabled.svg</file>
+		<file>icons/black/svg/arrow-down.svg</file>
+		<file>icons/black/svg/arrow-up-disabled.svg</file>
+		<file>icons/black/svg/arrow-up.svg</file>
 		<file>icons/black/svg/checkbox-checked-disabled.svg</file>
 		<file>icons/black/svg/checkbox-checked-pressed.svg</file>
 		<file>icons/black/svg/checkbox-checked.svg</file>
@@ -210,6 +214,10 @@
 		<file>icons/monochrome/svg/zoom-out-line.svg</file>
 		<file>icons/system-search.png</file>
 		<file>icons/system-search@2x.png</file>
+		<file>icons/white/svg/arrow-down-disabled.svg</file>
+		<file>icons/white/svg/arrow-down.svg</file>
+		<file>icons/white/svg/arrow-up-disabled.svg</file>
+		<file>icons/white/svg/arrow-up.svg</file>
 		<file>icons/white/svg/checkbox-checked-disabled.svg</file>
 		<file>icons/white/svg/checkbox-checked-pressed.svg</file>
 		<file>icons/white/svg/checkbox-checked.svg</file>
