@@ -655,7 +655,13 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
     new CheatCodeEditorDialog(this, getPathForSavingCheats(code->name), m_codes, *code, getGroupNames());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  connect(dlg, &QDialog::accepted, this, [this] {
+  connect(dlg, &QDialog::accepted, this, [this, dlg, old_name = code->name] {
+    if (CheatCodeEditorDialog::renameCodeInSettings(m_dialog->getSettingsInterface(), Cheats::CHEATS_CONFIG_SECTION,
+                                                    old_name, dlg->getCode().name))
+    {
+      m_dialog->saveGameSettings();
+    }
+
     reloadList();
     QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
   });
@@ -834,6 +840,29 @@ CheatCodeEditorDialog::CheatCodeEditorDialog(QWidget* parent, std::string save_p
 }
 
 CheatCodeEditorDialog::~CheatCodeEditorDialog() = default;
+
+bool CheatCodeEditorDialog::renameCodeInSettings(SettingsInterface* si, const char* section,
+                                                 const std::string& old_name, const std::string& new_name)
+{
+  if (old_name.empty() || old_name == new_name)
+    return false;
+
+  bool changed = false;
+  if (si->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, old_name.c_str()))
+  {
+    si->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, new_name.c_str());
+    changed = true;
+  }
+
+  if (u32 value; si->FindUIntValue(section, old_name.c_str(), &value))
+  {
+    si->DeleteValue(section, old_name.c_str());
+    si->SetUIntValue(section, new_name.c_str(), value);
+    changed = true;
+  }
+
+  return changed;
+}
 
 void CheatCodeEditorDialog::onGroupSelectedIndexChanged(int index)
 {

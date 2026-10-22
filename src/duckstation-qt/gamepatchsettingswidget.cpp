@@ -121,7 +121,13 @@ void GamePatchSettingsWidget::editPatch(const std::string& name)
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->setWindowTitle(tr("Patch Editor"));
 
-  connect(dlg, &QDialog::accepted, this, [this] {
+  connect(dlg, &QDialog::accepted, this, [this, dlg, old_name = name] {
+    if (CheatCodeEditorDialog::renameCodeInSettings(m_dialog->getSettingsInterface(), Cheats::PATCHES_CONFIG_SECTION,
+                                                    old_name, dlg->getCode().name))
+    {
+      m_dialog->saveGameSettings();
+    }
+
     reloadList();
     QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
   });

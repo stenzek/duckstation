@@ -23,6 +23,7 @@ namespace GameList {
 struct Entry;
 }
 
+class SettingsInterface;
 class SettingsWindow;
 
 class QStandardItem;
@@ -95,6 +96,12 @@ public:
   CheatCodeEditorDialog(QWidget* parent, std::string save_path, const Cheats::CodeInfoList& existing_codes,
                         Cheats::CodeInfo code, const QStringList& group_names);
   ~CheatCodeEditorDialog() override;
+
+  const Cheats::CodeInfo& getCode() const { return m_code; }
+
+  /// Moves the enable state and option value of a renamed code. Returns true if the settings were changed.
+  static bool renameCodeInSettings(SettingsInterface* si, const char* section, const std::string& old_name,
+                                   const std::string& new_name);
 
 private:
   void onGroupSelectedIndexChanged(int index);
