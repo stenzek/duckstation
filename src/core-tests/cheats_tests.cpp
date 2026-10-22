@@ -10,10 +10,10 @@
 
 namespace {
 
-static Cheats::CheatCode::Metadata MakeMetadata(Cheats::CodeType type,
-                                                Cheats::CodeActivation activation = Cheats::CodeActivation::EndFrame)
+static Cheats::CodeMetadata MakeMetadata(Cheats::CodeType type,
+                                         Cheats::CodeActivation activation = Cheats::CodeActivation::EndFrame)
 {
-  Cheats::CheatCode::Metadata metadata = {};
+  Cheats::CodeMetadata metadata = {};
   metadata.name = "Test Code";
   metadata.type = type;
   metadata.activation = activation;
@@ -196,7 +196,7 @@ TEST(Cheats, ParseGamesharkCode)
 
 TEST(Cheats, ParseGamesharkOptions)
 {
-  Cheats::CheatCode::Metadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
+  Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
   metadata.has_options = true;
   Error error;
   std::unique_ptr<Cheats::CheatCode> base =
@@ -229,7 +229,7 @@ TEST(Cheats, ParseGamesharkCodeErrors)
 
 TEST(Cheats, ParseAssemblyCode)
 {
-  Cheats::CheatCode::Metadata metadata = MakeMetadata(Cheats::CodeType::Assembly);
+  Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Assembly);
   metadata.has_options = true;
   static constexpr std::string_view input = ".org 0x80010000\n"
                                             "start: addiu t0, zero, 1\n"
