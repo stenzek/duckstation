@@ -1271,7 +1271,9 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
   // Rd = Rs + Rt (signed)
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXPValue& prdVal = GetRdValue(instr);
+
+  // Rd may be the same as Rs or Rt, so build the result separately to avoid clobbering the source.
+  PGXPValue prdVal;
 
   if (rtVal == 0)
   {
@@ -1302,6 +1304,8 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
 
     SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
   }
+
+  GetRdValue(instr) = prdVal;
 }
 
 void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
@@ -1311,7 +1315,9 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
   // Rd = Rs - Rt (signed)
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXPValue& prdVal = GetRdValue(instr);
+
+  // Rd may be the same as Rs or Rt, so build the result separately to avoid clobbering the source.
+  PGXPValue prdVal;
 
   if (rtVal == 0)
   {
@@ -1337,6 +1343,8 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
 
     SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
   }
+
+  GetRdValue(instr) = prdVal;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal)
