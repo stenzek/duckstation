@@ -1468,11 +1468,12 @@ restart_instruction:
 
     BEGIN_INSTRUCTION(sltiu)
     {
-      const u32 result = BoolToUInt32(ReadReg(inst.i.rs) < inst.i.imm_sext32());
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 result = BoolToUInt32(rsVal < inst.i.imm_sext32());
       WriteReg(inst.i.rt, result);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_SLTIU(inst, ReadReg(inst.i.rs));
+        PGXP::CPU_SLTIU(inst, rsVal);
     }
     END_INSTRUCTION()
 
