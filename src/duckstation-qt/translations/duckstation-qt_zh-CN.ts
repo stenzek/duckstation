@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation>缺失第三方html文件。您应当从您获得DuckStation的地方去索取它。</translation>
+        <translation>缺失thirdparty.html文件。您应当从您获得DuckStation的地方去索取它。</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -127,7 +127,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>&lt;strong&gt;您在RetroAchievements的登录令牌不再有效。&lt;/strong&gt;您必须重新登录您的凭据用以跟踪成就。您的密码不会保存在DuckStation中，取而代之的是会生成并使用一个访问令牌。</translation>
+        <translation>&lt;strong&gt;您在RetroAchievements的登录令牌不再有效。&lt;/strong&gt;您必须重新输入登录凭据才能跟踪成就。您的密码不会保存在DuckStation中，取而代之的是会生成并使用一个访问令牌。</translation>
     </message>
     <message>
         <source>RetroAchievements Login</source>
@@ -303,7 +303,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Register</source>
-        <translation>寄存器</translation>
+        <translation>注册</translation>
     </message>
     <message>
         <source>Track Unofficial Achievements</source>
@@ -745,14 +745,14 @@ We will keep trying to submit this request.</source>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>您已经解锁了{}的%n成就</numerusform>
+            <numerusform>您已经解锁了%n项成就中的{}项</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>并获得了{}的%n点数</numerusform>
+            <numerusform>并获得了%n点中的{}点</numerusform>
         </translation>
     </message>
     <message>
@@ -919,7 +919,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Date Submitted</source>
-        <translation>日期提交</translation>
+        <translation>提交日期</translation>
     </message>
     <message>
         <source>Open Leaderboard</source>
@@ -978,7 +978,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
-        <translation>您已经解锁了{0}的{1}成就，获得了{2}的{3}可能的点数。</translation>
+        <translation>您已经解锁了{1}项成就中的{0}项，获得了总计{3}点中的{2}点。</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -1029,7 +1029,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
-        <translation>在窗口和游戏机日志中包含本应用程序自启动以后经过的时间。</translation>
+        <translation>在窗口和控制台日志中包含本应用程序自启动以后经过的时间。</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
@@ -1161,7 +1161,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Logs messages to the console window.</source>
-        <translation>将消息记录到游戏机窗口。</translation>
+        <translation>将消息记录到控制台窗口。</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -1256,7 +1256,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation>翻转右模拟遥杆的方向。</translation>
+        <translation>翻转右模拟摇杆的方向。</translation>
     </message>
     <message>
         <source>Circle</source>
@@ -1284,7 +1284,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Never</source>
-        <translation>从未</translation>
+        <translation>从不</translation>
     </message>
     <message>
         <source>Digital Mode Only</source>
@@ -1332,7 +1332,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation>翻转左模拟遥杆的方向。</translation>
+        <translation>翻转左模拟摇杆的方向。</translation>
     </message>
     <message>
         <source>Triangle</source>
@@ -1479,7 +1479,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
-        <translation>翻转右模拟遥杆的方向。</translation>
+        <translation>翻转右模拟摇杆的方向。</translation>
     </message>
     <message>
         <source>Circle</source>
@@ -1503,7 +1503,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Inverts the direction of the left analog stick.</source>
-        <translation>翻转左模拟遥杆的方向。</translation>
+        <translation>翻转左模拟摇杆的方向。</translation>
     </message>
     <message>
         <source>Triangle</source>
@@ -1797,6 +1797,16 @@ Unread messages: {}</source>
         <translation>退出时保存即时存档</translation>
     </message>
     <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>关闭游戏前确认</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>从暂停菜单关闭游戏前要求确认。</translation>
+    </message>
+    <message>
         <source>Pause On Controller Disconnection</source>
         <comment>settings_pause_on_controller_disconnection</comment>
         <translation>控制器断开连接时暂停</translation>
@@ -1947,6 +1957,16 @@ Unread messages: {}</source>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>正在关机…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>帧中扫描输出</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>在一帧显示过程中应用对显示帧缓冲区的更改。某些游戏的分屏效果需要此功能，但它会在其他游戏中导致画面撕裂。</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2103,6 +2123,16 @@ Current Binding: %s</source>
         <translation>行为</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>列表图标</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>选择游戏列表中每个游戏旁边显示的图像。</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>视频设置</translation>
@@ -2146,6 +2176,21 @@ Current Binding: %s</source>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>无法打开所选文件。</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>确认关闭</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>您确定想要关闭当前游戏吗？</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>下次从此处继续</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2486,6 +2531,11 @@ Do you want to %1$s anyway?</source>
         <translation>触屏</translation>
     </message>
     <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>端口 %1$s</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <comment>controller_settings_category_bindings</comment>
         <translation>绑定</translation>
@@ -2738,7 +2788,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>Save States</source>
         <comment>settings_category_save_states</comment>
-        <translation>保存即时档案</translation>
+        <translation>即时存档</translation>
     </message>
     <message>
         <source>Enable Rewinding</source>
@@ -2945,6 +2995,84 @@ Do you want to %1$s anyway?</source>
         <source>Save State Manager</source>
         <comment>save_state_manager_title</comment>
         <translation>即时存档管理器</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>记忆卡</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>创建新记忆卡</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>创建一张已格式化的新记忆卡。</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>导入记忆卡</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>从存储中导入记忆卡，并在必要时转换格式。</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>已导入记忆卡“%s”。</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>名为“%s”的记忆卡已存在。是否覆盖？现有数据将全部丢失。</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>为多光盘游戏使用单记忆卡</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>使用按游戏（标题）分配的记忆卡游玩多光盘游戏时，所有光盘共用一张记忆卡。禁用后，每张光盘使用独立的记忆卡。</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>可使用的记忆卡数量取决于多重连接器和游戏的支持情况。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>当前多重连接器模式：%1$s（%2$d 张记忆卡）</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>记忆卡类型</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>选择插入此插槽的记忆卡镜像。</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>共用记忆卡名称</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>选择记忆卡类型为所有游戏共用时所使用的记忆卡。</translation>
     </message>
     <message>
         <source>Confirm Deletion</source>
@@ -3247,6 +3375,76 @@ Do you want to %1$s anyway?</source>
         <source>Remove All</source>
         <comment>cheat_codes_remove_all</comment>
         <translation>删除全部</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>倒带</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>左键</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>右键</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>缩放</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>适应</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>填充</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>拉伸</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>鼠标</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>重置为默认值</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>当前值</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>默认值</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>全局设置</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>对所有指令使用PGXP，而不仅限于内存操作。选择“自动”时使用游戏数据库中的设置。</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>使用屏幕位置来解析PGXP数据。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置。</translation>
     </message>
     <message>
         <source>Auto (Game Native)</source>
@@ -3884,16 +4082,6 @@ Do you want to %1$s anyway?</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>优先使用成就图标</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>优先使用游戏在RetroAchievements上的徽章，而非记忆卡图标。</translation>
-    </message>
-    <message>
         <source>Show Grid Captions</source>
         <comment>settings_show_grid_captions</comment>
         <translation>显示网格标题</translation>
@@ -4165,11 +4353,6 @@ Do you want to %1$s anyway?</source>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
         <comment>settings_achievements_disclaimer</comment>
         <translation>DuckStation使用RetroAchievements (retroachievements.org)作为成就数据库，并用于跟踪进度。使用DuckStation无需RetroAchievements账户。</translation>
-    </message>
-    <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>端口 %1$d</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -5954,12 +6137,12 @@ ${serial}：游戏序号。
     <message>
         <source>Seek Speedup</source>
         <comment>settings_seek_speedup</comment>
-        <translation>搜寻加速</translation>
+        <translation>寻道加速</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
         <comment>settings_summary_seek_speedup</comment>
-        <translation>以指定的系数加快CD-ROM的搜寻速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
+        <translation>以指定的系数加快CD-ROM的寻道速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -6276,7 +6459,7 @@ Would you like to import one now?</source>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <comment>settings_summary_use_old_mdec_routines</comment>
-        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要旧的替换背景方能匹配/加载。</translation>
+        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要启用此选项，才能匹配/加载旧的替换背景。</translation>
     </message>
     <message>
         <source>Enable Texture Replacements</source>
@@ -6522,11 +6705,6 @@ Would you like to import one now?</source>
         <translation>对颜色使用透视校正插值，可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>对全部指令使用PGXP，而不仅仅是内存操作。</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>提高多边形剔除的精度，减少几何图形中孔的数量。</translation>
@@ -6545,11 +6723,6 @@ Would you like to import one now?</source>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>对纹理坐标使用透视校正插值，矫直扭曲的纹理。</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>使用屏幕位置来解析PGXP数据。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -6694,7 +6867,7 @@ Would you like to import one now?</source>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
         <comment>settings_summary_max_seek_speedup_cycles</comment>
-        <translation>设置&apos;最大&apos;搜寻加速级别的最小延迟。</translation>
+        <translation>设置&apos;最大&apos;寻道加速级别的最小延迟。</translation>
     </message>
     <message>
         <source>Skip Duplicate Frames</source>
@@ -7420,7 +7593,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Use Anti-Aliasing Filter</source>
-        <translation>使用抗锯齿过滤器</translation>
+        <translation>使用抗混叠滤波器</translation>
     </message>
     <message>
         <source>Reset Output Volume</source>
@@ -7492,7 +7665,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Unchecked</source>
-        <translation>不勾选</translation>
+        <translation>未勾选</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -7544,11 +7717,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Enable Anti-Alias Filter</source>
-        <translation>启用抗锯齿过滤器</translation>
+        <translation>启用抗混叠滤波器</translation>
     </message>
     <message>
         <source>Enables an anti-aliasing filter used by the pitch transposer. Disabling it may reduce quality when pitch shifting but can slightly reduce CPU usage.</source>
-        <translation>启用音调转换器使用的抗锯齿过滤器。禁用后可能降低变调时的质量，但可略微降低CPU使用率。</translation>
+        <translation>启用音调转换器使用的抗混叠滤波器。禁用后可能降低变调时的质量，但可略微降低CPU使用率。</translation>
     </message>
     <message>
         <source>Resets value back to the global/inherited setting.</source>
@@ -7774,7 +7947,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Simulates a device plugged into the console&apos;s parallel port. Usually these are flash cartridges, and require some sort of image dump to function.</source>
-        <translation>模拟插入游戏机并行接口的设备。通常这些是闪存盒卡，需要某种图像转储才能运行。</translation>
+        <translation>模拟插入游戏机并行接口的设备。通常这些是闪存盒卡，需要某种镜像转储才能运行。</translation>
     </message>
     <message>
         <source>Image Path</source>
@@ -7798,7 +7971,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
-        <translation>将做到盒卡闪存中的任何图像存储回本机的文件系统。&lt;strong&gt;这将覆盖您的盒卡转储，&lt;/strong&gt;您应该先确保您有备份。</translation>
+        <translation>将对盒卡闪存所做的更改保存回本机的文件系统。&lt;strong&gt;这将覆盖您的盒卡转储，&lt;/strong&gt;您应该先确保您有备份。</translation>
     </message>
     <message>
         <source>Select BIOS Directory</source>
@@ -7882,7 +8055,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Image Path:</source>
-        <translation>图像路径:</translation>
+        <translation>镜像路径:</translation>
     </message>
     <message>
         <source>Cartridge Switch On</source>
@@ -7890,7 +8063,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Allow Image Writes</source>
-        <translation>允许图像写入</translation>
+        <translation>允许镜像写入</translation>
     </message>
     <message>
         <source>Options</source>
@@ -8298,6 +8471,10 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
 <context>
     <name>CheatCodeEditorDialog</name>
     <message>
+        <source>Patch Editor</source>
+        <translation>补丁编辑器</translation>
+    </message>
+    <message>
         <source>Enter Group Name</source>
         <translation>输入分组名</translation>
     </message>
@@ -8315,7 +8492,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Instructions cannot be empty.</source>
-        <translation>说明不能为空。</translation>
+        <translation>指令不能为空。</translation>
     </message>
     <message>
         <source>The entered cheat code is not valid:
@@ -8334,10 +8511,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>已经存在一个名称为&apos;%1&apos;的代码。</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>无法保存金手指代码:
+        <translation>无法保存代码：
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>无</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8462,7 +8643,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>减少CD-ROM滑橇移动到光盘不同区域的模拟时间。这能缩短加载时间，但可能导致那些不支持CD-ROM操作更快的游戏发生崩溃。</translation>
+        <translation>减少CD-ROM光头滑架移动到光盘不同区域的模拟时间。这能缩短加载时间，但可能导致那些未预期CD-ROM运行速度更快的游戏崩溃。</translation>
     </message>
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
@@ -8482,7 +8663,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。游戏必须使用更大的堆大小才能使用这些额外的内存。依赖于内存镜像的标题可能会破裂，所以它应当仅被用于可兼容的mod。</translation>
+        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。游戏必须使用更大的堆大小才能使用这些额外的内存。依赖于内存镜像的游戏可能无法正常运行，因此应仅与兼容的mod配合使用。</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
@@ -8506,7 +8687,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>忽略使用物理光盘时驱动器提供的子渠道，而始终生成子通道数据。不可用于libcrypt游戏，但能提高某些驱动器的读取可靠性。</translation>
+        <translation>忽略使用物理光盘时驱动器提供的子通道，而始终生成子通道数据。不可用于libcrypt游戏，但能提高某些驱动器的读取可靠性。</translation>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
@@ -8574,7 +8755,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
-        <translation>CD-ROM搜寻加速</translation>
+        <translation>CD-ROM寻道加速</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup</source>
@@ -8594,7 +8775,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>No, take me back to safety.</source>
-        <translation>不好，带我返回安全模式。</translation>
+        <translation>不，取消超频。</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -8662,7 +8843,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Seek Speedup:</source>
-        <translation>搜寻加速:</translation>
+        <translation>寻道加速:</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
@@ -9752,7 +9933,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     </message>
     <message>
         <source>Densha de Go! Controller</source>
-        <translation>次世代电车GO!控制器</translation>
+        <translation>电车GO!控制器</translation>
     </message>
     <message>
         <source>Analog Controller</source>
@@ -10021,7 +10202,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Transition Frames</source>
-        <translation>功率转换框架</translation>
+        <translation>功率转换帧数</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
@@ -10029,7 +10210,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Brake Transition Frames</source>
-        <translation>制动转换框架</translation>
+        <translation>制动转换帧数</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
@@ -10293,7 +10474,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>暂存器</translation>
+        <translation>暂存内存</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
@@ -10541,7 +10722,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA最大片段时数</translation>
+        <translation>DMA最大片段周期数</translation>
     </message>
     <message>
         <source> cycles</source>
@@ -10549,7 +10730,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>DMA Halt Ticks</source>
-        <translation>DMA停顿时数</translation>
+        <translation>DMA停顿周期数</translation>
     </message>
     <message>
         <source>GPU FIFO Size</source>
@@ -10593,7 +10774,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>CD-ROM Max Seek Speedup Cycles</source>
-        <translation>CD-ROM最大搜寻加速周期</translation>
+        <translation>CD-ROM最大寻道加速周期</translation>
     </message>
     <message>
         <source>CD-ROM Disable Speedup on MDEC</source>
@@ -10797,7 +10978,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced. Higher values increase input latency, but decrease the risk of overrun, or missed frames. Lower values require faster hardware.</source>
-        <translation>指定增加的缓冲时间大小，以减少引入的额外睡眠时间。较高的值增加输入延迟，但降低超支或错过框架的风险。较低的值需要更快的硬件。</translation>
+        <translation>指定增加的缓冲时间大小，以减少引入的额外等待时间。较高的值增加输入延迟，但降低超时或丢帧的风险。较低的值需要更快的硬件。</translation>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with syncing to host refresh.</source>
@@ -10957,7 +11138,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Enable for Analog Input</source>
-        <translation>启用模拟输入</translation>
+        <translation>对模拟输入启用</translation>
     </message>
     <message>
         <source>2 Frames</source>
@@ -11029,11 +11210,11 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>将游戏机的帧呈现同步到本机。启用它可能会带来更顺畅的动画，但代价是会增加输入延迟。&lt;strong&gt;GSync/FreeSync用户应启用最佳帧间距。&lt;/strong&gt;</translation>
+        <translation>将游戏机的帧呈现同步到本机。启用它可能会带来更顺畅的动画，但代价是会增加输入延迟。&lt;strong&gt;GSync/FreeSync用户应改为启用最佳帧间距。&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以它能管理的速度运行。</translation>
+        <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以其能达到的最快速度运行。</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
@@ -11200,7 +11381,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Deinterlacing Mode</source>
-        <translation>逐行扫描模式</translation>
+        <translation>去隔行模式</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -11232,7 +11413,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>确保生成的每一帧以最佳间距显示。如果您有速度或声音问题，请禁用。启用可变刷新显示器，例如GSync/FreeSync。如果您有速度或声音问题，请禁用。</translation>
+        <translation>确保生成的每一帧都被显示，以获得最佳帧间距。使用GSync/FreeSync等可变刷新率显示器时应启用此选项。如果出现速度或声音问题，请禁用。</translation>
     </message>
     <message>
         <source>Enter Value</source>
@@ -11469,6 +11650,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Applies a blur effect to the background when a menu is open to improve readability.</source>
         <translation>菜单打开时对背景应用模糊效果，以提高可读性。</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>在一帧显示过程中应用对显示帧缓冲区的更改。某些游戏的分屏效果需要此功能，但它会在其他游戏中导致画面撕裂。</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller?
@@ -11831,6 +12016,10 @@ You cannot undo this action.</source>
         <translation>为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>帧中扫描输出</translation>
+    </message>
+    <message>
         <source>Password</source>
         <translation>密码</translation>
     </message>
@@ -11944,7 +12133,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
-        <translation>设置&apos;最大&apos;搜寻加速级别的最小延迟。</translation>
+        <translation>设置&apos;最大&apos;寻道加速级别的最小延迟。</translation>
     </message>
     <message>
         <source>Show All</source>
@@ -11992,7 +12181,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
-        <translation>使用旧的MDEC惯例</translation>
+        <translation>使用旧的MDEC例程</translation>
     </message>
     <message>
         <source>Use Separate Disc Settings</source>
@@ -12176,7 +12365,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
-        <translation>性能增强——直接跳到块之间，而不是返回到分配器。</translation>
+        <translation>性能增强——在代码块之间直接跳转，而不是返回调度器。</translation>
     </message>
     <message>
         <source>Pin to OSD</source>
@@ -12216,11 +12405,11 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>确定同屏消息和显示器的大小。</translation>
+        <translation>确定屏幕消息和监视信息的显示大小。</translation>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>日志记录到系统游戏机</translation>
+        <translation>将日志记录到系统控制台</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
@@ -12322,7 +12511,7 @@ Error was:</source>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
-        <translation>尝试通过内存传输来保留部分的构成组件，从而减少“抖动的”多边形。</translation>
+        <translation>尝试在内存传输过程中保留小数部分，从而减少多边形“抖动”。</translation>
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
@@ -12354,7 +12543,7 @@ Error was:</source>
     </message>
     <message>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation>以指定的系数加快CD-ROM的搜寻速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
+        <translation>以指定的系数加快CD-ROM的寻道速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
     </message>
     <message>
         <source>Resume Game</source>
@@ -12402,7 +12591,7 @@ Error was:</source>
     </message>
     <message>
         <source>Logs messages to the debug console where supported.</source>
-        <translation>将消息记录到所支持的调试游戏机。</translation>
+        <translation>在支持的平台上将消息记录到调试控制台。</translation>
     </message>
     <message>
         <source>Stage {}: {}</source>
@@ -12650,7 +12839,7 @@ Error was:</source>
     </message>
     <message>
         <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation>设置涡轮转速。不能保证在所有系统上都能达到这个速度。</translation>
+        <translation>设置涡轮速度。不能保证在所有系统上都能达到这个速度。</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -12698,7 +12887,7 @@ Error was:</source>
     </message>
     <message>
         <source>Memory Card {} Type</source>
-        <translation>记忆卡{}格式</translation>
+        <translation>记忆卡{}类型</translation>
     </message>
     <message>
         <source>Perspective Correct Colors</source>
@@ -12718,7 +12907,7 @@ Error was:</source>
     </message>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
-        <translation>SDL双震动手柄4/双感应手柄增强模式</translation>
+        <translation>SDL DualShock 4 / DualSense增强模式</translation>
     </message>
     <message>
         <source>Game Properties</source>
@@ -12886,7 +13075,7 @@ Error was:</source>
     </message>
     <message>
         <source>Log To Debug Console</source>
-        <translation>日志记录到调试游戏机</translation>
+        <translation>将日志记录到调试控制台</translation>
     </message>
     <message>
         <source>Downsampling Display Scale</source>
@@ -12902,7 +13091,7 @@ Error was:</source>
     </message>
     <message>
         <source>Timing out in {:.0f} seconds...</source>
-        <translation>{:.0f}秒种后超时…</translation>
+        <translation>{:.0f}秒钟后超时…</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -12970,7 +13159,7 @@ Error was:</source>
     </message>
     <message>
         <source>Logs messages to the console window.</source>
-        <translation>将消息记录到游戏机窗口。</translation>
+        <translation>将消息记录到控制台窗口。</translation>
     </message>
     <message>
         <source>Show CPU Usage</source>
@@ -13122,11 +13311,11 @@ Error was:</source>
     </message>
     <message>
         <source>No save present in this slot.</source>
-        <translation>此档位中目前没有保存。</translation>
+        <translation>此档位中没有存档。</translation>
     </message>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>为PGXP数据后投影增加额外的精度。可以改善某些游戏的视觉效果。</translation>
+        <translation>提高投影后的PGXP数据精度。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -13190,7 +13379,7 @@ Error was:</source>
     </message>
     <message>
         <source>Delete Save</source>
-        <translation>删除保存</translation>
+        <translation>删除存档</translation>
     </message>
     <message>
         <source>Add Search Directory</source>
@@ -13238,7 +13427,7 @@ Error was:</source>
     </message>
     <message>
         <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
-        <translation>鸭子图标由icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
+        <translation>鸭子图标由icons8提供 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
     </message>
     <message>
         <source>Show Status Indicators</source>
@@ -13246,7 +13435,7 @@ Error was:</source>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation>通过在工作线程上异步读取/解压缩CD数据来减少模拟中的故障。</translation>
+        <translation>通过在工作线程上异步读取/解压缩CD数据来减少模拟中的卡顿。</translation>
     </message>
     <message>
         <source>Game Quick Save</source>
@@ -13331,10 +13520,6 @@ Error was:</source>
     <message>
         <source>Selects the GPU to use for rendering.</source>
         <translation>选择用于渲染的GPU。</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>对全部指令使用PGXP，而不仅仅是内存操作。</translation>
     </message>
     <message>
         <source>Threaded Rendering</source>
@@ -13586,11 +13771,11 @@ Error was:</source>
     </message>
     <message>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation>启用/禁用双感应手柄控制器上的玩家指示灯。</translation>
+        <translation>启用/禁用DualSense控制器上的玩家指示灯。</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation>启用缓存客户纹理，这是纹理替换所必需的。</translation>
+        <translation>启用游戏纹理缓存，纹理替换需要此功能。</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
@@ -13614,7 +13799,7 @@ Error was:</source>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要旧的替换背景方能匹配/加载。</translation>
+        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要启用此选项，才能匹配/加载旧的替换背景。</translation>
     </message>
     <message>
         <source>Enter a new serial for this game.</source>
@@ -13762,7 +13947,7 @@ Error was:</source>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
-        <translation>在窗口和游戏机日志中包含本应用程序自启动以后经过的时间。</translation>
+        <translation>在窗口和控制台日志中包含本应用程序自启动以后经过的时间。</translation>
     </message>
     <message>
         <source>Indicator Location</source>
@@ -13850,7 +14035,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Login token generated {}</source>
-        <translation>已生成登录令牌 {}</translation>
+        <translation>登录令牌生成于{}</translation>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
@@ -14162,7 +14347,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>SDL DualSense Player LED</source>
-        <translation>SDL双感应手柄玩家指示灯</translation>
+        <translation>SDL DualSense玩家指示灯</translation>
     </message>
     <message>
         <source>SDL Persistent Device Identifiers</source>
@@ -14198,7 +14383,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Saved {}</source>
-        <translation>保存{}</translation>
+        <translation>已保存{}</translation>
     </message>
     <message>
         <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
@@ -14410,7 +14595,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation>当游戏取得成就或已掌握时，在游戏网格中显示奖杯图标。</translation>
+        <translation>当游戏支持成就或已解锁全部成就时，在游戏网格中显示奖杯图标。</translation>
     </message>
     <message>
         <source>Size: </source>
@@ -14605,12 +14790,20 @@ Please check your username and password, and try again.</source>
         <translation>使用此目录</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>对所有指令使用PGXP，而不仅限于内存操作。选择“自动”时使用游戏数据库中的设置。</translation>
+    </message>
+    <message>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
         <translation>使用游戏专用的热键配置。如果禁用，将使用全局热键。</translation>
     </message>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>使用游戏专用的输入源配置。如果禁用，将使用全局配置。</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>使用屏幕位置来解析PGXP数据。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置。</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
@@ -14702,7 +14895,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>{} deleted.</source>
-        <translation>{}删除。</translation>
+        <translation>{}已删除。</translation>
     </message>
     <message>
         <source>All Time: {}</source>
@@ -14797,10 +14990,6 @@ Do you want to {1} anyway?</source>
         <translation>着色器{}添加为层{}。</translation>
     </message>
     <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>使用屏幕位置来解析PGXP数据。可以改善某些游戏的视觉效果。</translation>
-    </message>
-    <message>
         <source>Hide Cursor In Fullscreen</source>
         <translation>全屏时隐藏光标</translation>
     </message>
@@ -14846,7 +15035,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation>当黑色边框必须添加时，确定其在屏幕上的位置。</translation>
+        <translation>确定必须添加黑色边框时游戏画面在屏幕上的位置。</translation>
     </message>
     <message>
         <source>Reloads the shaders from disk, applying any changes.</source>
@@ -14942,7 +15131,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Seek Speedup</source>
-        <translation>搜寻加速</translation>
+        <translation>寻道加速</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -14977,7 +15166,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Saved screenshot to &apos;{}&apos;.</source>
-        <translation>保存屏幕截图到&apos;{}&apos;。</translation>
+        <translation>已保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
     <message>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
@@ -15001,7 +15190,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
-        <translation>保存GPU追踪到&apos;{}&apos;。</translation>
+        <translation>已保存GPU追踪到&apos;{}&apos;。</translation>
     </message>
     <message>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
@@ -15068,7 +15257,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation>您的GPU不支持几何着色器，需要线框渲染。</translation>
+        <translation>您的GPU不支持几何着色器，而线框渲染需要几何着色器。</translation>
     </message>
     <message>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
@@ -15192,6 +15381,34 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Edit Choices...</source>
         <translation>编辑选择...</translation>
+    </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>设置覆盖</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>宽高比:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>CPU超频:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>禁用宽屏渲染</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>启用8MB内存</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>硬核模式下禁用</translation>
     </message>
 </context>
 <context>
@@ -15439,7 +15656,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable CD-ROM Seek Speedup</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>禁用CD-ROM搜寻加速</translation>
+        <translation>禁用CD-ROM寻道加速</translation>
     </message>
     <message>
         <source>Disable CD-ROM Speedup on MDEC</source>
@@ -15552,6 +15769,11 @@ Are you sure you want to continue?</source>
         <translation>过滤上传到帧缓冲的数据</translation>
     </message>
     <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>强制帧中扫描输出</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>快速启动已禁用。</translation>
     </message>
@@ -15627,7 +15849,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>CD-ROM seek speedup disabled.</source>
-        <translation>CD-ROM搜寻加速已禁用。</translation>
+        <translation>CD-ROM寻道加速已禁用。</translation>
     </message>
     <message>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
@@ -15692,6 +15914,14 @@ Are you sure you want to continue?</source>
         <translation>快进记忆卡访问已禁用。</translation>
     </message>
     <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>此游戏需要PGXP顶点缓存，但该功能已禁用。这可能会导致渲染错误。</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>此游戏需要PGXP的CPU模式，但该模式已禁用。这可能会导致渲染错误。</translation>
+    </message>
+    <message>
         <source>Please configure a supported controller from the following list:</source>
         <translation>请从以下列表中配置受支持的控制器:</translation>
     </message>
@@ -15717,7 +15947,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Save Title</source>
-        <translation>保存标题</translation>
+        <translation>存档标题</translation>
     </message>
     <message>
         <source>Languages</source>
@@ -15765,7 +15995,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Display Deinterlacing Mode</source>
-        <translation>显示逐行扫描模式</translation>
+        <translation>显示去隔行模式</translation>
     </message>
     <message>
         <source>CPU Overclock Percent</source>
@@ -15773,15 +16003,15 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA最大片段时数</translation>
+        <translation>DMA最大片段周期数</translation>
     </message>
     <message>
         <source>DMA Halt Ticks</source>
-        <translation>DMA停顿时数</translation>
+        <translation>DMA停顿周期数</translation>
     </message>
     <message>
         <source>CD-ROM Max Seek Speedup Cycles</source>
-        <translation>CD-ROM最大搜寻加速周期</translation>
+        <translation>CD-ROM最大寻道加速周期</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -16116,7 +16346,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .iso（单轨镜像）
 .ecm（错误代码建模镜像）
 .mds（媒体描述符附属文件）
-.ccd（克隆CD镜像）
+.ccd（CloneCD镜像）
 .chd（压缩数据块）
 .pbp（PlayStation Portable，仅解密版）</translation>
     </message>
@@ -16140,6 +16370,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>启用</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>编辑补丁</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>移除补丁</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;作者: &lt;/span&gt;补丁作者&lt;/p&gt;&lt;p&gt;描述将放在这里&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16159,9 +16397,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>No description provided.</source>
         <translation>未提供描述。</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>选项:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>添加补丁</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>禁用全部补丁</translation>
@@ -16474,7 +16720,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Deinterlacing:</source>
-        <translation>逐行扫描:</translation>
+        <translation>去隔行:</translation>
     </message>
     <message>
         <source>Advanced</source>
@@ -16634,7 +16880,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
-        <translation>使用旧的MDEC惯例</translation>
+        <translation>使用旧的MDEC例程</translation>
     </message>
     <message>
         <source>Enable VRAM Write Dumping</source>
@@ -16717,12 +16963,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>下:</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>帧中扫描输出</translation>
+    </message>
+    <message>
         <source>Reset Geometry Tolerance</source>
         <translation>重置几何容差</translation>
     </message>
     <message>
         <source>Reset Depth Clear Threshold</source>
         <translation>重置深度清除阈值</translation>
+    </message>
+    <message>
+        <source>CPU Mode:</source>
+        <translation>CPU模式:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>顶点缓存:</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -16850,7 +17108,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Deinterlacing</source>
-        <translation>逐行扫描</translation>
+        <translation>去隔行</translation>
     </message>
     <message>
         <source>Crop</source>
@@ -16934,7 +17192,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation>当黑色边框必须添加时，确定其在屏幕上的位置。</translation>
+        <translation>确定必须添加黑色边框时游戏画面在屏幕上的位置。</translation>
     </message>
     <message>
         <source>Sprite Texture Filtering</source>
@@ -16950,7 +17208,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation>当使用Direct3D 11渲染器时，使用位块传输呈现模型而不是翻转。这通常会导致性能降低，但对于某些流应用程序或在某些系统上打开帧率可能需要这样。</translation>
+        <translation>当使用Direct3D 11渲染器时，使用位块传输呈现模型而不是翻转。这通常会导致性能降低，但某些流媒体应用程序可能需要此设置，某些系统也可能需要它来解除帧率限制。</translation>
     </message>
     <message>
         <source>Line Detection</source>
@@ -17010,15 +17268,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>为PGXP数据后投影增加额外的精度。可以改善某些游戏的视觉效果。</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>对全部指令使用PGXP，而不仅仅是内存操作。需要PGXP来校正某些游戏中的抖动，但有高的性能成本。</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>使用屏幕空间顶点位置来获取精确的位置，而不是跟踪内存访问。可以为某些游戏提供PGXP兼容性，但是&lt;strong&gt;通常不会带来任何好处。&lt;/strong&gt;</translation>
+        <translation>提高投影后的PGXP数据精度。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -17042,7 +17292,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>将隔行渲染中的跳行缩放到内置分辨率。这会使梳理在较高分辨率下不那么明显。通常可以安全启用。</translation>
+        <translation>将隔行渲染中的跳行缩放到内置分辨率。这会使梳齿状瑕疵在较高分辨率下不那么明显。通常可以安全启用。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -17062,7 +17312,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要旧的替换背景方能匹配/加载。</translation>
+        <translation>启用较旧的、精度较低的MDEC解码例程。可能需要启用此选项，才能匹配/加载旧的替换背景。</translation>
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
@@ -17083,6 +17333,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>提升分辨率时，以原生分辨率采样16位直接颜色纹理。这可以修复某些游戏中全动态视频(FMV)/背景的过滤问题，但可能降低渲染到纹理效果的质量。</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>在一帧显示过程中应用对显示帧缓冲区的更改，而不是等到下一帧开始时才应用。某些游戏依赖此功能实现分屏效果，但它会在帧中切换帧缓冲区的游戏中导致画面撕裂，因此请仅对需要此功能的游戏启用。</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -17109,8 +17363,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>仅过滤高度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>对所有指令使用PGXP，而不仅是内存操作。某些游戏需要此功能才能通过PGXP校正抖动，但性能开销很高。“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
+    </message>
+    <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>使用屏幕空间中的顶点位置获取精确位置，而不是跟踪内存访问。可使某些游戏兼容PGXP，但&lt;strong&gt;通常没有益处。&lt;/strong&gt;“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
+    </message>
+    <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation>启用缓存客户纹理，这是纹理替换所必需的。&lt;strong&gt;纹理缓存目前还处于试验阶段，并可能在某些游戏中导致渲染错误。&lt;/strong&gt;</translation>
+        <translation>启用游戏纹理缓存，纹理替换需要此功能。&lt;strong&gt;纹理缓存目前还处于试验阶段，并可能在某些游戏中导致渲染错误。&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Enable Texture Replacements</source>
@@ -17170,7 +17432,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disable Texture Copies To Self</source>
-        <translation>禁用纹理副本到自身</translation>
+        <translation>禁用纹理复制到自身</translation>
     </message>
     <message>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17374,7 +17636,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Never</source>
-        <translation>从不</translation>
+        <translation>从未</translation>
     </message>
     <message>
         <source>today</source>
@@ -17558,7 +17820,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Save States</source>
-        <translation>保存即时档案</translation>
+        <translation>即时存档</translation>
     </message>
     <message>
         <source>Select Previous Save Slot</source>
@@ -17838,11 +18100,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Freecam Roll Left</source>
-        <translation>自由镜头向左滚动</translation>
+        <translation>自由镜头向左滚转</translation>
     </message>
     <message>
         <source>Freecam Roll Right</source>
-        <translation>自由镜头向右滚动</translation>
+        <translation>自由镜头向右滚转</translation>
     </message>
     <message>
         <source>Select Next Slot and Save State</source>
@@ -18021,7 +18283,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
-        <translation>&lt;上级 目录&gt;</translation>
+        <translation>&lt;上级目录&gt;</translation>
     </message>
 </context>
 <context>
@@ -18445,7 +18707,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Failed to create force feedback device for Port {}:
 {}</source>
-        <translation>无法为接口创建力反馈设备 {}:
+        <translation>无法为接口{}创建力反馈设备：
 {}</translation>
     </message>
     <message>
@@ -18637,7 +18899,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
-        <translation>应用于光枪垂直位置的偏移量，该偏移量是Justifier最先触发光枪的位置。</translation>
+        <translation>应用于Justifier最先触发时的光枪垂直位置的偏移量。</translation>
     </message>
     <message>
         <source>Line End Offset</source>
@@ -18645,11 +18907,11 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
-        <translation>应用于光枪垂直位置的偏移量，该偏移量是Justifier最后触发光枪的位置。</translation>
+        <translation>应用于Justifier最后触发时的光枪垂直位置的偏移量。</translation>
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>时数偏移量</translation>
+        <translation>时钟周期偏移量</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
@@ -18681,7 +18943,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>掉线%1日志信息，请使用文件或系统游戏机日志记录。
+        <translation>已丢弃%1条日志消息，请使用文件或系统控制台日志记录。
 </translation>
     </message>
 </context>
@@ -18739,7 +19001,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Log To &amp;Debug Console</source>
-        <translation>日志记录到调试游戏机(&amp;D)</translation>
+        <translation>日志记录到调试控制台(&amp;D)</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -18747,7 +19009,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Log To &amp;System Console</source>
-        <translation>日志记录到系统游戏机(&amp;S)</translation>
+        <translation>日志记录到系统控制台(&amp;S)</translation>
     </message>
 </context>
 <context>
@@ -19440,6 +19702,10 @@ This action cannot be undone.</source>
         <translation>配置与RetroAchievements相关的选项。</translation>
     </message>
     <message>
+        <source>TTY Window</source>
+        <translation>TTY窗口</translation>
+    </message>
+    <message>
         <source>Prefer Ac&amp;hievement Icons</source>
         <translation>优先使用成就图标(&amp;H)</translation>
     </message>
@@ -19581,7 +19847,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Start Bi&amp;g Picture Mode</source>
-        <translation>启动大屏幕模式(&amp;G)</translation>
+        <translation>启动大视画模式(&amp;G)</translation>
     </message>
     <message>
         <source>Cover &amp;Downloader</source>
@@ -19737,7 +20003,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>日志记录到系统游戏机</translation>
+        <translation>日志记录到系统控制台</translation>
     </message>
     <message>
         <source>Log To Window</source>
@@ -20458,11 +20724,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>PNG Images (*.png);;JPEG Images (*.jpg *.jpeg);;WebP Images (*.webp)</source>
-        <translation>PNG 图像（*.png）;;JPEG 图像（*.jpg *.jpeg）;;WebP 图像（*.webp）</translation>
+        <translation>PNG 图像 (*.png);;JPEG 图像 (*.jpg *.jpeg);;WebP 图像 (*.webp)</translation>
     </message>
     <message>
         <source>Animated PNG Images (*.png)</source>
-        <translation>动画 PNG 图像（*.png）</translation>
+        <translation>动画 PNG 图像 (*.png)</translation>
     </message>
     <message>
         <source>Extract Icon</source>
@@ -20529,7 +20795,7 @@ Error: {1}</source>
     <message>
         <source>Failed to import memory card from %1:
 %2</source>
-        <translation>无法导入记忆卡来自%1:
+        <translation>无法从%1导入记忆卡:
 %2</translation>
     </message>
     <message>
@@ -20539,7 +20805,7 @@ Error: {1}</source>
     <message>
         <source>Failed to import save from %1:
 %2</source>
-        <translation>无法导入保存来自%1:
+        <translation>无法从%1导入存档:
 %2</translation>
     </message>
     <message>
@@ -20748,7 +21014,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>暂存器</translation>
+        <translation>暂存内存</translation>
     </message>
     <message>
         <source>EXP1</source>
@@ -20947,15 +21213,15 @@ Error: {1}</source>
     </message>
     <message>
         <source>Decreased By Value</source>
-        <translation>按值减少</translation>
+        <translation>减少了指定值</translation>
     </message>
     <message>
         <source>Increased By Value</source>
-        <translation>按值增加</translation>
+        <translation>增加了指定值</translation>
     </message>
     <message>
         <source>Changed By Value</source>
-        <translation>按值更改</translation>
+        <translation>变化了指定值</translation>
     </message>
     <message>
         <source>Equal to Value</source>
@@ -20999,7 +21265,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>暂存器</translation>
+        <translation>暂存内存</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -21103,7 +21369,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>%1 (only showing first %2)</source>
-        <translation>%1 (仅显示第一个%2)</translation>
+        <translation>%1 (仅显示前%2项)</translation>
     </message>
 </context>
 <context>
@@ -21396,7 +21662,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Now showing display.</source>
-        <translation>现在显示显示。</translation>
+        <translation>现在显示游戏画面。</translation>
     </message>
     <message>
         <source>CPU clock speed control enabled ({:.3f} MHz).</source>
@@ -22081,11 +22347,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, an image with alpha of 0.75 will draw the game image at 25% brightness.</source>
-        <translation>若勾选此选项，游戏图像将与覆盖图像中alpha值的倒数混合。例如，alpha值为0.75的图像将以25%的亮度绘制游戏图像。</translation>
+        <translation>若勾选此选项，游戏图像将按1减去覆盖图像中alpha值所得的比例进行混合。例如，alpha值为0.75的图像将以25%的亮度绘制游戏图像。</translation>
     </message>
     <message>
         <source>Select Image</source>
-        <translation>选择镜像</translation>
+        <translation>选择图像</translation>
     </message>
     <message>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
@@ -22598,11 +22864,11 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Force Digital Hat Inputs</source>
-        <translation>强制数字帽子输入</translation>
+        <translation>强制数字方向帽输入</translation>
     </message>
     <message>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>强制操纵杆始终将&apos;帽子&apos;轴输入 (ABS_HAT0X - ABS_HAT3Y) 视为8向数字帽子，而不检查它们是否是模拟的。</translation>
+        <translation>强制操纵杆始终将方向帽轴输入 (ABS_HAT0X - ABS_HAT3Y) 视为8向数字方向帽，而不检查它们是否为模拟输入。</translation>
     </message>
     <message>
         <source>SDL-{0}  {1}</source>
@@ -22674,7 +22940,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>No save present in this slot.</source>
-        <translation>此档位中目前没有保存。</translation>
+        <translation>此档位中没有存档。</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -22690,7 +22956,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>No save in this slot.</source>
-        <translation>此档位中没有保存。</translation>
+        <translation>此档位中没有存档。</translation>
     </message>
     <message>
         <source>Global Save Slot {} selected.</source>
@@ -23172,7 +23438,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>编织 (梳理)</translation>
+        <translation>编织 (梳齿状瑕疵)</translation>
     </message>
     <message>
         <source>Blend (Blur)</source>
@@ -23333,6 +23599,21 @@ Do you want to create this directory?</source>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (锐化)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>禁用</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -23502,17 +23783,17 @@ Do you want to create this directory?</source>
     <message>
         <source>Enable on Port 1 Only</source>
         <comment>MultitapMode</comment>
-        <translation>仅启用接口1</translation>
+        <translation>仅在接口1启用</translation>
     </message>
     <message>
         <source>Enable on Port 2 Only</source>
         <comment>MultitapMode</comment>
-        <translation>仅启用接口2</translation>
+        <translation>仅在接口2启用</translation>
     </message>
     <message>
         <source>Enable on Ports 1 and 2</source>
         <comment>MultitapMode</comment>
-        <translation>启用接口1和接口2</translation>
+        <translation>在接口1和接口2启用</translation>
     </message>
     <message>
         <source>Uncompressed</source>
@@ -24017,7 +24298,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Register</source>
-        <translation>寄存器</translation>
+        <translation>注册</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -24259,7 +24540,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;欢迎来到DuckStation！&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;此向导将帮助指导您完成使用本应用程序所需的配置步骤。如果这是您第一次安装DuckStation，建议您到&lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;查看安装指南。&lt;/p&gt;&lt;p&gt;默认情况下，DuckStation将连接到服务器&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;去检查更新，如果确认有了可用的，将会从&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;下载升级包。如果您不希望DuckStation在启动时进行任何网络连接，您现在应当取消勾选自动更新选项。自动更新设置稍后可以在界面设置中随时更改。&lt;/p&gt;&lt;p&gt;请选择一种语言和主题开始。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;欢迎来到DuckStation！&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;此向导将帮助指导您完成使用本应用程序所需的配置步骤。如果这是您第一次安装DuckStation，建议您到&lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;查看安装指南。&lt;/p&gt;&lt;p&gt;默认情况下，DuckStation将连接到服务器&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;检查更新，如果有可用更新并经您确认，将从&lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;下载更新包。如果您不希望DuckStation在启动时进行任何网络连接，您现在应当取消勾选自动更新选项。自动更新设置稍后可以在界面设置中随时更改。&lt;/p&gt;&lt;p&gt;请选择一种语言和主题开始。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>No devices available</source>
@@ -24315,7 +24596,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>无法打开光盘镜像&apos;{}&apos;，正被即时存档占用中:
+        <translation>无法打开即时存档所使用的光盘镜像&apos;{}&apos;:
 </translation>
     </message>
     <message>
@@ -24331,7 +24612,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
-        <translation>CD-ROM搜寻加速</translation>
+        <translation>CD-ROM寻道加速</translation>
     </message>
     <message>
         <source>Force Frame Timings</source>
@@ -24397,7 +24678,7 @@ Using current CD image, this may result in instability.</source>
     </message>
     <message>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
-        <translation>使用特定于光盘的记忆卡&apos;{}&apos;而不是独立记忆卡。</translation>
+        <translation>使用特定于光盘的记忆卡&apos;{}&apos;而不是每个游戏独立记忆卡。</translation>
     </message>
     <message>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
@@ -24465,7 +24746,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
-        <translation>CD-ROM读取/搜寻加速已启用。这可能会导致游戏崩溃。</translation>
+        <translation>CD-ROM读取/寻道加速已启用。这可能会导致游戏崩溃。</translation>
     </message>
     <message>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
@@ -24570,7 +24851,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
         <source>Memory Card Slot {}</source>
-        <translation>记忆卡档位{}</translation>
+        <translation>记忆卡插槽{}</translation>
     </message>
     <message>
         <source>Card changed to {}.</source>
@@ -24587,7 +24868,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
-        <translation>此即时存档是在启用以下有污点选项时创建的，可能不稳定。
+        <translation>此即时存档是在启用以下可能影响模拟稳定性的选项时创建的，可能不稳定。
 您必须保存到记忆卡并重启游戏才能清除所有影响。</translation>
     </message>
     <message>
@@ -24660,7 +24941,7 @@ You must save to a memory card and reset the game to clear any effects.</source>
     </message>
     <message>
         <source>CD-ROM seek speedup disabled.</source>
-        <translation>CD-ROM搜寻加速已禁用。</translation>
+        <translation>CD-ROM寻道加速已禁用。</translation>
     </message>
     <message>
         <source>Mute CD-ROM audio disabled.</source>
@@ -24672,7 +24953,7 @@ You must save to a memory card and reset the game to clear any effects.</source>
     </message>
     <message>
         <source>Use old MDEC routines disabled.</source>
-        <translation>使用旧的MDEC惯例已禁用。</translation>
+        <translation>使用旧的MDEC例程已禁用。</translation>
     </message>
     <message>
         <source>PIO device removed.</source>
@@ -24816,6 +25097,29 @@ DuckStation 需要 PS1 或 PS2 BIOS 才能运行。
     </message>
 </context>
 <context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>TTY窗口</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>TTY窗口 - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>设置(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>启用BIOS TTY日志记录(&amp;T)</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>显示时间戳(&amp;T)</translation>
+    </message>
+</context>
+<context>
     <name>TextureReplacementSettingsDialog</name>
     <message>
         <source>Texture Replacement Settings</source>
@@ -24899,7 +25203,7 @@ DuckStation 需要 PS1 或 PS2 BIOS 才能运行。
     </message>
     <message>
         <source>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</source>
-        <translation>确定在后台转储模式下将转储的显存写入的最小大小。小于此大小的上传将被忽略。</translation>
+        <translation>确定在背景转储模式下将转储的显存写入的最小大小。小于此大小的上传将被忽略。</translation>
     </message>
     <message>
         <source>Export...</source>

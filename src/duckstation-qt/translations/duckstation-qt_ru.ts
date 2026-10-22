@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
+        <translation>DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, ориентированный на удобство игры, скорость и возможность долгосрочного сопровождения.</translation>
     </message>
     <message>
         <source>Authors</source>
@@ -41,7 +41,7 @@
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation>Отсутствует файл Thirdparty.html. Вам следует запросить его там, где вы получили DuckStation.</translation>
+        <translation>Отсутствует файл thirdparty.html. Вам следует запросить его там, где вы получили DuckStation.</translation>
     </message>
 </context>
 <context>
@@ -108,7 +108,7 @@ Do you want to enable tracking now?</source>
     </message>
     <message>
         <source>Enable Hardcore Mode</source>
-        <translation>Включить режим режим &quot;Хардкор&quot;</translation>
+        <translation>Включить режим &quot;Хардкор&quot;</translation>
     </message>
     <message>
         <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
@@ -156,7 +156,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Register</source>
-        <translation>Регистр</translation>
+        <translation>Зарегистрироваться</translation>
     </message>
     <message>
         <source>Enable Spectator Mode</source>
@@ -365,7 +365,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
-        <translation>Отображает уведомление или значки в выбранном месте, когда активное задание или готовое достижение.</translation>
+        <translation>Отображает уведомление или значки в выбранном месте, когда активно испытание или достижение готово к разблокировке.</translation>
     </message>
     <message>
         <source>Indicator Location</source>
@@ -465,11 +465,11 @@ Token generated %2</source>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
-        <translation>Попытка создания списка лидеров началась.</translation>
+        <translation>Попытка в списке лидеров началась.</translation>
     </message>
     <message>
         <source>Leaderboard attempt failed.</source>
-        <translation>Попытка создания списка лидеров не удалась.</translation>
+        <translation>Попытка в списке лидеров не удалась.</translation>
     </message>
     <message>
         <source>Your Time: {}</source>
@@ -555,7 +555,7 @@ Error: {}</source>
     </message>
     <message>
         <source>Spectator mode enabled.</source>
-        <translation>Включен режим просмотра.</translation>
+        <translation>Включен режим наблюдателя.</translation>
     </message>
     <message>
         <source>All achievements are locked, and unlocks will not be recorded in your account.</source>
@@ -684,7 +684,7 @@ This session will start in offline mode.</source>
     <message>
         <source>Nearest Completion</source>
         <comment>Pause Menu</comment>
-        <translation>Ближайшая дата завершения</translation>
+        <translation>Ближе всего к завершению</translation>
     </message>
     <message>
         <source>Last Progress Update</source>
@@ -712,7 +712,7 @@ This session will start in offline mode.</source>
     <message>
         <source>Core</source>
         <translatorcomment>*Счёт?</translatorcomment>
-        <translation>Ядро</translation>
+        <translation>Основные</translation>
     </message>
     <message>
         <source>{0} - {1}</source>
@@ -743,9 +743,9 @@ This session will start in offline mode.</source>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
-            <numerusform>%n достижение не поддерживается DuckStation и не будет разблокировано.</numerusform>
-            <numerusform>%n достижения не поддерживается DuckStation и не будет разблокировано.</numerusform>
-            <numerusform>%n достижений не поддерживается DuckStation и не будет разблокировано.</numerusform>
+            <numerusform>%n достижение не поддерживается DuckStation, и его невозможно разблокировать.</numerusform>
+            <numerusform>%n достижения не поддерживаются DuckStation, и их невозможно разблокировать.</numerusform>
+            <numerusform>%n достижений не поддерживаются DuckStation, и их невозможно разблокировать.</numerusform>
         </translation>
     </message>
     <message>
@@ -866,9 +866,9 @@ This session will start in offline mode.</source>
         <comment>Achievement popup</comment>
         <translatorcomment>**открыли</translatorcomment>
         <translation>
-            <numerusform>Вы разблокировали {} достижение из %n</numerusform>
-            <numerusform>Вы разблокировали {} достижения из %n</numerusform>
-            <numerusform>Вы разблокировали {} достижений из %n</numerusform>
+            <numerusform>Вы разблокировали {} из %n достижения</numerusform>
+            <numerusform>Вы разблокировали {} из %n достижений</numerusform>
+            <numerusform>Вы разблокировали {} из %n достижений</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -929,11 +929,11 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation>Включён режим &quot;Хардкор&quot;. Читы и сохранения недоступны.</translation>
+        <translation>Включён режим &quot;Хардкор&quot;. Читы и сохранения состояния недоступны.</translation>
     </message>
     <message>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation>Режим &quot;Хардкор&quot; отключён. Лидеры не будут отслеживаться.</translation>
+        <translation>Режим &quot;Хардкор&quot; отключён. Результаты в списках лидеров не будут отслеживаться.</translation>
     </message>
     <message>
         <source>This game has no achievements.</source>
@@ -1124,7 +1124,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Жунал в файл</translation>
+        <translation>Журнал в файл</translation>
     </message>
     <message>
         <source>Log Timestamps</source>
@@ -1404,7 +1404,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Allows you to use the right analog stick to control the shoulder buttons (L1/R1), as well as the buttons.</source>
-        <translation>Позволяет использовать правый аналоговый джойстик для управления кнопками плеча (L1/R1), а также другими кнопками.</translation>
+        <translation>Позволяет использовать правый аналоговый джойстик для управления кнопками L1/R1 в дополнение к самим кнопкам.</translation>
     </message>
     <message>
         <source>Use Right Analog for Trigger Buttons</source>
@@ -1412,7 +1412,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Allows you to use the right analog stick to control the trigger buttons (L2/R2), as well as the buttons.</source>
-        <translation>Позволяет использовать правый аналоговый джойстик для управления кнопками триггеров (L2/R2), а также другими кнопками.</translation>
+        <translation>Позволяет использовать правый аналоговый джойстик для управления кнопками триггеров (L2/R2) в дополнение к самим кнопкам.</translation>
     </message>
     <message>
         <source>Use Left Analog for D-Pad in Digital Mode</source>
@@ -1483,7 +1483,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>D-Pad Down</source>
-        <translation>Крестовина вправо</translation>
+        <translation>Крестовина вниз</translation>
     </message>
     <message>
         <source>D-Pad Left</source>
@@ -1575,7 +1575,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Режим светодиодной подсветки</translation>
+        <translation>Светодиодный индикатор режима</translation>
     </message>
     <message>
         <source>Not Inverted</source>
@@ -1839,6 +1839,16 @@ This session will start in offline mode.</source>
         <translation>Сохранять состояние при выходе</translation>
     </message>
     <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>Подтверждать закрытие игры</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>Запрашивает подтверждение перед закрытием игры из меню паузы.</translation>
+    </message>
+    <message>
         <source>Pause On Controller Disconnection</source>
         <comment>settings_pause_on_controller_disconnection</comment>
         <translation>Пауза при отключении контроллера</translation>
@@ -1989,6 +1999,16 @@ This session will start in offline mode.</source>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>Выключение…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>Вывод изображения в середине кадра</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>Применяет изменения к отображаемому буферу кадра в процессе вывода кадра. Необходимо для эффектов разделения экрана в некоторых играх, но вызывает разрывы изображения в других.</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2145,6 +2165,16 @@ Current Binding: %s</source>
         <translation>Поведение</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>Значки в списке</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>Выбор изображения, отображаемого рядом с каждой игрой в списке игр.</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>Настройки видео</translation>
@@ -2188,6 +2218,21 @@ Current Binding: %s</source>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>Не удалось открыть выбранный файл.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>Подтвердить закрытие</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>Уверены, что хотите закрыть текущую игру?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>В следующий раз продолжить с этого места</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2411,7 +2456,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>Unpin from OSD</source>
         <comment>achievement_unpin_from_osd</comment>
-        <translation>Открепить от экранного меню</translation>
+        <translation>Открепить от OSD</translation>
     </message>
     <message>
         <source>Reset Unlock</source>
@@ -2446,7 +2491,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>%1$s unpinned from OSD.</source>
         <comment>achievement_unpinned_from_osd</comment>
-        <translation>%1$s откреплено от экранного меню.</translation>
+        <translation>%1$s откреплено от OSD.</translation>
     </message>
     <message numerus="yes">
         <source>This game has %d leaderboards.</source>
@@ -2542,6 +2587,11 @@ Do you want to %1$s anyway?</source>
         <source>Touchscreen</source>
         <comment>controller_settings_tab_touchscreen</comment>
         <translation>Сенсорный экран</translation>
+    </message>
+    <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>Порт %1$s</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -3009,6 +3059,86 @@ Do you want to %1$s anyway?</source>
         <translation>Менеджер сохранений состояния</translation>
     </message>
     <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>Карты памяти</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>Создать новую карту</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>Создаёт новую отформатированную карту памяти.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>Импортировать карту памяти</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>Импортирует карту памяти из хранилища, при необходимости преобразуя её формат.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>Карта памяти «%s» импортирована.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>Карта памяти с именем «%s» уже существует. Перезаписать её? Все имеющиеся на ней данные будут потеряны.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>Использовать одну карту для игр с несколькими дисками</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>При использовании отдельных карт памяти по названию игры для многодисковой игры используется одна карта для всех дисков. Если параметр отключён, для каждого диска используется отдельная карта.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>Количество доступных карт памяти зависит от поддержки мультитапа и возможностей игры.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>Текущий режим мультитапа: %1$s (%2$d карта)</numerusform>
+            <numerusform>Текущий режим мультитапа: %1$s (%2$d карты)</numerusform>
+            <numerusform>Текущий режим мультитапа: %1$s (%2$d карт)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>Тип карты памяти</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>Выбирает образ карты памяти, вставленной в этот разъём.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>Имя общей карты</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>Выбирает карту, используемую при выборе типа карты, общей для всех игр.</translation>
+    </message>
+    <message>
         <source>Confirm Deletion</source>
         <comment>confirm_deletion</comment>
         <translation>Подтвердить удаление</translation>
@@ -3311,6 +3441,76 @@ Do you want to %1$s anyway?</source>
         <source>Remove All</source>
         <comment>cheat_codes_remove_all</comment>
         <translation>Удалить все</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>Перемотка назад</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>Левая кнопка</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>Правая кнопка</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>Масштабирование</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>Вписать</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>Заполнить</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>Растянуть</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>Мышь</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>Восстановить значение по умолчанию</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>Текущее значение</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>Значение по умолчанию</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>Общая настройка</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Использует PGXP для всех инструкций, а не только для операций с памятью. В автоматическом режиме используется настройка из базы данных игр.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Использует экранные координаты для определения данных PGXP. Может улучшить изображение в некоторых играх. В автоматическом режиме используется настройка из базы данных игр.</translation>
     </message>
     <message>
         <source>Auto (Game Native)</source>
@@ -3948,16 +4148,6 @@ Do you want to %1$s anyway?</source>
         <translation>Список игр</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>Предпочитать значки достижений</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>Отдаёт предпочтение значкам игры из RetroAchievements перед значками с карты памяти.</translation>
-    </message>
-    <message>
         <source>Show Grid Captions</source>
         <comment>settings_show_grid_captions</comment>
         <translation>Показать подписи в сетке</translation>
@@ -4233,11 +4423,6 @@ Do you want to %1$s anyway?</source>
         <translation>DuckStation использует RetroAchievements (retroachievements.org) как базу достижений и для отслеживания прогресса. Для использования DuckStation учётная запись RetroAchievements не требуется.</translation>
     </message>
     <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>Порт %1$d</translation>
-    </message>
-    <message>
         <source>Controller Type</source>
         <comment>controller_type</comment>
         <translation>Тип контроллера</translation>
@@ -4410,7 +4595,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>No save states found.</source>
         <comment>save_state_manager_empty</comment>
-        <translation>Сохранения состояний не найдено.</translation>
+        <translation>Сохранения состояний не найдены.</translation>
     </message>
     <message>
         <source>Memory Card Editor</source>
@@ -4535,7 +4720,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>This file requires %1$d blocks, but only %2$d blocks are free.</source>
         <comment>memory_card_editor_copy_insufficient_blocks</comment>
-        <translation>Для этого файла требуется %1$d блоков, но свободно только %2$d блоков.</translation>
+        <translation>Для этого файла требуется следующее число блоков: %1$d. Доступно только %2$d.</translation>
     </message>
     <message>
         <source>File &apos;%s&apos; already exists on destination card.</source>
@@ -6318,7 +6503,7 @@ Would you like to import one now?</source>
     <message>
         <source>Use Software Renderer For Readbacks</source>
         <comment>settings_use_software_renderer_for_readbacks</comment>
-        <translation>Использовать считывание данных с программной отрисовки</translation>
+        <translation>Использовать программный отрисовщик для считывания данных</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks, which may improve performance with the hardware renderer.</source>
@@ -6373,7 +6558,7 @@ Would you like to import one now?</source>
     <message>
         <source>Preload Replacement Textures</source>
         <comment>settings_preload_textures</comment>
-        <translation>Предварительная загрузка замены текстур</translation>
+        <translation>Предварительная загрузка заменяющих текстур</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6553,7 +6738,7 @@ Would you like to import one now?</source>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <comment>settings_summary_tty_logging</comment>
-        <translation>Журналирует вызовы BIOS в printf(). Не все игры содержат отладочные сообщения.</translation>
+        <translation>Записывает в журнал вызовы функции printf() BIOS. Не все игры содержат отладочные сообщения.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -6596,11 +6781,6 @@ Would you like to import one now?</source>
         <translation>Использует интерполяцию цветов с учётом перспективы, что может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>Использование PGXP для всех инструкций, а не только для операций с памятью.</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии.</translation>
@@ -6619,11 +6799,6 @@ Would you like to import one now?</source>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>Использует интерполяцию текстурных координат с учётом перспективы, устраняя искажения текстур.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>Использует экранные координаты для определения данных PGXP. Может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -7559,7 +7734,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>Размер буфера определяет размер фрагментов звука, которые будет извлекать хост. Меньшие значения уменьшают задержку вывода, но могут вызвать сбой, если скорость эмуляции непостоянна. Обратите внимание, что движок Cubeb использует меньшие фрагменты независимо от этого значения, поэтому использование здесь низкого значения не может существенно изменить задержку.</translation>
+        <translation>Размер буфера определяет размер фрагментов звука, которые будет извлекать хост. Меньшие значения уменьшают задержку вывода, но могут вызвать прерывания звука, если скорость эмуляции непостоянна. Обратите внимание, что движок Cubeb использует меньшие фрагменты независимо от этого значения, поэтому использование здесь низкого значения может не привести к существенному изменению задержки.</translation>
     </message>
     <message>
         <source>Output Latency</source>
@@ -7632,7 +7807,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>При работе со скоростью, превышающей 100%, регулирует темп звука вместо пропуска кадров. Производит гораздо более приятный звук с ускоренной перемоткой/замедлением при небольших затратах на производительность.</translation>
+        <translation>При работе со скоростью, отличной от 100%, регулирует темп звука вместо пропуска кадров. Производит гораздо более приятный звук с ускоренной перемоткой/замедлением при небольших затратах на производительность.</translation>
     </message>
     <message>
         <source>Resets volume back to the global/inherited setting.</source>
@@ -7810,7 +7985,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Предупреждение о сохраненных состояниях&lt;/h2&gt;&lt;p&gt;Установка этого обновления сделает ваши сохраненные состояний &lt;b&gt;несовместимыми&lt;/b&gt;. Перед установкой этого обновления убедитесь, что вы сохранили свои игры на карту памяти, иначе вы потеряете прогресс. &lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Предупреждение о сохраненных состояниях&lt;/h2&gt;&lt;p&gt;Установка этого обновления сделает ваши сохраненные состояния &lt;b&gt;несовместимыми&lt;/b&gt;. Перед установкой этого обновления убедитесь, что вы сохранили свои игры на карту памяти, иначе вы потеряете прогресс. &lt;/p&gt;</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update:
@@ -7914,7 +8089,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
-        <translation>Журналирует вызовы BIOS в printf(). Не все игры содержат отладочные сообщения.</translation>
+        <translation>Записывает в журнал вызовы функции printf() BIOS. Не все игры содержат отладочные сообщения.</translation>
     </message>
     <message>
         <source>Select BIOS Directory</source>
@@ -7990,7 +8165,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Auto-Detect</source>
-        <translation>Авто-определение</translation>
+        <translation>Автоопределение</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -8143,7 +8318,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>File Name Format:</source>
-        <translation>Формат файла:</translation>
+        <translation>Формат имени файла:</translation>
     </message>
     <message>
         <source>Save Location:</source>
@@ -8236,11 +8411,11 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Save Name</source>
-        <translation>Сохранить имя</translation>
+        <translation>Имя сохраняемого файла</translation>
     </message>
     <message>
         <source>Determines the format of the filename used when saving screenshots, and whether a subdirectory is created per-game.</source>
-        <translation>Определяет формат файла, используемый при сохранении снимков, а также то, создается ли отдельный подкаталог для каждой игры.</translation>
+        <translation>Определяет формат имени файла, используемый при сохранении снимков, а также то, создается ли отдельный подкаталог для каждой игры.</translation>
     </message>
     <message>
         <source>Screenshot Format</source>
@@ -8340,7 +8515,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
-        <translation>Параметры, передаваемые в выбранный кодек видео.&lt;br&gt;&lt;b&gt;Необходимо использовать знак &quot;=&quot;, чтобы отделить ключ от значения, и знак &quot;:&quot;, чтобы отделить две пары друг от друга.&lt;/b&gt;&lt;br&gt;Например: &quot;crf = 21: предустановка = очень быстро&quot;</translation>
+        <translation>Параметры, передаваемые в выбранный кодек видео.&lt;br&gt;&lt;b&gt;Необходимо использовать знак &quot;=&quot;, чтобы отделить ключ от значения, и знак &quot;:&quot;, чтобы отделить две пары друг от друга.&lt;/b&gt;&lt;br&gt;Например: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
         <source>Audio Codec</source>
@@ -8368,7 +8543,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
-        <translation>Параметры, передаваемые в выбранный кодек звука.&lt;br&gt;&lt;b&gt;Необходимо использовать знак &quot;=&quot;, чтобы отделить ключ от значения, и символ &quot;:&quot;, чтобы отделить две пары друг от друга.&lt;/b&gt;&lt;br&gt;Например: &quot;compression_level = 4: Joint_stereo = 1&quot;</translation>
+        <translation>Параметры, передаваемые в выбранный кодек звука.&lt;br&gt;&lt;b&gt;Необходимо использовать знак &quot;=&quot;, чтобы отделить ключ от значения, и символ &quot;:&quot;, чтобы отделить две пары друг от друга.&lt;/b&gt;&lt;br&gt;Например: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -8377,6 +8552,10 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
 </context>
 <context>
     <name>CheatCodeEditorDialog</name>
+    <message>
+        <source>Patch Editor</source>
+        <translation>Редактор патчей</translation>
+    </message>
     <message>
         <source>Enter Group Name</source>
         <translation>Введите имя группы</translation>
@@ -8414,10 +8593,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Код с именем «%1» уже существует.</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>Не удалось сохранить чит-код:
+        <translation>Не удалось сохранить код:
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Нет</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8437,7 +8620,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Assembly</source>
-        <translation>Сборка</translation>
+        <translation>Ассемблер</translation>
     </message>
     <message>
         <source>Manual</source>
@@ -8495,11 +8678,11 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{0} и {1} отключаются достижениями в режиме &quot;Хардкора&quot;/безопасном режиме.</translation>
+        <translation>{0} и {1} отключены режимом «Хардкор» для достижений или безопасным режимом.</translation>
     </message>
     <message>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{} отключается достижениями в режиме &quot;Хардкора&quot;/безопасном режиме.</translation>
+        <translation>{} отключено режимом «Хардкор» для достижений или безопасным режимом.</translation>
     </message>
     <message>
         <source>Cheat &apos;{}&apos; applied.</source>
@@ -8530,7 +8713,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Включить 8Мб оперативной памяти (консоль разработчика)</translation>
+        <translation>Включить 8 МБ оперативной памяти (консоль разработчика)</translation>
     </message>
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
@@ -8591,7 +8774,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Maximum (Safer)</source>
-        <translation>Максимальный (безопасный)</translation>
+        <translation>Максимальный (более безопасный)</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
@@ -8652,7 +8835,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Позволяет использовать дополнительные 6 МБ оперативной памяти, всего 2+6 = 8 МБ, что обычно встречается на консолях разработчиков. Для использования этой дополнительной памяти игры должны использовать больший размер кучи. Названия, полагающиеся на зеркала памяти, могут работать некорректно, поэтому используйте этот параметр только с совместимыми модификациями.</translation>
+        <translation>Позволяет использовать дополнительные 6 МБ оперативной памяти, всего 2+6 = 8 МБ, что обычно встречается на консолях разработчиков. Для использования этой дополнительной памяти игры должны использовать больший размер кучи. Игры, полагающиеся на зеркала памяти, могут работать некорректно, поэтому используйте этот параметр только с совместимыми модификациями.</translation>
     </message>
     <message>
         <source>Preload Image to RAM</source>
@@ -8752,7 +8935,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Игноририровать субканал, предоставляемый приводом, при использовании физических дисков, вместо этого всегда генерирует данные подканала. Не будет работать с играми libcrypt, но может повысить надежность чтения на некоторых дисках.</translation>
+        <translation>Игнорирует субканал, предоставляемый приводом при использовании физических дисков, и вместо этого всегда генерирует данные субканала. Не будет работать с играми libcrypt, но может повысить надежность чтения на некоторых приводах.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -8768,7 +8951,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
-        <translation>Да, я подтверждаю наличие ошибок без разгона перед сообщением об ошибках.</translation>
+        <translation>Да, перед отправкой отчетов об ошибках я буду проверять, возникают ли они без разгона.</translation>
     </message>
     <message>
         <source>No, take me back to safety.</source>
@@ -9085,7 +9268,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Кнопки лица</translation>
+        <translation>Лицевые кнопки</translation>
     </message>
     <message>
         <source>Cross</source>
@@ -9145,7 +9328,7 @@ This warning will only be shown once.</source>
     <message>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-        <translation>Взаимосвязанное прицеливание</translation>
+        <translation>Относительное прицеливание</translation>
     </message>
     <message>
         <source>Down</source>
@@ -9177,7 +9360,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;По умолчанию световые пистолеты используют указатель мыши. Для использования мыши вам &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; нужно настраивать никаких привязок, кроме курка и кнопок. Настройка прицеливания требуется только в том случае, если вы хотите использовать несколько мышей. &lt;/p&gt;&lt;p&gt;Если вы хотите использовать контроллер или световой пистолет, имитирующий контроллер вместо мыши, вам следует привязать его к «Взаимосвязанному прицеливанию». В противном случае «Взаимосвязанное прицеливание» следует &lt;span style=&quot; font-weight:700;&quot;&gt;оставить непривязанным&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для привязки мыши вашего ПК необходимо включить переназначение мыши в глобальных настройках.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;По умолчанию световые пистолеты используют указатель мыши. Для использования мыши вам &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; нужно настраивать никаких привязок, кроме курка и кнопок. Настройка прицеливания требуется только в том случае, если вы хотите использовать несколько мышей. &lt;/p&gt;&lt;p&gt;Если вы хотите использовать контроллер или световой пистолет, имитирующий контроллер вместо мыши, вам следует привязать его к «Относительному прицеливанию». В противном случае «Относительное прицеливание» следует &lt;span style=&quot; font-weight:700;&quot;&gt;оставить непривязанным&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для привязки мыши вашего ПК необходимо включить сопоставление мыши в глобальных настройках.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Aiming</source>
@@ -9185,7 +9368,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Fire Offscreen</source>
-        <translation>Огонь за кадром</translation>
+        <translation>Выстрел за пределы экрана</translation>
     </message>
     <message>
         <source>Fire</source>
@@ -9200,7 +9383,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Fire Offscreen</source>
-        <translation>Режим светодиодной подсветки</translation>
+        <translation>Выстрел за пределы экрана</translation>
     </message>
     <message>
         <source>Aiming</source>
@@ -9225,11 +9408,11 @@ This warning will only be shown once.</source>
     <message>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-        <translation>Взаимосвязанное прицеливание</translation>
+        <translation>Относительное прицеливание</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;По умолчанию световые пистолеты используют указатель мыши. Для использования мыши вам &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; нужно настраивать никаких привязок, кроме спускового крючка и кнопок. Настройка прицеливания требуется только в том случае, если вы хотите использовать несколько мышей. &lt;/p&gt;&lt;p&gt;Если вы хотите использовать контроллер или световой пистолет, имитирующий контроллер вместо мыши, вам следует привязать его к «Взаимосвязанному прицеливанию». В противном случае «Взаимосвязанное прицеливание» следует &lt;span style=&quot; font-weight:700;&quot;&gt;оставить непривязанным&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для привязки мыши вашего ПК необходимо включить переназначение мыши в глобальных настройках.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;По умолчанию световые пистолеты используют указатель мыши. Для использования мыши вам &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; нужно настраивать никаких привязок, кроме спускового крючка и кнопок. Настройка прицеливания требуется только в том случае, если вы хотите использовать несколько мышей. &lt;/p&gt;&lt;p&gt;Если вы хотите использовать контроллер или световой пистолет, имитирующий контроллер вместо мыши, вам следует привязать его к «Относительному прицеливанию». В противном случае «Относительное прицеливание» следует &lt;span style=&quot; font-weight:700;&quot;&gt;оставить непривязанным&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для привязки мыши вашего ПК необходимо включить сопоставление мыши в глобальных настройках.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Down</source>
@@ -9264,7 +9447,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для настройки клавиш с помощью мыши на ПК необходимо включить функцию «Настройка мыши» в «Общих настройках».&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;ПРИМЕЧАНИЕ: &lt;/span&gt;Для привязки мыши вашего ПК необходимо включить сопоставление мыши в глобальных настройках.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Pointer</source>
@@ -9480,7 +9663,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
-        <translation>Позволяет использовать тачпад контроллеров DualShock 4 / DualSense в качестве указателя при игре с лазерными пистолетами.</translation>
+        <translation>Позволяет использовать тачпад контроллеров DualShock 4 / DualSense в качестве указателя при игре со световыми пистолетами.</translation>
     </message>
     <message>
         <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
@@ -9536,7 +9719,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Use Profile Input Sources</source>
-        <translation>Использование источников профилей ввода</translation>
+        <translation>Использовать источники ввода профиля</translation>
     </message>
     <message>
         <source>Use Profile Hotkeys</source>
@@ -9560,7 +9743,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</source>
-        <translation>Позволяет назначать кнопки мыши на эмулированные элементы управления. По умолчанию движения мыши игнорируются.</translation>
+        <translation>Позволяет привязывать мышь к эмулируемым элементам управления. По умолчанию движения мыши игнорируются.</translation>
     </message>
     <message>
         <source>Enable Mouse Mapping</source>
@@ -9584,7 +9767,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Enable DualSense Player LED</source>
-        <translation>Включить светодиодную подсветку DualSense</translation>
+        <translation>Включить светодиодный индикатор игрока DualSense</translation>
     </message>
     <message>
         <source>Profile Settings</source>
@@ -9745,7 +9928,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Per-game controller configuration reset to global settings.</source>
-        <translation>Конфигурация контроллера для каждой игры сбрасывается до глобальных настроек.</translation>
+        <translation>Настройки контроллера для игры сброшены к глобальным настройкам.</translation>
     </message>
     <message>
         <source>Global Settings</source>
@@ -9903,7 +10086,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
-        <translation>ВНИМАНИЕ: ваша игра все еще сохраняется на карту памяти. Продолжение %1 может НЕОБРАТИМО УНИЧТОЖИТЬ ВАШУ КАРТУ ПАМЯТИ. Мы рекомендуем продолжить игру и подождать 5 секунд, пока она не завершит сохранение.
+        <translation>ВНИМАНИЕ: ваша игра все еще сохраняется на карту памяти. Если выполнить действие «%1», это может НЕОБРАТИМО УНИЧТОЖИТЬ ВАШУ КАРТУ ПАМЯТИ. Мы рекомендуем продолжить игру и подождать 5 секунд, пока она не завершит сохранение.
 
 Вы все равно хотите %1?</translation>
     </message>
@@ -9915,21 +10098,21 @@ Do you want to %1 anyway?</source>
         <source>%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to %2 anyway?</source>
-        <translation>%1 достижения не подтверждены сервером. Если вы продолжите %2, эти достижения будут утрачены. После восстановления сетевого соединения эти достижения будут подтверждены автоматически.
+        <translation>Сервер не подтвердил разблокировку достижений (%1). Если выполнить действие «%2», эти достижения будут утрачены. После восстановления сетевого соединения эти достижения будут подтверждены автоматически.
 
 Вы всё равно хотите %2?</translation>
     </message>
     <message>
         <source>shut down</source>
-        <translation>выключение</translation>
+        <translation>выключить систему</translation>
     </message>
     <message>
         <source>reset</source>
-        <translation>перезагрузка</translation>
+        <translation>перезагрузить систему</translation>
     </message>
     <message>
         <source>change disc</source>
-        <translation>смена диска</translation>
+        <translation>сменить диск</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %1</source>
@@ -9984,7 +10167,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation>DuckStation может автоматически загружать обложки для игр, для которых в настоящее время нет набора обложек. Мы не храним никаких изображений обложек, пользователь должен предоставить свой собственный источник изображений.</translation>
+        <translation>DuckStation может автоматически загружать обложки для игр, у которых ещё не задана обложка. Мы не храним никаких изображений обложек, пользователь должен предоставить свой собственный источник изображений.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Depending on your jurisdiction, &lt;span style=&quot; font-weight:700;&quot;&gt;game covers may be copyrighted&lt;/span&gt;. You are only authorized to use this tool with &lt;span style=&quot; font-weight:700;&quot;&gt;your own servers and images&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Save title for the game, including the region suffix.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized title for the game in its native language.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -10043,27 +10226,27 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Off</source>
-        <translation>Выключить питание</translation>
+        <translation>Тяга отключена</translation>
     </message>
     <message>
         <source>Power 1</source>
-        <translation>Питание 1</translation>
+        <translation>Тяга 1</translation>
     </message>
     <message>
         <source>Power 2</source>
-        <translation>Питание 2</translation>
+        <translation>Тяга 2</translation>
     </message>
     <message>
         <source>Power 3</source>
-        <translation>Питание 3</translation>
+        <translation>Тяга 3</translation>
     </message>
     <message>
         <source>Power 4</source>
-        <translation>Питание 4</translation>
+        <translation>Тяга 4</translation>
     </message>
     <message>
         <source>Power 5</source>
-        <translation>Питание 5</translation>
+        <translation>Тяга 5</translation>
     </message>
     <message>
         <source>Brake Released</source>
@@ -10099,7 +10282,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power</source>
-        <translation>Питание</translation>
+        <translation>Тяга</translation>
     </message>
     <message>
         <source>Brake</source>
@@ -10123,11 +10306,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Transition Frames</source>
-        <translation>Кадры перехода питания</translation>
+        <translation>Кадры перехода тяги</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
-        <translation>Задаёт количество кадров, в течение которых контроллер сообщает переходное промежуточное состояние при изменении уровня питания.</translation>
+        <translation>Задаёт количество кадров, в течение которых контроллер сообщает переходное промежуточное состояние при изменении уровня тяги.</translation>
     </message>
     <message>
         <source>Brake Transition Frames</source>
@@ -10256,7 +10439,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Scratchpad</source>
         <translatorcomment>*Черновик</translatorcomment>
-        <translation>Блокнот</translation>
+        <translation>Память Scratchpad</translation>
     </message>
     <message>
         <source>EXP1</source>
@@ -10334,11 +10517,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Over</source>
-        <translation>Выполнить до</translation>
+        <translation>Шаг с обходом</translation>
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation>Выполнить д&amp;о</translation>
+        <translation>Шаг с &amp;обходом</translation>
     </message>
     <message>
         <source>F10</source>
@@ -10488,7 +10671,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>&amp;Follow Load/Store</source>
-        <translation>&amp;Отслеживать загрузку/сохранение</translation>
+        <translation>&amp;Перейти к адресу чтения/записи</translation>
     </message>
     <message>
         <source>Failed to read the instruction at 0x%1.</source>
@@ -10578,7 +10761,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translatorcomment>*(пройден конец памяти).</translatorcomment>
-        <translation>Шаблон найден по адресу 0x%1 (за концом памяти).</translation>
+        <translation>Шаблон найден по адресу 0x%1 (поиск продолжен с начала памяти).</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1.</source>
@@ -10689,7 +10872,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
-        <translation>Максимальное ускорение циклов чтения дисковода</translation>
+        <translation>Максимальное ускорение чтения CD-ROM: циклы</translation>
     </message>
     <message>
         <source>CD-ROM Max Seek Speedup Cycles</source>
@@ -10697,7 +10880,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>CD-ROM Disable Speedup on MDEC</source>
-        <translation>Отключить ускорение MDEC дисковода</translation>
+        <translation>Отключить ускорение дисковода при работе MDEC</translation>
     </message>
     <message>
         <source>CD-ROM Region Check</source>
@@ -10837,7 +11020,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Changing the serial for a game will make it appear as a different game, and will not share save data or settings with the original game.
 
 Clicking Reset will restore the serial back to the value scanned from in the disc image.</source>
-        <translation>Изменение серийного номера игры приведет к тому, что она будет отображаться как отдельная игра, и данные сохранений или настройки не будут совпадать с оригинальной игрой.
+        <translation>Изменение серийного номера игры приведет к тому, что она будет отображаться как отдельная игра и не будет использовать общие данные сохранений или настройки с оригинальной игрой.
 
 Нажатие кнопки «Сброс» восстановит серийный номер, соответствующий значению, считанному из образа диска.</translation>
     </message>
@@ -10851,7 +11034,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>This game currently has a custom serial set.</source>
-        <translation>В данной игре в настоящее время установлен пользовательский набор серийных номеров.</translation>
+        <translation>Для этой игры сейчас задан пользовательский серийный номер.</translation>
     </message>
 </context>
 <context>
@@ -10897,7 +11080,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Оптимальная частота кадров</translation>
+        <translation>Равномерный вывод кадров</translation>
     </message>
     <message>
         <source>Reduce Input Latency</source>
@@ -11061,7 +11244,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Синхронизация представления кадров консоли хосту. Включение может привести к более плавной анимации за счет увеличения задержки ввода. &lt;strong&gt;Пользователям GSync/FreeSync вместо этого следует включить оптимальную синхронизацию кадров.&lt;/strong&gt;</translation>
+        <translation>Синхронизация представления кадров консоли хосту. Включение может привести к более плавной анимации за счет увеличения задержки ввода. &lt;strong&gt;Пользователям GSync/FreeSync вместо этого следует включить равномерный вывод кадров.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
@@ -11073,7 +11256,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Включение этой опции гарантирует, что каждый кадр, отображаемый консолью, будет отображаться на экране с постоянной скоростью и оптимальной частотой кадров. Если у вас дисплей GSync/FreeSync, включите эту опцию. Если у вас возникли трудности с поддержанием полной скорости или возникли сбои со звуком, попробуйте отключить эту опцию.</translation>
+        <translation>Включение этой опции гарантирует, что каждый кадр, отрисованный консолью, будет выведен на экран через равные интервалы времени для равномерного вывода кадров. Если у вас дисплей GSync/FreeSync, включите эту опцию. Если у вас возникли трудности с поддержанием полной скорости или возникли сбои со звуком, попробуйте отключить эту опцию.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11089,11 +11272,11 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced. Higher values increase input latency, but decrease the risk of overrun, or missed frames. Lower values require faster hardware.</source>
-        <translation>Указать количество добавляемого буферного времени, которое уменьшает введенное дополнительное время ожидания. Более высокие значения увеличивают задержку ввода, но уменьшают риск переполнения или пропуска кадров. Более низкие значения требуют более быстрого оборудования.</translation>
+        <translation>Указать количество добавляемого буферного времени, которое уменьшает введенное дополнительное время ожидания. Более высокие значения увеличивают задержку ввода, но уменьшают риск превышения отведённого времени или пропуска кадров. Более низкие значения требуют более быстрого оборудования.</translation>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with syncing to host refresh.</source>
-        <translation>Пропустить презентацию/отображение кадров, которые не являются уникальными. Может сочетаться с генерацией кадров на уровне драйвера для увеличения ощутимой частоты кадров. Может привести к ухудшению синхронизации кадров и несовместимо с синхронизацией с обновлением хоста.</translation>
+        <translation>Пропустить презентацию/отображение кадров, которые не являются уникальными. Может сочетаться с генерацией кадров на уровне драйвера для увеличения ощутимой частоты кадров. Может привести к менее равномерному выводу кадров и несовместимо с синхронизацией с частотой обновления хоста.</translation>
     </message>
     <message>
         <source>Rewinding</source>
@@ -11157,7 +11340,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>Имититация системы опережения и откатывает/повторяет, чтобы уменьшить задержку ввода. Очень высокие системные требования.</translation>
+        <translation>Эмулирует систему с опережением и выполняет откат и повторное выполнение для уменьшения задержки ввода. Очень высокие системные требования.</translation>
     </message>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
@@ -11169,7 +11352,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Use Global Setting [%1%]</source>
-        <translation>Использовать глобальную настройку [%1]</translation>
+        <translation>Использовать глобальную настройку [%1%]</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -11410,7 +11593,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
-        <translation>Отображает сообщения экранного меню при возникновении событий. Ошибки и предупреждения отображаются независимо от этого параметра.</translation>
+        <translation>Отображает экранные сообщения при возникновении событий. Ошибки и предупреждения отображаются независимо от этого параметра.</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -11451,7 +11634,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translatorcomment>(BigP/Настройки графики/Сохранение точности проекции/Подсказка)</translatorcomment>
-        <translation>Добавляет дополнительную точность постпроецированию данных PGXP. Может улучшить визуальную составляющую в некоторых играх.</translation>
+        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
         <source>%.1f ms</source>
@@ -11561,7 +11744,7 @@ You cannot undo this action.</source>
     <message>
         <source>Auto-Detect</source>
         <translatorcomment>Вариант выбора настроек</translatorcomment>
-        <translation>Авто-определение</translation>
+        <translation>Автоопределение</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -11776,7 +11959,7 @@ You cannot undo this action.</source>
     <message>
         <source>Clears a shader from the chain.</source>
         <translatorcomment>Настройки постобработки/Очистить шейдеры/Подсказка</translatorcomment>
-        <translation>Очищает шейдер из цепочки.</translation>
+        <translation>Удаляет шейдер из цепочки.</translation>
     </message>
     <message>
         <source>Clears all settings set for this game.</source>
@@ -12021,7 +12204,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>Определяет размер экранных сообщений и монитора.</translation>
+        <translation>Определяет размер экранных сообщений и индикаторов производительности.</translation>
     </message>
     <message>
         <source>Determines how long action confirmation messages are displayed on screen.</source>
@@ -12078,7 +12261,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Determines the format of the screenshot file names.</source>
-        <translation>Определяет формат файлов снимков.</translation>
+        <translation>Определяет формат имен файлов снимков.</translation>
     </message>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
@@ -12188,7 +12371,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
-        <translation>Иконка утки от images8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
+        <translation>Иконка утки от icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
@@ -12205,7 +12388,7 @@ You cannot undo this action.</source>
     <message>
         <source>Enable 8MB RAM</source>
         <translatorcomment>Настройки консоли</translatorcomment>
-        <translation>Включить 8Мб ОЗУ</translation>
+        <translation>Включить 8 МБ ОЗУ</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -12307,7 +12490,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation>Включить/отключить светодиодную подсветку на контроллерах DualSense.</translation>
+        <translation>Включить/отключить светодиодный индикатор игрока на контроллерах DualSense.</translation>
     </message>
     <message>
         <source>Enables animation for on-screen messages when they appear and disappear.</source>
@@ -12315,7 +12498,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation>Включить кэширование гостевых текстур, необходимых для замены текстур.</translation>
+        <translation>Включает кэширование текстур эмулируемой системы, необходимое для замены текстур.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
@@ -12371,7 +12554,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Enter the name of the controller preset you wish to create.</source>
-        <translation>Введите имя предустановки контроллера, который вы хотите создать.</translation>
+        <translation>Введите имя предустановки контроллера, которую вы хотите создать.</translation>
     </message>
     <message>
         <source>Error Message Duration</source>
@@ -12437,7 +12620,7 @@ Error was:</source>
     </message>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
-        <translation>Перемотка ускоряет процесс ранней загрузки, экономя время. Результаты могут отличаться в разных играх.</translation>
+        <translation>Ускоряет начальный этап загрузки при использовании быстрой загрузки, экономя время. Результаты могут отличаться в разных играх.</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads</source>
@@ -12449,7 +12632,7 @@ Error was:</source>
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation>Принудительно включить отслеживание выгрузки текстур, независимо от того, нужно ли это.</translation>
+        <translation>Принудительно включает отслеживание загрузки текстур, независимо от того, нужно ли это.</translation>
     </message>
     <message>
         <source>Frequency</source>
@@ -12520,7 +12703,7 @@ Error was:</source>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in file logs.</source>
-        <translation>Включает в журналы файлов время, прошедшее с момента запуска приложения.</translation>
+        <translation>Добавляет в журналы, записываемые в файлы, время, прошедшее с момента запуска приложения.</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
@@ -12540,7 +12723,7 @@ Error was:</source>
     </message>
     <message>
         <source>Last Played: </source>
-        <translation>Последняя игра: </translation>
+        <translation>Последний запуск: </translation>
     </message>
     <message>
         <source>Launch Options</source>
@@ -12614,7 +12797,7 @@ Error was:</source>
         <source>Login Failed.
 Error: {}
 Please check your username and password, and try again.</source>
-        <translation>Авторизация в систему не удался.
+        <translation>Не удалось авторизоваться.
 Ошибка: {}
 Пожалуйста, проверьте имя пользователя и пароль и повторите попытку.</translation>
     </message>
@@ -12624,11 +12807,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
-        <translation>Максимальное ускорение циклов чтения</translation>
+        <translation>Максимальное ускорение чтения: циклы</translation>
     </message>
     <message>
         <source>Maximum Seek Speedup Cycles</source>
-        <translation>Максимальное ускорение циклов поиска</translation>
+        <translation>Максимальное ускорение поиска: циклы</translation>
     </message>
     <message>
         <source>Maximum: {}</source>
@@ -12776,7 +12959,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>Сбросить разблокировки неофициального достижения</translation>
+        <translation>Сбросить разблокировки неофициальных достижений</translation>
     </message>
     <message>
         <source>Resets all settings to the defaults.</source>
@@ -12825,7 +13008,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>Запускает программную отрисовку параллельно для обратных чтений VRAM. На некоторых системах это может привести к повышению производительности при использовании графических улучшений при аппаратной отрисовке.</translation>
+        <translation>Параллельно запускает программный отрисовщик для считывания данных из VRAM. На некоторых системах это может повысить производительность при использовании графических улучшений с аппаратным отрисовщиком.</translation>
     </message>
     <message>
         <source>SDL DualSense Player LED</source>
@@ -12854,7 +13037,7 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Save as Serial File Names</source>
         <translatorcomment>#Настройка списка игр/Настройки обложек/Скачивание обложек</translatorcomment>
-        <translation>Сохранить в виде серийных имен файлов</translation>
+        <translation>Сохранять файлы с серийными номерами в именах</translation>
     </message>
     <message>
         <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
@@ -12866,7 +13049,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>Масштабирует пропуск строк при чересстрочной отрисовки до внутреннего разрешения, делая его менее заметным. Обычно безопасно включать.</translation>
+        <translation>Масштабирует пропуск строк при чересстрочной отрисовке до внутреннего разрешения, делая его менее заметным. Обычно безопасно включать.</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -12969,7 +13152,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Show Grid View Titles</source>
-        <translation>Показать заголовки сетки просмотра</translation>
+        <translation>Показать названия игр в сетке</translation>
     </message>
     <message>
         <source>Show Localized Titles</source>
@@ -13003,7 +13186,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation>Отображает значки трофеев в списке игр, если в играх есть достижения или они были пройдена на все 100 %.</translation>
+        <translation>Отображает значки трофеев в сетке игр, если в играх есть достижения или они были пройдены на все 100 %.</translation>
     </message>
     <message>
         <source>Size: </source>
@@ -13071,7 +13254,7 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
         <translatorcomment>#Настройки эмуляции/Управление задержкой -&gt; Вертикальная синхронизация-подсказка</translatorcomment>
-        <translation>Синхронизирует представление кадров консоли хосту. Пользователям GSync/FreeSync следует вместо этого включить оптимальную синхронизацию кадров.</translation>
+        <translation>Синхронизирует вывод кадров консоли с хостом. Пользователям GSync/FreeSync следует вместо этого включить «Равномерный вывод кадров».</translation>
     </message>
     <message>
         <source>Textures Directory</source>
@@ -13102,7 +13285,7 @@ Please check your username and password, and try again.</source>
         <source>Toggle Fullscreen</source>
         <translatorcomment>Подсказка внизу
 *Переключение полноэкранного режима</translatorcomment>
-        <translation>Переключить полноэкраный режим</translation>
+        <translation>Переключить полноэкранный режим</translation>
     </message>
     <message>
         <source>Top: </source>
@@ -13118,11 +13301,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Unofficial achievement unlock reset.</source>
-        <translation>Неофициальная разблокировка достижения сброшена.</translation>
+        <translation>Разблокировка неофициального достижения сброшена.</translation>
     </message>
     <message>
         <source>Unofficial achievement unlocks reset.</source>
-        <translation>Неофициальные разблокировки достижений сброшены.</translation>
+        <translation>Разблокировки неофициальных достижений сброшены.</translation>
     </message>
     <message>
         <source>Update Progress</source>
@@ -13133,8 +13316,16 @@ Please check your username and password, and try again.</source>
         <translation>Использует OpenGL ES даже при поддержке настольного OpenGL. Может улучшить производительность на некоторых драйверах SBC.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>Использует PGXP для всех инструкций, а не только операций с памятью. В режиме «Автоматически» используется настройка из базы данных игр.</translation>
+    </message>
+    <message>
         <source>Uses localized (native language) titles in the game list.</source>
         <translation>Использует локализованные (на родном языке) названия в списке игр.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Использует экранные координаты для поиска данных PGXP. Может улучшить изображение в некоторых играх. В режиме «Автоматически» используется настройка из базы данных игр.</translation>
     </message>
     <message>
         <source>Value Range</source>
@@ -13158,13 +13349,13 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>restart</source>
-        <translation>перезапуск</translation>
+        <translation>перезагрузить систему</translation>
     </message>
     <message>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to {1} anyway?</source>
-        <translation>{0} достижения не подтверждены сервером. Если вы продолжите {1}, эти достижения будут утрачены. После восстановления сетевого соединения эти достижения будут подтверждены автоматически.
+        <translation>Сервер не подтвердил разблокировку достижений ({0}). Если выполнить действие «{1}», эти достижения будут утрачены. После восстановления сетевого соединения эти достижения будут подтверждены автоматически.
 
 Вы всё равно хотите {1}?</translation>
     </message>
@@ -13330,6 +13521,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>При открытии меню на фоне применяется эффект размытия, чтобы улучшить читаемость.</translation>
     </message>
     <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>Применяет изменения к отображаемому буферу кадра в процессе вывода кадра. Необходимо для эффектов разделения экрана в некоторых играх, но вызывает разрывы изображения в других.</translation>
+    </message>
+    <message>
         <source>Automatic Mapping Failed</source>
         <translation>Ошибка автоматического сопоставления</translation>
     </message>
@@ -13418,7 +13613,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translatorcomment>Главное меню/Запустить диск/Ошибка</translatorcomment>
-        <translation>Не удалось найти устройства CD/DVD-ROM. Убедитесь, что у вас подключен диск и есть достаточные разрешения для доступа к нему.</translation>
+        <translation>Не удалось найти устройства CD/DVD-ROM. Убедитесь, что у вас подключен привод и есть достаточные разрешения для доступа к нему.</translation>
     </message>
     <message>
         <source>Create New...</source>
@@ -13443,7 +13638,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
-        <translation>Определить область наложения изображения, в пределах которой будет отображаться изображение.</translation>
+        <translation>Определяет область изображения наложения, в пределах которой будет выводиться изображение игры.</translation>
     </message>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
@@ -13451,7 +13646,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
-        <translation>Определить границу между краем экрана и экранными сообщениями.</translation>
+        <translation>Определяет отступ между краем экрана и экранными сообщениями.</translation>
     </message>
     <message>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
@@ -13464,7 +13659,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Disable Speedup on MDEC</source>
-        <translation>Отключить ускорение MDEC</translation>
+        <translation>Отключить ускорение чтения при работе MDEC</translation>
     </message>
     <message>
         <source>Disc</source>
@@ -13484,7 +13679,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStation - это бесплатный симулятор/эмулятор консоли Sony PlayStation™, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
+        <translation>DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation™, ориентированный на удобство игры, скорость и возможность долгосрочного сопровождения.</translation>
     </message>
     <message>
         <source>Dump Replaced Textures</source>
@@ -13506,11 +13701,11 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
-        <translation>Включает выравнивание и исключения шины. Не требуется ни для одной известной игры.</translation>
+        <translation>Включает исключения при нарушении выравнивания и ошибках шины. Не требуется ни для одной известной игры.</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Включает дополнительные 6Мб ОЗУ, чтобы получить в общей сложности 2+6 = 8Мб, обычно присутствует на консолях разработчиков.</translation>
+        <translation>Включает дополнительные 6 МБ ОЗУ, чтобы получить в общей сложности 2+6 = 8 МБ, как обычно на консолях разработчиков.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13589,7 +13784,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Принудительное использование FIFO вместо представления Mailbox, т.е. двойная буферизация вместо тройной. Обычно это приводит к ухудшению частоты кадров.</translation>
+        <translation>Принудительно использует режим вывода FIFO вместо Mailbox, то есть двойную буферизацию вместо тройной. Обычно это приводит к менее равномерному выводу кадров.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -13676,7 +13871,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-        <translation>Настройки игры инициализируются глобальными настройками для &apos;{}&apos;.</translation>
+        <translation>Настройки игры для &apos;{}&apos; инициализированы на основе глобальных настроек.</translation>
     </message>
     <message>
         <source>Game title copied to clipboard.</source>
@@ -13832,7 +14027,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Жунал в файл</translation>
+        <translation>Журнал в файл</translation>
     </message>
     <message>
         <source>Log To System Console</source>
@@ -13854,7 +14049,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
-        <translation>Журналирует вызовы BIOS в printf(). Не все игры содержат отладочные сообщения.</translation>
+        <translation>Записывает в журнал вызовы функции printf() BIOS. Не все игры содержат отладочные сообщения.</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
@@ -13878,7 +14073,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Maximum (Safer)</source>
-        <translation>Максимальный (безопасный)</translation>
+        <translation>Максимальный (более безопасный)</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -13913,6 +14108,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Message Location</source>
         <translation>Расположение сообщения</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Вывод изображения в середине кадра</translation>
     </message>
     <message>
         <source>Minimal Output Latency</source>
@@ -13970,7 +14169,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>No save states found.</source>
-        <translation>Сохранения состояний не найдено.</translation>
+        <translation>Сохранения состояний не найдены.</translation>
     </message>
     <message>
         <source>No, resume the game.</source>
@@ -14014,7 +14213,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>OSD Scale</source>
         <translatorcomment>**Масштаб отображения на экране (BigP/Настройки/Настройки интерфейса/Экранное меню) (wUI/Графика/Вкладка)</translatorcomment>
-        <translation>Масштаб экранного меню</translation>
+        <translation>Масштаб экранных сообщений</translation>
     </message>
     <message>
         <source>On-Screen Display</source>
@@ -14023,11 +14222,11 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>On-Screen Display Message Durations</source>
-        <translation>Продолжительность отображения экраснных подсказок</translation>
+        <translation>Продолжительность отображения экранных сообщений</translation>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
-        <translation>Закрепить можно только те достижения, которые были измерены.</translation>
+        <translation>Закрепить можно только достижения с измеряемым прогрессом.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
@@ -14053,7 +14252,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Optimal Frame Pacing</source>
         <translatorcomment>(Эмуляция-Управление задержкой *wUI) (Настройки-Настройки эмуляции-Управление задержкой *BigP)</translatorcomment>
-        <translation>Оптимальная частота кадров</translation>
+        <translation>Равномерный вывод кадров</translation>
     </message>
     <message>
         <source>Options</source>
@@ -14136,7 +14335,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>Конфигурация контроллера для каждой игры инициализируется с глобальными настройками.</translation>
+        <translation>Конфигурация контроллера для этой игры инициализирована глобальными настройками.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -14265,7 +14464,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
-        <translation>Уменьшает «шаткие» полигоны, пытаясь сохранить дробную составляющую при передаче данных через память.</translation>
+        <translation>Уменьшает дрожание полигонов, пытаясь сохранить дробную составляющую при передаче данных через память.</translation>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
@@ -14277,7 +14476,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
-        <translation>Уменьшает дрожание полигонов за счет тестирования глубины. Низкая совместимость с играми.</translation>
+        <translation>Уменьшает мерцание перекрывающихся полигонов (Z-fighting) за счёт проверки глубины. Низкая совместимость с играми.</translation>
     </message>
     <message>
         <source>Reduces the size of save states by compressing the data before saving.</source>
@@ -14518,7 +14717,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>При масштабировании округляет координаты текстур, вместо наложения. Может исправить смещенные текстуры в некоторых играх, но нарушить другие и несовместимо с фильтрацией текстур.</translation>
+        <translation>При масштабировании округляет координаты текстур до ближайшего целого вместо округления вниз. Может исправить смещённые текстуры в некоторых играх, но нарушить их отображение в других; несовместимо с фильтрацией текстур.</translation>
     </message>
     <message>
         <source>Runahead</source>
@@ -14533,7 +14732,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
         <translatorcomment>Настройки контроллеров</translatorcomment>
-        <translation>SDL DualShock 4 / расширенный режим DualSense</translation>
+        <translation>Расширенный режим SDL для DualShock 4 / DualSense</translation>
     </message>
     <message>
         <source>Save Screenshot</source>
@@ -14585,7 +14784,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Screenshot File Name Format</source>
-        <translation>Формат файла снимка</translation>
+        <translation>Формат имени файла снимка</translation>
     </message>
     <message>
         <source>Scroll Page</source>
@@ -14593,7 +14792,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Search Directories</source>
-        <translation>Поиск в каталогах</translation>
+        <translation>Каталоги поиска</translation>
     </message>
     <message>
         <source>Seek Speedup</source>
@@ -14620,7 +14819,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Selects between Xbox/PlayStation button icons in the footer and input binding.</source>
-        <translation>Выбор между значками кнопок Xbox/PlayStation в нижнем колонтитуле и настройкой клавиш.</translation>
+        <translation>Выбор значков кнопок Xbox или PlayStation для нижней панели и настройки привязок ввода.</translation>
     </message>
     <message>
         <source>Selects the GPU to use for rendering.</source>
@@ -14633,7 +14832,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Selects the font used for the performance overlay.</source>
-        <translation>Выбор шрифта, используемого для наложения производительности.</translation>
+        <translation>Выбор шрифта для экранных показателей производительности.</translation>
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
@@ -14791,7 +14990,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
         <translatorcomment>**Отображает (BigP/Настройка/Настройка интерфейса/Экранное меню-Отображение на экране/Подсказка) (wUI/Настройка/Графика/Экранное меню-Отображение на экране/Подсказка)</translatorcomment>
-        <translation>Показывает информацию о вводе и задержке звука в правом верхнем углу дисплея.</translation>
+        <translation>Показывает информацию о задержке ввода и звука в правом верхнем углу дисплея.</translation>
     </message>
     <message>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
@@ -15031,7 +15230,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Unpin from OSD</source>
-        <translation>Открепить от экранного меню</translation>
+        <translation>Открепить от OSD</translation>
     </message>
     <message>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
@@ -15075,19 +15274,15 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translatorcomment>Настройки графики
 *Использование программной отрисовки для считывания данных
 *отображение *визуализация</translatorcomment>
-        <translation>Использовать считывание данных с программной отрисовки</translation>
+        <translation>Использовать программный отрисовщик для считывания данных</translation>
     </message>
     <message>
         <source>User Name</source>
         <translation>Имя пользователя</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>Использование PGXP для всех инструкций, а не только для операций с памятью.</translation>
-    </message>
-    <message>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
-        <translation>Использование модели блит-презентации вместо переворачивания. Это может быть необходимо в некоторых системах.</translation>
+        <translation>Использует модель вывода blit вместо переключения буферов. Это может потребоваться в некоторых системах.</translation>
     </message>
     <message>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
@@ -15112,10 +15307,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>Использование интерполяции с учетом перспективы для координат текстур, выпрямляя деформированные текстуры.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>Использование позиции экрана для разрешения данных PGXP. Может улучшить визуальную составляющую в некоторых играх.</translation>
     </message>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
@@ -15151,7 +15342,7 @@ Do you want to delete the save state and boot the game anyway?</source>
 
 Do you want to {0} anyway?</source>
         <translatorcomment>CoreThread</translatorcomment>
-        <translation>ВНИМАНИЕ: ваша игра все еще сохраняется на карту памяти. Продолжение {0} может НЕОБРАТИМО УНИЧТОЖИТЬ ВАШУ КАРТУ ПАМЯТИ. Мы рекомендуем продолжить игру и подождать 5 секунд, пока она не завершит сохранение.
+        <translation>ВНИМАНИЕ: ваша игра все еще сохраняется на карту памяти. Если выполнить действие «{0}», это может НЕОБРАТИМО УНИЧТОЖИТЬ ВАШУ КАРТУ ПАМЯТИ. Мы рекомендуем продолжить игру и подождать 5 секунд, пока она не завершит сохранение.
 
 Вы все равно хотите {0}?</translation>
     </message>
@@ -15185,7 +15376,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
-        <translation>Если этот параметр включен, карты памяти и контроллеры будут перезаписываться при загрузке сохранений сотояний.</translation>
+        <translation>Если этот параметр включен, карты памяти и контроллеры будут перезаписываться при загрузке сохранений состояний.</translation>
     </message>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
@@ -15194,7 +15385,7 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
         <translatorcomment>MemoryCardSettingsWidget</translatorcomment>
-        <translation>При игре на нескольких дисках и использовании карт памяти для каждой игры (название) для всех дисков будет использоваться одна карта памяти.</translation>
+        <translation>При игре в многодисковую игру с использованием отдельных карт памяти по названию игры для всех дисков используется одна карта памяти.</translation>
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
@@ -15214,7 +15405,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
-        <translation>Да, сейчас {} и риск повредить карту памяти.</translation>
+        <translation>Да, {} сейчас, несмотря на риск повредить карту памяти.</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
@@ -15229,12 +15420,12 @@ Do you want to {0} anyway?</source>
     <message>
         <source>change disc</source>
         <translatorcomment>CoreThread</translatorcomment>
-        <translation>смена диска</translation>
+        <translation>сменить диск</translation>
     </message>
     <message>
         <source>shut down</source>
         <translatorcomment>CoreThread</translatorcomment>
-        <translation>выключение</translation>
+        <translation>выключить систему</translation>
     </message>
     <message>
         <source>{} Frames</source>
@@ -15250,7 +15441,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>{} is not a valid disc image.</source>
-        <translation>{} не верный образ диска.</translation>
+        <translation>{} — недопустимый образ диска.</translation>
     </message>
     <message numerus="yes">
         <source>%n seconds remaining</source>
@@ -15265,7 +15456,7 @@ Do you want to {0} anyway?</source>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
-            <numerusform>Осталось %n минута</numerusform>
+            <numerusform>Осталась %n минута</numerusform>
             <numerusform>Осталось %n минуты</numerusform>
             <numerusform>Осталось %n минут</numerusform>
         </translation>
@@ -15297,7 +15488,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>Сохранение трассировки ГП кадра {0} в &apos;{1}&apos;.</translation>
+        <translation>Сохранение трассировки ГП (кадров: {0}) в &apos;{1}&apos;.</translation>
     </message>
     <message>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
@@ -15361,11 +15552,11 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Shader blending is not supported by your current GPU.</source>
-        <translation>Смешивание шейдеров не поддерживается вашим текущим графическим процессором.</translation>
+        <translation>Смешивание с помощью шейдеров не поддерживается вашим текущим графическим процессором.</translation>
     </message>
     <message>
         <source>It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
-        <translation>Для этого требуется выборка кадрового буфера, циклы обратной связи или порядок просмотра растеризатора.</translation>
+        <translation>Для этого требуется поддержка framebuffer fetch, циклов обратной связи или Rasterizer Ordered Views (ROV).</translation>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
@@ -15373,7 +15564,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
-        <translation>Мультисэмплерное сглаживание не поддерживается при использовании шейдерного смешивания.</translation>
+        <translation>Многовыборочное сглаживание не поддерживается при использовании шейдерного смешивания.</translation>
     </message>
     <message>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
@@ -15389,7 +15580,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation>Масштаб разрешения {0}x не поддерживается для адаптивного понижения разрешения с использованием {1}x.</translation>
+        <translation>Масштаб разрешения {0}x не поддерживается для адаптивного понижения разрешения, вместо него используется {1}x.</translation>
     </message>
     <message>
         <source>Failed to allocate {}x{} texture for cache:
@@ -15504,6 +15695,34 @@ Do you want to {0} anyway?</source>
         <source>Edit Choices...</source>
         <translation>Изменить выбор...</translation>
     </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>Переопределение настроек</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>Соотношение сторон:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>Разгон процессора:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Отключить широкоэкранную отрисовку</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>Включить 8 МБ ОЗУ</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>Запретить в режиме &quot;Хардкор&quot;</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15597,7 +15816,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>This code is from the built-in cheat database, and cannot be removed. To hide this code, uncheck the &quot;Load Database Cheats&quot; option.</source>
-        <translation>Этот код взят из встроенной базы читов и не может быть удален. Чтобы скрыть этот код, снимите флажок «Загрузить чит-коды базы данных».</translation>
+        <translation>Этот код взят из встроенной базы читов и не может быть удален. Чтобы скрыть этот код, снимите флажок «Загрузить читы из базы данных».</translation>
     </message>
     <message>
         <source>Enable Game Settings</source>
@@ -15675,7 +15894,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Software renderer readbacks enabled.</source>
-        <translation>Считывание данных с программной отрисовки включено.</translation>
+        <translation>Использование программного отрисовщика для считывания данных включено.</translation>
     </message>
     <message>
         <source>Upscaling disabled.</source>
@@ -15701,16 +15920,16 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>PGXP perspective correct textures disabled.</source>
-        <translation>Текстуры с корректировкой перспективы PGXP отключены.</translation>
+        <translation>Корректировка перспективы текстур PGXP отключена.</translation>
     </message>
     <message>
         <source>PGXP perspective correct colors disabled.</source>
         <translatorcomment>*Коррекцией</translatorcomment>
-        <translation>Цвета с корректировкой перспективы PGXP отключены.</translation>
+        <translation>Корректировка перспективы цветов PGXP отключена.</translation>
     </message>
     <message>
         <source>PGXP preserve projection precision disabled.</source>
-        <translation>Сохранение точности проецирования PGXP отключен.</translation>
+        <translation>Сохранение точности проецирования PGXP отключено.</translation>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
@@ -15798,12 +16017,12 @@ Are you sure you want to continue?</source>
     <message>
         <source>Force Software Renderer For Readbacks</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Принудительно: Считывание данных с программной отрисовки</translation>
+        <translation>Принудительно: Программный отрисовщик для считывания данных</translation>
     </message>
     <message>
         <source>Force Round Texture Coordinates</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Принудительно: Скруглить координаты текстур</translation>
+        <translation>Принудительно: Округление текстурных координат</translation>
     </message>
     <message>
         <source>Force Deinterlacing</source>
@@ -15843,7 +16062,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable CD-ROM Speedup on MDEC</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Отключить: Ускорение MDEC дисковода</translation>
+        <translation>Отключить: Ускорение дисковода при декодировании MDEC</translation>
     </message>
     <message>
         <source>Disable True Color</source>
@@ -15933,7 +16152,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Принудительно: Перекомпилятор ICache</translation>
+        <translation>Принудительно: Кэш инструкций перекомпилятора</translation>
     </message>
     <message>
         <source>Force CD-ROM SubQ Skew</source>
@@ -15943,7 +16162,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Is LibCrypt Protected</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Защищен ли LibCrypt</translation>
+        <translation>Защита LibCrypt</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
@@ -15954,6 +16173,11 @@ Are you sure you want to continue?</source>
         <source>Filter Framebuffer Uploads</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Фильтровать данные, загружаемые в буфер кадра</translation>
+    </message>
+    <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Принудительный вывод изображения в середине кадра</translation>
     </message>
     <message>
         <source>Fast forward memory card access disabled.</source>
@@ -15978,6 +16202,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>Deinterlacing set to {}.</source>
         <translation>Деинтерлейсинг установлен на {}.</translation>
+    </message>
+    <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Для этой игры требуется кэш вершин PGXP, но он отключён. Это может привести к ошибкам отрисовки.</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Для этой игры требуется режим процессора PGXP, но он отключён. Это может привести к ошибкам отрисовки.</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads Minimum Width</source>
@@ -16049,7 +16281,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Sort Title</source>
-        <translation>Сортировать по названию</translation>
+        <translation>Название для сортировки</translation>
     </message>
     <message>
         <source>Localized Title</source>
@@ -16057,7 +16289,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Save Title</source>
-        <translation>Сохранить название</translation>
+        <translation>Название для сохранений</translation>
     </message>
     <message>
         <source>Languages</source>
@@ -16125,7 +16357,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
-        <translation>Максимальное ускорение циклов чтения дисковода</translation>
+        <translation>Максимальное ускорение чтения CD-ROM: циклы</translation>
     </message>
     <message>
         <source>GPU FIFO Size</source>
@@ -16310,7 +16542,7 @@ Are you sure you want to continue?</source>
     <name>GameListSearchDirectoriesModel</name>
     <message>
         <source>Search Directory</source>
-        <translation>Поиск в каталоге</translation>
+        <translation>Каталог поиска</translation>
     </message>
     <message>
         <source>Scan Recursively</source>
@@ -16461,8 +16693,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Включен</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>Редактировать патч</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>Удалить патч</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;font-weight:700;&quot;&gt;Автор: &lt;/span&gt;Автор исправления&lt;/p&gt;&lt;p&gt;Здесь будет размещено описание&lt;/p&gt;&lt; /body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;font-weight:700;&quot;&gt;Автор: &lt;/span&gt;Автор исправления&lt;/p&gt;&lt;p&gt;Здесь будет размещено описание&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Author: &lt;/strong&gt;%1%2&lt;br&gt;%3</source>
@@ -16480,9 +16720,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>No description provided.</source>
         <translation>Описание не предоставлено.</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>Параметр:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>Добавить патч</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>Отключить все патчи</translation>
@@ -16654,7 +16902,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>Конфигурация контроллера для каждой игры инициализируется с глобальными настройками.</translation>
+        <translation>Конфигурация контроллера для этой игры инициализирована глобальными настройками.</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -16871,11 +17119,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>Всегда отслеживать выгрузку</translation>
+        <translation>Всегда отслеживать загрузки в VRAM</translation>
     </message>
     <message>
         <source>VRAM Write (Background) Replacement</source>
-        <translation>Замена записи в VRAM (фоновая запись)</translation>
+        <translation>Замена записей в VRAM (фоны)</translation>
     </message>
     <message>
         <source>Textures Directory</source>
@@ -16936,7 +17184,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Depth Clear Threshold:</source>
-        <translation>Порог глубины очистки:</translation>
+        <translation>Порог очистки глубины:</translation>
     </message>
     <message>
         <source>Perspective Correct Textures</source>
@@ -17057,12 +17305,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Внизу:</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Вывод изображения в середине кадра</translation>
+    </message>
+    <message>
         <source>Reset Geometry Tolerance</source>
         <translation>Сбросить допуск геометрии</translation>
     </message>
     <message>
         <source>Reset Depth Clear Threshold</source>
         <translation>Сбросить порог очистки глубины</translation>
+    </message>
+    <message>
+        <source>CPU Mode:</source>
+        <translation>Режим процессора:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>Кэш вершин:</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -17106,7 +17366,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disable Rasterizer Order Views</source>
-        <translation>Отключить порядок просмотра растеризатора</translation>
+        <translation>Отключить Rasterizer Ordered Views (ROV)</translation>
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
@@ -17190,7 +17450,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Опции &quot;Смешивание шейдеров&quot; выполняют смешивание программно и являются более точными, но имеют &lt;strong&gt;значительное&lt;/strong&gt; снижение производительности.</translation>
+        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Варианты со смешиванием в шейдерах выполняют смешивание программно и являются более точными, но приводят к &lt;strong&gt;значительному&lt;/strong&gt; снижению производительности.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -17253,6 +17513,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>При повышении разрешения выполняет выборку из 16-битных текстур с прямым цветом в исходном разрешении. Это может исправить фильтрацию видеороликов и фона в некоторых играх, но может снизить качество эффектов рендеринга в текстуру.</translation>
     </message>
     <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>Применяет изменения к отображаемому буферу кадра в середине кадра, а не в начале следующего. Некоторые игры используют это для эффектов разделённого экрана, но в играх, переключающих буферы кадра в середине кадра, это вызывает разрывы изображения, поэтому включайте только для игр, которым это необходимо.</translation>
+    </message>
+    <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
         <translation>Применяет выбранный фильтр текстур спрайтов к данным, загружаемым в буфер кадра. Это может сгладить фон в некоторых играх, сохраняя данные текстур и 24-битное видео.</translation>
     </message>
@@ -17275,6 +17539,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture data.</source>
         <translation>Фильтрует только данные, загружаемые в буфер кадра, высота которых не меньше этого значения. Увеличьте это значение, чтобы избежать фильтрации данных текстур.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Использует PGXP для всех инструкций, а не только для операций с памятью. Требуется для устранения дрожания с помощью PGXP в некоторых играх, но значительно снижает производительность. В автоматическом режиме включается только для игр, которым это требуется согласно базе данных игр.</translation>
+    </message>
+    <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Использует положения вершин в экранном пространстве для получения точных координат вместо отслеживания обращений к памяти. Может обеспечить совместимость PGXP с некоторыми играми, но &lt;strong&gt;обычно не даёт преимуществ.&lt;/strong&gt; В автоматическом режиме включается только для игр, которым это требуется согласно базе данных игр.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -17419,7 +17691,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Уменьшает количество «шатких» полигонов и «деформаций» текстур, которые часто встречаются в играх для PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
+        <translation>Уменьшает дрожание полигонов и искажения текстур, характерные для игр PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
@@ -17427,7 +17699,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Принудительное использование FIFO вместо представления Mailbox, т.е. двойная буферизация вместо тройной. Обычно это приводит к ухудшению частоты кадров.</translation>
+        <translation>Принудительное использование FIFO вместо представления Mailbox, т.е. двойная буферизация вместо тройной. Обычно это приводит к менее равномерному выводу кадров.</translation>
     </message>
     <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
@@ -17439,7 +17711,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>При масштабировании округляет координаты текстур, вместо наложения. Может исправить смещенные текстуры в некоторых играх, но нарушить другие и несовместимо с фильтрацией текстур.</translation>
+        <translation>При масштабировании округляет координаты текстур до ближайшего целого вместо округления вниз. Может исправить смещённые текстуры в некоторых играх, но нарушить их отображение в других; несовместимо с фильтрацией текстур.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -17478,15 +17750,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Добавляет дополнительную точность постпроецированию данных PGXP. Может улучшить визуальную составляющую в некоторых играх.</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>Использует PGXP для всех инструкций, а не только для операций с памятью. Требуется для PGXP чтобы исправить дрожание в некоторых играх, но требует высоких затрат производительности.</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>Использует позиции вершин в пространстве экрана для получения точных позиций, вместо того чтобы отслеживать обращения к памяти. Может обеспечить совместимость с PGXP для некоторых игр, но &lt;strong&gt;обычно не дает никаких преимуществ.&lt;/strong&gt;</translation>
+        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -17502,7 +17766,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation>Принуждает включать отслеживание выгрузки текстур независимо от того, нужно ли оно. Снижает производительность, но позволяет включать и выключать замену. &lt;strong&gt;Не требуется для загрузки замен, &lt;/strong&gt; обычно отслеживание включается автоматически, когда это необходимо.</translation>
+        <translation>Принудительно включает отслеживание загрузки текстур в VRAM независимо от того, нужно ли оно. Снижает производительность, но позволяет включать и выключать замену. &lt;strong&gt;Не требуется для загрузки замен, &lt;/strong&gt;обычно отслеживание включается автоматически, когда это необходимо.</translation>
     </message>
     <message>
         <source>Enable GPU-based validation when supported by the renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17526,7 +17790,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation>Загружает все заменяемые текстуры в оперативную память, уменьшая заикание во время выполнения.</translation>
+        <translation>Загружает все заменяющие текстуры в оперативную память, уменьшая подтормаживания во время игры.</translation>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
@@ -17547,7 +17811,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>Масштабирует пропуск строк при чересстрочном рендеринге до внутреннего разрешения. Это делает прочесывание менее заметным при высоких разрешениях. Обычно безопасно включать.</translation>
+        <translation>Масштабирует пропуск строк при чересстрочном рендеринге до внутреннего разрешения. Это делает эффект гребёнки менее заметным при высоких разрешениях. Обычно безопасно включать.</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17583,7 +17847,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Отключает использование порядка просмотра растеризатора. Полезно для тестирования сломанных графических драйверов. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
+        <translation>Отключает использование Rasterizer Ordered Views (ROV). Полезно для тестирования сломанных графических драйверов. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>%1x Native</source>
@@ -18119,43 +18383,43 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Load Game State 1</source>
-        <translation>Загрузить: Cостояние игры 1</translation>
+        <translation>Загрузить: Состояние игры 1</translation>
     </message>
     <message>
         <source>Load Game State 2</source>
-        <translation>Загрузить: Cостояние игры 2</translation>
+        <translation>Загрузить: Состояние игры 2</translation>
     </message>
     <message>
         <source>Load Game State 3</source>
-        <translation>Загрузить: Cостояние игры 3</translation>
+        <translation>Загрузить: Состояние игры 3</translation>
     </message>
     <message>
         <source>Load Game State 4</source>
-        <translation>Загрузить: Cостояние игры 4</translation>
+        <translation>Загрузить: Состояние игры 4</translation>
     </message>
     <message>
         <source>Load Game State 5</source>
-        <translation>Загрузить: Cостояние игры 5</translation>
+        <translation>Загрузить: Состояние игры 5</translation>
     </message>
     <message>
         <source>Load Game State 6</source>
-        <translation>Загрузить: Cостояние игры 6</translation>
+        <translation>Загрузить: Состояние игры 6</translation>
     </message>
     <message>
         <source>Load Game State 7</source>
-        <translation>Загрузить: Cостояние игры 7</translation>
+        <translation>Загрузить: Состояние игры 7</translation>
     </message>
     <message>
         <source>Load Game State 8</source>
-        <translation>Загрузить: Cостояние игры 8</translation>
+        <translation>Загрузить: Состояние игры 8</translation>
     </message>
     <message>
         <source>Load Game State 9</source>
-        <translation>Загрузить: Cостояние игры 9</translation>
+        <translation>Загрузить: Состояние игры 9</translation>
     </message>
     <message>
         <source>Load Game State 10</source>
-        <translation>Загрузить: Cостояние игры 10</translation>
+        <translation>Загрузить: Состояние игры 10</translation>
     </message>
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
@@ -18451,7 +18715,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>Left-click to change binding.
 Shift-click to set multiple bindings.</source>
         <translation>Щелкните левой кнопкой мыши, чтобы изменить привязку.
-Щелкните Shift, чтобы установить несколько привязок.</translation>
+Щелкните, удерживая Shift, чтобы установить несколько привязок.</translation>
     </message>
     <message>
         <source>Right-click to remove binding.</source>
@@ -18467,7 +18731,7 @@ Shift-click to set multiple bindings.</source>
         <translation>
             <numerusform>%n привязка</numerusform>
             <numerusform>%n привязки</numerusform>
-            <numerusform>%n привязки</numerusform>
+            <numerusform>%n привязок</numerusform>
         </translation>
     </message>
     <message>
@@ -18488,7 +18752,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
-        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Выберите устройство и эффект, к которым будет привязано это соединение.</translation>
+        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Выберите устройство и эффект для этой привязки.</translation>
     </message>
 </context>
 <context>
@@ -18503,11 +18767,11 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>WheelX</source>
-        <translation>Руль X</translation>
+        <translation>Колесо прокрутки X</translation>
     </message>
     <message>
         <source>WheelY</source>
-        <translation>Руль Y</translation>
+        <translation>Колесо прокрутки Y</translation>
     </message>
     <message>
         <source>LeftButton</source>
@@ -18731,7 +18995,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translatorcomment>(wUI/Интерфейс/Пауза при потере фокуса/Подсказка)</translatorcomment>
-        <translation>Приостановить эмулятор, когда вы сворачиваете окно или переключаетесь на другое приложение, и возобновляет работу при обратном переключении.</translation>
+        <translation>Приостанавливает эмулятор, когда вы сворачиваете окно или переключаетесь на другое приложение, и возобновляет его работу при обратном переключении.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -18747,7 +19011,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Hides the main window of the application while the game is displayed in a separate window.</source>
-        <translation>Скрывает главное окно приложения, а игра отображается в отдельном окне.</translation>
+        <translation>Скрывает главное окно приложения, когда игра отображается в отдельном окне.</translation>
     </message>
     <message>
         <source>Displays the log in the main window of the application while a game is running.</source>
@@ -18888,7 +19152,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Mode LED</source>
-        <translation>Режим светодиодной подсветки</translation>
+        <translation>Светодиодный индикатор режима</translation>
     </message>
     <message>
         <source>Vibration Motor</source>
@@ -18943,7 +19207,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Shoot Offscreen</source>
-        <translation>Выстрел за кадром</translation>
+        <translation>Выстрел за пределы экрана</translation>
     </message>
     <message>
         <source>Start</source>
@@ -19031,7 +19295,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Number of frames that the Justifier is pointed out-of-bounds for an off-screen shot.</source>
-        <translation>Количество кадров, в которых Justifier направлен за пределы поля для выстрела за кадром.</translation>
+        <translation>Количество кадров, в течение которых Justifier направлен за пределы экрана для выстрела за пределы экрана.</translation>
     </message>
     <message>
         <source>Off-Screen Trigger Frames</source>
@@ -19039,11 +19303,11 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Number of frames that the trigger is held for an off-screen shot.</source>
-        <translation>Количество кадров, в течение которых удерживается курок для выстрела за кадром.</translation>
+        <translation>Количество кадров, в течение которых удерживается курок для выстрела за пределы экрана.</translation>
     </message>
     <message>
         <source>Number of frames that the Justifier is pointed out-of-bounds after the trigger is released, for an off-screen shot.</source>
-        <translation>Количество кадров, в которых Justifier указывает за пределы поля после отпускания курка для выстрела за кадром.</translation>
+        <translation>Количество кадров, в течение которых Justifier направлен за пределы экрана после отпускания курка при выстреле за пределы экрана.</translation>
     </message>
 </context>
 <context>
@@ -19051,7 +19315,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>Переданы %1 сообщения журнала, используйте файл или журнал системной консоли.
+        <translation>Пропущено сообщений журнала: %1. Используйте запись журнала в файл или системную консоль.
 </translation>
     </message>
 </context>
@@ -19144,7 +19408,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Quit %1</source>
-        <translation>Выйти %1</translation>
+        <translation>Выйти из %1</translation>
     </message>
     <message>
         <source>About %1</source>
@@ -19332,11 +19596,11 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Configures options and bindings for the emulated controllers.</source>
-        <translation>Настройка параметров и привязкок для эмулируемых контроллеров.</translation>
+        <translation>Настройка параметров и привязок для эмулируемых контроллеров.</translation>
     </message>
     <message>
         <source>Configures shortcut keys for actions related to the session.</source>
-        <translation>Настройка горячих клавиши для действий, связанных с сессией.</translation>
+        <translation>Настройка горячих клавиш для действий, связанных с сессией.</translation>
     </message>
     <message>
         <source>&amp;Graphics</source>
@@ -19368,7 +19632,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Opens a link to the Discord server for the application.</source>
-        <translation>Открывает ссылку на сервере Discord.</translation>
+        <translation>Открывает ссылку на сервер Discord.</translation>
     </message>
     <message>
         <source>Checks if any application updates are available for download.</source>
@@ -19453,6 +19717,10 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Removes the disc from the emulated system.</source>
         <translation>Извлекает диск из эмулируемой системы.</translation>
+    </message>
+    <message>
+        <source>TTY Window</source>
+        <translation>Окно TTY</translation>
     </message>
     <message>
         <source>Shows captions under the game cover in grid view.</source>
@@ -19640,7 +19908,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Открывает или закрывает режим «big picture» на основе контроллера.</translation>
+        <translation>Открывает или закрывает режим Big Picture с управлением контроллером.</translation>
     </message>
     <message>
         <source>Big Picture</source>
@@ -19700,7 +19968,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Жунал в файл</translation>
+        <translation>Журнал в файл</translation>
     </message>
     <message>
         <source>Opens the ISO browser window.</source>
@@ -19865,7 +20133,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Show Timers State</source>
-        <translation>Показать состояние таймера</translation>
+        <translation>Показать состояние таймеров</translation>
     </message>
     <message>
         <source>Show MDEC State</source>
@@ -19905,7 +20173,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Loc&amp;k Toolbar</source>
-        <translation>&amp;Блокировка панели интсрументов</translation>
+        <translation>&amp;Блокировка панели инструментов</translation>
     </message>
     <message>
         <source>Controls whether the toolbar can be moved.</source>
@@ -20100,7 +20368,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Game Save %1 (%2)</source>
-        <translation>Игра сохранена %1 (%2)</translation>
+        <translation>Сохранение игры %1 (%2)</translation>
     </message>
     <message>
         <source>Edit Memory Cards...</source>
@@ -20290,7 +20558,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>No resume save state found.</source>
-        <translation>Сохраннённое состояние для возобновления не найдено.</translation>
+        <translation>Сохранённое состояние для возобновления не найдено.</translation>
     </message>
     <message>
         <source>Stop Big Picture Mode</source>
@@ -20360,7 +20628,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <translation>Обложка изображения для этой игры уже существует, вы хотите заменить её?</translation>
+        <translation>Изображение обложки для этой игры уже существует, вы хотите заменить его?</translation>
     </message>
     <message>
         <source>Copy Error</source>
@@ -20734,7 +21002,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Saved card to &apos;{}&apos;.</source>
-        <translation>Сохранение карты в &apos;{}&apos;.</translation>
+        <translation>Карта сохранена в &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -20745,7 +21013,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Icon</source>
-        <translation>Значёк</translation>
+        <translation>Значок</translation>
     </message>
     <message>
         <source>Title</source>
@@ -20950,7 +21218,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation>Форматирование карты памяти приведет к уничтожению всех сохранений, и они не будут восстановлены. Карта памяти, которая будет отформатирована, находится в &apos;%1&apos;.</translation>
+        <translation>Форматирование карты памяти приведет к уничтожению всех сохранений, и их нельзя будет восстановить. Карта памяти, которая будет отформатирована, находится в &apos;%1&apos;.</translation>
     </message>
 </context>
 <context>
@@ -21049,7 +21317,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Backs up any previous save state when creating a new save state, with a .bak extension.</source>
-        <translation>Создает резервную копию любого предыдущего сохранения состояния при создании нового сохранения состояния с расширением .bak.</translation>
+        <translation>При создании нового сохранения состояния создаёт резервную копию предыдущего сохранения с расширением .bak.</translation>
     </message>
     <message>
         <source>Enable Global Save States</source>
@@ -21133,7 +21401,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>Блокнот</translation>
+        <translation>Память Scratchpad</translation>
     </message>
     <message>
         <source>EXP1</source>
@@ -21266,11 +21534,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed</source>
-        <translation>Подписанный</translation>
+        <translation>Знаковый</translation>
     </message>
     <message>
         <source>Unsigned</source>
-        <translation>Неподписанный</translation>
+        <translation>Беззнаковый</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -21388,7 +21656,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>Блокнот</translation>
+        <translation>Память Scratchpad</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -21807,11 +22075,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
-        <translation>Сохранение точности проецирования PGXP включён.</translation>
+        <translation>Сохранение точности проецирования PGXP включено.</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now disabled.</source>
-        <translation>Сохранение точности проецирования PGXP отключён.</translation>
+        <translation>Сохранение точности проецирования PGXP отключено.</translation>
     </message>
     <message>
         <source>Now showing VRAM.</source>
@@ -21819,7 +22087,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Now showing display.</source>
-        <translation>Теперь отображается на экране.</translation>
+        <translation>Теперь отображается изображение игры.</translation>
     </message>
     <message>
         <source>Volume: Muted</source>
@@ -21831,11 +22099,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
-        <translation>Перемотка отключена при включённом безопасном режиме.</translation>
+        <translation>Перемотка назад отключена при включённом безопасном режиме.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
-        <translation>Перемотка недоступна.</translation>
+        <translation>Перемотка назад недоступна.</translation>
     </message>
     <message>
         <source>Volume: {}%</source>
@@ -21854,7 +22122,7 @@ Error: {1}</source>
     <message>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translatorcomment>*Порты карт памяти поменялись местами</translatorcomment>
-        <translation>Поменялись местами порты карт памяти. В оба порта устанавливается карта памяти.</translation>
+        <translation>Порты карт памяти поменяны местами. В обоих портах установлены карты памяти.</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
@@ -21929,7 +22197,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
-        <translation>Перезагрузка шейдеров постобработки.</translation>
+        <translation>Шейдеры постобработки перезагружены.</translation>
     </message>
     <message>
         <source>Failed to initialize hardware renderer, falling back to software renderer.</source>
@@ -22002,7 +22270,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Error Duration:</source>
-        <translation>Продолжительность ошибки:</translation>
+        <translation>Продолжительность сообщений об ошибках:</translation>
     </message>
     <message>
         <source> seconds</source>
@@ -22014,11 +22282,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Information Duration:</source>
-        <translation>Продолжительность информационная:</translation>
+        <translation>Продолжительность информационных сообщений:</translation>
     </message>
     <message>
         <source>Action Duration:</source>
-        <translation>Продолжительность действий:</translation>
+        <translation>Продолжительность сообщений о действиях:</translation>
     </message>
     <message>
         <source>Display Location:</source>
@@ -22460,7 +22728,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Display Rectangle</source>
-        <translation>Отображать прямоугольник</translation>
+        <translation>Прямоугольник отображения</translation>
     </message>
     <message>
         <source>Defines the area in the overlay image that the game image will be drawn into.</source>
@@ -22993,11 +23261,11 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Force Digital Hat Inputs</source>
-        <translation>Принудительный цифровой ввод «шляп»</translation>
+        <translation>Принудительный цифровой ввод переключателей POV</translation>
     </message>
     <message>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>Заставляет джойстики всегда обрабатывать ввод осей «шляп» (ABS_HAT0X - ABS_HAT3Y) как 8-позиционные цифровые шляпы, не проверяя, могут ли они быть аналоговыми.</translation>
+        <translation>Заставляет джойстики всегда обрабатывать ввод осей переключателей POV (ABS_HAT0X - ABS_HAT3Y) как ввод 8-позиционных цифровых переключателей, не проверяя, могут ли они быть аналоговыми.</translation>
     </message>
     <message>
         <source>SDL-{0}  {1}</source>
@@ -23129,7 +23397,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Last Played</source>
-        <translation>Последняя игра</translation>
+        <translation>Последний запуск</translation>
     </message>
     <message>
         <source>Select</source>
@@ -23455,7 +23723,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>Без масштабирования (смешивание шейдеров)</translation>
+        <translation>Без масштабирования (смешивание с помощью шейдеров)</translation>
     </message>
     <message>
         <source>Scaled</source>
@@ -23465,7 +23733,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>Масштабирование (смешивание шейдеров)</translation>
+        <translation>Масштабирование (смешивание с помощью шейдеров)</translation>
     </message>
     <message>
         <source>True Color</source>
@@ -23485,7 +23753,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Quads</source>
         <comment>GPULineDetectMode</comment>
-        <translation>Квадраты</translation>
+        <translation>Четырёхугольники</translation>
     </message>
     <message>
         <source>Triangles (Basic)</source>
@@ -23505,7 +23773,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Box (Downsample 3D/Smooth All)</source>
         <comment>GPUDownsampleMode</comment>
-        <translation>Квадрат (понижение разрешения 3D/сгладить все)</translation>
+        <translation>Прямоугольный фильтр (понижение разрешения 3D/сглаживание всего изображения)</translation>
     </message>
     <message>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
@@ -23571,7 +23839,7 @@ Do you want to create this directory?</source>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translatorcomment>*Смешивание ?</translatorcomment>
-        <translation>Волновой (расчесывание)</translation>
+        <translation>Объединение полей (эффект «гребёнки»)</translation>
     </message>
     <message>
         <source>Blend (Blur)</source>
@@ -23636,7 +23904,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Auto (Game Native)</source>
         <comment>DisplayAspectRatio</comment>
-        <translation>Автоматически (нативно игре)</translation>
+        <translation>Автоматически (исходное соотношение сторон игры)</translation>
     </message>
     <message>
         <source>Stretch To Fill</source>
@@ -23686,7 +23954,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Auto-Detect</source>
         <comment>ForceVideoTiming</comment>
-        <translation>Авто-определение</translation>
+        <translation>Автоопределение</translation>
     </message>
     <message>
         <source>NTSC (60 Hz)</source>
@@ -23732,6 +24000,21 @@ Do you want to create this directory?</source>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Ланцош (резкий)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Автоматически</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Включен</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Отключен</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -24104,7 +24387,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Cheats&lt;/strong&gt;&lt;hr&gt;This section allows you to select which cheats you wish to enable. &lt;strong&gt;Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves.&lt;/strong&gt; Cheats also persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.</source>
-        <translation>&lt;strong&gt;Читы&lt;/strong&gt;&lt;hr&gt;В этом разделе вы можете выбрать, какие читы вы хотите включить. &lt;strong&gt;Использование читов может иметь непредсказуемые последствия для игр, вызывая сбои, графические сбои и повреждения сохранений.&lt;/strong&gt; Читы также сохраняются в состояниях сохранения даже после отключения. Не забудьте выполнить сброс/перезагрузку игры после отключения любых кодов. .</translation>
+        <translation>&lt;strong&gt;Читы&lt;/strong&gt;&lt;hr&gt;В этом разделе вы можете выбрать, какие читы вы хотите включить. &lt;strong&gt;Использование читов может иметь непредсказуемые последствия для игр, вызывая сбои, графические сбои и повреждения сохранений.&lt;/strong&gt; Читы также сохраняются в состояниях сохранения даже после отключения. Не забудьте выполнить сброс/перезагрузку игры после отключения любых кодов.</translation>
     </message>
     <message>
         <source>Memory Cards</source>
@@ -24223,7 +24506,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Per-game configuration copied from global settings.</source>
-        <translation>Конфигурация каждой игры скопирована из глобальных настроек.</translation>
+        <translation>Конфигурация этой игры скопирована из глобальных настроек.</translation>
     </message>
     <message>
         <source>The configuration for this game will be cleared.
@@ -24239,7 +24522,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Per-game configuration cleared.</source>
-        <translation>Конфигурация для каждой игры удалена.</translation>
+        <translation>Конфигурация этой игры удалена.</translation>
     </message>
     <message>
         <source>Recommended Value</source>
@@ -24254,7 +24537,7 @@ Do you want to continue?</source>
     <name>SetupWizardDialog</name>
     <message>
         <source>DuckStation Setup Wizard</source>
-        <translation>Мастер установки DuckStation</translation>
+        <translation>Мастер настройки DuckStation</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -24402,7 +24685,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Определить, какую часть области, которая обычно не видна на потребительском телевизоре, необходимо обрезать/скрыть. Некоторые игры отображают контент в области нерезкости или используют ее для экранных эффектов. Может отображаться неправильно при настройке «Все границы». «Только нерабочая область» предлагает хороший компромисс между стабильностью и скрытием черных границ.</translation>
+        <translation>Определяет, какую часть области, обычно невидимой на бытовом телевизоре, следует обрезать или скрыть. Некоторые игры отображают содержимое в области за пределами развертки или используют ее для экранных эффектов. При выборе «Все границы» изображение может отображаться неправильно. «Только область за пределами развертки» — хороший компромисс между стабильностью и скрытием черных границ.</translation>
     </message>
     <message>
         <source>Scaling:</source>
@@ -24434,7 +24717,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Уменьшает количество «шатких» полигонов и «деформаций» текстур, которые часто встречаются в играх для PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
+        <translation>Уменьшает дрожание полигонов и искажения текстур, характерные для игр PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -24458,7 +24741,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Опции &quot;Смешивание шейдеров&quot; выполняют смешивание программно и являются более точными, но имеют &lt;strong&gt;значительное&lt;/strong&gt; снижение производительности.</translation>
+        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Варианты со смешиванием в шейдерах выполняют смешивание программно и являются более точными, но приводят к &lt;strong&gt;значительному&lt;/strong&gt; снижению производительности.</translation>
     </message>
     <message>
         <source>RetroAchievements</source>
@@ -24978,7 +25261,7 @@ Using current CD image, this may result in instability.</source>
     </message>
     <message>
         <source>Save states require a disc inserted with a valid serial.</source>
-        <translation>Сохранённые состояния требуют вставленный диск с действительным серийным номером.</translation>
+        <translation>Для использования сохранённых состояний требуется вставить диск с действительным серийным номером.</translation>
     </message>
     <message>
         <source>No save state found in slot {}.</source>
@@ -25086,7 +25369,7 @@ Using current CD image, this may result in instability.</source>
     </message>
     <message>
         <source>Mute CD-ROM audio disabled.</source>
-        <translation>Звук CD-ROM отключен.</translation>
+        <translation>Отключение звука CD-ROM отменено.</translation>
     </message>
     <message>
         <source>VRAM write texture replacements disabled.</source>
@@ -25094,7 +25377,7 @@ Using current CD image, this may result in instability.</source>
     </message>
     <message>
         <source>Use old MDEC routines disabled.</source>
-        <translation>Использовать старые процедуры MDEC отключено.</translation>
+        <translation>Использование старых процедур MDEC отключено.</translation>
     </message>
     <message>
         <source>PIO device removed.</source>
@@ -25143,12 +25426,12 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>Failed to load undo state, restarting game.
 {}</source>
-        <translation>Не удалось загрузить отмену сохранённого состояния, игра перезапускается.
+        <translation>Не удалось загрузить состояние для отмены загрузки, игра перезапускается.
 {}</translation>
     </message>
     <message>
         <source>Loaded undo save state created {}.</source>
-        <translation>Загружено состояние отмены сохранения, созданное {}.</translation>
+        <translation>Загружено состояние для отмены загрузки, созданное {}.</translation>
     </message>
     <message>
         <source>Failed to change GPU dump: {}</source>
@@ -25185,7 +25468,7 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>Cannot use per-game memory card without a disc.
 Using shared card instead.</source>
-        <translation>Невозможно использовать игровую карту памяти без диска.
+        <translation>Невозможно использовать отдельную карту памяти для игры без диска.
 Вместо этого используется общая карта.</translation>
     </message>
     <message>
@@ -25222,6 +25505,29 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
 </context>
 <context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>Окно TTY</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>Окно TTY - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>&amp;Настройки</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>Включить журналирование &amp;TTY BIOS</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>Показать &amp;Временные метки</translation>
+    </message>
+</context>
+<context>
     <name>TextureReplacementSettingsDialog</name>
     <message>
         <source>Texture Replacement Settings</source>
@@ -25249,7 +25555,7 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
     <message>
         <source>Dump Full Texture Pages</source>
-        <translation>Дамп страниц с полными текстурами</translation>
+        <translation>Дамп полных страниц текстур</translation>
     </message>
     <message>
         <source>The texture dumping system can either operate in page mode, or write-tracking mode. Replacements can be loaded from either dump method.</source>
@@ -25273,7 +25579,7 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
     <message>
         <source>Maximum Write Splits:</source>
-        <translation>Максимальное количество записей:</translation>
+        <translation>Максимальное число разбиений записи:</translation>
     </message>
     <message>
         <source>Convert Copies To Writes</source>
@@ -25281,7 +25587,7 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
     <message>
         <source>Bilinear Replacement Scaling</source>
-        <translation>Масштабирование с билинейной заменой</translation>
+        <translation>Билинейное масштабирование заменяющих текстур</translation>
     </message>
     <message>
         <source>Texture Dumping Options</source>
@@ -25301,11 +25607,11 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
     <message>
         <source>Background Dumping Options</source>
-        <translation>Параметры фонового дампа</translation>
+        <translation>Параметры дампа фоновых изображений</translation>
     </message>
     <message>
         <source>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</source>
-        <translation>Определяет минимальный размер записи VRAM, которая будет выгружена в фоновом режиме дампа. Загрузки меньшего размера будут игнорироваться.</translation>
+        <translation>Определяет минимальный размер записи в VRAM, которая будет сохранена в дамп в режиме дампа фоновых изображений. Записи меньшего размера будут игнорироваться.</translation>
     </message>
     <message>
         <source>Export...</source>

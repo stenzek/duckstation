@@ -405,7 +405,7 @@ Jeton généré le %2</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Le mode &quot;Challenge&quot; pour les succès, incluant suivi de classement. Désactive les save states, codes de triche, et fonctions de ralentissement.</translation>
+        <translation>Mode « Défi » pour les succès, incluant le suivi des classements. Désactive les états de sauvegarde, les codes de triche et les fonctions de ralentissement.</translation>
     </message>
     <message>
         <source> seconds</source>
@@ -484,7 +484,7 @@ Jeton généré le %2</translation>
     </message>
     <message>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation>Le mode Hardcore est activé. Les triches et les sauvegardes sont indisponibles.</translation>
+        <translation>Le mode Hardcore est activé. Les codes de triche et les états de sauvegarde sont indisponibles.</translation>
     </message>
     <message>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
@@ -498,7 +498,7 @@ Jeton généré le %2</translation>
         <source>%n achievements are not supported by DuckStation.</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>%n succès ne sont pas pris en charge par DuckStation.</numerusform>
+            <numerusform>%n succès n&apos;est pas pris en charge par DuckStation.</numerusform>
             <numerusform>%n succès ne sont pas pris en charge par DuckStation.</numerusform>
         </translation>
     </message>
@@ -547,7 +547,7 @@ Jeton généré le %2</translation>
     <message>
         <source>Subset complete.
 {0} and {1}.</source>
-        <translation>Ensemble complet.
+        <translation>Sous-ensemble terminé.
 {0} et {1}.</translation>
     </message>
     <message>
@@ -684,7 +684,7 @@ Cette session démarrera en mode hors ligne.</translation>
         <source>Prefetching achievement badges (%n remaining)...</source>
         <comment>Achievement badge prefetch count</comment>
         <translation>
-            <numerusform>Préchargement des badges de succès : il reste %n badges...</numerusform>
+            <numerusform>Préchargement des badges de succès : il reste %n badge...</numerusform>
             <numerusform>Préchargement des badges de succès : il reste %n badges...</numerusform>
         </translation>
     </message>
@@ -771,7 +771,7 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Core</source>
-        <translation>Noyau</translation>
+        <translation>Principal</translation>
     </message>
     <message>
         <source>{0} - {1}</source>
@@ -813,7 +813,7 @@ Messages non lus : {}</translation>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
-            <numerusform>%n succès ne sont pas pris en charge par DuckStation et ne peuvent pas être déverrouillés.</numerusform>
+            <numerusform>%n succès n&apos;est pas pris en charge par DuckStation et ne peut pas être déverrouillé.</numerusform>
             <numerusform>%n succès ne sont pas pris en charge par DuckStation et ne peuvent pas être déverrouillés.</numerusform>
         </translation>
     </message>
@@ -1130,7 +1130,7 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
-        <translation>Définie la verbosité des messages loggés. Les niveaux élevés loggeront plus de messages.</translation>
+        <translation>Définit la verbosité des messages loggés. Les niveaux élevés loggeront plus de messages.</translation>
     </message>
     <message>
         <source>User Preference</source>
@@ -1142,15 +1142,15 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Logs messages to the debug console where supported.</source>
-        <translation>Logge les messages dans la console de dégogage quand supporté.</translation>
+        <translation>Logge les messages dans la console de débogage quand supporté.</translation>
     </message>
     <message>
         <source>Logs messages to the window.</source>
-        <translation>Logge les message dans la fenêtre.</translation>
+        <translation>Logge les messages dans la fenêtre.</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
-        <translation>Logge les messages dans la log duckstation dans le répertoire utilisateur.</translation>
+        <translation>Enregistre les messages dans le fichier duckstation.log du répertoire utilisateur.</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
@@ -1209,7 +1209,7 @@ Messages non lus : {}</translation>
     <name>AnalogController</name>
     <message>
         <source>Select</source>
-        <translation>Sélectionner</translation>
+        <translation>Select</translation>
     </message>
     <message>
         <source>Start</source>
@@ -1389,11 +1389,11 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
-        <translation>Zone morte bouton/gachette</translation>
+        <translation>Zone morte bouton/gâchette</translation>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation>Définis la zone morte pour activer les boutons/gachettes, càd la fraction de gachette qui sera ignorée.</translation>
+        <translation>Définit la zone morte pour activer les boutons/gâchettes, càd la fraction de gâchette qui sera ignorée.</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -1433,7 +1433,7 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>Définis la zone morte du stick analogique, càd la fraction de mouvement du stick qui sera ignorée.</translation>
+        <translation>Définit la zone morte du stick analogique, càd la fraction de mouvement du stick qui sera ignorée.</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
@@ -1441,7 +1441,7 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Définis le facteur d&apos;échelle de l&apos;axe du stick analogique. Une valeur entre 130% et 140% est recommandée pour les manettes récentes, par ex. DualShock 4, manette Xbox One.</translation>
+        <translation>Définit le facteur d&apos;échelle de l&apos;axe du stick analogique. Une valeur entre 130% et 140% est recommandée pour les manettes récentes, par ex. DualShock 4, manette Xbox One.</translation>
     </message>
 </context>
 <context>
@@ -1532,15 +1532,15 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>Définis la zone morte du stick analogique, càd la fraction du mouvement du stick qui sera ignorée.</translation>
+        <translation>Définit la zone morte du stick analogique, càd la fraction du mouvement du stick qui sera ignorée.</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
-        <translation>Sensitivité analogique</translation>
+        <translation>Sensibilité analogique</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Définis le facteur d&apos;échelle de l&apos;axe du stick analogique. Une valeur entre 130% et 140% est recommandée pour les manettes récentes, par ex. DualShock 4, manette Xbox One.</translation>
+        <translation>Définit le facteur d&apos;échelle de l&apos;axe du stick analogique. Une valeur entre 130% et 140% est recommandée pour les manettes récentes, par ex. DualShock 4, manette Xbox One.</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
@@ -1810,6 +1810,16 @@ Messages non lus : {}</translation>
         <translation>Enregistrer l&apos;état à la fermeture</translation>
     </message>
     <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>Confirmer la fermeture du jeu</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>Demande une confirmation avant de fermer un jeu depuis le menu de pause.</translation>
+    </message>
+    <message>
         <source>Pause On Controller Disconnection</source>
         <comment>settings_pause_on_controller_disconnection</comment>
         <translation>Mettre en pause lors de la déconnexion de la manette</translation>
@@ -1854,7 +1864,7 @@ Messages non lus : {}</translation>
     <message>
         <source>Log To File</source>
         <comment>settings_log_to_file</comment>
-        <translation>Enregistrer vers un fichier</translation>
+        <translation>Journaliser dans un fichier</translation>
     </message>
     <message>
         <source>Fast Forward Volume</source>
@@ -1960,6 +1970,16 @@ Messages non lus : {}</translation>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>Arrêt en cours…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>Balayage en cours d&apos;image</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>Applique les modifications au tampon d&apos;image affiché en cours d&apos;image. Nécessaire pour les effets d&apos;écran partagé dans certains jeux, mais provoque des déchirures dans d&apos;autres.</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2116,6 +2136,16 @@ Affectation actuelle : %s</translation>
         <translation>Comportement</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>Icônes de la liste</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>Sélectionne l&apos;image affichée à côté de chaque jeu dans la liste des jeux.</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>Paramètres vidéo</translation>
@@ -2159,6 +2189,21 @@ Affectation actuelle : %s</translation>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>Le fichier sélectionné n&apos;a pas pu être ouvert.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>Confirmer la fermeture</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>Êtes-vous sûr de vouloir fermer le jeu actuel ?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>Reprendre ici la prochaine fois</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2505,6 +2550,11 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <source>Touchscreen</source>
         <comment>controller_settings_tab_touchscreen</comment>
         <translation>Écran tactile</translation>
+    </message>
+    <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>Port %1$s</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -2970,6 +3020,85 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <translation>Gestionnaire des états de sauvegarde</translation>
     </message>
     <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>Cartes mémoire</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>Créer une nouvelle carte</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>Crée une nouvelle carte mémoire formatée.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>Importer une carte mémoire</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>Importe une carte mémoire depuis le stockage, en la convertissant si nécessaire.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>Carte mémoire &apos;%s&apos; importée.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>Une carte mémoire nommée &apos;%s&apos; existe déjà. Voulez-vous l&apos;écraser ? Toutes les données existantes seront perdues.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>Utiliser une seule carte mémoire pour les jeux multi-disques</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>Lors de l&apos;utilisation de cartes mémoire par jeu (titre) avec un jeu multi-disques, utilise une seule carte pour tous les disques. Si cette option est désactivée, chaque disque utilise une carte distincte.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>Le nombre de cartes mémoire utilisables dépend du Multitap et de la prise en charge par le jeu.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>Mode Multitap actuel : %1$s (%2$d carte)</numerusform>
+            <numerusform>Mode Multitap actuel : %1$s (%2$d cartes)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>Type de carte mémoire</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>Sélectionne l&apos;image de carte mémoire insérée dans cet emplacement.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>Nom de carte partagée</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>Sélectionne la carte utilisée lorsque le type est partagé entre tous les jeux.</translation>
+    </message>
+    <message>
         <source>Confirm Deletion</source>
         <comment>confirm_deletion</comment>
         <translation>Confirmer la suppression</translation>
@@ -3271,6 +3400,76 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <source>Remove All</source>
         <comment>cheat_codes_remove_all</comment>
         <translation>Tout supprimer</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>Rembobinage</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>Bouton gauche</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>Bouton droit</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>Mise à l&apos;échelle</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>Ajuster</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>Remplir</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>Étirer</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>Souris</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>Rétablir la valeur par défaut</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>Valeur actuelle</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>Valeur par défaut</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>Paramètre global</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Utilise PGXP pour toutes les instructions, et pas uniquement les opérations mémoire. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Utilise les positions à l&apos;écran pour retrouver les données PGXP. Peut améliorer les graphismes dans certains jeux. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
     </message>
     <message>
         <source>Auto (Game Native)</source>
@@ -3908,16 +4107,6 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <translation>Liste des jeux</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>Privilégier les icônes de succès</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>Donne la priorité aux badges du jeu utilisés par RetroAchievements par rapport aux icônes de carte mémoire.</translation>
-    </message>
-    <message>
         <source>Show Grid Captions</source>
         <comment>settings_show_grid_captions</comment>
         <translation>Afficher les légendes dans la vue en grille</translation>
@@ -4190,11 +4379,6 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
         <comment>settings_achievements_disclaimer</comment>
         <translation>DuckStation utilise RetroAchievements (retroachievements.org) comme base de données de succès et pour suivre la progression. Un compte RetroAchievements n&apos;est pas nécessaire pour utiliser DuckStation.</translation>
-    </message>
-    <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>Port %1$d</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -6179,7 +6363,7 @@ Voulez-vous en importer une maintenant ?</translation>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <comment>settings_summary_dithering_mode</comment>
-        <translation>Contrôle la manière dont le tramage (dithering) est appliqué dans le GPU émulé. « True Color » désactive le tramage et produit les dégradés les plus esthétiques.</translation>
+        <translation>Contrôle la manière dont le tramage (dithering) est appliqué dans le GPU émulé. « Couleurs réelles » désactive le tramage et produit les dégradés les plus esthétiques.</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -6551,11 +6735,6 @@ Voulez-vous en importer une maintenant ?</translation>
         <translation>Utilise une interpolation avec correction de perspective pour les couleurs, ce qui peut améliorer le visuel de certains jeux.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>Utilise PGXP pour toutes les instructions, et pas seulement pour les opérations mémoire.</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>Augmente la précision de l&apos;élimination des polygones (culling), réduisant le nombre de trous dans la géométrie.</translation>
@@ -6574,11 +6753,6 @@ Voulez-vous en importer une maintenant ?</translation>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>Utilise une interpolation avec correction de perspective pour les coordonnées de texture, redressant les textures déformées.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>Utilise les positions à l&apos;écran pour résoudre les données PGXP. Peut améliorer le visuel de certains jeux.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -7509,7 +7683,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>Le moteur audio détermine comment les images produites par l&apos;émulateur sont soumises à l&apos;hôte. Cubeb fournit une latence basse, si vous rencontrez des problèmes, essayez alors le moteur SDL. Le moteur null désactive toutes les sorties audio de l&apos;hôte.</translation>
+        <translation>Le moteur audio détermine comment les trames audio produites par l&apos;émulateur sont transmises à l&apos;hôte. Cubeb offre la latence la plus faible ; si vous rencontrez des problèmes, essayez le moteur SDL. Le moteur null désactive toutes les sorties audio de l&apos;hôte.</translation>
     </message>
     <message>
         <source>Buffer Size</source>
@@ -7517,7 +7691,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>La taille du tampon détermine la taille des échantillons audio qui seront récupérés par l&apos;hôte. Les plus petites valeurs réduisent la latence de la sortie, mais peuvent créer des saccades si la vitesse d&apos;émulation est incompatible. Remarque: le moteur Cubeb utilise de plus petits échantillons quelque soit sa valeur, donc utiliser une valeur faible ici peut ne pas faire changer de manière significative la latence.</translation>
+        <translation>La taille du tampon détermine la taille des blocs audio qui seront récupérés par l&apos;hôte. Des valeurs plus faibles réduisent la latence de sortie, mais peuvent provoquer des saccades si la vitesse d&apos;émulation est irrégulière. Notez que le moteur Cubeb utilise des blocs plus petits quelle que soit cette valeur ; une valeur faible ici peut donc ne pas modifier sensiblement la latence.</translation>
     </message>
     <message>
         <source>Output Latency</source>
@@ -7561,7 +7735,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>Quand au-delà d&apos;une vitesse de 100%, ajuste le tempo sur l&apos;audio plûtot que sauter des images. Produit une avance rapide/ralentissement audio plus joli au prix d&apos;un léger impact sur les performances.</translation>
+        <translation>Lorsque la vitesse diffère de 100%, ajuste le tempo de l&apos;audio au lieu de supprimer des trames audio. Produit un son bien meilleur en avance rapide ou au ralenti, au prix d&apos;un léger impact sur les performances.</translation>
     </message>
     <message>
         <source>Default</source>
@@ -7601,7 +7775,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Stretch Sequence Length</source>
-        <translation>Étirement de la longueur de la séquence</translation>
+        <translation>Longueur des séquences d&apos;étirement</translation>
     </message>
     <message>
         <source>Determines how long individual sequences are when the time-stretch algorithm chops the audio. Longer sequences can improve quality but increase latency.</source>
@@ -7649,7 +7823,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Resets value back to the default.</source>
-        <translation>Réinitialise la valeur au défaut.</translation>
+        <translation>Réinitialise la valeur à sa valeur par défaut.</translation>
     </message>
     <message>
         <source>%1 [Unavailable]</source>
@@ -7819,7 +7993,7 @@ Vous pouvez mettre à jour DuckStation manuellement en téléchargeant à nouvea
     </message>
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>Duckstation recherche les fichiers BIOS dans ce répertoire.</translation>
+        <translation>DuckStation recherche les fichiers BIOS dans ce répertoire.</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -8328,6 +8502,10 @@ Votre dump peut être corrompu, ou le disque physique est rayé.</translation>
 <context>
     <name>CheatCodeEditorDialog</name>
     <message>
+        <source>Patch Editor</source>
+        <translation>Éditeur de correctifs</translation>
+    </message>
+    <message>
         <source>Enter Group Name</source>
         <translation>Entrer le nom du groupe</translation>
     </message>
@@ -8364,10 +8542,14 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Un code portant le nom &apos;%1&apos; existe déjà.</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>Échec de la sauvegarde du code de triche :
+        <translation>Échec de l&apos;enregistrement du code :
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Aucun</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8394,7 +8576,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>Automatic (Frame End)</source>
-        <translation>Automatique (image de fin)</translation>
+        <translation>Automatique (fin d&apos;image)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -8472,7 +8654,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>CPU Emulation</source>
-        <translation>Emulation du CPU</translation>
+        <translation>Émulation du CPU</translation>
     </message>
     <message>
         <source>Execution Mode:</source>
@@ -8484,7 +8666,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>CD-ROM Emulation</source>
-        <translation>Emulation du CD-ROM</translation>
+        <translation>Émulation du CD-ROM</translation>
     </message>
     <message>
         <source>Read Speedup:</source>
@@ -8516,7 +8698,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation>Activer le recompilateur ICache</translation>
+        <translation>Activer le cache d&apos;instructions du recompilateur</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -8678,7 +8860,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
-        <translation>Réduit le temps simulé pour la tête de lecture de CD-ROM pour se déplacer entre les différentes zones du disque. Peut améliorer les temps de chargement, mais plante les jeu qui ne s&apos;attendent pas à ce que le CD-ROM aille plus vite.</translation>
+        <translation>Réduit le temps simulé nécessaire à la tête de lecture du CD-ROM pour se déplacer entre les différentes zones du disque. Peut améliorer les temps de chargement, mais peut faire planter les jeux qui ne s&apos;attendent pas à ce que le CD-ROM fonctionne plus vite.</translation>
     </message>
     <message>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
@@ -8698,7 +8880,7 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>L&apos;activation de l&apos;overclocking du processeur peut planter les jeux, causer des bogues, réduire les performances et peut augmenter considérablement les exigences du système.
+        <translation>L&apos;activation de l&apos;overclocking du processeur perturbera le fonctionnement des jeux, causera des bogues, réduira les performances et peut augmenter considérablement les exigences du système.
 
 En activant cette option, vous acceptez de ne créer aucun rapport de bogue à moins que vous n&apos;ayez confirmé que le bogue se produit également avec l&apos;overclocking désactivé.
 
@@ -8706,7 +8888,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
-        <translation>Oui, je confirmerai que les bogues sont sans overclocking avant de les signaler.</translation>
+        <translation>Oui, je vérifierai que les bogues se produisent sans overclocking avant de les signaler.</translation>
     </message>
     <message>
         <source>No, take me back to safety.</source>
@@ -9089,7 +9271,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, les pistolets optiques utiliseront le pointeur de la souris. Pour utiliser la souris, vous &lt;span style=&quot; font-weight:700;&quot;&gt;n&apos;avez pas&lt;/span&gt; besoin de configurer de raccourcis hormis la gâchette et les boutons. Le pointage ne doit être configuré que lorsque vous souhaitez utiliser plusieurs souris.&lt;/p&gt;&lt;p&gt;Si vous souhaitez utiliser une manette, ou un pistolet optique simulant une manette au lieu d&apos;une souris, vous devriez alors le lier à Viser Relatif. Sinon, Viser Relatif devrait être &lt;span style=&quot; font-weight:700;&quot;&gt;laissé non lié&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE : &lt;/span&gt;Le mappage de la souris doit être activé dans les Paramètres Généraux pour lier la souris de votre PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, les pistolets optiques utiliseront le pointeur de la souris. Pour utiliser la souris, vous &lt;span style=&quot; font-weight:700;&quot;&gt;n&apos;avez pas&lt;/span&gt; besoin de configurer de raccourcis hormis la gâchette et les boutons. Le pointage ne doit être configuré que lorsque vous souhaitez utiliser plusieurs souris.&lt;/p&gt;&lt;p&gt;Si vous souhaitez utiliser une manette, ou un pistolet optique simulant une manette au lieu d&apos;une souris, vous devriez alors le lier à Visée relative. Sinon, Visée relative devrait être &lt;span style=&quot; font-weight:700;&quot;&gt;laissée non liée&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE : &lt;/span&gt;Le mappage de la souris doit être activé dans les Paramètres Généraux pour lier la souris de votre PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Down</source>
@@ -9189,7 +9371,7 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation>Démarrer</translation>
+        <translation>Start</translation>
     </message>
 </context>
 <context>
@@ -9492,11 +9674,11 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <source>Vertical Sensitivity:</source>
-        <translation>Sensitivité verticale :</translation>
+        <translation>Sensibilité verticale :</translation>
     </message>
     <message>
         <source>Horizontal Sensitivity:</source>
-        <translation>Sensitivité horizontale :</translation>
+        <translation>Sensibilité horizontale :</translation>
     </message>
     <message>
         <source>Mapping Settings</source>
@@ -9722,7 +9904,7 @@ La couleur &quot;alternative&quot; est utilisée lorsque le mode analogique est 
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>Êtes-vous sûr de vouloir appliquer le préréglage de la manette nommée &apos;%1&apos; ?
+        <translation>Êtes-vous sûr de vouloir appliquer le préréglage de manette nommé &apos;%1&apos; ?
 
 Toutes les affectations globales actuelles seront supprimées, et les affectations du préréglage seront chargées.
 
@@ -9736,7 +9918,7 @@ Vous ne pouvez pas annuler cette action.</translation>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation>Êtes-vous sûr de vouloir supprimer le préréglage de la manette nommée &apos;%1&apos; ?
+        <translation>Êtes-vous sûr de vouloir supprimer le préréglage de manette nommé &apos;%1&apos; ?
 
 Vous ne pouvez pas annuler cette action.</translation>
     </message>
@@ -9928,11 +10110,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <translation>Par défaut, les jaquettes téléchargées seront enregistrées avec le titre du jeu. Si cela n&apos;est pas souhaité, vous pouvez cocher la case « Utiliser les noms de fichiers série » ci-dessous. L&apos;utilisation de numéros de série au lieu des titres de jeu évitera les conflits lorsque plusieurs régions du même jeu sont utilisées.</translation>
+        <translation>Par défaut, les jaquettes téléchargées seront enregistrées avec le titre du jeu. Si cela n&apos;est pas souhaité, vous pouvez cocher la case « Utiliser les numéros de série comme noms de fichiers » ci-dessous. L&apos;utilisation de numéros de série au lieu des titres de jeu évitera les conflits lorsque plusieurs régions du même jeu sont utilisées.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <translation>Utiliser les noms de fichiers série</translation>
+        <translation>Utiliser les numéros de série comme noms de fichiers</translation>
     </message>
     <message>
         <source>Waiting to start...</source>
@@ -9959,11 +10141,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     <name>DDGoController</name>
     <message>
         <source>Select</source>
-        <translation>Sélectionner</translation>
+        <translation>Select</translation>
     </message>
     <message>
         <source>Start</source>
-        <translation>Démarrer</translation>
+        <translation>Start</translation>
     </message>
     <message>
         <source>A</source>
@@ -9979,27 +10161,27 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Off</source>
-        <translation>Éteindre</translation>
+        <translation>Puissance nulle</translation>
     </message>
     <message>
         <source>Power 1</source>
-        <translation>Alimentation 1</translation>
+        <translation>Puissance 1</translation>
     </message>
     <message>
         <source>Power 2</source>
-        <translation>Alimentation 2</translation>
+        <translation>Puissance 2</translation>
     </message>
     <message>
         <source>Power 3</source>
-        <translation>Alimentation 3</translation>
+        <translation>Puissance 3</translation>
     </message>
     <message>
         <source>Power 4</source>
-        <translation>Alimentation 4</translation>
+        <translation>Puissance 4</translation>
     </message>
     <message>
         <source>Power 5</source>
-        <translation>Alimentation 5</translation>
+        <translation>Puissance 5</translation>
     </message>
     <message>
         <source>Brake Released</source>
@@ -10225,7 +10407,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Hit Count</source>
-        <translation>Nombre de résultats</translation>
+        <translation>Nombre de déclenchements</translation>
     </message>
     <message>
         <source>Stack</source>
@@ -10369,7 +10551,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>&amp;Dump Address</source>
-        <translation>&amp;Décharger l&apos;adresse</translation>
+        <translation>&amp;Afficher l&apos;adresse dans la mémoire</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -10393,7 +10575,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Enter code address:</source>
-        <translation>Entrer un code adresse :</translation>
+        <translation>Saisissez une adresse de code :</translation>
     </message>
     <message>
         <source>Enter memory address:</source>
@@ -10407,7 +10589,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation>L&apos;enregistrement vers cpu_log.tx s&apos;est arrêté.</translation>
+        <translation>L&apos;enregistrement de la trace dans cpu_log.txt s&apos;est arrêté.</translation>
     </message>
     <message>
         <source>&amp;Remove</source>
@@ -10473,7 +10655,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>View in &amp;Dump</source>
-        <translation>Voir dans la &amp;décharge</translation>
+        <translation>Voir dans la &amp;mémoire</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -10497,7 +10679,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Motif de recherche invalide. Il devrait contenir des chiffres héxa ou des points d&apos;interrogation.</translation>
+        <translation>Motif de recherche invalide. Il devrait contenir des chiffres hexadécimaux ou des points d&apos;interrogation.</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
@@ -10520,7 +10702,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Adresse invalide. Elle devrait être en héxa (0x12345678 ou 12345678)</translation>
+        <translation>Adresse invalide. Elle devrait être en hexadécimal (0x12345678 ou 12345678)</translation>
     </message>
 </context>
 <context>
@@ -10551,7 +10733,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>Display Active Start Offset</source>
-        <translation>Afficher le décalage de démarrage actif</translation>
+        <translation>Décalage de début de la zone d&apos;affichage active</translation>
     </message>
     <message>
         <source>Display Active End Offset</source>
@@ -10690,7 +10872,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     <name>DigitalController</name>
     <message>
         <source>Select</source>
-        <translation>Sélectionner</translation>
+        <translation>Select</translation>
     </message>
     <message>
         <source>Start</source>
@@ -10959,7 +11141,7 @@ Cliquer sur Réinitialiser restaurera le numéro de série à la valeur scannée
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>Définis la vitesse d&apos;émulation de la cible. Il n&apos;est pas garanti que cette vitesse soit atteinte, et si ce n&apos;est pas le cas, l&apos;émulateur fonctionnera aussi vite qu&apos;il le pourra.</translation>
+        <translation>Définit la vitesse d&apos;émulation cible. Il n&apos;est pas garanti que cette vitesse soit atteinte, et si ce n&apos;est pas le cas, l&apos;émulateur fonctionnera aussi vite qu&apos;il le pourra.</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -10971,7 +11153,7 @@ Cliquer sur Réinitialiser restaurera le numéro de série à la valeur scannée
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>Définis la vitesse d&apos;avance rapide. Cette vitesse sera utilisée quand le raccourci d&apos;avance rapide sera pressé/basculé.</translation>
+        <translation>Définit la vitesse d&apos;avance rapide. Cette vitesse sera utilisée quand le raccourci d&apos;avance rapide sera pressé/basculé.</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -10979,11 +11161,11 @@ Cliquer sur Réinitialiser restaurera le numéro de série à la valeur scannée
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>Définis la vitesse turbo. Cette vitesse sera utilisée quand le raccourci turbo sera pressé/basculé. Le turbo sera prioritaire sur l&apos;avance rapide si les deux raccourcis sont pressés/basculés.</translation>
+        <translation>Définit la vitesse turbo. Cette vitesse sera utilisée quand le raccourci turbo sera pressé/basculé. Le turbo sera prioritaire sur l&apos;avance rapide si les deux raccourcis sont pressés/basculés.</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Synchronise la présentation des images de la console avec l&apos;hôte. L&apos;activation peut rendre les animations plus fluides, au prix d&apos;une augmentation de la latence d&apos;entrée. &lt;strong&gt;Les utilisateurs de GSync/FreeSync devraient plutôt activer le cadencement d&apos;image optimal.&lt;/strong&gt;</translation>
+        <translation>Synchronise la présentation des images de la console avec l&apos;hôte. L&apos;activation peut rendre les animations plus fluides, au prix d&apos;une augmentation de la latence d&apos;entrée. &lt;strong&gt;Les utilisateurs de GSync/FreeSync devraient plutôt activer l&apos;option « Rythme optimal d&apos;image ».&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
@@ -11101,7 +11283,7 @@ Cliquer sur Réinitialiser restaurera le numéro de série à la valeur scannée
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Le rewind est désactivé. Veuillez noter qu&apos;activer le rewind peut augmenter significativement les prérequis système.</translation>
+        <translation>Le rembobinage est désactivé. Veuillez noter qu&apos;activer le rembobinage peut augmenter significativement les prérequis système.</translation>
     </message>
 </context>
 <context>
@@ -11320,7 +11502,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et lancer le jeu malgré tout ?
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>Toujours suivre les téléchargements</translation>
+        <translation>Toujours suivre les transferts de textures</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -12136,7 +12318,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Save as Serial File Names</source>
-        <translation>Enregistrer sous les noms de fichier série</translation>
+        <translation>Enregistrer avec les numéros de série comme noms de fichier</translation>
     </message>
     <message>
         <source>Save state deleted.</source>
@@ -12260,7 +12442,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation>Atténue le pixellisation entre les transitions de couleurs dans les contenus 24 bits, généralement les cinématiques (FMV).</translation>
+        <translation>Atténue la pixellisation entre les transitions de couleurs dans les contenus 24 bits, généralement les cinématiques (FMV).</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
@@ -12284,7 +12466,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Synchronise la présentation des images de la console avec l&apos;hôte. Les utilisateurs de GSync/FreeSync devraient plutôt activer le Cadencement optimal des images (Optimal Frame Pacing).</translation>
+        <translation>Synchronise la présentation des images de la console avec l&apos;hôte. Les utilisateurs de GSync/FreeSync devraient plutôt activer l&apos;option « Rythme d&apos;images optimal ».</translation>
     </message>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
@@ -12320,7 +12502,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
-        <translation>Active la macro lorsque le bouton est pressé, au lieu de le maintenir.</translation>
+        <translation>Active ou désactive la macro à chaque pression sur le bouton, au lieu de nécessiter son maintien.</translation>
     </message>
     <message>
         <source>Top: </source>
@@ -12395,6 +12577,10 @@ Vous ne pourrez pas annuler cette action.</translation>
         <translation>Utilise OpenGL ES même lorsque l&apos;OpenGL de bureau est pris en charge. Peut améliorer les performances sur certains pilotes SBC.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>Utilise PGXP pour toutes les instructions, et pas uniquement les opérations mémoire. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
+    </message>
+    <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
         <translation>Utilise un second thread pour le rendu graphique. Offre une amélioration significative de la vitesse, particulièrement avec le moteur de rendu logiciel, et son utilisation est sans risque.</translation>
     </message>
@@ -12405,6 +12591,10 @@ Vous ne pourrez pas annuler cette action.</translation>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Utilise une configuration spécifique au jeu pour les sources d&apos;entrée. Si désactivé, la configuration globale sera utilisée.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Utilise les positions à l&apos;écran pour retrouver les données PGXP. Peut améliorer les graphismes dans certains jeux. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -12525,6 +12715,10 @@ Vous ne pourrez pas annuler cette action.</translation>
     <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Autoriser le démarrage sans fichier SBI</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>Applique les modifications au tampon d&apos;image affiché en cours d&apos;image. Nécessaire pour les effets d&apos;écran partagé dans certains jeux, mais provoque des déchirures dans d&apos;autres.</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -12828,7 +13022,7 @@ Vous ne pouvez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
-        <translation>Contrôle la manière dont le tramage (dithering) est appliqué dans le GPU émulé. « True Color » désactive le tramage et produit les dégradés les plus esthétiques.</translation>
+        <translation>Contrôle la manière dont le tramage (dithering) est appliqué dans le GPU émulé. « Couleurs réelles » désactive le tramage et produit les dégradés les plus esthétiques.</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -12892,7 +13086,7 @@ Vous ne pouvez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
-        <translation>Rogner les couleurs de sommet à 5:5:5 avant la modulation avec la couleur de texture, ce qui résulte généralement en un phénomène de bandes plus visible.</translation>
+        <translation>Réduit la précision des couleurs des sommets à 5:5:5 avant la modulation avec la couleur de texture, ce qui entraîne généralement des bandes de couleur plus visibles.</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -12976,7 +13170,7 @@ Vous ne pouvez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
-        <translation>Détermine la latence entre la capture audio par l&apos;API hôte et sa lecture via les haut-parleurs.</translation>
+        <translation>Détermine la latence entre la récupération du son par l&apos;API hôte et sa lecture par les haut-parleurs.</translation>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
@@ -13306,7 +13500,7 @@ Erreur :</translation>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Force l&apos;utilisation de la présentation FIFO plutôt que Mailbox, c&apos;est-à-dire le double tampon au lieu du triple tampon. Entraîne généralement une moins bonne régularité de la fréquence d&apos;images.</translation>
+        <translation>Force l&apos;utilisation de la présentation FIFO plutôt que Mailbox, c&apos;est-à-dire le double tampon au lieu du triple tampon. Entraîne généralement une présentation moins régulière des images.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -13661,6 +13855,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Type de carte mémoire {}</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Balayage en cours d&apos;image</translation>
+    </message>
+    <message>
         <source>Minimal Output Latency</source>
         <translation>Latence de sortie minimale</translation>
     </message>
@@ -13754,7 +13952,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Not Scanning Subdirectories</source>
-        <translation>Ne pas analyser les sous-répertoires</translation>
+        <translation>Sous-répertoires non analysés</translation>
     </message>
     <message>
         <source>Notification Location</source>
@@ -14042,7 +14240,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
-        <translation>Réduit les polygones « instables » en tentant de préserver la composante fractionnaire lors des transferts mémoire.</translation>
+        <translation>Réduit le tremblement des polygones en tentant de préserver la composante fractionnaire lors des transferts mémoire.</translation>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
@@ -14218,7 +14416,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Save State</source>
-        <translation>État de sauvegarde</translation>
+        <translation>Enregistrer l&apos;état</translation>
     </message>
     <message>
         <source>Saved {}</source>
@@ -14418,7 +14616,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Setting {} binding {}.</source>
-        <translation>Paramètre {} liaison {}.</translation>
+        <translation>Définition de l&apos;affectation {} : {}.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -14718,7 +14916,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
-        <translation>Le backend audio détermine comment les images produites par l&apos;émulateur sont transmises à l&apos;hôte.</translation>
+        <translation>Le moteur audio détermine comment les trames audio produites par l&apos;émulateur sont transmises à l&apos;hôte.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -14770,7 +14968,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Annuler l&apos;état de chargement</translation>
+        <translation>Annuler le chargement de l&apos;état</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -14794,7 +14992,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Update Progress</source>
-        <translation>Progression de la mise à jour</translation>
+        <translation>Mise à jour de la progression</translation>
     </message>
     <message>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
@@ -14825,10 +15023,6 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Utiliser le rendu logiciel pour les lectures (readbacks)</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>Utilise PGXP pour toutes les instructions, et pas seulement pour les opérations mémoire.</translation>
-    </message>
-    <message>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
         <translation>Utilise un modèle de présentation par blit au lieu du basculement (flipping). Peut être nécessaire sur certains systèmes.</translation>
     </message>
@@ -14851,10 +15045,6 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>Utilise une interpolation avec correction de perspective pour les coordonnées de texture, redressant les textures déformées.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>Utilise les positions à l&apos;écran pour résoudre les données PGXP. Peut améliorer le visuel de certains jeux.</translation>
     </message>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
@@ -15240,6 +15430,34 @@ Voulez-vous {1} quand même ?</translation>
         <source>Edit Choices...</source>
         <translation>Modifier les choix...</translation>
     </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>Substitution de paramètres</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>Format d&apos;image :</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>Overclocking du CPU :</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Désactiver le rendu écran large</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>Activer 8 Mo de RAM</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>Interdire en mode Hardcore</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15269,7 +15487,7 @@ Voulez-vous {1} quand même ?</translation>
     </message>
     <message>
         <source>Load Database Cheats</source>
-        <translation>Charger la base de données des codes de triche</translation>
+        <translation>Charger les codes de triche de la base de données</translation>
     </message>
     <message>
         <source>Clear List</source>
@@ -15347,7 +15565,7 @@ Voulez-vous activer les codes de triche maintenant ?</translation>
     </message>
     <message>
         <source>This code is from the built-in cheat database, and cannot be removed. To hide this code, uncheck the &quot;Load Database Cheats&quot; option.</source>
-        <translation>Ce code provient de la base de données de triche intégrée et ne peut pas être supprimé. Pour masquer ce code, décochez l&apos;option &quot;Charger les codes de la base de données&quot;.</translation>
+        <translation>Ce code provient de la base de données de triche intégrée et ne peut pas être supprimé. Pour masquer ce code, décochez l&apos;option &quot;Charger les codes de triche de la base de données&quot;.</translation>
     </message>
     <message>
         <source>Confirm Removal</source>
@@ -15385,7 +15603,7 @@ Any database cheats will still be loaded and present unless you uncheck the &quo
 Are you sure you want to continue?</source>
         <translation>Vous êtes sur le point de supprimer tous les codes de triche ajoutés manuellement pour ce jeu. Cette action est irréversible.
 
-Les codes de la base de données seront toujours chargés et présents, sauf si vous décochez l&apos;option &quot;Charger les codes de la base de données&quot;.
+Les codes de la base de données seront toujours chargés et présents, sauf si vous décochez l&apos;option &quot;Charger les codes de triche de la base de données&quot;.
 
 Êtes-vous sûr de vouloir continuer ?</translation>
     </message>
@@ -15475,7 +15693,7 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     <message>
         <source>Disable Fast Forward Memory Card Access</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Désactiver l&apos;accès accéléré à la carte mémoire pendant l&apos;avance rapide</translation>
+        <translation>Désactiver l&apos;avance rapide lors des accès à la carte mémoire</translation>
     </message>
     <message>
         <source>Disable CD-ROM Read Speedup</source>
@@ -15603,6 +15821,11 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
         <translation>Filtrer les transferts vers le tampon d&apos;image</translation>
     </message>
     <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Forcer le balayage en cours d&apos;image</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Inconnu</translation>
     </message>
@@ -15699,12 +15922,20 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
         <translation>Cache de sommets PGXP activé.</translation>
     </message>
     <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Le cache de sommets PGXP est requis pour ce jeu, mais il est désactivé. Cela peut provoquer des erreurs de rendu.</translation>
+    </message>
+    <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>Le cache de sommets PGXP est activé, mais il n&apos;est pas requis pour ce jeu. Cela peut provoquer des erreurs de rendu.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
         <translation>Mode CPU PGXP activé.</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Le mode CPU PGXP est requis pour ce jeu, mais il est désactivé. Cela peut provoquer des erreurs de rendu.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
@@ -15748,7 +15979,7 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     </message>
     <message>
         <source>Serial</source>
-        <translation>Série</translation>
+        <translation>Numéro de série</translation>
     </message>
     <message>
         <source>Title</source>
@@ -16032,7 +16263,7 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     </message>
     <message>
         <source>%1 unlocked in hardcore mode</source>
-        <translation>%1 déverrouillé en mode hardcore</translation>
+        <translation>Nombre de succès déverrouillés en mode hardcore : %1</translation>
     </message>
 </context>
 <context>
@@ -16183,6 +16414,14 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Activé</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>Modifier le correctif</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>Supprimer le correctif</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Auteur : &lt;/span&gt;Auteur du patch&lt;/p&gt;&lt;p&gt;La description s&apos;afficherait ici&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16206,9 +16445,17 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <source>No description provided.</source>
         <translation>Aucune description fournie.</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>Option :</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>Ajouter un correctif</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>Désactiver tous les patchs</translation>
@@ -16298,7 +16545,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Hash</source>
-        <translation>Hashage</translation>
+        <translation>Empreinte</translation>
     </message>
     <message>
         <source>Status</source>
@@ -16310,7 +16557,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Controllers:</source>
-        <translation>Contrôlleurs :</translation>
+        <translation>Contrôleurs :</translation>
     </message>
     <message>
         <source>Release Info:</source>
@@ -16603,6 +16850,10 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Taille minimale :</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Balayage en cours d&apos;image</translation>
+    </message>
+    <message>
         <source>Scaled Interlacing</source>
         <translation>Entrelacement mis à l&apos;échelle</translation>
     </message>
@@ -16635,6 +16886,14 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Réinitialiser le seuil d&apos;effacement de profondeur</translation>
     </message>
     <message>
+        <source>CPU Mode:</source>
+        <translation>Mode CPU :</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>Cache de sommets :</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Correction de perspective des textures</translation>
     </message>
@@ -16653,6 +16912,10 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <message>
         <source>CPU Mode</source>
         <translation>Mode CPU</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Utilise PGXP pour toutes les instructions, et pas uniquement pour les opérations mémoire. Nécessaire pour que PGXP corrige les tremblements dans certains jeux, mais a un coût élevé en performances. Le mode Automatique ne l&apos;active que pour les jeux qui le nécessitent selon la base de données des jeux.</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -16692,7 +16955,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>Toujours suivre les téléchargements</translation>
+        <translation>Toujours suivre les transferts de textures</translation>
     </message>
     <message>
         <source>Dump Replaced Textures</source>
@@ -16892,7 +17155,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Contrôle comment le dithering est appliqué dans le GPU émulé. True Color désactive le dithering et produit les dégradés les plus esthétiques. Les options mises à l&apos;échelle rendent le motif de dithering moins visible aux résolutions plus élevées. Les options de mélange par shader (Shader Blending) effectuent le mélange de manière logicielle ; elles sont plus précises mais ont un impact &lt;strong&gt;significatif&lt;/strong&gt; sur les performances.</translation>
+        <translation>Contrôle comment le dithering est appliqué dans le GPU émulé. « Couleurs réelles » désactive le dithering et produit les dégradés les plus esthétiques. Les options mises à l&apos;échelle rendent le motif de dithering moins visible aux résolutions plus élevées. Les options avec « fusion par nuanceur » effectuent le mélange de manière logicielle ; elles sont plus précises mais ont un impact &lt;strong&gt;significatif&lt;/strong&gt; sur les performances.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -16900,7 +17163,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Modifie le format d&apos;image utilisé pour afficher la sortie de la console à l&apos;écran. La valeur par défaut est Auto (Game Native), qui ajuste automatiquement le format d&apos;image pour correspondre à la façon dont un jeu était affiché sur une télévision typique de l&apos;époque.</translation>
+        <translation>Modifie le format d&apos;image utilisé pour afficher la sortie de la console à l&apos;écran. La valeur par défaut est Auto (natif du jeu), qui ajuste automatiquement le format d&apos;image pour correspondre à la façon dont un jeu était affiché sur une télévision typique de l&apos;époque.</translation>
     </message>
     <message>
         <source>Deinterlacing</source>
@@ -16916,7 +17179,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Détermine quelle partie de la zone normalement non visible sur un téléviseur grand public doit être rognée/masquée. Certains jeux affichent du contenu dans la zone d&apos;overscan ou l&apos;utilisent pour des effets d&apos;écran. Peut ne pas s&apos;afficher correctement avec le réglage &quot;Toutes les bordures&quot;. &quot;Overscan uniquement&quot; offre un bon compromis entre stabilité et masquage des bordures noires.</translation>
+        <translation>Détermine quelle partie de la zone normalement non visible sur un téléviseur grand public doit être rognée/masquée. Certains jeux affichent du contenu dans la zone d&apos;overscan ou l&apos;utilisent pour des effets d&apos;écran. Peut ne pas s&apos;afficher correctement avec le réglage &quot;Toutes les bordures&quot;. &quot;Zone de surbalayage uniquement&quot; offre un bon compromis entre stabilité et masquage des bordures noires.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -17016,7 +17279,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Force l&apos;utilisation de FIFO plutôt que la présentation Mailbox, c&apos;est-à-dire le double tampon au lieu du triple tampon. Entraîne généralement une moins bonne régularité de la fréquence d&apos;images (frame pacing).</translation>
+        <translation>Force l&apos;utilisation de FIFO plutôt que la présentation Mailbox, c&apos;est-à-dire le double tampon au lieu du triple tampon. Entraîne généralement une présentation moins régulière des images.</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
@@ -17047,12 +17310,16 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Utilise un second thread pour le dessin des graphismes. Offre une amélioration de vitesse significative, en particulier avec le moteur de rendu logiciel, et son utilisation est sans danger.</translation>
     </message>
     <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Utilise les positions des sommets dans l&apos;espace écran pour obtenir des positions précises, au lieu de suivre les accès mémoire. Peut rendre certains jeux compatibles avec PGXP, mais &lt;strong&gt;n&apos;apporte généralement aucun avantage.&lt;/strong&gt; Le mode Automatique ne l&apos;active que pour les jeux qui le nécessitent selon la base de données des jeux.</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Rognage de la modulation de texture (GPU « Ancien/v0 »)</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Rogner les couleurs des sommets à 5:5:5 avant de moduler avec la couleur de la texture, ce qui entraîne généralement une bande plus visible. C&apos;est une caractéristique des « anciens » GPU présents dans les premiers modèles de consoles.</translation>
+        <translation>Réduit la précision des couleurs des sommets à 5:5:5 avant la modulation avec la couleur de la texture, ce qui entraîne généralement des bandes de couleur plus visibles. C&apos;est une caractéristique des « anciens » GPU présents dans les premiers modèles de consoles.</translation>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
@@ -17061,6 +17328,10 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>Échantillonne les textures 16 bits en couleurs directes à leur résolution native lors de la mise à l&apos;échelle. Cela peut corriger le filtrage des vidéos FMV et des arrière-plans dans certains jeux, mais peut réduire la qualité des effets de rendu vers une texture.</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>Applique les modifications du tampon d&apos;image affiché en cours d&apos;image, plutôt qu&apos;au début de l&apos;image suivante. Certains jeux en dépendent pour leurs effets d&apos;écran partagé, mais cela provoque des déchirures d&apos;image dans les jeux qui changent de tampon d&apos;image en cours d&apos;image. Ne l&apos;activez donc que pour les jeux qui en ont besoin.</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -17125,14 +17396,6 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>Ajoute une précision supplémentaire aux données PGXP après la projection. Peut améliorer le visuel dans certains jeux.</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>Utilise PGXP pour toutes les instructions, pas seulement les opérations mémoire. Requis pour que PGXP corrige le vacillement dans certains jeux, mais a un coût élevé en termes de performances.</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>Utilise les positions des sommets dans l&apos;espace écran pour obtenir des positions précises, au lieu de suivre les accès mémoire. Peut fournir une compatibilité PGXP pour certains jeux, mais &lt;strong&gt;n&apos;apporte généralement aucun avantage.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -17387,7 +17650,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>Décalage de coche</translation>
+        <translation>Décalage en ticks</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
@@ -17534,7 +17797,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <name>Hotkeys</name>
     <message>
         <source>Toggle Fullscreen</source>
-        <translation>Basculer en Plein Ecran</translation>
+        <translation>Basculer en Plein Écran</translation>
     </message>
     <message>
         <source>Toggle Pause</source>
@@ -17542,15 +17805,15 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Power Off System</source>
-        <translation>Eteindre le Système</translation>
+        <translation>Éteindre le Système</translation>
     </message>
     <message>
         <source>Save Screenshot</source>
-        <translation>Sauvegarder les Captures d&apos;Ecrans</translation>
+        <translation>Enregistrer une capture d&apos;écran</translation>
     </message>
     <message>
         <source>Frame Step</source>
-        <translation>Pas de la Trame</translation>
+        <translation>Avancer d&apos;une image</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -17566,11 +17829,11 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>Basculer le  tampon de profondeur PGXP</translation>
+        <translation>Basculer le tampon de profondeur PGXP</translation>
     </message>
     <message>
         <source>Increase Resolution Scale</source>
-        <translation>Augmenter l&apos;Echelle de Résolution</translation>
+        <translation>Augmenter l&apos;Échelle de Résolution</translation>
     </message>
     <message>
         <source>Open Pause Menu</source>
@@ -17678,47 +17941,47 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Load Game State 1</source>
-        <translation>Charger l&apos;Etat du Jeu 1</translation>
+        <translation>Charger l&apos;État du Jeu 1</translation>
     </message>
     <message>
         <source>Load Game State 2</source>
-        <translation>Charger l&apos;Etat du Jeu 2</translation>
+        <translation>Charger l&apos;État du Jeu 2</translation>
     </message>
     <message>
         <source>Load Game State 3</source>
-        <translation>Charger l&apos;Etat du Jeu 3</translation>
+        <translation>Charger l&apos;État du Jeu 3</translation>
     </message>
     <message>
         <source>Load Game State 4</source>
-        <translation>Charger l&apos;Etat du Jeu 4</translation>
+        <translation>Charger l&apos;État du Jeu 4</translation>
     </message>
     <message>
         <source>Load Game State 5</source>
-        <translation>Charger l&apos;Etat du Jeu 5</translation>
+        <translation>Charger l&apos;État du Jeu 5</translation>
     </message>
     <message>
         <source>Load Game State 6</source>
-        <translation>Charger l&apos;Etat du Jeu 6</translation>
+        <translation>Charger l&apos;État du Jeu 6</translation>
     </message>
     <message>
         <source>Load Game State 7</source>
-        <translation>Charger l&apos;Etat du Jeu 7</translation>
+        <translation>Charger l&apos;État du Jeu 7</translation>
     </message>
     <message>
         <source>Load Game State 8</source>
-        <translation>Charger l&apos;Etat du Jeu 8</translation>
+        <translation>Charger l&apos;État du Jeu 8</translation>
     </message>
     <message>
         <source>Load Game State 9</source>
-        <translation>Charger l&apos;Etat du Jeu 9</translation>
+        <translation>Charger l&apos;État du Jeu 9</translation>
     </message>
     <message>
         <source>Load Game State 10</source>
-        <translation>Charger l&apos;Etat du Jeu 10</translation>
+        <translation>Charger l&apos;État du Jeu 10</translation>
     </message>
     <message>
         <source>Save Game State 1</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 1</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 1</translation>
     </message>
     <message>
         <source>Interface</source>
@@ -17866,39 +18129,39 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Save Game State 2</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 2</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 2</translation>
     </message>
     <message>
         <source>Save Game State 3</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 3</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 3</translation>
     </message>
     <message>
         <source>Save Game State 4</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 4</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 4</translation>
     </message>
     <message>
         <source>Save Game State 5</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 5</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 5</translation>
     </message>
     <message>
         <source>Save Game State 6</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 6</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 6</translation>
     </message>
     <message>
         <source>Save Game State 7</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 7</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 7</translation>
     </message>
     <message>
         <source>Save Game State 8</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 8</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 8</translation>
     </message>
     <message>
         <source>Save Game State 9</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 9</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 9</translation>
     </message>
     <message>
         <source>Save Game State 10</source>
-        <translation>Sauvegarder l&apos;Etat du Jeu 10</translation>
+        <translation>Sauvegarder l&apos;État du Jeu 10</translation>
     </message>
     <message>
         <source>Load Global State 1</source>
@@ -18088,11 +18351,11 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <name>InputBindingDialog</name>
     <message>
         <source>Edit Bindings</source>
-        <translation>Editer les Assignations</translation>
+        <translation>Éditer les Assignations</translation>
     </message>
     <message>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>Assigne pour la manette0/BoutonRond</translation>
+        <translation>Affectations pour Controller0/ButtonCircle</translation>
     </message>
     <message>
         <source>Sensitivity:</source>
@@ -18870,7 +19133,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>&amp;Débug</translation>
+        <translation>&amp;Débogage</translation>
     </message>
     <message>
         <source>Switch GPU Renderer</source>
@@ -18878,11 +19141,11 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Switch CPU Emulation Mode</source>
-        <translation>Changer le Mode d&apos;Emulation du CPU</translation>
+        <translation>Changer le Mode d&apos;Émulation du CPU</translation>
     </message>
     <message>
         <source>Switch Crop Mode</source>
-        <translation>Changer le Mode de Coupe</translation>
+        <translation>Changer le mode de rognage</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -18990,11 +19253,11 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>About &amp;Qt...</source>
-        <translation>A Propos De &amp;Qt...</translation>
+        <translation>À Propos De &amp;Qt...</translation>
     </message>
     <message>
         <source>&amp;About DuckStation...</source>
-        <translation>&amp;A Propos De DuckStation...</translation>
+        <translation>&amp;À Propos De DuckStation...</translation>
     </message>
     <message>
         <source>Ad&amp;vanced</source>
@@ -19026,11 +19289,11 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Dump CPU to VRAM Copies</source>
-        <translation>Copier le CPU vers la VRAM</translation>
+        <translation>Exporter les copies du CPU vers la VRAM</translation>
     </message>
     <message>
         <source>Dump VRAM to CPU Copies</source>
-        <translation>Copier la VRAM vers le CPU</translation>
+        <translation>Exporter les copies de la VRAM vers le CPU</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -19050,19 +19313,19 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Show GPU State</source>
-        <translation>Afficher l&apos;Etat du GPU</translation>
+        <translation>Afficher l&apos;État du GPU</translation>
     </message>
     <message>
         <source>Show SPU State</source>
-        <translation>Afficher l&apos;Etat du SPU</translation>
+        <translation>Afficher l&apos;État du SPU</translation>
     </message>
     <message>
         <source>Show Timers State</source>
-        <translation>Afficher l&apos;Etat du Compteur</translation>
+        <translation>Afficher l&apos;état des temporisateurs</translation>
     </message>
     <message>
         <source>Show MDEC State</source>
-        <translation>Afficher l&apos;Etat du MDEC</translation>
+        <translation>Afficher l&apos;État du MDEC</translation>
     </message>
     <message>
         <source>Show DMA State</source>
@@ -19070,7 +19333,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>&amp;Screenshot</source>
-        <translation>&amp;Capture d&apos;Ecran</translation>
+        <translation>&amp;Capture d&apos;Écran</translation>
     </message>
     <message>
         <source>Resume</source>
@@ -19086,11 +19349,11 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Lock Toolbar</source>
-        <translation>Verrouiller la barre d&apos;outil</translation>
+        <translation>Verrouiller la barre d&apos;outils</translation>
     </message>
     <message>
         <source>&amp;Status Bar</source>
-        <translation>Barre  de &amp;Statut</translation>
+        <translation>Barre de &amp;Statut</translation>
     </message>
     <message>
         <source>Game &amp;List</source>
@@ -19298,7 +19561,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Ac&amp;hievements</source>
-        <translation>Ré&amp;ussites</translation>
+        <translation>&amp;Succès</translation>
     </message>
     <message>
         <source>Configures options related to RetroAchievements.</source>
@@ -19418,7 +19681,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
-        <translation>Editeur de &amp;Carte Mémoire</translation>
+        <translation>Éditeur de &amp;Carte Mémoire</translation>
     </message>
     <message>
         <source>Opens the memory card editor.</source>
@@ -19427,6 +19690,10 @@ Shift+clic pour définir plusieurs assignations.</translation>
     <message>
         <source>Opens the debugger for the emulated CPU.</source>
         <translation>Ouvre le débogueur pour le CPU émulé.</translation>
+    </message>
+    <message>
+        <source>TTY Window</source>
+        <translation>Fenêtre TTY</translation>
     </message>
     <message>
         <source>Show Grid Ca&amp;ptions</source>
@@ -19490,7 +19757,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Memory &amp;Scanner</source>
-        <translation>Mémoire &amp;Scanner</translation>
+        <translation>&amp;Scanner de mémoire</translation>
     </message>
     <message>
         <source>Scanner</source>
@@ -19842,7 +20109,7 @@ Les sauvegardes ne seront pas récupérables.</translation>
     </message>
     <message>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation>Échec de la suppression du fichier de save state &apos;%1&apos;.</translation>
+        <translation>Échec de la suppression du fichier d&apos;état de sauvegarde &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>Save was created %1.</source>
@@ -20054,7 +20321,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et démarrer le jeu malgré tou
     </message>
     <message>
         <source>Copy Error</source>
-        <translation>Copier l&apos;Erreur</translation>
+        <translation>Erreur de copie</translation>
     </message>
     <message>
         <source>You must select a different file to the current cover image.</source>
@@ -20066,7 +20333,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et démarrer le jeu malgré tou
     </message>
     <message>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>N&apos;a pas réussi à copier &apos;%1&apos; to &apos;%2&apos;</translation>
+        <translation>Échec de la copie de &apos;%1&apos; vers &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Failed to remove &apos;%1&apos;</source>
@@ -20190,7 +20457,7 @@ Cette action ne peut pas être annulée.</translation>
     </message>
     <message>
         <source>Save State For Resume</source>
-        <translation>Save state pour reprendre</translation>
+        <translation>Enregistrer un état pour reprendre</translation>
     </message>
     <message>
         <source>Memory Card Not Found</source>
@@ -20784,7 +21051,7 @@ Erreur : {1}</translation>
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>L&apos;éditeur de carte mémoire vous permet de déplacer les sauvegardes entres les cartes, ainsi que d&apos;importer des cartes dans d&apos;autres formats.</translation>
+        <translation>L&apos;éditeur de carte mémoire vous permet de déplacer les sauvegardes entre les cartes, ainsi que d&apos;importer des cartes dans d&apos;autres formats.</translation>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
@@ -21415,7 +21682,7 @@ Erreur : {1}</translation>
     </message>
     <message>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation>PGXP est incompatible avec le logiciel de rendu, ce qui désactive PGXP.</translation>
+        <translation>PGXP est incompatible avec le moteur de rendu logiciel, désactivation de PGXP.</translation>
     </message>
     <message>
         <source>PGXP is now enabled.</source>
@@ -21552,7 +21819,7 @@ Erreur : {1}</translation>
     <message>
         <source>Failed to save undo load state:
 {}</source>
-        <translation>Échec de la sauvegarde de l&apos;état de chargement annulé :
+        <translation>Échec de l&apos;enregistrement de l&apos;état permettant d&apos;annuler le chargement :
 {}</translation>
     </message>
     <message>
@@ -21861,7 +22128,7 @@ Erreur : {1}</translation>
     </message>
     <message>
         <source>Leaving {0} connected.</source>
-        <translation>Laisser {0} connecté.</translation>
+        <translation>{0} reste connecté.</translation>
     </message>
     <message>
         <source>Memory card {} present in save state but not in system.</source>
@@ -21881,7 +22148,7 @@ Erreur : {1}</translation>
     </message>
     <message>
         <source>Ignoring card.</source>
-        <translation>Ignorer la carte.</translation>
+        <translation>Carte ignorée.</translation>
     </message>
     <message>
         <source>Memory card {} present in system but not in save state.</source>
@@ -22461,11 +22728,11 @@ Souhaitez-vous mettre à jour le raccourci pour qu&apos;il pointe vers l&apos;em
     </message>
     <message>
         <source>LeftShoulder</source>
-        <translation>GâchetteGauche</translation>
+        <translation>BoutonÉpauleGauche</translation>
     </message>
     <message>
         <source>RightShoulder</source>
-        <translation>GâchetteDroite</translation>
+        <translation>BoutonÉpauleDroit</translation>
     </message>
     <message>
         <source>DPadUp</source>
@@ -22693,7 +22960,7 @@ Souhaitez-vous mettre à jour le raccourci pour qu&apos;il pointe vers l&apos;em
     </message>
     <message>
         <source>MuteLED</source>
-        <translation>CouperLED</translation>
+        <translation>LED de coupure du micro</translation>
     </message>
     <message>
         <source>RGBLED</source>
@@ -22795,7 +23062,7 @@ Souhaitez-vous mettre à jour le raccourci pour qu&apos;il pointe vers l&apos;em
     </message>
     <message>
         <source>Last Played</source>
-        <translation>Dernière lecture</translation>
+        <translation>Dernière partie</translation>
     </message>
     <message>
         <source>Select</source>
@@ -23396,6 +23663,21 @@ Voulez-vous créer ce répertoire ?</translation>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (net)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Automatique</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Activé</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -24016,7 +24298,7 @@ Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>BIOS Directory:</source>
-        <translation>Répertoire du BIOS</translation>
+        <translation>Répertoire du BIOS :</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -24064,7 +24346,7 @@ Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Contrôle la manière dont le tramage est appliqué dans le GPU émulé. « True Color » désactive le tramage et produit les dégradés les plus esthétiques. Les options « Scaled » rendent le motif de tramage moins visible à des résolutions élevées. Les options « Shader Blending » effectuent le mélange par logiciel ; elles sont plus précises mais entraînent une baisse de performance &lt;strong&gt;significative&lt;/strong&gt;.</translation>
+        <translation>Contrôle la manière dont le tramage est appliqué dans le GPU émulé. « Couleurs réelles » désactive le tramage et produit les dégradés les plus esthétiques. Les options « Mis à l&apos;échelle » rendent le motif de tramage moins visible à des résolutions élevées. Les options avec « fusion par nuanceur » effectuent le mélange par logiciel ; elles sont plus précises mais entraînent une baisse de performance &lt;strong&gt;significative&lt;/strong&gt;.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
@@ -24072,7 +24354,7 @@ Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Change le format d&apos;image utilisé pour afficher la sortie de la console à l&apos;écran. La valeur par défaut « Auto (Game Native) » ajuste automatiquement le format d&apos;image pour correspondre à la façon dont un jeu serait affiché sur un téléviseur typique de l&apos;époque.</translation>
+        <translation>Change le format d&apos;image utilisé pour afficher la sortie de la console à l&apos;écran. La valeur par défaut « Auto (natif du jeu) » ajuste automatiquement le format d&apos;image pour correspondre à la façon dont un jeu serait affiché sur un téléviseur typique de l&apos;époque.</translation>
     </message>
     <message>
         <source>:</source>
@@ -24084,7 +24366,7 @@ Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Détermine la zone, normalement non visible sur un téléviseur grand public, à recadrer ou masquer. Certains jeux affichent du contenu dans la zone d&apos;overscan ou l&apos;utilisent pour des effets d&apos;écran. Peut ne pas s&apos;afficher correctement avec le paramètre « All Borders ». « Only Overscan » offre un bon compromis entre stabilité et masquage des bordures noires.</translation>
+        <translation>Détermine la zone, normalement non visible sur un téléviseur grand public, à recadrer ou masquer. Certains jeux affichent du contenu dans la zone de surbalayage ou l&apos;utilisent pour des effets d&apos;écran. Peut ne pas s&apos;afficher correctement avec le paramètre « Toutes les bordures ». « Zone de surbalayage uniquement » offre un bon compromis entre stabilité et masquage des bordures noires.</translation>
     </message>
     <message>
         <source>Scaling:</source>
@@ -24398,7 +24680,7 @@ Souhaitez-vous continuer ?</translation>
     <message>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
-        <translation>Forcer la synchronisation des images</translation>
+        <translation>Forcer la cadence des images</translation>
     </message>
     <message>
         <source>8MB RAM</source>
@@ -24881,6 +25163,29 @@ Pour des raisons légales, vous devez obtenir un BIOS à partir d&apos;une véri
     </message>
 </context>
 <context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>Fenêtre TTY</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>Fenêtre TTY - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>&amp;Paramètres</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>Activer la journalisation &amp;TTY du BIOS</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>Afficher les &amp;horodatages</translation>
+    </message>
+</context>
+<context>
     <name>TextureReplacementSettingsDialog</name>
     <message>
         <source>Texture Replacement Settings</source>
@@ -24944,7 +25249,7 @@ Pour des raisons légales, vous devez obtenir un BIOS à partir d&apos;une véri
     </message>
     <message>
         <source>Texture Dumping Options</source>
-        <translation>Options d&apos;exporation des textures</translation>
+        <translation>Options d&apos;exportation des textures</translation>
     </message>
     <message>
         <source>Dump Size Threshold:</source>
@@ -24956,15 +25261,15 @@ Pour des raisons légales, vous devez obtenir un BIOS à partir d&apos;une véri
     </message>
     <message>
         <source>Determines the minimum size of a texture that will be dumped. Textures with a size smaller than this value will be ignored.</source>
-        <translation>Détermine la taille minimale d&apos;une texture à vider. Les textures d&apos;une taille inférieure à cette valeur seront ignorées.</translation>
+        <translation>Détermine la taille minimale d&apos;une texture à exporter. Les textures d&apos;une taille inférieure à cette valeur seront ignorées.</translation>
     </message>
     <message>
         <source>Background Dumping Options</source>
-        <translation>Options de vidage en arrière-plan</translation>
+        <translation>Options d&apos;exportation des arrière-plans</translation>
     </message>
     <message>
         <source>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</source>
-        <translation>Détermine la taille minimale d&apos;une écriture VRAM qui sera vidée, en mode de vidage en arrière-plan. Les téléchargements inférieurs à cette taille seront ignorés.</translation>
+        <translation>Détermine la taille minimale d&apos;une écriture en VRAM à exporter en mode d&apos;exportation des arrière-plans. Les transferts vers la VRAM inférieurs à cette taille seront ignorés.</translation>
     </message>
     <message>
         <source>Export...</source>

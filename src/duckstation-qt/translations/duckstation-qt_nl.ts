@@ -5,11 +5,11 @@
     <name>AboutDialog</name>
     <message>
         <source>About DuckStation</source>
-        <translation>Over EendStation</translation>
+        <translation>Over DuckStation</translation>
     </message>
     <message>
         <source>DuckStation</source>
-        <translation>EendStation</translation>
+        <translation>DuckStation</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -1111,7 +1111,7 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     </message>
     <message>
         <source>Show Debug Menu</source>
-        <translation>Toon het debug-venster</translation>
+        <translation>Debugmenu tonen</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -1811,6 +1811,16 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>Save state opslaan bij afsluiten</translation>
     </message>
     <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>Sluiten van game bevestigen</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>Vraagt om bevestiging voordat een game vanuit het pauzemenu wordt gesloten.</translation>
+    </message>
+    <message>
         <source>Pause On Controller Disconnection</source>
         <comment>settings_pause_on_controller_disconnection</comment>
         <translation>Pauzeren bij loskoppelen van controller</translation>
@@ -1961,6 +1971,16 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>Afsluiten…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>Scanout tijdens een frame</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>Past wijzigingen in de weergegeven framebuffer toe terwijl een frame wordt weergegeven. Nodig voor split-screeneffecten in sommige games, maar veroorzaakt tearing in andere games.</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2117,6 +2137,16 @@ Huidige toewijzing: %s</translation>
         <translation>Gedrag</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>Lijstpictogrammen</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>Selecteert de afbeelding die naast elke game in de gamelijst wordt weergegeven.</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>Video-instellingen</translation>
@@ -2160,6 +2190,21 @@ Huidige toewijzing: %s</translation>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>Het geselecteerde bestand kon niet worden geopend.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>Sluiten bevestigen</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>Weet u zeker dat u de huidige game wilt sluiten?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>Volgende keer vanaf hier hervatten</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2506,6 +2551,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Touchscreen</source>
         <comment>controller_settings_tab_touchscreen</comment>
         <translation>Aanraakscherm</translation>
+    </message>
+    <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>Poort %1$s</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -2971,6 +3021,85 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Save-statebeheer</translation>
     </message>
     <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>Geheugenkaarten</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>Nieuwe kaart maken</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>Maakt een nieuwe, geformatteerde geheugenkaart.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>Geheugenkaart importeren</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>Importeert een geheugenkaart uit de opslag en converteert deze indien nodig.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>Geheugenkaart &apos;%s&apos; geïmporteerd.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>Er bestaat al een geheugenkaart met de naam &apos;%s&apos;. Wilt u deze overschrijven? Alle bestaande gegevens gaan verloren.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>Eén kaart gebruiken voor games met meerdere schijven</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>Gebruikt bij games met meerdere schijven één geheugenkaart voor alle schijven wanneer geheugenkaarten per game (titel) worden gebruikt. Indien uitgeschakeld, gebruikt elke schijf een afzonderlijke kaart.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>Het aantal geheugenkaarten dat kan worden gebruikt, hangt af van de ondersteuning voor multitap en van de game.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>Huidige multitapmodus: %1$s (%2$d kaart)</numerusform>
+            <numerusform>Huidige multitapmodus: %1$s (%2$d kaarten)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>Type geheugenkaart</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>Selecteert welke geheugenkaartimage in dit vak wordt geplaatst.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>Naam gedeelde kaart</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>Selecteert de kaart die wordt gebruikt wanneer het kaarttype wordt gedeeld door alle games.</translation>
+    </message>
+    <message>
         <source>Confirm Deletion</source>
         <comment>confirm_deletion</comment>
         <translation>Verwijdering bevestigen</translation>
@@ -3272,6 +3401,76 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Remove All</source>
         <comment>cheat_codes_remove_all</comment>
         <translation>Alles verwijderen</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>Terugspoelen</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>Linkerknop</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>Rechterknop</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>Schalen</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>Passend maken</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>Vullen</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>Uitrekken</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>Muis</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>Standaardwaarde herstellen</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>Huidige waarde</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>Standaardwaarde</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>Globale instelling</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Gebruikt PGXP voor alle instructies, niet alleen voor geheugenbewerkingen. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Gebruikt schermposities om PGXP-gegevens te bepalen. Kan de beelden in sommige games verbeteren. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
     </message>
     <message>
         <source>Auto (Game Native)</source>
@@ -3909,16 +4108,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Spellenlijst</translation>
     </message>
     <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>Voorkeur geven aan prestatiepictogrammen</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>Geeft voorrang aan de badges van het spel die voor RetroAchievements worden gebruikt boven geheugenkaartpictogrammen.</translation>
-    </message>
-    <message>
         <source>Show Grid Captions</source>
         <comment>settings_show_grid_captions</comment>
         <translation>Bijschriften in rasterweergave tonen</translation>
@@ -4191,11 +4380,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
         <comment>settings_achievements_disclaimer</comment>
         <translation>DuckStation gebruikt RetroAchievements (retroachievements.org) als prestatiedatabase en voor het bijhouden van de voortgang. Een RetroAchievements-account is niet vereist om DuckStation te gebruiken.</translation>
-    </message>
-    <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>Poort %1$d</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -6180,7 +6364,7 @@ Wil je er nu één importeren?</translation>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <comment>settings_summary_dithering_mode</comment>
-        <translation>Regelt hoe dithering in de geëmuleerde GPU wordt toegepast. True Color schakelt dithering uit en levert de mooiste kleurverlopen op.</translation>
+        <translation>Regelt hoe dithering in de geëmuleerde GPU wordt toegepast. Ware kleuren schakelt dithering uit en levert de mooiste kleurverlopen op.</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -6552,11 +6736,6 @@ Wil je er nu één importeren?</translation>
         <translation>Gebruikt perspectiefcorrecte interpolatie voor kleuren, wat de beelden in sommige games kan verbeteren.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>Gebruikt PGXP voor alle instructies, niet alleen geheugenbewerkingen.</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>Verhoogt de nauwkeurigheid van polygon-culling, waardoor het aantal gaten in de geometrie afneemt.</translation>
@@ -6575,11 +6754,6 @@ Wil je er nu één importeren?</translation>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>Gebruikt perspectiefcorrecte interpolatie voor textuurcoördinaten, waardoor vervormde texturen worden rechtgetrokken.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>Gebruikt schermposities om PGXP-gegevens op te lossen. Kan de beelden in sommige games verbeteren.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -7566,7 +7740,7 @@ Wil je er nu één importeren?</translation>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>De buffergrootte bepaald de grootte van de audio &apos;chunks&apos; die gespeeld worden door de host. Kleinere waardes verkleinen de vertraging, maar kunnen voor storinkjes zorgen als de snelheid van de emulator inconsistent is. Merk op dat de &apos;Cubeb&apos; backend kleinere chunks gebruikt, ongeacht deze waarde, uds een kleine waarde zal de vertraging niet significant beperken.</translation>
+        <translation>De buffergrootte bepaalt de grootte van de audioblokken die de host ophaalt. Kleinere waarden verminderen de uitvoervertraging, maar kunnen haperingen veroorzaken als de emulatiesnelheid niet constant is. Houd er rekening mee dat de Cubeb-backend ongeacht deze waarde kleinere blokken gebruikt, zodat een lage waarde hier de latentie mogelijk niet merkbaar verandert.</translation>
     </message>
     <message>
         <source> ms</source>
@@ -7692,7 +7866,7 @@ Wil je er nu één importeren?</translation>
     </message>
     <message>
         <source>Current Version: </source>
-        <translation>Huidige Verise: </translation>
+        <translation>Huidige versie: </translation>
     </message>
     <message>
         <source>New Version: </source>
@@ -7764,7 +7938,7 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Save State Waarschuwing&lt;/h2&gt;&lt;p&gt;Deze updates zal je save states&lt;b&gt;incompatibel&lt;/b&gt; maken. Zorg ervoor dat al je save states op je geheugenkaart zijn om geen voortgang te verliezen.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Waarschuwing voor save states&lt;/h2&gt;&lt;p&gt;Door deze update te installeren worden uw save states &lt;b&gt;incompatibel&lt;/b&gt;. Zorg ervoor dat u uw games op een geheugenkaart hebt opgeslagen voordat u deze update installeert, anders verliest u voortgang.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Updater Warning</source>
@@ -7801,7 +7975,7 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
     <message>
         <source>PAL (Europe, Australia):</source>
         <translatorcomment>I can&apos;t add a trema to the last e in Australie...</translatorcomment>
-        <translation>PAL (Europa, Australie):</translation>
+        <translation>PAL (Europa, Australië):</translation>
     </message>
     <message>
         <source>NTSC-J (Japan):</source>
@@ -7821,7 +7995,7 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
     </message>
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>EendStation zal naar BIOS images zoeken in deze folder</translation>
+        <translation>DuckStation zoekt in deze map naar BIOS-images.</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -8330,6 +8504,10 @@ Uw dump is mogelijk beschadigd of de fysieke schijf is bekrast.</translation>
 <context>
     <name>CheatCodeEditorDialog</name>
     <message>
+        <source>Patch Editor</source>
+        <translation>Patcheditor</translation>
+    </message>
+    <message>
         <source>Enter Group Name</source>
         <translation>Groepsnaam invoeren</translation>
     </message>
@@ -8366,10 +8544,14 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Er bestaat al een code met de naam &apos;%1&apos;.</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>De cheatcode kon niet worden opgeslagen:
+        <translation>Code opslaan mislukt:
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Geen</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8658,7 +8840,7 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     </message>
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
-        <translation>Simuleert vertragingen in de recompilers wanneer de geëmuleerde CPU instructies uit zijn cache moet ophalen. Hierdoor draaien games dichter bij de framesnelheid van de console, met een kleine invloed op de prestaties. De interpretermodus simuleert de instructiecache altijd.</translation>
+        <translation>Simuleert vertragingen in de recompilers wanneer de geëmuleerde CPU instructies in zijn cache moet laden. Hierdoor draaien games dichter bij de framesnelheid van de console, met een kleine invloed op de prestaties. De interpretermodus simuleert de instructiecache altijd.</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
@@ -8698,7 +8880,7 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>De CPU overklokken kan spellen laten crashen, bugs creeren, prestaties verslechteren en significant de systeemvereisten verhogen.
+        <translation>De CPU overklokken kan spellen laten crashen, bugs creëren, prestaties verslechteren en significant de systeemvereisten verhogen.
 
 Door deze instelling aan te zetten ga je ermee akkoord dat je geen bug-reports maakt, tenzij je zeker weet dat de bug ook gebeurt zonder overklokken.
 
@@ -8796,7 +8978,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
-        <translation>Weet u zeker dat u alle toewijzingen voor deze controller wilt wissen? Deze actie kan niet ongedaan worden.</translation>
+        <translation>Weet u zeker dat u alle toewijzingen voor deze controller wilt wissen? Deze actie kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Automatic Mapping Failed</source>
@@ -8871,7 +9053,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Gezichtsknoppen</translation>
+        <translation>Actieknoppen</translation>
     </message>
     <message>
         <source>Cross</source>
@@ -8966,7 +9148,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Gezichtsknoppen</translation>
+        <translation>Actieknoppen</translation>
     </message>
     <message>
         <source>Cross</source>
@@ -9021,7 +9203,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Gezichtsknoppen</translation>
+        <translation>Actieknoppen</translation>
     </message>
     <message>
         <source>Cross</source>
@@ -9247,7 +9429,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Gezichtsknoppen</translation>
+        <translation>Actieknoppen</translation>
     </message>
     <message>
         <source>I</source>
@@ -9306,7 +9488,7 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>Gezichtsknoppen</translation>
+        <translation>Actieknoppen</translation>
     </message>
     <message>
         <source>I</source>
@@ -9577,11 +9759,11 @@ De &quot;alternatieve&quot; kleur wordt gebruikt wanneer de analoge modus actief
     </message>
     <message>
         <source>Trigger</source>
-        <translation>Trekker</translation>
+        <translation>Activeringsknop</translation>
     </message>
     <message>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Selecteer de trekker om deze macro te activeren. Dit kan één knop zijn of een combinatie van knoppen (een combinatie). Shift-klik voor meerdere trekkers.</translation>
+        <translation>Selecteer de knop om deze macro te activeren. Dit kan één knop zijn of een combinatie van knoppen. Shift-klik voor meerdere activeringsknoppen.</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
@@ -9720,7 +9902,7 @@ You cannot undo this action.</source>
 
 Alle huidige globale bindingen worden verwijderd en de bindingen van de voorinstelling worden geladen.
 
-Deze actie kan niet ongedaan worden.</translation>
+Deze actie kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Delete Controller Preset</source>
@@ -9732,7 +9914,7 @@ Deze actie kan niet ongedaan worden.</translation>
 You cannot undo this action.</source>
         <translation>Weet u zeker dat u de controller­voorinstelling met de naam &apos;%1&apos; wilt verwijderen?
 
-Deze actie kan niet ongedaan worden.</translation>
+Deze actie kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Are you sure you want to restore the default controller configuration?
@@ -9740,7 +9922,7 @@ Deze actie kan niet ongedaan worden.</translation>
 All bindings and configuration will be lost. You cannot undo this action.</source>
         <translation>Weet u zeker dat u de standaardcontrollerconfiguratie wilt herstellen?
 
-Alle bindingen en configuratie gaan verloren. Deze actie kan niet ongedaan worden.</translation>
+Alle bindingen en configuratie gaan verloren. Deze actie kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Per-game controller configuration reset to global settings.</source>
@@ -10292,7 +10474,7 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     </message>
     <message>
         <source>Step Out</source>
-        <translation>Uitstappen</translation>
+        <translation>Stap uit</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
@@ -10526,7 +10708,7 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
     <name>DebuggingSettingsWidget</name>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Changing these settings may cause games to become unstable or crash.&lt;/span&gt; Do not change any settings on this page if you do not know what you are doing, or understand what the impact of the change will be.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Als u deze instellingen wijzigt, kunnen games instabiel worden of crashen.&lt;/span&gt; Wijzig geen instellingen op deze pagina als u niet weet wat u doet of begrijpt wat de gevolgen van de wijziging zijn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Als u deze instellingen wijzigt, kunnen games instabiel worden of crashen.&lt;/span&gt; Wijzig geen instellingen op deze pagina als u niet weet wat u doet of niet begrijpt wat de gevolgen van de wijziging zijn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Reset To Default</source>
@@ -10558,7 +10740,7 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
     </message>
     <message>
         <source>Pause On Start</source>
-        <translation>Pause bij opstarten</translation>
+        <translation>Pauzeren bij opstarten</translation>
     </message>
     <message>
         <source>Save State Compression</source>
@@ -10566,19 +10748,19 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
     </message>
     <message>
         <source>Display Active Start Offset</source>
-        <translation>Startoffset actieve weergave tonen</translation>
+        <translation>Startoffset van actieve weergave</translation>
     </message>
     <message>
         <source>Display Active End Offset</source>
-        <translation>Eindoffset actieve weergave tonen</translation>
+        <translation>Eindoffset van actieve weergave</translation>
     </message>
     <message>
         <source>Display Line Start Offset</source>
-        <translation>Startoffset van beeldlijn tonen</translation>
+        <translation>Startoffset van beeldlijn</translation>
     </message>
     <message>
         <source>Display Line End Offset</source>
-        <translation>Eindoffset van beeldlijn tonen</translation>
+        <translation>Eindoffset van beeldlijn</translation>
     </message>
     <message>
         <source>DMA Max Slice Ticks</source>
@@ -11294,8 +11476,12 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Opstarten zonder SBI-bestand toestaan</translation>
     </message>
     <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>Past wijzigingen in de weergegeven framebuffer toe terwijl een frame wordt weergegeven. Nodig voor split-screeneffecten in sommige games, maar veroorzaakt tearing in andere games.</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
-        <translation>Beeldpatches toepassen</translation>
+        <translation>Schijfkopiepatches toepassen</translation>
     </message>
     <message>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
@@ -11567,7 +11753,7 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>Bepaalt de grootte van berichten op het scherm en van de monitor.</translation>
+        <translation>Bepaalt de grootte van berichten en prestatiegegevens op het scherm.</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
@@ -11857,7 +12043,7 @@ De fout was:</translation>
     </message>
     <message>
         <source>Game path copied to clipboard.</source>
-        <translation>Gamepad naar klembord gekopieerd.</translation>
+        <translation>Pad van game naar klembord gekopieerd.</translation>
     </message>
     <message>
         <source>Game region copied to clipboard.</source>
@@ -12046,6 +12232,10 @@ De fout was:</translation>
     <message>
         <source>Memory Card {} Type</source>
         <translation>Type geheugenkaart {}</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Scanout tijdens een frame</translation>
     </message>
     <message>
         <source>Minimal Output Latency</source>
@@ -12445,7 +12635,7 @@ U kunt deze actie niet ongedaan maken.</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
-        <translation>Regelt hoe dithering in de geëmuleerde GPU wordt toegepast. True Color schakelt dithering uit en levert de mooiste kleurverlopen op.</translation>
+        <translation>Regelt hoe dithering in de geëmuleerde GPU wordt toegepast. Ware kleuren schakelt dithering uit en levert de mooiste kleurverlopen op.</translation>
     </message>
     <message>
         <source>Copies a BIOS image to the configured global BIOS directory.</source>
@@ -12713,7 +12903,7 @@ U kunt deze actie niet ongedaan maken.</translation>
     </message>
     <message>
         <source>Dump Replaced Textures</source>
-        <translation>Vervangingstexturen dumpen</translation>
+        <translation>Vervangen texturen dumpen</translation>
     </message>
     <message>
         <source>Dumps textures that have replacements already loaded.</source>
@@ -12757,11 +12947,11 @@ U kunt deze actie niet ongedaan maken.</translation>
     </message>
     <message>
         <source>Enable VRAM Write Dumping</source>
-        <translation>VRAM-wegdumping inschakelen</translation>
+        <translation>Dumpen van VRAM-schrijfbewerkingen inschakelen</translation>
     </message>
     <message>
         <source>Enable VRAM Write Replacement</source>
-        <translation>VRAM-wegvervanging inschakelen</translation>
+        <translation>Vervanging van VRAM-schrijfbewerkingen inschakelen</translation>
     </message>
     <message>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
@@ -13061,7 +13251,7 @@ U kunt deze actie niet ongedaan maken.</translation>
     </message>
     <message>
         <source>Install BIOS</source>
-        <translation>Install BIOS</translation>
+        <translation>BIOS installeren</translation>
     </message>
     <message>
         <source>Internal Resolution</source>
@@ -13373,7 +13563,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Output Latency</source>
-        <translation>Uitlatentie</translation>
+        <translation>Uitvoervertraging</translation>
     </message>
     <message>
         <source>Output Volume</source>
@@ -13389,7 +13579,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
-        <translation>Overschrijft of vervangt normale driehoekweergave door een draadmodel-/lijnweergave.</translation>
+        <translation>Legt een draadmodel-/lijnweergave over de normale driehoekweergave heen of vervangt deze ermee.</translation>
     </message>
     <message>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
@@ -13633,7 +13823,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation>Toont trofeepictogrammen in het gamerooster wanneer games prestaties hebben of zijn voltooid.</translation>
+        <translation>Toont trofeepictogrammen in het gameraster wanneer games prestaties hebben of alle prestaties zijn behaald.</translation>
     </message>
     <message>
         <source>Smooth Scrolling</source>
@@ -13685,7 +13875,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
-        <translation>Schakelt de macro in wanneer de knop wordt ingedrukt in plaats van vastgehouden.</translation>
+        <translation>Schakelt de macro in of uit wanneer de knop wordt ingedrukt in plaats van vastgehouden.</translation>
     </message>
     <message>
         <source>Top: </source>
@@ -13693,7 +13883,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Track</source>
-        <translation>Volgen</translation>
+        <translation>Track</translation>
     </message>
     <message>
         <source>Track Unofficial Achievements</source>
@@ -13756,6 +13946,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Gebruikt OpenGL ES, zelfs wanneer desktop-OpenGL wordt ondersteund. Kan prestaties op sommige SBC-stuurprogramma&apos;s verbeteren.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>Gebruikt PGXP voor alle instructies, niet alleen voor geheugenbewerkingen. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
+    </message>
+    <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
         <translation>Gebruikt een tweede thread voor het tekenen van afbeeldingen. Levert een aanzienlijke snelheidsverbetering, vooral met de software-renderer, en is veilig te gebruiken.</translation>
     </message>
@@ -13766,6 +13960,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>Gebruikt gamespecifieke configuratie voor invoerbronnen. Als dit is uitgeschakeld, wordt de globale configuratie gebruikt.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Gebruikt schermposities om PGXP-gegevens te bepalen. Kan de beelden in sommige games verbeteren. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
@@ -13857,7 +14055,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
-        <translation>Pauseert de emulator wanneer een spel wordt gestart.</translation>
+        <translation>Pauzeert de emulator wanneer een spel wordt gestart.</translation>
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
@@ -13933,7 +14131,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
-        <translation>Afbeeldingen vooraf in RAM laden</translation>
+        <translation>Schijfkopieën vooraf in RAM laden</translation>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
@@ -14217,7 +14415,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Search Directories</source>
-        <translation>Mappen doorzoeken</translation>
+        <translation>Zoekmappen</translation>
     </message>
     <message>
         <source>Search on redump.info</source>
@@ -14401,7 +14599,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Setting {} binding {}.</source>
-        <translation>Binding {} wordt ingesteld op {}.</translation>
+        <translation>Toewijzing voor {}: {} instellen.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -14417,7 +14615,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Show Achievement Trophy Icons</source>
-        <translation>Troonpictogrammen van achievements tonen</translation>
+        <translation>Trofeepictogrammen van prestaties tonen</translation>
     </message>
     <message>
         <source>Show All</source>
@@ -14820,10 +15018,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Softwarerenderer gebruiken voor uitlezen</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>Gebruikt PGXP voor alle instructies, niet alleen geheugenbewerkingen.</translation>
-    </message>
-    <message>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
         <translation>Gebruikt een blit-presentatiemodel in plaats van omklappen. Dit kan op sommige systemen nodig zijn.</translation>
     </message>
@@ -14833,7 +15027,7 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     </message>
     <message>
         <source>Uses localized (native language) titles in the game list.</source>
-        <translation>Gebruikt gelokaliseerde (Nederlandstalige) titels in de gamelijst.</translation>
+        <translation>Gebruikt gelokaliseerde titels (in de oorspronkelijke taal) in de gamelijst.</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
@@ -14846,10 +15040,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>Gebruikt perspectiefcorrecte interpolatie voor textuurcoördinaten, waardoor vervormde texturen worden rechtgetrokken.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>Gebruikt schermposities om PGXP-gegevens op te lossen. Kan de beelden in sommige games verbeteren.</translation>
     </message>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
@@ -15113,7 +15303,7 @@ Wil je toch doorgaan met {1}?</translation>
     </message>
     <message>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation>Geometri shaders worden niet ondersteund door je GPU en zijn vereist voor rendering met draadmodel.</translation>
+        <translation>Geometrieshaders worden niet ondersteund door je GPU en zijn vereist voor rendering met draadmodel.</translation>
     </message>
     <message>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
@@ -15238,6 +15428,34 @@ Wil je toch doorgaan met {1}?</translation>
     <message>
         <source>Edit Choices...</source>
         <translation>Keuzes bewerken...</translation>
+    </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>Instellingsoverschrijvingen</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>Beeldverhouding:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>CPU-overklok:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Breedbeeldweergave uitschakelen</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>8 MB RAM inschakelen</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>Niet toestaan in hardcoremodus</translation>
     </message>
 </context>
 <context>
@@ -15524,7 +15742,7 @@ Weet u zeker dat u wilt doorgaan?</translation>
     <message>
         <source>Disable Scaled Interlacing</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Geschaald deïnterlacen uitschakelen</translation>
+        <translation>Geschaalde interlacing uitschakelen</translation>
     </message>
     <message>
         <source>Disable All Borders Crop</source>
@@ -15602,6 +15820,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Framebufferuploads filteren</translation>
     </message>
     <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Scanout tijdens een frame forceren</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Onbekend</translation>
     </message>
@@ -15631,7 +15854,7 @@ Weet u zeker dat u wilt doorgaan?</translation>
     </message>
     <message>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
-        <translation>De optie voor cd-rom-versnelling op MDEC is ingeschakeld, maar is niet vereist voor dit spel.</translation>
+        <translation>De optie om cd-rom-versnelling bij MDEC uit te schakelen is ingeschakeld, maar is niet vereist voor dit spel.</translation>
     </message>
     <message>
         <source>Display cropping set to {}.</source>
@@ -15671,7 +15894,7 @@ Weet u zeker dat u wilt doorgaan?</translation>
     </message>
     <message>
         <source>Scaled interlacing disabled.</source>
-        <translation>Geschaald deïnterlacen uitgeschakeld.</translation>
+        <translation>Geschaalde interlacing uitgeschakeld.</translation>
     </message>
     <message>
         <source>Widescreen rendering disabled.</source>
@@ -15698,12 +15921,20 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>PGXP-vertexcache ingeschakeld.</translation>
     </message>
     <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>De PGXP-vertexcache is vereist voor dit spel, maar is uitgeschakeld. Dit kan renderfouten veroorzaken.</translation>
+    </message>
+    <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>De PGXP-vertexcache is ingeschakeld, maar is niet vereist voor dit spel. Dit kan renderfouten veroorzaken.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
         <translation>PGXP CPU-modus ingeschakeld.</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>De PGXP CPU-modus is vereist voor dit spel, maar is uitgeschakeld. Dit kan renderfouten veroorzaken.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
@@ -16182,6 +16413,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Ingeschakeld</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>Patch bewerken</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>Patch verwijderen</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Auteur: &lt;/span&gt;Patch-auteur&lt;/p&gt;&lt;p&gt;Beschrijving komt hier&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16205,9 +16444,17 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <source>No description provided.</source>
         <translation>Geen beschrijving opgegeven.</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>Optie:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>Patch toevoegen</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>Alle patches uitschakelen</translation>
@@ -16601,8 +16848,12 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Minimale grootte:</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Scanout tijdens een frame</translation>
+    </message>
+    <message>
         <source>Scaled Interlacing</source>
-        <translation>Geschaald deïnterlacen</translation>
+        <translation>Geschaalde interlacing</translation>
     </message>
     <message>
         <source>Software Renderer Readbacks</source>
@@ -16633,6 +16884,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Drempelwaarde voor dieptewissen herstellen</translation>
     </message>
     <message>
+        <source>CPU Mode:</source>
+        <translation>CPU-modus:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>Vertexcache:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Perspectiefcorrecte texturen</translation>
     </message>
@@ -16651,6 +16910,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>CPU Mode</source>
         <translation>CPU-modus</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Gebruikt PGXP voor alle instructies, niet alleen voor geheugenbewerkingen. Vereist om PGXP trillende geometrie in sommige games te laten corrigeren, maar heeft een grote invloed op de prestaties. Automatisch schakelt dit alleen in voor games die het volgens de gamedatabase vereisen.</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -16906,7 +17169,7 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation>Bepaalt welk algoritme wordt gebruikt om geïnterlinieerde frames voor weergave op je systeem om te zetten naar progressieve frames. Progressieve rendering levert de beste kwaliteit, maar voor sommige games is geïnlinieerde rendering vereist.</translation>
+        <translation>Bepaalt welk algoritme wordt gebruikt om geïnterlinieerde frames voor weergave op je systeem om te zetten naar progressieve frames. Progressieve rendering levert de beste kwaliteit, maar voor sommige games is geïnterlinieerde rendering vereist.</translation>
     </message>
     <message>
         <source>Crop</source>
@@ -17045,6 +17308,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Gebruikt een tweede thread voor het tekenen van graphics. Levert vooral met de software-renderer een aanzienlijke snelheidsverbetering en is veilig in gebruik.</translation>
     </message>
     <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Gebruikt vertexposities in schermruimte om precieze posities te verkrijgen, in plaats van geheugentoegang bij te houden. Kan PGXP-compatibiliteit bieden voor sommige games, maar &lt;strong&gt;biedt doorgaans geen voordeel.&lt;/strong&gt; Automatisch schakelt dit alleen in voor games die het volgens de gamedatabase vereisen.</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Bijsnijden van textuurmodulatie (&apos;Oude/v0&apos;-GPU)</translation>
     </message>
@@ -17059,6 +17326,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>Bemonstert 16-bits texturen met directe kleuren op de oorspronkelijke resolutie bij het opschalen. Dit kan de filtering van FMV&apos;s/achtergronden in sommige games corrigeren, maar kan de kwaliteit van effecten die naar texturen worden gerenderd verminderen.</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>Past wijzigingen in de weergegeven framebuffer toe terwijl een frame wordt weergegeven, in plaats van aan het begin van het volgende frame. Sommige games hebben dit nodig voor split-screeneffecten, maar het veroorzaakt tearing in games die tijdens een frame van framebuffer wisselen. Schakel dit daarom alleen in voor games die het nodig hebben.</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -17123,14 +17394,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>Voegt extra precisie toe aan PGXP-gegevens na projectie. Kan de weergave in sommige games verbeteren.</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>Gebruikt PGXP voor alle instructies, niet alleen voor geheugenbewerkingen. Vereist voor het corrigeren van wobble met PGXP in sommige games, maar brengt hoge prestatiekosten met zich mee.</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>Gebruikt vertexposities in schermruimte om precieze posities te verkrijgen in plaats van geheugentoegangen bij te houden. Kan PGXP-compatibiliteit voor sommige games bieden, maar &lt;strong&gt;biedt over het algemeen geen voordeel.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -17664,7 +17927,7 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     </message>
     <message>
         <source>Select Next Save Slot</source>
-        <translation>Selecteer volgende save state positite</translation>
+        <translation>Selecteer volgende save state positie</translation>
     </message>
     <message>
         <source>Save State and Select Next Slot</source>
@@ -18122,7 +18385,7 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     </message>
     <message>
         <source>Clear Bindings</source>
-        <translation>Bindigen Leeg Maken</translation>
+        <translation>Bindingen leegmaken</translation>
     </message>
     <message>
         <source>Bindings for %1:</source>
@@ -18996,7 +19259,7 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>&amp;About DuckStation...</source>
-        <translation>Over EendStation (&amp;A)...</translation>
+        <translation>Over DuckStation (&amp;A)...</translation>
     </message>
     <message>
         <source>Ad&amp;vanced</source>
@@ -19028,11 +19291,11 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>Dump CPU to VRAM Copies</source>
-        <translation>Dump CPU naar VRAM Kopien</translation>
+        <translation>Kopieën van CPU naar VRAM dumpen</translation>
     </message>
     <message>
         <source>Dump VRAM to CPU Copies</source>
-        <translation>Dump VRAM naar CPU kopien</translation>
+        <translation>Kopieën van VRAM naar CPU dumpen</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -19084,7 +19347,7 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>&amp;Toolbar</source>
-        <translation>Gereedschappen (&amp;T)</translation>
+        <translation>Werkbalk (&amp;T)</translation>
     </message>
     <message>
         <source>Lock Toolbar</source>
@@ -19467,6 +19730,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Opent de geheugenkaarteditor.</translation>
     </message>
     <message>
+        <source>TTY Window</source>
+        <translation>TTY-venster</translation>
+    </message>
+    <message>
         <source>Show Grid Ca&amp;ptions</source>
         <translation>Rasterbijschriften &amp;weergeven</translation>
     </message>
@@ -19604,7 +19871,7 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>Creates or edits controller presets that can be applied to games.</source>
-        <translation>Maakt controller-voorinstellingen die op spellen kunnen worden toegepast of bewerkt.</translation>
+        <translation>Maakt of bewerkt controller-voorinstellingen die op spellen kunnen worden toegepast.</translation>
     </message>
     <message>
         <source>&amp;Change List Background...</source>
@@ -19640,7 +19907,7 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>Memory &amp;Editor</source>
-        <translation>Geheugenkaart&amp;editor</translation>
+        <translation>Geheugen&amp;editor</translation>
     </message>
     <message>
         <source>Editor</source>
@@ -19696,7 +19963,7 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation>Openen</translation>
+        <translation>Open</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
@@ -19876,7 +20143,7 @@ De saves kunnen niet worden hersteld.</translation>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</source>
-        <translation>Alle bestandstypen (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Rawafbeeldingen met één track (*.bin *.img *.iso);;Cuebladen (*.cue);;MAME CHD-afbeeldingen (*.chd);;Error Code Modeler-afbeeldingen (*.ecm);;Media Descriptor-sidecarafbeeldingen (*.mds);;CloneCD-afbeeldingen (*.ccd);;PlayStation EBOOT&apos;s (*.pbp *.PBP);;PlayStation-uitvoerbare bestanden (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format-bestanden (*.psf *.minipsf);;Afspeellijsten (*.m3u);;PSX GPU-dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
+        <translation>Alle bestandstypen (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Raw-images met één track (*.bin *.img *.iso);;Cuebladen (*.cue);;MAME CHD-images (*.chd);;Error Code Modeler-images (*.ecm);;Media Descriptor-sidecarimages (*.mds);;CloneCD-images (*.ccd);;PlayStation EBOOT&apos;s (*.pbp *.PBP);;PlayStation-uitvoerbare bestanden (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format-bestanden (*.psf *.minipsf);;Afspeellijsten (*.m3u);;PSX GPU-dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
     </message>
     <message>
         <source>Images (*.jpg *.jpeg *.png *.webp)</source>
@@ -19920,7 +20187,7 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     </message>
     <message>
         <source>Do you want to swap discs or boot the new image via system restart?</source>
-        <translation>Wilt u van schijf wisselen of de nieuwe afbeelding laden via een systeemherstart?</translation>
+        <translation>Wilt u van schijf wisselen of de nieuwe schijfimage opstarten via een systeemherstart?</translation>
     </message>
     <message>
         <source>No resume save state found.</source>
@@ -20052,7 +20319,7 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     </message>
     <message>
         <source>Copy Error</source>
-        <translation>Fout bij het kopieren</translation>
+        <translation>Fout bij het kopiëren</translation>
     </message>
     <message>
         <source>You must select a different file to the current cover image.</source>
@@ -20064,7 +20331,7 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     </message>
     <message>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>Kon niet kopieren van &apos;%1&apos; naar &apos;%2&apos;</translation>
+        <translation>Kon niet kopiëren van &apos;%1&apos; naar &apos;%2&apos;</translation>
     </message>
     <message>
         <source>Failed to remove &apos;%1&apos;</source>
@@ -20184,7 +20451,7 @@ Deze actie kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Checking for updates...</source>
-        <translation>Controleren op &amp;updates...</translation>
+        <translation>Controleren op updates...</translation>
     </message>
     <message>
         <source>Save State For Resume</source>
@@ -20238,7 +20505,7 @@ Deze actie kan niet ongedaan worden gemaakt.</translation>
     <message>
         <source>Uncompressed PCM</source>
         <comment>AudioCodec</comment>
-        <translation>Uncompressed PCM</translation>
+        <translation>Ongecomprimeerde PCM</translation>
     </message>
     <message>
         <source>Failed to load Media Foundation libraries: </source>
@@ -20980,7 +21247,7 @@ Fout: {1}</translation>
     </message>
     <message>
         <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>Elke waarde (&apos;Nieuw zoeken&apos; of &apos;Resultaatwaarde resetten&apos;)</translation>
+        <translation>Elke waarde (&apos;Nieuwe zoekopdracht&apos; of &apos;Resultaatwaarde resetten&apos;)</translation>
     </message>
     <message>
         <source>Less Than Previous Result</source>
@@ -21413,7 +21680,7 @@ Fout: {1}</translation>
     </message>
     <message>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation>PGXP is incompatibel met de software renderen, PGXP wordt uitgeschakeld.</translation>
+        <translation>PGXP is incompatibel met de softwarerenderer; PGXP wordt uitgeschakeld.</translation>
     </message>
     <message>
         <source>PGXP is now enabled.</source>
@@ -22150,7 +22417,7 @@ Fout: {1}</translation>
     </message>
     <message>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
-        <translation>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</translation>
+        <translation>Alle typen hoesafbeeldingen (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <source>Export to YAML</source>
@@ -23168,7 +23435,7 @@ Wilt u deze map maken?</translation>
     <message>
         <source>Box (Downsample 3D/Smooth All)</source>
         <comment>GPUDownsampleMode</comment>
-        <translation>Box (3D downsamplen/glad  maken)</translation>
+        <translation>Box (3D downsamplen/alles gladmaken)</translation>
     </message>
     <message>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
@@ -23394,6 +23661,21 @@ Wilt u deze map maken?</translation>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (Scherp)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Ingeschakeld</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Uitgeschakeld</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -23966,7 +24248,7 @@ Wilt u doorgaan?</translation>
     </message>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>Mappen zoeken (worden op games gescand)</translation>
+        <translation>Zoekmappen (worden op games gescand)</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -24062,7 +24344,7 @@ Wilt u doorgaan?</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Bepaalt hoe dithering wordt toegepast in de geëmuleerde GPU. True Color schakelt dithering uit en levert de mooiste kleurverlopen. Geschaalde opties maken het ditheringpatroon bij hogere resoluties minder zichtbaar. Opties voor shaderblending voeren blending uit in software en zijn nauwkeuriger, maar hebben een &lt;strong&gt;aanzienlijke&lt;/strong&gt; invloed op de prestaties.</translation>
+        <translation>Bepaalt hoe dithering wordt toegepast in de geëmuleerde GPU. Ware kleuren schakelt dithering uit en levert de mooiste kleurverlopen. Geschaalde opties maken het ditheringpatroon bij hogere resoluties minder zichtbaar. Opties voor shaderblending voeren blending uit in software en zijn nauwkeuriger, maar hebben een &lt;strong&gt;aanzienlijke&lt;/strong&gt; invloed op de prestaties.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
@@ -24098,7 +24380,7 @@ Wilt u doorgaan?</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation>Vermindert &quot;wiebbelende&quot; polygonen en &quot;vervormde&quot; texturen die vaak voorkomen in PS1-games. &lt;strong&gt;Werkt mogelijk niet met alle games.&lt;/strong&gt;</translation>
+        <translation>Vermindert &quot;wiebelende&quot; polygonen en &quot;vervormde&quot; texturen die vaak voorkomen in PS1-games. &lt;strong&gt;Werkt mogelijk niet met alle games.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -24155,7 +24437,7 @@ Wilt u doorgaan?</translation>
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
         <translation>Kies welke interface DuckStation bij het opstarten moet tonen. De desktopmodus is ontworpen voor gebruik met muis en toetsenbord, terwijl de Grotebeeldmodus is geoptimaliseerd voor navigatie met een controller op een tv.
 
-U kunt dit later wijzigen door de instelling &quot;Starten in Grotebeeldmodus&quot; in de Interface-instellingen aan of uit te zetten.</translation>
+U kunt dit later wijzigen door de instelling &quot;Starten in Big Picture-modus&quot; in de Interface-instellingen aan of uit te zetten.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -24876,6 +25158,29 @@ Dit kan komen doordat uw GPU de gekozen renderer ({1}) niet ondersteunt of doord
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>Terugspoelen en runahead kunnen niet tegelijkertijd worden gebruikt.</translation>
+    </message>
+</context>
+<context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>TTY-venster</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>TTY-venster - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>&amp;Instellingen</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>BIOS-&amp;TTY-logboekregistratie inschakelen</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>&amp;Tijdstempels weergeven</translation>
     </message>
 </context>
 <context>

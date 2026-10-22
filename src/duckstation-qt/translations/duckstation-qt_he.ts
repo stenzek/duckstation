@@ -5,7 +5,7 @@
     <name>AboutDialog</name>
     <message>
         <source>About DuckStation</source>
-        <translation>Duckstation אודות</translation>
+        <translation>אודות DuckStation</translation>
     </message>
     <message>
         <source>DuckStation</source>
@@ -351,7 +351,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
-        <translation>מציג התראה או סמלים במיקום שנבחר כאשר אתגר/הישג שהופעל מראש פעיל.</translation>
+        <translation>מציג התראה או סמלים במיקום שנבחר כאשר אתגר/הישג שמוכן לפתיחה פעיל.</translation>
     </message>
     <message>
         <source>Indicator Location</source>
@@ -1018,7 +1018,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Log Level:</source>
-        <translation>:רמת רישום</translation>
+        <translation>רמת רישום:</translation>
     </message>
     <message>
         <source>Log To System Console</source>
@@ -1078,7 +1078,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Used for storing compiled shaders and game list data.</source>
-        <translation>משמשת לאחסון הצללות מהודרות ונתוני רשימת המשחקים.</translation>
+        <translation>משמשת לאחסון מצללים מהודרים ונתוני רשימת המשחקים.</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -1182,7 +1182,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>מציין את התיקייה שבה יאוחסנו ההצללות המהודרות ונתוני רשימת המשחקים.</translation>
+        <translation>מציין את התיקייה שבה יאוחסנו המצללים המהודרים ונתוני רשימת המשחקים.</translation>
     </message>
     <message>
         <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
@@ -1409,7 +1409,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>מגדיר את האזור המת של המקל האנלוגי, כלומר את החלק מתנועת המקל שיתעלם ממנו.</translation>
+        <translation>מגדיר את האזור המת של המקל האנלוגי, כלומר את החלק מתנועת המקל שממנו מתעלמים.</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
@@ -1425,7 +1425,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation>מגדיר את האזור המת להפעלת כפתורים/הדקים, כלומר את החלק מהדק הקלט שיתעלם ממנו.</translation>
+        <translation>מגדיר את האזור המת להפעלת כפתורים/הדקים, כלומר את החלק מתנועת ההדק שממנו מתעלמים.</translation>
     </message>
     <message>
         <source>Invert Left Stick</source>
@@ -1580,7 +1580,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>מגדיר את האזור המת של המקל האנלוגי, כלומר את החלק מתנועת המקל שיתעלם ממנו.</translation>
+        <translation>מגדיר את האזור המת של המקל האנלוגי, כלומר את החלק מתנועת המקל שממנו מתעלמים.</translation>
     </message>
     <message>
         <source>Analog Sensitivity</source>
@@ -1722,7 +1722,7 @@ This session will start in offline mode.</source>
     <message>
         <source>Post-Processing</source>
         <comment>settings_tab_post_processing</comment>
-        <translation>עיבוד לאחר הצגה</translation>
+        <translation>עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -1808,6 +1808,16 @@ This session will start in offline mode.</source>
         <source>Save State On Exit</source>
         <comment>settings_save_state_on_exit</comment>
         <translation>שמירת מצב ביציאה</translation>
+    </message>
+    <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>אישור סגירת משחק</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>מבקש אישור לפני סגירת משחק מתפריט ההשהיה.</translation>
     </message>
     <message>
         <source>Pause On Controller Disconnection</source>
@@ -1960,6 +1970,16 @@ This session will start in offline mode.</source>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>מכבה…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>סריקת תצוגה באמצע פריים</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>מחיל שינויים במאגר הפריים המוצג במהלך הצגת הפריים. נדרש לאפקטים של מסך מפוצל במשחקים מסוימים, אך גורם לקריעת תמונה באחרים.</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2116,6 +2136,16 @@ Current Binding: %s</source>
         <translation>התנהגות</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>סמלי הרשימה</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>בוחר את התמונה המוצגת לצד כל משחק ברשימת המשחקים.</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>הגדרות וידאו</translation>
@@ -2159,6 +2189,21 @@ Current Binding: %s</source>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>לא ניתן לפתוח את הקובץ שנבחר.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>אישור סגירה</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>האם אתה בטוח שברצונך לסגור את המשחק הנוכחי?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>המשך מכאן בפעם הבאה</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2507,6 +2552,11 @@ Do you want to %1$s anyway?</source>
         <translation>מסך מגע</translation>
     </message>
     <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>יציאה %1$s</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <comment>controller_settings_category_bindings</comment>
         <translation>מיפויים</translation>
@@ -2574,7 +2624,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>Edit Menu</source>
         <comment>touchscreen_controller_edit_menu</comment>
-        <translation>תפריט עריכה</translation>
+        <translation>עריכת תפריט</translation>
     </message>
     <message>
         <source>Change Opacity</source>
@@ -2970,6 +3020,85 @@ Do you want to %1$s anyway?</source>
         <translation>מנהל מצבי שמירה</translation>
     </message>
     <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>כרטיסי זיכרון</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>יצירת כרטיס חדש</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>יוצר כרטיס זיכרון חדש ומאותחל.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>ייבוא כרטיס זיכרון</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>מייבא כרטיס זיכרון מהאחסון וממיר אותו במידת הצורך.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>כרטיס הזיכרון &apos;%s&apos; יובא.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>כרטיס זיכרון בשם &apos;%s&apos; כבר קיים. האם לדרוס אותו? כל הנתונים הקיימים יאבדו.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>שימוש בכרטיס יחיד למשחקים מרובי-דיסקים</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>בעת משחק במשחק מרובה דיסקים עם כרטיסי זיכרון נפרדים לכל משחק (לפי כותרת), משתמש בכרטיס יחיד לכל הדיסקים. אם האפשרות מושבתת, כל דיסק משתמש בכרטיס נפרד.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>מספר כרטיסי הזיכרון שניתן להשתמש בהם תלוי בתמיכה ב־Multitap ובתמיכת המשחק.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>מצב Multitap נוכחי: %1$s (%2$d כרטיס)</numerusform>
+            <numerusform>מצב Multitap נוכחי: %1$s (%2$d כרטיסים)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>סוג כרטיס זיכרון</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>בוחר איזו תמונת כרטיס זיכרון מוכנסת למשבצת זו.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>שם כרטיס משותף</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>בוחר את הכרטיס שישמש כאשר הסוג מוגדר כמשותף לכל המשחקים.</translation>
+    </message>
+    <message>
         <source>Confirm Deletion</source>
         <comment>confirm_deletion</comment>
         <translation>אישור מחיקה</translation>
@@ -3271,6 +3400,76 @@ Do you want to %1$s anyway?</source>
         <source>Remove All</source>
         <comment>cheat_codes_remove_all</comment>
         <translation>הסרת הכול</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>חזרה לאחור</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>כפתור שמאלי</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>כפתור ימני</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>קנה מידה</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>התאמה</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>מילוי</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>מתיחה</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>עכבר</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>איפוס לברירת המחדל</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>ערך נוכחי</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>ערך ברירת מחדל</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>הגדרה גלובלית</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>משתמש ב־PGXP לכל הפקודות, ולא רק לפעולות זיכרון. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>משתמש במיקומים על המסך כדי לזהות את נתוני PGXP המתאימים. עשוי לשפר את הגרפיקה בחלק מהמשחקים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
     </message>
     <message>
         <source>Auto (Game Native)</source>
@@ -3700,7 +3899,7 @@ Do you want to %1$s anyway?</source>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
         <comment>settings_summary_osd_scale</comment>
-        <translation>קובע את גודל ההודעות והצג שעל המסך.</translation>
+        <translation>קובע את גודל ההודעות ונתוני הניטור שעל המסך.</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -3906,16 +4105,6 @@ Do you want to %1$s anyway?</source>
         <source>Game List</source>
         <comment>settings_category_content_list</comment>
         <translation>רשימת משחקים</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>העדפת סמלי הישגים</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>מעדיף את תגי המשחק המשמשים ב־RetroAchievements על פני סמלי כרטיסי הזיכרון.</translation>
     </message>
     <message>
         <source>Show Grid Captions</source>
@@ -4190,11 +4379,6 @@ Do you want to %1$s anyway?</source>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
         <comment>settings_achievements_disclaimer</comment>
         <translation>DuckStation משתמש ב־RetroAchievements ‏(retroachievements.org) כמאגר הישגים ולמעקב אחר התקדמות. אין צורך בחשבון RetroAchievements כדי להשתמש ב־DuckStation.</translation>
-    </message>
-    <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>יציאה %1$d</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -4798,12 +4982,12 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     <message>
         <source>Enable Post Processing</source>
         <comment>postfx_setting_enable</comment>
-        <translation>הפעלת עיבוד לאחר הצגה</translation>
+        <translation>הפעלת עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Applies the post-processing chain configured below.</source>
         <comment>postfx_setting_summary_enable</comment>
-        <translation>מחיל את שרשרת העיבוד לאחר הצגה שהוגדרה למטה.</translation>
+        <translation>מחיל את שרשרת העיבוד לאחר רינדור שהוגדרה למטה.</translation>
     </message>
     <message>
         <source>Add Shader</source>
@@ -4858,7 +5042,7 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     <message>
         <source>Removes this shader from the post-processing pipeline.</source>
         <comment>postfx_setting_summary_remove_shader</comment>
-        <translation>מסיר שיידר זה מצינור העיבוד לאחר הצגה.</translation>
+        <translation>מסיר שיידר זה מצינור העיבוד לאחר רינדור.</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -6174,12 +6358,12 @@ Would you like to import one now?</source>
     <message>
         <source>Dithering</source>
         <comment>settings_dithering_mode</comment>
-        <translation>דיסינג</translation>
+        <translation>דיתרינג</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <comment>settings_summary_dithering_mode</comment>
-        <translation>שולט באופן החלת הדיסינג ב-GPU המדומה. צבע אמיתי משבית את הדיסינג ומפיק מעברי צבע שנראים טוב יותר.</translation>
+        <translation>שולט באופן החלת הדיתרינג ב-GPU המדומה. צבע אמיתי משבית את הדיתרינג ומפיק מעברי צבע שנראים טוב יותר.</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -6274,12 +6458,12 @@ Would you like to import one now?</source>
     <message>
         <source>Use Software Renderer For Readbacks</source>
         <comment>settings_use_software_renderer_for_readbacks</comment>
-        <translation>שימוש במרנדר תוכנה לקריאות חוזרות</translation>
+        <translation>שימוש במרנדר תוכנה לקריאת נתונים חזרה</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks, which may improve performance with the hardware renderer.</source>
         <comment>settings_summary_use_software_renderer_for_readbacks</comment>
-        <translation>מפעיל את מרנדר התוכנה במקביל לקריאות חוזרות מ-VRAM, דבר שעשוי לשפר את הביצועים עם מרנדר החומרה.</translation>
+        <translation>מפעיל את מרנדר התוכנה במקביל לצורך קריאת נתונים חזרה מ־VRAM, דבר שעשוי לשפר את הביצועים עם מרנדר החומרה.</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -6551,11 +6735,6 @@ Would you like to import one now?</source>
         <translation>משתמש באינטרפולציה מתוקנת לפי פרספקטיבה עבור צבעים, מה שעשוי לשפר את המראה בחלק מהמשחקים.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>משתמש ב-PGXP עבור כל ההוראות, לא רק פעולות זיכרון.</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>מגדיל את הדיוק של סינון מצולעים, ובכך מפחית את מספר החורים בגאומטריה.</translation>
@@ -6574,11 +6753,6 @@ Would you like to import one now?</source>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>משתמש באינטרפולציה מתוקנת לפי פרספקטיבה עבור קואורדינטות טקסטורה, ומיישר טקסטורות מעוותות.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>משתמש במיקומי מסך כדי לפתור את נתוני PGXP. עשוי לשפר את המראה בחלק מהמשחקים.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -7315,7 +7489,7 @@ Would you like to import one now?</source>
     <message>
         <source>Copy Files is the safer, recommended choice because it preserves the old contents. Move Files copies first and removes copied originals only after the new setting is saved.</source>
         <comment>settings_folder_transfer_summary</comment>
-        <translation>העתקת קבצים היא הבחירה הבטוחה והמומלצת, מכיוון שהיא שומרת על התוכן הישן. העברת קבצים מעתיקה תחילה ומסירה את המקורות שהועתקו רק לאחר שמירת ההגדרה החדשה.</translation>
+        <translation>העתקת קבצים היא הבחירה הבטוחה יותר והמומלצת, מכיוון שהיא שומרת על התוכן הישן. העברת קבצים מעתיקה תחילה ומסירה את המקורות שהועתקו רק לאחר שמירת ההגדרה החדשה.</translation>
     </message>
     <message>
         <source>Copy Files (Recommended)</source>
@@ -7397,7 +7571,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Buffer Size:</source>
-        <translation>גודל Buffer</translation>
+        <translation>גודל המאגר:</translation>
     </message>
     <message>
         <source>0 ms</source>
@@ -7405,7 +7579,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Reset Buffer Size</source>
-        <translation>איפוס גודל הbuffer</translation>
+        <translation>איפוס גודל המאגר</translation>
     </message>
     <message>
         <source>Minimal</source>
@@ -7449,7 +7623,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Use Anti-Aliasing Filter</source>
-        <translation>שימוש במסנן נגד קצוות</translation>
+        <translation>שימוש במסנן למניעת קיפול תדרים</translation>
     </message>
     <message>
         <source>Output Latency:</source>
@@ -7501,7 +7675,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>מנוע האודיו קובע כמה מהפריימים שייוצרו &quot;עי&quot; האמולטור &quot;יישלחו למארח. Cubeb נותנת את זמן ההמתנה הנמוך ביותר,אם אתה נתקל בבעיות נסה את מנוע הSDL. מנוע הnull  מבטל את כל האודיו של המארח.</translation>
+        <translation>מנוע האודיו קובע כיצד הפריימים שמפיק האמולטור נשלחים למארח. Cubeb מספק את ההשהיה הנמוכה ביותר; אם אתה נתקל בבעיות, נסה את מנוע SDL. מנוע null משבית את כל פלט השמע למארח.</translation>
     </message>
     <message>
         <source>Output Latency</source>
@@ -7521,7 +7695,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Buffer Size</source>
-        <translation>גודל הbuffer</translation>
+        <translation>גודל המאגר</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
@@ -7621,11 +7795,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Enable Anti-Alias Filter</source>
-        <translation>הפעלת מסנן החלקת קצוות</translation>
+        <translation>הפעלת מסנן למניעת קיפול תדרים</translation>
     </message>
     <message>
         <source>Enables an anti-aliasing filter used by the pitch transposer. Disabling it may reduce quality when pitch shifting but can slightly reduce CPU usage.</source>
-        <translation>מפעיל מסנן החלקת קצוות המשמש את משנה גובה הצליל. השבתתו עלולה להפחית את האיכות בעת שינוי גובה הצליל, אך עשויה להפחית מעט את השימוש ב־CPU.</translation>
+        <translation>מפעיל מסנן למניעת קיפול תדרים המשמש את משנה גובה הצליל. השבתתו עלולה להפחית את האיכות בעת שינוי גובה הצליל, אך עשויה להפחית מעט את השימוש ב־CPU.</translation>
     </message>
     <message>
         <source>Resets value back to the global/inherited setting.</source>
@@ -7683,7 +7857,7 @@ Would you like to import one now?</source>
     <name>AutoUpdaterDialog</name>
     <message>
         <source>Automatic Updater</source>
-        <translation>מעדכן אוטומוטי</translation>
+        <translation>מעדכן אוטומטי</translation>
     </message>
     <message>
         <source>Update Available</source>
@@ -7703,7 +7877,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Download and Install...</source>
-        <translation>עדכון</translation>
+        <translation>הורדה והתקנה...</translation>
     </message>
     <message>
         <source>Skip This Update</source>
@@ -8024,7 +8198,7 @@ WAV files must be 16-bit stereo and use a sample rate of 44100hz.</source>
     </message>
     <message>
         <source>Preload Image To RAM</source>
-        <translation>RAM טען מראש תמונה ל</translation>
+        <translation>טעינה מוקדמת של תמונה ל־RAM</translation>
     </message>
     <message>
         <source>Allocating {} MB memory for precaching...</source>
@@ -8121,7 +8295,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Container:</source>
-        <translation>מכולה:</translation>
+        <translation>מכל מדיה:</translation>
     </message>
     <message>
         <source>Codec:</source>
@@ -8222,7 +8396,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Container</source>
-        <translation>מכולה</translation>
+        <translation>מכל מדיה</translation>
     </message>
     <message>
         <source>Determines the file format used to contain the captured video.</source>
@@ -8328,12 +8502,16 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
 <context>
     <name>CheatCodeEditorDialog</name>
     <message>
+        <source>Patch Editor</source>
+        <translation>עורך תיקונים</translation>
+    </message>
+    <message>
         <source>Enter Group Name</source>
         <translation>הזנת שם קבוצה</translation>
     </message>
     <message>
         <source>Enter name for the code group. Using backslashes (\) will create sub-trees.</source>
-        <translation>הזן שם לקבוצת הקוד. שימוש בלוכסנים אחוריים (\\) ייצור תתי־עצים.</translation>
+        <translation>הזן שם לקבוצת הקוד. שימוש בלוכסנים אחוריים (\) ייצור תתי־עצים.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -8364,10 +8542,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>קוד בשם &apos;%1&apos; כבר קיים.</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>נכשל בשמירת קוד הצ&apos;יט:
+        <translation>שמירת הקוד נכשלה:
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>ללא</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8464,7 +8646,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <name>ConsoleSettingsWidget</name>
     <message>
         <source>Console</source>
-        <translation>מסוף בקרה</translation>
+        <translation>קונסולה</translation>
     </message>
     <message>
         <source>Region:</source>
@@ -8516,23 +8698,23 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>2x (Quad Speed)</source>
-        <translation>2x (Quad Speed)</translation>
+        <translation>פי 2 (מהירות פי 4)</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
-        <translation>3x (6x Speed)</translation>
+        <translation>פי 3 (מהירות פי 6)</translation>
     </message>
     <message>
         <source>4x (8x Speed)</source>
-        <translation>4x (8x Speed)</translation>
+        <translation>פי 4 (מהירות פי 8)</translation>
     </message>
     <message>
         <source>5x (10x Speed)</source>
-        <translation>5x (10x Speed)</translation>
+        <translation>פי 5 (מהירות פי 10)</translation>
     </message>
     <message>
         <source>6x (12x Speed)</source>
-        <translation>6x (12x Speed)</translation>
+        <translation>פי 6 (מהירות פי 12)</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -8580,7 +8762,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     </message>
     <message>
         <source>CPU Emulation</source>
-        <translation>CPU אמולציית</translation>
+        <translation>אמולציית CPU</translation>
     </message>
     <message>
         <source>Execution Mode:</source>
@@ -9083,7 +9265,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;כברירת מחדל, אקדחים קלים ישתמשו במצביע העכבר. כדי להשתמש בעכבר, &lt;span style=&quot; font-weight:700;&quot;&gt;אין&lt;/span&gt; צורך להגדיר מיפויים מלבד ההדק והלחצנים. יש להגדיר כיוון רק כאשר רוצים להשתמש בכמה עכברים.&lt;/p&gt;&lt;p&gt;אם ברצונך להשתמש בבקר, או באקדח קל המדמה בקר במקום עכבר, יש למפות אותו ל&quot;כיוון יחסי&quot;. אחרת, יש &lt;span style=&quot; font-weight:700;&quot;&gt;להשאיר את הכיוון היחסי ללא מיפוי&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;הערה: &lt;/span&gt;יש להפעיל את מיפוי העכבר בהגדרות הכלליות כדי למפות את העכבר של המחשב.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;כברירת מחדל, אקדחי אור ישתמשו במצביע העכבר. כדי להשתמש בעכבר, &lt;span style=&quot; font-weight:700;&quot;&gt;אין&lt;/span&gt; צורך להגדיר מיפויים מלבד ההדק והלחצנים. יש להגדיר כיוון רק כאשר רוצים להשתמש בכמה עכברים.&lt;/p&gt;&lt;p&gt;אם ברצונך להשתמש בבקר, או באקדח אור המדמה בקר במקום עכבר, יש למפות אותו ל&quot;כיוון יחסי&quot;. אחרת, יש &lt;span style=&quot; font-weight:700;&quot;&gt;להשאיר את הכיוון היחסי ללא מיפוי&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;הערה: &lt;/span&gt;יש להפעיל את מיפוי העכבר בהגדרות הכלליות כדי למפות את העכבר של המחשב.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Down</source>
@@ -9134,7 +9316,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;כברירת מחדל, אקדחים קלים ישתמשו במצביע העכבר. כדי להשתמש בעכבר, &lt;span style=&quot; font-weight:700;&quot;&gt;אין&lt;/span&gt; צורך להגדיר מיפויים מלבד ההדק והלחצנים. יש להגדיר כיוון רק כאשר רוצים להשתמש בכמה עכברים.&lt;/p&gt;&lt;p&gt;אם ברצונך להשתמש בבקר, או באקדח קל המדמה בקר במקום עכבר, יש למפות אותו ל&quot;כיוון יחסי&quot;. אחרת, יש &lt;span style=&quot; font-weight:700;&quot;&gt;להשאיר את הכיוון היחסי ללא מיפוי&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;הערה: &lt;/span&gt;יש להפעיל את מיפוי העכבר בהגדרות הכלליות כדי למפות את העכבר של המחשב.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;כברירת מחדל, אקדחי אור ישתמשו במצביע העכבר. כדי להשתמש בעכבר, &lt;span style=&quot; font-weight:700;&quot;&gt;אין&lt;/span&gt; צורך להגדיר מיפויים מלבד ההדק והלחצנים. יש להגדיר כיוון רק כאשר רוצים להשתמש בכמה עכברים.&lt;/p&gt;&lt;p&gt;אם ברצונך להשתמש בבקר, או באקדח אור המדמה בקר במקום עכבר, יש למפות אותו ל&quot;כיוון יחסי&quot;. אחרת, יש &lt;span style=&quot; font-weight:700;&quot;&gt;להשאיר את הכיוון היחסי ללא מיפוי&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;הערה: &lt;/span&gt;יש להפעיל את מיפוי העכבר בהגדרות הכלליות כדי למפות את העכבר של המחשב.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Relative Aiming</source>
@@ -9418,7 +9600,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Allows use of the touchpad for DualShock 4 / DualSense controllers as a pointer, for use with lightguns.</source>
-        <translation>מאפשר שימוש במשטח המגע של בקרי DualShock 4 / DualSense כמצביע, לשימוש עם אקדחים קלים.</translation>
+        <translation>מאפשר שימוש במשטח המגע של בקרי DualShock 4 / DualSense כמצביע, לשימוש עם אקדחי אור.</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
@@ -9458,7 +9640,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</source>
-        <translation>משתמש בקלט גולמי עבור קלט עכברים. הפעל אם ברצונך להשתמש בכמה עכברים או אקדחים קלים.</translation>
+        <translation>משתמש בקלט גולמי עבור קלט עכברים. הפעל אם ברצונך להשתמש בכמה עכברים או אקדחי אור.</translation>
     </message>
     <message>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
@@ -9502,7 +9684,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</source>
-        <translation>מאפשר למפות את העכבר לבקרות מדומות. כברירת מחדל, תנועת העכבר תתעלם.</translation>
+        <translation>מאפשר למפות את העכבר לבקרות מדומות. כברירת מחדל, המערכת תתעלם מתנועת העכבר.</translation>
     </message>
     <message>
         <source>Enable Mouse Mapping</source>
@@ -9575,11 +9757,11 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Trigger</source>
-        <translation>הדק</translation>
+        <translation>קלט הפעלה</translation>
     </message>
     <message>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>בחר את ההדק להפעלת מאקרו זה. זה יכול להיות לחצן יחיד או שילוב לחצנים (צירוף). לחץ על Shift תוך כדי לחיצה כדי לבחור כמה הדקים.</translation>
+        <translation>בחר את הקלט להפעלת מאקרו זה. זה יכול להיות לחצן יחיד או שילוב לחצנים (צירוף). לחץ תוך החזקת Shift כדי לבחור כמה קלטי הפעלה.</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
@@ -9633,7 +9815,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     <name>ControllerMacroWidget</name>
     <message>
         <source>Controller Port %1 Macros</source>
-        <translation>מאקרואים של יציאה %1 בבקר</translation>
+        <translation>מאקרואים של יציאת בקר %1</translation>
     </message>
     <message>
         <source>Macro %1
@@ -9976,27 +10158,27 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Off</source>
-        <translation>כיבוי</translation>
+        <translation>ללא כוח הנעה</translation>
     </message>
     <message>
         <source>Power 1</source>
-        <translation>הפעלה 1</translation>
+        <translation>כוח הנעה 1</translation>
     </message>
     <message>
         <source>Power 2</source>
-        <translation>הפעלה 2</translation>
+        <translation>כוח הנעה 2</translation>
     </message>
     <message>
         <source>Power 3</source>
-        <translation>הפעלה 3</translation>
+        <translation>כוח הנעה 3</translation>
     </message>
     <message>
         <source>Power 4</source>
-        <translation>הפעלה 4</translation>
+        <translation>כוח הנעה 4</translation>
     </message>
     <message>
         <source>Power 5</source>
-        <translation>הפעלה 5</translation>
+        <translation>כוח הנעה 5</translation>
     </message>
     <message>
         <source>Brake Released</source>
@@ -10040,7 +10222,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power</source>
-        <translation>הפעלה</translation>
+        <translation>כוח הנעה</translation>
     </message>
     <message>
         <source>Brake</source>
@@ -10064,11 +10246,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Power Transition Frames</source>
-        <translation>פריימי מעבר הפעלה</translation>
+        <translation>פריימי מעבר כוח הנעה</translation>
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
-        <translation>מגדיר את מספר הפריימים שהבקר ידווח על מצב המעבר/הביניים בעת שינוי רמת ההפעלה.</translation>
+        <translation>מגדיר את מספר הפריימים שהבקר ידווח על מצב המעבר/הביניים בעת שינוי רמת כוח ההנעה.</translation>
     </message>
     <message>
         <source>Brake Transition Frames</source>
@@ -10087,11 +10269,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Address:</source>
-        <translation>:כתובת</translation>
+        <translation>כתובת:</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>:סוג</translation>
+        <translation>סוג:</translation>
     </message>
     <message>
         <source>Execute</source>
@@ -10132,7 +10314,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <name>DebuggerStackModel</name>
     <message>
         <source>&lt;invalid&gt;</source>
-        <translation>&lt;invalid&gt;</translation>
+        <translation>&lt;לא תקין&gt;</translation>
     </message>
     <message>
         <source>Address</source>
@@ -10250,11 +10432,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Into</source>
-        <translation>כניסה לצעד</translation>
+        <translation>צעד פנימה</translation>
     </message>
     <message>
         <source>&amp;Step Into</source>
-        <translation>&amp;כניסה לצעד</translation>
+        <translation>&amp;צעד פנימה</translation>
     </message>
     <message>
         <source>F11</source>
@@ -10290,11 +10472,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Out</source>
-        <translation>יציאה מהצעד</translation>
+        <translation>צעד החוצה</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
-        <translation>יציאה מהצ&amp;עד</translation>
+        <translation>צעד ה&amp;חוצה</translation>
     </message>
     <message>
         <source>Ctrl+F11</source>
@@ -10469,7 +10651,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation>נכשל בהוספת נקודת עצירה ליציאה מהצעד; האם אתה נמצא בפונקציה חוקית?</translation>
+        <translation>הוספת נקודת עצירה ליציאה מהפונקציה נכשלה; האם אתה נמצא בפונקציה חוקית?</translation>
     </message>
     <message>
         <source>&amp;Patch Instruction</source>
@@ -10584,7 +10766,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source> cycles</source>
-        <translation> cycles</translation>
+        <translation> מחזורים</translation>
     </message>
     <message>
         <source>DMA Halt Ticks</source>
@@ -10596,7 +10778,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source> words</source>
-        <translation> words</translation>
+        <translation> מילים</translation>
     </message>
     <message>
         <source>GPU Max Runahead</source>
@@ -10624,7 +10806,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source> sectors</source>
-        <translation> sectors</translation>
+        <translation> סקטורים</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -10968,7 +11150,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>מגדיר את מהירות ההרצה המהירה. מהירות זו תשמש בעת לחיצה על מקש הקיצור להרצה מהירה או החלפתו.</translation>
+        <translation>מגדיר את מהירות ההרצה המהירה. מהירות זו תשמש בעת לחיצה על מקש הקיצור להרצה מהירה או הפעלת המצב באמצעותו.</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -10976,7 +11158,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>מגדיר את מהירות הטורבו. מהירות זו תשמש בעת לחיצה על מקש הקיצור לטורבו או החלפתו. הטורבו יקבל עדיפות על פני הרצה מהירה אם שני מקשי הקיצור נלחצים או מוחלפים.</translation>
+        <translation>מגדיר את מהירות הטורבו. מהירות זו תשמש בעת לחיצה על מקש הקיצור לטורבו או הפעלת המצב באמצעותו. הטורבו יקבל עדיפות על פני הרצה מהירה אם שני המצבים מופעלים באמצעות מקשי הקיצור שלהם.</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
@@ -11292,8 +11474,12 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>אפשר הפעלה ללא קובץ SBI</translation>
     </message>
     <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>מחיל שינויים במאגר הפריים המוצג במהלך הצגת הפריים. נדרש לאפקטים של מסך מפוצל במשחקים מסוימים, אך גורם לקריעת תמונה באחרים.</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
-        <translation>החלת תיקוני תמונה</translation>
+        <translation>החלת תיקונים על תמונות תקליטור</translation>
     </message>
     <message>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
@@ -11397,7 +11583,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>CPU Emulation</source>
-        <translation>CPU אמולציית</translation>
+        <translation>אמולציית CPU</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -11465,7 +11651,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Controller Port {}</source>
-        <translation>בקר {}</translation>
+        <translation>יציאת בקר {}</translation>
     </message>
     <message>
         <source>Controller Settings</source>
@@ -11565,7 +11751,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>קובע את גודל ההודעות והצג שעל המסך.</translation>
+        <translation>קובע את גודל ההודעות ונתוני הניטור שעל המסך.</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
@@ -11589,7 +11775,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Determines that field that the game list will be sorted by.</source>
-        <translation>קובע לפיו שדה המשחקים ימוין.</translation>
+        <translation>קובע לפי איזה שדה תמוין רשימת המשחקים.</translation>
     </message>
     <message>
         <source>Determines the amount of audio buffered before being pulled by the host API.</source>
@@ -11601,7 +11787,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation>קובע את המיקום במסך שבו יש להוסיף גבולות שחורים.</translation>
+        <translation>קובע את מיקום התמונה על המסך כאשר יש צורך להוסיף שוליים שחורים.</translation>
     </message>
     <message>
         <source>Device Settings</source>
@@ -11633,7 +11819,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
-        <translation>לחיצה כפולה מחליפה למצב מסך מלא</translation>
+        <translation>לחיצה כפולה מפעילה או מבטלת מסך מלא</translation>
     </message>
     <message>
         <source>Download Covers</source>
@@ -11661,7 +11847,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation>DuckStation יכול להוריד אוטומטית תמונות עטיפה למשחקים שאין להם כרגע אוסף תמונות עטיפה. אנחנו לא מארחים תמונות עטיפה; על המשתמש לספק מקור תמונות משלו.</translation>
+        <translation>DuckStation יכול להוריד אוטומטית תמונות עטיפה למשחקים שטרם הוגדרה להם תמונת עטיפה. אנחנו לא מארחים תמונות עטיפה; על המשתמש לספק מקור תמונות משלו.</translation>
     </message>
     <message>
         <source>Emulation Settings</source>
@@ -11693,7 +11879,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Enable Post Processing</source>
-        <translation>הפעלת עיבוד לאחר</translation>
+        <translation>הפעלת עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Enable Recompiler Block Linking</source>
@@ -11919,7 +12105,7 @@ Error was:</source>
     </message>
     <message>
         <source>If not enabled, the current post processing chain will be ignored.</source>
-        <translation>אם האפשרות אינה מופעלת, שרשרת העיבוד לאחר לא תהיה בשימוש.</translation>
+        <translation>אם האפשרות אינה מופעלת, שרשרת העיבוד לאחר רינדור הנוכחית לא תהיה בשימוש.</translation>
     </message>
     <message>
         <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
@@ -12044,6 +12230,10 @@ Error was:</source>
     <message>
         <source>Memory Card {} Type</source>
         <translation>סוג כרטיס זיכרון {}</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>סריקת תצוגה באמצע פריים</translation>
     </message>
     <message>
         <source>Minimal Output Latency</source>
@@ -12443,7 +12633,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
-        <translation>שולט באופן החלת הדיסינג ב-GPU המדומה. צבע אמיתי משבית את הדיסינג ומפיק מעברי צבע שנראים טוב יותר.</translation>
+        <translation>שולט באופן החלת הדיתרינג ב־GPU המדומה. צבע אמיתי משבית את הדיתרינג ומפיק את מעברי הצבע הנאים ביותר.</translation>
     </message>
     <message>
         <source>Copies a BIOS image to the configured global BIOS directory.</source>
@@ -12471,7 +12661,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Cover set.</source>
-        <translation>ערכת תמונות עטיפה.</translation>
+        <translation>תמונת העטיפה הוגדרה.</translation>
     </message>
     <message>
         <source>Create New...</source>
@@ -12627,7 +12817,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
-        <translation>קובע באיזה אלגוריתם להשתמש כדי להמיר פריימים משולבים לפריימים פרוגרסיביים לתצוגה במערכת שלך.</translation>
+        <translation>קובע באיזה אלגוריתם להשתמש כדי להמיר פריימים שזורים לפריימים פרוגרסיביים לתצוגה במערכת שלך.</translation>
     </message>
     <message>
         <source>Disable Background Input</source>
@@ -12907,7 +13097,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Fine Crop Mode</source>
-        <translation>מצב חיתוך מסך</translation>
+        <translation>מצב חיתוך עדין</translation>
     </message>
     <message>
         <source>Font</source>
@@ -13107,7 +13297,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Line Detection</source>
-        <translation>זיהוי שורות</translation>
+        <translation>זיהוי קווים</translation>
     </message>
     <message>
         <source>List Compact Mode</source>
@@ -13339,7 +13529,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Only measured achievements can be pinned.</source>
-        <translation>ניתן להצמיד רק הישגים שנמדדו.</translation>
+        <translation>ניתן להצמיד רק הישגים בעלי מדד התקדמות.</translation>
     </message>
     <message>
         <source>Open Containing Directory</source>
@@ -13467,7 +13657,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>מריץ את מעבד עיבוד התוכנה במקביל לקריאות חוזרות של VRAM. במערכות מסוימות הדבר עשוי לשפר את הביצועים בעת שימוש בשיפורים גרפיים עם מעבד עיבוד חומרה.</translation>
+        <translation>מריץ את מרנדר התוכנה במקביל לצורך קריאת נתונים חזרה מ־VRAM. במערכות מסוימות הדבר עשוי לשפר את הביצועים בעת שימוש בשיפורים גרפיים עם מרנדר החומרה.</translation>
     </message>
     <message>
         <source>SDL DualSense Player LED</source>
@@ -13515,7 +13705,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Save as Serial File Names</source>
-        <translation>שמירה כשמות קבצים סידוריים</translation>
+        <translation>שמירה בשמות קבצים לפי המספר הסידורי</translation>
     </message>
     <message>
         <source>Save state deleted.</source>
@@ -13531,7 +13721,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>משנה את קנה המידה של דילוג על שורות ברינדור משולב לרזולוציה הפנימית, וכך הופך אותו לפחות בולט. בדרך כלל בטוח להפעיל.</translation>
+        <translation>משנה את קנה המידה של דילוג על שורות ברינדור שזור לרזולוציה הפנימית, וכך הופך אותו לפחות בולט. בדרך כלל בטוח להפעיל.</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -13611,7 +13801,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
-        <translation>מציג מידע על ה־GPU המאומלץ בפינה הימנית העליונה של התצוגה.</translation>
+        <translation>מציג מידע על ה־GPU המדומה בפינה הימנית העליונה של התצוגה.</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
@@ -13619,7 +13809,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
-        <translation>מציג את השימוש של ה־CPU במארח עבור כל הליך מערכת בפינה הימנית העליונה של התצוגה.</translation>
+        <translation>מציג את השימוש במעבד המארח של כל תהליכון במערכת בפינה הימנית העליונה של התצוגה.</translation>
     </message>
     <message>
         <source>Shows the number of the current frame in the top-right corner of the display.</source>
@@ -13683,7 +13873,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
-        <translation>מחליף את המאקרו כאשר הכפתור נלחץ, במקום להחזיק אותו.</translation>
+        <translation>מפעיל או מבטל את המאקרו בלחיצה על הכפתור, במקום לדרוש החזקה שלו.</translation>
     </message>
     <message>
         <source>Top: </source>
@@ -13754,8 +13944,12 @@ Please check your username and password, and try again.</source>
         <translation>משתמש ב־OpenGL ES גם כאשר OpenGL לשולחן העבודה נתמך. עשוי לשפר ביצועים במנהלי התקנים מסוימים של SBC.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>משתמש ב־PGXP לכל הפקודות, ולא רק לפעולות זיכרון. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
+    </message>
+    <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation>משתמש בשרשור שני לציור גרפיקה. מספק שיפור ביצועים משמעותי, במיוחד עם מעבד עיבוד התוכנה, ובטוח לשימוש.</translation>
+        <translation>משתמש בתהליכון שני לציור גרפיקה. מספק שיפור ביצועים משמעותי, במיוחד עם מרנדר התוכנה, ובטוח לשימוש.</translation>
     </message>
     <message>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
@@ -13764,6 +13958,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses game-specific configuration for input sources. If disabled, the global configuration will be used.</source>
         <translation>משתמש בתצורה ספציפית למשחק עבור מקורות קלט. אם מושבת, ייעשה שימוש בתצורה הגלובלית.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>משתמש במיקומים על המסך כדי לזהות את נתוני PGXP המתאימים. עשוי לשפר את הגרפיקה בחלק מהמשחקים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
@@ -13851,15 +14049,15 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>מושהה את האמולטור כאשר בקר עם מיפויים מנותק.</translation>
+        <translation>משהה את האמולטור כאשר בקר עם מיפויים מנותק.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a game is started.</source>
-        <translation>מושהה את האמולטור בעת הפעלת משחק.</translation>
+        <translation>משהה את האמולטור בעת הפעלת משחק.</translation>
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation>מושהה את האמולטור בעת מזעור החלון או מעבר ליישום אחר, ומבטל את ההשהיה בעת החזרה.</translation>
+        <translation>משהה את האמולטור בעת מזעור החלון או מעבר ליישום אחר, ומבטל את ההשהיה בעת החזרה.</translation>
     </message>
     <message>
         <source>Per-Game Configuration</source>
@@ -13871,7 +14069,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
-        <translation>שיפור ביצועים — מדלג ישירות בין בלוקים במקום לחזור למפענח.</translation>
+        <translation>שיפור ביצועים — מדלג ישירות בין בלוקים במקום לחזור למנגנון השיגור.</translation>
     </message>
     <message>
         <source>Perspective Correct Colors</source>
@@ -13911,15 +14109,15 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Post-Processing Settings</source>
-        <translation>הגדרות עיבוד לאחר</translation>
+        <translation>הגדרות עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Post-processing chain cleared.</source>
-        <translation>שרשרת העיבוד לאחר נוקתה.</translation>
+        <translation>שרשרת העיבוד לאחר רינדור נוקתה.</translation>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
-        <translation>שיידרי העיבוד לאחר נטענו מחדש.</translation>
+        <translation>שיידרי העיבוד לאחר רינדור נטענו מחדש.</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
@@ -14019,11 +14217,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation>מפחית קפיצות באמולציה באמצעות קריאה או פירוק אסינכרוניים של נתוני CD ב-thread עובד.</translation>
+        <translation>מפחית קפיצות באמולציה באמצעות קריאה ופענוח דחיסה של נתוני CD באופן אסינכרוני בתהליכון עבודה.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time.</source>
-        <translation>מפחית את השהיית הקלט באמצעות דחיית תחילת הפריים עד למועד התצוגה.</translation>
+        <translation>מפחית את השהיית הקלט באמצעות דחיית תחילת הפריים למועד קרוב יותר למועד ההצגה.</translation>
     </message>
     <message>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
@@ -14131,7 +14329,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation>הופך את סדר מיון רשימת המשחקים מברירת המחדל, בדרך כלל מעולה ליורד.</translation>
+        <translation>הופך את סדר מיון רשימת המשחקים מברירת המחדל, בדרך כלל מסדר עולה לסדר יורד.</translation>
     </message>
     <message>
         <source>Rewind</source>
@@ -14399,7 +14597,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Setting {} binding {}.</source>
-        <translation>מגדיר את המיפוי {} של {}.</translation>
+        <translation>מגדיר עבור {} את המיפוי {}.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -14467,7 +14665,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Shows a notification or icons in the selected location when a challenge/primed achievement is active.</source>
-        <translation>מציג התראה או סמלים במיקום שנבחר כאשר אתגר או הישג שהופעל מראש פעיל.</translation>
+        <translation>מציג התראה או סמלים במיקום שנבחר כאשר אתגר או הישג שמוכן לפתיחה פעיל.</translation>
     </message>
     <message>
         <source>Shows a popup in the selected location when progress towards a measured achievement changes.</source>
@@ -14535,7 +14733,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
-        <translation>מדלג על הצגה או תצוגה של פריימים שאינם ייחודיים. עלול לגרום לקצב פריימים פחות יציב.</translation>
+        <translation>מדלג על הצגת פריימים שאינם ייחודיים. עלול לגרום לתזמון פריימים פחות אחיד.</translation>
     </message>
     <message>
         <source>Slow Boot</source>
@@ -14711,7 +14909,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Threaded Rendering</source>
-        <translation>רינדור מרובה-תהליכים</translation>
+        <translation>רינדור בתהליכון נפרד</translation>
     </message>
     <message>
         <source>Timing out in {:.0f} seconds...</source>
@@ -14727,7 +14925,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Title:</source>
-        <translation>:כותרת</translation>
+        <translation>כותרת:</translation>
     </message>
     <message>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
@@ -14815,11 +15013,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Use Software Renderer For Readbacks</source>
-        <translation>שימוש במרנדר תוכנה לקריאות חוזרות</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>משתמש ב-PGXP עבור כל ההוראות, לא רק פעולות זיכרון.</translation>
+        <translation>שימוש במרנדר תוכנה לקריאת נתונים חזרה</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
@@ -14831,7 +15025,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Uses localized (native language) titles in the game list.</source>
-        <translation>משתמש בכותרות מקומיות (בשפה הטבעית) ברשימת המשחקים.</translation>
+        <translation>משתמש בכותרות מקומיות (בשפת המקור) ברשימת המשחקים.</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
@@ -14844,10 +15038,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>משתמש באינטרפולציה מתוקנת לפי פרספקטיבה עבור קואורדינטות טקסטורה, ומיישר טקסטורות מעוותות.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>משתמש במיקומי מסך כדי לפתור את נתוני PGXP. עשוי לשפר את המראה בחלק מהמשחקים.</translation>
     </message>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
@@ -14879,11 +15069,11 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>אזהרה: הפעלת צ&apos;יטים עלולה לגרום להתנהגות בלתי צפויה, לקריסות, לנעילות רכות או למשחקים שמורים פגומים.</translation>
+        <translation>אזהרה: הפעלת צ&apos;יטים עלולה לגרום להתנהגות בלתי צפויה, לקריסות, להיתקעות ללא אפשרות להתקדם או לפגיעה בשמירות המשחק.</translation>
     </message>
     <message>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>אזהרה: הפעלת תיקוני משחק עלולה לגרום להתנהגות בלתי צפויה, לקריסות, לנעילות רכות או למשחקים שמורים פגומים.</translation>
+        <translation>אזהרה: הפעלת תיקוני משחק עלולה לגרום להתנהגות בלתי צפויה, לקריסות, להיתקעות ללא אפשרות להתקדם או לפגיעה בשמירות המשחק.</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
@@ -14923,7 +15113,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
-        <translation>כאשר האפשרות מופעלת, כרטיסי זיכרון ובקרים יוחלפו בעת טעינת מצבי שמירה.</translation>
+        <translation>כאשר האפשרות מופעלת, נתוני כרטיסי הזיכרון ומצב הבקרים יידרסו בעת טעינת מצבי שמירה.</translation>
     </message>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
@@ -14935,7 +15125,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
-        <translation>כאשר אפשרות זו נבחרת, תיעשה שימוש במהירות השעון המוגדרת להלן.</translation>
+        <translation>כאשר אפשרות זו נבחרת, ייעשה שימוש במהירות השעון המוגדרת להלן.</translation>
     </message>
     <message>
         <source>Wireframe Rendering</source>
@@ -15059,7 +15249,7 @@ Do you want to {1} anyway?</source>
     <name>GPU_HW</name>
     <message>
         <source>Compiling Shaders...</source>
-        <translation>מהדר Shaders...</translation>
+        <translation>מהדר שיידרים...</translation>
     </message>
     <message>
         <source>{} of {} pipelines</source>
@@ -15091,11 +15281,11 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Texture filter &apos;{}/{}&apos; is not supported with the current renderer.</source>
-        <translation>מסנן המרקמים &apos;{}/{}&apos; אינו נתמך במעבד העיבוד הנוכחי.</translation>
+        <translation>מסנן המרקמים &apos;{}/{}&apos; אינו נתמך במרנדר הנוכחי.</translation>
     </message>
     <message>
         <source>Shader blending is not supported by your current GPU.</source>
-        <translation>ערבוב Shaders אינו נתמך על ידי ה־GPU הנוכחי שלך.</translation>
+        <translation>מיזוג באמצעות שיידרים אינו נתמך על ידי ה־GPU הנוכחי שלך.</translation>
     </message>
     <message>
         <source>It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
@@ -15103,15 +15293,15 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
-        <translation>החלקת קצוות מרובת דגימות אינה נתמכת בעת שימוש בערבוב Shaders.</translation>
+        <translation>החלקת קצוות מרובת דגימות אינה נתמכת בעת שימוש במיזוג באמצעות שיידרים.</translation>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
-        <translation>מאגר העומק של PGXP אינו נתמך על ידי ה־GPU או מעבד העיבוד הנוכחי שלך.</translation>
+        <translation>מאגר העומק של PGXP אינו נתמך על ידי ה־GPU או המרנדר הנוכחי שלך.</translation>
     </message>
     <message>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation>ה־GPU שלך אינו תומך ב־Shaders גאומטריים, והם נדרשים לרינדור קווי מסגרת.</translation>
+        <translation>ה־GPU שלך אינו תומך בשיידרים גאומטריים, והם נדרשים לרינדור קווי מסגרת.</translation>
     </message>
     <message>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
@@ -15237,6 +15427,34 @@ Do you want to {1} anyway?</source>
         <source>Edit Choices...</source>
         <translation>עריכת אפשרויות...</translation>
     </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>עקיפת הגדרות</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>יחס גובה־רוחב:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>המהרת CPU:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>השבתת רינדור במסך רחב</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>הפעלת 8MB RAM</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>איסור במצב הארדקור</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15322,7 +15540,7 @@ Do you want to enable cheats now?</source>
     </message>
     <message>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</translation>
+        <translation>קובצי צ&apos;יטים של PCSXR/Libretro (*.cht *.txt);;כל הקבצים (*.*)</translation>
     </message>
     <message>
         <source>Import Cheats</source>
@@ -15362,7 +15580,7 @@ Do you want to enable cheats now?</source>
     </message>
     <message>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation>PCSXR Cheat Files (*.cht);;All Files (*.*)</translation>
+        <translation>קובצי צ&apos;יטים של PCSXR (*.cht);;כל הקבצים (*.*)</translation>
     </message>
     <message>
         <source>Export Cheats</source>
@@ -15427,12 +15645,12 @@ Are you sure you want to continue?</source>
     <message>
         <source>Force Software Renderer</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>כפיית מעבד עיבוד תוכנה</translation>
+        <translation>כפיית מרנדר תוכנה</translation>
     </message>
     <message>
         <source>Force Software Renderer For Readbacks</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>כפיית מעבד עיבוד תוכנה לקריאות חוזרות</translation>
+        <translation>כפיית מרנדר תוכנה לקריאת נתונים חזרה</translation>
     </message>
     <message>
         <source>Force Round Texture Coordinates</source>
@@ -15472,7 +15690,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable Fast Forward Memory Card Access</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>השבתת גישה לכרטיס הזיכרון בהרצה מהירה</translation>
+        <translation>השבתת האצת הגישה לכרטיס הזיכרון</translation>
     </message>
     <message>
         <source>Disable CD-ROM Read Speedup</source>
@@ -15517,7 +15735,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable Scaled Dithering</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>השבתת ערבול גוונים מותאם</translation>
+        <translation>השבתת ערבול גוונים מותאם לקנה מידה</translation>
     </message>
     <message>
         <source>Disable Scaled Interlacing</source>
@@ -15542,7 +15760,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable PGXP Culling</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>השבתת חיתוך PGXP</translation>
+        <translation>השבתת סינון המצולעים של PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
@@ -15600,6 +15818,11 @@ Are you sure you want to continue?</source>
         <translation>סינון העלאות למאגר הפריימים</translation>
     </message>
     <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>כפיית סריקת תצוגה באמצע פריים</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>לא ידוע</translation>
     </message>
@@ -15617,7 +15840,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Fast forward memory card access disabled.</source>
-        <translation>הגישה לכרטיס הזיכרון בהרצה מהירה מושבתת.</translation>
+        <translation>האצת הגישה לכרטיס הזיכרון מושבתת.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -15641,7 +15864,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Software renderer readbacks enabled.</source>
-        <translation>קריאות חוזרות של מעבד עיבוד התוכנה מופעלות.</translation>
+        <translation>קריאת נתונים חזרה באמצעות מרנדר תוכנה מופעלת.</translation>
     </message>
     <message>
         <source>Deinterlacing set to {}.</source>
@@ -15681,7 +15904,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>PGXP culling correction disabled.</source>
-        <translation>תיקון החיתוך של PGXP מושבת.</translation>
+        <translation>תיקון סינון המצולעים של PGXP מושבת.</translation>
     </message>
     <message>
         <source>PGXP perspective correct textures disabled.</source>
@@ -15696,12 +15919,20 @@ Are you sure you want to continue?</source>
         <translation>מטמון הקודקודים של PGXP מופעל.</translation>
     </message>
     <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>מטמון הקודקודים של PGXP נדרש למשחק זה, אך הוא מושבת. הדבר עלול לגרום לשגיאות רינדור.</translation>
+    </message>
+    <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>מטמון הקודקודים של PGXP מופעל, אך אינו נדרש למשחק זה. הדבר עלול לגרום לשגיאות רינדור.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
         <translation>מצב CPU של PGXP מופעל.</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>מצב CPU של PGXP נדרש למשחק זה, אך הוא מושבת. הדבר עלול לגרום לשגיאות רינדור.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
@@ -16014,7 +16245,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>No URLs to download enumerated.</source>
-        <translation>לא סופרו כתובות URL להורדה.</translation>
+        <translation>לא נמצאו כתובות URL להורדה.</translation>
     </message>
 </context>
 <context>
@@ -16036,7 +16267,7 @@ Are you sure you want to continue?</source>
     <name>GameListSearchDirectoriesModel</name>
     <message>
         <source>Search Directory</source>
-        <translation>חיפוש תיקייה</translation>
+        <translation>תיקיית חיפוש</translation>
     </message>
     <message>
         <source>Scan Recursively</source>
@@ -16180,6 +16411,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מופעל</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>עריכת תיקון</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>הסרת תיקון</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;מחבר: &lt;/span&gt;מחבר התיקון&lt;/p&gt;&lt;p&gt;התיאור יופיע כאן&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16203,9 +16442,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>No description provided.</source>
         <translation>לא סופק תיאור.</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>אפשרות:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>הוספת תיקון</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>השבתת כל התיקונים</translation>
@@ -16271,7 +16518,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Controller Preset:</source>
-        <translation>:קביעת בקר</translation>
+        <translation>תצורה מוגדרת מראש של הבקר:</translation>
     </message>
     <message>
         <source>Verify</source>
@@ -16397,7 +16644,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>&lt;not computed&gt;</source>
-        <translation>&lt;not computed&gt;</translation>
+        <translation>&lt;לא חושב&gt;</translation>
     </message>
     <message>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
@@ -16464,7 +16711,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Dithering:</source>
-        <translation>:דיסינג</translation>
+        <translation>דיתרינג:</translation>
     </message>
     <message>
         <source>Deinterlacing:</source>
@@ -16576,7 +16823,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Multi-Sampling:</source>
-        <translation>:דגימת-יתר</translation>
+        <translation>דגימה מרובה:</translation>
     </message>
     <message>
         <source>Line Detection:</source>
@@ -16584,7 +16831,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Threaded Rendering</source>
-        <translation>רינדור מרובה-תהליכים</translation>
+        <translation>רינדור בתהליכון נפרד</translation>
     </message>
     <message>
         <source>Max Queued Frames:</source>
@@ -16599,12 +16846,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>גודל מינימלי:</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>סריקת תצוגה באמצע פריים</translation>
+    </message>
+    <message>
         <source>Scaled Interlacing</source>
-        <translation>שזירה מדורגת</translation>
+        <translation>שזירה מותאמת לקנה מידה</translation>
     </message>
     <message>
         <source>Software Renderer Readbacks</source>
-        <translation>קריאות חוזרות של מרנדר תוכנה</translation>
+        <translation>קריאת נתונים חזרה באמצעות מרנדר תוכנה</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
@@ -16631,6 +16882,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>איפוס סף ניקוי עומק</translation>
     </message>
     <message>
+        <source>CPU Mode:</source>
+        <translation>מצב CPU:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>מטמון קודקודים:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>טקסטורות מתוקנות לפי פרספקטיבה</translation>
     </message>
@@ -16649,6 +16908,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>CPU Mode</source>
         <translation>מצב CPU</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>משתמש ב־PGXP לכל הפקודות, ולא רק לפעולות זיכרון. נדרש כדי ש־PGXP יתקן רעידות בחלק מהמשחקים, אך כרוך בעלות ביצועים גבוהה. האפשרות האוטומטית מפעילה זאת רק במשחקים הדורשים זאת לפי מסד נתוני המשחקים.</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
@@ -16684,7 +16947,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Enable Texture Dumping</source>
-        <translation>הפעלת השלכת טקסטורות</translation>
+        <translation>הפעלת ייצוא טקסטורות</translation>
     </message>
     <message>
         <source>Always Track Uploads</source>
@@ -16692,7 +16955,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Dump Replaced Textures</source>
-        <translation>השלכת טקסטורות מוחלפות</translation>
+        <translation>ייצוא טקסטורות מוחלפות</translation>
     </message>
     <message>
         <source>VRAM Write (Background) Replacement</source>
@@ -16704,7 +16967,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Enable VRAM Write Dumping</source>
-        <translation>הפעלת השלכת כתיבה ל-VRAM</translation>
+        <translation>הפעלת ייצוא כתיבות ל־VRAM</translation>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
@@ -16716,7 +16979,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Directory to load replacement textures from, and save dumps to.</source>
-        <translation>תיקייה שממנה ייטענו החלפות טקסטורות ואליה יישמרו השלכות.</translation>
+        <translation>תיקייה שממנה ייטענו טקסטורות חלופיות ואליה יישמרו קובצי הייצוא.</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -16748,15 +17011,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>GPU Dump Recording/Playback</source>
-        <translation>הקלטה/הפעלה של השלכת GPU</translation>
+        <translation>הקלטה/הפעלה של קובץ תיעוד GPU</translation>
     </message>
     <message>
         <source>Dump Compression Mode:</source>
-        <translation>:מצב דחיסת השלכה</translation>
+        <translation>מצב דחיסת קובץ תיעוד:</translation>
     </message>
     <message>
         <source>Fast Dump Playback</source>
-        <translation>הפעלה מהירה של השלכה</translation>
+        <translation>הפעלה מהירה של קובץ תיעוד</translation>
     </message>
     <message>
         <source>Device Options</source>
@@ -16884,11 +17147,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Dithering</source>
-        <translation>דיסינג</translation>
+        <translation>דיתרינג</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>שולט באופן החלת הדיסינג ב-GPU המדומה. צבע אמיתי משבית את הדיסינג ומפיק מעברי צבע שנראים טוב יותר. אפשרויות קנה מידה הופכות את תבנית הדיסינג לפחות בולטת ברזולוציות גבוהות יותר. אפשרויות מיזוג שיידרים מבצעות את המיזוג בתוכנה, והן מדויקות יותר אך כוללות פגיעה &lt;strong&gt;משמעותית&lt;/strong&gt; בביצועים.</translation>
+        <translation>שולט באופן החלת הדיתרינג ב־GPU המדומה. צבע אמיתי משבית את הדיתרינג ומפיק את מעברי הצבע הנאים ביותר. אפשרויות קנה המידה הופכות את תבנית הדיתרינג לפחות בולטת ברזולוציות גבוהות יותר. אפשרויות מיזוג שיידרים מבצעות את המיזוג בתוכנה, והן מדויקות יותר אך כוללות פגיעה &lt;strong&gt;משמעותית&lt;/strong&gt; בביצועים.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -16904,7 +17167,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation>קובע באיזה אלגוריתם נעשה שימוש להמרת פריימים משולבים לפרוגרסיביים לצורך הצגה במערכת שלך. רינדור פרוגרסיבי מספק את איכות הפלט הטובה ביותר, אך חלק מהמשחקים דורשים רינדור משולב.</translation>
+        <translation>קובע באיזה אלגוריתם נעשה שימוש להמרת פריימים שזורים לפרוגרסיביים לצורך הצגה במערכת שלך. רינדור פרוגרסיבי מספק את איכות הפלט הטובה ביותר, אך חלק מהמשחקים דורשים רינדור שזור.</translation>
     </message>
     <message>
         <source>Crop</source>
@@ -16996,7 +17259,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation>קובע את המיקום במסך שבו יש להוסיף גבולות שחורים.</translation>
+        <translation>קובע את מיקום התמונה על המסך כאשר יש צורך להוסיף שוליים שחורים.</translation>
     </message>
     <message>
         <source>Fine Crop Mode</source>
@@ -17012,7 +17275,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>כופה שימוש ב-FIFO במקום בהצגת Mailbox, כלומר באגירה כפולה במקום באגירה משולשת. בדרך כלל גורם לקצב פריימים פחות יציב.</translation>
+        <translation>כופה שימוש ב-FIFO במקום בהצגת Mailbox, כלומר באגירה כפולה במקום באגירה משולשת. בדרך כלל גורם לתזמון פריימים פחות יציב.</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
@@ -17028,7 +17291,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Multi-Sampling</source>
-        <translation>דגימת-יתר</translation>
+        <translation>דגימה מרובה</translation>
     </message>
     <message>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
@@ -17043,6 +17306,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>משתמש ב-thread שני לציור גרפיקה. מספק שיפור ביצועים משמעותי, במיוחד עם המרנדר התוכנתי, ובטוח לשימוש.</translation>
     </message>
     <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>משתמש במיקומי קודקודים במרחב המסך לקבלת מיקומים מדויקים, במקום לעקוב אחר גישות לזיכרון. עשוי לאפשר תאימות ל־PGXP בחלק מהמשחקים, אך &lt;strong&gt;בדרך כלל אינו מספק תועלת.&lt;/strong&gt; האפשרות האוטומטית מפעילה זאת רק במשחקים הדורשים זאת לפי מסד נתוני המשחקים.</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>חיתוך ויסות טקסטורות (&quot;GPU ישן/v0&quot;)</translation>
     </message>
@@ -17052,11 +17319,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>מגדיל את קנה המידה של דילוג על קווים ברינדור משולב לרזולוציה הפנימית. פעולה זו הופכת את אפקט המסרק לפחות בולט ברזולוציות גבוהות יותר. בדרך כלל בטוח להפעלה.</translation>
+        <translation>מגדיל את קנה המידה של דילוג על קווים ברינדור שזור לרזולוציה הפנימית. פעולה זו הופכת את אפקט המסרק לפחות בולט ברזולוציות גבוהות יותר. בדרך כלל בטוח להפעלה.</translation>
     </message>
     <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>דוגם טקסטורות בצבע ישיר של 16 סיביות ברזולוציה המקורית בעת הגדלה. פעולה זו יכולה לתקן סינון של סרטוני FMV או רקעים במשחקים מסוימים, אך עלולה להפחית את איכות האפקטים של רינדור לטקסטורה.</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>מחיל שינויים במאגר הפריימים המוצג במהלך פריים, במקום בתחילת הפריים הבא. חלק מהמשחקים מסתמכים על כך לאפקטים של מסך מפוצל, אך הדבר גורם לקריעת תמונה במשחקים המחליפים מאגרי פריימים באמצע פריים, ולכן יש להפעיל זאת רק במשחקים הזקוקים לכך.</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -17084,7 +17355,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>מריץ את המרנדר התוכנתי במקביל עבור קריאות חוזרות של VRAM. במערכות מסוימות הדבר עשוי לשפר ביצועים בעת שימוש בשיפורים גרפיים עם המרנדר החומרתי.</translation>
+        <translation>מריץ את המרנדר התוכנתי במקביל לצורך קריאת נתונים חזרה מ־VRAM. במערכות מסוימות הדבר עשוי לשפר ביצועים בעת שימוש בשיפורים גרפיים עם המרנדר החומרתי.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -17123,14 +17394,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מוסיף דיוק נוסף לנתוני PGXP לאחר ההיטל. עשוי לשפר את המראה בחלק מהמשחקים.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>משתמש ב-PGXP עבור כל ההוראות, לא רק פעולות זיכרון. נדרש כדי ש-PGXP יתקן תנודות בחלק מהמשחקים, אך כרוך במחיר ביצועים גבוה.</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>משתמש במיקומי קודקודים במרחב המסך כדי להשיג מיקומים מדויקים, במקום לעקוב אחר גישות לזיכרון. יכול לספק תאימות ל-PGXP בחלק מהמשחקים, אך &lt;strong&gt;בדרך כלל אינו מספק תועלת.&lt;/strong&gt;</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>משתמש בקואורדינטות של הרזולוציה הטבעית עבור מצולעים דו-ממדיים, במקום בקואורדינטות מדויקות. יכול לתקן ממשק משתמש שאינו מיושר בחלק מהמשחקים, אך אחרת יש להשאירו מושבת. מסד נתוני המשחקים יפעיל זאת אוטומטית בעת הצורך.</translation>
     </message>
@@ -17156,15 +17419,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation>כופה הפעלת מעקב אחר העלאות טקסטורות ללא קשר לשאלה אם הוא נדרש. מפחית ביצועים, אך מאפשר להחליף החלפות טקסטורות ולהשביתן. &lt;strong&gt;אין צורך בכך כדי לטעון החלפות, &lt;/strong&gt;ובדרך כלל המעקב מופעל אוטומטית בעת הצורך.</translation>
+        <translation>כופה הפעלת מעקב אחר העלאות טקסטורות ללא קשר לשאלה אם הוא נדרש. מפחית ביצועים, אך מאפשר להפעיל או להשבית החלפות טקסטורות. &lt;strong&gt;אין צורך בכך כדי לטעון החלפות, &lt;/strong&gt;ובדרך כלל המעקב מופעל אוטומטית בעת הצורך.</translation>
     </message>
     <message>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation>מאפשר השלכת טקסטורות לקובצי תמונה שניתן להחליף. אינו תואם לכל המשחקים.</translation>
+        <translation>מאפשר ייצוא טקסטורות לקובצי תמונה שניתן להחליף. אינו תואם לכל המשחקים.</translation>
     </message>
     <message>
         <source>Dumps textures that have replacements already loaded.</source>
-        <translation>משליך טקסטורות שכבר נטענו להן החלפות.</translation>
+        <translation>מייצא טקסטורות שכבר נטענו להן החלפות.</translation>
     </message>
     <message>
         <source>Enables the replacement of background textures in supported games.</source>
@@ -17172,7 +17435,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>כותב רקעים שניתן להחליף לתיקיית ההשלכות.</translation>
+        <translation>כותב רקעים שניתן להחליף לתיקיית הייצוא.</translation>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
@@ -17307,7 +17570,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>GunCon</name>
     <message>
         <source>Pointer/Aiming</source>
-        <translation>מצביע/כוונון</translation>
+        <translation>מצביע/כיוון</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -17383,7 +17646,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>היסט סימון</translation>
+        <translation>היסט פעימות שעון</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position.</source>
@@ -17622,11 +17885,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Toggle Post-Processing</source>
-        <translation>החלפת עיבוד לאחר</translation>
+        <translation>החלפת מצב העיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Reload Post Processing Shaders</source>
-        <translation>טעינה מחדש של שיידרי העיבוד לאחר</translation>
+        <translation>טעינה מחדש של שיידרי העיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Reload Texture Replacements</source>
@@ -18005,7 +18268,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>File:</source>
-        <translation>:קובץ</translation>
+        <translation>קובץ:</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -18077,7 +18340,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
-        <translation>&lt;Parent Directory&gt;</translation>
+        <translation>&lt;תיקיית האב&gt;</translation>
     </message>
 </context>
 <context>
@@ -18088,11 +18351,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Bindings for Controller0/ButtonCircle</source>
-        <translation>מיפויים עבור </translation>
+        <translation>מיפויים עבור Controller0/ButtonCircle</translation>
     </message>
     <message>
         <source>Sensitivity:</source>
-        <translation>:רגישות</translation>
+        <translation>רגישות:</translation>
     </message>
     <message>
         <source>100%</source>
@@ -18100,7 +18363,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Deadzone:</source>
-        <translation>:אזור מת</translation>
+        <translation>אזור מת:</translation>
     </message>
     <message>
         <source>Reset Sensitivity</source>
@@ -18112,11 +18375,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Add Binding</source>
-        <translation>הוסף מיפויים</translation>
+        <translation>הוסף מיפוי</translation>
     </message>
     <message>
         <source>Remove Binding</source>
-        <translation>הסר מיפויים</translation>
+        <translation>הסר מיפוי</translation>
     </message>
     <message>
         <source>Clear Bindings</source>
@@ -18124,7 +18387,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Bindings for %1:</source>
-        <translation>קישורים עבור %1:</translation>
+        <translation>מיפויים עבור %1:</translation>
     </message>
     <message>
         <source>Push Button/Axis... [%1]</source>
@@ -18330,11 +18593,11 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Language:</source>
-        <translation>:שפה</translation>
+        <translation>שפה:</translation>
     </message>
     <message>
         <source>Theme:</source>
-        <translation>:נושא</translation>
+        <translation>נושא:</translation>
     </message>
     <message>
         <source>Updates</source>
@@ -18342,11 +18605,11 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Update Channel:</source>
-        <translation>:ערוץ עדכונים</translation>
+        <translation>ערוץ עדכונים:</translation>
     </message>
     <message>
         <source>Current Version:</source>
-        <translation>:גרסה נוכחית</translation>
+        <translation>גרסה נוכחית:</translation>
     </message>
     <message>
         <source>Enable Automatic Update Check</source>
@@ -18622,7 +18885,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <name>Justifier</name>
     <message>
         <source>Pointer/Aiming</source>
-        <translation>מצביע/כוונה</translation>
+        <translation>מצביע/כיוון</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -18694,7 +18957,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
-        <translation>היסט המוחל על המיקום האנכי של אקדח האור, שבו ה־Justifier יפעיל לראשונה.</translation>
+        <translation>היסט המוחל על המיקום האנכי של אקדח האור, שבו ה־Justifier יגיב לראשונה.</translation>
     </message>
     <message>
         <source>Line End Offset</source>
@@ -18702,7 +18965,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
-        <translation>היסט המוחל על המיקום האנכי של אקדח האור, שבו ה־Justifier יפעיל לאחרונה.</translation>
+        <translation>היסט המוחל על המיקום האנכי של אקדח האור, שבו ה־Justifier יגיב בפעם האחרונה.</translation>
     </message>
     <message>
         <source>Tick Offset</source>
@@ -18710,7 +18973,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
-        <translation>היסט המוחל על המיקום האופקי של אקדח האור, שבו ה־Justifier יפעיל.</translation>
+        <translation>היסט המוחל על המיקום האופקי של אקדח האור, שבו ה־Justifier יגיב.</translation>
     </message>
     <message>
         <source>Off-Screen Out-Of-Bounds Frames</source>
@@ -18738,7 +19001,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>הושמטו %1 הודעות יומן, יש להשתמש ברישום למסוף הקובץ או המערכת.
+        <translation>הושמטו %1 הודעות יומן, יש להשתמש ברישום לקובץ או למסוף המערכת.
 </translation>
     </message>
 </context>
@@ -18798,7 +19061,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Log Files (*.txt)</source>
-        <translation>Log Files (*.txt)</translation>
+        <translation>קובצי יומן (*.txt)</translation>
     </message>
     <message>
         <source>Log was written to %1.
@@ -18858,7 +19121,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>S&amp;ettings</source>
-        <translation>הגדרות</translation>
+        <translation>ה&amp;גדרות</translation>
     </message>
     <message>
         <source>&amp;Help</source>
@@ -18870,11 +19133,11 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Switch GPU Renderer</source>
-        <translation>GPU החלף מנוע</translation>
+        <translation>החלפת מרנדר GPU</translation>
     </message>
     <message>
         <source>Switch CPU Emulation Mode</source>
-        <translation>CPU החלף מצב אמולצית</translation>
+        <translation>החלפת מצב אמולציית CPU</translation>
     </message>
     <message>
         <source>Switch Crop Mode</source>
@@ -18914,15 +19177,15 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Start &amp;Disc...</source>
-        <translation>הפעל דיסק</translation>
+        <translation>הפעלת &amp;דיסק...</translation>
     </message>
     <message>
         <source>Start &amp;BIOS</source>
-        <translation>BIOS הפעל</translation>
+        <translation>הפעלת &amp;BIOS</translation>
     </message>
     <message>
         <source>&amp;Rescan All Games</source>
-        <translation>&amp;סרוק מחדש</translation>
+        <translation>&amp;סריקה מחדש של כל המשחקים</translation>
     </message>
     <message>
         <source>&amp;Pause</source>
@@ -18938,7 +19201,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>E&amp;xit</source>
-        <translation>&amp;ייציאה</translation>
+        <translation>&amp;יציאה</translation>
     </message>
     <message>
         <source>C&amp;onsole</source>
@@ -19046,7 +19309,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation>צא</translation>
+        <translation>סגירה</translation>
     </message>
     <message>
         <source>Ends the current session.</source>
@@ -19122,11 +19385,11 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Post-Processi&amp;ng</source>
-        <translation>עיבוד לאח&amp;ר מכן</translation>
+        <translation>עיבוד לאחר &amp;רינדור</translation>
     </message>
     <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
-        <translation>מגדיר אפקטים של עיבוד לאחרי המוחלים לאחר רינדור התוכן.</translation>
+        <translation>מגדיר אפקטים של עיבוד לאחר רינדור המוחלים לאחר רינדור התוכן.</translation>
     </message>
     <message>
         <source>On-&amp;Screen Display</source>
@@ -19342,7 +19605,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>System &amp;Display</source>
-        <translation>מערכת ו&amp;תצוגה</translation>
+        <translation>תצוגת ה&amp;מערכת</translation>
     </message>
     <message>
         <source>Switches back to the game currently running.</source>
@@ -19367,6 +19630,10 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Opens the debugger for the emulated CPU.</source>
         <translation>פותח את מנפה הבאגים עבור המעבד המדומה.</translation>
+    </message>
+    <message>
+        <source>TTY Window</source>
+        <translation>חלון TTY</translation>
     </message>
     <message>
         <source>Show Grid Ca&amp;ptions</source>
@@ -19654,7 +19921,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>&amp;Discord Server...</source>
-        <translation>Discord שרת</translation>
+        <translation>שרת &amp;Discord...</translation>
     </message>
     <message>
         <source>Check for &amp;Updates...</source>
@@ -19686,15 +19953,15 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Show VRAM</source>
-        <translation>VRAM הראה</translation>
+        <translation>הצגת VRAM</translation>
     </message>
     <message>
         <source>Dump CPU to VRAM Copies</source>
-        <translation>השלכת עותקי CPU ל־VRAM</translation>
+        <translation>ייצוא העתקות מ־CPU ל־VRAM</translation>
     </message>
     <message>
         <source>Dump VRAM to CPU Copies</source>
-        <translation>השלכת עותקי VRAM ל־CPU</translation>
+        <translation>ייצוא העתקות מ־VRAM ל־CPU</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -19702,23 +19969,23 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
-        <translation>השלכת RAM...</translation>
+        <translation>ייצוא תוכן RAM...</translation>
     </message>
     <message>
         <source>Dump VRAM...</source>
-        <translation>השלכת VRAM...</translation>
+        <translation>ייצוא תוכן VRAM...</translation>
     </message>
     <message>
         <source>Dump SPU RAM...</source>
-        <translation>השלכת RAM של SPU...</translation>
+        <translation>ייצוא תוכן RAM של SPU...</translation>
     </message>
     <message>
         <source>Show GPU State</source>
-        <translation>CPU הראה מצב</translation>
+        <translation>הצגת מצב GPU</translation>
     </message>
     <message>
         <source>Show SPU State</source>
-        <translation>SPU הראה מצב</translation>
+        <translation>הצגת מצב SPU</translation>
     </message>
     <message>
         <source>Show Timers State</source>
@@ -19726,7 +19993,7 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Show MDEC State</source>
-        <translation>MDEC הראה מצב</translation>
+        <translation>הצגת מצב MDEC</translation>
     </message>
     <message>
         <source>Show DMA State</source>
@@ -19738,11 +20005,11 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     </message>
     <message>
         <source>Resume</source>
-        <translation>התחל</translation>
+        <translation>המשך</translation>
     </message>
     <message>
         <source>Resumes the last save state created.</source>
-        <translation>מתחיל את מצב המשחק האחרון שנוצר</translation>
+        <translation>ממשיך ממצב השמירה האחרון שנוצר.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -19874,7 +20141,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;CloneCD Images (*.ccd);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</source>
-        <translation>כל סוגי הקבצים (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;תמונות גולמיות ברצועה יחידה (*.bin *.img *.iso);;דפי CUE (*.cue);;תמונות MAME CHD (*.chd);;תמונות Error Code Modeler (*.ecm);;תמונות צדדיות Media Descriptor (*.mds);;תמונות CloneCD (*.ccd);;קובצי EBOOT של PlayStation (*.pbp *.PBP);;קובצי הפעלה של PlayStation (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;קובצי Portable Sound Format (*.psf *.minipsf);;רשימות השמעה (*.m3u);;השלכות GPU של PSX (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
+        <translation>כל סוגי הקבצים (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.ccd *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;תמונות גולמיות ברצועה יחידה (*.bin *.img *.iso);;דפי CUE (*.cue);;תמונות MAME CHD (*.chd);;תמונות Error Code Modeler (*.ecm);;קובצי Media Descriptor נלווים (*.mds);;תמונות CloneCD (*.ccd);;קובצי EBOOT של PlayStation (*.pbp *.PBP);;קובצי הפעלה של PlayStation (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;קובצי Portable Sound Format (*.psf *.minipsf);;רשימות השמעה (*.m3u);;קובצי תיעוד GPU של PSX (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
     </message>
     <message>
         <source>Images (*.jpg *.jpeg *.png *.webp)</source>
@@ -20022,7 +20289,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
-        <translation>RA: מחובר בתור %1 (%2 נקודות, %3 מזדמנים). %4 הודעות שלא נקראו.</translation>
+        <translation>RA: מחובר בתור %1 (%2 נקודות, %3 נקודות במצב רגיל). %4 הודעות שלא נקראו.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -20186,7 +20453,7 @@ This action cannot be undone.</source>
     </message>
     <message>
         <source>Save State For Resume</source>
-        <translation>מצב שמירה להמשך</translation>
+        <translation>שמירת מצב להמשך</translation>
     </message>
     <message>
         <source>Memory Card Not Found</source>
@@ -20633,11 +20900,11 @@ Error: {1}</source>
     <name>MemoryCardRenameFileDialog</name>
     <message>
         <source>Rename Memory Card File</source>
-        <translation>שינוי שם קובץ כרטיס הזיכרון</translation>
+        <translation>שינוי שם קובץ בכרטיס הזיכרון</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;WARNING: &lt;/span&gt;Renaming memory card files may result in saves becoming inaccessible or corrupted. Be sure to make backups first.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;אזהרה: &lt;/span&gt;שינוי שמות של קובצי כרטיס זיכרון עלול לגרום לשמירות להפוך לבלתי נגישות או להיפגם. הקפד ליצור גיבויים תחילה.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;אזהרה: &lt;/span&gt;שינוי שמות של קבצים בכרטיס הזיכרון עלול לגרום לשמירות להפוך לבלתי נגישות או להיפגם. הקפד ליצור גיבויים תחילה.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Original Name:</source>
@@ -20645,7 +20912,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Region:</source>
-        <translation>:אזור</translation>
+        <translation>אזור:</translation>
     </message>
     <message>
         <source>Serial:</source>
@@ -20668,7 +20935,7 @@ Error: {1}</source>
     <name>MemoryCardSettingsWidget</name>
     <message>
         <source>Memory Card Type:</source>
-        <translation>:סוג כרטיס  זיכרון</translation>
+        <translation>סוג כרטיס זיכרון:</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -20784,7 +21051,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
-        <translation>:נתיב כרטיס זיכרון משותף</translation>
+        <translation>נתיב כרטיס זיכרון משותף:</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
@@ -20807,7 +21074,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>משטח עבודה</translation>
+        <translation>זיכרון זמני</translation>
     </message>
     <message>
         <source>EXP1</source>
@@ -20839,7 +21106,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed Byte:</source>
-        <translation>בית מסומן:</translation>
+        <translation>בית עם סימן:</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -20859,11 +21126,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Little Endian</source>
-        <translation>סדר בתים קטן</translation>
+        <translation>הבית הפחות משמעותי תחילה</translation>
     </message>
     <message>
         <source>Big Endian</source>
-        <translation>סדר בתים גדול</translation>
+        <translation>הבית המשמעותי ביותר תחילה</translation>
     </message>
     <message>
         <source>Unsigned Halfword:</source>
@@ -20891,15 +21158,15 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed Word:</source>
-        <translation>מילה מסומנת:</translation>
+        <translation>מילה עם סימן:</translation>
     </message>
     <message>
         <source>Signed Halfword:</source>
-        <translation>חצי־מילה מסומנת:</translation>
+        <translation>חצי־מילה עם סימן:</translation>
     </message>
     <message>
         <source>Signed Doubleword:</source>
-        <translation>מילה כפולה מסומנת:</translation>
+        <translation>מילה כפולה עם סימן:</translation>
     </message>
     <message>
         <source>Enter memory address:</source>
@@ -20942,7 +21209,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed</source>
-        <translation>מסומן</translation>
+        <translation>עם סימן</translation>
     </message>
     <message>
         <source>Unsigned</source>
@@ -21058,7 +21325,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Scratchpad</source>
-        <translation>משטח עבודה</translation>
+        <translation>זיכרון זמני</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -21134,15 +21401,15 @@ Error: {1}</source>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation>בית מסומן</translation>
+        <translation>בית עם סימן</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation>חצי־מילה מסומנת</translation>
+        <translation>חצי־מילה עם סימן</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation>מילה מסומנת</translation>
+        <translation>מילה עם סימן</translation>
     </message>
     <message>
         <source>Address of RAM for HxD Usage: 0x%1</source>
@@ -21419,7 +21686,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
-        <translation>PGXP אינו תואם למעבד התוכנה; PGXP מושבת.</translation>
+        <translation>PGXP אינו תואם למרנדר התוכנה; PGXP מושבת.</translation>
     </message>
     <message>
         <source>Rewinding is not enabled.</source>
@@ -21457,11 +21724,11 @@ Error: {1}</source>
     </message>
     <message>
         <source>Switching to {} renderer...</source>
-        <translation>עובר למעבד {}...</translation>
+        <translation>עובר למרנדר {}...</translation>
     </message>
     <message>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation>אפשרויות הקומפיילר־מחדש השתנו; כל הבלוקים נשטפים.</translation>
+        <translation>אפשרויות הקומפיילר־מחדש השתנו; כל הבלוקים מנוקים.</translation>
     </message>
     <message>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
@@ -21473,7 +21740,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Switching to {}{} GPU renderer.</source>
-        <translation>עובר למעבד הגרפי {}{} של GPU.</translation>
+        <translation>עובר למרנדר GPU מסוג {}{}.</translation>
     </message>
     <message>
         <source>Switching to {} audio backend.</source>
@@ -21489,23 +21756,23 @@ Error: {1}</source>
     </message>
     <message>
         <source>Failed to load post-processing chain.</source>
-        <translation>טעינת שרשרת העיבוד לאחרי נכשלה.</translation>
+        <translation>טעינת שרשרת העיבוד לאחר רינדור נכשלה.</translation>
     </message>
     <message>
         <source>No post-processing shaders are selected.</source>
-        <translation>לא נבחרו שיידרים לעיבוד לאחרי.</translation>
+        <translation>לא נבחרו שיידרים לעיבוד לאחר רינדור.</translation>
     </message>
     <message>
         <source>Post-processing is now enabled.</source>
-        <translation>עיבוד לאחרי מופעל כעת.</translation>
+        <translation>עיבוד לאחר רינדור מופעל כעת.</translation>
     </message>
     <message>
         <source>Post-processing is now disabled.</source>
-        <translation>עיבוד לאחרי מושבת כעת.</translation>
+        <translation>עיבוד לאחר רינדור מושבת כעת.</translation>
     </message>
     <message>
         <source>Post-processing shaders reloaded.</source>
-        <translation>שיידרי העיבוד לאחרי נטענו מחדש.</translation>
+        <translation>שיידרי העיבוד לאחר רינדור נטענו מחדש.</translation>
     </message>
     <message>
         <source>PGXP is now enabled.</source>
@@ -21597,7 +21864,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Failed to initialize hardware renderer, falling back to software renderer.</source>
-        <translation>אתחול המעבד הגרפי בחומרה נכשל; מתבצע מעבר למעבד גרפי בתוכנה.</translation>
+        <translation>אתחול מרנדר החומרה נכשל; מתבצע מעבר למרנדר תוכנה.</translation>
     </message>
     <message>
         <source>Failed to create {} GPU device, reverting to {}.
@@ -21782,7 +22049,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc. Errors and warnings are still displayed regardless of this setting.</source>
-        <translation>מציג הודעות תצוגה־על כאשר מתרחשים אירועים כגון יצירה או טעינה של שמירות מצבים, צילום מסכי־תמונה וכו&apos;. שגיאות ואזהרות עדיין מוצגות ללא קשר להגדרה זו.</translation>
+        <translation>מציג הודעות תצוגה־על כאשר מתרחשים אירועים כגון יצירה או טעינה של מצבי שמירה, צילום צילומי מסך וכו&apos;. שגיאות ואזהרות עדיין מוצגות ללא קשר להגדרה זו.</translation>
     </message>
     <message>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
@@ -21986,18 +22253,18 @@ Error: {1}</source>
     </message>
     <message>
         <source>Failed to compile post-processing shader &apos;{}&apos;.</source>
-        <translation>הידור שיידר העיבוד לאחרי &apos;{}&apos; נכשל.</translation>
+        <translation>הידור שיידר העיבוד לאחר רינדור &apos;{}&apos; נכשל.</translation>
     </message>
     <message>
         <source>Failed to resize post-processing shader &apos;{}&apos;.</source>
-        <translation>שינוי גודל שיידר העיבוד לאחרי &apos;{}&apos; נכשל.</translation>
+        <translation>שינוי גודל שיידר העיבוד לאחר רינדור &apos;{}&apos; נכשל.</translation>
     </message>
 </context>
 <context>
     <name>PostProcessingChainConfigWidget</name>
     <message>
         <source>Enable Post Processing</source>
-        <translation>הפעל עיבוד לאחרי</translation>
+        <translation>הפעל עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Open Directory</source>
@@ -22009,7 +22276,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Post Processing Chain</source>
-        <translation>שרשרת עיבוד לאחרי</translation>
+        <translation>שרשרת עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Add</source>
@@ -22048,7 +22315,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;שכבת־על של מסגרת היא תמונה המצוירת סביב תצוגת המערכת. שכבות־על של מסגרות מוחלות לאחר עיבוד לאחרי. ניתן לבחור מהרשימה למטה או להגדיר ידנית מסגרת מותאמת אישית.&lt;/p&gt;&lt;p&gt;ניתן להוסיף מסגרות מוגדרות מראש נוספות לתיקייה &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; שבתוך תיקיית הנתונים.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;שכבת־על של מסגרת היא תמונה המצוירת סביב תצוגת המערכת. שכבות־על של מסגרות מוחלות לאחר העיבוד לאחר רינדור. ניתן לבחור מהרשימה למטה או להגדיר ידנית מסגרת מותאמת אישית.&lt;/p&gt;&lt;p&gt;ניתן להוסיף מסגרות מוגדרות מראש נוספות לתיקייה &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; שבתוך תיקיית הנתונים.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Selected Preset:</source>
@@ -22657,11 +22924,11 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Force Digital Hat Inputs</source>
-        <translation>כפה קלטי כובע דיגיטליים</translation>
+        <translation>כפיית קלט דיגיטלי למתגי כיוונים</translation>
     </message>
     <message>
         <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
-        <translation>מאלץ ג&apos;ויסטיקים להתייחס תמיד לקלטי ציר &quot;כובע&quot; (ABS_HAT0X - ABS_HAT3Y) כאל כובעים דיגיטליים בעלי 8 כיוונים, בלי לבדוק אם הם עשויים להיות אנלוגיים.</translation>
+        <translation>מאלץ ג&apos;ויסטיקים להתייחס תמיד לקלטי צירי מתגי הכיוונים (ABS_HAT0X - ABS_HAT3Y) כאל מתגי כיוונים דיגיטליים בעלי 8 כיוונים, בלי לבדוק אם הם עשויים להיות אנלוגיים.</translation>
     </message>
     <message>
         <source>SDL-{0}  {1}</source>
@@ -22791,7 +23058,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Last Played</source>
-        <translation>משחק אחרון</translation>
+        <translation>הופעל לאחרונה</translation>
     </message>
     <message>
         <source>Select</source>
@@ -23116,7 +23383,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>ללא שינוי קנה מידה (מיזוג ב-Shader)</translation>
+        <translation>ללא שינוי קנה מידה (מיזוג בשיידר)</translation>
     </message>
     <message>
         <source>Scaled</source>
@@ -23126,7 +23393,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation>בקנה מידה (מיזוג ב-Shader)</translation>
+        <translation>בקנה מידה (מיזוג בשיידר)</translation>
     </message>
     <message>
         <source>True Color</source>
@@ -23392,6 +23659,21 @@ Do you want to create this directory?</source>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (חד)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>אוטומטי</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>מופעל</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>מושבת</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -23744,7 +24026,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;הגדרות מסוף&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה קובעות את תצורת המסוף המדומה.&lt;br&gt;&lt;br&gt;העבר את העכבר מעל אפשרות לקבלת מידע נוסף, והשתמש ב-Shift+Wheel כדי לגלול בחלונית זו.</translation>
+        <translation>&lt;strong&gt;הגדרות קונסולה&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה קובעות את תצורת הקונסולה המדומה.&lt;br&gt;&lt;br&gt;העבר את העכבר מעל אפשרות לקבלת מידע נוסף, והשתמש ב-Shift+Wheel כדי לגלול בחלונית זו.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -23772,7 +24054,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options control how the graphics of the emulated console are rendered. Not all options are available for the software renderer. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;הגדרות גרפיקה&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה שולטות באופן שבו גרפיקת המסוף המדומה מרונדרת. לא כל האפשרויות זמינות במרנדר התוכנה. העבר את העכבר מעל כל אפשרות לקבלת מידע נוסף, והשתמש ב-Shift+Wheel כדי לגלול בחלונית זו.</translation>
+        <translation>&lt;strong&gt;הגדרות גרפיקה&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה שולטות באופן שבו גרפיקת הקונסולה המדומה מרונדרת. לא כל האפשרויות זמינות במרנדר התוכנה. העבר את העכבר מעל כל אפשרות לקבלת מידע נוסף, והשתמש ב-Shift+Wheel כדי לגלול בחלונית זו.</translation>
     </message>
     <message>
         <source>On-Screen Display</source>
@@ -23785,7 +24067,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be downloaded from &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</source>
-        <translation>&lt;strong&gt;הגדרות עיבוד לאחר הצגה&lt;/strong&gt;&lt;hr&gt;עיבוד לאחר הצגה מאפשר לשנות את מראה התמונה המוצגת על המסך באמצעות מסננים שונים. הצללות יבוצעו ברצף. ניתן להוריד הצללות נוספות מ-&lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</translation>
+        <translation>&lt;strong&gt;הגדרות עיבוד לאחר רינדור&lt;/strong&gt;&lt;hr&gt;עיבוד לאחר רינדור מאפשר לשנות את מראה התמונה המוצגת על המסך באמצעות מסננים שונים. שיידרים יבוצעו ברצף. ניתן להוריד שיידרים נוספים מ-&lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -23861,7 +24143,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Console</source>
-        <translation>מסוף בקרה</translation>
+        <translation>קונסולה</translation>
     </message>
     <message>
         <source>Emulation</source>
@@ -23877,7 +24159,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Post-Processing</source>
-        <translation>עיבוד לאחר הצגה</translation>
+        <translation>עיבוד לאחר רינדור</translation>
     </message>
     <message>
         <source>Audio</source>
@@ -23885,7 +24167,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;הגדרות שמע&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה שולטות בפלט השמע של המסוף. העבר את העכבר מעל אפשרות לקבלת מידע נוסף.</translation>
+        <translation>&lt;strong&gt;הגדרות שמע&lt;/strong&gt;&lt;hr&gt;אפשרויות אלה שולטות בפלט השמע של הקונסולה. העבר את העכבר מעל אפשרות לקבלת מידע נוסף.</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -24060,7 +24342,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>שולט באופן שבו הדיטרינג מוחל ב-GPU המדומה. צבע אמיתי משבית דיטרינג ומפיק מעברי צבע שנראים הטוב ביותר. אפשרויות בקנה מידה הופכות את תבנית הדיטרינג לפחות בולטת ברזולוציות גבוהות יותר. אפשרויות מיזוג Shader מבצעות מיזוג בתוכנה, והן מדויקות יותר אך כרוכות בפגיעה &lt;strong&gt;משמעותית&lt;/strong&gt; בביצועים.</translation>
+        <translation>שולט באופן שבו הדיטרינג מוחל ב-GPU המדומה. צבע אמיתי משבית דיטרינג ומפיק את מעברי הצבע הנאים ביותר. אפשרויות בקנה מידה הופכות את תבנית הדיטרינג לפחות בולטת ברזולוציות גבוהות יותר. אפשרויות מיזוג באמצעות שיידרים מבצעות מיזוג בתוכנה, והן מדויקות יותר אך כרוכות בפגיעה &lt;strong&gt;משמעותית&lt;/strong&gt; בביצועים.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
@@ -24068,7 +24350,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>משנה את יחס הגובה-רוחב המשמש להצגת פלט המסוף על המסך. ברירת המחדל היא אוטומטי (מקורי במשחק), שמכוונן אוטומטית את יחס הגובה-רוחב כך שיתאים לאופן שבו משחק הוצג בטלוויזיה טיפוסית של אותה תקופה.</translation>
+        <translation>משנה את יחס הגובה-רוחב המשמש להצגת פלט הקונסולה על המסך. ברירת המחדל היא אוטומטי (מקורי במשחק), שמכוונן אוטומטית את יחס הגובה-רוחב כך שיתאים לאופן שבו משחק הוצג בטלוויזיה טיפוסית של אותה תקופה.</translation>
     </message>
     <message>
         <source>:</source>
@@ -24088,7 +24370,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>קובע כיצד פלט המסוף המדומה יוגדל או יוקטן לרזולוציית הצג שלך.</translation>
+        <translation>קובע כיצד פלט הקונסולה המדומה יוגדל או יוקטן לרזולוציית הצג שלך.</translation>
     </message>
     <message>
         <source>FMV Scaling:</source>
@@ -24117,7 +24399,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register by clicking the Register button below.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation תומך בצבירת הישגים ובמעקב אחר לוחות מובילים באמצעות RetroAchievements.&lt;/p&gt;&lt;p&gt;אם יש לך חשבון RetroAchievements, ניתן להשתמש בטופס שלהלן כדי להתחבר. אם לא, ניתן להירשם בלחיצה על הכפתור הרשמה שלהלן.&lt;/p&gt;&lt;p&gt;חשבון RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;אינו&lt;/span&gt; נדרש לשימוש ב-DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation תומך בצבירת הישגים ובמעקב אחר לוחות תוצאות באמצעות RetroAchievements.&lt;/p&gt;&lt;p&gt;אם יש לך חשבון RetroAchievements, ניתן להשתמש בטופס שלהלן כדי להתחבר. אם לא, ניתן להירשם בלחיצה על הכפתור הרשמה שלהלן.&lt;/p&gt;&lt;p&gt;חשבון RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;אינו&lt;/span&gt; נדרש לשימוש ב-DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Register</source>
@@ -24151,9 +24433,9 @@ Do you want to continue?</source>
         <source>Choose the interface DuckStation should show when it starts. Desktop Mode is designed for mouse and keyboard use, while Big Picture Mode is optimized for navigation with a controller on a TV.
 
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
-        <translation>בחר את הממשק ש-DuckStation יציג בעת האתחול. מצב שולחן העבודה מיועד לשימוש בעכבר ובמקלדת, בעוד שמצב התמונה הגדולה מותאם לניווט באמצעות בקר בטלוויזיה.
+        <translation>בחר את הממשק ש-DuckStation יציג בעת האתחול. מצב שולחן העבודה מיועד לשימוש בעכבר ובמקלדת, בעוד שמצב Big Picture מותאם לניווט באמצעות בקר בטלוויזיה.
 
-ניתן לשנות זאת מאוחר יותר על ידי החלפת ההגדרה &quot;התחלה במצב תמונה גדולה&quot; בהגדרות הממשק.</translation>
+ניתן לשנות זאת מאוחר יותר על ידי החלפת ההגדרה &quot;הפעלה במצב Big Picture&quot; בהגדרות הממשק.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -24251,7 +24533,7 @@ Are you sure you wish to continue without selecting a BIOS image?</source>
         <source>No game directories have been selected. You will have to manually open any game dumps you want to play, DuckStation&apos;s list will be empty.
 
 Are you sure you want to continue?</source>
-        <translation>לא נבחרו ספריות משחקים. יהיה עליך לפתוח ידנית את כל העתקים של משחקים שברצונך לשחק בהם, ורשימת DuckStation תהיה ריקה.
+        <translation>לא נבחרו ספריות משחקים. יהיה עליך לפתוח ידנית את כל ההעתקים של משחקים שברצונך לשחק בהם, ורשימת DuckStation תהיה ריקה.
 
 האם אתה בטוח שברצונך להמשיך?</translation>
     </message>
@@ -24539,7 +24821,7 @@ Using current CD image, this may result in instability.</source>
     </message>
     <message>
         <source>No valid game is running.</source>
-        <translation>לא פועל משחק חוקי.</translation>
+        <translation>לא פועל משחק תקין.</translation>
     </message>
     <message>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
@@ -24553,7 +24835,7 @@ The name of the SBI file must match the name of the disc image.</source>
 
 {0}: {1}
 
-הקובץ שהשלכת אינו שלם; עליך להוסיף את קובץ ה־SBI כדי להפעיל משחק זה. 
+עותק המשחק שלך אינו שלם; עליך להוסיף את קובץ ה־SBI כדי להפעיל משחק זה.
 
 שם קובץ ה־SBI חייב להתאים לשם תמונת התקליטור.</translation>
     </message>
@@ -24567,7 +24849,7 @@ The name of the SBI file must match the name of the disc image.</source>
     </message>
     <message>
         <source>Current game does not have multiple discs.</source>
-        <translation>למשחק הנוכחי אין מספר תקליטורים.</translation>
+        <translation>המשחק הנוכחי אינו כולל כמה תקליטורים.</translation>
     </message>
     <message>
         <source>Could not determine current disc for switching.</source>
@@ -24807,11 +25089,11 @@ You must save to a memory card and reset the game to clear any effects.</source>
     </message>
     <message>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>עוצר את {0} אל &apos;{1}&apos;.</translation>
+        <translation>{0} אל &apos;{1}&apos; נעצרה.</translation>
     </message>
     <message>
         <source>Stopped {0}: {1}.</source>
-        <translation>עוצר את {0}: {1}.</translation>
+        <translation>{0} נעצרה: {1}.</translation>
     </message>
     <message>
         <source>Cannot use per-game memory card without a disc.
@@ -24821,7 +25103,7 @@ Using shared card instead.</source>
     </message>
     <message>
         <source>Failed to change GPU dump: {}</source>
-        <translation>שינוי השלכת ה־GPU נכשל: {}</translation>
+        <translation>שינוי קובץ תיעוד ה־GPU נכשל: {}</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
@@ -24865,7 +25147,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 
 {0}
 
-ייתכן שהסיבה לכך היא שה־GPU שלך אינו תומך במעבד שנבחר ({1}), או שיש לעדכן את מנהלי ההתקן הגרפיים שלך.</translation>
+ייתכן שהסיבה לכך היא שה־GPU שלך אינו תומך במרנדר שנבחר ({1}), או שיש לעדכן את מנהלי ההתקן הגרפיים שלך.</translation>
     </message>
     <message>
         <source>Rewind has been disabled.</source>
@@ -24874,6 +25156,29 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <source>Rewind and runahead cannot be used at the same time.</source>
         <translation>לא ניתן להשתמש בחזרה לאחור ובהרצה מקדימה בו־זמנית.</translation>
+    </message>
+</context>
+<context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>חלון TTY</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>חלון TTY - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>&amp;הגדרות</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>הפעלת רישום &amp;TTY של ה־BIOS</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>הצגת &amp;חותמות זמן</translation>
     </message>
 </context>
 <context>
@@ -24888,7 +25193,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     </message>
     <message>
         <source>Texture Dumping Mode</source>
-        <translation>מצב השלכת מרקמים</translation>
+        <translation>מצב ייצוא מרקמים</translation>
     </message>
     <message>
         <source>Reduce Palette Range</source>
@@ -24896,19 +25201,19 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     </message>
     <message>
         <source>Dump Texture Pages</source>
-        <translation>השלך דפי מרקמים</translation>
+        <translation>ייצוא דפי מרקמים</translation>
     </message>
     <message>
         <source>Dump C16 Textures</source>
-        <translation>השלך מרקמי C16</translation>
+        <translation>ייצוא מרקמי C16</translation>
     </message>
     <message>
         <source>Dump Full Texture Pages</source>
-        <translation>השלך דפי מרקמים מלאים</translation>
+        <translation>ייצוא דפי מרקמים מלאים</translation>
     </message>
     <message>
         <source>The texture dumping system can either operate in page mode, or write-tracking mode. Replacements can be loaded from either dump method.</source>
-        <translation>מערכת השלכת המרקמים יכולה לפעול במצב דפים או במצב מעקב כתיבות. ניתן לטעון החלפות מכל אחת משיטות ההשלכה.</translation>
+        <translation>מערכת ייצוא המרקמים יכולה לפעול במצב דפים או במצב מעקב כתיבות. ניתן לטעון החלפות מכל אחת משיטות הייצוא.</translation>
     </message>
     <message>
         <source>Write Tracking Options</source>
@@ -24932,7 +25237,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     </message>
     <message>
         <source>Convert Copies To Writes</source>
-        <translation>המר עותקים לכתיבות</translation>
+        <translation>המר פעולות העתקה לכתיבות</translation>
     </message>
     <message>
         <source>Bilinear Replacement Scaling</source>
@@ -24940,11 +25245,11 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     </message>
     <message>
         <source>Texture Dumping Options</source>
-        <translation>אפשרויות השלכת מרקמים</translation>
+        <translation>אפשרויות ייצוא מרקמים</translation>
     </message>
     <message>
         <source>Dump Size Threshold:</source>
-        <translation>סף גודל השלכה:</translation>
+        <translation>סף גודל לייצוא:</translation>
     </message>
     <message>
         <source>Set Alpha Channel</source>
@@ -24952,15 +25257,15 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     </message>
     <message>
         <source>Determines the minimum size of a texture that will be dumped. Textures with a size smaller than this value will be ignored.</source>
-        <translation>קובע את הגודל המזערי של מרקם שיושלך. מרקמים שגודלם קטן מערך זה יזכו להתעלמות.</translation>
+        <translation>קובע את הגודל המזערי של מרקם שייוצא. המערכת תתעלם ממרקמים שגודלם קטן מערך זה.</translation>
     </message>
     <message>
         <source>Background Dumping Options</source>
-        <translation>אפשרויות השלכה ברקע</translation>
+        <translation>אפשרויות ייצוא רקעים</translation>
     </message>
     <message>
         <source>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</source>
-        <translation>קובע את הגודל המזערי של כתיבת VRAM שתושלך במצב השלכה ברקע. העלאות שקטנות מגודל זה יזכו להתעלמות.</translation>
+        <translation>קובע את הגודל המזערי של כתיבת VRAM שתיוצא במצב ייצוא רקעים. המערכת תתעלם מהעלאות שקטנות מגודל זה.</translation>
     </message>
     <message>
         <source>Export...</source>

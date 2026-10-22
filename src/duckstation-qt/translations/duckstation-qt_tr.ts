@@ -5,7 +5,7 @@
     <name>AboutDialog</name>
     <message>
         <source>About DuckStation</source>
-        <translation>Duckstation Hakkında</translation>
+        <translation>DuckStation Hakkında</translation>
     </message>
     <message>
         <source>DuckStation</source>
@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>Duckstation özgür bir Playstation Emülatörüdür.&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; Kuallanılabilirlik,hız ve uzun vadede sürüdülebilirliği amaçlar.</translation>
+        <translation>DuckStation, oynanabilirliğe, hıza ve uzun vadeli sürdürülebilirliğe odaklanan, Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; konsolunun özgür bir simülatörü/emülatörüdür.</translation>
     </message>
     <message>
         <source>Authors</source>
@@ -49,7 +49,7 @@
     <message>
         <source>RetroAchievements Login</source>
         <comment>Window title</comment>
-        <translation>RetroAchievemnts Giriş</translation>
+        <translation>RetroAchievements Giriş</translation>
     </message>
     <message>
         <source>RetroAchievements Login</source>
@@ -78,7 +78,7 @@
     </message>
     <message>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>&lt;strong&gt;RetroAchievements giriş tokeniniz geçerliliğini yitirmiş&lt;/strong&gt; Başarımlarınızın takip edilebilmesi için giriş bilgilerinizi tekrar girmelisiniz. onun yerine token bazlı kimlik doğrulama kodu üretilip kullanılacak.</translation>
+        <translation>&lt;strong&gt;RetroAchievements giriş tokeniniz artık geçerli değil.&lt;/strong&gt; Başarımlarınızın takip edilebilmesi için giriş bilgilerinizi tekrar girmelisiniz. Şifreniz DuckStation&apos;da saklanmayacak; bunun yerine bir erişim tokeni oluşturulup kullanılacak.</translation>
     </message>
     <message>
         <source>Logging in...</source>
@@ -96,7 +96,7 @@ Please check your username and password, and try again.</source>
         <translation>Giriş başarılamadı.
 Hata: %1
 
-Lüten kullanıcı adı ve şifrenizi gözden geçirip tekrardan deneyiniz.</translation>
+Lütfen kullanıcı adı ve şifrenizi gözden geçirip tekrardan deneyiniz.</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -120,9 +120,9 @@ Başarım takibini etkinleştirmek ister misiniz?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Zor (Hardcore) modu şimdi etkin değil. Bunu açmak oyunlara özel lider tahtalarında zaman/skor yarışmalarına katılmanızı sağlayacak
+        <translation>Zor (Hardcore) modu şimdi etkin değil. Bunu açmak oyunlara özel lider tahtalarında zaman/skor yarışmalarına katılmanızı sağlayacak.
 
-Ama bunu etkinleştirmek durum kayıtlarını, hileleri ve oyun yavaşlatma fonksiyonunu kapayacak..
+Ama bunu etkinleştirmek durum kayıtlarını, hileleri ve oyun yavaşlatma fonksiyonunu kapayacak.
 
 Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
@@ -263,7 +263,7 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Başarımlar için&quot;Challenge/Meydan Okuma&quot; modu. Lider tahtası takibinide içerir. Durum kaydı,hile ve yavaşlatma fonksiyonlarını kapatır.</translation>
+        <translation>Başarımlar için &quot;Challenge/Meydan Okuma&quot; modu. Lider tahtası takibini de içerir. Durum kaydı, hile ve yavaşlatma fonksiyonlarını kapatır.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -275,7 +275,7 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
-        <translation>Başarım kazanılması ve oyunun bitirlmesi durumlarında ekrana mesaj gönderir.</translation>
+        <translation>Başarım kazanılması ve oyunun bitirilmesi durumlarında ekrana mesaj gönderir.</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -291,7 +291,7 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>Lider tahtası challenge/meydan okumalarında ekrana mesaj gönderir.</translation>
+        <translation>Bir lider tahtası meydan okuması başlatıldığında, sonucu gönderildiğinde veya başarısız olduğunda açılır mesajlar gösterir.</translation>
     </message>
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
@@ -299,7 +299,7 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Başarım kazanımları ve lider tahtası girdilerinde ekrana mesaj gönderir.</translation>
+        <translation>Başarım kazanılması ve lider tahtasına sonuç gönderilmesi gibi olaylarda ses efektleri çalar.</translation>
     </message>
     <message>
         <source>Downloads all locked achievement badges while starting the game. This will reduce delays in the images being shown when unlocking achievements.</source>
@@ -425,7 +425,7 @@ Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>Logout</source>
-        <translation>Sistem Çıkışı</translation>
+        <translation>Oturumu Kapat</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -468,7 +468,7 @@ Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>Your Value: {}</source>
-        <translation>Puanın: {}</translation>
+        <translation>Değerin: {}</translation>
     </message>
     <message>
         <source>Your Time: {0} (Best: {1})</source>
@@ -480,11 +480,11 @@ Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>Your Value: {0} (Best: {1})</source>
-        <translation>Puanın: {0} (Rekorun: {1})</translation>
+        <translation>Değerin: {0} (Rekorun: {1})</translation>
     </message>
     <message>
         <source>Leaderboard Position: {0} of {1}</source>
-        <translation>Lider Tahtasındaki Yer : {0} inci {1}</translation>
+        <translation>Lider Tahtasındaki Yer: {1} içinde {0}.</translation>
     </message>
     <message>
         <source>Achievements Disconnected</source>
@@ -589,7 +589,7 @@ Hata: {}</translation>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
-            <numerusform>Tüm başarımları kazanıp %n puan aldnız!</numerusform>
+            <numerusform>Tüm başarımları kazanıp %n puan aldınız!</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -624,7 +624,7 @@ Hata: {}</translation>
     </message>
     <message>
         <source>Unlocked in Casual</source>
-        <translation>Günlük Modda Açıldı</translation>
+        <translation>Rahat Modda Açıldı</translation>
     </message>
     <message>
         <source>Change Subset</source>
@@ -660,7 +660,7 @@ Hata: {}</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
-        <translation>{:.1f}% kadar oyuncular bu başarıma sahip</translation>
+        <translation>Oyuncuların %{:.1f} kadarı bu başarıma sahip</translation>
     </message>
     <message>
         <source>Leaderboards are not available.</source>
@@ -674,7 +674,7 @@ Hata: {}</translation>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>Bu oyunun %n tane başarım tahtası leaderboard&apos;u var.</numerusform>
+            <numerusform>Bu oyunda %n lider tablosu var.</numerusform>
         </translation>
     </message>
     <message>
@@ -703,7 +703,7 @@ Hata: {}</translation>
     </message>
     <message>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation>{0} Zor (Hardcore) durumu açıkken kullanılamaz. Zor(Hardcore) modunu kapatmak ister misiniz? {0} Hayır&apos;ı seçerseniz kapatılacak.</translation>
+        <translation>Zor (Hardcore) modu etkinken {0} işlemi gerçekleştirilemez. Zor (Hardcore) modunu kapatmak ister misiniz? Hayır&apos;ı seçerseniz {0} işlemi iptal edilecek.</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
@@ -747,7 +747,7 @@ Hata: {}</translation>
     </message>
     <message>
         <source>Unlocked</source>
-        <translation>Açılı</translation>
+        <translation>Kilidi Açık</translation>
     </message>
     <message>
         <source>Unsupported</source>
@@ -755,7 +755,7 @@ Hata: {}</translation>
     </message>
     <message>
         <source>Unofficial</source>
-        <translation>Üçüncü Parti</translation>
+        <translation>Resmi Olmayan</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
@@ -808,7 +808,7 @@ Hata: {}</translation>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
-            <numerusform>%n puanlar</numerusform>
+            <numerusform>%n puan</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -913,12 +913,12 @@ Bu isteği göndermeyi denemeye devam edeceğiz.</translation>
         <source>Score: {} ({} casual)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
-        <translation>Puan: {} ({} günlük)
+        <translation>Puan: {} ({} rahat mod)
 Okunmamış mesajlar: {}</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)</source>
-        <translation>Puan: {} ({} günlük)</translation>
+        <translation>Puan: {} ({} rahat mod)</translation>
     </message>
     <message>
         <source>Refreshing game database...</source>
@@ -957,7 +957,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
-            <numerusform>%n başarımlar</numerusform>
+            <numerusform>%n başarım</numerusform>
         </translation>
     </message>
     <message>
@@ -982,7 +982,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Puan</translation>
+        <translation>Değer</translation>
     </message>
     <message>
         <source>Date Submitted</source>
@@ -994,30 +994,30 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation>Liderler sıralaması indirliyor. Bekleyiniz...</translation>
+        <translation>Lider tablosu verileri indiriliyor, lütfen bekleyin...</translation>
     </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
     <message>
         <source>Logging</source>
-        <translation>Logging</translation>
+        <translation>Günlük Kaydı</translation>
     </message>
     <message>
         <source>Log Level:</source>
-        <translation>Log Level:</translation>
+        <translation>Günlük Düzeyi:</translation>
     </message>
     <message>
         <source>Log Channels</source>
-        <translation>Log Channels</translation>
+        <translation>Günlük Kanalları</translation>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>Log To System Console</translation>
+        <translation>Sistem Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To Window</source>
-        <translation>Log To Window</translation>
+        <translation>Pencereye Günlük Yaz</translation>
     </message>
     <message>
         <source>Log Timestamps</source>
@@ -1089,19 +1089,19 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Log To Debug Console</source>
-        <translation>Log To Debug Console</translation>
+        <translation>Hata Ayıklama Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Log To File</translation>
+        <translation>Dosyaya Günlük Yaz</translation>
     </message>
     <message>
         <source>Show Debug Menu</source>
-        <translation>Show Debug Menu</translation>
+        <translation>Hata Ayıklama Menüsünü Göster</translation>
     </message>
     <message>
         <source>Log Level</source>
-        <translation>Log Level</translation>
+        <translation>Günlük Düzeyi</translation>
     </message>
     <message>
         <source>Select Cache Directory</source>
@@ -1113,31 +1113,31 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation>Information</translation>
+        <translation>Bilgi</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
-        <translation>Sets the verbosity of messages logged. Higher levels will log more messages.</translation>
+        <translation>Günlüğe kaydedilen mesajların ayrıntı düzeyini ayarlar. Daha yüksek düzeylerde daha fazla mesaj kaydedilir.</translation>
     </message>
     <message>
         <source>User Preference</source>
-        <translation>User Preference</translation>
+        <translation>Kullanıcı Tercihi</translation>
     </message>
     <message>
         <source>Logs messages to the console window.</source>
-        <translation>Logs messages to the console window.</translation>
+        <translation>Mesajları konsol penceresine kaydeder.</translation>
     </message>
     <message>
         <source>Logs messages to the debug console where supported.</source>
-        <translation>Logs messages to the debug console where supported.</translation>
+        <translation>Desteklendiği yerlerde mesajları hata ayıklama konsoluna kaydeder.</translation>
     </message>
     <message>
         <source>Logs messages to the window.</source>
-        <translation>Logs messages to the window.</translation>
+        <translation>Mesajları pencereye kaydeder.</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
-        <translation>Logs messages to duckstation.log in the user directory.</translation>
+        <translation>Mesajları kullanıcı dizinindeki duckstation.log dosyasına kaydeder.</translation>
     </message>
     <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
@@ -1153,7 +1153,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
-        <translation>Shows a debug menu bar with additional statistics and quick settings.</translation>
+        <translation>Ek istatistikler ve hızlı ayarlar içeren bir hata ayıklama menü çubuğu gösterir.</translation>
     </message>
     <message>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
@@ -1208,7 +1208,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Çapraz</translation>
+        <translation>Çarpı</translation>
     </message>
     <message>
         <source>Circle</source>
@@ -1224,7 +1224,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>D-Pad Down</source>
-        <translation>Aşşağı Tuşu</translation>
+        <translation>Aşağı Tuşu</translation>
     </message>
     <message>
         <source>D-Pad Left</source>
@@ -1248,7 +1248,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>R1</source>
-        <translation>Sağ Üst R2</translation>
+        <translation>Sağ Üst R1</translation>
     </message>
     <message>
         <source>R2</source>
@@ -1272,7 +1272,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Left Stick Down</source>
-        <translation>Sol Çubuk Aşşağı</translation>
+        <translation>Sol Çubuk Aşağı</translation>
     </message>
     <message>
         <source>Left Stick Up</source>
@@ -1288,11 +1288,11 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Right Stick Down</source>
-        <translation>Sağ Çubuk Aşşağı</translation>
+        <translation>Sağ Çubuk Aşağı</translation>
     </message>
     <message>
         <source>Right Stick Up</source>
-        <translation>Sağ Çubuj Yukarı</translation>
+        <translation>Sağ Çubuk Yukarı</translation>
     </message>
     <message>
         <source>Large Motor</source>
@@ -1316,11 +1316,11 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Invert Up/Down</source>
-        <translation>Yukarı/Aşşağı Terslenme</translation>
+        <translation>Yukarı/Aşağı Terslenme</translation>
     </message>
     <message>
         <source>Invert Left/Right + Up/Down</source>
-        <translation>Sol/Sağ ve Yukarı/Aşşağı Terslenme</translation>
+        <translation>Sol/Sağ ve Yukarı/Aşağı Terslenme</translation>
     </message>
     <message>
         <source>Never</source>
@@ -1360,7 +1360,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
-        <translation>Dijital moddayken sol analogu dijital yön tuşları için kullanamanızı sağlar ve tuşlarıda destekler.</translation>
+        <translation>Dijital moddayken sol analog çubuğu, düğmelerin yanı sıra yön tuşlarını kontrol etmek için de kullanmanızı sağlar.</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
@@ -1372,7 +1372,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Use Right Analog for Shoulder Buttons</source>
-        <translation>Sağ Analogu Shoulder Tuşları İçin Kullan</translation>
+        <translation>Sağ Analogu Omuz Düğmeleri İçin Kullan</translation>
     </message>
     <message>
         <source>Button/Trigger Deadzone</source>
@@ -1380,7 +1380,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation>Tuş/Tetik temas/kavrama noktası için deadzone/ölü bölge ayarı. Tetiğin nereye kadar kenetlenmeyeceğini ayarlar.</translation>
+        <translation>Düğmelerin/tetiklerin etkinleşmesi için ölü bölgeyi, yani tetik hareketinin yok sayılacak kısmını ayarlar.</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -1443,7 +1443,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>D-Pad Down</source>
-        <translation>Aşşağı Tüş</translation>
+        <translation>Aşağı Tuş</translation>
     </message>
     <message>
         <source>D-Pad Left</source>
@@ -1463,7 +1463,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Left Stick Down</source>
-        <translation>Sol Çubuk Aşşağı</translation>
+        <translation>Sol Çubuk Aşağı</translation>
     </message>
     <message>
         <source>Left Stick Up</source>
@@ -1479,7 +1479,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Right Stick Down</source>
-        <translation>Sağ Çubuk Aşşağı</translation>
+        <translation>Sağ Çubuk Aşağı</translation>
     </message>
     <message>
         <source>Right Stick Up</source>
@@ -1499,11 +1499,11 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Invert Up/Down</source>
-        <translation>Yukarı/Aşşağı Terslenme</translation>
+        <translation>Yukarı/Aşağı Terslenme</translation>
     </message>
     <message>
         <source>Invert Left/Right + Up/Down</source>
-        <translation>Sol/Sağ ve Yukarı/Aşşağı Terslenme</translation>
+        <translation>Sol/Sağ ve Yukarı/Aşağı Terslenme</translation>
     </message>
     <message>
         <source>Disable Simultaneous Opposing Cardinal Directions</source>
@@ -1559,7 +1559,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Çapraz</translation>
+        <translation>Çarpı</translation>
     </message>
     <message>
         <source>Circle</source>
@@ -1579,7 +1579,7 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     </message>
     <message>
         <source>R1</source>
-        <translation>Sağ Üst R2</translation>
+        <translation>Sağ Üst R1</translation>
     </message>
     <message>
         <source>R2</source>
@@ -1797,6 +1797,16 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <translation>Çıkışta Durumu Kaydet</translation>
     </message>
     <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>Oyunu Kapatmayı Onayla</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>Duraklatma menüsünden bir oyunu kapatmadan önce onay ister.</translation>
+    </message>
+    <message>
         <source>Pause On Controller Disconnection</source>
         <comment>settings_pause_on_controller_disconnection</comment>
         <translation>Oyun Kolu Bağlantısı Kesildiğinde Duraklat</translation>
@@ -1947,6 +1957,16 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <source>Shutting Down…</source>
         <comment>emulation_activity_shutting_down</comment>
         <translation>Kapatılıyor…</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>Kare Ortasında Ekrana Aktarım</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>Görüntülenen kare arabelleğindeki değişiklikleri bir karenin ortasında uygular. Bazı oyunlardaki bölünmüş ekran efektleri için gereklidir, ancak diğerlerinde yırtılmaya neden olur.</translation>
     </message>
     <message>
         <source>Maximum Queued Frames</source>
@@ -2103,6 +2123,16 @@ Mevcut Atama: %s</translation>
         <translation>Davranış</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <comment>settings_content_list_icons</comment>
+        <translation>Liste Simgeleri</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_content_list_icons</comment>
+        <translation>Oyun listesindeki her oyunun yanında gösterilen resmi seçer.</translation>
+    </message>
+    <message>
         <source>Video Settings</source>
         <comment>settings_category_video_settings</comment>
         <translation>Video Ayarları</translation>
@@ -2146,6 +2176,21 @@ Mevcut Atama: %s</translation>
         <source>Selected file could not be opened.</source>
         <comment>emulation_menu_change_media_invalid_file</comment>
         <translation>Seçilen dosya açılamadı.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>Kapatmayı Onayla</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>Mevcut oyunu kapatmak istediğinizden emin misiniz?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>Bir dahaki sefere buradan devam et</translation>
     </message>
     <message>
         <source>Safety Check Failed</source>
@@ -2484,6 +2529,11 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>Touchscreen</source>
         <comment>controller_settings_tab_touchscreen</comment>
         <translation>Dokunmatik Ekran</translation>
+    </message>
+    <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>Bağlantı Noktası %1$s</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -2947,6 +2997,84 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Durum Kaydı Yöneticisi</translation>
     </message>
     <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>Hafıza Kartları</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>Yeni Kart Oluştur</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>Yeni, biçimlendirilmiş bir hafıza kartı oluşturur.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>Hafıza Kartını İçe Aktar</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>Depolama alanından bir hafıza kartını içe aktarır ve gerekirse dönüştürür.</translation>
+    </message>
+    <message>
+        <source>Memory card &apos;%s&apos; imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>&apos;%s&apos; hafıza kartı içe aktarıldı.</translation>
+    </message>
+    <message>
+        <source>A memory card named &apos;%s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>&apos;%s&apos; adlı bir hafıza kartı zaten var. Üzerine yazmak istiyor musunuz? Mevcut tüm veriler kaybolacak.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>Çok Diskli Oyunlar İçin Tek Kart Kullan</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>Oyuna (başlığa) özel hafıza kartlarıyla çok diskli bir oyun oynarken tüm diskler için tek bir kart kullanır. Devre dışı bırakılırsa her disk ayrı bir kart kullanır.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>Kullanılabilecek hafıza kartı sayısı, multitap ve oyun desteğine bağlıdır.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
+        <translation>
+            <numerusform>Geçerli Multitap Modu: %1$s (%2$d Kart)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>Hafıza Kartı Türü</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>Bu yuvaya hangi hafıza kartı kalıbının takılacağını seçer.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>Paylaşımlı Kart Adı</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>Tür, tüm oyunlar arasında paylaşımlı olarak ayarlandığında kullanılacak kartı seçer.</translation>
+    </message>
+    <message>
         <source>Confirm Deletion</source>
         <comment>confirm_deletion</comment>
         <translation>Silmeyi Onayla</translation>
@@ -3019,7 +3147,7 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     <message>
         <source>Path</source>
         <comment>game_properties_path</comment>
-        <translation>Dizin</translation>
+        <translation>Yol</translation>
     </message>
     <message>
         <source>Time Played</source>
@@ -3249,6 +3377,76 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Tümünü Kaldır</translation>
     </message>
     <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>Geri Sar</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>Sol Tuş</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>Sağ Tuş</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>content_background_mode</comment>
+        <translation>Ölçeklendirme</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>content_background_mode_fit</comment>
+        <translation>Sığdır</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>content_background_mode_fill</comment>
+        <translation>Doldur</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>content_background_mode_stretch</comment>
+        <translation>Ger</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>Fare</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>Varsayılana Sıfırla</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>Geçerli Değer</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>Varsayılan Değer</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>Genel Ayar</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>PGXP&apos;yi yalnızca bellek işlemleri için değil, tüm komutlar için kullanır. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>PGXP verilerini çözümlemek için ekran konumlarını kullanır. Bazı oyunlarda görselleri iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
+    </message>
+    <message>
         <source>Auto (Game Native)</source>
         <comment>settings_video_aspect_ratio_entries[0]</comment>
         <translation>Otomatik (Oyuna Göre)</translation>
@@ -3431,12 +3629,12 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     <message>
         <source>Start Big Picture Mode</source>
         <comment>content_list_start_fullscreen_ui</comment>
-        <translation>Tam Ekran Modunu Başlat</translation>
+        <translation>Büyük Resim Modunu Başlat</translation>
     </message>
     <message>
         <source>Start in Big Picture Mode</source>
         <comment>settings_start_fullscreen_ui</comment>
-        <translation>Tam Ekran Modunda Başlat</translation>
+        <translation>Büyük Resim Modunda Başlat</translation>
     </message>
     <message>
         <source>Opens the controller-friendly fullscreen interface when the app starts.</source>
@@ -3631,7 +3829,7 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     <message>
         <source>Scaling</source>
         <comment>settings_scaling</comment>
-        <translation>Büyütme</translation>
+        <translation>Ölçeklendirme</translation>
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
@@ -3882,16 +4080,6 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>Game List</source>
         <comment>settings_category_content_list</comment>
         <translation>Oyun Listesi</translation>
-    </message>
-    <message>
-        <source>Prefer Achievement Icons</source>
-        <comment>settings_prefer_achievement_icons</comment>
-        <translation>Başarım Simgelerini Tercih Et</translation>
-    </message>
-    <message>
-        <source>Prioritizes the game&apos;s badges used for RetroAchievements over memory card icons.</source>
-        <comment>settings_summary_prefer_achievement_icons</comment>
-        <translation>Oyunun RetroAchievements için kullanılan rozetlerine bellek kartı simgelerinden daha yüksek öncelik verir.</translation>
     </message>
     <message>
         <source>Show Grid Captions</source>
@@ -4165,11 +4353,6 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
         <comment>settings_achievements_disclaimer</comment>
         <translation>DuckStation, başarım veritabanı ve ilerleme takibi için RetroAchievements (retroachievements.org) kullanır. DuckStation&apos;ı kullanmak için RetroAchievements hesabı gerekli değildir.</translation>
-    </message>
-    <message>
-        <source>Port %1$d</source>
-        <comment>controller_port_format</comment>
-        <translation>Port %1$d</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -4668,7 +4851,7 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <comment>setup_wizard_interface_message</comment>
         <translation>DuckStation başlatıldığında gösterilecek arayüzü seçin. Standart Mod dokunmatik ekranlar için tasarlanmıştır; Büyük Resim Modu ise kolla gezinmek için tasarlanmış bir tam ekran arayüzüdür.
 
-Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Tam Ekran Modunda Başlat&quot; seçeneğiyle değiştirebilirsiniz.</translation>
+Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat&quot; seçeneğiyle değiştirebilirsiniz.</translation>
     </message>
     <message>
         <source>Standard Mode</source>
@@ -5924,12 +6107,12 @@ ${serial}: Oyunun seri numarası.
     <message>
         <source>Preload Images to RAM</source>
         <comment>settings_load_image_to_ram</comment>
-        <translation>CD&apos;yi RAM&apos;a Kopyala</translation>
+        <translation>Disk Görüntülerini RAM&apos;e Önceden Yükle</translation>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
         <comment>settings_summary_load_image_to_ram</comment>
-        <translation>Oyun dosyasını RAM&apos;e yükler. Özellikle ağ üzerinden bağlanılan dizinlerde oluşabilecek takılmalardan korur.</translation>
+        <translation>Oyun imajını RAM&apos;e yükler. Oyun sırasında güvenilirliğini yitirebilecek ağ yolları için kullanışlıdır.</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -5954,12 +6137,12 @@ ${serial}: Oyunun seri numarası.
     <message>
         <source>Seek Speedup</source>
         <comment>settings_seek_speedup</comment>
-        <translation>CD Dosya Araması Hızlandırması</translation>
+        <translation>CD Konumlandırma Hızlandırması</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
         <comment>settings_summary_seek_speedup</comment>
-        <translation>CD dosya arama hızlarını seçilen ayarda hızlandırır. Bazı oyunlarda yükleme sahnelerini kısaltabilir bazılarını bozabilir.</translation>
+        <translation>CD-ROM&apos;un konumlandırma işlemlerini belirtilen katsayıyla hızlandırır. Bazı oyunlarda yükleme sürelerini kısaltabilir, diğerlerinin çalışmasını bozabilir.</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -6171,7 +6354,7 @@ Would you like to import one now?</source>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
         <comment>settings_summary_sprite_texture_filter</comment>
-        <translation>Büyütülmüş 2 Boyutlu objelerdeki kaplamaları yumuşatır.</translation>
+        <translation>2D nesnelerdeki büyütülmüş dokuların bloklu görünümünü yumuşatır.</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -6216,7 +6399,7 @@ Would you like to import one now?</source>
     <message>
         <source>PGXP Depth Buffer</source>
         <comment>settings_pgxp_depth_buffer</comment>
-        <translation>PGXP Derinlik Verisi</translation>
+        <translation>PGXP Derinlik Arabelleği</translation>
     </message>
     <message>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
@@ -6256,7 +6439,7 @@ Would you like to import one now?</source>
     <message>
         <source>Texture Replacement</source>
         <comment>settings_category_texture_replacements</comment>
-        <translation>Doku Paketi Açma</translation>
+        <translation>Doku Değiştirme</translation>
     </message>
     <message>
         <source>Enable Texture Cache</source>
@@ -6296,12 +6479,12 @@ Would you like to import one now?</source>
     <message>
         <source>Enables the replacement of background textures in supported games.</source>
         <comment>settings_summary_enable_vram_write_replacements</comment>
-        <translation>Desteklenen oyunlarda arkaplan dokularını değiştirmeyi sağlar.</translation>
+        <translation>Desteklenen oyunlarda arka plan dokularının değiştirilmesini etkinleştirir.</translation>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
         <comment>settings_preload_textures</comment>
-        <translation>Doku Paketlerini RAM&apos;e Yükle</translation>
+        <translation>Değiştirme Dokularını Önceden Yükle</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6522,11 +6705,6 @@ Would you like to import one now?</source>
         <translation>Renkler için perspektif düzeltmeli enterpolasyon kullanır. Bazı oyunlarda görüntüyü iyileştirebilir.</translation>
     </message>
     <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <comment>settings_summary_pgxp_cpu</comment>
-        <translation>PGXP&apos;yi yalnızca bellek işlemleri için değil, tüm komutlar için kullanır.</translation>
-    </message>
-    <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <comment>settings_summary_pgxp_culling</comment>
         <translation>Poligon elemenin hassasiyetini artırarak geometrideki deliklerin sayısını azaltır.</translation>
@@ -6545,11 +6723,6 @@ Would you like to import one now?</source>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <comment>settings_summary_pgxp_texture_correction</comment>
         <translation>Doku koordinatları için perspektif düzeltmeli enterpolasyon kullanarak çarpılmış dokuları düzeltir.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>PGXP verisini düzeltmek için ekran konumlarını kullanır. Bazı oyunlarda görüntüyü iyileştirebilir.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.</source>
@@ -7372,7 +7545,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Reset Output Volume</source>
-        <translation>Çıkış Gücünü Resetle</translation>
+        <translation>Çıkış Ses Şiddetini Sıfırla</translation>
     </message>
     <message>
         <source>Reset Buffer Size</source>
@@ -7404,7 +7577,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Output Volume:</source>
-        <translation>Çıkış Gücü:</translation>
+        <translation>Çıkış Ses Şiddeti:</translation>
     </message>
     <message>
         <source>100%</source>
@@ -7468,7 +7641,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Use Anti-Aliasing Filter</source>
-        <translation>Kenar Yumuşatma Filtresini Kullan</translation>
+        <translation>Aliasing Önleme Filtresini Kullan</translation>
     </message>
     <message>
         <source>Audio Backend</source>
@@ -7476,11 +7649,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>Ses arayüzü karelerin emülatör tarafından nasıl sisteme aktarılacağını belirler. Cubeb en az gecikeyi verir. Sorun yaşarsanız SDL arayüzünü seçiniz. Null sisteme ses aktarımını kapatır.</translation>
+        <translation>Ses arayüzü, emülatörün ürettiği karelerin sisteme nasıl aktarılacağını belirler. Cubeb en düşük gecikmeyi sağlar. Sorun yaşarsanız SDL arayüzünü deneyin. Null arayüzü, sistemdeki tüm ses çıkışını devre dışı bırakır.</translation>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>Tampon bellek boyutu, sistem tarafından alınacak ses parçalarının boyutunu belirler. Düşük sayılar çıkış gecikmesini düşürür ama emülasyon hızı dengesiz olursa anlık donmalara yol açar. Aklınızda bulunsunki Cubeb arayüzü bu değere bakmaksızın düşük parça boyutu kullanır ve burada düşük değer ayarlamak gecikmelere fark edilebilir sonuçlar doğurmayabilir.</translation>
+        <translation>Tampon bellek boyutu, sistem tarafından alınacak ses parçalarının boyutunu belirler. Daha küçük değerler çıkış gecikmesini azaltır, ancak emülasyon hızı tutarsızsa takılmalara neden olabilir. Cubeb arayüzünün bu değerden bağımsız olarak daha küçük parçalar kullandığını unutmayın; dolayısıyla burada düşük bir değer kullanmak gecikmeyi belirgin biçimde değiştirmeyebilir.</translation>
     </message>
     <message>
         <source>Output Latency</source>
@@ -7556,11 +7729,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation>Oyun 100% hızda emülasyon edilemediğinde, kare kaybetmek yerine küçük bir performans kaybıyla sesin temposunu ayarlar. Daha hoş ileri sarma/yavaşlama sağlar.</translation>
+        <translation>100% dışındaki hızlarda çalışırken kareleri atmak yerine sesin temposunu ayarlar. Performansa küçük bir maliyet karşılığında ileri sarma/yavaşlatma sırasında çok daha hoş ses üretir.</translation>
     </message>
     <message>
         <source>Resets volume back to the global/inherited setting.</source>
-        <translation>Ses şiddetini evrensel/ayarlı sese geri döndürür.</translation>
+        <translation>Ses şiddetini genel/devralınan ayara geri döndürür.</translation>
     </message>
     <message>
         <source>Resets volume back to the default, i.e. full.</source>
@@ -7604,11 +7777,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Enable Anti-Alias Filter</source>
-        <translation>Kenar Yumuşatma Filtresini Etkinleştir</translation>
+        <translation>Aliasing Önleme Filtresini Etkinleştir</translation>
     </message>
     <message>
         <source>Enables an anti-aliasing filter used by the pitch transposer. Disabling it may reduce quality when pitch shifting but can slightly reduce CPU usage.</source>
-        <translation>Perde dönüştürücü tarafından kullanılan bir kenar yumuşatma filtresini etkinleştirir. Devre dışı bırakmak perde kaydırma sırasında kaliteyi düşürebilir ancak CPU kullanımını biraz azaltabilir.</translation>
+        <translation>Perde dönüştürücünün kullandığı aliasing önleme filtresini etkinleştirir. Devre dışı bırakılması perde kaydırma sırasında kaliteyi düşürebilir, ancak CPU kullanımını biraz azaltabilir.</translation>
     </message>
     <message>
         <source>Resets value back to the global/inherited setting.</source>
@@ -7636,11 +7809,11 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)</source>
-        <translation>Maksimum Gecikme: %1 ms (%2 ms buffer/tampon + %3 ms output/çıktı)</translation>
+        <translation>Maksimum Gecikme: %1 ms (%2 ms tampon + %3 ms çıkış)</translation>
     </message>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
-        <translation>Maksimum Gecikme: %1 ms (minimum çıktı latency/gecikme bilinmiyor)</translation>
+        <translation>Maksimum Gecikme: %1 ms (minimum çıkış gecikmesi bilinmiyor)</translation>
     </message>
 </context>
 <context>
@@ -7742,12 +7915,12 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Durum Kaydı İkazı&lt;/h2&gt;&lt;p&gt;Bu güncellemeyi kurmak durum kayıtlarınızı &lt;b&gt;uyumsuz kılar&lt;/b&gt;. Lütfen güncellemeyi kurmadan önce oyunlarınızı hafıza kartına kayıt ettiğinizden emin olun ki ilerleyişinizi kayıp olmasın.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Durum Kaydı Uyarısı&lt;/h2&gt;&lt;p&gt;Bu güncellemeyi yüklemek durum kayıtlarınızı &lt;b&gt;uyumsuz&lt;/b&gt; hale getirecektir. Lütfen bu güncellemeyi yüklemeden önce oyunlarınızı hafıza kartına kaydettiğinizden emin olun; aksi takdirde ilerlemenizi kaybedersiniz.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update:
 %1</source>
-        <translation>Güncelleme/Update&apos;den sonra updater.exe silinemedi:
+        <translation>Güncellemeden sonra güncelleyici exe dosyası kaldırılamadı:
 %1</translation>
     </message>
 </context>
@@ -7770,7 +7943,7 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>PAL (Europe, Australia):</source>
-        <translation>PAL (Avrupa Türkiye Avustrulya):</translation>
+        <translation>PAL (Avrupa, Avustralya):</translation>
     </message>
     <message>
         <source>NTSC-J (Japan):</source>
@@ -7790,7 +7963,7 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
-        <translation>Duckstation BIOS dosyalarını bu dizinde tarayacak.</translation>
+        <translation>DuckStation bu dizinde BIOS dosyalarını arar.</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -7798,7 +7971,7 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -7806,11 +7979,11 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Reset</source>
-        <translation>Reset</translation>
+        <translation>Sıfırla</translation>
     </message>
     <message>
         <source>Parallel Port</source>
-        <translation>Parallel Port</translation>
+        <translation>Paralel Port</translation>
     </message>
     <message>
         <source>Device Type:</source>
@@ -7818,15 +7991,15 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Image Path:</source>
-        <translation>Dosya Dizini:</translation>
+        <translation>Dosya Yolu:</translation>
     </message>
     <message>
         <source>Cartridge Switch On</source>
-        <translation>Cartridge Switch On/Açma</translation>
+        <translation>Kartuş Anahtarı Açık</translation>
     </message>
     <message>
         <source>Allow Image Writes</source>
-        <translation>Dosyalara Write/Yazmaya İzin Ver</translation>
+        <translation>İmaj Dosyalarına Yazmaya İzin Ver</translation>
     </message>
     <message>
         <source>Options</source>
@@ -7862,11 +8035,11 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Simulates a device plugged into the console&apos;s parallel port. Usually these are flash cartridges, and require some sort of image dump to function.</source>
-        <translation>Konsolun parallel portuna takılmış cihazlarıın simülasyonunu sağlar. Genellike flash kartuşlarıdır ve bir çeşit dosya kopyasına ihtiyaç duyarlar.</translation>
+        <translation>Konsolun paralel portuna takılmış bir cihazı simüle eder. Bunlar genellikle flash kartuşlardır ve çalışmak için bir tür imaj dökümü gerektirir.</translation>
     </message>
     <message>
         <source>Image Path</source>
-        <translation>Dosya Dizini</translation>
+        <translation>Dosya Yolu</translation>
     </message>
     <message>
         <source>Empty</source>
@@ -7874,7 +8047,7 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Sets the path to the image used for flash cartridges.</source>
-        <translation>Flash Cartridge&apos;lar için dosya dizinini seçer.</translation>
+        <translation>Flash kartuşlar için kullanılan imajın yolunu ayarlar.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -7882,11 +8055,11 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Simulates the position of the switch on the cartridge. Most cartridges require the switch to be on for it to activate on startup.</source>
-        <translation>Cartridge&apos;deki switch&apos;in konumunu belirler. Çoğu kartuşta ON açık konumunda olmalıdır.</translation>
+        <translation>Kartuş üzerindeki anahtarın konumunu simüle eder. Çoğu kartuşun başlangıçta etkinleşmesi için anahtarın açık olması gerekir.</translation>
     </message>
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
-        <translation>Cartridge&apos;deki depolamayı cartridge dosyasına işler. &lt;strong&gt;Cartridge dosyanızın üzerine yazar,&lt;/strong&gt; orijinal dosyanın yedeğine sahip olduğunuzdan emin olun.</translation>
+        <translation>Kartuşun flash depolamasına yazılan imajları ana sistemin dosya sistemine geri kaydeder. &lt;strong&gt;Bu işlem kartuş dökümünüzün üzerine yazacaktır;&lt;/strong&gt; önce bir yedeğiniz olduğundan emin olmalısınız.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -7914,7 +8087,7 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     </message>
     <message>
         <source>Auto-Detect</source>
-        <translation>Otomatikmen Algıla</translation>
+        <translation>Otomatik Algıla</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -8298,12 +8471,16 @@ Dökümünüz bozulmuş olabilir veya fiziksel disk çizilmiştir.</translation>
 <context>
     <name>CheatCodeEditorDialog</name>
     <message>
+        <source>Patch Editor</source>
+        <translation>Yama Düzenleyicisi</translation>
+    </message>
+    <message>
         <source>Enter Group Name</source>
         <translation>Grup İsmini Yazın</translation>
     </message>
     <message>
         <source>Enter name for the code group. Using backslashes (\) will create sub-trees.</source>
-        <translation>Kod grubu için isim yazın. \ kullanmak sub-tree oluşturur.</translation>
+        <translation>Kod grubu için bir ad girin. Ters eğik çizgi (\) kullanmak alt ağaçlar oluşturur.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -8334,10 +8511,14 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>&apos;%1&apos; adında bir kod zaten var.</translation>
     </message>
     <message>
-        <source>Failed to save cheat code:
+        <source>Failed to save code:
 %1</source>
-        <translation>Hile kodu kaydedilemedi:
+        <translation>Kod kaydedilemedi:
 %1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Hiç</translation>
     </message>
     <message>
         <source>Ungrouped</source>
@@ -8360,7 +8541,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Manual</source>
-        <translation>Manel</translation>
+        <translation>Manuel</translation>
     </message>
     <message>
         <source>Automatic (Frame End)</source>
@@ -8370,7 +8551,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
-            <numerusform>%n tane oyun yamaları aktif.</numerusform>
+            <numerusform>%n oyun yaması etkin.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -8386,29 +8567,29 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>No cheats/patches are found or enabled.</source>
-        <translation>Hiçbir hile/yama bulunamadı yada açılamadı.</translation>
+        <translation>Hiçbir hile/yama bulunamadı veya etkinleştirilmedi.</translation>
     </message>
     <message numerus="yes">
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
-            <numerusform>%n hileler</numerusform>
+            <numerusform>%n hile</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
-            <numerusform>%n yamalar</numerusform>
+            <numerusform>%n yama</numerusform>
         </translation>
     </message>
     <message>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{0} ve {1} başarımların safe güvenli/hardcore zor modu tarafından kapatıldı.</translation>
+        <translation>Başarımların hardcore modu veya güvenli mod nedeniyle {0} ve {1} devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{} başarımların safe güvenli/hardcore zor modu tarafından kapatıldı.</translation>
+        <translation>Başarımların hardcore modu veya güvenli mod nedeniyle {} devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>Cheat &apos;{}&apos; applied.</source>
@@ -8438,7 +8619,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RAM&apos;i etkinleştir (Yapımcı Konsolu)</translation>
+        <translation>8MB RAM&apos;i Etkinleştir (Geliştirici Konsolu)</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -8446,7 +8627,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Execution Mode:</source>
-        <translation>CPU Tipi:</translation>
+        <translation>Yürütme Modu:</translation>
     </message>
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
@@ -8454,7 +8635,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation>Derleyici Komut Önbelleğini Aç</translation>
+        <translation>Yeniden Derleyici Komut Önbelleğini Aç</translation>
     </message>
     <message>
         <source>Frame Rate:</source>
@@ -8466,7 +8647,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>İleri Sarma Başlangıç</translation>
+        <translation>Açılışı İleri Sar</translation>
     </message>
     <message>
         <source>Fast Forward Memory Card Access</source>
@@ -8518,11 +8699,11 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
-        <translation>Duraklatmada Sonraki CD&apos;ye Geç</translation>
+        <translation>CD Durduğunda Sonraki CD&apos;ye Geç</translation>
     </message>
     <message>
         <source>Seek Speedup:</source>
-        <translation>CD Dosya Arama Hızlandırması:</translation>
+        <translation>CD Konumlandırma Hızlandırması:</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
@@ -8550,7 +8731,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Ignore Drive Subcode</source>
-        <translation>Cihaz Subcode esgeç</translation>
+        <translation>Sürücü Alt Kodunu Yok Say</translation>
     </message>
     <message>
         <source>Region</source>
@@ -8566,7 +8747,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
-        <translation>Bölgeleri önemsemeden seçili kare zamanlamalırını seçer. NTSC oyunlarını 50hz&apos;ye ve PAL oyunlarını 60hz&apos;ye sabitlemek için kullanılabilir. Çoğu oyun sabit hızda çalıştığından yüzde 17 yavaşlama/hızlanma olabilir. Kare hızını ayarlayan oyunlarda oyunun hızı değişmeyebilir.</translation>
+        <translation>Etkin bölgeden bağımsız olarak seçilen kare zamanlamasını kullanır. Bu özellik, PAL oyunlarını 60Hz&apos;de ve NTSC oyunlarını 50Hz&apos;de çalışmaya zorlamak için kullanılabilir. Hızı kare hızına bağlı olan çoğu oyunda bu, oyunun yaklaşık 17% daha hızlı veya daha yavaş çalışmasına neden olur. Değişken kare hızına sahip oyunlarda hızı etkilemeyebilir.</translation>
     </message>
     <message>
         <source>Skips the boot animation. Safe to enable.</source>
@@ -8582,15 +8763,15 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Execution Mode</source>
-        <translation>CPU Tipi</translation>
+        <translation>Yürütme Modu</translation>
     </message>
     <message>
         <source>Recompiler (Fastest)</source>
-        <translation>Derleyici (En Hızlı)</translation>
+        <translation>Yeniden Derleyici (En Hızlı)</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
-        <translation>İşlemcinin türünü belirler.</translation>
+        <translation>Emüle edilen CPU&apos;nun komutları nasıl yürüteceğini belirler.</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -8614,15 +8795,15 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>Konsolun işlemci hızını belirler.</translation>
+        <translation>Emüle edilen donanımın normal saat hızının yüzde kaçında çalışacağını seçer.</translation>
     </message>
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
-        <translation>Derleyici modda emülasyondaki işlemcinin komutları önbelleğine geçirme gecikmesini emülasyon eder. Küçük bir performans kaybıyla oyunları gerçek konsoldaki kare hızlarına yaklaştırır. Yorumlayıcı bu işlemi her zaman emülasyon eder.</translation>
+        <translation>Emüle edilen CPU&apos;nun komutları önbelleğine getirmesi gerektiğinde yeniden derleyicilerde oluşacak beklemeleri simüle eder. Küçük bir performans kaybı karşılığında oyunların gerçek konsoldaki kare hızlarına daha yakın çalışmasını sağlar. Yorumlayıcı modu komut önbelleğini her zaman simüle eder.</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Emülasyon yapılan konsola fazladan 6 MB RAM ekleyerek toplam 8 MB RAM olur ve bu genellikle yapımcı konsollarında olur. Oyunların daha fazla RAM&apos;ı kullanabilmesi için oyunun buna göre kodlanmış olması gereklidir. Hafıza kopyaları kullanan oyunlar bozulabilir ve bu yüzden sadece uyumlu olan modifikasyonlu oyunlarda kullanılmalıdır.</translation>
+        <translation>Genellikle geliştirme konsollarında bulunan toplam 2+6 = 8 MB RAM&apos;e ulaşmak için ek 6 MB RAM&apos;i etkinleştirir. Bu ek RAM&apos;in kullanılabilmesi için oyunların daha büyük bir yığın (heap) boyutu kullanması gerekir. Bellek aynalamaya dayanan oyunlar bozulabilir; bu nedenle yalnızca uyumlu modlarla kullanılmalıdır.</translation>
     </message>
     <message>
         <source>Preload Image to RAM</source>
@@ -8630,7 +8811,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
-        <translation>Oyunu RAM&apos;a kopyalar. Yavaş dosya sistemleri için ve oyunlarda oluşabilen anlık donmalar için tavsiye edilir.</translation>
+        <translation>Oyun kalıbını RAM&apos;e yükler. Oyun sırasında güvenilirliğini yitirebilecek ağ yolları için yararlıdır. Bazı durumlarda oyunlar ses parçalarını çalmaya başladığında oluşan takılmaları da ortadan kaldırır.</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup</source>
@@ -8638,7 +8819,7 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>CD-ROM&apos;u belirlenen çarpanla hızlandırır. sadece 2x hızındaki okuma işlemleri için kullanılır ve ses çalınırken kullanılmaz. Yükleme ekranlarını azaltır ve bazı oyunları bozabilir.</translation>
+        <translation>CD-ROM okumalarını belirtilen katsayıyla hızlandırır. Yalnızca çift hızlı okumalar için geçerlidir ve ses çalınırken yok sayılır. Bazı oyunlarda yükleme hızlarını artırabilir, ancak diğer oyunların bozulmasına neden olabilir.</translation>
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
@@ -8654,11 +8835,11 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     </message>
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
-        <translation>Oyun CD okuyucunun motorunu durdurduğunda emülator bir sonraki CD&apos;ye otomatik geçer. Eğer oyunun son CD&apos;si zaten seçiliyse birşey olmaz.&lt;strong&gt;Tüm oyunlar için çalışmaz.&lt;/strong&gt;</translation>
+        <translation>Oyun CD okuyucunun motorunu durdurduğunda emülatör bir sonraki CD&apos;ye otomatik geçer. Eğer oyunun son CD&apos;si zaten seçiliyse bir şey olmaz. &lt;strong&gt;Tüm oyunlar için çalışmaz.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Cihazın Disclerin içindeki Subcode verisini esgeçer ve her zaman oluşturulmuş subchannel verisini ukllanır. Libcrypt&apos;li oyunlarada çalışmaz ama bazı cihazların Discleri okumaktaki tutarlılığını iyileştirebilir.</translation>
+        <translation>Fiziksel diskler kullanılırken sürücünün sağladığı alt kanal verilerini yok sayar ve bunun yerine alt kanal verilerini her zaman oluşturur. LibCrypt kullanan oyunlarda çalışmaz, ancak bazı sürücülerde okuma güvenilirliğini artırabilir.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -8666,11 +8847,11 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
 By enabling this option you are agreeing to not create any bug reports unless you have confirmed the bug also occurs with overclocking disabled.
 
 This warning will only be shown once.</source>
-        <translation>İşlemci hız aşırtması oyunları bozarak yavaşlamalarına ve sistem gereksinimlerinin yükselmesine sebep olabilir.
+        <translation>CPU hız aşırtmasını etkinleştirmek oyunları bozacak, hatalara neden olacak, performansı düşürecek ve sistem gereksinimlerini önemli ölçüde artırabilecektir.
 
-Bu ayar açıkken oluşabilecek oyun hatalarını bize bildirmeyiniz eğer aynı hatalar işlemci orijinal hızda çalışıyorken olmuyorsa.
+Bu seçeneği etkinleştirerek, hatanın hız aşırtma devre dışıyken de oluştuğunu doğrulamadıkça hata raporu oluşturmamayı kabul etmiş olursunuz.
 
-Bu son uyarıdır.</translation>
+Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
@@ -8709,7 +8890,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Controller {} switched to JogCon mode.</source>
-        <translation>Kol {} JogCon moduna alındı..</translation>
+        <translation>Kol {} JogCon moduna alındı.</translation>
     </message>
     <message>
         <source>Controller {} switched to Digital mode.</source>
@@ -9313,7 +9494,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Select File</source>
@@ -9352,7 +9533,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Enable DualSense Player LED</source>
-        <translation>DualSense Kol Işığı Aç</translation>
+        <translation>DualSense Oyuncu LED&apos;ini Etkinleştir</translation>
     </message>
     <message>
         <source>Enables the player LED on DualSense controllers.</source>
@@ -9396,7 +9577,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XInput kaynağı XInput protokolünü destekleyen kolları destekler Bu kaynak&lt;span style=&quot; font-weight:700;&quot;&gt;sadece&lt;/span&gt; XInput Wrapper kütüphanelerini kullanıyorsanız açık olmalıdır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XInput kaynağı XInput protokolünü destekleyen kolları destekler. Bu kaynak &lt;span style=&quot; font-weight:700;&quot;&gt;sadece&lt;/span&gt; XInput Wrapper kütüphanelerini kullanıyorsanız açık olmalıdır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Enable XInput Source</source>
@@ -9428,7 +9609,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
-        <translation>Saf girdiyi açmak çubukları fare imlecine bağlayınca keskinliği arttırır ve birden çok fareyi kullanmayı sağlar.</translation>
+        <translation>Ham girdi kullanmak, kontrolcü çubuklarını fare işaretçisine atadığınızda hassasiyeti artırır. Ayrıca birden fazla farenin kullanılmasını sağlar.</translation>
     </message>
     <message>
         <source>Allows sensors such as accelerometers to be mapped to emulated controls. By default sensors will be ignored.</source>
@@ -9476,7 +9657,7 @@ Bu son uyarıdır.</translation>
     </message>
     <message>
         <source>Use Raw Input</source>
-        <translation>Saf Girdiyi Kullan</translation>
+        <translation>Ham Girdiyi Kullan</translation>
     </message>
     <message>
         <source>XInput Source</source>
@@ -9525,7 +9706,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Bu tuş makrosunu aktive eden tuşları seçin. Makrodaki tüm tuşlar aynı anda basılacak.</translation>
+        <translation>Bu makroyla tetiklemek istediğiniz tuşları seçin. Tüm tuşlar aynı anda etkinleştirilir.</translation>
     </message>
     <message>
         <source>Pressure</source>
@@ -9533,7 +9714,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Bu ayar, makro seçiliyken basınca duyarlı tuşlarda ne kadar baskı yapılacağını ayarlar.</translation>
+        <translation>Basınca duyarlı tuşlarda bu kaydırıcı, makro etkinken ne kadar kuvvet uygulanacağını belirler.</translation>
     </message>
     <message>
         <source>100%</source>
@@ -9679,9 +9860,9 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation>Şu addaki kol profilini uygulamak istiyor musunz &apos;%1&apos;?
+        <translation>&apos;%1&apos; adlı kol profilini uygulamak istiyor musunuz?
 
-Tüm evrensel tuş atamaları kaldırılıp profildeki tuş atamaları yüklenecek.
+Tüm mevcut genel tuş atamaları kaldırılacak ve profildeki tuş atamaları yüklenecek.
 
 Bu işlemi geri alamazsınız.</translation>
     </message>
@@ -9711,7 +9892,7 @@ Tüm atamalar ve ayarlar silinecek bunu geri alamazsınız.</translation>
     </message>
     <message>
         <source>Controller preset reset to global settings.</source>
-        <translation>Kol profili evrensel ayarları evrensel ayarlara döndürüldü.</translation>
+        <translation>Kol profili genel ayarlara sıfırlandı.</translation>
     </message>
     <message>
         <source>Controller Port %1
@@ -9801,9 +9982,9 @@ Tüm atamalar ve ayarlar silinecek bunu geri alamazsınız.</translation>
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
-        <translation>UYARI: Oyun hafıza kartına kayıt veriyor. İşleme Devam etmek %1 Hafıza kartınızı TEMELLİ BOZABİLİR. Oyunu 5 saniyeliğine devam ettirip kaydınızın bitmesini tavsiye ederiz..
+        <translation>UYARI: Oyununuz hâlâ hafıza kartına kayıt yapıyor. Devam edip %1, HAFIZA KARTINIZI GERİ DÖNDÜRÜLEMEZ BİÇİMDE BOZABİLİR. Oyuna devam etmenizi ve kayıt işleminin tamamlanması için 5 saniye beklemenizi öneririz.
 
-Yinede işleminize devam etmek istiyor musunuz %1 ?</translation>
+Yine de %1 istiyor musunuz?</translation>
     </message>
     <message>
         <source>Achievement Unlocks Unconfirmed</source>
@@ -9813,21 +9994,21 @@ Yinede işleminize devam etmek istiyor musunuz %1 ?</translation>
         <source>%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to %2 anyway?</source>
-        <translation>%1 başarım açması sunucu tarafından doğrulanmadı. %2 işlemine devam etmek bu açmaların kaybolmasına neden olacaktır. Ağ bağlantısı yeniden kurulduğunda bu açmalar otomatik olarak doğrulanır.
+        <translation>%1 başarımın açıldığı sunucu tarafından doğrulanmadı. Devam edip %2, bu başarımların kaybolmasına neden olacaktır. Ağ bağlantısı yeniden kurulduğunda bu başarımlar otomatik olarak doğrulanacaktır.
 
-Yine de %2 yapmak istiyor musunuz?</translation>
+Yine de %2 istiyor musunuz?</translation>
     </message>
     <message>
         <source>shut down</source>
-        <translation>Sistemi Kapat</translation>
+        <translation>sistemi kapatmak</translation>
     </message>
     <message>
         <source>reset</source>
-        <translation>Reset</translation>
+        <translation>sıfırlamak</translation>
     </message>
     <message>
         <source>change disc</source>
-        <translation>CD Değiştir</translation>
+        <translation>diski değiştirmek</translation>
     </message>
     <message>
         <source>Failed to switch to subimage %1</source>
@@ -9843,7 +10024,7 @@ Yine de %2 yapmak istiyor musunuz?</translation>
 This file is approximately 206KB, do you want to download it now?</source>
         <translation>DuckStation&apos;da şu anda PadTest programı yok.
 
-Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</translation>
+Bu dosya aşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</translation>
     </message>
     <message>
         <source>Failed to download padtest application: %1</source>
@@ -9863,7 +10044,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>No Image</source>
-        <translation>Dosya Yok</translation>
+        <translation>Görüntü Yok</translation>
     </message>
     <message>
         <source>Game: %1 FPS</source>
@@ -9965,7 +10146,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Brake Released</source>
-        <translation>Fren Kes</translation>
+        <translation>Fren Bırakıldı</translation>
     </message>
     <message>
         <source>Brake 1</source>
@@ -10033,7 +10214,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
-        <translation>Güç ayarları değiştirilirken kaç karede yapılacağını ayarlar.</translation>
+        <translation>Güç seviyesi değiştirilirken kontrolcünün geçiş/ara durumunu kaç kare boyunca bildireceğini ayarlar.</translation>
     </message>
     <message>
         <source>Brake Transition Frames</source>
@@ -10041,18 +10222,18 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
-        <translation>Fren ayarları değiştirilirken kaç karede yapılacağını ayarlar.</translation>
+        <translation>Fren seviyesi değiştirilirken kontrolcünün geçiş/ara durumunu kaç kare boyunca bildireceğini ayarlar.</translation>
     </message>
 </context>
 <context>
     <name>DebuggerAddBreakpointDialog</name>
     <message>
         <source>Add Breakpoint</source>
-        <translation>Add Breakpoint</translation>
+        <translation>Kesme Noktası Ekle</translation>
     </message>
     <message>
         <source>Address:</source>
-        <translation>Address:</translation>
+        <translation>Adres:</translation>
     </message>
     <message>
         <source>Type:</source>
@@ -10060,15 +10241,15 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Execute</source>
-        <translation>Execute</translation>
+        <translation>Çalıştırma</translation>
     </message>
     <message>
         <source>Read</source>
-        <translation>Read</translation>
+        <translation>Okuma</translation>
     </message>
     <message>
         <source>Write</source>
-        <translation>Write</translation>
+        <translation>Yazma</translation>
     </message>
 </context>
 <context>
@@ -10086,26 +10267,26 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     <name>DebuggerRegistersModel</name>
     <message>
         <source>Register</source>
-        <translation>Register</translation>
+        <translation>Yazmaç</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Value</translation>
+        <translation>Değer</translation>
     </message>
 </context>
 <context>
     <name>DebuggerStackModel</name>
     <message>
         <source>&lt;invalid&gt;</source>
-        <translation>&lt;invalid&gt;</translation>
+        <translation>&lt;geçersiz&gt;</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation>Address</translation>
+        <translation>Adres</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Value</translation>
+        <translation>Değer</translation>
     </message>
 </context>
 <context>
@@ -10123,27 +10304,27 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     <name>DebuggerWindow</name>
     <message>
         <source>CPU Debugger</source>
-        <translation>CPU Debugger</translation>
+        <translation>CPU Hata Ayıklayıcısı</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>&amp;Debug</translation>
+        <translation>&amp;Hata Ayıklama</translation>
     </message>
     <message>
         <source>Breakpoints</source>
-        <translation>Breakpoints</translation>
+        <translation>Kesme Noktaları</translation>
     </message>
     <message>
         <source>Disassembly</source>
-        <translation>Disassembly</translation>
+        <translation>Makine Kodu Çözümlemesi</translation>
     </message>
     <message>
         <source>Registers</source>
-        <translation>Registers</translation>
+        <translation>Yazmaçlar</translation>
     </message>
     <message>
         <source>Memory</source>
-        <translation>Memory</translation>
+        <translation>Bellek</translation>
     </message>
     <message>
         <source>RAM</source>
@@ -10171,7 +10352,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Search</source>
-        <translation>Search</translation>
+        <translation>Ara</translation>
     </message>
     <message>
         <source>#</source>
@@ -10179,7 +10360,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Address</source>
-        <translation>Address</translation>
+        <translation>Adres</translation>
     </message>
     <message>
         <source>Type</source>
@@ -10187,11 +10368,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Hit Count</source>
-        <translation>Hit Count</translation>
+        <translation>Tetiklenme Sayısı</translation>
     </message>
     <message>
         <source>Stack</source>
-        <translation>Stack</translation>
+        <translation>Yığın</translation>
     </message>
     <message>
         <source>Threads</source>
@@ -10203,11 +10384,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Pause/Continue</source>
-        <translation>Pause/Continue</translation>
+        <translation>Duraklat/Devam Et</translation>
     </message>
     <message>
         <source>&amp;Pause/Continue</source>
-        <translation>&amp;Pause/Continue</translation>
+        <translation>&amp;Duraklat/Devam Et</translation>
     </message>
     <message>
         <source>F5</source>
@@ -10215,11 +10396,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Step Into</source>
-        <translation>Step Into</translation>
+        <translation>İçine Adımla</translation>
     </message>
     <message>
         <source>&amp;Step Into</source>
-        <translation>&amp;Step Into</translation>
+        <translation>&amp;İçine Adımla</translation>
     </message>
     <message>
         <source>F11</source>
@@ -10227,11 +10408,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Step Over</source>
-        <translation>Step Over</translation>
+        <translation>Üzerinden Adımla</translation>
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation>Step &amp;Over</translation>
+        <translation>&amp;Üzerinden Adımla</translation>
     </message>
     <message>
         <source>F10</source>
@@ -10239,11 +10420,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Toggle Breakpoint</source>
-        <translation>Toggle Breakpoint</translation>
+        <translation>Kesme Noktasını Aç/Kapat</translation>
     </message>
     <message>
         <source>Toggle &amp;Breakpoint</source>
-        <translation>Toggle &amp;Breakpoint</translation>
+        <translation>&amp;Kesme Noktasını Aç/Kapat</translation>
     </message>
     <message>
         <source>F9</source>
@@ -10251,15 +10432,15 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation>&amp;Close</translation>
+        <translation>&amp;Kapat</translation>
     </message>
     <message>
         <source>Step Out</source>
-        <translation>Step Out</translation>
+        <translation>Dışına Adımla</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
-        <translation>Step O&amp;ut</translation>
+        <translation>&amp;Dışına Adımla</translation>
     </message>
     <message>
         <source>Ctrl+F11</source>
@@ -10267,11 +10448,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Run To Cursor</source>
-        <translation>Run To Cursor</translation>
+        <translation>İmlece Kadar Çalıştır</translation>
     </message>
     <message>
         <source>&amp;Run To Cursor</source>
-        <translation>&amp;Run To Cursor</translation>
+        <translation>&amp;İmlece Kadar Çalıştır</translation>
     </message>
     <message>
         <source>Ctrl+F10</source>
@@ -10279,11 +10460,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Clear Breakpoints</source>
-        <translation>Clear Breakpoints</translation>
+        <translation>Kesme Noktalarını Temizle</translation>
     </message>
     <message>
         <source>&amp;Clear Breakpoints</source>
-        <translation>&amp;Clear Breakpoints</translation>
+        <translation>&amp;Kesme Noktalarını Temizle</translation>
     </message>
     <message>
         <source>Ctrl+Del</source>
@@ -10291,7 +10472,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Add Breakpoint</source>
-        <translation>Add Breakpoint</translation>
+        <translation>Kesme Noktası Ekle</translation>
     </message>
     <message>
         <source>Ctrl+F9</source>
@@ -10299,11 +10480,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Go To PC</source>
-        <translation>Go To PC</translation>
+        <translation>PC&apos;ye Git</translation>
     </message>
     <message>
         <source>&amp;Go To PC</source>
-        <translation>&amp;Go To PC</translation>
+        <translation>&amp;PC&apos;ye Git</translation>
     </message>
     <message>
         <source>Ctrl+P</source>
@@ -10311,11 +10492,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Go To Address</source>
-        <translation>Go To Address</translation>
+        <translation>Adrese Git</translation>
     </message>
     <message>
         <source>Go To &amp;Address</source>
-        <translation>Go To &amp;Address</translation>
+        <translation>&amp;Adrese Git</translation>
     </message>
     <message>
         <source>Toolbar</source>
@@ -10323,7 +10504,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>&amp;Add Breakpoint</source>
-        <translation>&amp;Add Breakpoint</translation>
+        <translation>&amp;Kesme Noktası Ekle</translation>
     </message>
     <message>
         <source>Ctrl+G</source>
@@ -10331,7 +10512,7 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>&amp;Dump Address</source>
-        <translation>&amp;Dump Address</translation>
+        <translation>Adresi Bellek &amp;Dökümünde Göster</translation>
     </message>
     <message>
         <source>Ctrl+D</source>
@@ -10339,11 +10520,11 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>Trace</source>
-        <translation>Trace</translation>
+        <translation>Yürütmeyi İzle</translation>
     </message>
     <message>
         <source>&amp;Trace</source>
-        <translation>&amp;Trace</translation>
+        <translation>&amp;Yürütmeyi İzle</translation>
     </message>
     <message>
         <source>Ctrl+T</source>
@@ -10351,29 +10532,29 @@ Bu dosya aşşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</tra
     </message>
     <message>
         <source>No address selected.</source>
-        <translation>No address selected.</translation>
+        <translation>Adres seçilmedi.</translation>
     </message>
     <message>
         <source>Enter code address:</source>
-        <translation>Enter code address:</translation>
+        <translation>Kod adresini girin:</translation>
     </message>
     <message>
         <source>Enter memory address:</source>
-        <translation>Enter memory address:</translation>
+        <translation>Bellek adresini girin:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation>Trace logging started to cpu_log.txt.
-This file can be several gigabytes, so be aware of SSD wear.</translation>
+        <translation>Yürütme izi cpu_log.txt dosyasına kaydedilmeye başlandı.
+Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına dikkat edin.</translation>
     </message>
     <message>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation>Trace logging to cpu_log.txt stopped.</translation>
+        <translation>cpu_log.txt dosyasına yürütme izi kaydı durduruldu.</translation>
     </message>
     <message>
         <source>&amp;Remove</source>
-        <translation>&amp;Remove</translation>
+        <translation>&amp;Kaldır</translation>
     </message>
     <message>
         <source>&amp;Patch Instruction</source>
@@ -10381,7 +10562,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>&amp;Follow Load/Store</source>
-        <translation>&amp;Follow Load/Store</translation>
+        <translation>Yükleme/Saklama Adresini &amp;İzle</translation>
     </message>
     <message>
         <source>Failed to read the instruction at 0x%1.</source>
@@ -10405,19 +10586,19 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
-        <translation>Failed to add breakpoint. A breakpoint may already exist at this address.</translation>
+        <translation>Kesme noktası eklenemedi. Bu adreste zaten bir kesme noktası olabilir.</translation>
     </message>
     <message>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
-        <translation>Failed to remove breakpoint. This breakpoint may not exist.</translation>
+        <translation>Kesme noktası kaldırılamadı. Bu kesme noktası mevcut olmayabilir.</translation>
     </message>
     <message>
         <source>Debugger</source>
-        <translation>Debugger</translation>
+        <translation>Hata Ayıklayıcı</translation>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation>Failed to add step-out breakpoint, are you in a valid function?</translation>
+        <translation>İşlevden çıkış kesme noktası eklenemedi. Geçerli bir işlevin içinde misiniz?</translation>
     </message>
     <message numerus="yes">
         <source>&amp;Nop %n Instruction(s)</source>
@@ -10433,7 +10614,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>View in &amp;Dump</source>
-        <translation>View in &amp;Dump</translation>
+        <translation>Bellek &amp;Dökümünde Göster</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -10456,19 +10637,19 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Invalid search pattern. It should contain hex digits or question marks.</translation>
+        <translation>Geçersiz arama deseni. Onaltılık rakamlar veya soru işaretleri içermelidir.</translation>
     </message>
     <message>
         <source>Pattern not found.</source>
-        <translation>Pattern not found.</translation>
+        <translation>Desen bulunamadı.</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation>Pattern found at 0x%1 (passed the end of memory).</translation>
+        <translation>Desen 0x%1 adresinde bulundu (belleğin sonu geçildi).</translation>
     </message>
     <message>
         <source>Pattern found at 0x%1.</source>
-        <translation>Pattern found at 0x%1.</translation>
+        <translation>Desen 0x%1 adresinde bulundu.</translation>
     </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
@@ -10478,7 +10659,7 @@ This file can be several gigabytes, so be aware of SSD wear.</translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Invalid address. It should be in hex (0x12345678 or 12345678)</translation>
+        <translation>Geçersiz adres. Onaltılık biçimde olmalıdır (0x12345678 veya 12345678)</translation>
     </message>
 </context>
 <context>
@@ -10777,7 +10958,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Sync To Host Refresh Rate</source>
-        <translation>Bilgisayar Siteminin Ekran Tazeleme Hızına Eşitle</translation>
+        <translation>Bilgisayar Sisteminin Ekran Tazeleme Hızına Eşitle</translation>
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
@@ -10785,7 +10966,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Kare Zamanlama Optimasyonu</translation>
+        <translation>Kare Zamanlama Optimizasyonu</translation>
     </message>
     <message>
         <source>Skip Duplicate Frame Display</source>
@@ -10793,7 +10974,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Frame Time Buffer:</source>
-        <translation>Frame Time Buffer:</translation>
+        <translation>Kare Süresi Arabelleği:</translation>
     </message>
     <message>
         <source> Milliseconds</source>
@@ -10813,7 +10994,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source> Seconds</source>
-        <translation> Saniyeler</translation>
+        <translation> Saniye</translation>
     </message>
     <message>
         <source>Rewind Buffer Size:</source>
@@ -10917,7 +11098,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation>Hedef emülasyon hızını ayarlar. Bu hıza ulaşılabilmesi garanti değildir ve olursa emülatör elinden geldiği kadar hızlı çalışacaktır.</translation>
+        <translation>Hedef emülasyon hızını ayarlar. Bu hıza ulaşılması garanti değildir; ulaşılamazsa emülatör çalışabildiği en yüksek hızda çalışır.</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -10929,7 +11110,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>İleri sarma hızını ayarlar. Bu hız ileri sarma kısayol tuşu basıldığında yada geçiş yapıldığında kullanılır.</translation>
+        <translation>İleri sarma hızını ayarlar. Bu hız, ileri sarma kısayol tuşuna basıldığında ya da ileri sarma açıldığında kullanılır.</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -10937,7 +11118,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>Turbo hızını ayarlar. Bu hız turbo hız kısayol tuşu basıldığında yada geçiş yapıldığında kullanılır. Turboya geçiş yapmak ileri sarmaya göre önceliklidir.ve iki mod aynı anda açılırsa öncelik alır.</translation>
+        <translation>Turbo hızını ayarlar. Bu hız, turbo kısayol tuşuna basıldığında ya da turbo açıldığında kullanılır. Her iki kısayol tuşuna da basılırsa veya her iki mod da açılırsa turbo, ileri sarmaya göre önceliklidir.</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -10945,11 +11126,11 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Konsolun çizdiği kareleri bilgisayarınız monitörüne çizimini senkronize eder. Bu ayarı açmak animasyonları akıcılaştırabilir ama bunun karşılığında tuş girdilerini geciktirebilir. &lt;strong&gt;GSync/FreeSync kullanıcıları bunun yerine Kare Zamanlama Optimzasyonunu açsa daha iyi olur.&lt;/strong&gt;</translation>
+        <translation>Konsolun çizdiği karelerin bilgisayarınızın monitöründe gösterimini senkronize eder. Bu ayarı açmak animasyonları akıcılaştırabilir ama bunun karşılığında tuş girdilerini geciktirebilir. &lt;strong&gt;GSync/FreeSync kullanıcıları bunun yerine Kare Zamanlama Optimizasyonunu etkinleştirmelidir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>V-Sync açılıyken emülasyonu yapılan konsolun ekran tazeleme hızını bilgisayarınızın ekranına sabitler böylece küçücük bir perfromans kaybıyla en akıcı animasyonlara ulaşılır. Bilgisayar Siteminin Ekran Tazeleme Hızına Eşitle ayarı emülasyonu yapılan konsolun tazeleme hızıyla ekranınınız tazeleme hızıyla çok fark varsa çalışmaz. VRR değişken tazeleme hızı olan monitöre sahipseniz bu ayarı kapayınız.</translation>
+        <translation>VSync etkinken konsolun tazeleme hızını bilgisayarın ekran tazeleme hızıyla eşleştirmek için emülasyon hızını ayarlar. Bu, emülasyon hızını 1%&apos;den az artırma olasılığı karşılığında mümkün olan en akıcı animasyonları sağlar. Konsolun tazeleme hızı bilgisayarın ekran tazeleme hızından çok farklıysa Bilgisayar Sisteminin Ekran Tazeleme Hızına Eşitle ayarı etkili olmaz. Değişken tazeleme hızlı ekran kullananlar bu seçeneği devre dışı bırakmalıdır.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -10957,15 +11138,15 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Bu ayarı açmak konsolun çizdiği her bir karenin ekranınıza sabit bir hızda gönderilmesini sağlar. G-Sync/FreeSync&apos;li monitörünüz varsa bu ayarı açın. Eğer emülasyon hızı tam hızda gitmiyorsa yada ses ile ilgili sorunlar çıkıyorsa bu ayarı kapayınız.</translation>
+        <translation>Bu ayarı açmak konsolun çizdiği her bir karenin ekranınıza sabit bir hızda gönderilmesini sağlar. G-Sync/FreeSync&apos;li monitörünüz varsa bu ayarı açın. Eğer emülasyon hızı tam hızda gitmiyorsa ya da ses ile ilgili sorunlar çıkıyorsa bu ayarı kapayınız.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
-        <translation>Karenin başlama zamanını gösterim zamanına geciktirerek girdi gecikmesini azaltmaya çalışır. Frame time farkı yüksek olan güçsüz sistemlerde frame buffer/kare tampon bölgesi yetersizse karelerin düşmesine/kaybolmasına yol açabilir.</translation>
+        <translation>Karenin işlenmeye başlamasını gösterim zamanına daha yakın bir ana erteleyerek girdi gecikmesini azaltır. Arabellek boyutu yeterli değilse kare süreleri arasındaki değişkenliğin yüksek olduğu yavaş sistemlerde kare atlanmasına neden olabilir.</translation>
     </message>
     <message>
         <source>Frame Time Buffer</source>
-        <translation>Frame Time Buffer</translation>
+        <translation>Kare Süresi Arabelleği</translation>
     </message>
     <message>
         <source>%1 ms</source>
@@ -10973,7 +11154,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced. Higher values increase input latency, but decrease the risk of overrun, or missed frames. Lower values require faster hardware.</source>
-        <translation>Eklenecek Buffer/Tampon zamanını ayarlar böylece bekleme zamanını azaltır. Yüksek değerler girdi gecikmesini arttırır ama kayıp boşa giden kareleri azaltır. Düşük değerler güçlü donanım gerektirir.</translation>
+        <translation>Eklenen tampon süresini belirler; bu süre, ilave bekleme süresini azaltır. Daha yüksek değerler girdi gecikmesini artırır, ancak ayrılan sürenin aşılması veya karelerin kaçırılması riskini azaltır. Daha düşük değerler daha hızlı donanım gerektirir.</translation>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with syncing to host refresh.</source>
@@ -11037,15 +11218,15 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Runahead</source>
-        <translation>İleriyi Hesaplamak</translation>
+        <translation>İleriyi Hesaplama</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>Konsolun gelecekte ne yapacağını hesaplayarak girdi gecikmesini düşürür. Çok güçlü bir sistem gerektirir.</translation>
+        <translation>Girdi gecikmesini azaltmak için sistemi önceden simüle eder ve geri alıp yeniden oynatır. Sistem gereksinimleri çok yüksektir.</translation>
     </message>
     <message>
         <source>Use Global Setting [Unlimited]</source>
-        <translation>Use Global Setting [Sınırsız]</translation>
+        <translation>Genel Ayarı Kullan [Sınırsız]</translation>
     </message>
     <message>
         <source>Use Global Setting [%1%]</source>
@@ -11053,11 +11234,11 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Unlimited</source>
-        <translation>Sınrısız</translation>
+        <translation>Sınırsız</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Geri sarma açık değil. Aklınızda olsun ki geri sarma, sistem gereksinimlerini yükseltebilir.</translation>
+        <translation>Geri sarma açık değil. Geri sarmayı etkinleştirmenin sistem gereksinimlerini önemli ölçüde artırabileceğini lütfen unutmayın.</translation>
     </message>
 </context>
 <context>
@@ -11236,7 +11417,7 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP sisteminin hassasiyetini yükseltir. Bazı oyunlar için işe yarayabilir.</translation>
+        <translation>Yansıtma işleminden sonra PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görselleri iyileştirebilir.</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
@@ -11352,11 +11533,11 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. Does not work for all games.</source>
-        <translation>Oyun CD okuyucunun motorunu durdurduğunda emülator bir sonraki CD&apos;ye otomatik geçer. Tüm oyunlar için çalışmaz.</translation>
+        <translation>Oyun CD okuyucunun motorunu durdurduğunda emülatör bir sonraki CD&apos;ye otomatik geçer. Tüm oyunlar için çalışmaz.</translation>
     </message>
     <message>
         <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
-        <translation>C++ Koduna çağrılardan sakınılır. Yeniden derleyiciyi bayağı bir hızlandırı.</translation>
+        <translation>C++ koduna yapılan çağrılardan kaçınarak yeniden derleyiciyi önemli ölçüde hızlandırır.</translation>
     </message>
     <message>
         <source>BIOS Directory</source>
@@ -11432,7 +11613,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
-        <translation>Konsolun görüntü çıkışına monitöre yansıtırken kullanılan en boy oranını değiştirir.</translation>
+        <translation>Konsolun çıktısını ekranda göstermek için kullanılan en boy oranını değiştirir.</translation>
     </message>
     <message>
         <source>Chooses the language used for UI elements.</source>
@@ -11452,11 +11633,11 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Clears a shader from the chain.</source>
-        <translation>Sıradan bir shader/görsel efekti kaldırır.</translation>
+        <translation>Zincirden bir gölgelendiriciyi kaldırır.</translation>
     </message>
     <message>
         <source>Clears all settings set for this game.</source>
-        <translation>Bu oyun için tüm ayarları temizleri.</translation>
+        <translation>Bu oyun için belirlenmiş tüm ayarları temizler.</translation>
     </message>
     <message>
         <source>Close</source>
@@ -11504,11 +11685,11 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Controller preset &apos;{}&apos; saved.</source>
-        <translation>Kol profili&apos;{}&apos; kaydedildi.</translation>
+        <translation>Kol profili &apos;{}&apos; kaydedildi.</translation>
     </message>
     <message>
         <source>Controller settings reset to default.</source>
-        <translation>Kol Ayarları Varsayılana Ayarlanır.</translation>
+        <translation>Kol ayarları varsayılanlara sıfırlandı.</translation>
     </message>
     <message>
         <source>Controls</source>
@@ -11592,7 +11773,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Culling Correction</source>
-        <translation>Model Es Geçmeyi Kapat</translation>
+        <translation>Poligon Eleme Düzeltmesi</translation>
     </message>
     <message>
         <source>Custom</source>
@@ -11676,11 +11857,11 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Depth Test Transparent Polygons</source>
-        <translation>Depth Test Transparent Polygons</translation>
+        <translation>Saydam Poligonlara Derinlik Testi Uygula</translation>
     </message>
     <message>
         <source>Destination Alpha Blending</source>
-        <translation>Destination Alpha Blending</translation>
+        <translation>Hedef Alfa Harmanlaması</translation>
     </message>
     <message>
         <source>Details</source>
@@ -11688,7 +11869,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>Ekrandaki mesajları ve göstergeleri ayarlar.</translation>
+        <translation>Ekrandaki mesajların ve göstergelerin boyutunu belirler.</translation>
     </message>
     <message>
         <source>Determines how long action confirmation messages are displayed on screen.</source>
@@ -11708,7 +11889,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Determines how much button pressure is ignored before activating the macro.</source>
-        <translation>Macro etkinleştirilmeden önce ne kadar basıncın görmezden gelineceğini ayarlar.</translation>
+        <translation>Makro etkinleştirilmeden önce ne kadar tuş basıncının yok sayılacağını belirler.</translation>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
@@ -11720,7 +11901,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Macro açılmadan önce ne kadar basıncın uygulanacağını belirler.</translation>
+        <translation>Makro etkinken ne kadar basınç uygulanacağını belirler.</translation>
     </message>
     <message>
         <source>Determines how much to crop the display area.</source>
@@ -11728,15 +11909,15 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
-        <translation>İşlemcinin türünü belirler.</translation>
+        <translation>Emüle edilen CPU&apos;nun komutları nasıl yürüteceğini belirler.</translation>
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>Emülasyonu edilen konsoldan çıkan görüntünün ekranınıza nasıl büyütüleceğini/küçültüleciğini ayarlar.</translation>
+        <translation>Emüle edilen konsolun çıktısının monitörünüzün çözünürlüğüne göre nasıl büyütüleceğini veya küçültüleceğini belirler.</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
-        <translation>Oyun tam hızda emülasyon edilemediğinde sesin nasıl çıkacağını belirler.</translation>
+        <translation>100% hızda çalışmadığında ses kalitesini belirler.</translation>
     </message>
     <message>
         <source>Determines that field that the game list will be sorted by.</source>
@@ -11748,7 +11929,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
-        <translation>Ekranın üstüne çizilecek görselin bölgesini ayarlar.</translation>
+        <translation>Kaplama görselinde oyun görüntüsünün çizileceği alanı belirler.</translation>
     </message>
     <message>
         <source>Determines the emulated hardware type.</source>
@@ -11864,15 +12045,15 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Enable Recompiler Block Linking</source>
-        <translation>Recompiler Block Linking Aç</translation>
+        <translation>Yeniden Derleyici Blok Bağlamayı Etkinleştir</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
-        <translation>Derleyici Komut Önbelleğini Aç</translation>
+        <translation>Yeniden Derleyici Komut Önbelleğini Etkinleştir</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
-        <translation>Enable Recompiler Memory Exceptions</translation>
+        <translation>Yeniden Derleyici Bellek İstisnalarını Etkinleştir</translation>
     </message>
     <message>
         <source>Enable Region Check</source>
@@ -11900,7 +12081,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
-        <translation>Bilgisayarın çizicisi deskteklediğindi hata ayıklamayı aç. Sadece geliştiriciler iin.</translation>
+        <translation>Ana sistemin çizim API&apos;si destekliyorsa hata ayıklamayı etkinleştirir. Yalnızca geliştiriciler içindir.</translation>
     </message>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
@@ -11908,7 +12089,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Konsola 6 Megabayt RAM ekler. Genellikle geliştirici konsollarında bulunur.</translation>
+        <translation>Genellikle geliştirme konsollarında bulunan toplam 2+6 = 8 MB RAM&apos;e ulaşmak için ek 6 MB RAM&apos;i etkinleştirir.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -11916,7 +12097,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Enables the replacement of background textures in supported games.</source>
-        <translation>Desteklenen oyunlarda arkaplan dokularını değiştirmeyi sağlar.</translation>
+        <translation>Desteklenen oyunlarda arka plan dokularının değiştirilmesini etkinleştirir.</translation>
     </message>
     <message>
         <source>Encore Mode</source>
@@ -11924,7 +12105,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Execution Mode</source>
-        <translation>CPU Tipi</translation>
+        <translation>CPU Yürütme Modu</translation>
     </message>
     <message>
         <source>Exit</source>
@@ -11954,7 +12135,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Fast Boot</source>
-        <translation>Tazeden Başlat</translation>
+        <translation>Hızlı Başlatma</translation>
     </message>
     <message>
         <source>Fast Forward Speed</source>
@@ -12010,7 +12191,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Game Quick Save</source>
-        <translation>Oyun QuickSave</translation>
+        <translation>Oyun Hızlı Kaydı</translation>
     </message>
     <message>
         <source>Game Slot {0}##game_slot_{0}</source>
@@ -12022,7 +12203,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Game path copied to clipboard.</source>
-        <translation>Oyun dizini panoya kopyalandı.</translation>
+        <translation>Oyun yolu panoya kopyalandı.</translation>
     </message>
     <message>
         <source>Game region copied to clipboard.</source>
@@ -12050,7 +12231,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>GitHub Repository</source>
-        <translation>GitHub Repository/Dizini</translation>
+        <translation>GitHub Deposu</translation>
     </message>
     <message>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
@@ -12074,7 +12255,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <translation>Ne sıklıkla geri sarma durum kaydı oluşturulacak. Yüsek sıklıklar daha fazla sistem gereksinimi oluşturur.</translation>
+        <translation>Geri sarma durum kaydının ne sıklıkla oluşturulacağını belirler. Daha yüksek sıklıklar daha fazla sistem kaynağı gerektirir.</translation>
     </message>
     <message>
         <source>Identifies any new files added to the game directories.</source>
@@ -12082,7 +12263,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>If not enabled, the current post processing chain will be ignored.</source>
-        <translation>Açılmazsa şimdiki shader/görself efekt zinciri kullanılmaz.</translation>
+        <translation>Etkinleştirilmezse mevcut gölgelendirici/görsel efekt zinciri kullanılmaz.</translation>
     </message>
     <message>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
@@ -12090,11 +12271,11 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
-        <translation>Model es geçme çözünürlüğünü yükselterek modellerdeki yarık sorunlarını çözer.</translation>
+        <translation>Poligon elemenin hassasiyetini artırarak geometrideki deliklerin sayısını azaltır.</translation>
     </message>
     <message>
         <source>Inhibit Screensaver</source>
-        <translation>İşletim sisteminin ekran korucusunu engelle</translation>
+        <translation>İşletim sisteminin ekran koruyucusunu engelle</translation>
     </message>
     <message>
         <source>Input Sources</source>
@@ -12142,31 +12323,31 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation>Tüm doku paketlerini RAM&apos;e yükler. Oyun çalışırken takılamaları azaltır.</translation>
+        <translation>Tüm değiştirme dokularını RAM&apos;e yükleyerek çalışma sırasındaki takılmaları azaltır.</translation>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
-        <translation>Oyun dosyasını RAM&apos;e yükler. Özellikle ağ üzerinden bağlanılan dizinlerde oluşabilecek takılmalardan korur.</translation>
+        <translation>Oyun kalıbını RAM&apos;e yükler. Oyun sırasında güvenilirliğini yitirebilecek ağ yolları için yararlıdır.</translation>
     </message>
     <message>
         <source>Log Level</source>
-        <translation>Log Level</translation>
+        <translation>Günlük Düzeyi</translation>
     </message>
     <message>
         <source>Log To Debug Console</source>
-        <translation>Log To Debug Console</translation>
+        <translation>Hata Ayıklama Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Log To File</translation>
+        <translation>Dosyaya Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>Log To System Console</translation>
+        <translation>Sistem Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Logging Settings</source>
-        <translation>Logging Settings</translation>
+        <translation>Günlük Ayarları</translation>
     </message>
     <message>
         <source>Login</source>
@@ -12174,7 +12355,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Logout</source>
-        <translation>Sistem Çıkışı</translation>
+        <translation>Oturumu Kapat</translation>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
@@ -12182,15 +12363,15 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
-        <translation>Logs messages to duckstation.log in the user directory.</translation>
+        <translation>Mesajları kullanıcı dizinindeki duckstation.log dosyasına kaydeder.</translation>
     </message>
     <message>
         <source>Logs messages to the console window.</source>
-        <translation>Logs messages to the console window.</translation>
+        <translation>Mesajları konsol penceresine kaydeder.</translation>
     </message>
     <message>
         <source>Logs messages to the debug console where supported.</source>
-        <translation>Logs messages to the debug console where supported.</translation>
+        <translation>Desteklendiğinde mesajları hata ayıklama konsoluna kaydeder.</translation>
     </message>
     <message>
         <source>Maximum: {}</source>
@@ -12203,6 +12384,10 @@ Hata şuydu:</translation>
     <message>
         <source>Merges multi-disc games into one item in the game list.</source>
         <translation>Birden çok CD kullanan oyunları listede tek olacak şekilde birleştirir.</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Kare Ortasında Ekrana Aktarım</translation>
     </message>
     <message>
         <source>Minimum Framebuffer Upload Height</source>
@@ -12226,7 +12411,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>No cheats are available for this game.</source>
-        <translation>Bu oyun için hiç bir hile yok.</translation>
+        <translation>Bu oyun için hiçbir hile yok.</translation>
     </message>
     <message>
         <source>No devices with vibration motors were detected.</source>
@@ -12242,7 +12427,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
-        <translation>PGXP Derinlik Bilgisi</translation>
+        <translation>PGXP Derinlik Arabelleği</translation>
     </message>
     <message>
         <source>Parent Directory</source>
@@ -12250,7 +12435,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Pause On Controller Disconnection</source>
-        <translation>Oyun Kol Çıkınca Duraklat</translation>
+        <translation>Kol Bağlantısı Kesildiğinde Duraklat</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -12366,7 +12551,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Geri sarma açık değil. Aklınızda olsun ki geri sarma, sistem gereksinimlerini yükseltebilir.</translation>
+        <translation>Geri sarma açık değil. Geri sarmayı etkinleştirmenin sistem gereksinimlerini önemli ölçüde artırabileceğini lütfen unutmayın.</translation>
     </message>
     <message>
         <source>%.2f Seconds</source>
@@ -12406,7 +12591,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>V-Sync açık ise emülasyonunun hızını konsolun tazeleme hızına eşitler.</translation>
+        <translation>VSync etkin olduğunda konsolun yenileme hızı ana sisteminkiyle eşleşecek şekilde emülasyon hızını ayarlar.</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -12421,8 +12606,12 @@ Hata şuydu:</translation>
 {}</translation>
     </message>
     <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>Görüntülenen kare arabelleğindeki değişiklikleri bir karenin ortasında uygular. Bazı oyunlardaki bölünmüş ekran efektleri için gereklidir, ancak diğerlerinde yırtılmaya neden olur.</translation>
+    </message>
+    <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation>Çözünürlük iyileştirmesi yapılırken oluşan bazı boş piksellerini tespit edip doldurmaya çalışır.</translation>
+        <translation>Çözünürlük yükseltilmeden yapılan rasterleştirmeye bağlı, bir piksel yüksekliğindeki veya genişliğindeki çizgileri algılayarak çözünürlük yükseltmenin oluşturduğu boşlukları doldurmaya çalışır.</translation>
     </message>
     <message>
         <source>Back</source>
@@ -12470,7 +12659,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Create New...</source>
-        <translation>Yeni Bir...</translation>
+        <translation>Yeni Oluştur...</translation>
     </message>
     <message>
         <source>Deinterlacing Mode</source>
@@ -12490,7 +12679,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Determines the rotation of the simulated TV screen.</source>
-        <translation>Simülasyonu yapılan TV ekranının eğriliğini ayarlar.</translation>
+        <translation>Simüle edilen TV ekranının döndürülmesini belirler.</translation>
     </message>
     <message>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
@@ -12514,7 +12703,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
-        <translation>Interlace çizilien karelerin Progressive scan&apos;a nasıl çevirileceğini ayarlar.</translation>
+        <translation>Sisteminizde görüntülemek üzere geçmeli kareleri aşamalı taramaya dönüştürmek için hangi algoritmanın kullanılacağını belirler.</translation>
     </message>
     <message>
         <source>Disable Background Input</source>
@@ -12550,15 +12739,15 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation>DualSense kollardaki LED ışığı aç kapa.</translation>
+        <translation>DualSense denetleyicilerindeki oyuncu LED&apos;ini etkinleştirir/devre dışı bırakır.</translation>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>Eski MDEC decode metodlarını açar. Eski texture pack&apos;leri kullanmak için gerekli olabilir.</translation>
+        <translation>Daha eski ve daha az doğru MDEC kod çözme yordamlarını etkinleştirir. Eski değiştirme arka planlarının eşleşmesi/yüklenmesi için gerekli olabilir.</translation>
     </message>
     <message>
         <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>Her oluşturulan karenin kare zamanlama optimizasyonuna uyumlu olmasını sağlar. VRR monitörünüz varsa açın Gsync/FreeSync gibi. Hız veya ses sorunlarınız varsa kapayın.</translation>
+        <translation>En iyi kare zamanlaması için üretilen her karenin görüntülenmesini sağlar. GSync/FreeSync gibi değişken yenileme hızlı ekranlarda etkinleştirin. Hız veya ses sorunları yaşıyorsanız devre dışı bırakın.</translation>
     </message>
     <message>
         <source>Enter Value</source>
@@ -12574,7 +12763,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
-        <translation>Tam Ekran modundan çıkar. Masaüstü arayüzüne döner.</translation>
+        <translation>Büyük Resim Modundan çıkarak masaüstü arayüzüne döner.</translation>
     </message>
     <message>
         <source>FMV Chroma Smoothing</source>
@@ -12586,11 +12775,11 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Malibox presentation yerine FIFO kullanır. Triple buffering yerine Double Buffering kullanır. Genellikle daha kötü kare zamanlamasına sebep olur.</translation>
+        <translation>Mailbox sunumu yerine FIFO kullanımını, yani üçlü tamponlama yerine çift tamponlamayı zorlar. Genellikle daha kötü kare zamanlamasına neden olur.</translation>
     </message>
     <message>
         <source>Frame Time Buffer</source>
-        <translation>Frame Time Buffer</translation>
+        <translation>Kare Süresi Arabelleği</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -12602,7 +12791,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Internal Resolution</source>
-        <translation>Çözünürlük Ayarı</translation>
+        <translation>Dahili Çözünürlük</translation>
     </message>
     <message>
         <source>Latency Control</source>
@@ -12614,7 +12803,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
-        <translation>Bir oyunu dosyadan yada CD&apos;den başlatır yada konsolu direk içi boş başlatır.</translation>
+        <translation>Bir oyunu dosyadan veya CD&apos;den başlatır ya da konsolu CD takılmadan başlatır.</translation>
     </message>
     <message>
         <source>Line Detection</source>
@@ -12622,11 +12811,11 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>List Settings</source>
-        <translation>Ayarları Listele</translation>
+        <translation>Liste Ayarları</translation>
     </message>
     <message>
         <source>Load Global State</source>
-        <translation>Everensel Durum Kaydı Yükle</translation>
+        <translation>Genel Durum Kaydı Yükle</translation>
     </message>
     <message>
         <source>Login token generated {}</source>
@@ -12678,7 +12867,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>Readback VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
+        <translation>VRAM geri okumaları için yazılımsal çiziciyi paralel olarak çalıştırır. Bazı sistemlerde, donanımsal çiziciyle grafik iyileştirmeleri kullanılırken daha yüksek performans sağlayabilir.</translation>
     </message>
     <message>
         <source>SDL Persistent Device Identifiers</source>
@@ -12718,7 +12907,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>Interlaced çizimde hat atlama çözünürlüğünü oyunun çözünrülüğüne ayarlar ve daha az belirgin yapar. Açmak genellikle sorun çıkarmaz.</translation>
+        <translation>Geçmeli çizimde satır atlamayı dahili çözünürlüğe göre ölçekleyerek daha az fark edilir hale getirir. Etkinleştirmek genellikle güvenlidir.</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -12730,7 +12919,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Screen Rotation</source>
-        <translation>Ekran Eğriltme</translation>
+        <translation>Ekran Döndürme</translation>
     </message>
     <message>
         <source>Screenshot Directory</source>
@@ -12774,7 +12963,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
-        <translation>Listedeki kenar profillerinden birini seçin yada özel bir ayar yapın.</translation>
+        <translation>Önceden tanımlanmış kenarlıklar listesinden seçim yapın veya özel bir yapılandırmayı elle belirtin.</translation>
     </message>
     <message>
         <source>Selected Preset</source>
@@ -12790,7 +12979,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Selects the color style to be used for Big Picture UI.</source>
-        <translation>Tam Ekran Arayüz İçin Renk Stili Seçin.</translation>
+        <translation>Büyük Resim arayüzünde kullanılacak renk stilini seçer.</translation>
     </message>
     <message>
         <source>Selects the font used for UI text.</source>
@@ -12882,7 +13071,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation>Başarımlarda ustalaşınca ödüllerini oyunlar tablosunda göster.</translation>
+        <translation>Oyunlarda başarımlar bulunduğunda veya oyunlarda ustalaşıldığında oyun ızgarasında kupa simgeleri gösterir.</translation>
     </message>
     <message>
         <source>Size: </source>
@@ -12890,7 +13079,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Smooth Scrolling</source>
-        <translation>Yumuşak Sürükleme</translation>
+        <translation>Yumuşak Kaydırma</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
@@ -12898,7 +13087,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
-        <translation>Büyütülmüş 2 Boyutlu objelerdeki kaplamaları yumuşatır.</translation>
+        <translation>2D nesnelerdeki büyütülmüş dokuların bloklu görünümünü yumuşatır.</translation>
     </message>
     <message>
         <source>Sort Alphabetically</source>
@@ -12930,7 +13119,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
-        <translation>XInput protokolünü destekleyen kollara destek verir. Bu kaynak XInput Wrapper kütüphanelerini kullanıyorsanız açık olmalıdır.</translation>
+        <translation>XInput protokolünü kullanan denetleyiciler için destek sağlar. XInput yalnızca bir XInput sarmalayıcı kitaplığı kullanıyorsanız kullanılmalıdır.</translation>
     </message>
     <message>
         <source>Swap Gamepad Confirm/Cancel Buttons</source>
@@ -12942,7 +13131,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
-        <translation>Duraklatmada Sonraki CD&apos;ye Geç</translation>
+        <translation>CD Durduğunda Sonraki CD&apos;ye Geç</translation>
     </message>
     <message>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
@@ -12954,7 +13143,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Textures Directory</source>
-        <translation>Texture/Kaplamalar Dizini</translation>
+        <translation>Kaplamalar Dizini</translation>
     </message>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
@@ -12998,7 +13187,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Track</source>
-        <translation>Takip Et</translation>
+        <translation>Parça</translation>
     </message>
     <message>
         <source>Track Unofficial Achievements</source>
@@ -13006,7 +13195,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>Track hash copied to clipboard.</source>
-        <translation>İzleme karması panoya kopyalandı.</translation>
+        <translation>Parça karması panoya kopyalandı.</translation>
     </message>
     <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
@@ -13061,8 +13250,12 @@ Hata şuydu:</translation>
         <translation>Masaüstü OpenGL desteklense bile OpenGL ES kullanır. Bazı SBC sürücülerinde performansı artırabilir.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>PGXP&apos;yi yalnızca bellek işlemleri için değil, tüm komutlar için kullanır. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
+    </message>
+    <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation>Grafikleri çizmek için ikinci bir iş parçacığı kullanır. Şimdilik sadece yazılımsal çizici tarafından desteklenir ama performansı yükseltir ve bunu kullanmaktan zarar gelmez.</translation>
+        <translation>Grafikleri çizmek için ikinci bir iş parçacığı kullanır. Özellikle yazılımsal çizicide önemli bir hız artışı sağlar ve kullanımı güvenlidir.</translation>
     </message>
     <message>
         <source>Uses game-specific configuration for hotkeys. If disabled, global hotkeys will be used.</source>
@@ -13073,12 +13266,16 @@ Hata şuydu:</translation>
         <translation>Girdi kaynakları için oyuna özel yapılandırmayı kullanır. Devre dışı bırakılırsa genel yapılandırma kullanılır.</translation>
     </message>
     <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>PGXP verilerini çözümlemek için ekran konumlarını kullanır. Bazı oyunlarda görüntüyü iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
+    </message>
+    <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Birden çok CD kullanan oyunlar için her CD&apos;ye özel oyun ayarları kullanır. Bu ayar sadece ana/ilk CD&apos;de ayarlanabilir.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
-        <translation>Oyunun kendi sistemini esgeçip seçtiğiniz kare hızını ayarlar.</translation>
+        <translation>Oyunun ayarından bağımsız olarak seçilen kare hızını kullanır.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -13086,15 +13283,15 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>DİKKAT: Hileleri açmak oyunun çökmesine, görevlerin buglanmasına ve kayıtlı oyunların bozuk çıkmasına sebep olabilir.</translation>
+        <translation>UYARI: Hileleri etkinleştirmek öngörülemeyen davranışlara, çökmelere, oyunda ilerlemenin durmasına veya kayıtlı oyunların bozulmasına neden olabilir.</translation>
     </message>
     <message>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>DİKKAT: Yamaları uygulamak oyunun çökmesine, görevlerin buglanmasına ve kayıtlı oyunların bozuk çıkmasına sebep olabilir.</translation>
+        <translation>UYARI: Oyun yamalarını etkinleştirmek öngörülemeyen davranışlara, çökmelere, oyunda ilerlemenin durmasına veya kayıtlı oyunların bozulmasına neden olabilir.</translation>
     </message>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
-        <translation>Tam Ekran Modu başlatıldığında ana menü yerine oyun listesi gösterilir.</translation>
+        <translation>Büyük Resim Modu başlatıldığında ana menü yerine oyun listesi gösterilir.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -13118,7 +13315,7 @@ Hata şuydu:</translation>
     </message>
     <message>
         <source>%d cycles</source>
-        <translation>%d cycles</translation>
+        <translation>%d çevrim</translation>
     </message>
     <message>
         <source>%g seconds</source>
@@ -13170,7 +13367,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
-        <translation>SBI dosyası olmasada oyunun açılmasına izin verir. Bu şekilde oyunlar doğru çalışmaz.</translation>
+        <translation>Gerekli bir SBI dosyası olmadan da açılışın devam etmesine izin verir. Bu oyunlar doğru çalışmaz.</translation>
     </message>
     <message>
         <source>Alpha Blending</source>
@@ -13186,7 +13383,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
-        <translation>Tam Ekran modundayken pencerelerin açılıp kapanması gibi animasyonları açar.</translation>
+        <translation>Büyük Resim arayüzünde pencerelerin açılıp kapanmasını ve görünümler arasındaki değişiklikleri canlandırır.</translation>
     </message>
     <message>
         <source>Appearance</source>
@@ -13290,7 +13487,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Disc</source>
-        <translation>Disc</translation>
+        <translation>Disk</translation>
     </message>
     <message>
         <source>Display Area</source>
@@ -13306,23 +13503,23 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>Duckstation özgür bir Sony Playstation (TM) Emülatörüdür. Kuallanılabilirlik,hız ve uzun vadede sürüdülebilirliği amaçlar.</translation>
+        <translation>DuckStation, oynanabilirliğe, hıza ve uzun vadeli sürdürülebilirliğe odaklanan, Sony PlayStation(TM) konsolunun özgür bir simülatörü/emülatörüdür.</translation>
     </message>
     <message>
         <source>Dump Replaced Textures</source>
-        <translation>Üstüne Yazılan Kaplamaları Kaydet</translation>
+        <translation>Değiştirilen Kaplamaları Kaydet</translation>
     </message>
     <message>
         <source>Dumps textures that have replacements already loaded.</source>
-        <translation>Üzerine yazılacak textureları yüklenen textureları kaydeder.</translation>
+        <translation>Değiştirme dokuları zaten yüklenmiş olan kaplamaları dosyaya kaydeder.</translation>
     </message>
     <message>
         <source>Enable GPU-Based Validation</source>
-        <translation>Enable GPU-Based Validation</translation>
+        <translation>GPU Tabanlı Doğrulamayı Etkinleştir</translation>
     </message>
     <message>
         <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
-        <translation>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</translation>
+        <translation>Ana sistemin çizici API&apos;si desteklediğinde GPU tabanlı doğrulamayı etkinleştirir. Yalnızca geliştiricilerin kullanımı içindir.</translation>
     </message>
     <message>
         <source>Enable Texture Cache</source>
@@ -13338,23 +13535,23 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Enable VRAM Write Dumping</source>
-        <translation>Enable VRAM Write Dumping</translation>
+        <translation>VRAM Yazımlarını Kaydetmeyi Etkinleştir</translation>
     </message>
     <message>
         <source>Enable VRAM Write Replacement</source>
-        <translation>Enable VRAM Write Texture Replacement</translation>
+        <translation>VRAM Yazımlarını Değiştirmeyi Etkinleştir</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation>Yüklenecek textureları önbelleğe alır, texture değiştirmek için gereklidir.</translation>
+        <translation>Emüle edilen sistemin kaplamalarını önbelleğe almayı etkinleştirir; kaplama değiştirme için gereklidir.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
-        <translation>Yarı saydam poligonlar için derinlik testini açar. Genellikle gölgeler için işe yarar ve zeminde kaybolabilirler bu ayar açılıysa.</translation>
+        <translation>Yarı saydam poligonlar için derinlik testini etkinleştirir. Bunlar genellikle gölgeleri içerir ve derinlik testi etkin olduğunda zeminin içine girme eğilimindedir.</translation>
     </message>
     <message>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation>Texture/Kaplamaları resim dosyalarına kaydeder ve değiştirilebilrmelerini sağlar. Tüm oyunlarla uyumlu değildir.</translation>
+        <translation>Kaplamaların değiştirilebilecek resim dosyalarına kaydedilmesini etkinleştirir. Tüm oyunlarla uyumlu değildir.</translation>
     </message>
     <message>
         <source>Enables loading of cheats for this game from DuckStation&apos;s database.</source>
@@ -13366,7 +13563,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
-        <translation>Menülerin Tam Ekran Modunda akışkan bir şekilde kaymasına izin verir.</translation>
+        <translation>Büyük Resim arayüzünde menülerin yumuşak kaydırılmasını etkinleştirir.</translation>
     </message>
     <message>
         <source>Enables the cheats that are selected below.</source>
@@ -13382,7 +13579,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Failed to delete existing cover: {}</source>
-        <translation>Varolan kapak silinemedi {}</translation>
+        <translation>Var olan kapak silinemedi: {}</translation>
     </message>
     <message>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
@@ -13390,7 +13587,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>İleri Sarma Başlangıç</translation>
+        <translation>Açılışı İleri Sar</translation>
     </message>
     <message>
         <source>Fast Forward Memory Card Access</source>
@@ -13406,7 +13603,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation>Gerekli olsun olmasın texture/kaplama takibini açar.</translation>
+        <translation>Gerekli olup olmadığına bakılmaksızın kaplama yüklemelerinin takibini zorla etkinleştirir.</translation>
     </message>
     <message>
         <source>Frame Rate</source>
@@ -13438,15 +13635,15 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
-        <translation>Açılıysa. Ekran ve üstüne çizilecek resim birlikte çzilir.</translation>
+        <translation>Etkinleştirilirse görüntü, kaplama resminin saydamlığına göre harmanlanır.</translation>
     </message>
     <message>
         <source>If enabled, the transparency of the overlay image will be applied.</source>
-        <translation>Açılıysa. Ekran ve üstüne çizilecek resim birlikte çzilir.</translation>
+        <translation>Etkinleştirilirse kaplama resminin saydamlığı uygulanır.</translation>
     </message>
     <message>
         <source>Image Path</source>
-        <translation>Dosya Dizini</translation>
+        <translation>Dosya Yolu</translation>
     </message>
     <message>
         <source>Language</source>
@@ -13462,7 +13659,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation>Light</translation>
+        <translation>Açık</translation>
     </message>
     <message>
         <source>Load Database Cheats</source>
@@ -13474,7 +13671,7 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Logging in to RetroAchievements...</source>
-        <translation>RetroAchievemnts&apos;a giriş yapılıyor...</translation>
+        <translation>RetroAchievements&apos;a giriş yapılıyor...</translation>
     </message>
     <message>
         <source>Login Failed.
@@ -13486,19 +13683,19 @@ Hata: {}
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
-        <translation>CD-ROM Max Read Speedup Cycles</translation>
+        <translation>En Fazla Okuma Hızlandırma Çevrimi</translation>
     </message>
     <message>
         <source>Maximum Seek Speedup Cycles</source>
-        <translation>Maximum Seek Speedup Cycles</translation>
+        <translation>En Fazla Konumlandırma Hızlandırma Çevrimi</translation>
     </message>
     <message>
         <source>Menu Background</source>
-        <translation>Menu Arkaplanı</translation>
+        <translation>Menü Arka Planı</translation>
     </message>
     <message>
         <source>Menu Borders</source>
-        <translation>Menu Kenarları</translation>
+        <translation>Menü Kenarları</translation>
     </message>
     <message>
         <source>Move Down</source>
@@ -13570,7 +13767,7 @@ Hata: {}
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>Modifiye edilebilecek arkaplanları kopya klasörüne kopyalar.</translation>
+        <translation>Değiştirilebilen arka planları döküm dizinine yazar.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -13830,7 +14027,7 @@ Hata: {}
     </message>
     <message>
         <source>No resume save state found.</source>
-        <translation>Devam Durum Kayıdı Bulunamadı.</translation>
+        <translation>Devam Durum Kaydı Bulunamadı.</translation>
     </message>
     <message>
         <source>No rewind states are available yet.</source>
@@ -13922,7 +14119,7 @@ Hata: {}
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Kare Zamanlama Optimasyonu</translation>
+        <translation>Kare Zamanlama Optimizasyonu</translation>
     </message>
     <message>
         <source>Options</source>
@@ -13946,11 +14143,11 @@ Hata: {}
     </message>
     <message>
         <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
-        <translation>Normal model çiziminin üstüne wireframe çizer yada direk değiştirir.</translation>
+        <translation>Normal üçgen çiziminin üstüne tel kafes/çizgi görünümü çizer ya da çizimi bu görünümle değiştirir.</translation>
     </message>
     <message>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP (Çarpık Yamuk Şekil Düzeltme Sistemi)</translation>
+        <translation>PGXP (Hassas Geometri Dönüşüm İşlem Hattı)</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -13970,7 +14167,7 @@ Hata: {}
     </message>
     <message>
         <source>Path</source>
-        <translation>Dizin</translation>
+        <translation>Yol</translation>
     </message>
     <message>
         <source>Pause On Focus Loss</source>
@@ -13986,7 +14183,7 @@ Hata: {}
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation>Pencere küçültülünce yada başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
+        <translation>Pencere küçültülünce ya da başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
     </message>
     <message>
         <source>Per-Game Configuration</source>
@@ -13994,7 +14191,7 @@ Hata: {}
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>Oyuna özel tuş atamaları evrensel ayarlar kullanılarak atandı.</translation>
+        <translation>Oyuna özel kontrolcü yapılandırması genel ayarlarla başlatıldı.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -14006,7 +14203,7 @@ Hata: {}
     </message>
     <message>
         <source>Perspective Correct Textures</source>
-        <translation>Perspektif Düzelmeli Dokular</translation>
+        <translation>Perspektif Düzeltmeli Dokular</translation>
     </message>
     <message>
         <source>Pin to OSD</source>
@@ -14059,11 +14256,11 @@ Hata: {}
     </message>
     <message>
         <source>Preload Images to RAM</source>
-        <translation>CD&apos;yi RAM&apos;a Kopyala</translation>
+        <translation>Disk Görüntülerini RAM&apos;e Önceden Yükle</translation>
     </message>
     <message>
         <source>Preload Replacement Textures</source>
-        <translation>Doku Paketlerini RAM&apos;e Yükle</translation>
+        <translation>Değiştirme Dokularını Önceden Yükle</translation>
     </message>
     <message>
         <source>Rewind</source>
@@ -14127,7 +14324,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
-        <translation>Model Döşeme Kalitesini Koru</translation>
+        <translation>Yansıtma Hassasiyetini Koru</translation>
     </message>
     <message>
         <source>%d Frames</source>
@@ -14159,7 +14356,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Quick Save</source>
-        <translation>Quick Save</translation>
+        <translation>Hızlı Kaydet</translation>
     </message>
     <message>
         <source>Read Speedup</source>
@@ -14171,7 +14368,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Recompiler Fast Memory Access</source>
-        <translation>Enable Recompiler Fast Memory Access</translation>
+        <translation>Yeniden Derleyici Hızlı Bellek Erişimi</translation>
     </message>
     <message>
         <source>Reduce Input Latency</source>
@@ -14183,15 +14380,15 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation>CD&apos;yi ayrı bir iş parçacığı olarak ele alır ve anlık donmaları azaltır.</translation>
+        <translation>CD verilerini bir iş parçacığında eşzamansız okuyarak/sıkıştırmasını açarak emülasyondaki takılmaları azaltır.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time.</source>
-        <translation>Karenin başlama zamanını gösterim zamanına geciktirerek girdi gecikmesini azaltmaya çalışır.</translation>
+        <translation>Karenin işlenmeye başlamasını gösterim zamanına daha yakın bir ana erteleyerek girdi gecikmesini azaltır.</translation>
     </message>
     <message>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
-        <translation>Derinlik testi kullanarak üst üste binmiş modellerin çarpışmasını önler. Çoğu oyunla iyi çalışmaz.</translation>
+        <translation>Derinlik testiyle poligonların Z-fighting sorununu azaltır. Oyunlarla uyumluluğu düşüktür.</translation>
     </message>
     <message>
         <source>Reduces the size of save states by compressing the data before saving.</source>
@@ -14259,7 +14456,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation>Oyun listesi sıralamsını varsayılandan değiştirir. (Genellikle yükseleni azalana çevirir).</translation>
+        <translation>Oyun listesinin sıralama düzenini varsayılanın tersine çevirir (genellikle artandan azalana).</translation>
     </message>
     <message>
         <source>Rewind Save Frequency</source>
@@ -14287,11 +14484,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>Kaplama koordinatlarını yuvarlayarak işler. Bazı oyunlardaki hizası kayıp kaplamaları düzeltirken bazılarında bozabilir ve Kaplama Süzme ayarıyla çakışır.</translation>
+        <translation>Büyütme sırasında doku koordinatlarını aşağı yuvarlamak yerine en yakın değere yuvarlar. Bazı oyunlarda yanlış hizalanmış dokuları düzeltebilir, ancak diğerlerini bozabilir ve doku süzmeyle uyumlu değildir.</translation>
     </message>
     <message>
         <source>Runahead</source>
-        <translation>İleriyi Hesaplamak</translation>
+        <translation>İleriyi Hesaplama</translation>
     </message>
     <message>
         <source>Runahead/Rewind</source>
@@ -14327,7 +14524,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Scaling</source>
-        <translation>Büyütme</translation>
+        <translation>Ölçeklendirme</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
@@ -14343,7 +14540,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Seek Speedup</source>
-        <translation>CD Dosya Araması Hızlandırması</translation>
+        <translation>CD Konumlandırma Hızlandırması</translation>
     </message>
     <message>
         <source>Select</source>
@@ -14359,11 +14556,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Select Disc Drive</source>
-        <translation>Disc Okuyucu Seç</translation>
+        <translation>Disk Okuyucu Seç</translation>
     </message>
     <message>
         <source>Select Disc Image</source>
-        <translation>Dosya Seç</translation>
+        <translation>Disk Görüntüsü Seç</translation>
     </message>
     <message>
         <source>Select Game</source>
@@ -14387,7 +14584,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>Konsolun işlemci hızını belirler.</translation>
+        <translation>Emüle edilen donanımın normal saat hızının yüzde kaçıyla çalışacağını seçer.</translation>
     </message>
     <message>
         <source>Selects the quality at which screenshots will be compressed.</source>
@@ -14395,7 +14592,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>Son çıktıya uygulanan downsamplingi seçer. 1x oyunun orijinal çözünürlüğüne ayarlar.</translation>
+        <translation>Son görüntüye uygulanacak çözünürlük ölçeğini seçer. 1x, görüntüyü konsolun orijinal çözünürlüğüne küçültür.</translation>
     </message>
     <message>
         <source>Selects the resolution to use in fullscreen modes.</source>
@@ -14415,11 +14612,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
-        <translation>Küsüratları kırpma toleransını ayarlar. Bazı oyunlarda işe yarayabilir.</translation>
+        <translation>Aşıldığında hassas değerlerin atılması için bir eşik belirler. Bazı oyunlardaki hatalara yardımcı olabilir.</translation>
     </message>
     <message>
         <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
-        <translation>Derinlik verisindeki küsüratları kırpma toleransını ayarlar. Bazı oyunlarda işe yarayabilir.</translation>
+        <translation>Emüle edilen derinlik arabelleğinin atılması için bir eşik belirler. Bazı oyunlarda yardımcı olabilir.</translation>
     </message>
     <message>
         <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
@@ -14427,11 +14624,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
-        <translation>&apos;Maximum&apos; okuma hızlandırması için minimum gecikme ayarlar.</translation>
+        <translation>&apos;Maksimum&apos; okuma hızlandırması düzeyi için en düşük gecikmeyi ayarlar.</translation>
     </message>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
-        <translation>&apos;Maximum&apos; dosya arama hızlandırması için minimum gecikme ayarlar.</translation>
+        <translation>&apos;Maksimum&apos; konumlandırma hızlandırması düzeyi için en düşük gecikmeyi ayarlar.</translation>
     </message>
     <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
@@ -14443,7 +14640,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
-        <translation>Sets the verbosity of messages logged. Higher levels will log more messages.</translation>
+        <translation>Günlüğe kaydedilen mesajların ayrıntı düzeyini ayarlar. Daha yüksek düzeylerde daha fazla mesaj kaydedilir.</translation>
     </message>
     <message>
         <source>Sets which sort of memory card image will be used for slot {}.</source>
@@ -14451,7 +14648,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Setting {} binding {}.</source>
-        <translation>Ayar {} Atama {}.</translation>
+        <translation>{} için {} ataması ayarlanıyor.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -14463,7 +14660,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Shader {} added as stage {}.</source>
-        <translation>Shader/Görsel Efekt {} Şu aşama için eklendi {}.</translation>
+        <translation>Shader/Görsel Efekt {} şu aşama olarak eklendi: {}.</translation>
     </message>
     <message>
         <source>Shared Card Name</source>
@@ -14547,7 +14744,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation>Anlık kol durumunu (Basılan tuşlar) sol alt köşede gösterir..</translation>
+        <translation>Anlık kol durumunu (basılan tuşlar) sol alt köşede gösterir.</translation>
     </message>
     <message>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
@@ -14563,11 +14760,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation>Bilgisayarınızn grafik kartı kullanımını ekranınınız sağ üstünde gösterir.</translation>
+        <translation>Bilgisayarınızın grafik kartı kullanımını ekranınızın sağ üstünde gösterir.</translation>
     </message>
     <message>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>Sitemde saniyede olan kare sayısını (ya da dikey senkronları) sağ üstte gösterir.</translation>
+        <translation>Sistemde saniyede gösterilen kare sayısını (ya da dikey senkronları) sağ üstte gösterir.</translation>
     </message>
     <message>
         <source>Shows the number of the current frame in the top-right corner of the display.</source>
@@ -14575,11 +14772,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation>Orijinal olan konsollardaki bölge kontrolünü simüle eder.</translation>
+        <translation>Orijinal, değiştirilmemiş konsollardaki bölge kontrolünü simüle eder.</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>Konsolun gelecekte ne yapacağını hesaplayarak girdi gecikmesini düşürür. Çok güçlü bir sistem gerektirir.</translation>
+        <translation>Girdi gecikmesini azaltmak için sistemi önceden simüle eder ve geri alıp yeniden oynatır. Sistem gereksinimleri çok yüksektir.</translation>
     </message>
     <message>
         <source>Skip Duplicate Frame Display</source>
@@ -14627,7 +14824,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation>CD dosya arama hızlarını seçilen ayarda hızlandırır. Bazı oyunlarda yükleme sahnelerini kısaltabilir bazılarını bozabilir.</translation>
+        <translation>CD-ROM konumlandırma işlemlerini belirtilen çarpanla hızlandırır. Bazı oyunlarda yükleme hızlarını artırabilir, bazılarını ise bozabilir.</translation>
     </message>
     <message>
         <source>Sprite Texture Filtering</source>
@@ -14675,7 +14872,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation>24 Bit içerik gösterilince 4:3 en boy oranına geçer. Genellike video ara sahneler gibi.</translation>
+        <translation>24 bit içerik (genellikle FMV video ara sahneleri) gösterilirken 4:3 en boy oranına geri döner.</translation>
     </message>
     <message>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
@@ -14687,7 +14884,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Temporarily disables all enhancements, useful when testing.</source>
-        <translation>Tüm iyileştiremleri geçici olarak kapar. Deneme yaparken işe yarar.</translation>
+        <translation>Tüm iyileştirmeleri geçici olarak kapatır. Deneme yaparken işe yarar.</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -14703,7 +14900,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
-        <translation>Ses arkayüzü çizilen karelerin bilgisayarınza nasıl verileceğini belirler.</translation>
+        <translation>Ses arka ucu, emülatörün ürettiği ses karelerinin sisteme nasıl iletileceğini belirler.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -14715,7 +14912,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Timing out in {:.0f} seconds...</source>
-        <translation>{:.0f} saniyede time out olacaksınız...</translation>
+        <translation>Zaman aşımına {:.0f} saniye kaldı...</translation>
     </message>
     <message>
         <source>Title</source>
@@ -14751,7 +14948,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Durum Kaydını Geri Al</translation>
+        <translation>Durum Kaydı Yüklemesini Geri Al</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -14763,7 +14960,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Unlimited</source>
-        <translation>Sınrısız</translation>
+        <translation>Sınırsız</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -14771,7 +14968,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Use Blit Swap Chain</source>
-        <translation>Blit Swaip Chain Sistemini Kullan</translation>
+        <translation>Blit Swap Chain Sistemini Kullan</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -14783,7 +14980,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
-        <translation>Use Old MDEC Routines</translation>
+        <translation>Eski MDEC Yordamlarını Kullan</translation>
     </message>
     <message>
         <source>Use Single Card For Multi-Disc Games</source>
@@ -14796,10 +14993,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Readbackler İçin Yazılımsal Çiziciyi Kullan</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations.</source>
-        <translation>Tüm komutlar için PGXP kullan sadece hafıza işlemleri için değil.</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
@@ -14819,15 +15012,11 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
-        <translation>Renkler için perspektif düzeltmeli renkler kullanır. Bazı oyunlar için işe yarayabilir.</translation>
+        <translation>Renkler için perspektif düzeltmeli ara değerleme kullanır; bu, bazı oyunlarda görselleri iyileştirebilir.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
-        <translation>Perspektif düzeltmeli doku koordinatlarını kullanır. Eğri büğrü dokuları düzeltir.</translation>
-    </message>
-    <message>
-        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation>PGXP verisini düzeltmek için ekran konumlarını kullanır. Bazı oyunlarda görüntüyü iyileştirebilir.</translation>
+        <translation>Doku koordinatları için perspektif düzeltmeli ara değerleme kullanarak eğrilmiş dokuları düzeltir.</translation>
     </message>
     <message>
         <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
@@ -14839,7 +15028,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Verify</source>
-        <translation>Onayla</translation>
+        <translation>Doğrula</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -14847,7 +15036,7 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation>Vertex Cache</translation>
+        <translation>Köşe Önbelleği</translation>
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
@@ -14857,9 +15046,9 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translation>UYARI: Oyun hafıza kartına kayıt veriyor. İşleme Devam etmek {0} Hafıza kartınızı TEMELLİ BOZABİLİR. Oyunu 5 saniyeliğine devam ettirip kaydınızın bitmesini tavsiye ederiz..
+        <translation>UYARI: Oyununuz hâlâ hafıza kartına kayıt yapıyor. &quot;{0}&quot; işlemine devam etmek HAFIZA KARTINIZI GERİ DÖNDÜRÜLEMEZ BİÇİMDE BOZABİLİR. Oyuna devam etmenizi ve kayıt işleminin tamamlanması için 5 saniye beklemenizi öneririz.
 
-Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
+Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -14919,11 +15108,11 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Başarımlar için&quot;Challenge/Meydan Okuma&quot; modu. Lider tahtası takibinide içerir. Durum kaydı,hile ve yavaşlatma fonksiyonlarını kapatır.</translation>
+        <translation>Başarımlar için &quot;Meydan Okuma&quot; modu. Liderlik tablosu takibini de içerir. Durum kaydı, hile ve yavaşlatma işlevlerini devre dışı bırakır.</translation>
     </message>
     <message>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
-        <translation>&quot;PlayStation&quot; ve &quot;PSX&quot; Sony Interactive Entartainment Europe Limited&apos;in kayıtlı markalarıdır. Bu yazılım hiçbir şekilde Sony Interactive Entartainment ile bağlantılı değildir.</translation>
+        <translation>&quot;PlayStation&quot; ve &quot;PSX&quot;, Sony Interactive Entertainment Europe Limited&apos;in tescilli ticari markalarıdır. Bu yazılımın Sony Interactive Entertainment ile hiçbir bağlantısı yoktur.</translation>
     </message>
     <message>
         <source>change disc</source>
@@ -14969,12 +15158,12 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     <message>
         <source>Failed to save screenshot:
 {}</source>
-        <translation>Ekran kaydı kaydedilemedi:
+        <translation>Ekran görüntüsü kaydedilemedi:
 {}</translation>
     </message>
     <message>
         <source>Saving screenshot to &apos;{}&apos;.</source>
-        <translation>Ekran görüntüsü şuraya keydediliyor &apos;{}&apos;.</translation>
+        <translation>Ekran görüntüsü &apos;{}&apos; konumuna kaydediliyor.</translation>
     </message>
     <message>
         <source>Saved screenshot to &apos;{}&apos;.</source>
@@ -14986,31 +15175,31 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Failed to start GPU trace:</source>
-        <translation>Failed to start GPU trace:</translation>
+        <translation>GPU izleme kaydı başlatılamadı:</translation>
     </message>
     <message>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>Saving {0} frame GPU trace to &apos;{1}&apos;.</translation>
+        <translation>{0} karelik GPU izleme kaydı &apos;{1}&apos; konumuna kaydediliyor.</translation>
     </message>
     <message>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</translation>
+        <translation>Çok kareli GPU izleme kaydı &apos;{1}&apos; konumuna kaydediliyor.</translation>
     </message>
     <message>
         <source>Failed to close GPU trace:</source>
-        <translation>Failed to close GPU trace:</translation>
+        <translation>GPU izleme kaydı kapatılamadı:</translation>
     </message>
     <message>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
-        <translation>Saved GPU trace to &apos;{}&apos;.</translation>
+        <translation>GPU izleme kaydı &apos;{}&apos; konumuna kaydedildi.</translation>
     </message>
     <message>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
-        <translation>Compressing GPU trace &apos;{}&apos;...</translation>
+        <translation>&apos;{}&apos; GPU izleme kaydı sıkıştırılıyor...</translation>
     </message>
     <message>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
-        <translation>Failed to save GPU trace to &apos;{}&apos;:</translation>
+        <translation>GPU izleme kaydı &apos;{}&apos; konumuna kaydedilemedi:</translation>
     </message>
 </context>
 <context>
@@ -15021,7 +15210,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>{} of {} pipelines</source>
-        <translation>{} işlem hattından {}</translation>
+        <translation>{}/{} işlem hattı</translation>
     </message>
     <message>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
@@ -15041,7 +15230,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation>{}x MSAA desteklenmiyor, onu yerine {}x ayarlandı.</translation>
+        <translation>{}x MSAA desteklenmiyor, onun yerine {}x kullanılıyor.</translation>
     </message>
     <message>
         <source>SSAA is not supported, using MSAA instead.</source>
@@ -15061,7 +15250,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
-        <translation>PGXP derinlik arabelleği mevcut GPU&apos;nuz veya oluşturucunuz tarafından desteklenmiyor.</translation>
+        <translation>PGXP derinlik arabelleği mevcut GPU&apos;nuz veya çiziciniz tarafından desteklenmiyor.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
@@ -15086,7 +15275,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     <message>
         <source>Failed to allocate {}x{} texture for cache:
 {}</source>
-        <translation>Failed to allocate {}x{} texture for cache:
+        <translation>Önbellek için {}x{} boyutunda doku ayrılamadı:
 {}</translation>
     </message>
     <message>
@@ -15106,7 +15295,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>No replacement textures found.</source>
-        <translation>Tane texture/kaplama dosyası bulundu.</translation>
+        <translation>Hiçbir değiştirme dokusu bulunamadı.</translation>
     </message>
 </context>
 <context>
@@ -15137,7 +15326,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>At least one option must be defined.</source>
-        <translation>En az bir ayar seçilmeli.</translation>
+        <translation>En az bir seçenek tanımlanmalıdır.</translation>
     </message>
     <message>
         <source>The option &apos;%1&apos; is defined twice.</source>
@@ -15193,6 +15382,34 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     <message>
         <source>Edit Choices...</source>
         <translation>Ayarları Düzenle...</translation>
+    </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>Geçersiz Kılınan Ayarlar</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>En Boy Oranı:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>CPU Hız Aşırtması:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Geniş Ekran Çizimini Devre Dışı Bırak</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>8 Megabayt RAM Aç</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>Hardcore Modunda İzin Verme</translation>
     </message>
 </context>
 <context>
@@ -15263,7 +15480,7 @@ Yinede işleminize {0} devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Import Cheats</source>
-        <translation>Hileleri İçeri Akatar</translation>
+        <translation>Hileleri İçe Aktar</translation>
     </message>
     <message>
         <source>Error</source>
@@ -15315,7 +15532,7 @@ Hileleri şimdi etkinleştirmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>You are removing the code named &apos;%1&apos;. You cannot undo this action, are you sure you wish to delete this code?</source>
-        <translation>Şu isimdeki hileyi siliyorsunuz&apos;%1&apos;. Bu işlemi geri alamazsınız. Bu hileyi silmekten emin misiniz?</translation>
+        <translation>&apos;%1&apos; adlı hileyi siliyorsunuz. Bu işlemi geri alamazsınız. Bu hileyi silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
@@ -15380,7 +15597,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Widescreen rendering disabled.</source>
-        <translation>Geniş Ekram Çizim Kapatıldı.</translation>
+        <translation>Geniş ekran çizimi kapatıldı.</translation>
     </message>
     <message>
         <source>PGXP geometry correction disabled.</source>
@@ -15400,11 +15617,11 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP model döşeme hassasiyeti kapatıldı.</translation>
+        <translation>PGXP yansıtma hassasiyetini koruma kapatıldı.</translation>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
-        <translation>PGXP vertec cache açıldı.</translation>
+        <translation>PGXP köşe önbelleği açıldı.</translation>
     </message>
     <message>
         <source>Unknown</source>
@@ -15464,7 +15681,7 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Force Full True Color</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Kaliteli Renk Çizimini Zorla</translation>
+        <translation>Tam Kaliteli Renk Çizimini Zorla</translation>
     </message>
     <message>
         <source>Force Deinterlacing</source>
@@ -15489,17 +15706,17 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Disable Fast Forward Memory Card Access</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Hızlı İleri Sarma için Hafıza Kartı Erişimini Devre Dışı Bırak</translation>
+        <translation>Hafıza Kartı Erişiminde İleri Sarmayı Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>CD-ROM Okuma Hızını Kapat</translation>
+        <translation>CD-ROM Okuma Hızlandırmasını Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable CD-ROM Seek Speedup</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>CD-ROM Dosya Arama Hızlandırmayı Kapat</translation>
+        <translation>CD-ROM Konumlandırma Hızlandırmasını Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable CD-ROM Speedup on MDEC</source>
@@ -15514,7 +15731,7 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Disable Full True Color</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Tam Doğru Renk Çizimini Kapat</translation>
+        <translation>Tam Kaliteli Renk Çizimini Kapat</translation>
     </message>
     <message>
         <source>Disable Upscaling</source>
@@ -15574,7 +15791,7 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Disable PGXP Depth Buffer</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>PGXP Derinlik Verisi Kapat</translation>
+        <translation>PGXP Derinlik Arabelleğini Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable PGXP on 2D Polygons</source>
@@ -15584,7 +15801,7 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Force PGXP Vertex Cache</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>PGXP Vertec Cache Zorla</translation>
+        <translation>PGXP Köşe Önbelleğini Zorla</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
@@ -15617,6 +15834,11 @@ Devam etmekten emin misiniz?</translation>
         <translation>Kare Arabelleğine Yapılan Yüklemeleri Filtrele</translation>
     </message>
     <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Kare Ortasında Ekrana Aktarımı Zorla</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>Hızlı Başlangıç Kapatıldı.</translation>
     </message>
@@ -15626,7 +15848,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Fast forward memory card access disabled.</source>
-        <translation>Hızlı ileri sarma için hafıza kartı erişimi devre dışı bırakıldı.</translation>
+        <translation>Hafıza kartı erişiminde ileri sarma devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -15634,7 +15856,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>CD-ROM seek speedup disabled.</source>
-        <translation>CD-ROM Dosya arama hızı kapatıldı.</translation>
+        <translation>CD-ROM konumlandırma hızlandırması kapatıldı.</translation>
     </message>
     <message>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
@@ -15657,20 +15879,28 @@ Devam etmekten emin misiniz?</translation>
         <translation>Orantılı interlacing kapatıldı.</translation>
     </message>
     <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Bu oyun için PGXP Köşe Önbelleği gerekli, ancak devre dışı. Bu durum çizim hatalarına neden olabilir.</translation>
+    </message>
+    <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation>PGXP Vertex Cache açıldı, her ne kadar bu oyun için gerekli olmasada. Bu çizim hatalarına sebep olabilir.</translation>
+        <translation>PGXP Köşe Önbelleği etkin, ancak bu oyun için gerekli değil. Bu durum çizim hatalarına neden olabilir.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
         <translation>PGXP CPU modu açıldı.</translation>
     </message>
     <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>Bu oyun için PGXP CPU modu gerekli, ancak devre dışı. Bu durum çizim hatalarına neden olabilir.</translation>
+    </message>
+    <message>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation>PGXP CPU modu açıldı, her ne kadar bu oyun için gerekli olmasada. Bu çizim hatalarına sebep olabilir.</translation>
+        <translation>PGXP CPU modu etkin, ancak bu oyun için gerekli değil. Bu durum çizim hatalarına neden olabilir.</translation>
     </message>
     <message>
         <source>PGXP depth buffer disabled.</source>
-        <translation>PGXP derinlik verisi kapatıldı.</translation>
+        <translation>PGXP derinlik arabelleği kapatıldı.</translation>
     </message>
     <message>
         <source>PGXP disabled on 2D polygons.</source>
@@ -15770,19 +16000,19 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Display Active Start Offset</source>
-        <translation>Display Active Start Offset</translation>
+        <translation>Görüntü Etkin Başlangıç Ofseti</translation>
     </message>
     <message>
         <source>Display Active End Offset</source>
-        <translation>Display Active End Offset</translation>
+        <translation>Görüntü Etkin Bitiş Ofseti</translation>
     </message>
     <message>
         <source>Display Line Start Offset</source>
-        <translation>Display Line Start Offset</translation>
+        <translation>Görüntü Satırı Başlangıç Ofseti</translation>
     </message>
     <message>
         <source>Display Line End Offset</source>
-        <translation>Display Line End Offset</translation>
+        <translation>Görüntü Satırı Bitiş Ofseti</translation>
     </message>
     <message>
         <source>Display Crop Mode</source>
@@ -15798,11 +16028,11 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>DMA Max Slice Ticks</source>
-        <translation>DMA Max Slice Ticks</translation>
+        <translation>DMA Maksimum Dilim Tikleri</translation>
     </message>
     <message>
         <source>DMA Halt Ticks</source>
-        <translation>DMA Halt Ticks</translation>
+        <translation>DMA Duraklatma Tikleri</translation>
     </message>
     <message>
         <source>CD-ROM Max Seek Speedup Cycles</source>
@@ -15838,7 +16068,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Disc Set</source>
-        <translation>Disc Seç</translation>
+        <translation>Disk Seti</translation>
     </message>
 </context>
 <context>
@@ -15846,12 +16076,12 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Disc</source>
         <comment>EntryType</comment>
-        <translation>Disc</translation>
+        <translation>Disk</translation>
     </message>
     <message>
         <source>Disc Set</source>
         <comment>EntryType</comment>
-        <translation>Disc Seç</translation>
+        <translation>Disk Seti</translation>
     </message>
     <message>
         <source>Audio CD</source>
@@ -15955,7 +16185,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Scanning directory &apos;{}&apos;...</source>
-        <translation>Dizin Aranıyor &apos;{}&apos;...</translation>
+        <translation>&apos;{}&apos; dizini taranıyor...</translation>
     </message>
     <message>
         <source>Scanning &apos;{}&apos;...</source>
@@ -16016,7 +16246,7 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Excluded Paths (will not be scanned)</source>
-        <translation>Dışlanacak Dizinler (Taranmayacak)</translation>
+        <translation>Dışlanan Yollar (taranmayacak)</translation>
     </message>
     <message>
         <source>File...</source>
@@ -16044,19 +16274,19 @@ Devam etmekten emin misiniz?</translation>
     </message>
     <message>
         <source>Scan Recursively?</source>
-        <translation>Alt Klasörleride Ara?</translation>
+        <translation>Alt Klasörleri de Tara?</translation>
     </message>
     <message>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>Şu dizinin &quot;%1&quot; alt klasörleriyle birlikte arar mıydınız?
+        <translation>&quot;%1&quot; dizinini alt klasörleriyle birlikte taramak ister misiniz?
 
-Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tarar.</translation>
+Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosyaları da bulur.</translation>
     </message>
     <message>
         <source>Select Path</source>
-        <translation>Dizin Seç</translation>
+        <translation>Yol Seç</translation>
     </message>
     <message>
         <source>Select Directory</source>
@@ -16137,6 +16367,14 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Açık</translation>
     </message>
     <message>
+        <source>Edit Patch</source>
+        <translation>Yamayı Düzenle</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>Yamayı Kaldır</translation>
+    </message>
+    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Author: &lt;/span&gt;Patch Author&lt;/p&gt;&lt;p&gt;Description would go here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Yapımcı: &lt;/span&gt;Yama Yapımcısı&lt;/p&gt;&lt;p&gt;Açıklama buraya gitmeli&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -16160,9 +16398,17 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <source>No description provided.</source>
         <translation>Açıklama verilmedi.</translation>
     </message>
+    <message>
+        <source>Option:</source>
+        <translation>Seçenek:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
+    <message>
+        <source>Add Patch</source>
+        <translation>Yama Ekle</translation>
+    </message>
     <message>
         <source>Disable All Patches</source>
         <translation>Tüm Yamaları Kapat</translation>
@@ -16180,7 +16426,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <name>GameSummaryWidget</name>
     <message>
         <source>Image Path:</source>
-        <translation>Dosya Dizini:</translation>
+        <translation>Dosya Yolu:</translation>
     </message>
     <message>
         <source>Restore Title</source>
@@ -16244,7 +16490,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Start</source>
-        <translation>Başlat</translation>
+        <translation>Başlangıç</translation>
     </message>
     <message>
         <source>Length</source>
@@ -16252,7 +16498,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Hash</source>
-        <translation>Hashcheck</translation>
+        <translation>Karma</translation>
     </message>
     <message>
         <source>Status</source>
@@ -16272,7 +16518,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Verify</source>
-        <translation>Onayla</translation>
+        <translation>Doğrula</translation>
     </message>
     <message>
         <source>Type:</source>
@@ -16300,7 +16546,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>%1-%2 memory card blocks</source>
-        <translation>%1-%2 Hafıza kartı blokları</translation>
+        <translation>%1-%2 hafıza kartı bloğu</translation>
     </message>
     <message>
         <source>Use Global Settings</source>
@@ -16308,7 +16554,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Show Default Flag</source>
-        <translation>Varsayılan Flag Göster</translation>
+        <translation>Varsayılan Bayrağı Göster</translation>
     </message>
     <message>
         <source>%1 (Custom)</source>
@@ -16360,7 +16606,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Track %1</source>
-        <translation>Sektör %1</translation>
+        <translation>Parça %1</translation>
     </message>
     <message>
         <source>&lt;not computed&gt;</source>
@@ -16376,7 +16622,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>Oyuna özel tuş atamaları evrensel ayarlar kullanılarak atandı.</translation>
+        <translation>Oyuna özel kontrolcü yapılandırması genel ayarlarla başlatıldı.</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -16399,7 +16645,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Internal Resolution:</source>
-        <translation>Çözünürlük Ayarı:</translation>
+        <translation>Dahili Çözünürlük:</translation>
     </message>
     <message>
         <source>Down-Sampling:</source>
@@ -16435,11 +16681,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Scaling:</source>
-        <translation>Büyütme:</translation>
+        <translation>Ölçeklendirme:</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer (Low Compatibility)</source>
-        <translation>PGXP Derinlik Verisi (Düşük Uyumluluk)</translation>
+        <translation>PGXP Derinlik Arabelleği (Düşük Uyumluluk)</translation>
     </message>
     <message>
         <source>Force 4:3 For FMVs</source>
@@ -16471,7 +16717,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Exclusive Fullscreen:</source>
-        <translation>Exclusive Fullscreen:</translation>
+        <translation>Özel Tam Ekran:</translation>
     </message>
     <message>
         <source>Screen Position:</source>
@@ -16483,7 +16729,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Use Blit Swap Chain</source>
-        <translation>Blit Swaip Chain Sistemini Kullan</translation>
+        <translation>Blit Takas Zincirini Kullan</translation>
     </message>
     <message>
         <source>Rendering Options</source>
@@ -16547,11 +16793,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation>Vertex Cache</translation>
+        <translation>Köşe Önbelleği</translation>
     </message>
     <message>
         <source>Perspective Correct Textures</source>
-        <translation>Perspektif Düzeltmeli Renkler</translation>
+        <translation>Perspektif Düzeltmeli Dokular</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -16559,11 +16805,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Preserve Projection Precision</source>
-        <translation>Model Döşeme Kalitesini Koru</translation>
+        <translation>Yansıtma Hassasiyetini Koru</translation>
     </message>
     <message>
         <source>Culling Correction</source>
-        <translation>Model Es Geçmeyi Kapat</translation>
+        <translation>Poligon Eleme Düzeltmesi</translation>
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
@@ -16571,7 +16817,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Depth Test Transparent Polygons</source>
-        <translation>Depth Test Transparent Polygons</translation>
+        <translation>Saydam Poligonlarda Derinlik Testi</translation>
     </message>
     <message>
         <source>Disable Compute Shaders</source>
@@ -16583,27 +16829,27 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Enable VRAM Write Replacement</source>
-        <translation>Enable VRAM Write Texture Replacement</translation>
+        <translation>VRAM Yazımlarını Değiştirmeyi Etkinleştir</translation>
     </message>
     <message>
         <source>Preload Texture Replacements</source>
-        <translation>Doku Paketlerini RAM&apos;e Yükle</translation>
+        <translation>Değiştirme Dokularını Önceden Yükle</translation>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
-        <translation>Use Old MDEC Routines</translation>
+        <translation>Eski MDEC Yordamlarını Kullan</translation>
     </message>
     <message>
         <source>Enable VRAM Write Dumping</source>
-        <translation>Enable VRAM Write Dumping</translation>
+        <translation>VRAM Yazımlarını Kaydetmeyi Etkinleştir</translation>
     </message>
     <message>
         <source>Debugging</source>
-        <translation>Debugging</translation>
+        <translation>Hata Ayıklama</translation>
     </message>
     <message>
         <source>Wireframe Mode:</source>
-        <translation>Wireframe Mode:</translation>
+        <translation>Ayrıt Modu:</translation>
     </message>
     <message>
         <source>Device Options</source>
@@ -16611,11 +16857,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
-        <translation>Kapat  Texture Copy To Self</translation>
+        <translation>Dokunun Kendisine Kopyalanmasını Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Use Debug Device</source>
-        <translation>Use Debug Device</translation>
+        <translation>Hata Ayıklama Aygıtını Kullan</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
@@ -16623,7 +16869,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Texture Replacement</source>
-        <translation>Doku Paketi Açma</translation>
+        <translation>Doku Değiştirme</translation>
     </message>
     <message>
         <source>Enable Texture Cache</source>
@@ -16643,15 +16889,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Dump Replaced Textures</source>
-        <translation>Üstüne Yazılan Kaplamaları Kaydet</translation>
+        <translation>Değiştirilen Kaplamaları Kaydet</translation>
     </message>
     <message>
         <source>VRAM Write (Background) Replacement</source>
-        <translation>Enable VRAM Write Texture Replacement</translation>
+        <translation>VRAM Yazımı (Arka Plan) Değiştirme</translation>
     </message>
     <message>
         <source>Textures Directory</source>
-        <translation>Texture/Doku Dizini</translation>
+        <translation>Doku Dizini</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -16694,6 +16940,10 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Alt:</translation>
     </message>
     <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Kare Ortasında Ekrana Aktarım</translation>
+    </message>
+    <message>
         <source>Reset Geometry Tolerance</source>
         <translation>Geometri Toleransını Sıfırla</translation>
     </message>
@@ -16702,12 +16952,20 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Derinlik Temizleme Eşiğini Sıfırla</translation>
     </message>
     <message>
+        <source>CPU Mode:</source>
+        <translation>İşlemci Modu:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>Köşe Önbelleği:</translation>
+    </message>
+    <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation>Reset</translation>
+        <translation>Sıfırla</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -16719,19 +16977,19 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>GPU Dump Recording/Playback</source>
-        <translation>GPU Dump Recording/Playback</translation>
+        <translation>GPU Dökümü Kaydetme/Oynatma</translation>
     </message>
     <message>
         <source>Dump Compression Mode:</source>
-        <translation>Dump Compression Mode:</translation>
+        <translation>Döküm Sıkıştırma Modu:</translation>
     </message>
     <message>
         <source>Fast Dump Playback</source>
-        <translation>Fast Dump Playback</translation>
+        <translation>Hızlı Döküm Oynatma</translation>
     </message>
     <message>
         <source>Use GPU-Based Validation</source>
-        <translation>Use GPU-Based Validation</translation>
+        <translation>GPU Tabanlı Doğrulamayı Kullan</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
@@ -16739,11 +16997,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Disable Compressed Textures</source>
-        <translation>Disable Compressed Textures</translation>
+        <translation>Sıkıştırılmış Dokuları Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Dual-Source Blending</source>
-        <translation>Disable Dual-Source Blending</translation>
+        <translation>Çift Kaynaklı Karıştırmayı Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Framebuffer Fetch</source>
@@ -16751,19 +17009,19 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Disable Texture Buffers</source>
-        <translation>Texture Buffers Kapat</translation>
+        <translation>Doku Arabelleklerini Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Shader Cache</source>
-        <translation>Disable Shader Cache</translation>
+        <translation>Gölgelendirici Önbelleğini Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Memory Import</source>
-        <translation>Disable Memory Import</translation>
+        <translation>Bellek İçe Aktarmayı Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disable Rasterizer Order Views</source>
-        <translation>Disable Rasterizer Order Views</translation>
+        <translation>Rasterizer Order Views&apos;i Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Renderer</source>
@@ -16783,11 +17041,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Internal Resolution</source>
-        <translation>Çözünürlük Ayarı</translation>
+        <translation>Dahili Çözünürlük</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Bunu yükseltmek 3D modellerin çizimini iyileştirir. Sadece donanım çizicilerinde çalışır. &lt;br&gt;Genellike zarar gelmez ve oyunlar çok daha güzel gözükür. Çözünürlük yükseltmek güçlü bir grafik kartı gerektirir.</translation>
+        <translation>Bu değeri 1x&apos;in üzerine çıkarmak, çizilen 3D poligonların ve çizgilerin çözünürlüğünü artırır. Yalnızca donanımsal çiziciler için geçerlidir. &lt;br&gt;Bu seçenek genellikle güvenlidir ve çoğu oyun daha yüksek çözünürlüklerde düzgün görünür. Daha yüksek çözünürlükler daha güçlü bir GPU gerektirir.</translation>
     </message>
     <message>
         <source>Down-Sampling</source>
@@ -16811,7 +17069,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>Son çıktıya uygulanan downsamplingi seçer. 1x oyunun orijinal çözünürlüğüne ayarlar.</translation>
+        <translation>Son görüntüye uygulanacak çözünürlük ölçeğini seçer. 1x, görüntüyü konsolun orijinal çözünürlüğüne küçültür.</translation>
     </message>
     <message>
         <source>Texture Filtering</source>
@@ -16823,7 +17081,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Yakında görünen 2D spritelerda kare kare çıkan kaplamaları filtreler aracılığıyla yumuşatır. Bu sadece spriteler ve başka 2D elementleri etkiler mesela HUD&apos;ları.</translation>
+        <translation>Filtreleme kullanarak 2D nesnelerdeki büyütülmüş dokuların bloklu görünümünü yumuşatır. Bu filtre yalnızca sprite&apos;lara ve HUD gibi diğer 2D öğelere uygulanır.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -16843,11 +17101,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Konsolun çizdiği ama sıradan bir TV&apos;nin gösteremeyeceği alanın ne kadarının kırpılacağını ayarlar. Bazı oyunlar bu overscan bölgesinde birşeyler gösterir ya da ekran efektleri için kullanır. &quot;Tüm Kenarlar&quot; ayarı açıkken doğru gösteremeyebilir. &quot;Sadece Aşırı Tarama Bölgesi&quot; denge/stabilite ve siyah çerçeveyi saklama arasında bir dengeli bir feragatlık sağlar.</translation>
+        <translation>Sıradan bir TV&apos;de genellikle görünmeyen alanın ne kadarının kırpılacağını/gizleneceğini belirler. Bazı oyunlar aşırı tarama alanında içerik gösterir veya bu alanı ekran efektleri için kullanır. &quot;Tüm Kenarlar&quot; ayarında doğru görüntülenmeyebilir. &quot;Sadece Aşırı Tarama Bölgesi&quot;, kararlılık ile siyah kenarları gizleme arasında iyi bir denge sağlar.</translation>
     </message>
     <message>
         <source>Scaling</source>
-        <translation>Büyütme</translation>
+        <translation>Ölçeklendirme</translation>
     </message>
     <message>
         <source>Bilinear (Smooth)</source>
@@ -16855,7 +17113,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>Emülasyonu edilen konsoldan çıkan görüntünün ekranınıza nasıl büyütüleceğini/küçültüleciğini ayarlar.</translation>
+        <translation>Emüle edilen konsolun görüntüsünün monitörünüzün çözünürlüğüne nasıl büyütüleceğini veya küçültüleceğini belirler.</translation>
     </message>
     <message>
         <source>FMV Scaling</source>
@@ -16887,7 +17145,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Ekrandaki vertex koordinatlarını geniş ekrana uyarlar ve böylece 3D 4:3 oranındaki görüntüyü seçili en boy oranına ayarlar. &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Ekran uzayındaki köşe konumlarını geniş ekran en boy oranına ölçekleyerek 3D oyunlarda görüş alanını 4:3&apos;ten seçilen görüntü en boy oranına genişletir. &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -16895,15 +17153,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
-        <translation>PGXP Derinlik Verisi</translation>
+        <translation>PGXP Derinlik Arabelleği</translation>
     </message>
     <message>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation>Modellerin üst üste binip yanıp sönme yapmasını PGXP sisteminin koordinat verilerini kullanarak durdurmaya çalışır. Çoğu oyunla tam uyumlu değildir ama bazı oyunlar iyi yararlanır ve bazı oyunlar ise ince ayar ister.</translation>
+        <translation>Pikselleri PGXP&apos;den gelen derinlik değerleriyle test ederek poligonlardaki Z-fighting sorununu azaltmaya çalışır. Uyumluluğu düşüktür, ancak bazı oyunlarda iyi çalışabilir. Diğer oyunlarda eşik ayarı gerekebilir.</translation>
     </message>
     <message>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation>24 Bit içerik gösterilince 4:3 en boy oranına geçer. Genellike video ara sahneler gibi.</translation>
+        <translation>Genellikle FMV&apos;ler olmak üzere 24 bit içerik görüntülenirken yeniden 4:3 görüntü en boy oranına geçer.</translation>
     </message>
     <message>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
@@ -16923,7 +17181,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Exclusive Fullscreen Control</source>
-        <translation>Exclusive Fullscreen Kontrolü</translation>
+        <translation>Özel Tam Ekran Kontrolü</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -16931,7 +17189,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Controls whether exclusive fullscreen can be utilized by Vulkan drivers.</source>
-        <translation>Exclusive Fullscreen&apos;in Vulkan sürücülerinde kullanılabileceğini ayarlar.</translation>
+        <translation>Vulkan sürücülerinin özel tam ekranı kullanıp kullanamayacağını kontrol eder.</translation>
     </message>
     <message>
         <source>Position</source>
@@ -16943,11 +17201,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>Malibox presentation yerine FIFO kullanır. Triple buffering yerine Double Buffering kullanır. Genellikle daha kötü kare zamanlamasına sebep olur.</translation>
+        <translation>Mailbox sunumu yerine FIFO kullanımını, yani üçlü tamponlama yerine çift tamponlamayı zorlar. Genellikle daha kötü kare zamanlamasına neden olur.</translation>
     </message>
     <message>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation>Direct3D 11 çizicisinde flipping modeli yerine blit gösterim yöntemini kullanır. Performansı düşürebilir ama bazı yayın (Streaming) programları için gerekli ve bazı sistemlerdeki kare hızlarının kilidinin sınırını için gereklidir.</translation>
+        <translation>Direct3D 11 çizicisi kullanılırken flipping yerine blit sunum modelini kullanır. Bu genellikle daha düşük performansa neden olur, ancak bazı yayın uygulamaları veya bazı sistemlerde kare hızı sınırını kaldırmak için gerekli olabilir.</translation>
     </message>
     <message>
         <source>Line Detection</source>
@@ -16955,7 +17213,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation>Çözünürlük iyileştirmesi yapılırken oluşan bazı boş piksellerini tespit edip doldurmaya çalışır.</translation>
+        <translation>Çözünürlük yükseltilmeden yapılan rasterleştirmeye bağlı, bir piksel yüksekliğindeki veya genişliğindeki çizgileri algılayarak çözünürlük yükseltmenin oluşturduğu boşlukları doldurmaya çalışır.</translation>
     </message>
     <message>
         <source>Multi-Sampling</source>
@@ -16963,15 +17221,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
-        <translation>3D Poligonları çizerken Multi-Sampled Anti-Aliasing kullan. Çözünürlük iyileştirmesine oranla daha düşük performans kaybı yaşatır &lt;strong&gt; ama genellikle çizim hatalarına sebep olur.&lt;./strong&gt;</translation>
+        <translation>3D poligonları çizerken çok örneklemeli kenar yumuşatma kullanır. Çözünürlük yükseltmeye göre daha düşük performans gereksinimiyle görüntüyü iyileştirebilir, &lt;strong&gt;ancak çoğu zaman çizim hatalarına neden olur.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>Readback VRAM tekrar okumaları için yazılımsal çiziciyi kullanır. Bazı sistemlerde donanımsal çizicilere performans verebilir.</translation>
+        <translation>VRAM geri okumaları için yazılımsal çiziciyi paralel olarak çalıştırır. Bazı sistemlerde, donanımsal çiziciyle grafik iyileştirmeleri kullanılırken daha yüksek performans sağlayabilir.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>Kaplama koordinatlarını yuvarlayarak işler. Bazı oyunlardaki hizası kayıp kaplamaları düzeltirken bazılarında bozabilir ve Kaplama Süzme ayarıyla çakışır.</translation>
+        <translation>Çözünürlük yükseltilirken doku koordinatlarını aşağı yuvarlamak yerine en yakın değere yuvarlar. Bazı oyunlarda yanlış hizalanmış dokuları düzeltebilir, ancak diğerlerini bozabilir ve doku filtrelemeyle uyumsuzdur.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -16983,7 +17241,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
-        <translation>Tolerans ayarına göre hassas geometri koordinatı farklıysa işlemi esgeçer. PGXP nin aşırı etkilediği oyunlara düzeltme yapabilir ama yine bir hack/yamalama dikme türü işlemdir.</translation>
+        <translation>Belirtilen eşiğin ötesine kaydığı tespit edilen hassas geometriyi yok sayar. PGXP&apos;nin köşeleri önemli ölçüde kaydırdığı oyunlarda yardımcı olabilir, ancak yine de bir geçici çözümdür.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -16991,11 +17249,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
-        <translation>Derinlik verisinin ulaşacağı sınırı belirler. Bazı oyunlardaki derinlik verisi sorunlarını düzeltebilir ama yinede hack/yama tarzı bir şeydir.</translation>
+        <translation>Derinlik arabelleğinin temizlenmesine neden olacak derinlik artışını belirler. Bazı oyunlardaki derinlik sorunlarına yardımcı olabilir, ancak yine de bir geçici çözümdür.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Perspektif odaklı olarak doku koordinatları ve renkleri hesaplanarak eğik ve büzük dokular düzeltilir. Geometri düzeltmesi açık olmalıdır.</translation>
+        <translation>Doku koordinatları için perspektif düzeltmeli ara değer hesaplaması kullanarak eğrilmiş dokuları düzeltir. Geometri düzeltmesinin etkin olması gerekir.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
@@ -17003,19 +17261,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Model es geçme çözünürlüğünü yükselterek modellerdeki yarık sorunlarını çözer. Geometri düzeltme açık olmalıdır.</translation>
+        <translation>Poligon elemenin hassasiyetini artırarak geometrideki deliklerin sayısını azaltır. Geometri düzeltmesinin etkin olması gerekir.</translation>
     </message>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP Model döşemeye ayrıyetten daha çok hassasiyet ekler. Bazı oyunlarda grafikleri iyileştirebilir.</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation>PGXP tüm işlemlerde kullan, sadece hafıza bazlı işlemlerde değil. Bazı oyunlarda PGXP&apos;nin bu şekilde herşeye çalışması gerekir ve bu yüksek performans gerektirir.</translation>
-    </message>
-    <message>
-        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>PGXP&apos;nin hafıza adresleri yerine tüm ekranı takip etmesini sağlar. Bazı oyunlarda PGXP uyumluluğu için gereklidir ama &lt;strong&gt;genelde pek bir şey fark etmez&lt;strong&gt;</translation>
+        <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir.</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -17027,15 +17277,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation>Tüm doku paketlerini RAM&apos;e yükler. Oyun çalışırken takılamaları azaltır.</translation>
+        <translation>Tüm değiştirme dokularını RAM&apos;e yükleyerek çalışma sırasındaki takılmaları azaltır.</translation>
     </message>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>Eski MDEC decode metodlarını açar. Eski arka plan texture pack&apos;leri kullanmak için gerekli olabilir.</translation>
+        <translation>Daha eski ve daha az doğru MDEC kod çözme yordamlarını etkinleştirir. Eski değiştirme arka planlarının eşleşmesi/yüklenmesi için gerekli olabilir.</translation>
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>Modifiye edilebilecek arkaplanları kopya klasörüne kopyalar.</translation>
+        <translation>Değiştirilebilen arka planları döküm dizinine yazar.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -17043,11 +17293,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
-        <translation>Konsolun grafik kartının çizdiği üçgenlerin ayrıtlarını çizer. Modelleri değiştirerek yada üstlerine yazarak.</translation>
+        <translation>Konsolun GPU&apos;sunun çizdiği üçgenlerin ayrıtlarını, asıl görüntünün yerine veya görüntü üzerine bir katman olarak çizer.</translation>
     </message>
     <message>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation>Grafikleri çizmek için ikinci bir iş parçacığı kullanır. Şimdilik sadece yazılımsal çizici tarafından desteklenir ama performansı yükseltir ve bunu kullanmaktan zarar gelmez.</translation>
+        <translation>Grafikleri çizmek için ikinci bir iş parçacığı kullanır. Özellikle yazılımsal çizicide önemli bir hız artışı sağlar ve kullanımı güvenlidir.</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -17059,11 +17309,15 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>Interlaced çizimde hat atlama çözünürlüğünü oyunun çözünrülüğüne ayarlar ve daha az belirgin yapar. Açmak genellikle sorun çıkarmaz.</translation>
+        <translation>Geçmeli çizimde satır atlamayı dahili çözünürlüğe göre ölçekler. Bu, yüksek çözünürlüklerde taraklanmayı daha az belirgin hale getirir. Etkinleştirmek genellikle güvenlidir.</translation>
     </message>
     <message>
         <source>Samples 16-bit direct-color textures at native resolution when upscaling. This can fix filtering of FMVs/backgrounds in some games, but may reduce the quality of render-to-texture effects.</source>
         <translation>Büyütme sırasında 16 bit doğrudan renkli dokuları doğal çözünürlükte örnekler. Bu, bazı oyunlarda FMV&apos;lerin/arka planların filtrelenmesini düzeltebilir, ancak dokuya çizim efektlerinin kalitesini düşürebilir.</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>Görüntülenen kare arabelleğindeki değişiklikleri bir sonraki karenin başında değil, kare devam ederken uygular. Bazı oyunlar bölünmüş ekran efektleri için buna ihtiyaç duyar, ancak kare ortasında kare arabelleğini değiştiren oyunlarda yırtılmaya neden olur; bu nedenle yalnızca ihtiyaç duyan oyunlarda etkinleştirin.</translation>
     </message>
     <message>
         <source>Applies the selected sprite texture filter to framebuffer uploads. This can smooth backgrounds in some games while preserving texture data and 24-bit video.</source>
@@ -17090,12 +17344,20 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
         <translation>Yalnızca en az bu yükseklikteki kare arabelleği yüklemelerini filtreler. Doku verilerinin filtrelenmesini önlemek için bu değeri artırın.</translation>
     </message>
     <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>PGXP&apos;yi yalnızca bellek işlemleri için değil, tüm komutlar için kullanır. PGXP&apos;nin bazı oyunlardaki titremeyi düzeltmesi için gereklidir, ancak performans maliyeti yüksektir. Otomatik seçeneği, oyun veritabanına göre bunu yalnızca gerekli olan oyunlarda etkinleştirir.</translation>
+    </message>
+    <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Hassas konumları elde etmek için bellek erişimlerini takip etmek yerine ekran uzayındaki köşe konumlarını kullanır. Bazı oyunlarda PGXP uyumluluğu sağlayabilir, ancak &lt;strong&gt;genellikle hiçbir fayda sağlamaz.&lt;/strong&gt; Otomatik seçeneği, oyun veritabanına göre bunu yalnızca gerekli olan oyunlarda etkinleştirir.</translation>
+    </message>
+    <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
-        <translation>Yarı saydam poligonlar için derinlik testini açar. Genellikle gölgeler için işe yarar ve zeminde kaybolabilirler bu ayar açılıysa.</translation>
+        <translation>Yarı saydam poligonlar için derinlik testini etkinleştirir. Bunlar genellikle gölgeleri içerir ve derinlik testi etkin olduğunda zeminin içine girme eğilimindedir. Bu ayardan bağımsız olarak yarı saydam poligonların derinlik yazımları devre dışıdır.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation>Yüklenecek textureları önbelleğe alır, texture değiştirmek için gereklidir. &lt;strong&gt;Daha deneme aşamasında. Çizim hataları oluşturabilir.&lt;/strong&gt;</translation>
+        <translation>Emüle edilen sistemin dokularını önbelleğe almayı etkinleştirir; doku değiştirme için gereklidir. &lt;strong&gt;Doku önbelleği şu anda deneyseldir ve bazı oyunlarda çizim hatalarına neden olabilir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Enable Texture Replacements</source>
@@ -17107,19 +17369,19 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation>Gerekli olsun olmasın texture/kaplama takibini açar. Performans düşürür ama doku değiştirmeyi aç kapa yapmak için kullanılabilir. &lt;strong&gt;Doku paketlerinin yüklenmesi için gerekli değildir.&lt;/strong&gt;normalde takip gerektiğinde kendiliğinden seçilir.</translation>
+        <translation>Gerekli olup olmadığına bakılmaksızın doku yüklemelerinin takibini zorla etkinleştirir. Performansı düşürür, ancak doku değiştirmeyi açıp kapatmaya olanak tanır. &lt;strong&gt;Değiştirme dokularının yüklenmesi için gerekli değildir; &lt;/strong&gt;normalde takip gerektiğinde otomatik olarak etkinleştirilir.</translation>
     </message>
     <message>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation>Texture/Kaplamaları resim dosyalarına kaydeder ve değiştirilebilrmelerini sağlar. Tüm oyunlarla uyumlu değildir.</translation>
+        <translation>Dokuların değiştirilebilecek resim dosyalarına kaydedilmesini etkinleştirir. Tüm oyunlarla uyumlu değildir.</translation>
     </message>
     <message>
         <source>Dumps textures that have replacements already loaded.</source>
-        <translation>Üzerine yazılacak textureları yüklenen textureları kaydeder.</translation>
+        <translation>Değiştirme dokuları zaten yüklenmiş olan dokuları dosyaya kaydeder.</translation>
     </message>
     <message>
         <source>Enables the replacement of background textures in supported games.</source>
-        <translation>Desteklenen oyunlarda arkaplan dokularını değiştirmeyi sağlar.</translation>
+        <translation>Desteklenen oyunlarda arka plan dokularının değiştirilmesini etkinleştirir.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -17131,11 +17393,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Ana sistemin çizici API&apos;si desteklediğinde hata ayıklamayı etkinleştirir. &lt;strong&gt;Yalnızca geliştiricilerin kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Enable GPU-based validation when supported by the renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Enable GPU-based validation when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Çizici API&apos;si desteklediğinde GPU tabanlı doğrulamayı etkinleştirir. &lt;strong&gt;Yalnızca geliştiricilerin kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
@@ -17143,43 +17405,43 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Programın her çalıştırılmasında gölgelendiricilerin derlenmesini zorlar. &lt;strong&gt;Yalnızca geliştiricilerin kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Çift kaynaklı karıştırmanın kullanılmasını engeller. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Kare arabelleğinden veri alma uzantılarının kullanılmasını engeller. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>VRAM güncellemelerinin doku arabellekleri ve çizim işlemleri yerine doku güncellemeleri üzerinden yapılmasını zorlar. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disable Texture Copies To Self</source>
-        <translation>Disable Texture Copies To Self</translation>
+        <translation>Dokunun Kendisine Kopyalanmasını Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>VRAM dokusu için kendine kopyalama güncellemelerinin kullanımını devre dışı bırakır. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Ana sistem belleğini içe aktarmanın kullanımını devre dışı bırakır. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Rasterleştirici sıralı görünümlerinin kullanımını devre dışı bırakır. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Hesaplama gölgelendiricilerinin kullanımını devre dışı bırakır. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</translation>
+        <translation>Sıkıştırılmış dokuların kullanımını devre dışı bırakır. Hatalı grafik sürücülerini test etmek için yararlıdır. &lt;strong&gt;Yalnızca geliştirici kullanımı içindir.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>%1 [Unavailable]</source>
@@ -17243,11 +17505,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Dither işleminin emülasyonu yapılan konsolda nasıl işleneceğini ayarlar. Kaliteli Renk Çizimi ditheringi kapar ve en iyi renk geçişlerini çizer. Orantılı ayarlar deseni yüksek çözünürlüklerde daha az belirgin yapar. Shader Blending/Karıştırma modları yazılımsal olarak çalışır ve daha gerçeğe birdir ama &lt;strong&gt;çok&lt;/strong&gt; performans kaybına yol açar.</translation>
+        <translation>Dither işleminin emüle edilen GPU&apos;da nasıl uygulanacağını ayarlar. Kaliteli Renk ditheringi kapatır ve en iyi renk geçişlerini oluşturur. Ölçeklenmiş seçenekler deseni yüksek çözünürlüklerde daha az belirgin yapar. Shader Blending/Karıştırma seçenekleri karıştırmayı yazılımsal olarak gerçekleştirir ve daha doğrudur, ancak &lt;strong&gt;önemli&lt;/strong&gt; bir performans kaybına yol açar.</translation>
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation>Interlace çizilien karelerin Progressive scan&apos;a nasıl çevirileceğini ayarlar. Genelde Deinterlacing Kapama iyileştirmesi kaliteyi yükseltir ama bazı oyunlar interlaced çizim gerektirir.</translation>
+        <translation>Geçmeli karelerin sisteminizde gösterilmek üzere aşamalı karelere dönüştürülmesinde kullanılacak algoritmayı belirler. Aşamalı çizim en iyi görüntü kalitesini sağlar, ancak bazı oyunlar geçmeli çizim gerektirir.</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -17298,11 +17560,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Crosshair Image Path</source>
-        <translation>Nişangah Dosyası Dizini</translation>
+        <translation>Nişangah Görseli Yolu</translation>
     </message>
     <message>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation>Nişangah Olarak Kullanılacak Çizimin Dizini.</translation>
+        <translation>Nişangah/imleç olarak kullanılacak görselin yolu.</translation>
     </message>
     <message>
         <source>Crosshair Image Scale</source>
@@ -17322,7 +17584,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>X Scale</source>
-        <translation>X Eksen Kaydırması</translation>
+        <translation>X Ölçeği</translation>
     </message>
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
@@ -17571,11 +17833,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>PGXP Derinlik Verisini Aç/Kapat</translation>
+        <translation>PGXP Derinlik Arabelleğini Aç/Kapat</translation>
     </message>
     <message>
         <source>Debugging</source>
-        <translation>Debugging</translation>
+        <translation>Hata Ayıklama</translation>
     </message>
     <message>
         <source>Toggle PGXP CPU Mode</source>
@@ -17639,71 +17901,71 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Record Single Frame GPU Trace</source>
-        <translation>Record Single Frame GPU Trace</translation>
+        <translation>Tek Karelik GPU Yürütme İzi Kaydet</translation>
     </message>
     <message>
         <source>Record Multi-Frame GPU Trace</source>
-        <translation>Record Multi-Frame GPU Trace</translation>
+        <translation>Çok Karelik GPU Yürütme İzi Kaydet</translation>
     </message>
     <message>
         <source>Free Camera</source>
-        <translation>Özgür/Free Camera</translation>
+        <translation>Serbest Kamera</translation>
     </message>
     <message>
         <source>Freecam Toggle</source>
-        <translation>Özgür/Freecam Aç/Kapa</translation>
+        <translation>Serbest Kamerayı Aç/Kapat</translation>
     </message>
     <message>
         <source>Freecam Reset</source>
-        <translation>Özgür/Freecam Resetleme</translation>
+        <translation>Serbest Kamerayı Sıfırla</translation>
     </message>
     <message>
         <source>Freecam Move Left</source>
-        <translation>Özgür/Freecam Sol Gitme</translation>
+        <translation>Serbest Kamerayı Sola Taşı</translation>
     </message>
     <message>
         <source>Freecam Move Right</source>
-        <translation>Özgür/Freecam Sağ Gitme</translation>
+        <translation>Serbest Kamerayı Sağa Taşı</translation>
     </message>
     <message>
         <source>Freecam Move Up</source>
-        <translation>Özgür/Freecam Yukarı Gitme</translation>
+        <translation>Serbest Kamerayı Yukarı Taşı</translation>
     </message>
     <message>
         <source>Freecam Move Down</source>
-        <translation>Özgür/Freecam Aşağı Gitme</translation>
+        <translation>Serbest Kamerayı Aşağı Taşı</translation>
     </message>
     <message>
         <source>Freecam Move Forward</source>
-        <translation>Özgür/Freecam İleri Gitme</translation>
+        <translation>Serbest Kamerayı İleri Taşı</translation>
     </message>
     <message>
         <source>Freecam Move Backward</source>
-        <translation>Özgür/Freecam Geri Gitme</translation>
+        <translation>Serbest Kamerayı Geri Taşı</translation>
     </message>
     <message>
         <source>Freecam Rotate Left</source>
-        <translation>Özgür/Freecam Sol Döndürme</translation>
+        <translation>Serbest Kamerayı Sola Döndür</translation>
     </message>
     <message>
         <source>Freecam Rotate Right</source>
-        <translation>Özgür/Freecam Sağ Döndürme</translation>
+        <translation>Serbest Kamerayı Sağa Döndür</translation>
     </message>
     <message>
         <source>Freecam Rotate Forward</source>
-        <translation>Özgür/Freecam İleri Döndürme</translation>
+        <translation>Serbest Kamerayı İleri Döndür</translation>
     </message>
     <message>
         <source>Freecam Rotate Backward</source>
-        <translation>Özgür/Freecam Geri Döndürme</translation>
+        <translation>Serbest Kamerayı Geri Döndür</translation>
     </message>
     <message>
         <source>Freecam Roll Left</source>
-        <translation>Özgür/Freecam Sola Yatırma</translation>
+        <translation>Serbest Kamerayı Sola Yatır</translation>
     </message>
     <message>
         <source>Freecam Roll Right</source>
-        <translation>Özgür/Freecam Sağ Yatırma</translation>
+        <translation>Serbest Kamerayı Sağa Yatır</translation>
     </message>
     <message>
         <source>Save States</source>
@@ -17723,7 +17985,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Select Next Save Slot</source>
-        <translation>Sonraki Durum Kayıtı Slotunu Seç</translation>
+        <translation>Sonraki Durum Kaydı Slotunu Seç</translation>
     </message>
     <message>
         <source>Save State and Select Next Slot</source>
@@ -17731,11 +17993,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Select Next Slot and Save State</source>
-        <translation>Sonraki Yuvayı Seç ve Kayıt Durumunu Kaydet</translation>
+        <translation>Sonraki Yuvayı Seç ve Durum Kaydı Kaydet</translation>
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Durum Kaydı Geri Al</translation>
+        <translation>Durum Kaydı Yüklemesini Geri Al</translation>
     </message>
     <message>
         <source>Load Game State 1</source>
@@ -17779,7 +18041,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
-        <translation>PGXP Model Döşeme Hassasiyeti Aç/Kapa</translation>
+        <translation>PGXP Yansıtma Hassasiyetini Korumayı Aç/Kapat</translation>
     </message>
     <message>
         <source>Toggle Pause Menu</source>
@@ -17799,7 +18061,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Toggle VRAM View</source>
-        <translation>Toggle VRAM View</translation>
+        <translation>VRAM Görünümünü Aç/Kapat</translation>
     </message>
     <message>
         <source>Save Game State 1</source>
@@ -17855,7 +18117,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>Load Global State 4</source>
-        <translation>Evrensel Kayıt 5 Yükle</translation>
+        <translation>Evrensel Kayıt 4 Yükle</translation>
     </message>
     <message>
         <source>Load Global State 5</source>
@@ -17946,7 +18208,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <name>ISOBrowserWindow</name>
     <message>
         <source>ISO Browser</source>
-        <translation>ISO Arayıcı</translation>
+        <translation>ISO Gezgini</translation>
     </message>
     <message>
         <source>File:</source>
@@ -17986,7 +18248,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>ISO Browser - %1</source>
-        <translation>ISO Arayıcı - %1</translation>
+        <translation>ISO Gezgini - %1</translation>
     </message>
     <message>
         <source>Select File</source>
@@ -17994,11 +18256,11 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>&amp;Open</source>
-        <translation>&amp;Oaç</translation>
+        <translation>&amp;Aç</translation>
     </message>
     <message>
         <source>&amp;Extract</source>
-        <translation>&amp;EDışarı Çıkar</translation>
+        <translation>&amp;Dışarı Çıkar</translation>
     </message>
     <message>
         <source>Extract (&amp;XA)</source>
@@ -18022,7 +18284,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
-        <translation>&lt;Parent Dizin&gt;</translation>
+        <translation>&lt;Üst Dizin&gt;</translation>
     </message>
 </context>
 <context>
@@ -18085,8 +18347,8 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <message>
         <source>Left-click to change binding.
 Shift-click to set multiple bindings.</source>
-        <translation>Sol tıkla atama değiştirin
-Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
+        <translation>Atamayı değiştirmek için sol tıklayın.
+Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</translation>
     </message>
     <message>
         <source>Right-click to remove binding.</source>
@@ -18094,7 +18356,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>No binding set.</source>
-        <translation>Hiç atama atılamdı.</translation>
+        <translation>Hiçbir atama yapılmadı.</translation>
     </message>
     <message numerus="yes">
         <source>%n bindings</source>
@@ -18206,11 +18468,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Pause On Controller Disconnection</source>
-        <translation>Oyun Kol Çıkınca Duraklat</translation>
+        <translation>Kol Bağlantısı Kesildiğinde Duraklat</translation>
     </message>
     <message>
         <source>Inhibit Screensaver</source>
-        <translation>İşletim sisteminin ekran korucusunu engelle</translation>
+        <translation>İşletim sisteminin ekran koruyucusunu engelle</translation>
     </message>
     <message>
         <source>Pause On Focus Loss</source>
@@ -18238,7 +18500,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Render To Separate Window</source>
-        <translation>Görüntüyü Ayrı Ekrana Çiz</translation>
+        <translation>Görüntüyü Ayrı Pencereye Çiz</translation>
     </message>
     <message>
         <source>Hide Main Window When Running</source>
@@ -18262,7 +18524,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Save State On Game Close</source>
-        <translation>Oyun Kapatıldığında Kayıt Durumunu Kaydet</translation>
+        <translation>Oyun Kapatıldığında Durum Kaydı Oluştur</translation>
     </message>
     <message>
         <source>Automatically Resize Window</source>
@@ -18294,7 +18556,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Enable Automatic Update Check</source>
-        <translation>Otomak Güncelleme Kontrolünü Aç</translation>
+        <translation>Otomatik Güncelleme Kontrolünü Aç</translation>
     </message>
     <message>
         <source>Check for Updates...</source>
@@ -18366,11 +18628,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation>Emülasyondaki konsolun görüntüsünü ana ekrandaki kapak resimlerinin üstüne çizer. Seçiliyse görüntü ayrı pencereye çizilir.</translation>
+        <translation>Simüle edilen konsolun görüntüsünü uygulamanın ana penceresinde, oyun listesinin üzerine çizer. İşaretliyse görüntü ayrı bir pencerede çizilir.</translation>
     </message>
     <message>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation>Pencere küçültülünce yada başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
+        <translation>Pencere küçültülünce ya da başka bir uygulamaya geçilince oyun otomatik duraklatılır ve geri gelinince otomatik başlatılır.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -18434,7 +18696,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
-        <translation>Program başlangıcında güncelleştirmeleri denetler. İsterseniz uygulamaları indirip kurabilir yada es geçebilirsiniz.</translation>
+        <translation>Program başlangıcında güncellemeleri otomatik olarak denetler. Güncellemeler daha sonraya ertelenebilir veya tamamen atlanabilir.</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -18551,15 +18813,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation>Tuş/Tetik temas/kavrama noktası için deadzone/ölü bölge ayarı. Tetiğin nereye kadar kenetlenmeyeceğini ayarlar.</translation>
+        <translation>Tuşları/tetikleri etkinleştirmek için ölü bölgeyi, yani tetik hareketinin yok sayılacak kısmını ayarlar.</translation>
     </message>
     <message>
         <source>Steering Hold Deadzone</source>
-        <translation>Direksiyon Düz Yapma Ölü Bölgesi</translation>
+        <translation>Direksiyonu Konumda Tutma Ölü Bölgesi</translation>
     </message>
     <message>
         <source>Sets the deadzone for holding the wheel at the set position, i.e. when it will not trigger an effect.</source>
-        <translation>Direksiyonun sıfır noktasında düz kalacağı yerin deadzone/ölü bölgesini ayarlar.</translation>
+        <translation>Direksiyonu ayarlanan konumda tutmak için ölü bölgeyi, yani bir efektin tetiklenmeyeceği aralığı ayarlar.</translation>
     </message>
 </context>
 <context>
@@ -18602,11 +18864,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Crosshair Image Path</source>
-        <translation>Nişangah Dosyası Dizini</translation>
+        <translation>Nişangah Görseli Yolu</translation>
     </message>
     <message>
         <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation>Nişangah Olarak Kullanılacak Çizimin Dizini.</translation>
+        <translation>Nişangah/imleç olarak kullanılacak görselin yolu.</translation>
     </message>
     <message>
         <source>Crosshair Image Scale</source>
@@ -18626,7 +18888,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>X Scale</source>
-        <translation>X Eksen Kaydırması</translation>
+        <translation>X Ölçeği</translation>
     </message>
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
@@ -18634,7 +18896,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Line Start Offset</source>
-        <translation>Display Line Start Offset</translation>
+        <translation>Satır Başlangıç Ofseti</translation>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
@@ -18642,7 +18904,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Line End Offset</source>
-        <translation>Display Line End Offset</translation>
+        <translation>Satır Bitiş Ofseti</translation>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
@@ -18650,7 +18912,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Tick Offset</source>
-        <translation>Tick Offset</translation>
+        <translation>Tik Ofseti</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
@@ -18674,7 +18936,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Number of frames that the Justifier is pointed out-of-bounds after the trigger is released, for an off-screen shot.</source>
-        <translation>Tabancanın ekran dışı ateş için ateşlendikten sonra kaç kare daha ekran dışında kalacağı.</translation>
+        <translation>Ekran dışı atışta tetik bırakıldıktan sonra Justifier&apos;ın ekran sınırlarının dışında tutulacağı kare sayısı.</translation>
     </message>
 </context>
 <context>
@@ -18690,64 +18952,64 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     <name>LogWindow</name>
     <message>
         <source>Log Window - %1 [%2]</source>
-        <translation>Log Window - %1 [%2]</translation>
+        <translation>Günlük Penceresi - %1 [%2]</translation>
     </message>
     <message>
         <source>Log Window</source>
-        <translation>Log Window</translation>
+        <translation>Günlük Penceresi</translation>
     </message>
     <message>
         <source>&amp;Clear</source>
-        <translation>&amp;Clear</translation>
+        <translation>&amp;Temizle</translation>
     </message>
     <message>
         <source>&amp;Save...</source>
-        <translation>&amp;Save...</translation>
+        <translation>&amp;Kaydet...</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
-        <translation>&amp;Settings</translation>
+        <translation>&amp;Ayarlar</translation>
     </message>
     <message>
         <source>Log To &amp;System Console</source>
-        <translation>Log To &amp;System Console</translation>
+        <translation>&amp;Sistem Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To &amp;Debug Console</source>
-        <translation>Log To &amp;Debug Console</translation>
+        <translation>&amp;Hata Ayıklama Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To &amp;File</source>
-        <translation>Log To &amp;File</translation>
+        <translation>&amp;Dosyaya Günlük Yaz</translation>
     </message>
     <message>
         <source>Attach To &amp;Main Window</source>
-        <translation>Attach To &amp;Main Window</translation>
+        <translation>&amp;Ana Pencereye Bağla</translation>
     </message>
     <message>
         <source>Show &amp;Timestamps</source>
-        <translation>Show &amp;Timestamps</translation>
+        <translation>&amp;Zaman Damgalarını Göster</translation>
     </message>
     <message>
         <source>&amp;Log Level</source>
-        <translation>&amp;Log Level</translation>
+        <translation>&amp;Günlük Düzeyi</translation>
     </message>
     <message>
         <source>&amp;Channels</source>
-        <translation>&amp;Channels</translation>
+        <translation>&amp;Kanallar</translation>
     </message>
     <message>
         <source>Select Log File</source>
-        <translation>Select Log File</translation>
+        <translation>Günlük Dosyası Seç</translation>
     </message>
     <message>
         <source>Log Files (*.txt)</source>
-        <translation>Log Files (*.txt)</translation>
+        <translation>Günlük Dosyaları (*.txt)</translation>
     </message>
     <message>
         <source>Log was written to %1.
 </source>
-        <translation>Log was written to %1.
+        <translation>Günlük %1 konumuna yazıldı.
 </translation>
     </message>
 </context>
@@ -18786,7 +19048,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     <name>MainWindow</name>
     <message>
         <source>&amp;System</source>
-        <translation>&amp;System</translation>
+        <translation>&amp;Sistem</translation>
     </message>
     <message>
         <source>Change Disc</source>
@@ -18806,11 +19068,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation>&amp;Bilgi</translation>
+        <translation>&amp;Yardım</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>&amp;Debug</translation>
+        <translation>&amp;Hata Ayıklama</translation>
     </message>
     <message>
         <source>Switch GPU Renderer</source>
@@ -18846,7 +19108,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Start &amp;File...</source>
-        <translation>Start &amp;Dosya...</translation>
+        <translation>&amp;Dosya Başlat...</translation>
     </message>
     <message>
         <source>Start &amp;Disc...</source>
@@ -18866,7 +19128,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;Load State</source>
-        <translation>&amp;Durumu Kaydını Yükle</translation>
+        <translation>&amp;Durum Kaydını Yükle</translation>
     </message>
     <message>
         <source>&amp;Save State</source>
@@ -18878,15 +19140,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>C&amp;onsole</source>
-        <translation>C&amp;onsole</translation>
+        <translation>&amp;Konsol</translation>
     </message>
     <message>
         <source>&amp;Controllers</source>
-        <translation>&amp;CKollar</translation>
+        <translation>&amp;Kollar</translation>
     </message>
     <message>
         <source>Memory &amp;Scanner</source>
-        <translation>Hafıza &amp;sTarayıcı</translation>
+        <translation>Hafıza &amp;Tarayıcısı</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
@@ -19010,7 +19272,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Post-Processi&amp;ng</source>
-        <translation>Görsel İşleme &amp;Sonrası</translation>
+        <translation>Görsel &amp;Efektler</translation>
     </message>
     <message>
         <source>Configures post-processing effects applied after rendering the content.</source>
@@ -19245,6 +19507,10 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
         <translation>Öykünülen CPU için hata ayıklayıcıyı açar.</translation>
     </message>
     <message>
+        <source>TTY Window</source>
+        <translation>TTY Penceresi</translation>
+    </message>
+    <message>
         <source>Switches to the list of available games in grid/cover view.</source>
         <translation>Kullanılabilir oyunların listesine ızgara/kapak görünümünde geçer.</translation>
     </message>
@@ -19354,7 +19620,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Log Timestamps</source>
-        <translation>Log Timestamps</translation>
+        <translation>Günlük Zaman Damgaları</translation>
     </message>
     <message>
         <source>Log File Timestamps</source>
@@ -19362,15 +19628,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Log To System Console</source>
-        <translation>Log To System Console</translation>
+        <translation>Sistem Konsoluna Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To Window</source>
-        <translation>Log To Window</translation>
+        <translation>Pencereye Günlük Yaz</translation>
     </message>
     <message>
         <source>Log To File</source>
-        <translation>Log To File</translation>
+        <translation>Dosyaya Günlük Yaz</translation>
     </message>
     <message>
         <source>Opens the ISO browser window.</source>
@@ -19474,23 +19740,23 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Closed</source>
-        <translation>Kapandı</translation>
+        <translation>Kapalı</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation>Aç</translation>
+        <translation>Açık</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
-        <translation>Başarım İlerlemesini &amp;PTazele</translation>
+        <translation>Başarım İlerlemesini &amp;Yenile</translation>
     </message>
     <message>
         <source>Log Level</source>
-        <translation>Log Level</translation>
+        <translation>Günlük Düzeyi</translation>
     </message>
     <message>
         <source>Log Channels</source>
-        <translation>Log Channels</translation>
+        <translation>Günlük Kanalları</translation>
     </message>
     <message>
         <source>View Third-Party Notices...</source>
@@ -19502,15 +19768,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;Memory Cards</source>
-        <translation>&amp;MHafıza Kartları</translation>
+        <translation>&amp;Hafıza Kartları</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <translation>Tam Ekran Modunu Başlat</translation>
+        <translation>Büyük Resim Modunu Başlat</translation>
     </message>
     <message>
         <source>Big Picture</source>
-        <translation>Tam Ekran Modu</translation>
+        <translation>Büyük Resim</translation>
     </message>
     <message>
         <source>&amp;Graphics</source>
@@ -19518,11 +19784,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;GitHub Repository...</source>
-        <translation>&amp;GitHub Repository...</translation>
+        <translation>&amp;GitHub Deposu...</translation>
     </message>
     <message>
         <source>&amp;Discord Server...</source>
-        <translation>&amp;Discord Server...</translation>
+        <translation>&amp;Discord Sunucusu...</translation>
     </message>
     <message>
         <source>Check for &amp;Updates...</source>
@@ -19538,7 +19804,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;Interface</source>
-        <translation>&amp;iArayüz</translation>
+        <translation>&amp;Arayüz</translation>
     </message>
     <message>
         <source>Ad&amp;vanced</source>
@@ -19566,15 +19832,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Show VRAM</source>
-        <translation>Show VRAM</translation>
+        <translation>VRAM&apos;i Göster</translation>
     </message>
     <message>
         <source>Dump CPU to VRAM Copies</source>
-        <translation>Dump CPU to VRAM Copies</translation>
+        <translation>CPU&apos;dan VRAM&apos;e Kopyaların Dökümünü Al</translation>
     </message>
     <message>
         <source>Dump VRAM to CPU Copies</source>
-        <translation>Dump VRAM to CPU Copies</translation>
+        <translation>VRAM&apos;den CPU&apos;ya Kopyaların Dökümünü Al</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -19582,39 +19848,39 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Dump RAM...</source>
-        <translation>Dump RAM...</translation>
+        <translation>RAM Dökümünü Al...</translation>
     </message>
     <message>
         <source>Dump VRAM...</source>
-        <translation>Dump VRAM...</translation>
+        <translation>VRAM Dökümünü Al...</translation>
     </message>
     <message>
         <source>Dump SPU RAM...</source>
-        <translation>Dump SPU RAM...</translation>
+        <translation>SPU RAM Dökümünü Al...</translation>
     </message>
     <message>
         <source>Show GPU State</source>
-        <translation>Show GPU State</translation>
+        <translation>GPU Durumunu Göster</translation>
     </message>
     <message>
         <source>Show CD-ROM State</source>
-        <translation>Show CD-ROM State</translation>
+        <translation>CD-ROM Durumunu Göster</translation>
     </message>
     <message>
         <source>Show SPU State</source>
-        <translation>Show SPU State</translation>
+        <translation>SPU Durumunu Göster</translation>
     </message>
     <message>
         <source>Show Timers State</source>
-        <translation>Show Timers State</translation>
+        <translation>Zamanlayıcıların Durumunu Göster</translation>
     </message>
     <message>
         <source>Show MDEC State</source>
-        <translation>Show MDEC State</translation>
+        <translation>MDEC Durumunu Göster</translation>
     </message>
     <message>
         <source>Show DMA State</source>
-        <translation>Show DMA State</translation>
+        <translation>DMA Durumunu Göster</translation>
     </message>
     <message>
         <source>&amp;Screenshot</source>
@@ -19630,15 +19896,15 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>&amp;Toolbar</source>
-        <translation>&amp;Toolbar</translation>
+        <translation>&amp;Araç Çubuğu</translation>
     </message>
     <message>
         <source>Lock Toolbar</source>
-        <translation>Toolbar&apos;ı Kilitle</translation>
+        <translation>Araç Çubuğunu Kilitle</translation>
     </message>
     <message>
         <source>&amp;Status Bar</source>
-        <translation>&amp;Status Bar</translation>
+        <translation>&amp;Durum Çubuğu</translation>
     </message>
     <message>
         <source>Game &amp;List</source>
@@ -19674,11 +19940,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
-        <translation>CPU D&amp;ebugger</translation>
+        <translation>CPU &amp;Hata Ayıklayıcısı</translation>
     </message>
     <message>
         <source>Game &amp;Grid</source>
-        <translation>Oyun Listesi &amp;Grid</translation>
+        <translation>Oyun &amp;Izgarası</translation>
     </message>
     <message>
         <source>Show Grid Ca&amp;ptions</source>
@@ -19686,11 +19952,11 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Show Titles (Grid View)</source>
-        <translation>İsimleri Göster (Grid Görünümü)</translation>
+        <translation>İsimleri Göster (Izgara Görünümü)</translation>
     </message>
     <message>
         <source>Select Disc Image</source>
-        <translation>Dosya Seç</translation>
+        <translation>Disk Görüntüsü Seç</translation>
     </message>
     <message>
         <source>Start Disc</source>
@@ -19698,7 +19964,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation>Hiç bir CD-ROM cihazı bulunamadı. CD-ROM cihazı takılı olduğundan ve erişim yetkileriniz olduğundan emin olun.</translation>
+        <translation>Hiçbir CD-ROM cihazı bulunamadı. CD-ROM cihazı takılı olduğundan ve erişim yetkileriniz olduğundan emin olun.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -19754,7 +20020,7 @@ Shift&apos;e basılı tutarak birden çok atama yapın.</translation>
     </message>
     <message>
         <source>Confirm Save State Deletion</source>
-        <translation>Durum Kayıdı Silinişini Onayla</translation>
+        <translation>Durum Kaydı Silinişini Onayla</translation>
     </message>
     <message>
         <source>Are you sure you want to delete all save states for %1?
@@ -19778,7 +20044,7 @@ Durum kayıtları kurtarılamayacak.</translation>
     </message>
     <message>
         <source>Undo Load State (%1)</source>
-        <translation>Durum Kaydını Geri Al (%1)</translation>
+        <translation>Durum Kaydı Yüklemesini Geri Al (%1)</translation>
     </message>
     <message>
         <source>Undo Load State</source>
@@ -19786,7 +20052,7 @@ Durum kayıtları kurtarılamayacak.</translation>
     </message>
     <message>
         <source>Game Save %1 (Empty)</source>
-        <translation>Oyun Kayıdı %1 (Boş)</translation>
+        <translation>Oyun Kaydı %1 (Boş)</translation>
     </message>
     <message>
         <source>Global Save %1 (%2)</source>
@@ -19822,7 +20088,7 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
     </message>
     <message>
         <source>No resume save state found.</source>
-        <translation>Devam Durum Kayıdı Bulunamadı.</translation>
+        <translation>Devam Durum Kaydı Bulunamadı.</translation>
     </message>
     <message>
         <source>Select Disc...</source>
@@ -19902,7 +20168,7 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
     </message>
     <message>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation>Şu durum kaydı silinemedi%1&apos;.</translation>
+        <translation>&apos;%1&apos; durum kaydı dosyası silinemedi.</translation>
     </message>
     <message>
         <source>Confirm Disc Change</source>
@@ -19914,11 +20180,11 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
     </message>
     <message>
         <source>Stop Big Picture Mode</source>
-        <translation>Tam Ekran Modunu Durdur</translation>
+        <translation>Büyük Resim Modunu Durdur</translation>
     </message>
     <message>
         <source>Exit Big Picture</source>
-        <translation>Tam Ekran Modundan Çık</translation>
+        <translation>Büyük Resim Modundan Çık</translation>
     </message>
     <message>
         <source>You must select a disc to change discs.</source>
@@ -19936,9 +20202,9 @@ Durum kaydı silinsin ve oyun yine de başlatılsın mı?</translation>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
-        <translation>Şunun için oynama sürenizi resetlemek istiyormusunuz &apos;%1&apos;?
+        <translation>&apos;%1&apos; için oynama süresini sıfırlamak istediğinizden emin misiniz?
 
-Bu geri alınamaz.</translation>
+Bu işlem geri alınamaz.</translation>
     </message>
     <message>
         <source>Properties...</source>
@@ -19950,7 +20216,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Select Cheats...</source>
-        <translation>Dosyaları Seç...</translation>
+        <translation>Hileleri Seç...</translation>
     </message>
     <message>
         <source>Cheats are not enabled.</source>
@@ -19958,7 +20224,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>&amp;Apply Cheat</source>
-        <translation>&amp;AHile Uygula</translation>
+        <translation>&amp;Hile Uygula</translation>
     </message>
     <message>
         <source>Save was created %1.</source>
@@ -19990,7 +20256,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Boot and Debug</source>
-        <translation>Boot and Debug</translation>
+        <translation>Başlat ve Hata Ayıkla</translation>
     </message>
     <message>
         <source>Exclude From List</source>
@@ -20030,7 +20296,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>Şu&apos;%1&apos; şuna kopyalanamadı &apos;%2&apos;</translation>
+        <translation>&apos;%1&apos;, &apos;%2&apos; konumuna kopyalanamadı</translation>
     </message>
     <message>
         <source>%1x Scale</source>
@@ -20122,7 +20388,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
-        <translation>Hafıza kartı &apos;%1&apos; diye bir kart yok Boş bir hafıza kartı oluşturmak istermisiniz?</translation>
+        <translation>&apos;%1&apos; hafıza kartı mevcut değil. Boş bir hafıza kartı oluşturmak ister misiniz?</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
@@ -20130,7 +20396,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation>Hafıza kartı oluşturulamadı &apos;%1&apos; %2</translation>
+        <translation>&apos;%1&apos; hafıza kartı oluşturulamadı: %2</translation>
     </message>
     <message>
         <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
@@ -20184,7 +20450,7 @@ Bu geri alınamaz.</translation>
     </message>
     <message>
         <source>Failed to load Media Foundation libraries: </source>
-        <translation>Media Foundation Library kütüphaneleri yüklenemedi: </translation>
+        <translation>Media Foundation kütüphaneleri yüklenemedi: </translation>
     </message>
     <message>
         <source>MPEG-4 Part 14</source>
@@ -20319,7 +20585,7 @@ DuckStation&apos;ın bu derlemesi, şu kitaplık sürümleriyle FFmpeg v{} gerek
     </message>
     <message>
         <source>File does not exist, or is empty.</source>
-        <translation>Dosya yok yada boş.</translation>
+        <translation>Dosya yok ya da boş.</translation>
     </message>
     <message>
         <source>Unknown save format.</source>
@@ -20425,7 +20691,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Rename File</source>
-        <translation>Dosyaı Yeniden Adlandır</translation>
+        <translation>Dosyayı Yeniden Adlandır</translation>
     </message>
     <message>
         <source>Export File</source>
@@ -20509,7 +20775,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source> (Deleted)</source>
-        <translation> (Deleted)</translation>
+        <translation> (Silindi)</translation>
     </message>
     <message>
         <source>DuckStation Memory Card (*.mcd)</source>
@@ -20529,7 +20795,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation>Hafıza Kartı &apos;%1&apos; kaydedilmedi, çıkmadan önce kayıt etmek istermiydiniz?</translation>
+        <translation>&apos;%1&apos; hafıza kartı kaydedilmedi. Kapatmadan önce kaydetmek ister misiniz?</translation>
     </message>
     <message>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
@@ -20537,11 +20803,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
-        <translation>Yetersiz Blok,Bu dosya %1 blok istiyor ama sadece boşta %2 blok var.</translation>
+        <translation>Yetersiz blok. Bu dosya %1 blok gerektiriyor, ancak yalnızca %2 blok kullanılabilir.</translation>
     </message>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation>Şu dosya kurtarılamadı %1. Başka bir kayıt dosyası tarafından üstüne yazılmış olunulabilir.</translation>
+        <translation>%1 dosyası kurtarılamadı. Başka bir kayıt dosyası tarafından kısmen üzerine yazılmış olabilir.</translation>
     </message>
     <message>
         <source>Extract Animated Icon</source>
@@ -20569,7 +20835,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation>Hafıza kartına format atmak tüm kayıtları kurtarılamayacak şekilde silecek. Format atılacak hafıza kartı şurada olacak &apos;%1&apos;.</translation>
+        <translation>Hafıza kartını biçimlendirmek tüm kayıtları kurtarılamayacak şekilde siler. Biçimlendirilecek hafıza kartı &apos;%1&apos; konumundadır.</translation>
     </message>
 </context>
 <context>
@@ -20580,7 +20846,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;WARNING: &lt;/span&gt;Renaming memory card files may result in saves becoming inaccessible or corrupted. Be sure to make backups first.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;UYARI: &lt;/span&gt;Hafıza kartı dosyalarını yeniden adlandırmak kayıtların kullanılamaz yada bozuk hale gelmesine sebep olabilir, önceden bir yedek kaydını alın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;UYARI: &lt;/span&gt;Hafıza kartı dosyalarını yeniden adlandırmak kayıtların kullanılamaz ya da bozuk hale gelmesine sebep olabilir. Önce mutlaka yedek alın.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Original Name:</source>
@@ -20619,7 +20885,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -20631,11 +20897,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>Birden çok CD kullanan oyunlar oynanırken. Her oyun için ayrı hafıza kartı ayarı açıksa her CD için ayrı hafıza kartı kullanılacak. Seçili değilse her CD için ayrı bir hafıza kartı kullanılacak.</translation>
+        <translation>Birden çok diskli bir oyun oynarken ve oyuna özel (başlığa göre) hafıza kartları kullanılırken tüm diskler için tek bir hafıza kartı kullanılır. İşaretli değilse her disk için ayrı bir kart kullanılır.</translation>
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
-        <translation>Hafıza kartı düzenleyicisi kayıtları kartlar arası taşıma ve kartları içeri aktarmaya yarar.</translation>
+        <translation>Hafıza kartı düzenleyicisi, kayıtları kartlar arasında taşımanızı ve farklı biçimlerdeki kartları içe aktarmanızı sağlar.</translation>
     </message>
     <message>
         <source>Select Memory Card Directory</source>
@@ -20726,11 +20992,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Shared Memory Card Path:</source>
-        <translation>Paylaşılan Hafıza Kartı Dizini:</translation>
+        <translation>Paylaşılan Hafıza Kartı Yolu:</translation>
     </message>
     <message>
         <source>Select path to memory card image</source>
-        <translation>Hafıza kartı dosyası için dizin seçin</translation>
+        <translation>Hafıza kartı görüntüsünün yolunu seçin</translation>
     </message>
 </context>
 <context>
@@ -20781,7 +21047,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Signed Byte:</source>
-        <translation>İmzalı Bayt:</translation>
+        <translation>İşaretli Bayt:</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -20833,15 +21099,15 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Signed Word:</source>
-        <translation>İmzalı Sözcük:</translation>
+        <translation>İşaretli Sözcük:</translation>
     </message>
     <message>
         <source>Signed Halfword:</source>
-        <translation>İmzalı Yarım Sözcük:</translation>
+        <translation>İşaretli Yarım Sözcük:</translation>
     </message>
     <message>
         <source>Signed Doubleword:</source>
-        <translation>İmzalı Çift Sözcük:</translation>
+        <translation>İşaretli Çift Sözcük:</translation>
     </message>
     <message>
         <source>Enter memory address:</source>
@@ -20884,15 +21150,15 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Signed</source>
-        <translation>İmzalı</translation>
+        <translation>İşaretli</translation>
     </message>
     <message>
         <source>Unsigned</source>
-        <translation>İmzasız</translation>
+        <translation>İşaretsiz</translation>
     </message>
     <message>
         <source>Decimal</source>
-        <translation>On Haneli</translation>
+        <translation>Onluk</translation>
     </message>
     <message>
         <source>Hex</source>
@@ -20908,7 +21174,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Halfword (2 bytes)</source>
-        <translation>Halfowrd (2 byte)</translation>
+        <translation>Halfword (2 byte)</translation>
     </message>
     <message>
         <source>Word (4 bytes)</source>
@@ -20920,7 +21186,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>Herhangi Bir Değer</translation>
+        <translation>Herhangi Bir Değer (&apos;Yeni Arama&apos; veya &apos;Sonuç Değerini Sıfırla&apos;)</translation>
     </message>
     <message>
         <source>Less Than Previous Result</source>
@@ -20928,7 +21194,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Less or Equal to Previous Result</source>
-        <translation>Öncekinden Eşit yada Az</translation>
+        <translation>Önceki Sonuçtan Küçük veya Ona Eşit</translation>
     </message>
     <message>
         <source>Greater Than Previous Result</source>
@@ -20936,7 +21202,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Greater or Equal to Previous Result</source>
-        <translation>Öncekinden Eşit yada Büyük</translation>
+        <translation>Önceki Sonuçtan Büyük veya Ona Eşit</translation>
     </message>
     <message>
         <source>Not Equal to Previous Result (Changed Value)</source>
@@ -20948,39 +21214,39 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Decreased By Value</source>
-        <translation>Azalır dan</translation>
+        <translation>Belirtilen Değer Kadar Azalmış</translation>
     </message>
     <message>
         <source>Increased By Value</source>
-        <translation>Yükselir Den</translation>
+        <translation>Belirtilen Değer Kadar Artmış</translation>
     </message>
     <message>
         <source>Changed By Value</source>
-        <translation>Değiştirilir den</translation>
+        <translation>Belirtilen Değer Kadar Değişmiş</translation>
     </message>
     <message>
         <source>Equal to Value</source>
-        <translation>Eşittir Şuna</translation>
+        <translation>Değere Eşit</translation>
     </message>
     <message>
         <source>Not Equal to Value</source>
-        <translation>Eşit Değildir Şuna</translation>
+        <translation>Değere Eşit Değil</translation>
     </message>
     <message>
         <source>Less Than Value</source>
-        <translation>Azdır</translation>
+        <translation>Değerden Küçük</translation>
     </message>
     <message>
         <source>Less or Equal to Value</source>
-        <translation>Az yada Eşittir</translation>
+        <translation>Değerden Küçük veya Değere Eşit</translation>
     </message>
     <message>
         <source>Greater Than Value</source>
-        <translation>Büyüktür Den</translation>
+        <translation>Değerden Büyük</translation>
     </message>
     <message>
         <source>Greater or Equal to Value</source>
-        <translation>Büyük yada Eşittir</translation>
+        <translation>Değerden Büyük veya Değere Eşit</translation>
     </message>
     <message>
         <source>Start Address:</source>
@@ -21028,11 +21294,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Add Selected Results To Watch List</source>
-        <translation>Seçilen Sonuçların Takip Edilenler Listesine Ekle</translation>
+        <translation>Seçilen Sonuçları Takip Listesine Ekle</translation>
     </message>
     <message>
         <source>Simple Cheat Code or Description</source>
-        <translation>Sadece Hile Kodu yada Açıklama</translation>
+        <translation>Basit Hile Kodu veya Açıklama</translation>
     </message>
     <message>
         <source>Type</source>
@@ -21056,11 +21322,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Freeze Selected Entries</source>
-        <translation>Freeze Selected Entries</translation>
+        <translation>Seçilen Girdileri Dondur</translation>
     </message>
     <message>
         <source>Remove Selected Entries</source>
-        <translation>Remove Selected Entries</translation>
+        <translation>Seçilen Girdileri Kaldır</translation>
     </message>
     <message>
         <source>Byte</source>
@@ -21076,19 +21342,19 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation>İmzalı Byte</translation>
+        <translation>İşaretli Bayt</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation>İmzalı Halfword</translation>
+        <translation>İşaretli Yarım Sözcük</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation>İmzalı Word</translation>
+        <translation>İşaretli Sözcük</translation>
     </message>
     <message>
         <source>Address of RAM for HxD Usage: 0x%1</source>
-        <translation>HxD kullanımı için RAM&apos;ın addresi: 0x%1</translation>
+        <translation>HxD kullanımı için RAM&apos;in adresi: 0x%1</translation>
     </message>
     <message>
         <source>Enter manual address:</source>
@@ -21134,7 +21400,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>D-Pad Down</source>
-        <translation>Aşşağı Tüş</translation>
+        <translation>Aşağı Tuş</translation>
     </message>
     <message>
         <source>D-Pad Left</source>
@@ -21166,7 +21432,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Right Trigger</source>
-        <translation>Sol Tetik</translation>
+        <translation>Sağ Tetik</translation>
     </message>
     <message>
         <source>Steering (Twist) Left</source>
@@ -21194,19 +21460,19 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Steering Axis Saturation</source>
-        <translation>Direksiyon Ekseni Saturation (Etkin Bölge Sıkılaştırma)</translation>
+        <translation>Direksiyon Ekseni Doygunluğu</translation>
     </message>
     <message>
         <source>Sets saturation for steering axis.</source>
-        <translation>Direksiyon ekseni için Saturation ayarı yapar. Etkin bölgeyi sıkılaştırır.</translation>
+        <translation>Direksiyon ekseninin doygunluğunu ayarlar.</translation>
     </message>
     <message>
         <source>Steering Axis Linearity</source>
-        <translation>Direksiyon Ekseni Düzlüğü (Linearity)</translation>
+        <translation>Direksiyon Ekseni Doğrusallığı</translation>
     </message>
     <message>
         <source>Sets linearity for steering axis.</source>
-        <translation>Direksiyon ekseni için düzlüğü (linearity) ayarlar.</translation>
+        <translation>Direksiyon ekseninin doğrusallığını ayarlar.</translation>
     </message>
     <message>
         <source>Steering Scaling</source>
@@ -21226,19 +21492,19 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>I Button Saturation</source>
-        <translation>I Tuşu Ekseni Saturation (Sıkılaştırma)</translation>
+        <translation>I Tuşu Doygunluğu</translation>
     </message>
     <message>
         <source>Sets saturation for button I.</source>
-        <translation>I tuşu ekseni için saturation (sıkılaştırma) ayarı yapar.</translation>
+        <translation>I tuşunun doygunluğunu ayarlar.</translation>
     </message>
     <message>
         <source>I Button Linearity</source>
-        <translation>I Tuşu Düzlüğü (Linearity)</translation>
+        <translation>I Tuşu Doğrusallığı</translation>
     </message>
     <message>
         <source>Sets linearity for button I.</source>
-        <translation>I Tuşu için düzleştirme (Linearity) ayarlar.</translation>
+        <translation>I tuşunun doğrusallığını ayarlar.</translation>
     </message>
     <message>
         <source>I Scaling</source>
@@ -21258,19 +21524,19 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>II Button Saturation</source>
-        <translation>II Tuşu Ekseni Saturation (Sıkılaştırma)</translation>
+        <translation>II Tuşu Doygunluğu</translation>
     </message>
     <message>
         <source>Sets saturation for button II.</source>
-        <translation>II tuşu ekseni için saturation (sıkılaştırma) ayarı yapar.</translation>
+        <translation>II tuşunun doygunluğunu ayarlar.</translation>
     </message>
     <message>
         <source>II Button Linearity</source>
-        <translation>II Tuşu Düzlüğü (Linearity)</translation>
+        <translation>II Tuşu Doğrusallığı</translation>
     </message>
     <message>
         <source>Sets linearity for button II.</source>
-        <translation>II Tuşu için düzleştirme (Linearity) ayarlar.</translation>
+        <translation>II tuşunun doğrusallığını ayarlar.</translation>
     </message>
     <message>
         <source>II Scaling</source>
@@ -21290,19 +21556,19 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Left Trigger Saturation</source>
-        <translation>Sol Tetik Saturation (Etkin Bölge Sıkılaştırma)</translation>
+        <translation>Sol Tetik Doygunluğu</translation>
     </message>
     <message>
         <source>Sets saturation for left trigger.</source>
-        <translation>Sol tetik için Saturation ayarı yapar. Etkin Bölgeyi Sıkılaştırır.</translation>
+        <translation>Sol tetiğin doygunluğunu ayarlar.</translation>
     </message>
     <message>
         <source>Left Trigger Linearity</source>
-        <translation>Sol Tetik Düzlüğü (Linearity)</translation>
+        <translation>Sol Tetik Doğrusallığı</translation>
     </message>
     <message>
         <source>Sets linearity for left trigger.</source>
-        <translation>Sol tetik için düzlüğü (linearity) ayarlar.</translation>
+        <translation>Sol tetiğin doğrusallığını ayarlar.</translation>
     </message>
     <message>
         <source>Left Trigger Scaling</source>
@@ -21357,15 +21623,15 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Recompiler options changed, flushing all blocks.</source>
-        <translation>Recompiler options changed, flushing all blocks.</translation>
+        <translation>Yeniden derleyici seçenekleri değişti; tüm bloklar temizleniyor.</translation>
     </message>
     <message>
         <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
-        <translation>Disk dosyası şu çoklu CD kullanan oyun için önyüklenemez. &apos;{}&apos;</translation>
+        <translation>Çok diskli &apos;{}&apos; imajı için CD imajını önceden yükleme kullanılamıyor.</translation>
     </message>
     <message>
         <source>Precaching CD image failed, it may be unreliable.</source>
-        <translation>Disk Dosyası önyüklenemedi. sorun çıkartabilir.</translation>
+        <translation>CD imajı önbelleğe alınamadı; güvenilir olmayabilir.</translation>
     </message>
     <message>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
@@ -21394,7 +21660,7 @@ Hata: {1}</translation>
     <message>
         <source>Failed to save undo load state:
 {}</source>
-        <translation>Durum kaydından eski duruma dönülemedi:
+        <translation>Yüklemeyi geri almak için durum kaydı kaydedilemedi:
 {}</translation>
     </message>
     <message>
@@ -21423,7 +21689,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Emulation speed set to {}%.</source>
-        <translation>Emülasyon Hızı Ayarı {}%.</translation>
+        <translation>Emülasyon hızı %{} olarak ayarlandı.</translation>
     </message>
     <message>
         <source>PGXP is now enabled.</source>
@@ -21443,23 +21709,23 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
-        <translation>PGXP model döşeme hassasiyeti açıldı.</translation>
+        <translation>PGXP yansıtma hassasiyetini koruma etkinleştirildi.</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now disabled.</source>
-        <translation>PGXP model döşeme hassasiyeti kapatıldı.</translation>
+        <translation>PGXP yansıtma hassasiyetini koruma devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>Now showing VRAM.</source>
-        <translation>Now showing VRAM.</translation>
+        <translation>Artık VRAM gösteriliyor.</translation>
     </message>
     <message>
         <source>Now showing display.</source>
-        <translation>Now showing display.</translation>
+        <translation>Artık ekran görüntüsü gösteriliyor.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation>PGXP Derinlik Bilgisi Açıldı.</translation>
+        <translation>PGXP Derinlik Arabelleği etkinleştirildi.</translation>
     </message>
     <message>
         <source>Rewinding is disabled while runahead is enabled.</source>
@@ -21467,7 +21733,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation>PGXP Derinlik Bilgisi Kapatıldı.</translation>
+        <translation>PGXP Derinlik Arabelleği devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is now enabled.</source>
@@ -21499,7 +21765,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>CD Audio Unmuted.</source>
-        <translation>CD Müziğü Açıldı.</translation>
+        <translation>CD Sesi Açıldı.</translation>
     </message>
     <message>
         <source>Failed to load post-processing chain.</source>
@@ -21507,7 +21773,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>No post-processing shaders are selected.</source>
-        <translation>Hiçbir görsel efekt shaderleri seçilmedi.</translation>
+        <translation>Hiçbir görsel efekt gölgelendiricisi seçilmedi.</translation>
     </message>
     <message>
         <source>Post-processing is now enabled.</source>
@@ -21523,7 +21789,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
-        <translation>Hafıza kartı portları birbiriyle değiştirildi. Her iki porttada hafıza kartı var.</translation>
+        <translation>Hafıza kartı portları birbiriyle değiştirildi. Her iki portta da hafıza kartı var.</translation>
     </message>
     <message>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
@@ -21539,17 +21805,17 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Failed to initialize hardware renderer, falling back to software renderer.</source>
-        <translation>Donanım oluşturucusu başlatılamadı, yazılım oluşturucusuna geçiliyor.</translation>
+        <translation>Donanımsal çizici başlatılamadı; yazılımsal çiziciye geçiliyor.</translation>
     </message>
     <message>
         <source>Failed to create {} GPU device, reverting to {}.
 {}</source>
-        <translation>{} Grafik kartı oluşturulamadı şuna dönülüyor {}.
+        <translation>{} GPU aygıtı oluşturulamadı; {} aygıtına dönülüyor.
 {}</translation>
     </message>
     <message>
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
-        <translation>Exclusive Fullscreen elde edilemedi. Borderless fullscreen&apos;e geçiliyor.</translation>
+        <translation>Özel tam ekrana geçilemedi; bunun yerine kenarsız tam ekran kullanılıyor.</translation>
     </message>
 </context>
 <context>
@@ -21700,7 +21966,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
-        <translation>Ekran üstü öğeleri ve Big Picture arayüzü için kullanılacak temayı belirler.</translation>
+        <translation>Ekran üstü öğeleri ve Büyük Resim arayüzü için kullanılacak temayı belirler.</translation>
     </message>
     <message>
         <source>Font</source>
@@ -21708,7 +21974,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Determines the font to use for on-screen display elements and the Big Picture UI.</source>
-        <translation>Ekran üstü öğeleri ve Big Picture arayüzü için kullanılacak yazı tipini belirler.</translation>
+        <translation>Ekran üstü öğeleri ve Büyük Resim arayüzü için kullanılacak yazı tipini belirler.</translation>
     </message>
     <message>
         <source>Overlay Font</source>
@@ -21854,7 +22120,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Adjusts the correspondance between physical and virtual mouse movement.</source>
-        <translation>Fiziksel ve sanal fare arasındaki bağdaşmayı ayarlar.</translation>
+        <translation>Fiziksel fare hareketi ile sanal fare hareketi arasındaki ilişkiyi ayarlar.</translation>
     </message>
     <message>
         <source>Vertical Sensitivity</source>
@@ -21979,7 +22245,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all shader stages?</source>
-        <translation>Tüm shader sıralamalarını kaldırmak istiyormusunuz?</translation>
+        <translation>Tüm gölgelendirici aşamalarını temizlemek istediğinizden emin misiniz?</translation>
     </message>
 </context>
 <context>
@@ -21990,7 +22256,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Kenar çerçevesi sistem görüntüsünün etrafına çizilen bir görseldir. Bunlar post process görüntü işlemeden sonra eklenir. Aşağıdaki bir listeden seçebilir yada kendinize özel bir tane ayarlayabilirizsiniz&lt;/p&gt;&lt;p&gt;Başka kenar çerçeve profilleri şuraya &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; dizinine atılabilir veri klasörünün.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Kenar çerçevesi, sistem görüntüsünün etrafına çizilen bir görseldir. Kenar çerçeveleri görsel efektlerden sonra uygulanır. Aşağıdaki kenarlık listesinden seçim yapabilir veya özel bir kenarlığı elle yapılandırabilirsiniz.&lt;/p&gt;&lt;p&gt;Ek kenarlık profilleri, veri dizinindeki &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; klasörüne eklenebilir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Selected Preset:</source>
@@ -22006,11 +22272,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Image Path:</source>
-        <translation>Dosya Dizini:</translation>
+        <translation>Dosya Yolu:</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -22034,11 +22300,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Destination Alpha Blending</source>
-        <translation>Destination Alpha Blending</translation>
+        <translation>Hedef Alfa Harmanlaması</translation>
     </message>
     <message>
         <source>Alpha Blending</source>
-        <translation>Alpha Blending</translation>
+        <translation>Alfa Harmanlama</translation>
     </message>
     <message>
         <source>Export...</source>
@@ -22054,7 +22320,7 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Image Path</source>
-        <translation>Dosya Dizini</translation>
+        <translation>Dosya Yolu</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -22062,11 +22328,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>Defines the path of the custom overlay image that will be loaded.</source>
-        <translation>Seçilecek özel kenar çerçeve dosyasının dizinini ayarlar.</translation>
+        <translation>Yüklenecek özel kaplama resminin dosya yolunu tanımlar.</translation>
     </message>
     <message>
         <source>Display Rectangle</source>
-        <translation>Ekran Çerçevesi</translation>
+        <translation>Görüntü Dikdörtgeni</translation>
     </message>
     <message>
         <source>Defines the area in the overlay image that the game image will be drawn into.</source>
@@ -22078,11 +22344,11 @@ Hata: {1}</translation>
     </message>
     <message>
         <source>If checked, the overlay image will be alpha blended with the framebuffer, i.e. transparency will be applied.</source>
-        <translation>Seçiliyse çerçeve saydamlıkla ayarlanır.</translation>
+        <translation>İşaretlenirse kaplama resmi kare arabelleğiyle alfa harmanlamasına tabi tutulur, yani saydamlık uygulanır.</translation>
     </message>
     <message>
         <source>If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, an image with alpha of 0.75 will draw the game image at 25% brightness.</source>
-        <translation>Seçiliyse oyun görüntüsü ters hesaplanarak çizilir mesela 0.75 Alpha ile oyun yüzde 25 parlaklıkla çizilir.</translation>
+        <translation>İşaretlenirse oyun görüntüsü, kaplama resmindeki alfa miktarının tersiyle harmanlanır. Örneğin alfa değeri 0.75 olan bir resim, oyun görüntüsünü 25% parlaklıkta çizdirir.</translation>
     </message>
     <message>
         <source>Select Image</source>
@@ -22200,7 +22466,7 @@ Hata: {1}</translation>
         <source>Unfortunately, the virtual machine has abnormally shut down and cannot be recovered. Please use the available support options for further assistance, and provide information about what you were doing when the error occurred, as well as the details below:
 
 {}</source>
-        <translation>Maalesef sanal makine ters bir şekilde kapatıldı ve geri kurtarılamadı. Lütfen desteğe ulaşınız ve arıza sırasında neyi nasıl yapıyordunuz anlatın detaylıca olanları aşağı yazın:
+        <translation>Maalesef sanal makine olağan dışı şekilde kapandı ve kurtarılamıyor. Daha fazla yardım için lütfen mevcut destek seçeneklerini kullanın ve hata oluştuğunda ne yaptığınızı aşağıdaki ayrıntılarla birlikte bildirin:
 
 {}</translation>
     </message>
@@ -22324,7 +22590,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     </message>
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
-        <translation>(Batch) Toplu mod kullanılamıyor çünki bir dosya seçilmedi.</translation>
+        <translation>Başlatılacak bir dosya adı belirtilmediği için toplu işlem modu kullanılamıyor.</translation>
     </message>
 </context>
 <context>
@@ -22647,7 +22913,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     <message>
         <source>Failed to create or configure audio stream, falling back to null output. The error was:
 {}</source>
-        <translation>Ses sistemi oluşturulamadı null boş sisteme geçildi. Hata şuydu:
+        <translation>Ses akışı oluşturulamadı veya yapılandırılamadı; sessiz çıkışa geçiliyor. Hata şuydu:
 {}</translation>
     </message>
 </context>
@@ -22725,7 +22991,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     </message>
     <message>
         <source>Disc</source>
-        <translation>Disc</translation>
+        <translation>Disk</translation>
     </message>
     <message>
         <source>File Name</source>
@@ -22737,7 +23003,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     </message>
     <message>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation>Seç</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -22745,7 +23011,7 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
     </message>
     <message>
         <source>Select Disc for %1</source>
-        <translation>Şunun İçin Disc Seçin %1</translation>
+        <translation>%1 İçin Disk Seç</translation>
     </message>
 </context>
 <context>
@@ -22828,22 +23094,22 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Verbose</source>
         <comment>LogLevel</comment>
-        <translation>Verbose</translation>
+        <translation>Ayrıntılı</translation>
     </message>
     <message>
         <source>Developer</source>
         <comment>LogLevel</comment>
-        <translation>Developer</translation>
+        <translation>Geliştirici</translation>
     </message>
     <message>
         <source>Debug</source>
         <comment>LogLevel</comment>
-        <translation>Debug</translation>
+        <translation>Hata Ayıklama</translation>
     </message>
     <message>
         <source>Trace</source>
         <comment>LogLevel</comment>
-        <translation>Trace</translation>
+        <translation>İzleme</translation>
     </message>
     <message>
         <source>Auto-Detect</source>
@@ -22903,7 +23169,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Recompiler (Fastest)</source>
         <comment>CPUExecutionMode</comment>
-        <translation>Derleyici (En Hızlı)</translation>
+        <translation>Yeniden Derleyici (En Hızlı)</translation>
     </message>
     <message>
         <source>Disabled (Slowest)</source>
@@ -23043,7 +23309,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>MMPX Enhanced (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation>MMPX Enhanced/İyileştirilimiş (Yavaş)</translation>
+        <translation>MMPX İyileştirilmiş (Yavaş)</translation>
     </message>
     <message>
         <source>MMPX Advanced (Very Slow)</source>
@@ -23108,7 +23374,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Box (Downsample 3D/Smooth All)</source>
         <comment>GPUDownsampleMode</comment>
-        <translation>Box (Downsample 3D/Herşeyi Yumuşat)</translation>
+        <translation>Box (Downsample 3D/Her Şeyi Yumuşat)</translation>
     </message>
     <message>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
@@ -23123,7 +23389,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Overlay Wireframe</source>
         <comment>GPUWireframeMode</comment>
-        <translation>Wireframe/Ayrıtlari Üst Katmana Çiz</translation>
+        <translation>Wireframe/Ayrıtları Üst Katmana Çiz</translation>
     </message>
     <message>
         <source>Only Wireframe</source>
@@ -23138,17 +23404,17 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Zstandard (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Zstandard (Low)</translation>
+        <translation>Zstandard (Düşük)</translation>
     </message>
     <message>
         <source>Zstandard (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Zstandard (Default)</translation>
+        <translation>Zstandard (Varsayılan)</translation>
     </message>
     <message>
         <source>Zstandard (High)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>Zstandard (High)</translation>
+        <translation>Zstandard (Yüksek)</translation>
     </message>
     <message>
         <source>XZ (Low)</source>
@@ -23158,12 +23424,12 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>XZ (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>XZ (Default)</translation>
+        <translation>XZ (Varsayılan)</translation>
     </message>
     <message>
         <source>XZ (High)</source>
         <comment>GPUDumpCompressionMode</comment>
-        <translation>XZ (High)</translation>
+        <translation>XZ (Yüksek)</translation>
     </message>
     <message>
         <source>Disabled (Flickering)</source>
@@ -23173,22 +23439,22 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Weave (Combing)</translation>
+        <translation>Weave (Taraklanma)</translation>
     </message>
     <message>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Blend (Blur)</translation>
+        <translation>Harmanlama (Bulanıklık)</translation>
     </message>
     <message>
         <source>Adaptive (FastMAD)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Adaptive (FastMAD)</translation>
+        <translation>Uyarlanabilir (FastMAD)</translation>
     </message>
     <message>
         <source>Progressive (Optimal)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation>Agresif (Optimal)</translation>
+        <translation>Aşamalı (En Uygun)</translation>
     </message>
     <message>
         <source>None</source>
@@ -23203,7 +23469,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Only Overscan Area (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
-        <translation>Sadece Aşırı Tarama Bölgesi (Aspect Düzeltmesiz)</translation>
+        <translation>Yalnızca Aşırı Tarama Alanı (En Boy Oranı Düzeltilmeden)</translation>
     </message>
     <message>
         <source>All Borders</source>
@@ -23213,7 +23479,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>All Borders (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
-        <translation>Tüm Kenarlar (Orantı Düzeltmesiz)</translation>
+        <translation>Tüm Kenarlar (En Boy Oranı Düzeltilmeden)</translation>
     </message>
     <message>
         <source>None</source>
@@ -23334,6 +23600,21 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Lanczos (Keskin)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Otomatik</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Açık</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Kapalı</translation>
     </message>
     <message>
         <source>Automatic</source>
@@ -23523,32 +23804,32 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>Deflate (Low)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Deflate (Low)</translation>
+        <translation>Deflate (Düşük)</translation>
     </message>
     <message>
         <source>Deflate (Default)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Deflate (Default)</translation>
+        <translation>Deflate (Varsayılan)</translation>
     </message>
     <message>
         <source>Deflate (High)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Deflate (High)</translation>
+        <translation>Deflate (Yüksek)</translation>
     </message>
     <message>
         <source>Zstandard (Low)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Zstandard (Low)</translation>
+        <translation>Zstandard (Düşük)</translation>
     </message>
     <message>
         <source>Zstandard (Default)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Zstandard (Default)</translation>
+        <translation>Zstandard (Varsayılan)</translation>
     </message>
     <message>
         <source>Zstandard (High)</source>
         <comment>SaveStateCompressionMode</comment>
-        <translation>Zstandard (High)</translation>
+        <translation>Zstandard (Yüksek)</translation>
     </message>
     <message>
         <source>XZ (Low)</source>
@@ -23666,7 +23947,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Oyun Listesi Ayarları&lt;/strong&gt;&lt;hr&gt;Oyunların listesini ayarlar. Oyunların aranacağı dizinler seçilir.</translation>
+        <translation>&lt;strong&gt;Oyun Listesi Ayarları&lt;/strong&gt;&lt;hr&gt;Yukarıdaki liste, oyun listesini doldurmak için DuckStation&apos;ın arayacağı dizinleri gösterir. Arama dizinleri eklenebilir, kaldırılabilir ve alt dizinlerin taranıp taranmayacağı değiştirilebilir.</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -23674,7 +23955,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;BIOS Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar hangi BIOS&apos;un kullanılacağını ve hangi portun kullanılacağını belirler.&lt;br&gt;&lt;br&gt;Detaylı bilgi için imleci ayarların üstüne getirebilir ve Shift + Fare tekeri ile bu paneli kaydırabilirsiniz.</translation>
+        <translation>&lt;strong&gt;BIOS Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler hangi BIOS&apos;un ve genişletme portunun kullanılacağını belirler.&lt;br&gt;&lt;br&gt;Ek bilgi için fareyi bir seçeneğin üzerine getirin; bu paneli kaydırmak için Shift+Fare Tekerleği kullanın.</translation>
     </message>
     <message>
         <source>Console</source>
@@ -23690,7 +23971,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Emülasyon Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar sistemin ileriyi hesaplama davranışını ayarlar.&lt;br&gt;&lt;br&gt;Detaylı bilgi için imleci ayarların üstüne getirebilir ve Shift + Fare tekeri ile bu paneli kaydırabilirsiniz.</translation>
+        <translation>&lt;strong&gt;Emülasyon Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler sistemin hızını ve ileriyi hesaplama davranışını belirler.&lt;br&gt;&lt;br&gt;Ek bilgi için fareyi bir seçeneğin üzerine getirin; bu paneli kaydırmak için Shift+Fare Tekerleği kullanın.</translation>
     </message>
     <message>
         <source>Patches</source>
@@ -23698,7 +23979,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Patches&lt;/strong&gt;&lt;hr&gt;This section allows you to select optional patches to apply to the game, which may provide performance, visual, or gameplay improvements. Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, no support will be provided to users who have enabled game patches.</source>
-        <translation>&lt;strong&gt;Yamalar&lt;/strong&gt;&lt;hr&gt;Bu ayarlar hangi yamaların oyuna uygulanacağını belirler. Performans görsel veya oynanış iyileştirmeleri sağlar. Oyunlarda arıza oluşturabilir. Size kalmış. Oyun yaması kullanan kişilere destek verilmez.</translation>
+        <translation>&lt;strong&gt;Yamalar&lt;/strong&gt;&lt;hr&gt;Bu bölüm, oyuna uygulanacak ve performans, görsel veya oynanış iyileştirmeleri sağlayabilecek isteğe bağlı yamaları seçmenizi sağlar. Oyun yamalarını etkinleştirmek öngörülemeyen davranışlara, çökmelere, oyunda ilerlemenin engellenmesine veya kayıtlı oyunların bozulmasına neden olabilir. Yamaları kullanmanın riski size aittir; oyun yamalarını etkinleştiren kullanıcılara destek sağlanmaz.</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -23706,7 +23987,7 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Cheats&lt;/strong&gt;&lt;hr&gt;This section allows you to select which cheats you wish to enable. &lt;strong&gt;Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves.&lt;/strong&gt; Cheats also persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.</source>
-        <translation>&lt;strong&gt;Hileler&lt;/strong&gt;&lt;hr&gt;Bu ayarlar hangi hileleri açacağınızı seçmenizi ayarlar. &lt;strong&gt;Oyunlar bozulabilir kayıtlar bozulabilir.&lt;/strong&gt; Hileler kapatılsa bile durum kayıtlarında etkilerini silmez. Hileleri kapadıktan sonra oyunu aç kapa yapmayı unutmayın.</translation>
+        <translation>&lt;strong&gt;Hileler&lt;/strong&gt;&lt;hr&gt;Bu bölüm, etkinleştirmek istediğiniz hileleri seçmenizi sağlar. &lt;strong&gt;Hile kullanmanın oyunlar üzerinde öngörülemeyen etkileri olabilir; çökmelere, grafik hatalarına ve kayıtların bozulmasına neden olabilir.&lt;/strong&gt; Hileler devre dışı bırakılsa bile durum kayıtları aracılığıyla etkilerini sürdürebilir; kodları kapattıktan sonra oyunu sıfırlamayı veya yeniden başlatmayı unutmayın.</translation>
     </message>
     <message>
         <source>Memory Cards</source>
@@ -23775,7 +24056,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Arayüz Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarların emülatörün görünümünü ve çalışmasını ayarlar.&lt;br&gt;&lt;br&gt;Bir ayar hakkında bilgi edinmek için imleci üstüne getirin ve bu paneli Shift+Fare tekeriyle kaydırın.</translation>
+        <translation>&lt;strong&gt;Arayüz Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar emülatörün görünümünü ve davranışını belirler.&lt;br&gt;&lt;br&gt;Bir ayar hakkında bilgi edinmek için imleci üzerine getirin; bu paneli Shift+Fare Tekerleği ile kaydırın.</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -23791,7 +24072,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Ses Ayarları&lt;/strong&gt;&lt;hr&gt;Ses ayarları seçilir.Fareyi ayarların üstüne sürükleyerek açıklama okuyun.</translation>
+        <translation>&lt;strong&gt;Ses Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler konsolun ses çıkışını denetler. Ek bilgi için fareyi bir seçeneğin üzerine getirin.</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -23807,7 +24088,7 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Disables all enhancement options, simulating the system as accurately as possible. Use to quickly determine whether an enhancement is responsible for game bugs.</source>
-        <translation>Tüm iyileştirmeleri kapayıp sistemi gerçeğe en yakın şekilde emülasyon eder. Hangi iyileştirmenin oyunu bozduğunu hızlıca keşfetmek için kullanın.</translation>
+        <translation>Tüm iyileştirme seçeneklerini devre dışı bırakarak sistemi mümkün olduğunca doğru biçimde simüle eder. Oyun hatalarından bir iyileştirmenin sorumlu olup olmadığını hızla belirlemek için kullanın.</translation>
     </message>
     <message>
         <source>Confirm Restore Defaults</source>
@@ -23858,7 +24139,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;DuckStation&apos;a Hoş Geldiniz!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Bu sihirbaz DuckStation kurulumunda size yol gösterecek. Bu, DuckStation&apos;u ilk kurulumunuz ise kullanım kılavuzunu okumanızı şiddetle tavsiye ederiz &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Varsayılana göre DuckStation şu sunucuya bağlanacak &lt;a href=&quot;https://github.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github.com&lt;/span&gt;&lt;/a&gt; Ve müsait ve var ise güncellemeleri indirip kuracak &lt;a href=&quot;https://github.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github.com&lt;/span&gt;&lt;/a&gt;. Eğer her başlatmada DuckStation&apos;un internete bağlanmasını istemiyorsanız otomatik güncelleştirmeleri şimdi kapatmalısınız. Otomatik güncelleştirme ayarı arayayüzden her istediğiniz zaman değiştirilebilir.&lt;/p&gt;&lt;p&gt;Lütfen bir tema ve dil seçiniz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;DuckStation&apos;a Hoş Geldiniz!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Bu sihirbaz, uygulamayı kullanmak için gereken yapılandırma adımlarında size yol gösterecektir. DuckStation&apos;ı ilk kez kuruyorsanız &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt; adresindeki kurulum kılavuzuna bakmanız önerilir.&lt;/p&gt;&lt;p&gt;Varsayılan olarak DuckStation, güncellemeleri denetlemek için &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; sunucusuna bağlanır ve güncelleme varsa ve onaylanırsa güncelleme paketlerini &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; adresinden indirir. DuckStation&apos;ın başlangıçta herhangi bir ağ bağlantısı kurmasını istemiyorsanız Otomatik Güncellemeler seçeneğinin işaretini şimdi kaldırmalısınız. Otomatik Güncelleme ayarı daha sonra Arayüz Ayarları&apos;ndan istediğiniz zaman değiştirilebilir.&lt;/p&gt;&lt;p&gt;Başlamak için lütfen bir dil ve tema seçin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language:</source>
@@ -23878,11 +24159,11 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Browse...</source>
-        <translation>Ara...</translation>
+        <translation>Göz At...</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation>Reset</translation>
+        <translation>Sıfırla</translation>
     </message>
     <message>
         <source>NTSC-J (Japan):</source>
@@ -23894,7 +24175,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>PAL (Europe, Australia):</source>
-        <translation>PAL (Avrupa Türkiye Avustrulya):</translation>
+        <translation>PAL (Avrupa, Avustralya):</translation>
     </message>
     <message>
         <source>Open in Explorer...</source>
@@ -23922,7 +24203,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Controller Mapped To:</source>
-        <translation>Kol Şuna Atama Yapılmış:</translation>
+        <translation>Kolun Eşlendiği Cihaz:</translation>
     </message>
     <message>
         <source>Controller Type:</source>
@@ -23962,11 +24243,11 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Internal Resolution:</source>
-        <translation>Çözünürlük Ayarı:</translation>
+        <translation>Dahili Çözünürlük:</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Bunu yükseltmek 3D modellerin çizimini iyileştirir. Sadece donanım çizicilerinde çalışır. &lt;br&gt;Genellike zarar gelmez ve oyunlar çok daha güzel gözükür. Çözünürlük yükseltmek güçlü bir grafik kartı gerektirir.</translation>
+        <translation>Bunu 1x&apos;in üzerine ayarlamak, çizilen 3D poligonların ve çizgilerin çözünürlüğünü artırır. Yalnızca donanım arkayüzleri için geçerlidir. &lt;br&gt;Bu seçenek genellikle güvenlidir ve çoğu oyun daha yüksek çözünürlüklerde düzgün görünür. Daha yüksek çözünürlükler daha güçlü bir GPU gerektirir.</translation>
     </message>
     <message>
         <source>Texture Filtering:</source>
@@ -23982,7 +24263,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Yakında görünen 2D spritelerda kare kare çıkan kaplamaları filtreler aracılığıyla yumuşatır. Bu sadece spriteler ve başka 2D elementleri etkiler mesela HUD&apos;ları.</translation>
+        <translation>2D nesnelerde büyütülmüş dokuların pikselli görünümünü filtreleme kullanarak yumuşatır. Bu filtre yalnızca sprite&apos;lara ve HUD gibi diğer 2D öğelere uygulanır.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
@@ -24002,15 +24283,15 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Konsolun çizdiği ama sıradan bir TV&apos;nin gösteremeyeceği alanın ne kadarının kırpılacağını ayarlar. Bazı oyunlar bu overscan bölgesinde birşeyler gösterir ya da ekran efektleri için kullanır. &quot;Tüm Kenarlar&quot; ayarı açıkken doğru gösteremeyebilir. &quot;Sadece Aşırı Tarama Bölgesi&quot; denge/stabilite ve siyah çerçeveyi saklama arasında bir dengeli bir feragatlık sağlar.</translation>
+        <translation>Tüketici TV&apos;lerinde genellikle görünmeyen alanın ne kadarının kırpılacağını veya gizleneceğini belirler. Bazı oyunlar aşırı tarama alanında içerik gösterir veya bu alanı ekran efektleri için kullanır. &quot;Tüm Kenarlar&quot; ayarıyla doğru görüntülenmeyebilir. &quot;Sadece Aşırı Tarama Bölgesi&quot;, kararlılık ile siyah kenarları gizleme arasında iyi bir denge sağlar.</translation>
     </message>
     <message>
         <source>Scaling:</source>
-        <translation>Büyütme:</translation>
+        <translation>Ölçeklendirme:</translation>
     </message>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>Emülasyonu edilen konsoldan çıkan görüntünün ekranınıza nasıl büyütüleceğini/küçültüleciğini ayarlar.</translation>
+        <translation>Emüle edilen konsolun çıktısının monitörünüzün çözünürlüğüne göre nasıl büyütüleceğini veya küçültüleceğini belirler.</translation>
     </message>
     <message>
         <source>FMV Scaling:</source>
@@ -24018,7 +24299,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Ekrandaki vertex koordinatlarını geniş ekrana uyarlar ve böylece 3D 4:3 oranındaki görüntüyü seçili en boy oranına ayarlar. &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Ekran uzayındaki köşe konumlarını geniş ekran en boy oranına ölçeklendirerek 3D oyunlarda görüş alanını 4:3&apos;ten seçilen ekran en boy oranına genişletir. &lt;b&gt;&lt;u&gt;Tüm oyunlarla uyumlu olmayabilir.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -24063,7 +24344,7 @@ Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>Dither işleminin emülasyonu yapılan konsolda nasıl işleneceğini ayarlar. Kaliteli Renk Çizimi ditheringi kapar ve en iyi renk geçişlerini çizer. Orantılı ayarlar deseni yüksek çözünürlüklerde daha az belirgin yapar. Shader Blending/Karıştırma modları yazılımsal olarak çalışır ve daha gerçeğe birdir ama &lt;strong&gt;çok&lt;/strong&gt; performans kaybına yol açar.</translation>
+        <translation>Emüle edilen GPU&apos;da dithering işleminin nasıl uygulanacağını belirler. Kaliteli Renk, dithering&apos;i devre dışı bırakır ve en iyi görünen renk geçişlerini üretir. Orantılı seçenekler, yüksek çözünürlüklerde dither desenini daha az belirgin yapar. Gölgelendirici harmanlama seçenekleri harmanlamayı yazılımsal olarak gerçekleştirir ve daha doğrudur, ancak &lt;strong&gt;önemli&lt;/strong&gt; bir performans kaybına neden olur.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -24119,7 +24400,7 @@ Bu seçeneği daha sonra Masaüstü Modunda araç çubuğunu veya Büyük Resim 
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Kurulum Tamamlandı!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Oyun oynamaya hazırsınız.&lt;/p&gt;&lt;p&gt;İleri aşama ayarlar, ayarlar menüsünden ulaşılabilir. Sadece oyun kolu kullanarak Büyük Ekran modundada bu programı kullanabilirsiniz.&lt;/p&gt;&lt;p&gt;Umarız DuckStation size zevk verir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Kurulum Tamamlandı!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Artık oyunları çalıştırmaya hazırsınız.&lt;/p&gt;&lt;p&gt;Diğer seçeneklere ayarlar menüsünden ulaşabilirsiniz. Tamamen oyun koluyla gezinmek için Büyük Resim arayüzünü de kullanabilirsiniz.&lt;/p&gt;&lt;p&gt;DuckStation&apos;ı keyifle kullanmanızı umuyoruz.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language</source>
@@ -24159,11 +24440,11 @@ Bu seçeneği daha sonra Masaüstü Modunda araç çubuğunu veya Büyük Resim 
     </message>
     <message>
         <source>&amp;Back</source>
-        <translation>&amp;BGeri</translation>
+        <translation>&amp;Geri</translation>
     </message>
     <message>
         <source>&amp;Next</source>
-        <translation>&amp;Nİleri</translation>
+        <translation>&amp;İleri</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
@@ -24195,7 +24476,7 @@ Devam etmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
         <source>&amp;Finish</source>
-        <translation>&amp;FBitir</translation>
+        <translation>&amp;Bitir</translation>
     </message>
     <message>
         <source>Cancel Setup</source>
@@ -24234,15 +24515,15 @@ Any changes have been saved, and the wizard will run again next time you start D
     </message>
     <message>
         <source>Scan Recursively?</source>
-        <translation>Alt Klasörleride Ara?</translation>
+        <translation>Alt Klasörleri de Tara?</translation>
     </message>
     <message>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
-        <translation>Şu dizinin &quot;%1&quot; alt klasörleriyle birlikte arar mıydınız?
+        <translation>&quot;%1&quot; dizinini alt dizinleriyle birlikte taramak ister misiniz?
 
-Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tarar.</translation>
+Alt dizinleri de taramak daha uzun sürer, ancak alt dizinlerdeki dosyaları belirler.</translation>
     </message>
     <message>
         <source>Open Pause Menu</source>
@@ -24268,7 +24549,7 @@ Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>Logout</source>
-        <translation>Sistem Çıkışı</translation>
+        <translation>Oturumu Kapat</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -24295,7 +24576,7 @@ Belirteç %2 oluşturuldu</translation>
     </message>
     <message>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
-        <translation>Bu durum kaydı farklı bir BIOS ile oluşturulmuş. Bu stabilite/kararlılık sonuçlarına sebep olabilir.</translation>
+        <translation>Bu durum kaydı farklı bir BIOS ile oluşturulmuş. Bu, kararlılık sorunlarına neden olabilir.</translation>
     </message>
     <message>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
@@ -24351,21 +24632,21 @@ Devam etmek istiyor musunuz?</translation>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation>Libcrypt korumalı bir oyunu çalıştırmayı deniyorsunuz SBI dosyası olmadan.:
+        <translation>SBI dosyası olmadan LibCrypt korumalı bir oyun çalıştırmayı deniyorsunuz:
 
 {0}: {1}
 
-Oyun kopyanız eksiltili. 
+Disk dökümünüz eksik; bu oyunu çalıştırmak için SBI dosyasını eklemelisiniz.
 
-SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</translation>
+SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
     </message>
     <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>Subimage&apos;e geçildi {} ({}) şuardaki &apos;{}&apos;.</translation>
+        <translation>{} ({}) alt görüntüsüne &apos;{}&apos; içinde geçildi.</translation>
     </message>
     <message>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
-        <translation>CPU Devir saati ayarı şimdi {}% ({} / {}). Bu oyunları çökertebilir.</translation>
+        <translation>CPU saat hızı {}% ({} / {}) olarak ayarlandı. Bu, oyunların çökmesine neden olabilir.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
@@ -24392,7 +24673,7 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
     <message>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
-        <translation>CD-ROM Arama Hızlandırma</translation>
+        <translation>CD-ROM Konumlandırma Hızlandırması</translation>
     </message>
     <message>
         <source>Force Frame Timings</source>
@@ -24416,7 +24697,7 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
     </message>
     <message>
         <source>System is not in correct state.</source>
-        <translation>Sistem doğru durum kaydında değil.</translation>
+        <translation>Sistem doğru durumda değil.</translation>
     </message>
     <message>
         <source>Current game does not have multiple discs.</source>
@@ -24424,7 +24705,7 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
     </message>
     <message>
         <source>Could not determine current disc for switching.</source>
-        <translation>CD değiştirme işlemi için hangi CD seçileceği anlaşılamadı.</translation>
+        <translation>Disk değiştirmek için mevcut disk belirlenemedi.</translation>
     </message>
     <message>
         <source>There is no previous disc to switch to.</source>
@@ -24440,11 +24721,11 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
     </message>
     <message>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
-        <translation>CD-ROM okuma/arama hızı açık. Bu oyunları çökertebilir.</translation>
+        <translation>CD-ROM okuma/konumlandırma hızlandırması etkin. Bu, oyunların çökmesine neden olabilir.</translation>
     </message>
     <message>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
-        <translation>Kare hızı otomatiğe ayarlanamadı. Oyunlar yanlış hızlarda çalışabilir.</translation>
+        <translation>Kare hızı otomatik olarak ayarlı değil. Oyunlar yanlış hızlarda çalışabilir.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
@@ -24452,15 +24733,15 @@ SBI dosyasının ismi oyununuzun disk imajı dosyasıyla aynı adda olmalı.</tr
     </message>
     <message>
         <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
-        <translation>Texture/Doku önbelleği açık. Bu deneme aşamasındaki bir ayar. Bazı oyunlar bozuk çiziliebilir.</translation>
+        <translation>Doku önbelleği etkin. Bu özellik deneyseldir; bazı oyunlar doğru çizilmeyebilir.</translation>
     </message>
     <message>
         <source>Fastmem mode is set to {}, this will reduce performance.</source>
-        <translation>Fastmem modu şuna ayarlandı{}, bu performansı düşürebilir.</translation>
+        <translation>Fastmem modu {} olarak ayarlandı; bu, performansı düşürecektir.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>
-        <translation>Safe mode açıldı.</translation>
+        <translation>Güvenli mod etkin.</translation>
     </message>
     <message>
         <source>Memory Card Mismatch</source>
@@ -24544,7 +24825,7 @@ Mevcut CD görüntüsü kullanılıyor; bu kararsızlığa neden olabilir.</tran
     <message>
         <source>Failed to load state from {0}:
 {1}</source>
-        <translation>Durum şu konumdan yüklenemedi: {0}:
+        <translation>Durum kaydı {0} konumundan yüklenemedi:
 {1}</translation>
     </message>
     <message>
@@ -24641,7 +24922,7 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>Widescreen rendering disabled.</source>
-        <translation>Geniş Ekram Çizim Kapatıldı.</translation>
+        <translation>Geniş Ekran Çizimi Kapatıldı.</translation>
     </message>
     <message>
         <source>PGXP disabled.</source>
@@ -24665,7 +24946,7 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>CD-ROM seek speedup disabled.</source>
-        <translation>CD-ROM Dosya arama hızı kapatıldı.</translation>
+        <translation>CD-ROM konumlandırma hızlandırması kapatıldı.</translation>
     </message>
     <message>
         <source>Mute CD-ROM audio disabled.</source>
@@ -24673,7 +24954,7 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>VRAM write texture replacements disabled.</source>
-        <translation>VRAM doku paketleri kapatıldı.</translation>
+        <translation>VRAM yazma doku değiştirmeleri kapatıldı.</translation>
     </message>
     <message>
         <source>Use old MDEC routines disabled.</source>
@@ -24705,7 +24986,7 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
-        <translation>CD-ROM SubQ Skew is açıldı. Bu oyunları çökertecek.</translation>
+        <translation>CD-ROM SubQ Kayması etkin. Bu, oyunların çalışmasını bozar.</translation>
     </message>
     <message>
         <source>One or more unsafe settings is enabled.</source>
@@ -24733,7 +25014,7 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>Undo Load State</source>
-        <translation>Durum Kaydını Geri Al</translation>
+        <translation>Durum Kaydı Yüklemesini Geri Al</translation>
     </message>
     <message>
         <source>Failed to load undo state, restarting game.
@@ -24743,15 +25024,15 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>capturing audio and video</source>
-        <translation>Ses ve video yakalanıyor</translation>
+        <translation>ses ve video yakalama</translation>
     </message>
     <message>
         <source>capturing video</source>
-        <translation>Video yakalanıyor</translation>
+        <translation>video yakalama</translation>
     </message>
     <message>
         <source>capturing audio</source>
-        <translation>Ses yakalanıyor</translation>
+        <translation>ses yakalama</translation>
     </message>
     <message>
         <source>Failed to create media capture: {0}</source>
@@ -24759,15 +25040,15 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>Şu {0} şuraya kadar başlatılıyor &apos;{1}&apos;.</translation>
+        <translation>&apos;{1}&apos; dosyasına {0} başlatılıyor.</translation>
     </message>
     <message>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>Şu {0} şuraya kadar durduruldu &apos;{1}&apos;.</translation>
+        <translation>&apos;{1}&apos; dosyasına {0} durduruldu.</translation>
     </message>
     <message>
         <source>Stopped {0}: {1}.</source>
-        <translation>Şu {0}: durduruldu {1}.</translation>
+        <translation>{0} durduruldu: {1}.</translation>
     </message>
     <message>
         <source>Cannot use per-game memory card without a disc.
@@ -24789,11 +25070,11 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 
 {0}
 
-Grafik kartınızın çiziciyi desteklememesinden ({1}), yada grafik kartı sürücülerinizin güncellenmesi gerektiğinden olabilir.</translation>
+Grafik kartınızın çiziciyi desteklememesinden ({1}) ya da grafik kartı sürücülerinizin güncellenmesi gerektiğinden olabilir.</translation>
     </message>
     <message>
         <source>Startup was cancelled.</source>
-        <translation>Başlangıç İptal Edilidi.</translation>
+        <translation>Başlangıç İptal Edildi.</translation>
     </message>
     <message>
         <source>No BIOS image found for {} region.
@@ -24817,6 +25098,29 @@ Yasal nedenlerle, size ait gerçek bir PS1/PS2 biriminden BIOS edinmelisiniz (ö
     </message>
 </context>
 <context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>TTY Penceresi</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>TTY Penceresi - %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>&amp;Ayarlar</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>BIOS &amp;TTY Kaydını Etkinleştir</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>&amp;Zaman Damgalarını Göster</translation>
+    </message>
+</context>
+<context>
     <name>TextureReplacementSettingsDialog</name>
     <message>
         <source>Texture Replacement Settings</source>
@@ -24824,39 +25128,39 @@ Yasal nedenlerle, size ait gerçek bir PS1/PS2 biriminden BIOS edinmelisiniz (ö
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Texture Replacement Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the texture replacement system. You can also export a game-specific configuration file. Each of the options is explained in the configuration file, and at &lt;a href=&quot;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Texture/Doku Paketi ayarları&lt;/span&gt;&lt;br/&gt;Bu ayarlar doku paketi/texture modları sistemini ayarlar. Her oyuna özel ayar dosyasıda dışarı akatarabilirsiniz. Her bir ayar ayar dosyasında anlatılmaktadır ve şuradan okunabilir &lt;a href=&quot;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Doku Değiştirme Ayarları&lt;/span&gt;&lt;br/&gt;Bu ayarlar doku değiştirme sisteminin davranışında ince ayar yapar. Oyuna özel bir yapılandırma dosyasını da dışarı aktarabilirsiniz. Seçeneklerin her biri yapılandırma dosyasında ve &lt;a href=&quot;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;https://github.com/stenzek/duckstation/wiki/Texture-Replacement&lt;/span&gt;&lt;/a&gt; adresinde açıklanmıştır.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Texture Dumping Mode</source>
-        <translation>Texture Dumping Mode</translation>
+        <translation>Doku Döküm Modu</translation>
     </message>
     <message>
         <source>Reduce Palette Range</source>
-        <translation>Reduce Palette Range</translation>
+        <translation>Palet Aralığını Azalt</translation>
     </message>
     <message>
         <source>Dump Texture Pages</source>
-        <translation>Dump Texture Pages</translation>
+        <translation>Doku Sayfalarının Dökümünü Al</translation>
     </message>
     <message>
         <source>Dump C16 Textures</source>
-        <translation>Dump C16 Textures</translation>
+        <translation>C16 Dokularının Dökümünü Al</translation>
     </message>
     <message>
         <source>Dump Full Texture Pages</source>
-        <translation>Dump Full Texture Pages</translation>
+        <translation>Tam Doku Sayfalarının Dökümünü Al</translation>
     </message>
     <message>
         <source>The texture dumping system can either operate in page mode, or write-tracking mode. Replacements can be loaded from either dump method.</source>
-        <translation>The texture dumping system can either operate in page mode, or write-tracking mode. Replacements can be loaded from either dump method.</translation>
+        <translation>Doku döküm sistemi sayfa modunda veya yazma takibi modunda çalışabilir. Değiştirme dokuları her iki döküm yöntemiyle de yüklenebilir.</translation>
     </message>
     <message>
         <source>Write Tracking Options</source>
-        <translation>Write Tracking Options</translation>
+        <translation>Yazma Takibi Seçenekleri</translation>
     </message>
     <message>
         <source>Maximum Write Coalesce Size:</source>
-        <translation>Maximum Write Coalesce Size:</translation>
+        <translation>En Büyük Yazma Birleştirme Boyutu:</translation>
     </message>
     <message>
         <source>px</source>
@@ -24868,39 +25172,39 @@ Yasal nedenlerle, size ait gerçek bir PS1/PS2 biriminden BIOS edinmelisiniz (ö
     </message>
     <message>
         <source>Maximum Write Splits:</source>
-        <translation>Maximum Write Splits:</translation>
+        <translation>En Fazla Yazma Bölme Sayısı:</translation>
     </message>
     <message>
         <source>Convert Copies To Writes</source>
-        <translation>Convert Copies To Writes</translation>
+        <translation>Kopyalamaları Yazmalara Dönüştür</translation>
     </message>
     <message>
         <source>Bilinear Replacement Scaling</source>
-        <translation>Bilinear Replacement Scaling</translation>
+        <translation>Değiştirme Dokularını Bilinear Ölçekle</translation>
     </message>
     <message>
         <source>Texture Dumping Options</source>
-        <translation>Texture Dumping Options</translation>
+        <translation>Doku Döküm Seçenekleri</translation>
     </message>
     <message>
         <source>Dump Size Threshold:</source>
-        <translation>Dump Size Threshold:</translation>
+        <translation>Döküm Boyutu Eşiği:</translation>
     </message>
     <message>
         <source>Set Alpha Channel</source>
-        <translation>Set Alpha Channel</translation>
+        <translation>Alfa Kanalını Ayarla</translation>
     </message>
     <message>
         <source>Determines the minimum size of a texture that will be dumped. Textures with a size smaller than this value will be ignored.</source>
-        <translation>Determines the minimum size of a texture that will be dumped. Textures with a size smaller than this value will be ignored.</translation>
+        <translation>Dökümü alınacak bir dokunun en küçük boyutunu belirler. Bu değerden daha küçük dokular yok sayılır.</translation>
     </message>
     <message>
         <source>Background Dumping Options</source>
-        <translation>Background Dumping Options</translation>
+        <translation>Arka Plan Döküm Seçenekleri</translation>
     </message>
     <message>
         <source>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</source>
-        <translation>Determines the minimum size of a VRAM write that will be dumped, in background dumping mode. Uploads smaller than this size will be ignored.</translation>
+        <translation>Arka plan döküm modunda dökümü alınacak bir VRAM yazma işleminin en küçük boyutunu belirler. Bu boyuttan küçük yüklemeler yok sayılır.</translation>
     </message>
     <message>
         <source>Export...</source>
