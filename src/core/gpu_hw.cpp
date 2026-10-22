@@ -1050,9 +1050,9 @@ void GPU_HW::ClearFramebuffer()
   if (m_vram_depth_texture)
   {
     if (m_use_rov_for_shader_blend)
-      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0xFF);
+      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0);
     else
-      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), m_pgxp_depth_buffer ? 1.0f : 0.0f);
+      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 0.0f);
   }
   ClearVRAMDirtyRectangle();
   if (m_use_texture_cache)
@@ -1717,7 +1717,7 @@ bool GPU_HW::CompilePipelines(Error* error)
                 {
                   plconfig.depth.depth_test =
                     m_pgxp_depth_buffer ?
-                      (depth_test ? GPUPipeline::DepthFunc::LessEqual : GPUPipeline::DepthFunc::Always) :
+                      (depth_test ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always) :
                       (check_mask ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always);
 
                   // Don't write for transparent, but still test.
@@ -2461,9 +2461,9 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
   else
   {
     if (m_use_rov_for_shader_blend)
-      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0xFF);
+      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0);
     else
-      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 1.0f);
+      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 0.0f);
   }
 
   m_last_depth_z = 1.0f;

@@ -413,7 +413,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   pp.add_macro_definition("BUFFER_COLOR_BIT_DEPTH", "32");
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN", "0");
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_LOGARITHMIC", "0");
-  pp.add_macro_definition("RESHADE_DEPTH_LINEARIZATION_FAR_PLANE", "1000.0");
+  pp.add_macro_definition("RESHADE_DEPTH_LINEARIZATION_FAR_PLANE", "1.0"); // Depth is already linear.
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_REVERSED", "0");
 
   switch (cg_language)
