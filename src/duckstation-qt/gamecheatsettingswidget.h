@@ -23,7 +23,6 @@ namespace GameList {
 struct Entry;
 }
 
-class SettingsInterface;
 class SettingsWindow;
 
 class QStandardItem;
@@ -39,8 +38,14 @@ public:
 
   const Cheats::CodeInfo* getCodeInfo(const std::string_view name) const;
   void setCodeOption(const std::string_view name, u32 value);
-  std::string getPathForSavingCheats(std::string_view existing_name = {}) const;
-  QStringList getGroupNames() const;
+
+  /// Returns the path to write codes to. Existing codes are written back to the file they came from.
+  static std::string getPathForSavingCodes(const SettingsWindow* dialog, bool cheats,
+                                           std::string_view existing_name = {});
+
+  /// Asks for confirmation, then removes a code from the user's file, along with its enable state and option value.
+  static bool removeCodeFromFile(QWidget* parent, SettingsWindow* dialog, bool cheats, const std::string& name);
+
   void disableAllCheats();
 
 private:
@@ -93,15 +98,9 @@ class CheatCodeEditorDialog final : public QDialog
   Q_OBJECT
 
 public:
-  CheatCodeEditorDialog(QWidget* parent, std::string save_path, const Cheats::CodeInfoList& existing_codes,
-                        Cheats::CodeInfo code, const QStringList& group_names);
+  CheatCodeEditorDialog(QWidget* parent, SettingsWindow* dialog, bool cheats,
+                        const Cheats::CodeInfoList& existing_codes, Cheats::CodeInfo code);
   ~CheatCodeEditorDialog() override;
-
-  const Cheats::CodeInfo& getCode() const { return m_code; }
-
-  /// Moves the enable state and option value of a renamed code. Returns true if the settings were changed.
-  static bool renameCodeInSettings(SettingsInterface* si, const char* section, const std::string& old_name,
-                                   const std::string& new_name);
 
 private:
   void onGroupSelectedIndexChanged(int index);
@@ -113,13 +112,15 @@ private:
   void onRangeMaxChanged(int value);
   void onEditChoiceClicked();
 
-  void setupAdditionalUi(const QStringList& group_names);
+  void setupAdditionalUi();
   void fillUi();
+  void renameCodeInSettings(const std::string& old_name);
 
   Ui::GameCheatCodeEditorDialog m_ui;
 
-  std::string m_save_path;
+  SettingsWindow* m_dialog;
   const Cheats::CodeInfoList& m_existing_codes;
+  bool m_cheats;
 
   Cheats::CodeInfo m_code;
   Cheats::CodeOptionList m_new_options;

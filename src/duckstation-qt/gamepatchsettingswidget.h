@@ -55,8 +55,6 @@ private:
   void editPatch(const std::string& name);
   void removePatch(const std::string& name);
 
-  std::string getPathForSavingPatches(std::string_view existing_name = {}) const;
-
   Ui::GamePatchSettingsWidget m_ui;
   SettingsWindow* m_dialog;
   Cheats::CodeInfoList m_patches;

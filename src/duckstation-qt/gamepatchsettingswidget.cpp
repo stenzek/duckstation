@@ -11,8 +11,6 @@
 #include "core/cheats.h"
 
 #include "common/assert.h"
-#include "common/error.h"
-#include "common/file_system.h"
 
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QSpinBox>
@@ -129,24 +127,6 @@ void GamePatchSettingsWidget::onReloadClicked()
   QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
 }
 
-std::string GamePatchSettingsWidget::getPathForSavingPatches(std::string_view existing_name) const
-{
-  // Existing codes are written back to the file they came from.
-  if (!existing_name.empty())
-  {
-    std::string path =
-      Cheats::FindChtFileContainingCode(m_dialog->getGameSerial(), m_dialog->getGameHash(), false, existing_name);
-    if (!path.empty())
-      return path;
-  }
-
-  // Check for the path without the hash first. If we have one of those, keep using it.
-  std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, false);
-  if (!FileSystem::FileExists(path.c_str()) && m_dialog->isGameHashStable())
-    path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), false);
-  return path;
-}
-
 void GamePatchSettingsWidget::onAddClicked()
 {
   editPatch(std::string());
@@ -158,22 +138,11 @@ void GamePatchSettingsWidget::editPatch(const std::string& name)
   if (!name.empty() && !code)
     return;
 
-  QStringList group_names;
-  for (const std::string_view& prefix : Cheats::GetCodeListUniquePrefixes(m_patches, false))
-    group_names.push_back(QtUtils::StringViewToQString(prefix));
-
-  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, getPathForSavingPatches(name), m_patches,
-                                                               code ? *code : Cheats::CodeInfo(), group_names);
+  CheatCodeEditorDialog* const dlg =
+    new CheatCodeEditorDialog(this, m_dialog, false, m_patches, code ? *code : Cheats::CodeInfo());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
-  dlg->setWindowTitle(tr("Patch Editor"));
 
-  connect(dlg, &QDialog::accepted, this, [this, dlg, old_name = name] {
-    if (CheatCodeEditorDialog::renameCodeInSettings(m_dialog->getSettingsInterface(), Cheats::PATCHES_CONFIG_SECTION,
-                                                    old_name, dlg->getCode().name))
-    {
-      m_dialog->saveGameSettings();
-    }
-
+  connect(dlg, &QDialog::accepted, this, [this] {
     reloadList();
     QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
   });
@@ -183,27 +152,8 @@ void GamePatchSettingsWidget::editPatch(const std::string& name)
 
 void GamePatchSettingsWidget::removePatch(const std::string& name)
 {
-  if (QtUtils::MessageBoxQuestion(
-        this, tr("Confirm Removal"),
-        tr("You are removing the patch named '%1'. You cannot undo this action, are you sure you "
-           "wish to delete this patch?")
-          .arg(QString::fromStdString(name))) != QMessageBox::Yes)
-  {
+  if (!GameCheatSettingsWidget::removeCodeFromFile(this, m_dialog, false, name))
     return;
-  }
-
-  Error error;
-  if (!Cheats::UpdateCodeInFile(getPathForSavingPatches(name).c_str(), name, nullptr, &error))
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));
-    return;
-  }
-
-  // disable if it was enabled
-  INISettingsInterface* si = m_dialog->getSettingsInterface();
-  if (si->RemoveFromStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY, name.c_str()))
-    QtHost::SaveSettingsInterface(si, true, true);
 
   reloadList();
   QtHost::ReloadCheatFiles(m_dialog->getGameSerial(), false, true);
