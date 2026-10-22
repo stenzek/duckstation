@@ -1220,15 +1220,13 @@ void CPU::PGXP::CPU_SLTI(Instruction instr, u32 rsVal)
   const s32 imm = instr.i.imm_s16();
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
-  const float fimmx = static_cast<float>(imm);
-  const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
-
+  // The result is always 0 or 1, comparing precise values can only make it disagree with the native result.
   PGXPValue& prtVal = GetRtValue(instr);
-  prtVal.x = (prsVal.GetValidY(rsVal) < fimmy || prsVal.GetValidX(rsVal) < fimmx) ? 1.0f : 0.0f;
+  prtVal.value = BoolToUInt32(static_cast<s32>(rsVal) < imm);
+  prtVal.x = static_cast<float>(prtVal.value);
   prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
   prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
-  prtVal.value = BoolToUInt32(static_cast<s32>(rsVal) < imm);
 }
 
 void CPU::PGXP::CPU_SLTIU(Instruction instr, u32 rsVal)
@@ -1236,19 +1234,16 @@ void CPU::PGXP::CPU_SLTIU(Instruction instr, u32 rsVal)
   LOG_VALUES_C1(instr.i.rs.GetValue(), rsVal);
 
   // Rt = Rs < Imm (Unsigned)
-  const u32 imm = instr.i.imm_u16();
+  const u32 imm = instr.i.imm_sext32();
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
-  const float fimmx = static_cast<float>(static_cast<s16>(imm)); // deliberately signed
-  const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
-
+  // See CPU_SLTI().
   PGXPValue& prtVal = GetRtValue(instr);
-  prtVal.x =
-    (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(fimmy) || f16Unsign(prsVal.GetValidX(rsVal)) < fimmx) ? 1.0f : 0.0f;
+  prtVal.value = BoolToUInt32(rsVal < imm);
+  prtVal.x = static_cast<float>(prtVal.value);
   prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
   prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
-  prtVal.value = BoolToUInt32(rsVal < imm);
 }
 
 void CPU::PGXP::CPU_LUI(Instruction instr)
@@ -1424,16 +1419,14 @@ void CPU::PGXP::CPU_SLT(Instruction instr, u32 rsVal, u32 rtVal)
 
   // Rd = Rs < Rt (signed)
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   PGXPValue& prdVal = GetRdValue(instr);
-  prdVal.x = (prsVal.GetValidY(rsVal) < prtVal.GetValidY(rtVal) ||
-              f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
-               1.0f :
-               0.0f;
+
+  // See CPU_SLTI().
+  prdVal.value = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
+  prdVal.x = static_cast<float>(prdVal.value);
   prdVal.y = 0.0f;
   prdVal.z = prsVal.z;
   prdVal.flags = prsVal.flags | VALID_TAINTED_Z | VALID_X | VALID_Y;
-  prdVal.value = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
 }
 
 void CPU::PGXP::CPU_SLTU(Instruction instr, u32 rsVal, u32 rtVal)
@@ -1442,16 +1435,14 @@ void CPU::PGXP::CPU_SLTU(Instruction instr, u32 rsVal, u32 rtVal)
 
   // Rd = Rs < Rt (unsigned)
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   PGXPValue& prdVal = GetRdValue(instr);
-  prdVal.x = (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(prtVal.GetValidY(rtVal)) ||
-              f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
-               1.0f :
-               0.0f;
+
+  // See CPU_SLTI().
+  prdVal.value = BoolToUInt32(rsVal < rtVal);
+  prdVal.x = static_cast<float>(prdVal.value);
   prdVal.y = 0.0f;
   prdVal.z = prsVal.z;
   prdVal.flags = prsVal.flags | VALID_TAINTED_Z | VALID_X | VALID_Y;
-  prdVal.value = BoolToUInt32(rsVal < rtVal);
 }
 
 void CPU::PGXP::CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal)
