@@ -281,7 +281,9 @@ static void Execute_DPCT(Instruction inst);
 static void Execute_DCPL(Instruction inst);
 static void Execute_INTPL(Instruction inst);
 static void Execute_GPL(Instruction inst);
+static void Execute_GPL_PGXP(Instruction inst);
 static void Execute_GPF(Instruction inst);
+static void Execute_GPF_PGXP(Instruction inst);
 
 static void ApplyFreecam(s64& x, s64& y, s64& z);
 
@@ -1281,6 +1283,22 @@ ALWAYS_INLINE void GTE::Execute_GPF(Instruction inst)
   REGS.FLAG.UpdateError();
 }
 
+void GTE::Execute_GPL_PGXP(Instruction inst)
+{
+  // PGXP needs the inputs from before they are overwritten.
+  const u32 old_ir[3] = {REGS.dr32[9], REGS.dr32[10], REGS.dr32[11]};
+  const u32 old_mac[3] = {REGS.dr32[25], REGS.dr32[26], REGS.dr32[27]};
+  Execute_GPL(inst);
+  CPU::PGXP::GTE_GPF_GPL(old_ir, old_mac, inst.GetShift());
+}
+
+void GTE::Execute_GPF_PGXP(Instruction inst)
+{
+  const u32 old_ir[3] = {REGS.dr32[9], REGS.dr32[10], REGS.dr32[11]};
+  Execute_GPF(inst);
+  CPU::PGXP::GTE_GPF_GPL(old_ir, nullptr, inst.GetShift());
+}
+
 namespace GTE {
 
 /// Wraps an instruction handler, fixing the sf/lm bits at compile time. Once the handler is inlined, the shift amounts
@@ -1414,12 +1432,18 @@ void GTE::ExecuteInstruction(u32 inst_bits)
 
     case 0x3D:
       CPU::AddGTETicks(5);
-      GetSpecializedHandler<&Execute_GPF>(inst)(inst);
+      if (g_settings.UsingPGXPCPUMode())
+        Execute_GPF_PGXP(inst);
+      else
+        GetSpecializedHandler<&Execute_GPF>(inst)(inst);
       break;
 
     case 0x3E:
       CPU::AddGTETicks(5);
-      GetSpecializedHandler<&Execute_GPL>(inst)(inst);
+      if (g_settings.UsingPGXPCPUMode())
+        Execute_GPL_PGXP(inst);
+      else
+        GetSpecializedHandler<&Execute_GPL>(inst)(inst);
       break;
 
     case 0x3F:
@@ -1535,11 +1559,17 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 
     case 0x3D:
       *ticks = 5;
-      return GetSpecializedHandler<&Execute_GPF>(inst);
+      if (g_settings.UsingPGXPCPUMode())
+        return &Execute_GPF_PGXP;
+      else
+        return GetSpecializedHandler<&Execute_GPF>(inst);
 
     case 0x3E:
       *ticks = 5;
-      return GetSpecializedHandler<&Execute_GPL>(inst);
+      if (g_settings.UsingPGXPCPUMode())
+        return &Execute_GPL_PGXP;
+      else
+        return GetSpecializedHandler<&Execute_GPL>(inst);
 
     case 0x3F:
       *ticks = 39;

@@ -545,6 +545,73 @@ float CPU::PGXP::GTE_NCLIP()
   return nclip;
 }
 
+void CPU::PGXP::GTE_GPF_GPL(const u32 old_ir[3], const u32* old_mac, u8 shift)
+{
+  // [MAC1,MAC2,MAC3] = (([IR1,IR2,IR3] * IR0) + [MAC1,MAC2,MAC3]) SAR (sf*12), [IR1,IR2,IR3] = [MAC1,MAC2,MAC3]
+  // IR0 is a blend weight, so the native value is used, only the vector is interpolated precisely. MAC holds a
+  // 32-bit value, so it is split into halves the same way as the CPU arithmetic does.
+  const double ir0 = static_cast<double>(g_state.gte_regs.IR0);
+  const double scale = static_cast<double>(1u << shift);
+  for (u32 i = 0; i < 3; i++)
+  {
+    PGXPValue& ir = g_state.pgxp_gte[9 + i];
+    PGXPValue& mac = g_state.pgxp_gte[25 + i];
+    const u32 ir_val = g_state.gte_regs.dr32[9 + i];
+    const u32 mac_val = g_state.gte_regs.dr32[25 + i];
+
+    ir.Validate(old_ir[i]);
+
+    // A previous GPF can leave the precise IR wrapped past the 16-bit sign boundary, use the representation closest
+    // to the native value so the sign doesn't flip.
+    double ir_x = static_cast<double>(ir.GetValidX(old_ir[i]));
+    const double native_ir = static_cast<double>(static_cast<s16>(old_ir[i]));
+    if (ir_x - native_ir > 32768.0)
+      ir_x -= static_cast<double>(USHRT_MAX + 1);
+    else if (ir_x - native_ir < -32768.0)
+      ir_x += static_cast<double>(USHRT_MAX + 1);
+
+    double value = ir_x * ir0;
+    PGXPValue result = ir;
+    bool precise = (ir.flags & VALID_X) != 0;
+    if (old_mac)
+    {
+      mac.Validate(old_mac[i]);
+      const bool mac_precise = ((mac.flags & VALID_XY) == VALID_XY);
+      value += (mac_precise ? (f16Unsign(mac.x) + static_cast<double>(mac.y) * (USHRT_MAX + 1)) :
+                              static_cast<double>(static_cast<s32>(old_mac[i]))) *
+               scale;
+      CopyZIfMissing(result, mac);
+      precise |= mac_precise;
+    }
+    value /= scale;
+
+    if (!precise || value < static_cast<double>(INT_MIN) || value > static_cast<double>(INT_MAX))
+    {
+      mac.value = mac_val;
+      mac.flags = 0;
+      ir.value = ir_val;
+      ir.flags = 0;
+      continue;
+    }
+
+    const double hi = std::floor(value / (USHRT_MAX + 1));
+    mac.x = static_cast<float>(f16Sign(value - hi * (USHRT_MAX + 1)));
+    mac.y = static_cast<float>(hi);
+    mac.z = result.z;
+    mac.value = mac_val;
+    mac.flags = (result.flags & VALID_Z) | VALID_XY | VALID_TAINTED_Z;
+
+    // IR is only precise when MAC wasn't saturated.
+    ir = mac;
+    ir.value = ir_val;
+    if (ir_val != mac_val)
+    {
+      ir.x = static_cast<float>(LOWORD_S16(ir_val));
+      ir.y = static_cast<float>(HIWORD_S16(ir_val));
+    }
+  }
+}
+
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXPValue& value, u32 val)
 {
   switch (reg)

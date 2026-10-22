@@ -29,6 +29,7 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 void GTE_RTPS(float x, float y, float z, u32 value);
 bool GTE_HasPreciseVertices(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
+void GTE_GPF_GPL(const u32 old_ir[3], const u32* old_mac, u8 shift);
 
 // CPU instruction implementations.
 
