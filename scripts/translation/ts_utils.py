@@ -26,6 +26,7 @@ RICH_TAG_RE = re.compile(
     r"<\s*(/?)\s*(html|head|body|p|span|strong|b|i|u|br|hr|h[1-6]|a|table|tr|td|ul|ol|li)\b[^>]*>",
     re.IGNORECASE,
 )
+FILE_DIALOG_FILTER_RE = re.compile(r"[^\r\n]*\(([^()]*)\)\s*")
 
 CONTEXT_RE = re.compile(r"<context>.*?</context>", re.DOTALL)
 MESSAGE_RE = re.compile(r"<message(?:\s[^>]*)?>.*?</message>", re.DOTALL)
@@ -273,6 +274,20 @@ def unbalanced_rich_tags(text: str) -> dict[str, tuple[int, int]]:
     }
 
 
+def file_dialog_filter_patterns(text: str) -> list[collections.Counter[str]] | None:
+    """Recognize labeled Qt name filters, ignoring their translatable descriptions."""
+    filters: list[collections.Counter[str]] = []
+    for part in text.split(";;"):
+        match = FILE_DIALOG_FILTER_RE.fullmatch(part.strip())
+        if match is None:
+            return None
+        patterns = match.group(1).split()
+        if not patterns or any(not any(wildcard in pattern for wildcard in "*?") for pattern in patterns):
+            return None
+        filters.append(collections.Counter(patterns))
+    return filters
+
+
 def validate_translation(source: str, translation: str, allow_missing_placeholders: bool = False) -> list[str]:
     problems: list[str] = []
     source_placeholders = extract_placeholders(source)
@@ -285,6 +300,12 @@ def validate_translation(source: str, translation: str, allow_missing_placeholde
     if not placeholders_valid:
         problems.append(
             f"placeholder mismatch: source={dict(source_placeholders)} translation={dict(translated_placeholders)}"
+        )
+    source_filters = file_dialog_filter_patterns(source)
+    if source_filters is not None and file_dialog_filter_patterns(translation) != source_filters:
+        problems.append(
+            "file-dialog filter mismatch: preserve ASCII parentheses, ';;' separators, "
+            "and wildcard patterns in each filter"
         )
     return problems
 

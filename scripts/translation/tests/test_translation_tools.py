@@ -190,6 +190,61 @@ class TranslationToolTests(unittest.TestCase):
         self.assertFalse(unbalanced_rich_tags("<html><head/><body><br><hr/></body></html>"))
         self.assertEqual({"p": (2, 1), "strong": (1, 0)}, unbalanced_rich_tags("<p><p><strong>Text</p>"))
 
+    def test_file_dialog_filters_allow_localized_labels_and_pattern_order(self) -> None:
+        cases = [
+            ("PNG Images (*.png)", "PNG 图像 (*.png)"),
+            ("Images (*.jpg *.jpeg);;All Files (*)", "图像（照片） (*.jpeg   *.jpg);;所有文件 (*)"),
+            ("Images (PNG) (*.png)", "图像 (PNG) (*.png)"),
+            ("Saves (slot?.sav)", "存档 (slot?.sav)"),
+            ("Use files (*.png) here.", "在此处使用PNG文件。"),
+            ("Scaling (Nearest)", "缩放（邻近）"),
+        ]
+        for source, translation in cases:
+            with self.subTest(source=source, translation=translation):
+                self.assertEqual([], validate_translation(source, translation))
+
+    def test_file_dialog_filters_reject_broken_syntax_and_changed_patterns(self) -> None:
+        source = "PNG Images (*.png);;JPEG Images (*.jpg *.jpeg)"
+        translations = [
+            "PNG 图像（*.png）;;JPEG 图像（*.jpg *.jpeg）",
+            "PNG 图像 (*.png);JPEG 图像 (*.jpg *.jpeg)",
+            "PNG 图像 (*.png)；；JPEG 图像 (*.jpg *.jpeg)",
+            "PNG 图像 (*.png);;JPEG 图像 (*.jpg)",
+            "PNG 图像 (*.bmp);;JPEG 图像 (*.jpg *.jpeg)",
+            "PNG 图像 (*.png);;JPEG 图像 (*.jpg *.jpeg *.gif)",
+            "PNG 图像 (*.png);;JPEG 图像 (*.jpg *.jpg)",
+            "图像 (*.png *.jpg *.jpeg)",
+            "PNG 图像 (*.png);;JPEG 图像 (*.jpg *.jpeg);;所有文件 (*)",
+        ]
+        for translation in translations:
+            with self.subTest(translation=translation):
+                self.assertIn("file-dialog filter mismatch", validate_translation(source, translation)[0])
+        self.assertIn("file-dialog filter mismatch", validate_translation("All Files (*)", "所有文件 (*.*)")[0])
+
+    def test_file_dialog_filter_validation_reaches_lint_and_session_decisions(self) -> None:
+        fixture = FIXTURE.replace("New wording", "PNG Images (*.png)")
+        with tempfile.TemporaryDirectory() as directory:
+            catalog, session, manifest = self.start_session(Path(directory), fixture)
+            record = next(
+                record
+                for task in manifest["tasks"]
+                for record in self.task_records(session, task)
+                if record["source"] == "PNG Images (*.png)"
+            )
+            with self.assertRaisesRegex(ValueError, "file-dialog filter mismatch"):
+                validate_decision(record, {"id": record["id"], "translation": "PNG 图像（*.png）"})
+            normalized, _ = validate_decision(record, {"id": record["id"], "translation": "PNG 图像 (*.png)"})
+            self.assertEqual("PNG 图像 (*.png)", normalized["translation"])
+
+            text = catalog.read_text(encoding="utf-8").replace(
+                "<source>PNG Images (*.png)</source>\n        <translation type=\"unfinished\"></translation>",
+                "<source>PNG Images (*.png)</source>\n        <translation>PNG 图像（*.png）</translation>",
+            )
+            catalog.write_text(text, encoding="utf-8")
+            result = self.run_validator(catalog, expect=1)
+            self.assertIn("file-dialog filter mismatch", result.stdout)
+            self.run_validator(catalog, "--placeholders-only")
+
     def test_fingerprint_ignores_translation_changes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
