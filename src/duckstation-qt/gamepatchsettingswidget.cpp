@@ -14,16 +14,18 @@
 #include "common/error.h"
 #include "common/file_system.h"
 
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QSpinBox>
+
 #include <algorithm>
 
 #include "moc_gamepatchsettingswidget.cpp"
 
 using namespace Qt::StringLiterals;
 
-GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-                                               const std::string& description, bool disallowed_for_achievements,
-                                               bool enabled, bool removable, SettingsWindow* dialog, QWidget* parent)
-  : QWidget(parent), m_dialog(dialog), m_name(std::move(name))
+GamePatchDetailsWidget::GamePatchDetailsWidget(const Cheats::CodeInfo& info, bool enabled, SettingsWindow* dialog,
+                                               QWidget* parent)
+  : QWidget(parent), m_dialog(dialog), m_name(info.name)
 {
   m_ui.setupUi(this);
 
@@ -34,15 +36,53 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
   m_ui.name->setText(QString::fromStdString(m_name));
   m_ui.description->setText(
     tr("<strong>Author: </strong>%1%2<br>%3")
-      .arg(author.empty() ? tr("Unknown") : QString::fromStdString(author))
-      .arg(disallowed_for_achievements ? tr("<br><strong>Not permitted in RetroAchievements hardcore mode.</strong>") :
-                                         QString())
-      .arg(description.empty() ? tr("No description provided.") : QString::fromStdString(description)));
+      .arg(info.author.empty() ? tr("Unknown") : QString::fromStdString(info.author))
+      .arg(info.disallow_for_achievements ?
+             tr("<br><strong>Not permitted in RetroAchievements hardcore mode.</strong>") :
+             QString())
+      .arg(info.description.empty() ? tr("No description provided.") : QString::fromStdString(info.description)));
   m_ui.description->setEnabled(false);
-  m_ui.edit->setVisible(removable);
-  m_ui.remove->setVisible(removable);
+  m_ui.edit->setVisible(!info.from_database);
+  m_ui.remove->setVisible(!info.from_database);
 
   DebugAssert(dialog->getSettingsInterface());
+  const SettingsInterface* si = dialog->getSettingsInterface();
+  QWidget* option_widget = nullptr;
+  if (info.HasOptionChoices())
+  {
+    // unset values default to the first option
+    const u32 value = si->GetUIntValue(Cheats::PATCHES_CONFIG_SECTION, m_name.c_str(), info.options.front().second);
+    QComboBox* cb = new QComboBox(this);
+    for (const Cheats::CodeOption& opt : info.options)
+    {
+      cb->addItem(QString::fromStdString(opt.first), QVariant(static_cast<uint>(opt.second)));
+      if (opt.second == value)
+        cb->setCurrentIndex(cb->count() - 1);
+    }
+    connect(cb, &QComboBox::currentIndexChanged, this,
+            [this, cb](int index) { setOptionValue(cb->itemData(index).toUInt()); });
+    option_widget = cb;
+  }
+  else if (info.HasOptionRange())
+  {
+    QSpinBox* sb = new QSpinBox(this);
+    QtUtils::FixSpinBoxTextMargins(sb);
+    sb->setRange(info.option_range_start, info.option_range_end);
+    sb->setValue(
+      static_cast<int>(si->GetUIntValue(Cheats::PATCHES_CONFIG_SECTION, m_name.c_str(), info.option_range_start)));
+    connect(sb, &QSpinBox::valueChanged, this, [this](int value) { setOptionValue(static_cast<u32>(value)); });
+    option_widget = sb;
+  }
+
+  if (option_widget)
+  {
+    QHBoxLayout* option_layout = new QHBoxLayout();
+    option_layout->addWidget(new QLabel(tr("Option:"), this));
+    option_layout->addWidget(option_widget);
+    option_layout->addStretch(1);
+    m_ui.gridLayout->addLayout(option_layout, 2, 0);
+  }
+
   m_ui.enabled->setChecked(enabled);
   connect(m_ui.enabled, &ToggleButton::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
   connect(m_ui.edit, &QToolButton::clicked, this, &GamePatchDetailsWidget::editRequested);
@@ -60,6 +100,12 @@ void GamePatchDetailsWidget::onEnabledStateChanged(Qt::CheckState state)
     si->RemoveFromStringList(Cheats::PATCHES_CONFIG_SECTION, "Enable", m_name.c_str());
 
   QtHost::SaveSettingsInterface(si, true, true);
+}
+
+void GamePatchDetailsWidget::setOptionValue(u32 value)
+{
+  m_dialog->getSettingsInterface()->SetUIntValue(Cheats::PATCHES_CONFIG_SECTION, m_name.c_str(), value);
+  m_dialog->saveGameSettings();
 }
 
 GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent) : m_dialog(dialog)
@@ -204,9 +250,7 @@ void GamePatchSettingsWidget::reloadList()
       }
 
       const bool enabled = (std::find(enabled_list.begin(), enabled_list.end(), pi.name) != enabled_list.end());
-      GamePatchDetailsWidget* it =
-        new GamePatchDetailsWidget(pi.name, pi.author, pi.description, pi.disallow_for_achievements, enabled,
-                                   !pi.from_database, m_dialog, container);
+      GamePatchDetailsWidget* it = new GamePatchDetailsWidget(pi, enabled, m_dialog, container);
       layout->addWidget(it);
 
       // queued, because reloading the list destroys the widget that sent the signal

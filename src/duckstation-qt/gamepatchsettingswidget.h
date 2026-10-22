@@ -21,9 +21,7 @@ class GamePatchDetailsWidget : public QWidget
   Q_OBJECT
 
 public:
-  GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description,
-                         bool disallowed_for_achievements, bool enabled, bool removable, SettingsWindow* dialog,
-                         QWidget* parent);
+  GamePatchDetailsWidget(const Cheats::CodeInfo& info, bool enabled, SettingsWindow* dialog, QWidget* parent);
   ~GamePatchDetailsWidget();
 
 Q_SIGNALS:
@@ -32,6 +30,7 @@ Q_SIGNALS:
 
 private:
   void onEnabledStateChanged(Qt::CheckState state);
+  void setOptionValue(u32 value);
 
   Ui::GamePatchDetailsWidget m_ui;
   SettingsWindow* m_dialog;
