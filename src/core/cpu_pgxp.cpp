@@ -631,6 +631,42 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXPValue& value, 
       return;
     }
 
+    // halfword registers, the upper half is replaced with the sign/zero extension of the lower half
+    case 1:  // V0[z]
+    case 3:  // V1[z]
+    case 5:  // V2[z]
+    case 7:  // OTZ
+    case 8:  // IR0
+    case 9:  // IR1
+    case 10: // IR2
+    case 11: // IR3
+    case 16: // SZ0
+    case 17: // SZ1
+    case 18: // SZ2
+    case 19: // SZ3
+    case 36: // RT33
+    case 44: // L33
+    case 52: // LR33
+    case 58: // H
+    case 59: // DQA
+    case 61: // ZSF3
+    case 62: // ZSF4
+    {
+      const bool sign = (reg != 7 && (reg < 16 || reg > 19));
+      PGXPValue& gteVal = g_state.pgxp_gte[reg];
+      gteVal = value;
+
+      // The precise low half may have wrapped past the 16-bit sign boundary, so take the upper half from the
+      // representation closest to the native value.
+      const float native = static_cast<float>(sign ? LOWORD_S16(val) : LOWORD_U16(val));
+      const float diff = value.x - native;
+      const float precise = value.x + ((diff > 32768.0f) ? -65536.0f : (diff < -32768.0f) ? 65536.0f : 0.0f);
+      gteVal.y = std::floor(precise / static_cast<float>(USHRT_MAX + 1));
+      gteVal.value = sign ? SignExtend32(Truncate16(val)) : ZeroExtend32(Truncate16(val));
+      gteVal.flags = (value.flags & ~VALID_Y) | ((value.flags & VALID_X) << 1);
+      return;
+    }
+
     default:
     {
       PGXPValue& gteVal = g_state.pgxp_gte[reg];
