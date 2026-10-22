@@ -1642,6 +1642,15 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   double x = prtVal.x;
   double y = sign ? prtVal.y : f16Unsign(prtVal.y);
 
+  // The precise value can cross the 16-bit sign boundary when the native value doesn't (e.g. 0x7F9E vs 32905.1),
+  // use the representation of the low half closest to the native value, so it matches the sign tests below.
+  const double native_x = static_cast<double>(LOWORD_S16(rtVal));
+  if (x - native_x > 32768.0)
+    x -= static_cast<double>(USHRT_MAX + 1);
+  else if (x - native_x < -32768.0)
+    x += static_cast<double>(USHRT_MAX + 1);
+  const bool x_negative = (x < 0.0);
+
   const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
   const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
 
@@ -1663,7 +1672,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
     else if (sh < 16)
     {
       x += y * static_cast<double>(1 << (16 - sh));
-      if (prtVal.x < 0)
+      if (x_negative)
         x += static_cast<double>(1 << (16 - sh));
     }
     else
