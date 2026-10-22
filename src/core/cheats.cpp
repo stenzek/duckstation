@@ -808,6 +808,21 @@ std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<
   return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetChtTemplate(serial, hash, false));
 }
 
+std::string Cheats::FindChtFileContainingCode(const std::string_view serial, std::optional<GameHash> hash, bool cheats,
+                                              const std::string_view name)
+{
+  // later files override earlier ones when loading, so the last match is the one in use
+  std::string ret;
+  EnumerateChtFiles(serial, hash, cheats, true, true, false,
+                    [&ret, &name](const std::string& filename, const std::string& data, bool from_database) {
+                      CodeInfoList codes;
+                      ExtractCodeInfo(&codes, data, false, false, nullptr);
+                      if (FindCodeInInfoList(codes, name))
+                        ret = filename;
+                    });
+  return ret;
+}
+
 bool Cheats::AreCheatsEnabled()
 {
   if (Achievements::IsHardcoreModeActive() || g_settings.disable_all_enhancements)

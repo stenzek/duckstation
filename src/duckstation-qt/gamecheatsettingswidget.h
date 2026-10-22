@@ -38,9 +38,8 @@ public:
 
   const Cheats::CodeInfo* getCodeInfo(const std::string_view name) const;
   void setCodeOption(const std::string_view name, u32 value);
-  std::string getPathForSavingCheats() const;
+  std::string getPathForSavingCheats(std::string_view existing_name = {}) const;
   QStringList getGroupNames() const;
-  bool hasCodeWithName(const std::string_view name) const;
   void disableAllCheats();
 
 private:
@@ -93,7 +92,8 @@ class CheatCodeEditorDialog final : public QDialog
   Q_OBJECT
 
 public:
-  CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo code, const QStringList& group_names);
+  CheatCodeEditorDialog(QWidget* parent, std::string save_path, const Cheats::CodeInfoList& existing_codes,
+                        Cheats::CodeInfo code, const QStringList& group_names);
   ~CheatCodeEditorDialog() override;
 
 private:
@@ -109,8 +109,10 @@ private:
   void setupAdditionalUi(const QStringList& group_names);
   void fillUi();
 
-  GameCheatSettingsWidget* m_parent;
   Ui::GameCheatCodeEditorDialog m_ui;
+
+  std::string m_save_path;
+  const Cheats::CodeInfoList& m_existing_codes;
 
   Cheats::CodeInfo m_code;
   Cheats::CodeOptionList m_new_options;

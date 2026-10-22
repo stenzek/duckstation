@@ -6,6 +6,8 @@
 #include "ui_gamepatchdetailswidget.h"
 #include "ui_gamepatchsettingswidget.h"
 
+#include "core/cheats.h"
+
 #include <QtWidgets/QWidget>
 
 namespace GameList {
@@ -20,8 +22,13 @@ class GamePatchDetailsWidget : public QWidget
 
 public:
   GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description,
-                         bool disallowed_for_achievements, bool enabled, SettingsWindow* dialog, QWidget* parent);
+                         bool disallowed_for_achievements, bool enabled, bool removable, SettingsWindow* dialog,
+                         QWidget* parent);
   ~GamePatchDetailsWidget();
+
+Q_SIGNALS:
+  void editRequested();
+  void removeRequested();
 
 private:
   void onEnabledStateChanged(Qt::CheckState state);
@@ -45,7 +52,13 @@ private:
   void reloadList();
 
   void onReloadClicked();
+  void onAddClicked();
+  void editPatch(const std::string& name);
+  void removePatch(const std::string& name);
+
+  std::string getPathForSavingPatches(std::string_view existing_name = {}) const;
 
   Ui::GamePatchSettingsWidget m_ui;
   SettingsWindow* m_dialog;
+  Cheats::CodeInfoList m_patches;
 };

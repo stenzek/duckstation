@@ -241,8 +241,17 @@ void GameCheatSettingsWidget::setCodeOption(const std::string_view name, u32 val
   m_dialog->saveGameSettings();
 }
 
-std::string GameCheatSettingsWidget::getPathForSavingCheats() const
+std::string GameCheatSettingsWidget::getPathForSavingCheats(std::string_view existing_name) const
 {
+  // Existing codes are written back to the file they came from.
+  if (!existing_name.empty())
+  {
+    std::string path =
+      Cheats::FindChtFileContainingCode(m_dialog->getGameSerial(), m_dialog->getGameHash(), true, existing_name);
+    if (!path.empty())
+      return path;
+  }
+
   // Check for the path without the hash first. If we have one of those, keep using it.
   std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
   if (!FileSystem::FileExists(path.c_str()) && m_dialog->isGameHashStable())
@@ -262,11 +271,6 @@ QStringList GameCheatSettingsWidget::getGroupNames() const
       ret.push_back(QtUtils::StringViewToQString(prefix));
   }
   return ret;
-}
-
-bool GameCheatSettingsWidget::hasCodeWithName(const std::string_view name) const
-{
-  return (Cheats::FindCodeInInfoList(m_codes, name) != nullptr);
 }
 
 void GameCheatSettingsWidget::onEnableCheatsChanged(Qt::CheckState state)
@@ -628,7 +632,8 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
 
 void GameCheatSettingsWidget::newCode()
 {
-  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, Cheats::CodeInfo(), getGroupNames());
+  CheatCodeEditorDialog* const dlg =
+    new CheatCodeEditorDialog(this, getPathForSavingCheats(), m_codes, Cheats::CodeInfo(), getGroupNames());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
   connect(dlg, &QDialog::accepted, this, [this] {
@@ -646,7 +651,8 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
   if (!code)
     return;
 
-  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, *code, getGroupNames());
+  CheatCodeEditorDialog* const dlg =
+    new CheatCodeEditorDialog(this, getPathForSavingCheats(code->name), m_codes, *code, getGroupNames());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
   connect(dlg, &QDialog::accepted, this, [this] {
@@ -686,7 +692,7 @@ void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool 
     setCheatEnabled(code->name, false, true);
 
   Error error;
-  if (!Cheats::UpdateCodeInFile(getPathForSavingCheats().c_str(), code->name, nullptr, &error))
+  if (!Cheats::UpdateCodeInFile(getPathForSavingCheats(code->name).c_str(), code->name, nullptr, &error))
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
                              tr("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));
@@ -807,9 +813,10 @@ void GameCheatSettingsWidget::populateTreeWidgetItem(QStandardItem* parent, cons
   }
 }
 
-CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo code,
+CheatCodeEditorDialog::CheatCodeEditorDialog(QWidget* parent, std::string save_path,
+                                             const Cheats::CodeInfoList& existing_codes, Cheats::CodeInfo code,
                                              const QStringList& group_names)
-  : QDialog(parent), m_parent(parent), m_code(std::move(code))
+  : QDialog(parent), m_save_path(std::move(save_path)), m_existing_codes(existing_codes), m_code(std::move(code))
 {
   m_ui.setupUi(this);
   QtUtils::FixSpinBoxTextMargins(this);
@@ -900,7 +907,7 @@ void CheatCodeEditorDialog::saveClicked()
   }
 
   // if the name has changed, then we need to make sure it hasn't already been used
-  if (new_name != m_code.name && m_parent->hasCodeWithName(new_name))
+  if (new_name != m_code.name && Cheats::FindCodeInInfoList(m_existing_codes, new_name) != nullptr)
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
                              tr("A code with the name '%1' already exists.").arg(QString::fromStdString(new_name)));
@@ -940,8 +947,7 @@ void CheatCodeEditorDialog::saveClicked()
     m_code.option_range_end = static_cast<u16>(m_ui.rangeMax->value());
   }
 
-  std::string path = m_parent->getPathForSavingCheats();
-  if (!Cheats::UpdateCodeInFile(path.c_str(), old_name, &m_code, &error))
+  if (!Cheats::UpdateCodeInFile(m_save_path.c_str(), old_name, &m_code, &error))
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
                              tr("Failed to save cheat code:\n%1").arg(QString::fromStdString(error.GetDescription())));

@@ -30,7 +30,33 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop">
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QToolButton" name="edit">
+       <property name="toolTip">
+        <string>Edit Patch</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/edit-box-line.svg</normaloff>:/icons/monochrome/svg/edit-box-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="remove">
+       <property name="toolTip">
+        <string>Remove Patch</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
     <widget class="QLabel" name="description">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -80,6 +106,8 @@
    <header>togglebutton.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources/duckstation-qt.qrc"/>
+ </resources>
  <connections/>
 </ui>

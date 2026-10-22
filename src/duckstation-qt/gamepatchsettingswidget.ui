@@ -42,6 +42,17 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QPushButton" name="add">
+       <property name="text">
+        <string>Add Patch</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="disableAllPatches">
        <property name="text">
         <string>Disable All Patches</string>
