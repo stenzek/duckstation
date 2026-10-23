@@ -890,7 +890,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
       settings.gpu_pgxp_vertex_cache = settings.gpu_pgxp_enable;
     }
-    else
+    else if (!settings.gpu_pgxp_vertex_cache)
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Warning, "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
@@ -917,7 +917,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
       settings.gpu_pgxp_cpu = settings.gpu_pgxp_enable;
     }
-    else
+    else if (!settings.gpu_pgxp_cpu)
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Warning, "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
