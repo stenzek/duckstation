@@ -1447,6 +1447,7 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
       free_far_code_space < Recompiler::MIN_CODE_RESERVE_FOR_BLOCK)
   {
     ERROR_LOG("Out of code space while compiling {:08X}. Resetting code cache.", start_pc);
+    ClearBlocks();
     ResetCodeBuffer();
   }
 
