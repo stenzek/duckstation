@@ -256,8 +256,9 @@ Cheats::CheatCode::~CheatCode() = default;
 
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
-  return (m_metadata.disable_widescreen_rendering || m_metadata.enable_8mb_ram ||
-          m_metadata.override_aspect_ratio.has_value() || m_metadata.override_cpu_overclock.has_value());
+  return (m_metadata.disable_widescreen_rendering || m_metadata.force_pgxp_preserve_projection_precision ||
+          m_metadata.enable_8mb_ram || m_metadata.override_aspect_ratio.has_value() ||
+          m_metadata.override_cpu_overclock.has_value());
 }
 
 void Cheats::CheatCode::ApplySettingOverrides()
@@ -266,6 +267,11 @@ void Cheats::CheatCode::ApplySettingOverrides()
   {
     DEV_LOG("Disabling widescreen rendering from {} patch.", GetName());
     g_settings.gpu_widescreen_hack = false;
+  }
+  if (m_metadata.force_pgxp_preserve_projection_precision && !g_settings.gpu_pgxp_preserve_proj_fp)
+  {
+    DEV_LOG("Enabling PGXP preserve projection precision from {} patch.", GetName());
+    g_settings.gpu_pgxp_preserve_proj_fp = true;
   }
   if (m_metadata.enable_8mb_ram && !g_settings.cpu_enable_8mb_ram)
   {
@@ -636,6 +642,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "OverrideCPUOverclock = {}\n", code.override_cpu_overclock.value());
   if (code.disable_widescreen_rendering)
     fmt::format_to(appender, "DisableWidescreenRendering = true\n");
+  if (code.force_pgxp_preserve_projection_precision)
+    fmt::format_to(appender, "ForcePGXPPreserveProjectionPrecision = true\n");
   if (code.enable_8mb_ram)
     fmt::format_to(appender, "Enable8MBRAM = true\n");
   if (code.disallow_for_achievements)
@@ -1718,6 +1726,10 @@ bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view
   else if (key == "DisableWidescreenRendering")
   {
     metadata->disable_widescreen_rendering = StringUtil::FromChars<bool>(value).value_or(false);
+  }
+  else if (key == "ForcePGXPPreserveProjectionPrecision")
+  {
+    metadata->force_pgxp_preserve_projection_precision = StringUtil::FromChars<bool>(value).value_or(false);
   }
   else if (key == "Enable8MBRAM")
   {

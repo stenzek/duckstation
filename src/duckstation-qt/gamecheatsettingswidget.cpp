@@ -990,6 +990,7 @@ void CheatCodeEditorDialog::saveClicked()
                                       std::optional<u32>(static_cast<u32>(m_ui.overrideCPUOverclock->value())) :
                                       std::nullopt;
     m_code.disable_widescreen_rendering = m_ui.disableWidescreenRendering->isChecked();
+    m_code.force_pgxp_preserve_projection_precision = m_ui.forcePGXPPreserveProjectionPrecision->isChecked();
     m_code.enable_8mb_ram = m_ui.enable8MBRAM->isChecked();
     m_code.disallow_for_achievements = m_ui.disallowForAchievements->isChecked();
   }
@@ -1120,6 +1121,7 @@ void CheatCodeEditorDialog::fillUi()
   }
   m_ui.overrideCPUOverclock->setValue(static_cast<int>(m_code.override_cpu_overclock.value_or(0)));
   m_ui.disableWidescreenRendering->setChecked(m_code.disable_widescreen_rendering);
+  m_ui.forcePGXPPreserveProjectionPrecision->setChecked(m_code.force_pgxp_preserve_projection_precision);
   m_ui.enable8MBRAM->setChecked(m_code.enable_8mb_ram);
   m_ui.disallowForAchievements->setChecked(m_code.disallow_for_achievements);
   onCodeTypeChanged(m_ui.type->currentIndex());
