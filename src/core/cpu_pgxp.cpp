@@ -1171,30 +1171,22 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
   prtVal.value = rtVal;
   prtVal.flags = prsVal.flags | VALID_Y | VALID_TAINTED_Z;
 
-  switch (imm)
+  if (imm == 0)
   {
-    case 0:
-    {
-      // if 0 then x == 0
-      prtVal.x = 0.0f;
-      prtVal.flags |= VALID_X;
-    }
-    break;
-
-    case 0xFFFFu:
-    {
-      // if saturated then x == x
-      prtVal.x = prsVal.x;
-    }
-    break;
-
-    default:
-    {
-      // otherwise x is low precision value
-      prtVal.x = static_cast<float>(LOWORD_S16(rtVal));
-      prtVal.flags |= VALID_X;
-    }
-    break;
+    // if 0 then x == 0
+    prtVal.x = 0.0f;
+    prtVal.flags |= VALID_X;
+  }
+  else if (LOWORD_U16(rtVal) == LOWORD_U16(rsVal))
+  {
+    // if the mask didn't change anything then x == x
+    prtVal.x = prsVal.x;
+  }
+  else
+  {
+    // otherwise x is low precision value
+    prtVal.x = static_cast<float>(LOWORD_S16(rtVal));
+    prtVal.flags |= VALID_X;
   }
 }
 
@@ -1211,9 +1203,9 @@ void CPU::PGXP::CPU_ORI(Instruction instr, u32 rsVal)
   pRtVal = pRsVal;
   pRtVal.value = rtVal;
 
-  if (imm == 0) [[unlikely]]
+  if (LOWORD_U16(rtVal) == LOWORD_U16(rsVal))
   {
-    // if 0 then x == x
+    // if no bits were set then x == x
   }
   else
   {
