@@ -1806,7 +1806,10 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
     y = HIWORD_S16(dY);
   else
-    y = y / static_cast<double>(1 << sh);
+  {
+    // Use the native upper half, and only shift the precise offset from it, the integer bits shifted out go to x.
+    y = HIWORD_S16(dY) + (f16Sign(prtVal.y - HIWORD_S16(rtVal)) / static_cast<double>(1 << sh));
+  }
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
