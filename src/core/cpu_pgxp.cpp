@@ -1139,13 +1139,12 @@ void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
     return;
   }
 
-  prtVal.x = static_cast<float>(f16Unsign(prtVal.x));
-  prtVal.x += static_cast<float>(LOWORD_U16(immVal));
+  const double x = f16Unsign(prsVal.GetValidX(rsVal)) + LOWORD_U16(immVal);
 
   // carry on over/underflow
-  const float of = (prtVal.x >= (USHRT_MAX + 1)) ? 1.0f : (prtVal.x < 0.0f) ? -1.0f : 0.0f;
-  prtVal.x = static_cast<float>(f16Sign(prtVal.x));
-  prtVal.y += HIWORD_S16(immVal) + of;
+  const float of = (x >= (USHRT_MAX + 1)) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
+  prtVal.x = static_cast<float>(f16Sign(x));
+  prtVal.y = prsVal.GetValidY(rsVal) + HIWORD_S16(immVal) + of;
 
   // truncate on overflow/underflow
   prtVal.y += (prtVal.y >= (SHRT_MAX + 1)) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
