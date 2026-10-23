@@ -6,6 +6,7 @@
     <ClCompile Include="cdrom_tests.cpp" />
     <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="cpu_disasm_tests.cpp" />
+    <ClCompile Include="cpu_pgxp_tests.cpp" />
     <ClCompile Include="gpu_sw_rasterizer_tests.cpp" />
     <ClCompile Include="gpu_tests.cpp" />
     <ClCompile Include="gte_tests.cpp" />

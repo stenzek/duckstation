@@ -5,6 +5,7 @@ add_executable(core-tests
   cdrom_tests.cpp
   cheats_tests.cpp
   cpu_disasm_tests.cpp
+  cpu_pgxp_tests.cpp
   gpu_sw_rasterizer_tests.cpp
   gpu_tests.cpp
   gte_tests.cpp
