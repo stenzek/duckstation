@@ -1384,22 +1384,23 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, 
   PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
+  // Prefer a source with a precise value when the half is unchanged.
   float x, y;
   if (LOWORD_U16(rdVal) == 0)
     x = 0.0f;
-  else if (LOWORD_U16(rdVal) == LOWORD_U16(rsVal))
-    x = prsVal.GetValidX(rsVal);
-  else if (LOWORD_U16(rdVal) == LOWORD_U16(rtVal))
-    x = prtVal.GetValidX(rtVal);
+  else if (LOWORD_U16(rdVal) == LOWORD_U16(rsVal) && (prsVal.flags & VALID_X))
+    x = prsVal.x;
+  else if (LOWORD_U16(rdVal) == LOWORD_U16(rtVal) && (prtVal.flags & VALID_X))
+    x = prtVal.x;
   else
     x = static_cast<float>(LOWORD_S16(rdVal));
 
   if (HIWORD_U16(rdVal) == 0)
     y = 0.0f;
-  else if (HIWORD_U16(rdVal) == HIWORD_U16(rsVal))
-    y = prsVal.GetValidY(rsVal);
-  else if (HIWORD_U16(rdVal) == HIWORD_U16(rtVal))
-    y = prtVal.GetValidY(rtVal);
+  else if (HIWORD_U16(rdVal) == HIWORD_U16(rsVal) && (prsVal.flags & VALID_Y))
+    y = prsVal.y;
+  else if (HIWORD_U16(rdVal) == HIWORD_U16(rtVal) && (prtVal.flags & VALID_Y))
+    y = prtVal.y;
   else
     y = static_cast<float>(HIWORD_S16(rdVal));
 
@@ -1427,8 +1428,13 @@ void CPU::PGXP::CPU_OR_(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs | Rt
-  const u32 rdVal = rsVal | rtVal;
-  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
+  // With zero, this is a move, and keeps fractions in halves that are natively zero. Same as the recompiler.
+  if (rtVal == 0)
+    CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rs.GetValue()), rsVal);
+  else if (rsVal == 0)
+    CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rt.GetValue()), rtVal);
+  else
+    CPU_BITWISE(instr, rsVal | rtVal, rsVal, rtVal);
 }
 
 void CPU::PGXP::CPU_XOR_(Instruction instr, u32 rsVal, u32 rtVal)
@@ -1436,8 +1442,15 @@ void CPU::PGXP::CPU_XOR_(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs ^ Rt
-  const u32 rdVal = rsVal ^ rtVal;
-  CPU_BITWISE(instr, rdVal, rsVal, rtVal);
+  // See CPU_OR_(). XOR with itself is exactly zero, even when the source is natively zero.
+  if (instr.r.rs == instr.r.rt)
+    CPU_BITWISE(instr, 0, rsVal, rtVal);
+  else if (rtVal == 0)
+    CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rs.GetValue()), rsVal);
+  else if (rsVal == 0)
+    CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rt.GetValue()), rtVal);
+  else
+    CPU_BITWISE(instr, rsVal ^ rtVal, rsVal, rtVal);
 }
 
 void CPU::PGXP::CPU_NOR(Instruction instr, u32 rsVal, u32 rtVal)
