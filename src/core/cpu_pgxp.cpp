@@ -1785,6 +1785,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   else
     x = LOWORD_S16(dX); // only sign bits left
 
+  bool x_is_scalar = false;
   if (LOWORD_S16(dY) != HIWORD_S16(iX))
   {
     if (sh == 16)
@@ -1796,6 +1797,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
       x += y * static_cast<double>(1 << (16 - sh));
       if (x_negative)
         x += static_cast<double>(1 << (16 - sh));
+      x_is_scalar = true;
     }
     else
     {
@@ -1803,8 +1805,22 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
     }
   }
 
+  // When only sign bits are left in the upper half and it was shifted into x, x is the whole precise value, and its
+  // sign can differ from the native value (e.g. 45 vs -57.9). Take the sign from it, so the halves don't represent a
+  // value 65536 away.
   if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
-    y = HIWORD_S16(dY);
+  {
+    if (x_is_scalar)
+    {
+      // Quantize first, so both halves come from the same value.
+      x = std::trunc(x * (USHRT_MAX + 1)) / static_cast<double>(USHRT_MAX + 1);
+      y = std::floor(x / static_cast<double>(USHRT_MAX + 1));
+    }
+    else
+    {
+      y = HIWORD_S16(dY);
+    }
+  }
   else
   {
     // Use the native upper half, and only shift the precise offset from it, the integer bits shifted out go to x.
