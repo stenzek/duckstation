@@ -1761,6 +1761,23 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
 
   const u32 rdVal = sign ? static_cast<u32>(static_cast<s32>(rtVal) >> sh) : (rtVal >> sh);
 
+  if (sh >= 16)
+  {
+    // Only the upper half is left, so extract it, using the representation closest to the native value. The upper half
+    // of the result is only sign bits, taken from the precise value so that the halves represent the same value.
+    const double y = static_cast<double>(sign ? HIWORD_S16(rtVal) : HIWORD_U16(rtVal)) +
+                     f16Sign(prtVal.GetValidY(rtVal) - HIWORD_S16(rtVal));
+    // Quantize before splitting, otherwise a tiny negative value has a zero low half and a -1 upper half.
+    const double x =
+      std::trunc(y / static_cast<double>(1 << (sh - 16)) * (USHRT_MAX + 1)) / static_cast<double>(USHRT_MAX + 1);
+    prdVal.x = static_cast<float>(f16Sign(x));
+    prdVal.y = static_cast<float>(std::floor(x / static_cast<double>(USHRT_MAX + 1)));
+    prdVal.z = prtVal.z;
+    prdVal.value = rdVal;
+    prdVal.flags = (prtVal.flags & ~VALID_X) | ((prtVal.flags & VALID_Y) >> 1) | VALID_TAINTED_Z;
+    return;
+  }
+
   double x = prtVal.GetValidX(rtVal);
   double y = sign ? prtVal.GetValidY(rtVal) : f16Unsign(prtVal.GetValidY(rtVal));
 
@@ -1785,24 +1802,12 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   else
     x = LOWORD_S16(dX); // only sign bits left
 
-  bool x_is_scalar = false;
-  if (LOWORD_S16(dY) != HIWORD_S16(iX))
+  const bool x_is_scalar = (LOWORD_S16(dY) != HIWORD_S16(iX));
+  if (x_is_scalar)
   {
-    if (sh == 16)
-    {
-      x = y;
-    }
-    else if (sh < 16)
-    {
-      x += y * static_cast<double>(1 << (16 - sh));
-      if (x_negative)
-        x += static_cast<double>(1 << (16 - sh));
-      x_is_scalar = true;
-    }
-    else
-    {
-      x += y / static_cast<double>(1 << (sh - 16));
-    }
+    x += y * static_cast<double>(1 << (16 - sh));
+    if (x_negative)
+      x += static_cast<double>(1 << (16 - sh));
   }
 
   // When only sign bits are left in the upper half and it was shifted into x, x is the whole precise value, and its
@@ -1831,7 +1836,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
   // What we probably should do is not set the valid flag on non-3D values to begin
   // with, only letting them become valid when used in another expression.
-  if (sign && !is_variable && !(prtVal.flags & VALID_Z) && sh < 16)
+  if (sign && !is_variable && !(prtVal.flags & VALID_Z))
   {
     prdVal.x = static_cast<float>(LOWORD_S16(rdVal));
     prdVal.y = static_cast<float>(HIWORD_S16(rdVal));
