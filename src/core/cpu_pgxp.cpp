@@ -1704,7 +1704,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
   }
   else if (sh == 16)
   {
-    prdVal.y = prtVal.x;
+    prdVal.y = prtVal.GetValidX(rtVal);
     prdVal.x = 0.0f;
 
     // Only set valid X if there's also a valid Y. We could use GetValidX() to pull it from the low precision value
@@ -1714,7 +1714,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
   }
   else if (sh >= 16)
   {
-    prdVal.y = static_cast<float>(f16Sign(f16Unsign(prtVal.x * static_cast<double>(1 << (sh - 16)))));
+    prdVal.y = static_cast<float>(f16Sign(f16Unsign(prtVal.GetValidX(rtVal) * static_cast<double>(1 << (sh - 16)))));
     prdVal.x = 0.0f;
 
     // See above.
@@ -1723,8 +1723,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
   }
   else
   {
-    const double x = f16Unsign(prtVal.x) * static_cast<double>(1 << sh);
-    const double y = (f16Unsign(prtVal.y) * static_cast<double>(1 << sh)) + f16Overflow(x);
+    const double x = f16Unsign(prtVal.GetValidX(rtVal)) * static_cast<double>(1 << sh);
+    const double y = (f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << sh)) + f16Overflow(x);
     prdVal.x = static_cast<float>(f16Sign(x));
     prdVal.y = static_cast<float>(f16Sign(y));
     prdVal.flags = (prtVal.flags | VALID_TAINTED_Z);
@@ -1761,8 +1761,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
 
   const u32 rdVal = sign ? static_cast<u32>(static_cast<s32>(rtVal) >> sh) : (rtVal >> sh);
 
-  double x = prtVal.x;
-  double y = sign ? prtVal.y : f16Unsign(prtVal.y);
+  double x = prtVal.GetValidX(rtVal);
+  double y = sign ? prtVal.GetValidY(rtVal) : f16Unsign(prtVal.GetValidY(rtVal));
 
   // The precise value can cross the 16-bit sign boundary when the native value doesn't (e.g. 0x7F9E vs 32905.1),
   // use the representation of the low half closest to the native value, so it matches the sign tests below.
@@ -1824,7 +1824,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   else
   {
     // Use the native upper half, and only shift the precise offset from it, the integer bits shifted out go to x.
-    y = HIWORD_S16(dY) + (f16Sign(prtVal.y - HIWORD_S16(rtVal)) / static_cast<double>(1 << sh));
+    y = HIWORD_S16(dY) + (f16Sign(prtVal.GetValidY(rtVal) - HIWORD_S16(rtVal)) / static_cast<double>(1 << sh));
   }
 
   // Use low precision/rounded values when we're not shifting an entire component,
