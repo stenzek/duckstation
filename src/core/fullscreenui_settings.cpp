@@ -4181,7 +4181,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       for (const SettingInfo& si : ci->settings)
       {
         TinyString title;
-        title.format(ICON_FA_GEAR "{}", Host::TranslateToStringView(ci->name, si.display_name));
+        title.format(ICON_FA_GEAR "  {}", Host::TranslateToStringView(ci->name, si.display_name));
         std::string_view description = Host::TranslateToStringView(ci->name, si.description);
         switch (si.type)
         {
