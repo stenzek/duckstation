@@ -861,9 +861,10 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       else if (CHECK_ARG_PARAM("-setting"))
       {
         const std::string_view setting = argv[++i];
-        const std::string_view::size_type key_pos = setting.find('/');
-        const std::string_view::size_type value_pos = setting.find('=', key_pos);
-        if (key_pos == 0 || value_pos == std::string_view::npos || value_pos == (key_pos + 1))
+        const std::string_view::size_type value_pos = setting.find('=');
+        const std::string_view::size_type key_pos = setting.rfind('/', value_pos);
+        if (key_pos == 0 || key_pos == std::string_view::npos || value_pos == std::string_view::npos ||
+            value_pos == (key_pos + 1))
         {
           ERROR_LOG("Invalid setting '{}', expected <section>/<key>=<value>.", setting);
           return false;
