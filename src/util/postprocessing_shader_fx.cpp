@@ -338,9 +338,10 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
 
   // TODO: This could use spv, it's probably fastest.
   const auto& [cg, cg_language] = CreateRFXCodegen(only_config, error);
-  if (!cg || !CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetMainSwapChain()->GetWidth(),
-                           only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetMainSwapChain()->GetHeight(),
-                           cg.get(), cg_language, std::move(code), error))
+  const GPUSwapChain* swap_chain = only_config ? nullptr : g_gpu_device->GetMainSwapChain();
+  if (!cg || !CreateModule(swap_chain ? swap_chain->GetWidth() : DEFAULT_BUFFER_WIDTH,
+                           swap_chain ? swap_chain->GetHeight() : DEFAULT_BUFFER_HEIGHT, cg.get(), cg_language,
+                           std::move(code), error))
   {
     return false;
   }
