@@ -512,6 +512,9 @@ struct cubeb_stream {
 
   /* True if the stream is active, false if inactive. */
   bool active = false;
+  /* Set by the render loop when a reconfigure was requested while the stream
+     was inactive, so that the next stream start picks up the new device. */
+  bool reconfigure_pending = false;
 };
 
 class monitor_device_notifications {
@@ -1568,7 +1571,8 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       auto_lock lock(stm->stream_reset_lock);
       if (!stm->active) {
         /* Avoid reconfiguring, stream start will handle it. */
-        LOG("Stream is not active, ignoring reconfigure.");
+        LOG("Stream is not active, deferring reconfigure.");
+        stm->reconfigure_pending = true;
         continue;
       }
       XASSERT(stm->output_client || stm->input_client);
@@ -3250,9 +3254,15 @@ wasapi_stream_start(cubeb_stream * stm)
 
   XASSERT(stm);
 
-  /* A previous reconfigure may have failed and left the stream closed, try to
-     reopen it instead of aborting. */
-  if (!stm->output_client && !stm->input_client) {
+  /* The default device changed while the stream was inactive, or a previous
+     reconfigure failed and left the stream closed. Reopen it instead of
+     starting on a stale device or aborting. */
+  if (stm->reconfigure_pending || (!stm->output_client && !stm->input_client)) {
+    LOG("stream start: reconfiguring stream");
+    stm->reconfigure_pending = false;
+    if (stm->output_client || stm->input_client) {
+      close_wasapi_stream(stm);
+    }
     int r = setup_wasapi_stream(stm);
     if (r != CUBEB_OK) {
       LOG("stream start: reopening closed stream failed");
