@@ -12,7 +12,7 @@
 
 *.sln text eol=crlf
 *.vcxproj text eol=crlf
-*.vcxproj.filter text eol=crlf
+*.vcxproj.filters text eol=crlf
 
 *.sh text eol=lf
 CMakeLists.txt text eol=lf
