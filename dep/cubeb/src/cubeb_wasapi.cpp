@@ -3249,7 +3249,16 @@ wasapi_stream_start(cubeb_stream * stm)
   auto_lock lock(stm->stream_reset_lock);
 
   XASSERT(stm);
-  XASSERT(stm->output_client || stm->input_client);
+
+  /* A previous reconfigure may have failed and left the stream closed, try to
+     reopen it instead of aborting. */
+  if (!stm->output_client && !stm->input_client) {
+    int r = setup_wasapi_stream(stm);
+    if (r != CUBEB_OK) {
+      LOG("stream start: reopening closed stream failed");
+      return r;
+    }
+  }
 
   if (stm->output_client) {
     int rv = stream_start_one_side(stm, OUTPUT);
