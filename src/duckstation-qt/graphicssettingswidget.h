@@ -56,6 +56,7 @@ private:
 
   void onResetPGXPGeometryToleranceClicked();
   void onResetPGXPDepthClearThresholdClicked();
+  void onResetPGXPDepthBiasClicked();
 
   void onEnableTextureCacheChanged();
   void onEnableAnyTextureDumpingChanged();

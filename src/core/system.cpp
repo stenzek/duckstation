@@ -4786,6 +4786,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_pgxp_depth_buffer != old_settings.gpu_pgxp_depth_buffer ||
              g_settings.gpu_pgxp_vertex_cache != old_settings.gpu_pgxp_vertex_cache ||
              g_settings.gpu_pgxp_depth_clear_threshold != old_settings.gpu_pgxp_depth_clear_threshold ||
+             g_settings.gpu_pgxp_depth_bias != old_settings.gpu_pgxp_depth_bias ||
              g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
              g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
              g_settings.display_line_start_offset != old_settings.display_line_start_offset ||

@@ -5013,6 +5013,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       FSUI_VSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."),
       Settings::GPU_SECTION_NAME, "PGXPDepthThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f,
       static_cast<float>(GTE::MAX_Z), "%.1f", pgxp_enabled);
+
+    DrawFloatRangeSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_LAYER_GROUP, "Depth Bias"),
+      FSUI_VSTR("Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals."),
+      Settings::GPU_SECTION_NAME, "PGXPDepthBias", Settings::DEFAULT_GPU_PGXP_DEPTH_BIAS, 0.0f, 1000.0f, "%.2f",
+      pgxp_enabled);
   }
 
   MenuHeading(FSUI_VSTR("Capture"));

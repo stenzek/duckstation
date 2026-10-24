@@ -148,6 +148,7 @@ struct Entry
   std::optional<u16> gpu_filter_framebuffer_uploads_minimum_height;   ///< Filtered upload height override.
   std::optional<float> gpu_pgxp_tolerance;                            ///< GPU PGXP tolerance override.
   std::optional<float> gpu_pgxp_depth_threshold;                      ///< GPU PGXP depth threshold override.
+  std::optional<float> gpu_pgxp_depth_bias;                           ///< GPU PGXP depth bias override.
   std::optional<bool> gpu_pgxp_preserve_proj_fp; ///< GPU PGXP preserve projection precision override.
 
   /// Checks if a trait is present.

@@ -52,6 +52,9 @@ static constexpr GPUTextureFormat VRAM_DS_FORMAT = GPUTextureFormat::D16;
 static constexpr GPUTextureFormat VRAM_DS_DEPTH_FORMAT = GPUTextureFormat::D32F;
 static constexpr GPUTextureFormat VRAM_DS_COLOR_FORMAT = GPUTextureFormat::R32F;
 
+// Limit on the number of polygons that PGXP depth bias accumulates over.
+static constexpr s32 MAX_PGXP_DEPTH_DRAW_INDEX = 2048;
+
 #if defined(_DEBUG) || defined(_DEVEL)
 
 static u32 s_draw_number = 0;
@@ -2467,6 +2470,7 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
   }
 
   m_last_depth_z = 1.0f;
+  m_current_depth = 1;
   s_counters.num_depth_buffer_clears++;
 }
 
@@ -3321,6 +3325,7 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
                                 ComputePolygonAverageZ(vertices[0].w, vertices[1].w, vertices[2].w, vertices[3].w) :
                                 ComputePolygonAverageZ(vertices[0].w, vertices[1].w, vertices[2].w);
       CheckForDepthClear(cmd, average_z);
+      m_current_depth = std::min(m_current_depth + 1, MAX_PGXP_DEPTH_DRAW_INDEX);
     }
 
     FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
@@ -3741,6 +3746,11 @@ void GPU_HW::ResetBatchVertexDepth()
 
 ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
 {
+  if (m_pgxp_depth_buffer)
+  {
+    // Bias later polygons towards the camera, so that coplanar polygons resolve in draw order.
+    return static_cast<float>(m_current_depth) * g_gpu_settings.gpu_pgxp_depth_bias * 1.0e-6f;
+  }
   return 1.0f - (static_cast<float>(m_current_depth) / 65535.0f);
 }
 
@@ -3883,7 +3893,8 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   if (check_mask)
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
-    m_current_depth++;
+    if (!m_pgxp_depth_buffer)
+      m_current_depth++;
   }
   else
   {
@@ -4149,7 +4160,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       AddUnclampedDrawnRectangle(dst_bounds);
   }
 
-  if (check_mask)
+  if (check_mask && !m_pgxp_depth_buffer)
   {
     // set new vertex counter since we want this to take into consideration previous masked pixels
     m_current_depth++;
@@ -4354,7 +4365,7 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     }
   }
 
-  if (cmd->check_mask_before_draw)
+  if (cmd->check_mask_before_draw && !m_pgxp_depth_buffer)
     m_current_depth++;
 }
 

@@ -711,6 +711,7 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   gpu_pgxp_normalize_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", false);
   SetPGXPDepthClearThreshold(
     si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
+  gpu_pgxp_depth_bias = si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthBias", DEFAULT_GPU_PGXP_DEPTH_BIAS);
 }
 
 void Settings::Save(SettingsInterface& si, bool for_copy) const
@@ -824,6 +825,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", gpu_pgxp_normalize_depth);
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
+  si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthBias", gpu_pgxp_depth_bias);
   si.SetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", gpu_dump_fast_replay_mode);
   si.SetStringValue(GPU_SECTION_NAME, "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
 

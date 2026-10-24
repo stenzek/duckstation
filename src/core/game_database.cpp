@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 36,
+  GAME_DATABASE_CACHE_VERSION = 37,
 };
 
 /// Map of track hashes for image verification
@@ -566,6 +566,12 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.SetPGXPDepthClearThreshold(gpu_pgxp_depth_threshold.value());
     if (display_osd_messages)
       INFO_LOG("GameDB: PGXP depth clear threshold set to {}.", settings.GetPGXPDepthClearThreshold());
+  }
+  if (gpu_pgxp_depth_bias.has_value())
+  {
+    settings.gpu_pgxp_depth_bias = gpu_pgxp_depth_bias.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: PGXP depth bias set to {}.", settings.gpu_pgxp_depth_bias);
   }
   if (gpu_line_detect_mode.has_value())
   {
@@ -1181,6 +1187,7 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Tolerance"), gpu_pgxp_tolerance);
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Clear Threshold"),
                      gpu_pgxp_depth_threshold);
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Bias"), gpu_pgxp_depth_bias);
   AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Preserve Projection Precision"),
                     gpu_pgxp_preserve_proj_fp);
 
@@ -1307,8 +1314,8 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
         !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) || !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
-        !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) || !reader.ReadOptionalT(&entry.gpu_line_detect_mode) ||
-        !reader.ReadOptionalT(&entry.cpu_overclock))
+        !reader.ReadOptionalT(&entry.gpu_pgxp_depth_bias) || !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) ||
+        !reader.ReadOptionalT(&entry.gpu_line_detect_mode) || !reader.ReadOptionalT(&entry.cpu_overclock))
     {
       DEV_LOG("Cache entry is corrupted.");
       return false;
@@ -1437,6 +1444,7 @@ bool GameDatabase::SaveToCache()
     writer.WriteOptionalT(entry.gpu_filter_framebuffer_uploads_minimum_height);
     writer.WriteOptionalT(entry.gpu_pgxp_tolerance);
     writer.WriteOptionalT(entry.gpu_pgxp_depth_threshold);
+    writer.WriteOptionalT(entry.gpu_pgxp_depth_bias);
     writer.WriteOptionalT(entry.gpu_pgxp_preserve_proj_fp);
     writer.WriteOptionalT(entry.gpu_line_detect_mode);
     writer.WriteOptionalT(entry.cpu_overclock);
@@ -1737,6 +1745,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     entry->gpu_max_run_ahead = GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead");
     entry->gpu_pgxp_tolerance = GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance");
     entry->gpu_pgxp_depth_threshold = GetOptionalTFromObject<float>(settings, "gpuPGXPDepthThreshold");
+    entry->gpu_pgxp_depth_bias = GetOptionalTFromObject<float>(settings, "gpuPGXPDepthBias");
     entry->gpu_pgxp_preserve_proj_fp = GetOptionalTFromObject<bool>(settings, "gpuPGXPPreserveProjFP");
     entry->gpu_line_detect_mode =
       ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName);

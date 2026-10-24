@@ -230,6 +230,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                 "PGXPTolerance", -1.0f);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpDepthClearThreshold, Settings::GPU_SECTION_NAME,
                                                 "PGXPDepthThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpDepthBias, Settings::GPU_SECTION_NAME, "PGXPDepthBias",
+                                                Settings::DEFAULT_GPU_PGXP_DEPTH_BIAS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTextureCorrection, Settings::GPU_SECTION_NAME,
                                                "PGXPTextureCorrection", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpColorCorrection, Settings::GPU_SECTION_NAME,
@@ -260,6 +262,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::onResetPGXPGeometryToleranceClicked);
   connect(m_ui.resetPGXPDepthClearThreshold, &QPushButton::clicked, this,
           &GraphicsSettingsWidget::onResetPGXPDepthClearThresholdClicked);
+  connect(m_ui.resetPGXPDepthBias, &QPushButton::clicked, this, &GraphicsSettingsWidget::onResetPGXPDepthBiasClicked);
 
   SettingWidgetBinder::SetAvailability(m_ui.pgxpTextureCorrection,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPTextureCorrection));
@@ -552,6 +555,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              QStringLiteral("%1").arg(Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD),
                              tr("Determines the increase in depth that will result in the depth buffer being cleared. "
                                 "Can help with depth issues in some games, but is still a hack/workaround."));
+  dialog->registerWidgetHelp(m_ui.pgxpDepthBias, tr("Depth Bias"),
+                             QStringLiteral("%1").arg(Settings::DEFAULT_GPU_PGXP_DEPTH_BIAS),
+                             tr("Brings each polygon closer to the camera than the polygons drawn before it, in "
+                                "millionths of depth. Higher values reduce flickering of decals and shadows, but "
+                                "can cause polygons to show through surfaces in front of them."));
   dialog->registerWidgetHelp(m_ui.pgxpTextureCorrection, tr("Perspective Correct Textures"), tr("Checked"),
                              tr("Uses perspective-correct interpolation for texture coordinates, straightening out "
                                 "warped textures. Requires geometry correction enabled."));
@@ -1105,6 +1113,9 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDepthClearThreshold->setEnabled(depth_enabled);
   m_ui.pgxpDepthClearThresholdLabel->setEnabled(depth_enabled);
   m_ui.resetPGXPDepthClearThreshold->setEnabled(depth_enabled);
+  m_ui.pgxpDepthBias->setEnabled(depth_enabled);
+  m_ui.pgxpDepthBiasLabel->setEnabled(depth_enabled);
+  m_ui.resetPGXPDepthBias->setEnabled(depth_enabled);
   m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
                                            !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
@@ -1268,6 +1279,17 @@ void GraphicsSettingsWidget::onResetPGXPDepthClearThresholdClicked()
   SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpDepthClearThreshold,
                                                 Settings::GPU_SECTION_NAME, "PGXPDepthThreshold",
                                                 Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+}
+
+void GraphicsSettingsWidget::onResetPGXPDepthBiasClicked()
+{
+  m_dialog->setFloatSettingValue(
+    Settings::GPU_SECTION_NAME, "PGXPDepthBias",
+    m_dialog->isPerGameSettings() ? std::nullopt : std::make_optional(Settings::DEFAULT_GPU_PGXP_DEPTH_BIAS));
+  SettingWidgetBinder::DisconnectWidget(m_ui.pgxpDepthBias);
+  SettingWidgetBinder::BindWidgetToFloatSetting(m_dialog->getSettingsInterface(), m_ui.pgxpDepthBias,
+                                                Settings::GPU_SECTION_NAME, "PGXPDepthBias",
+                                                Settings::DEFAULT_GPU_PGXP_DEPTH_BIAS);
 }
 
 void GraphicsSettingsWidget::onEnableTextureCacheChanged()

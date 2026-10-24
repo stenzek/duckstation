@@ -148,6 +148,7 @@ struct GPUSettings
 
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 0.0f;
+  float gpu_pgxp_depth_bias = DEFAULT_GPU_PGXP_DEPTH_BIAS;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -238,6 +239,7 @@ struct GPUSettings
   static constexpr GPUWireframeMode DEFAULT_GPU_WIREFRAME_MODE = GPUWireframeMode::Disabled;
   static constexpr GPUDumpCompressionMode DEFAULT_GPU_DUMP_COMPRESSION_MODE = GPUDumpCompressionMode::ZstDefault;
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 4096.0f;
+  static constexpr float DEFAULT_GPU_PGXP_DEPTH_BIAS = 1.0f; // millionths of depth per polygon
   static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 65536.0f;
 
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Progressive;

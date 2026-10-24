@@ -188,7 +188,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
 #if PGXP_DEPTH
   // Interpolate reciprocal camera Z in screen space, preserving W for perspective correction.
   // Reversed depth retains precision at large distances and clears to zero.
-  float pos_z = 1.0 / max(a_pos.w * 65535.0, 1.0);
+  // Z holds a bias towards the camera that grows with draw order, so that coplanar polygons don't fight.
+  float pos_z = (1.0 + a_pos.z) / max(a_pos.w * 65535.0, 1.0);
   float pos_w = a_pos.w;
 #else
   float pos_z = a_pos.z;
