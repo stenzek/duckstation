@@ -78,6 +78,9 @@ static void DestroyDeinterlaceTextures();
 
 static void UpdatePostProcessingSettings(bool force_load);
 
+/// Returns true if the previous present was displayed late, and blocked past the specified present time.
+static bool IsPresentLate(u64 present_time);
+
 /// Returns true if the image path or alpha blend option has changed.
 static bool LoadOverlaySettings();
 static bool LoadOverlayTexture();
@@ -1449,28 +1452,14 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
     // If the previous frame was displayed a vblank later than usual, and its present blocked past this frame's
     // scheduled time, this frame will also be displayed late. Drop it, otherwise every following frame is too.
     if (present_time != 0 && s_locals.skipped_present_count == 0 &&
-        g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking() &&
-        s_locals.last_vblank_time.load(std::memory_order_relaxed) > present_time &&
-        s_locals.last_present_gap > s_locals.present_gap_baseline)
+        g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking() && IsPresentLate(present_time)) [[unlikely]]
     {
-      const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
-      const float refresh_rate =
-        (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
-      if ((s_locals.last_present_gap - s_locals.present_gap_baseline) >
-          Timer::ConvertSecondsToValue(0.5 / static_cast<double>(refresh_rate))) [[unlikely]]
-      {
-        DEV_LOG("Dropping late frame, previous frame displayed {:.2f} ms after scheduled time (expected {:.2f} ms)",
-                Timer::ConvertValueToMilliseconds(s_locals.last_present_gap),
-                Timer::ConvertValueToMilliseconds(s_locals.present_gap_baseline));
-        s_locals.last_present_gap = s_locals.present_gap_baseline;
-        s_locals.skipped_present_count++;
-
-        // If the previous frame was presented on time, the throttler's margin wasn't enough to display it.
-        if (s_locals.last_present_on_time)
-          s_locals.missed_vblank_count.fetch_add(1, std::memory_order_release);
-
-        return false;
-      }
+      DEV_LOG("Dropping late frame, previous frame displayed {:.2f} ms after scheduled time (expected {:.2f} ms)",
+              Timer::ConvertValueToMilliseconds(s_locals.last_present_gap),
+              Timer::ConvertValueToMilliseconds(s_locals.present_gap_baseline));
+      s_locals.last_present_gap = s_locals.present_gap_baseline;
+      s_locals.skipped_present_count++;
+      return false;
     }
 
     s_locals.skipped_present_count = 0;
@@ -1491,6 +1480,29 @@ bool VideoPresenter::ShouldPresentFrame(u64 present_time)
 
   s_locals.skipped_present_count++;
   return false;
+}
+
+bool VideoPresenter::IsPresentLate(u64 present_time)
+{
+  if (s_locals.last_vblank_time.load(std::memory_order_relaxed) <= present_time ||
+      s_locals.last_present_gap <= s_locals.present_gap_baseline)
+  {
+    return false;
+  }
+
+  const WindowInfo& swap_chain_wi = g_gpu_device->GetMainSwapChain()->GetWindowInfo();
+  const float refresh_rate = (swap_chain_wi.surface_refresh_rate > 0.0f) ? swap_chain_wi.surface_refresh_rate : 60.0f;
+  if ((s_locals.last_present_gap - s_locals.present_gap_baseline) <=
+      Timer::ConvertSecondsToValue(0.5 / static_cast<double>(refresh_rate)))
+  {
+    return false;
+  }
+
+  // If the previous frame was presented on time, the throttler's margin wasn't enough to display it.
+  if (s_locals.last_present_on_time)
+    s_locals.missed_vblank_count.fetch_add(1, std::memory_order_release);
+
+  return true;
 }
 
 void VideoPresenter::SetPresentSkipMode(PresentSkipMode mode)
