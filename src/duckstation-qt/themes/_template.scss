@@ -245,7 +245,9 @@ QCheckBox {
 }
 
 // Keep native group-box geometry so titles remain above the frame.
-QGroupBox {
+// Bold titles are opt-in, since pages with many small groups (e.g. controller bindings) look too heavy.
+.bold-groups QGroupBox,
+.bold-title {
   font-weight: 700;
 }
 QGroupBox::title {

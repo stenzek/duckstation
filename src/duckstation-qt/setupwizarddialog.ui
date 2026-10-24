@@ -14,7 +14,7 @@
    <string>DuckStation Setup Wizard</string>
   </property>
   <property name="class" stdset="0">
-   <string notr="true">settings-window</string>
+   <string notr="true">settings-window bold-groups</string>
   </property>
   <layout class="QGridLayout" name="mainLayout">
    <property name="horizontalSpacing">
