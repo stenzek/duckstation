@@ -24,7 +24,9 @@ ALWAYS_INLINE u8 MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert)
   if (invert)
     std::swap(neg_value, pos_value);
 
-  return static_cast<u8>(127 + ((static_cast<u32>(pos_value) + 1) / 2) - (static_cast<u32>(neg_value) / 2));
+  // Merge before rounding, so that equal opposing inputs produce center.
+  const s32 diff = static_cast<s32>(pos_value) - static_cast<s32>(neg_value);
+  return static_cast<u8>((diff > 0) ? (127 + ((diff + 1) / 2)) : (127 - (-diff / 2)));
 }
 
 /// Converts a 0..255 half-axis value to a normalized floating-point value, with 0 indicating center.
