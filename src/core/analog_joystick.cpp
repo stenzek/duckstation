@@ -23,7 +23,7 @@ LOG_CHANNEL(Controller);
 
 AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
 {
-  m_axis_state.fill(0x80);
+  m_axis_state.fill(AXIS_CENTER);
   Reset();
 }
 

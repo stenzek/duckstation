@@ -26,7 +26,7 @@ LOG_CHANNEL(Controller);
 AnalogController::AnalogController(u32 index) : Controller(index)
 {
   m_status_byte = 0x5A;
-  m_axis_state.fill(0x80);
+  m_axis_state.fill(AXIS_CENTER);
   m_rumble_config.fill(0xFF);
 }
 
