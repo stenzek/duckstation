@@ -212,7 +212,10 @@ void DisplayWidget::updateRelativeMode(bool enabled)
   {
     QCursor::setPos(m_relative_mouse_start_pos);
     m_relative_mouse_active = false;
-    releaseMouse();
+
+    // releaseMouse() clears Qt's grabber even if it's another widget, orphaning that widget's window grab.
+    if (mouseGrabber() == this)
+      releaseMouse();
   }
 
   m_relative_mouse_enabled = enabled;
@@ -266,6 +269,10 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 void DisplayWidget::destroy()
 {
   m_destroying = true;
+
+  // Release before the replacement widget grabs, otherwise our deferred release clears its grab.
+  if (m_relative_mouse_enabled)
+    updateRelativeMode(false);
 
 #ifdef __APPLE__
   // See Qt documentation, entire application is in full screen state, and the main

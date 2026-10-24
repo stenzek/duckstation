@@ -102,7 +102,8 @@ void DisplayWidget::updateRelativeMode(bool enabled)
       ERROR_LOG("CGWarpMouseCursorPosition() failed: {}", static_cast<int>(warp_result));
 
     m_relative_mouse_active = false;
-    releaseMouse();
+    if (mouseGrabber() == this)
+      releaseMouse();
     QCoreApplication::instance()->removeNativeEventFilter(this);
   }
 
