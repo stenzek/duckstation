@@ -14,6 +14,7 @@ add_executable(common-tests
   heap_array_tests.cpp
   lru_cache_tests.cpp
   misc_tests.cpp
+  packed_optional_tests.cpp
   path_tests.cpp
   rectangle_tests.cpp
   small_string_tests.cpp

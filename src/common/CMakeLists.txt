@@ -47,6 +47,7 @@ add_library(common
   md5_digest.h
   minizip_helpers.h
   optional_with_status.h
+  packed_optional.h
   path.h
   perf_scope.cpp
   perf_scope.h
