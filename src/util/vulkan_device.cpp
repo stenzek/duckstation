@@ -198,6 +198,10 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT, nullptr, VK_FALSE};
   VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR swapchain_maintenance1_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR, nullptr, VK_FALSE};
+  VkPhysicalDevicePresentIdFeaturesKHR present_id_feature = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+                                                             nullptr, VK_FALSE};
+  VkPhysicalDevicePresentWaitFeaturesKHR present_wait_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR, nullptr, VK_FALSE};
 
   // add in optional feature structs
   // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
@@ -255,6 +259,13 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     {
       Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
     }
+    if (enable_surface && SupportsExtension(VK_KHR_PRESENT_ID_EXTENSION_NAME) &&
+        SupportsExtension(VK_KHR_PRESENT_WAIT_EXTENSION_NAME))
+    {
+      m_optional_extensions.vk_khr_present_wait = true;
+      Vulkan::AddPointerToChain(&features2, &present_id_feature);
+      Vulkan::AddPointerToChain(&features2, &present_wait_feature);
+    }
   }
 
   // don't bother querying if we're not actually looking at any features
@@ -278,6 +289,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   m_optional_extensions.vk_khr_timeline_semaphore &= (timeline_semaphore_features.timelineSemaphore == VK_TRUE);
   m_optional_extensions.vk_ext_pipeline_creation_cache_control &=
     (pipeline_cache_control_features.pipelineCreationCacheControl == VK_TRUE);
+  m_optional_extensions.vk_khr_present_wait &=
+    (present_id_feature.presentId == VK_TRUE && present_wait_feature.presentWait == VK_TRUE);
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -409,6 +422,12 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     if (m_optional_extensions.vk_ext_pipeline_creation_cache_control)
       AddExtension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME);
 
+    if (m_optional_extensions.vk_khr_present_wait)
+    {
+      AddExtension(VK_KHR_PRESENT_ID_EXTENSION_NAME);
+      AddExtension(VK_KHR_PRESENT_WAIT_EXTENSION_NAME);
+    }
+
     // Driver support for swapchain maintenance is a mess... try KHR first, then EXT.
     m_optional_extensions.vk_khr_swapchain_maintenance1 =
       enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_surface_maintenance1 &&
@@ -442,6 +461,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
   LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
   LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
+  LOG_EXT("VK_KHR_present_wait", vk_khr_present_wait);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
   LOG_EXT("VK_KHR_swapchain_maintenance1", vk_khr_swapchain_maintenance1);
   LOG_EXT("VK_KHR_timeline_semaphore", vk_khr_timeline_semaphore);
@@ -603,6 +623,10 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR, nullptr, VK_TRUE};
   VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT pipeline_cache_control_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT, nullptr, VK_TRUE};
+  VkPhysicalDevicePresentIdFeaturesKHR present_id_feature = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+                                                             nullptr, VK_TRUE};
+  VkPhysicalDevicePresentWaitFeaturesKHR present_wait_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
@@ -626,6 +650,11 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     Vulkan::AddPointerToChain(&device_info, &timeline_semaphore_features);
   if (m_optional_extensions.vk_ext_pipeline_creation_cache_control)
     Vulkan::AddPointerToChain(&device_info, &pipeline_cache_control_features);
+  if (m_optional_extensions.vk_khr_present_wait)
+  {
+    Vulkan::AddPointerToChain(&device_info, &present_id_feature);
+    Vulkan::AddPointerToChain(&device_info, &present_wait_feature);
+  }
 
   VkDevice device;
   res = vkCreateDevice(physical_device, &device_info, nullptr, &device);
@@ -1366,14 +1395,25 @@ void VulkanDevice::EndAndSubmitCommandBuffer(bool wait_for_completion, VulkanSwa
 
 void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
 {
-  const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-                                         nullptr,
-                                         1,
-                                         present_swap_chain->GetPresentSemaphorePtr(),
-                                         1,
-                                         present_swap_chain->GetSwapChainPtr(),
-                                         present_swap_chain->GetCurrentImageIndexPtr(),
-                                         nullptr};
+  VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                                   nullptr,
+                                   1,
+                                   present_swap_chain->GetPresentSemaphorePtr(),
+                                   1,
+                                   present_swap_chain->GetSwapChainPtr(),
+                                   present_swap_chain->GetCurrentImageIndexPtr(),
+                                   nullptr};
+
+  // Acquiring the next image isn't guaranteed to block until this frame is displayed, drivers can return immediately
+  // and block in the command buffer instead. With vsync, wait for it explicitly, like the frame latency waitable on
+  // D3D, see D3DCommon::PresentSwapChain(). VideoPresenter uses the time we return as the vblank timestamp.
+  const VkSwapchainKHR swap_chain = present_swap_chain->GetSwapChain();
+  const u64 present_id = (m_optional_extensions.vk_khr_present_wait && present_swap_chain->IsVSyncModeBlocking()) ?
+                           present_swap_chain->GetNextPresentId() :
+                           0;
+  const VkPresentIdKHR present_id_info = {VK_STRUCTURE_TYPE_PRESENT_ID_KHR, nullptr, 1, &present_id};
+  if (present_id != 0)
+    present_info.pNext = &present_id_info;
 
   present_swap_chain->ResetImageAcquireResult();
 
@@ -1392,6 +1432,12 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
   present_swap_chain->AcquireNextImage(false);
+
+  // Don't wait if the swap chain was recreated. The timeout stops us hanging if the frame
+  // is never displayed, e.g. if the window is minimized.
+  static constexpr u64 PRESENT_WAIT_TIMEOUT_NS = 100'000'000;
+  if (present_id != 0 && res == VK_SUCCESS && present_swap_chain->GetSwapChain() == swap_chain)
+    vkWaitForPresentKHR(m_device, swap_chain, present_id, PRESENT_WAIT_TIMEOUT_NS);
 }
 
 void VulkanDevice::BeginCommandBuffer(u32 index)

@@ -43,6 +43,7 @@ public:
   {
     return &m_images[m_current_image].present_semaphore;
   }
+  ALWAYS_INLINE u64 GetNextPresentId() { return ++m_last_present_id; }
 
   bool CreateSurface(VkPhysicalDevice physical_device, Error* error);
   bool CreateSwapChain(VulkanDevice& dev, Error* error);
@@ -96,6 +97,7 @@ private:
 
   u32 m_current_image = 0;
   u32 m_current_image_acquire_semaphore = 0;
+  u64 m_last_present_id = 0;
 
   VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 

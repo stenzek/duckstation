@@ -59,6 +59,7 @@ public:
     bool vk_khr_dynamic_rendering_local_read : 1;
     bool vk_khr_maintenance4 : 1;
     bool vk_khr_maintenance5 : 1;
+    bool vk_khr_present_wait : 1;
     bool vk_khr_push_descriptor : 1;
     bool vk_khr_shader_non_semantic_info : 1;
     bool vk_khr_swapchain_maintenance1 : 1;

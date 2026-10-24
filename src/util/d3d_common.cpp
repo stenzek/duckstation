@@ -202,8 +202,8 @@ HRESULT D3DCommon::PresentSwapChain(IDXGISwapChain1* swap_chain, HANDLE frame_la
 {
   // By default, DXGI lets up to three presents queue up, and Present() only blocks once that queue is full. With vsync,
   // if a frame misses its vblank, the frames after it sit in that queue for an extra vblank each, and since nothing
-  // blocks, we can't tell that it happened. Vulkan FIFO with two images doesn't have this problem: acquiring the next
-  // image blocks until the frame just presented has flipped.
+  // blocks, we can't tell that it happened. Vulkan has the same problem, since acquiring the next image doesn't always
+  // block, so it waits for each present with VK_KHR_present_wait, see VulkanDevice::QueuePresent().
   //
   // The frame latency waitable object is a semaphore which DXGI signals each time a queued present completes, i.e. the
   // frame is displayed. With a maximum latency of one, waiting on it right after Present() gives the Vulkan behaviour:
