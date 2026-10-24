@@ -54,7 +54,7 @@ public:
   static constexpr float DEFAULT_BUTTON_DEADZONE = 0.25f;
 
   /// Center position when dealing with axis values.
-  static constexpr u8 AXIS_CENTER = 0x80;
+  static constexpr u8 AXIS_CENTER = 0x7F;
 
   explicit Controller(u32 index);
   virtual ~Controller();

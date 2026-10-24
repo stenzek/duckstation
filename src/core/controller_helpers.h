@@ -18,13 +18,13 @@ ALWAYS_INLINE bool InCircularDeadzone(float deadzone, float pos_x, float pos_y)
   return (distance <= deadzone);
 }
 
-/// Converts a 0..255 half-axis value to an unsigned 8-bit value, with 128 indicating center.
+/// Converts a 0..255 half-axis value to an unsigned 8-bit value, with 127 indicating center.
 ALWAYS_INLINE u8 MergeHalfAxes(u8 neg_value, u8 pos_value, bool invert)
 {
   if (invert)
     std::swap(neg_value, pos_value);
 
-  return static_cast<u8>(128 + (static_cast<u32>(pos_value) / 2) - ((static_cast<u32>(neg_value) + 1) / 2));
+  return static_cast<u8>(127 + ((static_cast<u32>(pos_value) + 1) / 2) - (static_cast<u32>(neg_value) / 2));
 }
 
 /// Converts a 0..255 half-axis value to a normalized floating-point value, with 0 indicating center.
