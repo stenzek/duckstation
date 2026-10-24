@@ -7,6 +7,7 @@
 
 #include "util/cd_image_hasher.h"
 
+#include "common/packed_optional.h"
 #include "common/small_string.h"
 
 #include <bitset>
@@ -130,26 +131,27 @@ struct Entry
 
   std::bitset<static_cast<size_t>(Trait::MaxCount)> traits{};         ///< Traits for the game.
   std::bitset<static_cast<size_t>(Language::MaxCount)> languages{};   ///< Languages supported by the game.
-  std::optional<s16> display_active_start_offset;                     ///< Display active start offset override.
-  std::optional<s16> display_active_end_offset;                       ///< Display active end offset override.
-  std::optional<s8> display_line_start_offset;                        ///< Display line start offset override.
-  std::optional<s8> display_line_end_offset;                          ///< Display line end offset override.
-  std::optional<DisplayCropMode> display_crop_mode;                   ///< Display crop mode override.
-  std::optional<DisplayDeinterlacingMode> display_deinterlacing_mode; ///< Display deinterlacing mode override.
-  std::optional<GPULineDetectMode> gpu_line_detect_mode;              ///< GPU line detect mode override.
-  std::optional<u8> cpu_overclock;                                    ///< CPU overclock percentage override.
-  std::optional<u32> dma_max_slice_ticks;                             ///< DMA max slice ticks override.
-  std::optional<u32> dma_halt_ticks;                                  ///< DMA halt ticks override.
-  std::optional<u32> cdrom_max_seek_speedup_cycles;                   ///< CD-ROM max seek speedup cycles override.
-  std::optional<u32> cdrom_max_read_speedup_cycles;                   ///< CD-ROM max read speedup cycles override.
-  std::optional<u32> gpu_fifo_size;                                   ///< GPU FIFO size override.
-  std::optional<u32> gpu_max_run_ahead;                               ///< GPU max runahead override.
-  std::optional<u16> gpu_filter_framebuffer_uploads_minimum_width;    ///< Filtered upload width override.
-  std::optional<u16> gpu_filter_framebuffer_uploads_minimum_height;   ///< Filtered upload height override.
-  std::optional<float> gpu_pgxp_tolerance;                            ///< GPU PGXP tolerance override.
-  std::optional<float> gpu_pgxp_depth_threshold;                      ///< GPU PGXP depth threshold override.
-  std::optional<float> gpu_pgxp_depth_bias;                           ///< GPU PGXP depth bias override.
-  std::optional<bool> gpu_pgxp_preserve_proj_fp; ///< GPU PGXP preserve projection precision override.
+  u32 override_mask = 0;                              ///< Bitmask of which of the settings overrides below are present.
+  PackedOptional<s16, 0> display_active_start_offset; ///< Display active start offset override.
+  PackedOptional<s16, 1> display_active_end_offset;   ///< Display active end offset override.
+  PackedOptional<s8, 2> display_line_start_offset;    ///< Display line start offset override.
+  PackedOptional<s8, 3> display_line_end_offset;      ///< Display line end offset override.
+  PackedOptional<DisplayCropMode, 4> display_crop_mode;                   ///< Display crop mode override.
+  PackedOptional<DisplayDeinterlacingMode, 5> display_deinterlacing_mode; ///< Display deinterlacing mode override.
+  PackedOptional<GPULineDetectMode, 6> gpu_line_detect_mode;              ///< GPU line detect mode override.
+  PackedOptional<u8, 7> cpu_overclock;                                    ///< CPU overclock percentage override.
+  PackedOptional<bool, 8> gpu_pgxp_preserve_proj_fp;     ///< GPU PGXP preserve projection precision override.
+  PackedOptional<u32, 9> dma_max_slice_ticks;            ///< DMA max slice ticks override.
+  PackedOptional<u32, 10> dma_halt_ticks;                ///< DMA halt ticks override.
+  PackedOptional<u32, 11> cdrom_max_seek_speedup_cycles; ///< CD-ROM max seek speedup cycles override.
+  PackedOptional<u32, 12> cdrom_max_read_speedup_cycles; ///< CD-ROM max read speedup cycles override.
+  PackedOptional<u32, 13> gpu_fifo_size;                 ///< GPU FIFO size override.
+  PackedOptional<u32, 14> gpu_max_run_ahead;             ///< GPU max runahead override.
+  PackedOptional<u16, 15> gpu_filter_framebuffer_uploads_minimum_width;  ///< Filtered upload width override.
+  PackedOptional<u16, 16> gpu_filter_framebuffer_uploads_minimum_height; ///< Filtered upload height override.
+  PackedOptional<float, 17> gpu_pgxp_tolerance;                          ///< GPU PGXP tolerance override.
+  PackedOptional<float, 18> gpu_pgxp_depth_threshold;                    ///< GPU PGXP depth threshold override.
+  PackedOptional<float, 19> gpu_pgxp_depth_bias;                         ///< GPU PGXP depth bias override.
 
   /// Checks if a trait is present.
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }

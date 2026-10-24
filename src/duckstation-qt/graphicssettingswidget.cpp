@@ -275,7 +275,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpNormalizeDepth,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::NormalizePGXPDepth));
   if (const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
-      dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value())
+      dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value(dbentry->override_mask))
   {
     if (dbentry->gpu_pgxp_preserve_proj_fp.value())
       SettingWidgetBinder::SetForceEnabled(m_ui.pgxpPreserveProjPrecision, true);
@@ -1101,8 +1101,9 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpColorCorrection->setEnabled(tc_enabled &&
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
   m_ui.pgxpDepthBuffer->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPDepthBuffer));
+  const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
   m_ui.pgxpPreserveProjPrecision->setEnabled(
-    enabled && (!m_dialog->hasDatabaseEntry() || !m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.has_value()));
+    enabled && (!dbentry || !dbentry->gpu_pgxp_preserve_proj_fp.has_value(dbentry->override_mask)));
   m_ui.pgxpCPU->setEnabled(enabled);
   m_ui.pgxpCPULabel->setEnabled(enabled);
   m_ui.pgxpVertexCache->setEnabled(enabled);

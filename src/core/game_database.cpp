@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 37,
+  GAME_DATABASE_CACHE_VERSION = 38,
 };
 
 /// Map of track hashes for image verification
@@ -495,85 +495,85 @@ std::optional<size_t> GameDatabase::DiscSetEntry::GetDiscIndex(std::string_view 
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
 {
-  if (display_active_start_offset.has_value())
+  if (display_active_start_offset.has_value(override_mask))
   {
     settings.display_active_start_offset = display_active_start_offset.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: Display active start offset set to {}.", settings.display_active_start_offset);
   }
-  if (display_active_end_offset.has_value())
+  if (display_active_end_offset.has_value(override_mask))
   {
     settings.display_active_end_offset = display_active_end_offset.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: Display active end offset set to {}.", settings.display_active_end_offset);
   }
-  if (display_line_start_offset.has_value())
+  if (display_line_start_offset.has_value(override_mask))
   {
     settings.display_line_start_offset = display_line_start_offset.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: Display line start offset set to {}.", settings.display_line_start_offset);
   }
-  if (display_line_end_offset.has_value())
+  if (display_line_end_offset.has_value(override_mask))
   {
     settings.display_line_end_offset = display_line_end_offset.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: Display line end offset set to {}.", settings.display_line_end_offset);
   }
-  if (dma_max_slice_ticks.has_value())
+  if (dma_max_slice_ticks.has_value(override_mask))
   {
     settings.dma_max_slice_ticks = dma_max_slice_ticks.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: DMA max slice ticks set to {}.", settings.dma_max_slice_ticks);
   }
-  if (dma_halt_ticks.has_value())
+  if (dma_halt_ticks.has_value(override_mask))
   {
     settings.dma_halt_ticks = dma_halt_ticks.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: DMA halt ticks set to {}.", settings.dma_halt_ticks);
   }
-  if (cdrom_max_seek_speedup_cycles.has_value() && g_settings.cdrom_seek_speedup == 0)
+  if (cdrom_max_seek_speedup_cycles.has_value(override_mask) && g_settings.cdrom_seek_speedup == 0)
   {
     settings.cdrom_max_seek_speedup_cycles = cdrom_max_seek_speedup_cycles.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: CDROM maximum seek speedup cycles set to {}.", settings.cdrom_max_seek_speedup_cycles);
   }
-  if (cdrom_max_read_speedup_cycles.has_value() && g_settings.cdrom_read_speedup == 0)
+  if (cdrom_max_read_speedup_cycles.has_value(override_mask) && g_settings.cdrom_read_speedup == 0)
   {
     settings.cdrom_max_read_speedup_cycles = cdrom_max_read_speedup_cycles.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: CDROM maximum read speedup cycles set to {}.", settings.cdrom_max_read_speedup_cycles);
   }
-  if (gpu_fifo_size.has_value())
+  if (gpu_fifo_size.has_value(override_mask))
   {
     settings.gpu_fifo_size = gpu_fifo_size.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: GPU FIFO size set to {}.", settings.gpu_fifo_size);
   }
-  if (gpu_max_run_ahead.has_value())
+  if (gpu_max_run_ahead.has_value(override_mask))
   {
     settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: GPU max runahead set to {}.", settings.gpu_max_run_ahead);
   }
-  if (gpu_pgxp_tolerance.has_value())
+  if (gpu_pgxp_tolerance.has_value(override_mask))
   {
     settings.gpu_pgxp_tolerance = gpu_pgxp_tolerance.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: PGXP tolerance set to {}.", settings.gpu_pgxp_tolerance);
   }
-  if (gpu_pgxp_depth_threshold.has_value())
+  if (gpu_pgxp_depth_threshold.has_value(override_mask))
   {
     settings.SetPGXPDepthClearThreshold(gpu_pgxp_depth_threshold.value());
     if (display_osd_messages)
       INFO_LOG("GameDB: PGXP depth clear threshold set to {}.", settings.GetPGXPDepthClearThreshold());
   }
-  if (gpu_pgxp_depth_bias.has_value())
+  if (gpu_pgxp_depth_bias.has_value(override_mask))
   {
     settings.gpu_pgxp_depth_bias = gpu_pgxp_depth_bias.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: PGXP depth bias set to {}.", settings.gpu_pgxp_depth_bias);
   }
-  if (gpu_line_detect_mode.has_value())
+  if (gpu_line_detect_mode.has_value(override_mask))
   {
     settings.gpu_line_detect_mode = gpu_line_detect_mode.value();
     if (display_osd_messages)
@@ -582,7 +582,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
                Settings::GetLineDetectModeName(settings.gpu_line_detect_mode));
     }
   }
-  if (cpu_overclock.has_value() && (!settings.cpu_overclock_enable || settings.disable_all_enhancements))
+  if (cpu_overclock.has_value(override_mask) && (!settings.cpu_overclock_enable || settings.disable_all_enhancements))
   {
     settings.SetCPUOverclockPercent(cpu_overclock.value());
     settings.cpu_overclock_enable = settings.cpu_overclock_active = true;
@@ -663,7 +663,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
                     "Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game."));
   }
 
-  if (display_crop_mode.has_value())
+  if (display_crop_mode.has_value(override_mask))
   {
     if (display_osd_messages && settings.display_crop_mode != display_crop_mode.value())
     {
@@ -733,10 +733,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForceDeinterlacing))
   {
     const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(
-      (settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Disabled &&
-       settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive) ?
-        settings.display_deinterlacing_mode :
-        DEFAULT_DEINTERLACING_MODE);
+      override_mask, (settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Disabled &&
+                      settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive) ?
+                       settings.display_deinterlacing_mode :
+                       DEFAULT_DEINTERLACING_MODE);
     if (display_osd_messages && settings.display_deinterlacing_mode != new_mode)
     {
       append_message_fmt(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
@@ -745,7 +745,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
     settings.display_deinterlacing_mode = new_mode;
   }
-  else if (display_deinterlacing_mode.has_value())
+  else if (display_deinterlacing_mode.has_value(override_mask))
   {
     // If the user has it set to progressive, then preserve that.
     if (settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive)
@@ -961,7 +961,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::NormalizePGXPDepth))
     settings.gpu_pgxp_normalize_depth = true;
 
-  if (gpu_pgxp_preserve_proj_fp.has_value())
+  if (gpu_pgxp_preserve_proj_fp.has_value(override_mask))
   {
     if (display_osd_messages)
     {
@@ -1158,38 +1158,45 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
 
   bool settings_heading = false;
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Active Start Offset"),
-                       display_active_start_offset);
+                       display_active_start_offset.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Active End Offset"),
-                       display_active_end_offset);
+                       display_active_end_offset.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Line Start Offset"),
-                       display_line_start_offset);
+                       display_line_start_offset.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Line End Offset"),
-                       display_line_end_offset);
+                       display_line_end_offset.get(override_mask));
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Crop Mode"),
-                    &Settings::GetDisplayCropModeDisplayName, display_crop_mode);
+                    &Settings::GetDisplayCropModeDisplayName, display_crop_mode.get(override_mask));
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Deinterlacing Mode"),
-                    &Settings::GetDisplayDeinterlacingModeDisplayName, display_deinterlacing_mode);
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CPU Overclock Percent"), cpu_overclock);
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"), dma_max_slice_ticks);
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"), dma_halt_ticks);
+                    &Settings::GetDisplayDeinterlacingModeDisplayName, display_deinterlacing_mode.get(override_mask));
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CPU Overclock Percent"),
+                       cpu_overclock.get(override_mask));
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"),
+                       dma_max_slice_ticks.get(override_mask));
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"),
+                       dma_halt_ticks.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Seek Speedup Cycles"),
-                       cdrom_max_seek_speedup_cycles);
+                       cdrom_max_seek_speedup_cycles.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Read Speedup Cycles"),
-                       cdrom_max_read_speedup_cycles);
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"), gpu_max_run_ahead);
+                       cdrom_max_read_speedup_cycles.get(override_mask));
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"),
+                       gpu_fifo_size.get(override_mask));
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"),
+                       gpu_max_run_ahead.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Filter Framebuffer Uploads Minimum Width"),
-                       gpu_filter_framebuffer_uploads_minimum_width);
+                       gpu_filter_framebuffer_uploads_minimum_width.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Filter Framebuffer Uploads Minimum Height"),
-                       gpu_filter_framebuffer_uploads_minimum_height);
+                       gpu_filter_framebuffer_uploads_minimum_height.get(override_mask));
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
-                    &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
-  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Tolerance"), gpu_pgxp_tolerance);
+                    &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode.get(override_mask));
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Tolerance"),
+                     gpu_pgxp_tolerance.get(override_mask));
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Clear Threshold"),
-                     gpu_pgxp_depth_threshold);
-  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Bias"), gpu_pgxp_depth_bias);
+                     gpu_pgxp_depth_threshold.get(override_mask));
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Bias"),
+                     gpu_pgxp_depth_bias.get(override_mask));
   AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Preserve Projection Precision"),
-                    gpu_pgxp_preserve_proj_fp);
+                    gpu_pgxp_preserve_proj_fp.get(override_mask));
 
   if (settings_heading)
     ret.append("\n");
@@ -1303,19 +1310,18 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadU16(&entry.supported_controllers) || !reader.ReadU8(&compatibility) ||
         compatibility >= static_cast<u8>(GameDatabase::CompatibilityRating::Count) ||
         !reader.Read(trait_bits.data(), trait_num_bytes) || !reader.Read(language_bits.data(), language_num_bytes) ||
-        !reader.ReadOptionalT(&entry.display_active_start_offset) ||
-        !reader.ReadOptionalT(&entry.display_active_end_offset) ||
-        !reader.ReadOptionalT(&entry.display_line_start_offset) ||
-        !reader.ReadOptionalT(&entry.display_line_end_offset) || !reader.ReadOptionalT(&entry.display_crop_mode) ||
-        !reader.ReadOptionalT(&entry.display_deinterlacing_mode) || !reader.ReadOptionalT(&entry.dma_max_slice_ticks) ||
-        !reader.ReadOptionalT(&entry.dma_halt_ticks) || !reader.ReadOptionalT(&entry.cdrom_max_seek_speedup_cycles) ||
-        !reader.ReadOptionalT(&entry.cdrom_max_read_speedup_cycles) || !reader.ReadOptionalT(&entry.gpu_fifo_size) ||
-        !reader.ReadOptionalT(&entry.gpu_max_run_ahead) ||
-        !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
-        !reader.ReadOptionalT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
-        !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) || !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
-        !reader.ReadOptionalT(&entry.gpu_pgxp_depth_bias) || !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) ||
-        !reader.ReadOptionalT(&entry.gpu_line_detect_mode) || !reader.ReadOptionalT(&entry.cpu_overclock))
+        !reader.ReadU32(&entry.override_mask) || !reader.ReadT(&entry.display_active_start_offset) ||
+        !reader.ReadT(&entry.display_active_end_offset) || !reader.ReadT(&entry.display_line_start_offset) ||
+        !reader.ReadT(&entry.display_line_end_offset) || !reader.ReadT(&entry.display_crop_mode) ||
+        !reader.ReadT(&entry.display_deinterlacing_mode) || !reader.ReadT(&entry.gpu_line_detect_mode) ||
+        !reader.ReadT(&entry.cpu_overclock) || !reader.ReadT(&entry.gpu_pgxp_preserve_proj_fp) ||
+        !reader.ReadT(&entry.dma_max_slice_ticks) || !reader.ReadT(&entry.dma_halt_ticks) ||
+        !reader.ReadT(&entry.cdrom_max_seek_speedup_cycles) || !reader.ReadT(&entry.cdrom_max_read_speedup_cycles) ||
+        !reader.ReadT(&entry.gpu_fifo_size) || !reader.ReadT(&entry.gpu_max_run_ahead) ||
+        !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
+        !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
+        !reader.ReadT(&entry.gpu_pgxp_tolerance) || !reader.ReadT(&entry.gpu_pgxp_depth_threshold) ||
+        !reader.ReadT(&entry.gpu_pgxp_depth_bias))
     {
       DEV_LOG("Cache entry is corrupted.");
       return false;
@@ -1428,26 +1434,27 @@ bool GameDatabase::SaveToCache()
     }
     writer.Write(language_bits.data(), language_num_bytes);
 
-    writer.WriteOptionalT(entry.display_active_start_offset);
-    writer.WriteOptionalT(entry.display_active_end_offset);
-    writer.WriteOptionalT(entry.display_line_start_offset);
-    writer.WriteOptionalT(entry.display_line_end_offset);
-    writer.WriteOptionalT(entry.display_crop_mode);
-    writer.WriteOptionalT(entry.display_deinterlacing_mode);
-    writer.WriteOptionalT(entry.dma_max_slice_ticks);
-    writer.WriteOptionalT(entry.dma_halt_ticks);
-    writer.WriteOptionalT(entry.cdrom_max_seek_speedup_cycles);
-    writer.WriteOptionalT(entry.cdrom_max_read_speedup_cycles);
-    writer.WriteOptionalT(entry.gpu_fifo_size);
-    writer.WriteOptionalT(entry.gpu_max_run_ahead);
-    writer.WriteOptionalT(entry.gpu_filter_framebuffer_uploads_minimum_width);
-    writer.WriteOptionalT(entry.gpu_filter_framebuffer_uploads_minimum_height);
-    writer.WriteOptionalT(entry.gpu_pgxp_tolerance);
-    writer.WriteOptionalT(entry.gpu_pgxp_depth_threshold);
-    writer.WriteOptionalT(entry.gpu_pgxp_depth_bias);
-    writer.WriteOptionalT(entry.gpu_pgxp_preserve_proj_fp);
-    writer.WriteOptionalT(entry.gpu_line_detect_mode);
-    writer.WriteOptionalT(entry.cpu_overclock);
+    writer.WriteU32(entry.override_mask);
+    writer.WriteT(entry.display_active_start_offset);
+    writer.WriteT(entry.display_active_end_offset);
+    writer.WriteT(entry.display_line_start_offset);
+    writer.WriteT(entry.display_line_end_offset);
+    writer.WriteT(entry.display_crop_mode);
+    writer.WriteT(entry.display_deinterlacing_mode);
+    writer.WriteT(entry.gpu_line_detect_mode);
+    writer.WriteT(entry.cpu_overclock);
+    writer.WriteT(entry.gpu_pgxp_preserve_proj_fp);
+    writer.WriteT(entry.dma_max_slice_ticks);
+    writer.WriteT(entry.dma_halt_ticks);
+    writer.WriteT(entry.cdrom_max_seek_speedup_cycles);
+    writer.WriteT(entry.cdrom_max_read_speedup_cycles);
+    writer.WriteT(entry.gpu_fifo_size);
+    writer.WriteT(entry.gpu_max_run_ahead);
+    writer.WriteT(entry.gpu_filter_framebuffer_uploads_minimum_width);
+    writer.WriteT(entry.gpu_filter_framebuffer_uploads_minimum_height);
+    writer.WriteT(entry.gpu_pgxp_tolerance);
+    writer.WriteT(entry.gpu_pgxp_depth_threshold);
+    writer.WriteT(entry.gpu_pgxp_depth_bias);
   }
 
   for (const auto& it : s_state.code_lookup)
@@ -1729,51 +1736,56 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
   if (const ryml::ConstNodeRef settings = value.find_child(to_csubstr("settings"));
       settings.valid() && settings.has_children())
   {
-    entry->display_active_start_offset = GetOptionalTFromObject<s16>(settings, "displayActiveStartOffset");
-    entry->display_active_end_offset = GetOptionalTFromObject<s16>(settings, "displayActiveEndOffset");
-    entry->display_line_start_offset = GetOptionalTFromObject<s8>(settings, "displayLineStartOffset");
-    entry->display_line_end_offset = GetOptionalTFromObject<s8>(settings, "displayLineEndOffset");
-    entry->display_crop_mode =
-      ParseOptionalTFromObject<DisplayCropMode>(settings, "displayCropMode", &Settings::ParseDisplayCropMode);
-    entry->display_deinterlacing_mode = ParseOptionalTFromObject<DisplayDeinterlacingMode>(
-      settings, "displayDeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode);
-    entry->dma_max_slice_ticks = GetOptionalTFromObject<u32>(settings, "dmaMaxSliceTicks");
-    entry->dma_halt_ticks = GetOptionalTFromObject<u32>(settings, "dmaHaltTicks");
-    entry->cdrom_max_seek_speedup_cycles = GetOptionalTFromObject<u32>(settings, "cdromMaxSeekSpeedupCycles");
-    entry->cdrom_max_read_speedup_cycles = GetOptionalTFromObject<u32>(settings, "cdromMaxReadSpeedupCycles");
-    entry->gpu_fifo_size = GetOptionalTFromObject<u32>(settings, "gpuFIFOSize");
-    entry->gpu_max_run_ahead = GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead");
-    entry->gpu_pgxp_tolerance = GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance");
-    entry->gpu_pgxp_depth_threshold = GetOptionalTFromObject<float>(settings, "gpuPGXPDepthThreshold");
-    entry->gpu_pgxp_depth_bias = GetOptionalTFromObject<float>(settings, "gpuPGXPDepthBias");
-    entry->gpu_pgxp_preserve_proj_fp = GetOptionalTFromObject<bool>(settings, "gpuPGXPPreserveProjFP");
-    entry->gpu_line_detect_mode =
-      ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName);
-    entry->cpu_overclock = GetOptionalTFromObject<u8>(settings, "cpuOverclockPercent");
+    entry->display_active_start_offset.set(entry->override_mask,
+                                           GetOptionalTFromObject<s16>(settings, "displayActiveStartOffset"));
+    entry->display_active_end_offset.set(entry->override_mask,
+                                         GetOptionalTFromObject<s16>(settings, "displayActiveEndOffset"));
+    entry->display_line_start_offset.set(entry->override_mask,
+                                         GetOptionalTFromObject<s8>(settings, "displayLineStartOffset"));
+    entry->display_line_end_offset.set(entry->override_mask,
+                                       GetOptionalTFromObject<s8>(settings, "displayLineEndOffset"));
+    entry->display_crop_mode.set(entry->override_mask, ParseOptionalTFromObject<DisplayCropMode>(
+                                                         settings, "displayCropMode", &Settings::ParseDisplayCropMode));
+    entry->display_deinterlacing_mode.set(
+      entry->override_mask, ParseOptionalTFromObject<DisplayDeinterlacingMode>(
+                              settings, "displayDeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode));
+    entry->dma_max_slice_ticks.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "dmaMaxSliceTicks"));
+    entry->dma_halt_ticks.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "dmaHaltTicks"));
+    entry->cdrom_max_seek_speedup_cycles.set(entry->override_mask,
+                                             GetOptionalTFromObject<u32>(settings, "cdromMaxSeekSpeedupCycles"));
+    entry->cdrom_max_read_speedup_cycles.set(entry->override_mask,
+                                             GetOptionalTFromObject<u32>(settings, "cdromMaxReadSpeedupCycles"));
+    entry->gpu_fifo_size.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "gpuFIFOSize"));
+    entry->gpu_max_run_ahead.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead"));
+    entry->gpu_pgxp_tolerance.set(entry->override_mask, GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance"));
+    entry->gpu_pgxp_depth_threshold.set(entry->override_mask,
+                                        GetOptionalTFromObject<float>(settings, "gpuPGXPDepthThreshold"));
+    entry->gpu_pgxp_depth_bias.set(entry->override_mask, GetOptionalTFromObject<float>(settings, "gpuPGXPDepthBias"));
+    entry->gpu_pgxp_preserve_proj_fp.set(entry->override_mask,
+                                         GetOptionalTFromObject<bool>(settings, "gpuPGXPPreserveProjFP"));
+    entry->gpu_line_detect_mode.set(
+      entry->override_mask,
+      ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName));
+    entry->cpu_overclock.set(entry->override_mask, GetOptionalTFromObject<u8>(settings, "cpuOverclockPercent"));
 
     // Bit yuck to parse a size here...
     if (const ryml::ConstNodeRef node = settings.find_child("gpuFilterFramebufferUploads"); node.valid())
     {
-      if (std::string_view next; (entry->gpu_filter_framebuffer_uploads_minimum_width =
-                                    StringUtil::FromChars<u16>(to_stringview(node.val()), 10, &next))
-                                   .has_value())
+      std::string_view next;
+      if (const std::optional<u16> width = StringUtil::FromChars<u16>(to_stringview(node.val()), 10, &next);
+          width.has_value())
       {
+        std::optional<u16> height;
         if (next = StringUtil::StripWhitespace(next);
             !next.empty() && next.front() == 'x' &&
-            (entry->gpu_filter_framebuffer_uploads_minimum_height =
-               StringUtil::FromChars<u16>(StringUtil::StripWhitespace(next.substr(1)), 10))
-              .has_value())
+            (height = StringUtil::FromChars<u16>(StringUtil::StripWhitespace(next.substr(1)), 10)).has_value())
         {
           // Clamp it here to avoid doing so at apply time.
-          entry->gpu_filter_framebuffer_uploads_minimum_width = std::clamp<u16>(
-            entry->gpu_filter_framebuffer_uploads_minimum_width.value(), 1, static_cast<u16>(VRAM_WIDTH));
-          entry->gpu_filter_framebuffer_uploads_minimum_height = std::clamp<u16>(
-            entry->gpu_filter_framebuffer_uploads_minimum_height.value(), 1, static_cast<u16>(VRAM_HEIGHT));
+          entry->gpu_filter_framebuffer_uploads_minimum_width.set(
+            entry->override_mask, std::clamp<u16>(width.value(), 1, static_cast<u16>(VRAM_WIDTH)));
+          entry->gpu_filter_framebuffer_uploads_minimum_height.set(
+            entry->override_mask, std::clamp<u16>(height.value(), 1, static_cast<u16>(VRAM_HEIGHT)));
           entry->traits[static_cast<size_t>(Trait::FilterFramebufferUploads)] = true;
-        }
-        else
-        {
-          entry->gpu_filter_framebuffer_uploads_minimum_width.reset();
         }
       }
     }
