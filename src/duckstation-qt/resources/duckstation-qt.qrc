@@ -138,6 +138,7 @@
 		<file>icons/monochrome/svg/fullscreen-line.svg</file>
 		<file>icons/monochrome/svg/function-line.svg</file>
 		<file>icons/monochrome/svg/github.svg</file>
+		<file>icons/monochrome/svg/gamepad-line.svg</file>
 		<file>icons/monochrome/svg/global-line.svg</file>
 		<file>icons/monochrome/svg/guncon-line.svg</file>
 		<file>icons/monochrome/svg/id-card-line.svg</file>
@@ -158,6 +159,7 @@
 		<file>icons/monochrome/svg/login-box-line.svg</file>
 		<file>icons/monochrome/svg/logout-box-line.svg</file>
 		<file>icons/monochrome/svg/mag-line.svg</file>
+		<file>icons/monochrome/svg/magic-line.svg</file>
 		<file>icons/monochrome/svg/memcard-line.svg</file>
 		<file>icons/monochrome/svg/memcards-line.svg</file>
 		<file>icons/monochrome/svg/minus-line.svg</file>

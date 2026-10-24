@@ -106,16 +106,40 @@
        </spacer>
       </item>
       <item>
-       <widget class="QLabel" name="boundDevice">
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::PlainText</enum>
-        </property>
+       <widget class="QFrame" name="boundDeviceFrame">
         <property name="class" stdset="0">
          <string notr="true">pill-label</string>
         </property>
+        <layout class="QHBoxLayout" name="boundDeviceLayout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="boundDeviceIcon"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="boundDevice">
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::PlainText</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -125,7 +149,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources/duckstation-qt.qrc">
-          <normaloff>:/icons/monochrome/svg/controller-digital-line.svg</normaloff>:/icons/monochrome/svg/controller-digital-line.svg</iconset>
+          <normaloff>:/icons/monochrome/svg/magic-line.svg</normaloff>:/icons/monochrome/svg/magic-line.svg</iconset>
         </property>
        </widget>
       </item>

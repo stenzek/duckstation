@@ -52,6 +52,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
   : QWidget(parent), m_dialog(dialog), m_config_section(Controller::GetSettingsSection(port)), m_port_number(port)
 {
   m_ui.setupUi(this);
+  m_ui.boundDeviceIcon->setPixmap(QIcon(u":/icons/monochrome/svg/gamepad-line.svg"_s).pixmap(16));
   populateControllerTypes();
   populateWidgets();
 
@@ -332,8 +333,8 @@ void ControllerBindingWidget::updateBindingDeviceStatus()
 
   static constexpr int MAX_BOUND_DEVICE_WIDTH = 500;
   m_ui.boundDevice->setText(m_ui.boundDevice->fontMetrics().elidedText(status, Qt::ElideRight, MAX_BOUND_DEVICE_WIDTH));
-  m_ui.boundDevice->setVisible(!status.isEmpty());
-  m_ui.boundDevice->setToolTip(status);
+  m_ui.boundDeviceFrame->setVisible(!status.isEmpty());
+  m_ui.boundDeviceFrame->setToolTip(status);
 }
 
 void ControllerBindingWidget::updateHeaderToolButtons()
