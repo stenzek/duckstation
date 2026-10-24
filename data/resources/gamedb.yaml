@@ -70513,6 +70513,8 @@ SCES-00984:
     - DigitalController
     - NeGcon
     - NeGconRumble
+  traits:
+    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"
@@ -70564,6 +70566,8 @@ SCPS-10045:
     - SCPS-45149
     - SCPS-91128
     - SCPS-91301
+  traits:
+    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"
@@ -70590,6 +70594,8 @@ SCUS-94194:
     - DigitalController
     - NeGcon
     - NeGconRumble
+  traits:
+    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"

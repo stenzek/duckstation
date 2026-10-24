@@ -150,6 +150,7 @@ static constexpr const std::array s_trait_names = {
   "DisablePGXPOn2DPolygons",
   "ForcePGXPVertexCache",
   "ForcePGXPCPUMode",
+  "NormalizePGXPDepth",
   "ForceRecompilerICache",
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
@@ -191,6 +192,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP on 2D Polygons", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP Vertex Cache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP CPU Mode", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Normalize PGXP Depth", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
@@ -949,6 +951,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
     settings.gpu_pgxp_disable_2d = true;
   }
+
+  if (HasTrait(Trait::NormalizePGXPDepth))
+    settings.gpu_pgxp_normalize_depth = true;
 
   if (gpu_pgxp_preserve_proj_fp.has_value())
   {

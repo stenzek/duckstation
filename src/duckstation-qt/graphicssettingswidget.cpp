@@ -249,6 +249,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "PGXPDisableOn2DPolygons", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, Settings::GPU_SECTION_NAME,
                                                "PGXPTransparentDepthTest", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpNormalizeDepth, Settings::GPU_SECTION_NAME,
+                                               "PGXPNormalizeDepth", false);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -267,6 +269,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpDisableOn2DPolygons,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
+  SettingWidgetBinder::SetForceEnabled(m_ui.pgxpNormalizeDepth,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::NormalizePGXPDepth));
   if (const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
       dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value())
   {
@@ -578,6 +582,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
                                 "and tend to clip through the ground when depth testing is enabled. Depth writes for "
                                 "semi-transparent polygons are disabled regardless of this setting."));
+  dialog->registerWidgetHelp(
+    m_ui.pgxpNormalizeDepth, tr("Normalize Depth Scale"), tr("Unchecked"),
+    tr("Removes the scale of each object's transform from depth values. Fixes missing geometry with the depth buffer "
+       "in games which shrink the transforms of distant objects, but breaks games which scale models through the "
+       "transform. The game database will enable this automatically when needed."));
 
   // Texture Replacements Tab
   dialog->registerWidgetHelp(
@@ -1099,6 +1108,8 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
                                            !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
+  m_ui.pgxpNormalizeDepth->setEnabled(depth_enabled &&
+                                      !m_dialog->hasGameTrait(GameDatabase::Trait::NormalizePGXPDepth));
   updateResolutionDependentOptions();
 }
 

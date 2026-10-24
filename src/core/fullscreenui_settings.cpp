@@ -4984,6 +4984,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                       FSUI_VSTR("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
                                 "and tend to clip through the ground when depth testing is enabled."),
                       Settings::GPU_SECTION_NAME, "PGXPTransparentDepthTest", false, pgxp_enabled);
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER_VERTICAL, "Normalize Depth Scale"),
+                      FSUI_VSTR("Removes the scale of each object's transform from depth values. Fixes missing "
+                                "geometry in some games, but breaks others."),
+                      Settings::GPU_SECTION_NAME, "PGXPNormalizeDepth", false, pgxp_enabled);
 
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "CPU Mode"),
                     FSUI_VSTR("Uses PGXP for all instructions, not just memory operations. Automatic uses the game "

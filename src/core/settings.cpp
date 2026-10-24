@@ -708,6 +708,7 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   gpu_pgxp_depth_buffer = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", false);
   gpu_pgxp_disable_2d = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", false);
   gpu_pgxp_transparent_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", false);
+  gpu_pgxp_normalize_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", false);
   SetPGXPDepthClearThreshold(
     si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 }
@@ -821,6 +822,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
+  si.SetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", gpu_pgxp_normalize_depth);
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
   si.SetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", gpu_dump_fast_replay_mode);
   si.SetStringValue(GPU_SECTION_NAME, "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
@@ -1325,6 +1327,7 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     gpu_pgxp_depth_buffer = false;
     gpu_pgxp_disable_2d = false;
     gpu_pgxp_transparent_depth = false;
+    gpu_pgxp_normalize_depth = false;
   }
 
   // texture replacements are not available without the TC or with the software renderer

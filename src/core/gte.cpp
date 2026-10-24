@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <numbers>
 #include <numeric>
 
@@ -910,7 +911,21 @@ NEVER_INLINE void GTE::RTPS_PGXP(const s16 V[3], u8 shift, bool lm, s64 x, s64 y
 
   precise_x = std::clamp<float>(precise_x, -1024.0f, 1023.0f);
   precise_y = std::clamp<float>(precise_y, -1024.0f, 1023.0f);
-  CPU::PGXP::GTE_RTPS(precise_x, precise_y, precise_z, REGS.dr32[14]);
+
+  // Some games scale the whole view transform per object to keep it within 16-bit range, compensating when sorting.
+  // Undo the scale of the rotation matrix's Z row, so that depth is comparable between objects.
+  float precise_depth = precise_z;
+  if (g_settings.gpu_pgxp_normalize_depth)
+  {
+    const float scale =
+      std::sqrt(static_cast<float>(s32(REGS.RT[2][0]) * REGS.RT[2][0] + s32(REGS.RT[2][1]) * REGS.RT[2][1] +
+                                   s32(REGS.RT[2][2]) * REGS.RT[2][2])) /
+      4096.0f;
+    if (scale > 0.0f)
+      precise_depth /= scale;
+  }
+
+  CPU::PGXP::GTE_RTPS(precise_x, precise_y, precise_depth, REGS.dr32[14]);
 }
 
 ALWAYS_INLINE void GTE::Execute_RTPS(Instruction inst)
