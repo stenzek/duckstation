@@ -3190,6 +3190,9 @@ wasapi_stream_release(cubeb_stream * stm)
     CloseHandle(stm->reconfigure_event);
     CloseHandle(stm->refill_event);
     CloseHandle(stm->input_available_event);
+    if (stm->thread_ready_event) {
+      CloseHandle(stm->thread_ready_event);
+    }
 
     CloseHandle(stm->thread);
 
