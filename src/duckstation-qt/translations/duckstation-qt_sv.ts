@@ -19746,37 +19746,37 @@ Aktuell bindning: %s</translation>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>Söker igenom undermappar.</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>Söker inte igenom undermappar.</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>Tillbaka</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>Fler mappåtgärder</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>Sök igenom undermappar</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>Sök inte igenom undermappar</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>Ta bort mapp</translation>
     </message>
     <message>
@@ -21168,7 +21168,7 @@ Vill du %1$s ändå?</translation>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>Starta BIOS</translation>
     </message>
     <message>
@@ -21553,37 +21553,37 @@ Vill du %1$s ändå?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>Spelmappar</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>Lägg till spelmapp</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>Spelmappar</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>Undantagna sökvägar</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>Inga spel har undantagits.</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>Fler åtgärder för undantagna sökvägar</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>Ta bort från undantagna sökvägar</translation>
     </message>
     <message>
@@ -21947,17 +21947,17 @@ Vill du %1$s ändå?</translation>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>Starta om spelet</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>Stäng spelet</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>Spelegenskaper</translation>
     </message>
     <message>
@@ -22272,7 +22272,7 @@ Vill du %1$s ändå?</translation>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>Spelhash</translation>
     </message>
     <message>
@@ -22287,7 +22287,7 @@ Vill du %1$s ändå?</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation upptäcker automatiskt spel i de mappar du anger här. Du bör lägga till minst en mapp att söka igenom. Lägg inte till rotkatalogen på din lagringsvolym, eftersom sökningen då tar mycket lång tid.</translation>
     </message>
     <message>
@@ -22797,12 +22797,12 @@ Databasfusk läses fortfarande in och finns kvar om du inte avmarkerar alternati
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>Verifiera</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>Läser och kontrollerar spel…</translation>
     </message>
     <message>
@@ -22982,62 +22982,62 @@ Databasfusk läses fortfarande in och finns kvar om du inte avmarkerar alternati
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>Inte tillgängligt</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>Alla filer</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>Slå samman skivuppsättningar</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>Sök efter nya spel</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>Sök igenom alla spel igen</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>Inga spel hittades. Lägg till en katalog med spel för att börja.</translation>
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>Lägg till spelkatalog</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>Starta spel</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>Spelegenskaper</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>Är du säker på att du vill ta bort omslagsbilden för detta spel? Den kan inte återställas.</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation kan automatiskt hämta omslagsbilder för spel som för närvarande saknar omslag. Vi tillhandahåller inga omslagsbilder, så användaren måste ange en egen bildkälla.</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>Beroende på din jurisdiktion kan spelomslag vara upphovsrättsskyddade. Du får endast använda verktyget med dina egna servrar och bilder.</translation>
     </message>
     <message>
@@ -23050,7 +23050,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>Ange webbadresserna som omslag ska hämtas från i rutan nedan, med en malladress per rad. Följande variabler är tillgängliga:
 
 ${title}: Spelets titel.
@@ -23063,27 +23063,27 @@ Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>Webbadressen innehåller inte ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} eller ${serial}.</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>Som standard sparas de hämtade omslagen med spelets titel. Om du inte vill det kan du aktivera &quot;Använd serienummer som filnamn&quot; nedan. Serienummer i stället för speltitlar förhindrar konflikter när flera regionversioner av samma spel används.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>Använd serienummer som filnamn</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>Stoppar…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>Hämtningen är färdig.</translation>
     </message>
     <message>
@@ -23303,7 +23303,7 @@ Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>Den valda URI:n är inte ett dokumentträd.</translation>
     </message>
     <message>
@@ -23411,7 +23411,7 @@ Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>Prestationer</translation>
     </message>
     <message>
@@ -24237,7 +24237,7 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>Välj skiva</translation>
     </message>
     <message>
@@ -24387,27 +24387,27 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>Verifierar innehåll…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>Innehållsverifieringen kunde inte slutföras.</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>Fel vid innehållsverifiering</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>Giltig</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>Ogiltig</translation>
     </message>
     <message>
@@ -24622,42 +24622,42 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>Typ: %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>Sortera efter: %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>Sök…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>Starta fil</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>Hanterare för sparade tillstånd</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>Hämta omslagsbilder</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>Ändra bakgrund</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>Visa version</translation>
     </message>
     <message>
@@ -24667,89 +24667,89 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>Meddelanden från tredje part</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>Visa rutnät</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>Visa lista</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>Läs in tillstånd</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>Välj omslagsbild</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>Ta bort omslagsbild</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>Skapa genväg på startskärmen</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>Exkludera från lista</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>Vill du läsa in det automatiskt sparade tillståndet som skapades %s?
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>Ren uppstart</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>Ta bort tillstånd</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>Vill du ta bort eller ange en ny bakgrundsbild?</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>Ändra</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>Töm</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>Genväg skapad för %s.</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>Kan inte skapa genväg. Kontrollera att din startskärmsapp stöder det.</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>Hämta</translation>
     </message>
     <message>
@@ -24916,7 +24916,7 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>Starta storbildsläge</translation>
     </message>
     <message>
@@ -24946,7 +24946,7 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>Spellista</translation>
     </message>
     <message>
@@ -25001,12 +25001,12 @@ Vill du importera en nu?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>Spelmappar</translation>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>Format som stöds: %s</translation>
     </message>
     <message>
@@ -25056,7 +25056,7 @@ Du kan ändra detta senare med alternativet &quot;Starta i storbildsläge&quot; 
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue (Cue-ark)
 .iso (enspårsavbild)
 .ecm (Error Code Modeling-avbild)
@@ -25071,7 +25071,7 @@ Du kan ändra detta senare med alternativet &quot;Starta i storbildsläge&quot; 
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>Följande format stöds:
 
 %s
@@ -25080,27 +25080,27 @@ Spel med flera spår i bin-format kräver en cuesheet (.cue) för att starta.</t
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>Favorit</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>Lägg till som favorit</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>Ta bort som favorit</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>Omslaget finns redan</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>En omslagsbild för detta spel finns redan. Vill du ersätta den?</translation>
     </message>
 </context>

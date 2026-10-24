@@ -2047,37 +2047,37 @@ Affectation actuelle : %s</translation>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>Analyse des sous-dossiers.</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>Aucune analyse des sous-dossiers.</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>Retour</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>Autres actions sur le dossier</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>Analyser les sous-dossiers</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>Ne pas analyser les sous-dossiers</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>Retirer le dossier</translation>
     </message>
     <message>
@@ -2137,12 +2137,12 @@ Affectation actuelle : %s</translation>
     </message>
     <message>
         <source>List Icons</source>
-        <comment>settings_content_list_icons</comment>
+        <comment>settings_game_list_icons</comment>
         <translation>Icônes de la liste</translation>
     </message>
     <message>
         <source>Selects the image shown next to each game in the game list.</source>
-        <comment>settings_summary_content_list_icons</comment>
+        <comment>settings_summary_game_list_icons</comment>
         <translation>Sélectionne l&apos;image affichée à côté de chaque jeu dans la liste des jeux.</translation>
     </message>
     <message>
@@ -3418,22 +3418,22 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Scaling</source>
-        <comment>content_background_mode</comment>
+        <comment>game_list_background_mode</comment>
         <translation>Mise à l&apos;échelle</translation>
     </message>
     <message>
         <source>Fit</source>
-        <comment>content_background_mode_fit</comment>
+        <comment>game_list_background_mode_fit</comment>
         <translation>Ajuster</translation>
     </message>
     <message>
         <source>Fill</source>
-        <comment>content_background_mode_fill</comment>
+        <comment>game_list_background_mode_fill</comment>
         <translation>Remplir</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <comment>content_background_mode_stretch</comment>
+        <comment>game_list_background_mode_stretch</comment>
         <translation>Étirer</translation>
     </message>
     <message>
@@ -3648,12 +3648,12 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>Démarrer le BIOS</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>Démarrer en mode Big Picture</translation>
     </message>
     <message>
@@ -4058,37 +4058,37 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>Dossiers de jeux</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>Ajouter un dossier de jeux</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>Dossiers de jeux</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>Chemins exclus</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>Aucun jeu n&apos;a été exclu.</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>Autres actions sur les chemins exclus</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>Retirer des chemins exclus</translation>
     </message>
     <message>
@@ -4103,7 +4103,7 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>Liste des jeux</translation>
     </message>
     <message>
@@ -4477,17 +4477,17 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>Redémarrer le jeu</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>Fermer le jeu</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>Propriétés du jeu</translation>
     </message>
     <message>
@@ -4822,7 +4822,7 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>Empreinte du jeu</translation>
     </message>
     <message>
@@ -4837,12 +4837,12 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>Dossiers de jeux</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation détectera automatiquement les jeux dans les dossiers que vous indiquez ici. Vous devriez ajouter au moins un dossier à analyser. N&apos;ajoutez pas la racine de votre volume de stockage, sinon l&apos;analyse prendra beaucoup de temps.</translation>
     </message>
     <message>
@@ -4852,7 +4852,7 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>Formats pris en charge : %s</translation>
     </message>
     <message>
@@ -5396,12 +5396,12 @@ Voulez-vous vraiment continuer ?</translation>
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>Vérifier</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>Lecture et vérification du jeu…</translation>
     </message>
     <message>
@@ -5581,32 +5581,32 @@ Voulez-vous vraiment continuer ?</translation>
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>S/O</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>Tous les fichiers</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>Regrouper les ensembles de disques</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>Rechercher de nouveaux jeux</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>Réanalyser tous les jeux</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>Aucun jeu trouvé. Ajoutez un répertoire contenant des jeux pour commencer.</translation>
     </message>
     <message>
@@ -5617,7 +5617,7 @@ Voulez-vous vraiment continuer ?</translation>
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue (feuilles CUE)
 .iso (image à piste unique)
 .ecm (image avec modélisation des codes d&apos;erreur)
@@ -5632,7 +5632,7 @@ Voulez-vous vraiment continuer ?</translation>
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>Les formats pris en charge sont :
 
 %s
@@ -5641,57 +5641,57 @@ Les jeux multipistes au format bin nécessitent une feuille CUE (.cue) pour dém
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>Ajouter un répertoire de jeux</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>Favori</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>Démarrer le jeu</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>Ajouter aux favoris</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>Retirer des favoris</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>Propriétés du jeu</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>Voulez-vous vraiment supprimer l&apos;image de jaquette de ce jeu ? Elle ne pourra pas être récupérée.</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>La couverture existe déjà</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>Une image de couverture existe déjà pour ce jeu, souhaitez-vous la remplacer ?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation peut télécharger automatiquement les jaquettes des jeux qui n&apos;en possèdent pas encore. Nous n&apos;hébergeons aucune image de jaquette, l&apos;utilisateur doit fournir sa propre source d&apos;images.</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>Selon votre juridiction, les jaquettes de jeux peuvent être protégées par le droit d&apos;auteur. Vous n&apos;êtes autorisé à utiliser cet outil qu&apos;avec vos propres serveurs et images.</translation>
     </message>
     <message>
@@ -5704,7 +5704,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>Dans le champ ci-dessous, indiquez les URL de téléchargement des jaquettes, avec un modèle d&apos;URL par ligne. Les variables suivantes sont disponibles :
 
 ${title} : Titre du jeu.
@@ -5717,27 +5717,27 @@ Exemple : https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>L&apos;URL ne contient pas ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} ou ${serial}.</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>Par défaut, les jaquettes téléchargées seront enregistrées sous le titre du jeu. Si vous préférez une autre option, vous pouvez activer « Utiliser les numéros de série comme noms de fichiers » ci-dessous. L&apos;utilisation des numéros de série à la place des titres des jeux évitera les conflits lorsque plusieurs versions régionales du même jeu sont utilisées.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>Utiliser les numéros de série comme noms de fichiers</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>Arrêt en cours…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>Téléchargement terminé.</translation>
     </message>
     <message>
@@ -5957,7 +5957,7 @@ Exemple : https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>L&apos;URI sélectionné n&apos;est pas une arborescence de documents.</translation>
     </message>
     <message>
@@ -6065,7 +6065,7 @@ Exemple : https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>Succès</translation>
     </message>
     <message>
@@ -6881,7 +6881,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>Sélectionner le disque</translation>
     </message>
     <message>
@@ -7031,27 +7031,27 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>Vérification du contenu…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>La vérification du contenu n&apos;a pas pu être terminée.</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>Erreur de vérification du contenu</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>Valide</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>Non valide</translation>
     </message>
     <message>
@@ -7266,42 +7266,42 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>Type : %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>Trier par : %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>Rechercher…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>Démarrer le fichier</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>Gestionnaire des états de sauvegarde</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>Télécharger les jaquettes</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>Modifier l&apos;arrière-plan</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>Afficher la version</translation>
     </message>
     <message>
@@ -7311,89 +7311,89 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>Mentions des tiers</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>Afficher la grille</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>Afficher la liste</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>Charger l&apos;état</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>Choisir une image de jaquette</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>Supprimer l&apos;image de jaquette</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>Créer un raccourci dans le lanceur</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>Exclure de la liste</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>Voulez-vous charger la sauvegarde automatique créée %s ?
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>Démarrage propre</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>Supprimer l&apos;état</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>Voulez-vous effacer l&apos;image d&apos;arrière-plan ou en définir une nouvelle ?</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>Modifier</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>Effacer</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>Raccourci créé pour %s.</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>Impossible de créer le raccourci. Assurez-vous que votre lanceur le prend en charge.</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>Télécharger</translation>
     </message>
     <message>

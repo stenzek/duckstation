@@ -2040,37 +2040,37 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>하위 폴더를 검색합니다.</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>하위 폴더를 검색하지 않습니다.</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>뒤로</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>기타 폴더 작업</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>하위 폴더 검색</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>하위 폴더 검색 안 함</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>폴더 제거</translation>
     </message>
     <message>
@@ -2130,12 +2130,12 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>List Icons</source>
-        <comment>settings_content_list_icons</comment>
+        <comment>settings_game_list_icons</comment>
         <translation>목록 아이콘</translation>
     </message>
     <message>
         <source>Selects the image shown next to each game in the game list.</source>
-        <comment>settings_summary_content_list_icons</comment>
+        <comment>settings_summary_game_list_icons</comment>
         <translation>게임 목록에서 각 게임 옆에 표시할 이미지를 선택합니다.</translation>
     </message>
     <message>
@@ -3399,22 +3399,22 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Scaling</source>
-        <comment>content_background_mode</comment>
+        <comment>game_list_background_mode</comment>
         <translation>크기 조정</translation>
     </message>
     <message>
         <source>Fit</source>
-        <comment>content_background_mode_fit</comment>
+        <comment>game_list_background_mode_fit</comment>
         <translation>맞추기</translation>
     </message>
     <message>
         <source>Fill</source>
-        <comment>content_background_mode_fill</comment>
+        <comment>game_list_background_mode_fill</comment>
         <translation>채우기</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <comment>content_background_mode_stretch</comment>
+        <comment>game_list_background_mode_stretch</comment>
         <translation>늘리기</translation>
     </message>
     <message>
@@ -3629,12 +3629,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>바이오스 시작</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>빅피처 모드 시작</translation>
     </message>
     <message>
@@ -4039,37 +4039,37 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>게임 폴더</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>게임 폴더 추가</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>게임 폴더</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>제외된 경로</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>제외된 게임이 없습니다.</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>제외된 경로의 추가 작업</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>제외된 경로에서 제거</translation>
     </message>
     <message>
@@ -4084,7 +4084,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>게임 목록</translation>
     </message>
     <message>
@@ -4457,17 +4457,17 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>게임 다시 시작</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>게임 닫기</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>게임 속성</translation>
     </message>
     <message>
@@ -4802,7 +4802,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>게임 해시</translation>
     </message>
     <message>
@@ -4817,12 +4817,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>게임 폴더</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation은 여기에서 지정한 폴더의 게임을 자동으로 감지합니다. 검색할 폴더를 하나 이상 추가하세요. 저장 장치의 최상위 폴더를 추가하면 검색에 매우 오랜 시간이 걸리므로 추가하지 마세요.</translation>
     </message>
     <message>
@@ -4832,7 +4832,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>지원 형식: %s</translation>
     </message>
     <message>
@@ -5375,12 +5375,12 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>확인</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>게임을 읽고 검사하는 중…</translation>
     </message>
     <message>
@@ -5560,32 +5560,32 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>해당 없음</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>모든 파일</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>디스크 세트 통합</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>새로운 게임 찾기</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>모든 게임 다시 검색</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>게임을 찾지 못했습니다. 시작하려면 게임이 있는 디렉터리를 추가하세요.</translation>
     </message>
     <message>
@@ -5596,7 +5596,7 @@ Are you sure you want to continue?</source>
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue (큐 시트)
 .iso (단일 트랙 이미지)
 .ecm (오류 코드 모델링 이미지)
@@ -5611,7 +5611,7 @@ Are you sure you want to continue?</source>
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>지원 형식:
 
 %s
@@ -5620,57 +5620,57 @@ bin 형식의 멀티트랙 게임을 시작하려면 큐 시트(.cue)가 필요�
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>게임 디렉터리 추가</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>즐겨찾기</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>게임 시작</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>즐겨찾기</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>즐겨찾기 해제</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>게임 속성</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>이 게임의 표지 이미지를 삭제하시겠습니까? 복구할 수 없습니다.</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>이미 존재하는 커버</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>이 게임의 커버 이미지가 이미 존재합니다, 교체하시겠습니까?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation은 현재 커버가 없는 게임의 커버를 자동으로 내려받을 수 있습니다. DuckStation은 어떠한 커버 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>관할 지역에 따라 게임 커버는 저작권으로 보호될 수 있습니다. 본인의 서버와 이미지에만 이 도구를 사용할 권한이 있습니다.</translation>
     </message>
     <message>
@@ -5683,7 +5683,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>아래 상자에 커버를 내려받을 URL을 한 줄에 하나씩 템플릿 URL로 지정하세요. 다음 변수를 사용할 수 있습니다.
 
 ${title}: 게임 타이틀.
@@ -5696,27 +5696,27 @@ ${serial}: 게임 일련번호.
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL에 ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} 또는 ${serial}이 없습니다.</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>기본적으로 내려받은 커버는 게임 타이틀을 파일 이름으로 사용하여 저장됩니다. 이를 원하지 않으면 아래의 &quot;시리얼 파일 이름 사용&quot;을 활성화할 수 있습니다. 게임 타이틀 대신 일련번호를 사용하면 같은 게임의 여러 지역 버전을 사용할 때 충돌을 방지할 수 있습니다.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>시리얼 파일 이름 사용</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>중지 중…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>내려받기를 완료했습니다.</translation>
     </message>
     <message>
@@ -5936,7 +5936,7 @@ ${serial}: 게임 일련번호.
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>선택한 URI가 문서 트리가 아닙니다.</translation>
     </message>
     <message>
@@ -6042,7 +6042,7 @@ ${serial}: 게임 일련번호.
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>도전 과제</translation>
     </message>
     <message>
@@ -6857,7 +6857,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>디스크 선택</translation>
     </message>
     <message>
@@ -7007,27 +7007,27 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>콘텐츠 검증 중…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>콘텐츠 검증을 완료할 수 없습니다.</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>콘텐츠 검증 오류</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>유효함</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>유효하지 않음</translation>
     </message>
     <message>
@@ -7242,42 +7242,42 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>유형: %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>정렬 기준: %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>검색…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>파일 시작</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>저장 상태 관리자</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>커버 내려받기</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>배경 변경</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>버전 표시</translation>
     </message>
     <message>
@@ -7287,89 +7287,89 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>제삼자 고지 사항</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>격자 표시</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>목록 표시</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>상태 불러오기</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>표지 이미지 선택</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>표지 이미지 삭제</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>런처 바로가기 만들기</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>목록에서 제외</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>%s에 생성된 자동 저장을 불러오시겠습니까?
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>클린 부팅</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>상태 삭제</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>배경 이미지를 지우거나 새로 설정하시겠습니까?</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>변경</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>지우기</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>%s의 바로가기를 만들었습니다.</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>바로가기를 만들 수 없습니다. 런처가 이 기능을 지원하는지 확인하세요.</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>다운로드</translation>
     </message>
     <message>

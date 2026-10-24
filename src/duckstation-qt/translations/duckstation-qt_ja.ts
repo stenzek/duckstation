@@ -2034,37 +2034,37 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>サブフォルダをスキャンします。</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>サブフォルダをスキャンしません。</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>戻る</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>その他のフォルダ操作</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>サブフォルダをスキャン</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>サブフォルダをスキャンしない</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>フォルダを削除</translation>
     </message>
     <message>
@@ -2124,12 +2124,12 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>List Icons</source>
-        <comment>settings_content_list_icons</comment>
+        <comment>settings_game_list_icons</comment>
         <translation>リストのアイコン</translation>
     </message>
     <message>
         <source>Selects the image shown next to each game in the game list.</source>
-        <comment>settings_summary_content_list_icons</comment>
+        <comment>settings_summary_game_list_icons</comment>
         <translation>ゲームリストの各ゲームの横に表示する画像を選択します。</translation>
     </message>
     <message>
@@ -3393,22 +3393,22 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Scaling</source>
-        <comment>content_background_mode</comment>
+        <comment>game_list_background_mode</comment>
         <translation>スケーリング</translation>
     </message>
     <message>
         <source>Fit</source>
-        <comment>content_background_mode_fit</comment>
+        <comment>game_list_background_mode_fit</comment>
         <translation>全体を表示</translation>
     </message>
     <message>
         <source>Fill</source>
-        <comment>content_background_mode_fill</comment>
+        <comment>game_list_background_mode_fill</comment>
         <translation>画面を埋める</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <comment>content_background_mode_stretch</comment>
+        <comment>game_list_background_mode_stretch</comment>
         <translation>引き伸ばす</translation>
     </message>
     <message>
@@ -3623,12 +3623,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>BIOSを起動</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>ビッグピクチャーモードを開始</translation>
     </message>
     <message>
@@ -4033,37 +4033,37 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>ゲームフォルダ</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>ゲームフォルダを追加</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>ゲームフォルダ</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>除外パス</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>除外されたゲームはありません。</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>その他の除外パス操作</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>除外パスから削除</translation>
     </message>
     <message>
@@ -4078,7 +4078,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>ゲームリスト</translation>
     </message>
     <message>
@@ -4451,17 +4451,17 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>ゲームを再起動</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>ゲームを終了</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>ゲームのプロパティ</translation>
     </message>
     <message>
@@ -4796,7 +4796,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>ゲームのハッシュ</translation>
     </message>
     <message>
@@ -4811,12 +4811,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>ゲームフォルダ</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation は、ここで指定したフォルダ内のゲームを自動的に検出します。スキャンするフォルダを少なくとも 1 つ追加してください。スキャンに非常に長い時間がかかるため、ストレージの最上位フォルダは追加しないでください。</translation>
     </message>
     <message>
@@ -4826,7 +4826,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>サポートされている形式: %s</translation>
     </message>
     <message>
@@ -5369,12 +5369,12 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>検証</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>ゲームを読み込んで照合しています…</translation>
     </message>
     <message>
@@ -5554,32 +5554,32 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>なし</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>すべてのファイル</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>複数枚組のディスクをまとめる</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>新規ゲームをスキャン</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>全ゲームを再スキャン</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>ゲームが見つかりませんでした。ゲームが含まれるディレクトリを追加してください。</translation>
     </message>
     <message>
@@ -5590,7 +5590,7 @@ Are you sure you want to continue?</source>
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue（キューシート）
 .iso（シングルトラックイメージ）
 .ecm（エラーコードモデリングイメージ）
@@ -5605,7 +5605,7 @@ Are you sure you want to continue?</source>
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>サポートされている形式は以下の通りです:
 
 %s
@@ -5614,57 +5614,57 @@ bin 形式のマルチトラックゲームを起動するには、キューシ�
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>ゲームディレクトリを追加</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>お気に入り</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>ゲーム起動</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>お気に入りに追加</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>お気に入りから削除</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>ゲームのプロパティ</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>このゲームのカバー画像を削除してもよろしいですか？復元することはできません。</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>カバーはすでに存在します</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>このゲームのカバー画像はすでに存在しますが、置き換えますか？</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation は現在カバーが設定されていないゲームのカバーを自動でダウンロードすることができます。我々はカバー画像を提供していません。ユーザーが自分で画像のダウンロード元を指定する必要があります。</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>お住まいの国や地域によっては、ゲームのカバーは著作権で保護されている場合があります。このツールは、自分のサーバーと画像に対してのみ使用できます。</translation>
     </message>
     <message>
@@ -5677,7 +5677,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>下の欄にカバーのダウンロード元 URL を指定してください。テンプレート URL を 1 行に 1 つ入力します。次の変数を使用できます:
 
 ${title}: ゲームのタイトル。
@@ -5690,27 +5690,27 @@ ${serial}: ゲームのシリアル番号。
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL に ${title}、${savetitle}、${localizedtitle}、${filetitle}、${serial} のいずれも含まれていません。</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>既定では、ダウンロードしたカバーはゲームのタイトルを使って保存されます。これを希望しない場合は、下の「シリアル番号をファイル名に使う」を有効にできます。ゲームのタイトルの代わりにシリアル番号を使用すると、同じゲームの複数の地域版を使用する際の競合を防ぐことができます。</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>シリアル番号をファイル名に使う</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>停止中…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>ダウンロード完了。</translation>
     </message>
     <message>
@@ -5930,7 +5930,7 @@ ${serial}: ゲームのシリアル番号。
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>選択された URI はドキュメントツリーではありません。</translation>
     </message>
     <message>
@@ -6036,7 +6036,7 @@ ${serial}: ゲームのシリアル番号。
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>実績</translation>
     </message>
     <message>
@@ -6851,7 +6851,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>ディスクを選択</translation>
     </message>
     <message>
@@ -7001,27 +7001,27 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>コンテンツを検証しています…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>コンテンツの検証を完了できませんでした。</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>コンテンツの検証エラー</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>正常</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>不正</translation>
     </message>
     <message>
@@ -7236,42 +7236,42 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>種類: %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>並べ替え: %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>検索…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>ファイル起動</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>ステートセーブの管理</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>カバーのダウンロード</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>背景を変更</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>バージョンを表示</translation>
     </message>
     <message>
@@ -7281,89 +7281,89 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>サードパーティに関する表記</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>グリッドを表示</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>リストを表示</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>ステートロード</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>カバー画像を選択</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>カバー画像を削除</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>ランチャーのショートカットを作成</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>リストから除外 (除外パスに追加)</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>%s に作成された自動セーブを読み込みますか？
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>クリーンブート</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>ステートを削除</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>背景画像をクリアしますか、それとも新しい画像を設定しますか？</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>変更</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>クリア</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>%s のショートカットを作成しました。</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>ショートカットを作成できません。ランチャーが対応していることを確認してください。</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>ダウンロード</translation>
     </message>
     <message>

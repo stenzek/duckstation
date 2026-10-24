@@ -2034,37 +2034,37 @@ Mevcut Atama: %s</translation>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>Alt klasörler taranıyor.</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>Alt klasörler taranmıyor.</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>Geri</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>Diğer klasör işlemleri</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>Alt Klasörleri Tara</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>Alt Klasörleri Tarama</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>Klasörü Kaldır</translation>
     </message>
     <message>
@@ -2124,12 +2124,12 @@ Mevcut Atama: %s</translation>
     </message>
     <message>
         <source>List Icons</source>
-        <comment>settings_content_list_icons</comment>
+        <comment>settings_game_list_icons</comment>
         <translation>Liste Simgeleri</translation>
     </message>
     <message>
         <source>Selects the image shown next to each game in the game list.</source>
-        <comment>settings_summary_content_list_icons</comment>
+        <comment>settings_summary_game_list_icons</comment>
         <translation>Oyun listesindeki her oyunun yanında gösterilen resmi seçer.</translation>
     </message>
     <message>
@@ -3393,22 +3393,22 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Scaling</source>
-        <comment>content_background_mode</comment>
+        <comment>game_list_background_mode</comment>
         <translation>Ölçeklendirme</translation>
     </message>
     <message>
         <source>Fit</source>
-        <comment>content_background_mode_fit</comment>
+        <comment>game_list_background_mode_fit</comment>
         <translation>Sığdır</translation>
     </message>
     <message>
         <source>Fill</source>
-        <comment>content_background_mode_fill</comment>
+        <comment>game_list_background_mode_fill</comment>
         <translation>Doldur</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <comment>content_background_mode_stretch</comment>
+        <comment>game_list_background_mode_stretch</comment>
         <translation>Ger</translation>
     </message>
     <message>
@@ -3623,12 +3623,12 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>BIOS Başlat</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>Büyük Resim Modunu Başlat</translation>
     </message>
     <message>
@@ -4033,37 +4033,37 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>Oyun Klasörleri</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>Oyun klasörü ekle</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>Oyun Klasörleri</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>Hariç Tutulan Yollar</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>Hariç tutulan oyun yok.</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>Diğer hariç tutulan yol işlemleri</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>Hariç Tutulan Yollardan Kaldır</translation>
     </message>
     <message>
@@ -4078,7 +4078,7 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>Oyun Listesi</translation>
     </message>
     <message>
@@ -4451,17 +4451,17 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>Oyunu Yeniden Başlat</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>Oyunu Kapat</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>Oyun Bilgileri</translation>
     </message>
     <message>
@@ -4796,7 +4796,7 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>Oyun Özeti</translation>
     </message>
     <message>
@@ -4811,12 +4811,12 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>Oyun Klasörleri</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation, burada belirttiğiniz klasörlerdeki oyunları otomatik olarak algılar. Taranacak en az bir klasör eklemelisiniz. Lütfen depolama biriminizin kök dizinini eklemeyin; aksi halde tarama çok uzun sürer.</translation>
     </message>
     <message>
@@ -4826,7 +4826,7 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>Desteklenen biçimler: %s</translation>
     </message>
     <message>
@@ -5369,12 +5369,12 @@ Devam etmek istediğinize emin misiniz?</translation>
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>Doğrula</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>Oyun okunuyor ve denetleniyor…</translation>
     </message>
     <message>
@@ -5554,32 +5554,32 @@ Devam etmek istediğinize emin misiniz?</translation>
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>Yok</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>Tüm Dosyalar</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>CD Kümelerini Birleştir</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>Yeni Oyunlar İçin Tara</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>Tüm Oyunları Tekrar Tara</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>Oyun bulunamadı. Başlamak için oyun içeren bir dizin ekleyin.</translation>
     </message>
     <message>
@@ -5590,7 +5590,7 @@ Devam etmek istediğinize emin misiniz?</translation>
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue (Cue Sayfaları)
 .iso (Tek Parçalı Görüntü)
 .ecm (Hata Kodu Modelleme Görüntüsü)
@@ -5605,7 +5605,7 @@ Devam etmek istediğinize emin misiniz?</translation>
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>Desteklenen biçimler:
 
 %s
@@ -5614,57 +5614,57 @@ bin biçimindeki çok parçalı oyunları başlatmak için bir cue dosyası (.cu
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>Oyun Dizini Ekle</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>Favori</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>Oyun Başlat</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>Favorilere Ekle</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>Favorilerden Kaldır</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>Oyun Bilgileri</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>Bu oyunun kapak görselini silmek istediğinize emin misiniz? Geri getirilemez.</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>Kapak Zaten Var</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>Bu oyunun zaten kapağı var. Üstüne yazılsın mı?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation, henüz kapak atanmamış oyunların kapaklarını otomatik olarak indirebilir. Hiçbir kapak görselini biz barındırmıyoruz; görseller için kendi kaynağınızı sağlamalısınız.</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>Yargı alanınıza bağlı olarak oyun kapakları telif hakkına tabi olabilir. Bu aracı yalnızca kendi sunucularınız ve görsellerinizle kullanmaya yetkilisiniz.</translation>
     </message>
     <message>
@@ -5677,7 +5677,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>Aşağıdaki kutuda kapakların indirileceği URL&apos;leri, her satırda bir şablon URL olacak şekilde belirtin. Şu değişkenler kullanılabilir:
 
 ${title}: Oyunun adı.
@@ -5690,27 +5690,27 @@ ${serial}: Oyunun seri numarası.
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} veya ${serial} içermiyor.</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>Varsayılan olarak indirilen kapaklar oyunun adıyla kaydedilir. Bunu istemiyorsanız aşağıdaki &quot;Seri Numaralı Dosya Adlarını Kullan&quot; seçeneğini etkinleştirebilirsiniz. Oyun adları yerine seri numaralarını kullanmak, aynı oyunun birden fazla bölge sürümü kullanıldığında çakışmaları önler.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>Seri Numaralı Dosya Adlarını Kullan</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>Durduruluyor…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>İndirme tamamlandı.</translation>
     </message>
     <message>
@@ -5930,7 +5930,7 @@ ${serial}: Oyunun seri numarası.
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>Seçilen URI bir belge ağacı değil.</translation>
     </message>
     <message>
@@ -6036,7 +6036,7 @@ ${serial}: Oyunun seri numarası.
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>Başarımlar</translation>
     </message>
     <message>
@@ -6851,7 +6851,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>CD Seç</translation>
     </message>
     <message>
@@ -7001,27 +7001,27 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>İçerik Doğrulanıyor…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>İçerik doğrulaması tamamlanamadı.</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>İçerik Doğrulama Hatası</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>Geçerli</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>Geçersiz</translation>
     </message>
     <message>
@@ -7236,42 +7236,42 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>Tür: %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>Sıralama: %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>Ara…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>Dosya Başlat</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>Durum Kaydı Yöneticisi</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>Oyun Kapaklarını İndir</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>Arka Planı Değiştir</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>Sürümü Göster</translation>
     </message>
     <message>
@@ -7281,89 +7281,89 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>Üçüncü Taraf Bildirimleri</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>Izgarayı Göster</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>Listeyi Göster</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>Durum Kaydı Yükle</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>Kapak Görseli Seç</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>Kapak Görselini Sil</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>Başlatıcı Kısayolu Oluştur</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>Listeden Dışla</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>%s oluşturulan otomatik kaydı yüklemek istiyor musunuz?
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>Temiz Başlatma</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>Durum Kaydını Sil</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>Arka plan görselini temizlemek veya yeni bir görsel ayarlamak istiyor musunuz?</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>Değiştir</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>Temizle</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>%s için kısayol oluşturuldu.</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>Kısayol oluşturulamıyor. Başlatıcınızın desteklediğinden emin olun.</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>İndir</translation>
     </message>
     <message>

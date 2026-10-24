@@ -2047,37 +2047,37 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>Scanning subfolders.</source>
-        <comment>content_folders_scanning_subdirectories</comment>
+        <comment>game_folders_scanning_subdirectories</comment>
         <translation>סריקת תיקיות משנה מופעלת.</translation>
     </message>
     <message>
         <source>Not scanning subfolders.</source>
-        <comment>content_folders_not_scanning_subdirectories</comment>
+        <comment>game_folders_not_scanning_subdirectories</comment>
         <translation>סריקת תיקיות משנה מושבתת.</translation>
     </message>
     <message>
         <source>Back</source>
-        <comment>content_folders_back</comment>
+        <comment>game_folders_back</comment>
         <translation>חזרה</translation>
     </message>
     <message>
         <source>More folder actions</source>
-        <comment>content_folders_more_actions</comment>
+        <comment>game_folders_more_actions</comment>
         <translation>פעולות נוספות בתיקייה</translation>
     </message>
     <message>
         <source>Scan Subfolders</source>
-        <comment>content_folders_enable_recursive</comment>
+        <comment>game_folders_enable_recursive</comment>
         <translation>סריקת תיקיות משנה</translation>
     </message>
     <message>
         <source>Do Not Scan Subfolders</source>
-        <comment>content_folders_disable_recursive</comment>
+        <comment>game_folders_disable_recursive</comment>
         <translation>ללא סריקת תיקיות משנה</translation>
     </message>
     <message>
         <source>Remove Folder</source>
-        <comment>content_folders_remove</comment>
+        <comment>game_folders_remove</comment>
         <translation>הסרת תיקייה</translation>
     </message>
     <message>
@@ -2137,12 +2137,12 @@ Current Binding: %s</source>
     </message>
     <message>
         <source>List Icons</source>
-        <comment>settings_content_list_icons</comment>
+        <comment>settings_game_list_icons</comment>
         <translation>סמלי הרשימה</translation>
     </message>
     <message>
         <source>Selects the image shown next to each game in the game list.</source>
-        <comment>settings_summary_content_list_icons</comment>
+        <comment>settings_summary_game_list_icons</comment>
         <translation>בוחר את התמונה המוצגת לצד כל משחק ברשימת המשחקים.</translation>
     </message>
     <message>
@@ -3418,22 +3418,22 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Scaling</source>
-        <comment>content_background_mode</comment>
+        <comment>game_list_background_mode</comment>
         <translation>קנה מידה</translation>
     </message>
     <message>
         <source>Fit</source>
-        <comment>content_background_mode_fit</comment>
+        <comment>game_list_background_mode_fit</comment>
         <translation>התאמה</translation>
     </message>
     <message>
         <source>Fill</source>
-        <comment>content_background_mode_fill</comment>
+        <comment>game_list_background_mode_fill</comment>
         <translation>מילוי</translation>
     </message>
     <message>
         <source>Stretch</source>
-        <comment>content_background_mode_stretch</comment>
+        <comment>game_list_background_mode_stretch</comment>
         <translation>מתיחה</translation>
     </message>
     <message>
@@ -3648,12 +3648,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Start BIOS</source>
-        <comment>content_list_start_bios</comment>
+        <comment>game_list_start_bios</comment>
         <translation>הפעלת BIOS</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
-        <comment>content_list_start_fullscreen_ui</comment>
+        <comment>game_list_start_fullscreen_ui</comment>
         <translation>הפעלת מצב תמונה גדולה</translation>
     </message>
     <message>
@@ -4058,37 +4058,37 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_title</comment>
+        <comment>game_folders_title</comment>
         <translation>תיקיות משחקים</translation>
     </message>
     <message>
         <source>Add game folder</source>
-        <comment>content_folders_add</comment>
+        <comment>game_folders_add</comment>
         <translation>הוספת תיקיית משחקים</translation>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>content_folders_tab_folders</comment>
+        <comment>game_folders_tab_folders</comment>
         <translation>תיקיות משחקים</translation>
     </message>
     <message>
         <source>Excluded Paths</source>
-        <comment>content_folders_tab_excluded</comment>
+        <comment>game_folders_tab_excluded</comment>
         <translation>נתיבים מוחרגים</translation>
     </message>
     <message>
         <source>No games have been excluded.</source>
-        <comment>content_folders_excluded_empty</comment>
+        <comment>game_folders_excluded_empty</comment>
         <translation>לא הוחרגו משחקים.</translation>
     </message>
     <message>
         <source>More excluded path actions</source>
-        <comment>content_folders_excluded_more_actions</comment>
+        <comment>game_folders_excluded_more_actions</comment>
         <translation>פעולות נוספות עבור נתיבים מוחרגים</translation>
     </message>
     <message>
         <source>Remove From Excluded Paths</source>
-        <comment>content_folders_excluded_remove</comment>
+        <comment>game_folders_excluded_remove</comment>
         <translation>הסרה מהנתיבים המוחרגים</translation>
     </message>
     <message>
@@ -4103,7 +4103,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game List</source>
-        <comment>settings_category_content_list</comment>
+        <comment>settings_category_game_list</comment>
         <translation>רשימת משחקים</translation>
     </message>
     <message>
@@ -4477,17 +4477,17 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Restart Game</source>
-        <comment>emulation_menu_restart_content</comment>
+        <comment>emulation_menu_restart_game</comment>
         <translation>הפעלת המשחק מחדש</translation>
     </message>
     <message>
         <source>Close Game</source>
-        <comment>emulation_menu_close_content</comment>
+        <comment>emulation_menu_close_game</comment>
         <translation>סגירת המשחק</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>emulation_menu_content_settings</comment>
+        <comment>emulation_menu_game_properties</comment>
         <translation>מאפייני משחק</translation>
     </message>
     <message>
@@ -4822,7 +4822,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Hash</source>
-        <comment>game_properties_content_hash</comment>
+        <comment>game_properties_hash</comment>
         <translation>גיבוב משחק</translation>
     </message>
     <message>
@@ -4837,12 +4837,12 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Game Folders</source>
-        <comment>setup_wizard_content_folders_title</comment>
+        <comment>setup_wizard_game_folders_title</comment>
         <translation>תיקיות משחקים</translation>
     </message>
     <message>
         <source>DuckStation will automatically detect games in the folders you specify here. You should add at least one folder to scan. Please do not add the top of your storage volume, otherwise scanning will take a very long time.</source>
-        <comment>setup_wizard_content_folders_message</comment>
+        <comment>setup_wizard_game_folders_message</comment>
         <translation>DuckStation יזהה אוטומטית משחקים בתיקיות שתציין כאן. יש להוסיף לפחות תיקייה אחת לסריקה. אין להוסיף את תיקיית השורש של אמצעי האחסון שלך, אחרת הסריקה תימשך זמן רב מאוד.</translation>
     </message>
     <message>
@@ -4852,7 +4852,7 @@ Do you want to %1$s anyway?</source>
     </message>
     <message>
         <source>Supported formats: %s</source>
-        <comment>setup_wizard_content_folders_supported_formats</comment>
+        <comment>setup_wizard_game_folders_supported_formats</comment>
         <translation>פורמטים נתמכים: %s</translation>
     </message>
     <message>
@@ -5396,12 +5396,12 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Verify</source>
-        <comment>content_verification_verify</comment>
+        <comment>game_verification_verify</comment>
         <translation>אימות</translation>
     </message>
     <message>
         <source>Reading and checking game…</source>
-        <comment>content_verification_progress_status</comment>
+        <comment>game_verification_progress_status</comment>
         <translation>קורא ובודק את המשחק…</translation>
     </message>
     <message>
@@ -5581,32 +5581,32 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>N/A</source>
-        <comment>content_list_no_achievements</comment>
+        <comment>game_list_no_achievements</comment>
         <translation>לא זמין</translation>
     </message>
     <message>
         <source>All Files</source>
-        <comment>content_list_filter_all</comment>
+        <comment>game_list_filter_all</comment>
         <translation>כל הקבצים</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
-        <comment>content_list_merge_media_sets</comment>
+        <comment>game_list_merge_media_sets</comment>
         <translation>מיזוג ערכות דיסקים</translation>
     </message>
     <message>
         <source>Scan For New Games</source>
-        <comment>content_list_scan_new</comment>
+        <comment>game_list_scan_new</comment>
         <translation>סריקה לאיתור משחקים חדשים</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
-        <comment>content_list_rescan_all</comment>
+        <comment>game_list_rescan_all</comment>
         <translation>סריקה מחדש של כל המשחקים</translation>
     </message>
     <message>
         <source>No games were found. Please add a directory with games to begin.</source>
-        <comment>content_list_empty_title</comment>
+        <comment>game_list_empty_title</comment>
         <translation>לא נמצאו משחקים. הוסף תיקייה עם משחקים כדי להתחיל.</translation>
     </message>
     <message>
@@ -5617,7 +5617,7 @@ Are you sure you want to continue?</source>
 .ccd (CloneCD Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, Only Decrypted)</source>
-        <comment>content_list_supported_formats</comment>
+        <comment>game_list_supported_formats</comment>
         <translation>.cue (גיליונות Cue)
 .iso (תמונת רצועה יחידה)
 .ecm (תמונת מודל קוד שגיאה)
@@ -5632,7 +5632,7 @@ Are you sure you want to continue?</source>
 %s
 
 Multi-track games in bin format require a cuesheet (.cue) to start.</source>
-        <comment>content_list_empty_supported_formats</comment>
+        <comment>game_list_empty_supported_formats</comment>
         <translation>הפורמטים הנתמכים הם:
 
 %s
@@ -5641,57 +5641,57 @@ Multi-track games in bin format require a cuesheet (.cue) to start.</source>
     </message>
     <message>
         <source>Add Game Directory</source>
-        <comment>content_list_empty_add_directory</comment>
+        <comment>game_list_empty_add_directory</comment>
         <translation>הוספת תיקיית משחקים</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_list_favorite</comment>
+        <comment>game_list_favorite</comment>
         <translation>מועדף</translation>
     </message>
     <message>
         <source>Start Game</source>
-        <comment>content_bottom_sheet_start</comment>
+        <comment>game_list_bottom_sheet_start</comment>
         <translation>הפעלת משחק</translation>
     </message>
     <message>
         <source>Favorite</source>
-        <comment>content_bottom_sheet_favorite</comment>
+        <comment>game_list_bottom_sheet_favorite</comment>
         <translation>הוספה למועדפים</translation>
     </message>
     <message>
         <source>Unfavorite</source>
-        <comment>content_bottom_sheet_unfavorite</comment>
+        <comment>game_list_bottom_sheet_unfavorite</comment>
         <translation>הסרה מהמועדפים</translation>
     </message>
     <message>
         <source>Game Properties</source>
-        <comment>content_bottom_sheet_properties</comment>
+        <comment>game_list_bottom_sheet_properties</comment>
         <translation>מאפייני משחק</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the cover image for this game? It cannot be recovered.</source>
-        <comment>content_bottom_sheet_delete_cover_message</comment>
+        <comment>game_list_bottom_sheet_delete_cover_message</comment>
         <translation>האם למחוק את תמונת העטיפה של משחק זה? לא ניתן לשחזר אותה.</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>
-        <comment>content_replace_cover_title</comment>
+        <comment>game_replace_cover_title</comment>
         <translation>תמונת העטיפה כבר קיימת</translation>
     </message>
     <message>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <comment>content_replace_cover_message</comment>
+        <comment>game_replace_cover_message</comment>
         <translation>תמונת עטיפה למשחק זה כבר קיימת, האם ברצונך להחליף אותה?</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>content_download_covers_description</comment>
+        <comment>game_list_download_covers_description</comment>
         <translation>DuckStation יכול להוריד באופן אוטומטי עטיפות למשחקים שאין להם כרגע עטיפה מוגדרת. איננו מארחים תמונות עטיפה, ועל המשתמש לספק מקור תמונות משלו.</translation>
     </message>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>content_download_covers_copyright</comment>
+        <comment>game_list_download_covers_copyright</comment>
         <translation>בהתאם לתחום השיפוט שלך, עטיפות משחק עשויות להיות מוגנות בזכויות יוצרים. מותר לך להשתמש בכלי זה רק עם השרתים והתמונות שלך.</translation>
     </message>
     <message>
@@ -5704,7 +5704,7 @@ ${filetitle}: Name component of the game&apos;s filename.
 ${serial}: Serial of the game.
 
 Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>content_download_covers_hint</comment>
+        <comment>game_list_download_covers_hint</comment>
         <translation>בתיבה שלהלן, יש לציין את כתובות ה־URL להורדת עטיפות, עם תבנית כתובת URL אחת בכל שורה. המשתנים הבאים זמינים:
 
 ${title}: כותרת המשחק.
@@ -5717,27 +5717,27 @@ ${serial}: המספר הסידורי של המשחק.
     </message>
     <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
-        <comment>content_download_covers_invalid_url</comment>
+        <comment>game_list_download_covers_invalid_url</comment>
         <translation>כתובת ה־URL אינה מכילה ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} או ${serial}.</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>content_download_covers_use_serial_description</comment>
+        <comment>game_list_download_covers_use_serial_description</comment>
         <translation>כברירת מחדל, העטיפות שהורדו יישמרו עם כותרת המשחק. אם אפשרות זו אינה רצויה, ניתן להפעיל את האפשרות &quot;שימוש בשמות קבצים סידוריים&quot; שלהלן. שימוש במספרים סידוריים במקום בכותרות משחקים ימנע התנגשויות בעת שימוש בגרסאות של אותו משחק מאזורים שונים.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
-        <comment>content_download_covers_use_serial</comment>
+        <comment>game_list_download_covers_use_serial</comment>
         <translation>שימוש בשמות קבצים סידוריים</translation>
     </message>
     <message>
         <source>Stopping…</source>
-        <comment>content_download_covers_stopping</comment>
+        <comment>game_list_download_covers_stopping</comment>
         <translation>עוצר…</translation>
     </message>
     <message>
         <source>Download complete.</source>
-        <comment>content_download_covers_complete</comment>
+        <comment>game_list_download_covers_complete</comment>
         <translation>ההורדה הושלמה.</translation>
     </message>
     <message>
@@ -5957,7 +5957,7 @@ ${serial}: המספר הסידורי של המשחק.
     </message>
     <message>
         <source>Selected URI is not a document tree.</source>
-        <comment>content_folders_not_document_tree</comment>
+        <comment>game_folders_not_document_tree</comment>
         <translation>ה-URI שנבחר אינו עץ מסמכים.</translation>
     </message>
     <message>
@@ -6065,7 +6065,7 @@ ${serial}: המספר הסידורי של המשחק.
     </message>
     <message>
         <source>Achievements</source>
-        <comment>content_bottom_sheet_achievements</comment>
+        <comment>game_list_bottom_sheet_achievements</comment>
         <translation>הישגים</translation>
     </message>
     <message>
@@ -6881,7 +6881,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Select Disc</source>
-        <comment>content_select_disc</comment>
+        <comment>game_select_disc</comment>
         <translation>בחירת דיסק</translation>
     </message>
     <message>
@@ -7031,27 +7031,27 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Verifying Content…</source>
-        <comment>content_verification_progress_title</comment>
+        <comment>game_verification_progress_title</comment>
         <translation>מאמת תוכן…</translation>
     </message>
     <message>
         <source>Content verification could not be completed.</source>
-        <comment>content_verification_failed_to_run</comment>
+        <comment>game_verification_failed_to_run</comment>
         <translation>לא ניתן היה להשלים את אימות התוכן.</translation>
     </message>
     <message>
         <source>Content Verification Error</source>
-        <comment>content_verification_error_title</comment>
+        <comment>game_verification_error_title</comment>
         <translation>שגיאה באימות תוכן</translation>
     </message>
     <message>
         <source>Valid</source>
-        <comment>content_verification_item_valid</comment>
+        <comment>game_verification_item_valid</comment>
         <translation>תקין</translation>
     </message>
     <message>
         <source>Invalid</source>
-        <comment>content_verification_item_invalid</comment>
+        <comment>game_verification_item_invalid</comment>
         <translation>לא תקין</translation>
     </message>
     <message>
@@ -7266,42 +7266,42 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Type: %s</source>
-        <comment>content_list_filter_type_template</comment>
+        <comment>game_list_filter_type_template</comment>
         <translation>סוג: %s</translation>
     </message>
     <message>
         <source>Sort By: %s</source>
-        <comment>content_list_sort_template</comment>
+        <comment>game_list_sort_template</comment>
         <translation>מיון לפי: %s</translation>
     </message>
     <message>
         <source>Search…</source>
-        <comment>content_list_search</comment>
+        <comment>game_list_search</comment>
         <translation>חיפוש…</translation>
     </message>
     <message>
         <source>Start File</source>
-        <comment>content_list_start_file</comment>
+        <comment>game_list_start_file</comment>
         <translation>הפעלת קובץ</translation>
     </message>
     <message>
         <source>Save State Manager</source>
-        <comment>content_list_save_state_manager</comment>
+        <comment>game_list_save_state_manager</comment>
         <translation>מנהל מצבי שמירה</translation>
     </message>
     <message>
         <source>Download Covers</source>
-        <comment>content_list_download_covers</comment>
+        <comment>game_list_download_covers</comment>
         <translation>הורדת עטיפות</translation>
     </message>
     <message>
         <source>Change Background</source>
-        <comment>content_list_change_background</comment>
+        <comment>game_list_change_background</comment>
         <translation>שינוי רקע</translation>
     </message>
     <message>
         <source>Show Version</source>
-        <comment>content_list_show_version</comment>
+        <comment>game_list_show_version</comment>
         <translation>הצגת גרסה</translation>
     </message>
     <message>
@@ -7311,89 +7311,89 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Third-Party Notices</source>
-        <comment>content_list_third_party_notices</comment>
+        <comment>game_list_third_party_notices</comment>
         <translation>הודעות צד שלישי</translation>
     </message>
     <message>
         <source>Show Grid</source>
-        <comment>content_list_show_grid</comment>
+        <comment>game_list_show_grid</comment>
         <translation>הצגת רשת</translation>
     </message>
     <message>
         <source>Show List</source>
-        <comment>content_list_show_list</comment>
+        <comment>game_list_show_list</comment>
         <translation>הצגת רשימה</translation>
     </message>
     <message>
         <source>Load State</source>
-        <comment>content_bottom_sheet_load_state</comment>
+        <comment>game_list_bottom_sheet_load_state</comment>
         <translation>טעינת מצב משחק</translation>
     </message>
     <message>
         <source>Choose Cover Image</source>
-        <comment>content_bottom_sheet_choose_cover</comment>
+        <comment>game_list_bottom_sheet_choose_cover</comment>
         <translation>בחירת תמונת עטיפה</translation>
     </message>
     <message>
         <source>Delete Cover Image</source>
-        <comment>content_bottom_sheet_delete_cover</comment>
+        <comment>game_list_bottom_sheet_delete_cover</comment>
         <translation>מחיקת תמונת עטיפה</translation>
     </message>
     <message>
         <source>Create Launcher Shortcut</source>
-        <comment>content_bottom_sheet_create_shortcut</comment>
+        <comment>game_list_bottom_sheet_create_shortcut</comment>
         <translation>יצירת קיצור דרך במשגר</translation>
     </message>
     <message>
         <source>Exclude From List</source>
-        <comment>content_bottom_sheet_exclude_from_list</comment>
+        <comment>game_list_bottom_sheet_exclude_from_list</comment>
         <translation>החרגה מהרשימה</translation>
     </message>
     <message>
         <source>Do you want to load the automatic save created %s?
 </source>
-        <comment>content_resume_summary</comment>
+        <comment>game_resume_summary</comment>
         <translation>האם לטעון את השמירה האוטומטית שנוצרה %s?
 </translation>
     </message>
     <message>
         <source>Clean Boot</source>
-        <comment>content_resume_clean_boot</comment>
+        <comment>game_resume_clean_boot</comment>
         <translation>אתחול נקי</translation>
     </message>
     <message>
         <source>Delete State</source>
-        <comment>content_resume_delete_state</comment>
+        <comment>game_resume_delete_state</comment>
         <translation>מחיקת מצב</translation>
     </message>
     <message>
         <source>Do you want to clear or set a new background image?</source>
-        <comment>content_background_prompt</comment>
+        <comment>game_list_background_prompt</comment>
         <translation>האם לנקות את תמונת הרקע או להגדיר תמונה חדשה?</translation>
     </message>
     <message>
         <source>Change</source>
-        <comment>content_background_change</comment>
+        <comment>game_list_background_change</comment>
         <translation>שינוי</translation>
     </message>
     <message>
         <source>Clear</source>
-        <comment>content_background_clear</comment>
+        <comment>game_list_background_clear</comment>
         <translation>ניקוי</translation>
     </message>
     <message>
         <source>Shortcut created for %s.</source>
-        <comment>content_shortcut_created</comment>
+        <comment>game_shortcut_created</comment>
         <translation>נוצר קיצור דרך עבור %s.</translation>
     </message>
     <message>
         <source>Cannot create shortcut. Make sure your launcher supports it.</source>
-        <comment>content_shortcut_failed</comment>
+        <comment>game_shortcut_failed</comment>
         <translation>לא ניתן ליצור קיצור דרך. יש לוודא שהמשגר שלך תומך בכך.</translation>
     </message>
     <message>
         <source>Download</source>
-        <comment>content_download_covers_start</comment>
+        <comment>game_list_download_covers_start</comment>
         <translation>הורדה</translation>
     </message>
     <message>
