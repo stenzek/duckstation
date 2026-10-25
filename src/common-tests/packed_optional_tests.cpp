@@ -175,3 +175,55 @@ TEST(PackedOptional, CopyKeepsValueAndMaskSeparately)
   EXPECT_TRUE(copy.a.has_value(copy.mask));
   EXPECT_EQ(copy.a.value(), 9u);
 }
+
+static_assert(sizeof(PackedOptionalArray<u32, 4>) == 5 * sizeof(u32));
+static_assert(sizeof(PackedOptionalArray<u64, 33>) == 34 * sizeof(u64));
+static_assert(std::is_same_v<PackedOptionalArray<u8, 8>::mask_type, u8>);
+static_assert(std::is_same_v<PackedOptionalArray<u8, 9>::mask_type, u16>);
+static_assert(std::is_same_v<PackedOptionalArray<u8, 32>::mask_type, u32>);
+static_assert(std::is_same_v<PackedOptionalArray<u8, 64>::mask_type, u64>);
+static_assert(std::is_trivially_copyable_v<PackedOptionalArray<u32, 4>>);
+
+static_assert([] {
+  PackedOptionalArray<u16, 4> arr;
+  return !arr.any() && !arr.has_value(0) && !arr.get(3).has_value() && arr.value_or(2, 7) == 7;
+}());
+static_assert([] {
+  PackedOptionalArray<u16, 4> arr;
+  arr.set(1, static_cast<u16>(5));
+  arr.set(3, std::optional<u16>(9));
+  return arr.any() && arr.has_value(1) && arr.has_value(3) && !arr.has_value(2) && arr.get(1) == 5 && arr.value(3) == 9;
+}());
+
+TEST(PackedOptionalArray, SetAndReset)
+{
+  PackedOptionalArray<s32, 21> arr;
+  EXPECT_EQ(arr.size(), 21u);
+
+  arr.set(0, -1);
+  arr.set(20, 20);
+  EXPECT_TRUE(arr.has_value(0));
+  EXPECT_TRUE(arr.has_value(20));
+  EXPECT_FALSE(arr.has_value(10));
+  EXPECT_EQ(arr.get(20), 20);
+
+  arr.reset(0);
+  EXPECT_FALSE(arr.has_value(0));
+  EXPECT_EQ(arr.value(0), 0);
+  EXPECT_TRUE(arr.has_value(20));
+
+  arr.set(20, std::optional<s32>());
+  EXPECT_FALSE(arr.any());
+}
+
+TEST(PackedOptionalArray, TopBitAndClear)
+{
+  PackedOptionalArray<u8, 64> arr;
+  arr.set(63, static_cast<u8>(1));
+  EXPECT_TRUE(arr.has_value(63));
+  EXPECT_FALSE(arr.has_value(62));
+
+  arr.clear();
+  EXPECT_FALSE(arr.any());
+  EXPECT_EQ(arr.value(63), 0u);
+}

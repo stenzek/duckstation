@@ -5,6 +5,7 @@
 
 #include "types.h"
 
+#include <array>
 #include <optional>
 #include <type_traits>
 
@@ -84,4 +85,85 @@ private:
   }
 
   T m_value{};
+};
+
+/// PackedOptionalArray<T, N> is a fixed-size array of optional values, indexed at runtime, whose has-value flags are
+/// packed into one bitmask stored with the array. This avoids the per-element bool and alignment padding of
+/// std::array<std::optional<T>, N>.
+///   PackedOptionalArray<u16, 4> arr;
+///   arr.set(2, 123);
+///   if (arr.has_value(2)) ...
+///   const std::optional<u16> v = arr.get(3);
+template<typename T, u32 N>
+class PackedOptionalArray
+{
+  static_assert(N > 0 && N <= 64, "PackedOptionalArray holds between 1 and 64 values");
+
+public:
+  using value_type = T;
+  using mask_type =
+    std::conditional_t<(N <= 8), u8, std::conditional_t<(N <= 16), u16, std::conditional_t<(N <= 32), u32, u64>>>;
+
+  /// Returns the number of elements, present or not.
+  ALWAYS_INLINE static constexpr u32 size() { return N; }
+
+  /// Returns true if the value at \p index is present.
+  ALWAYS_INLINE constexpr bool has_value(u32 index) const { return ((m_mask & bit(index)) != 0); }
+
+  /// Returns true if any value is present.
+  ALWAYS_INLINE constexpr bool any() const { return (m_mask != 0); }
+
+  /// Returns the value at \p index. Only meaningful if has_value() is true.
+  ALWAYS_INLINE constexpr const T& value(u32 index) const { return m_values[index]; }
+
+  /// Returns the value at \p index if present, otherwise \p default_value.
+  ALWAYS_INLINE constexpr T value_or(u32 index, const T& default_value) const
+  {
+    return has_value(index) ? m_values[index] : default_value;
+  }
+
+  /// Returns the value at \p index as a std::optional.
+  ALWAYS_INLINE constexpr std::optional<T> get(u32 index) const
+  {
+    return has_value(index) ? std::optional<T>(m_values[index]) : std::nullopt;
+  }
+
+  /// Stores a value at \p index.
+  ALWAYS_INLINE constexpr void set(u32 index, const T& value)
+  {
+    m_values[index] = value;
+    m_mask |= bit(index);
+  }
+
+  /// Stores the value at \p index if present, otherwise clears it.
+  ALWAYS_INLINE constexpr void set(u32 index, const std::optional<T>& value)
+  {
+    if (value.has_value())
+      set(index, value.value());
+    else
+      reset(index);
+  }
+
+  /// Clears the value at \p index.
+  ALWAYS_INLINE constexpr void reset(u32 index)
+  {
+    m_values[index] = T{};
+    m_mask &= static_cast<mask_type>(~bit(index));
+  }
+
+  /// Clears every value.
+  ALWAYS_INLINE constexpr void clear()
+  {
+    m_values = {};
+    m_mask = 0;
+  }
+
+private:
+  ALWAYS_INLINE static constexpr mask_type bit(u32 index)
+  {
+    return static_cast<mask_type>(static_cast<mask_type>(1) << index);
+  }
+
+  std::array<T, N> m_values{};
+  mask_type m_mask = 0;
 };
