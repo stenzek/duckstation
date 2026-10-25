@@ -5875,19 +5875,13 @@ void FullscreenUI::ChoiceDialog::Draw()
   if (choice >= 0)
   {
     // immediately close dialog when selecting, save the callback doing it. have to take a copy in this instance,
-    // because the callback may open another dialog, and we don't want to close that one.
+    // because the callback may open another dialog, and we don't want to close that one. checkable dialogs stay
+    // open, so the callback has to be kept for the next toggle.
+    const auto selected = m_options[choice];
+    const ChoiceDialogCallback callback = m_checkable ? m_callback : std::exchange(m_callback, ChoiceDialogCallback());
     if (!m_checkable)
-    {
-      const auto selected = m_options[choice];
-      const ChoiceDialogCallback callback = std::exchange(m_callback, ChoiceDialogCallback());
       StartClose();
-      callback(choice, selected.first, selected.second);
-    }
-    else
-    {
-      const auto& option = m_options[choice];
-      m_callback(choice, option.first, option.second);
-    }
+    callback(choice, selected.first, selected.second);
   }
 }
 
