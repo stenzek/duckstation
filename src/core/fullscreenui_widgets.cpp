@@ -6831,7 +6831,7 @@ void FullscreenUI::DrawBackgroundProgressDialogs(float& current_y)
       // indeterminate, so draw a scrolling bar
       const float bar_width = LayoutScale(30.0f);
       const float fraction = static_cast<float>(std::fmod(ImGui::GetTime(), 2.0) * 0.5);
-      const ImVec2 bar_start(pos.x + ImLerp(0.0f, box_end.x, fraction) - bar_width, pos.y);
+      const ImVec2 bar_start(pos.x + ImLerp(0.0f, box_end.x - pos.x + bar_width, fraction) - bar_width, pos.y);
       const ImVec2 bar_end(std::min(bar_start.x + bar_width, box_end.x), pos.y + LayoutScale(25.0f));
       dl->AddRectFilled(ImClamp(bar_start, pos, box_end), ImClamp(bar_end, pos, box_end),
                         ImGui::GetColorU32(UIStyle.SecondaryColor));
@@ -7169,7 +7169,8 @@ void FullscreenUI::DrawLoadingScreen(ImDrawList* dl, std::string_view image, std
       // indeterminate, so draw a scrolling bar
       const float bar_width = LayoutScale(30.0f);
       const float fraction = static_cast<float>(std::fmod(ImGui::GetTime(), 2.0) * 0.5);
-      const ImVec2 bar_start = ImVec2(box_start.x + ImLerp(0.0f, box_end.x, fraction) - bar_width, box_start.y);
+      const ImVec2 bar_start =
+        ImVec2(box_start.x + ImLerp(0.0f, progress_width + bar_width, fraction) - bar_width, box_start.y);
       const ImVec2 bar_end = ImVec2(std::min(bar_start.x + bar_width, box_end.x), box_end.y);
       if ((bar_end.x - bar_start.x) > LayoutScale(1.0f))
       {
