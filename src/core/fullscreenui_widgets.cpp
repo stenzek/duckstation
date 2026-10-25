@@ -667,6 +667,9 @@ void FullscreenUI::ShutdownWidgets()
     s_state.choice_dialog.ClearState();
     s_state.dropdown_dialog.ClearState();
     s_state.file_selector_dialog.ClearState();
+    s_state.directory_selector_dialog.ClearState();
+    s_state.fixed_popup_dialog.ClearState();
+    s_state.progress_dialog.ClearState();
     s_state.toggle_button_animation_id = 0;
     s_state.toggle_button_animation_start_time = 0.0;
     s_state.drag_scroll_active = false;
