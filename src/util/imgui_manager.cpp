@@ -566,7 +566,8 @@ void ImGuiManager::UpdateScale()
 void ImGuiManager::NewFrame(u64 current_time)
 {
   ImGuiIO& io = ImGui::GetIO();
-  io.DeltaTime = static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_state.last_render_time));
+  io.DeltaTime =
+    std::max(static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_state.last_render_time)), 0.0f);
   std::tie(s_state.imgui_context->IO.MousePos.x, s_state.imgui_context->IO.MousePos.y) =
     InputManager::GetPointerAbsolutePosition(0);
   s_state.last_render_time = current_time;
