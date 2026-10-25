@@ -161,6 +161,8 @@ struct State
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
 
+  // Only written on the core thread, but read from any thread. Each value is read on its own and doesn't publish any
+  // other data, so relaxed ordering is enough.
   std::array<std::array<std::atomic<float>, static_cast<u8>(InputPointerAxis::Count)>,
              InputManager::MAX_POINTER_DEVICES>
     host_pointer_positions;
@@ -178,6 +180,8 @@ struct State
   std::atomic<GamepadButtonType> last_gamepad_button_type{GamepadButtonType::Unknown};
 
 #ifdef _WIN32
+  // Only written on the core thread, but read from any thread. It only bounds loops over fixed-size arrays and doesn't
+  // publish any other data, so relaxed ordering is enough.
   std::atomic<u32> pointer_count{0};
   std::atomic_bool raw_input_enabled{false};
 
@@ -1449,18 +1453,18 @@ bool InputManager::UpdatePointerCount()
   InputSource* ris = s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)].get();
   if (!ris)
   {
-    s_state.pointer_count.store(1, std::memory_order_release);
+    s_state.pointer_count.store(1, std::memory_order_relaxed);
     return false;
   }
 
-  const u32 prev_pointer_count = s_state.pointer_count;
+  const u32 prev_pointer_count = s_state.pointer_count.load(std::memory_order_relaxed);
   u32 new_pointer_count = 0;
   for (const auto& [key, identifier, device_name] : ris->EnumerateDevices())
   {
     if (key.source_type == InputSourceType::Pointer)
       new_pointer_count++;
   }
-  return (s_state.pointer_count.exchange(new_pointer_count, std::memory_order_release) != prev_pointer_count);
+  return (s_state.pointer_count.exchange(new_pointer_count, std::memory_order_relaxed) != prev_pointer_count);
 #else
   return false;
 #endif
@@ -1469,8 +1473,8 @@ bool InputManager::UpdatePointerCount()
 u32 InputManager::GetPointerCount()
 {
 #ifdef _WIN32
-  // Threading: Called by any thread, but uses atomics for synchronization.
-  return s_state.pointer_count.load(std::memory_order_acquire);
+  // Threading: Called by any thread.
+  return s_state.pointer_count.load(std::memory_order_relaxed);
 #else
   return 1;
 #endif
@@ -1480,8 +1484,8 @@ std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 {
   DebugAssert(index < s_state.host_pointer_positions.size());
   return std::make_pair(
-    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)].load(std::memory_order_acquire),
-    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)].load(std::memory_order_acquire));
+    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)].load(std::memory_order_relaxed),
+    s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)].load(std::memory_order_relaxed));
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bool raw_input)
@@ -1492,11 +1496,10 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bo
 
   DebugAssert(Host::IsOnCoreThread());
 
-  // weak memory access for the read is fine here, because this is only called on the core thread
   const float dx = x - s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)].exchange(
-                         x, std::memory_order_release);
+                         x, std::memory_order_relaxed);
   const float dy = y - s_state.host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)].exchange(
-                         y, std::memory_order_release);
+                         y, std::memory_order_relaxed);
 
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta += dx;
   s_state.pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta += dy;
@@ -1524,13 +1527,12 @@ void InputManager::UpdatePointerPositionRelativeDelta(u32 index, InputPointerAxi
   s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 
   // We need to clamp the position ourselves in relative mode.
-  // weak memory access for the read is fine here, because this is only called on the core thread
   const WindowInfo& wi = VideoThread::GetRenderWindowInfo();
   const float max_dim = static_cast<float>((axis == InputPointerAxis::X) ? wi.surface_width : wi.surface_height);
   s_state.host_pointer_positions[index][static_cast<u8>(axis)].store(
     std::clamp(s_state.host_pointer_positions[index][static_cast<u8>(axis)].load(std::memory_order_relaxed) + d, 0.0f,
                max_dim),
-    std::memory_order_release);
+    std::memory_order_relaxed);
 }
 
 void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis axis, float d)
@@ -1541,7 +1543,7 @@ void InputManager::UpdatePointerWheelRelativeDelta(u32 index, InputPointerAxis a
   if (index >= MAX_POINTER_DEVICES)
     return;
 
-  s_state.host_pointer_positions[index][static_cast<u8>(axis)].fetch_add(d, std::memory_order_release);
+  s_state.host_pointer_positions[index][static_cast<u8>(axis)].fetch_add(d, std::memory_order_relaxed);
   s_state.pointer_state[index][static_cast<u8>(axis)].delta += d;
 }
 

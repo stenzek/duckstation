@@ -183,6 +183,9 @@ bool WantsMouseInput();
 /// Called on the UI or CPU thread in response to a key press. String is UTF-8.
 void AddTextInput(std::string str);
 
+/// Called on the CPU thread before pointer 0's events, with whether it's a touchscreen rather than a mouse.
+void SetPointerIsTouchscreen(bool touchscreen);
+
 /// Called on the CPU thread in response to a mouse button press.
 /// Returns true if ImGui intercepted the event, and regular handlers should not execute.
 bool ProcessPointerButtonEvent(InputBindingKey key, float value);

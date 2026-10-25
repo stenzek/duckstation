@@ -105,6 +105,7 @@ static void UpdateTextures(const ImDrawData* draw_data);
 static void DestroyTextures(bool recycle);
 static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
+static ImGuiMouseSource GetPointerMouseSource();
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
 static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
 static OSDMessageIconType GetOSDMessageIconType(std::string_view icon);
@@ -210,6 +211,9 @@ struct ALIGN_TO_CACHE_LINE State
 {
   // Shared between both threads
 
+  // These are only read as flags and don't publish any other data, so relaxed ordering is enough. The CPU thread never
+  // touches the context, and the work it posts to the GPU thread checks imgui_context itself.
+
   // Mirror of context != nullptr that can be read atomically by core thread.
   std::atomic_bool imgui_has_context{false};
 
@@ -217,6 +221,10 @@ struct ALIGN_TO_CACHE_LINE State
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
   std::atomic_bool imgui_wants_text_input{false};
+
+  // Whether pointer 0 is a touchscreen rather than a mouse. Relaxed, because it doesn't publish any other data: button
+  // events read it on the CPU thread that writes it, and NewFrame() only uses it for that frame's source.
+  std::atomic_bool pointer_is_touchscreen{false};
 
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
@@ -427,13 +435,13 @@ bool ImGuiManager::Initialize(Error* error)
 
   CreateSoftwareCursorTextures();
 
-  s_state.imgui_has_context.store(true, std::memory_order_release);
+  s_state.imgui_has_context.store(true, std::memory_order_relaxed);
   return true;
 }
 
 void ImGuiManager::Shutdown()
 {
-  s_state.imgui_has_context.store(false, std::memory_order_release);
+  s_state.imgui_has_context.store(false, std::memory_order_relaxed);
 
   DestroySoftwareCursorTextures();
 
@@ -464,9 +472,9 @@ void ImGuiManager::Shutdown()
     s_state.imgui_context = nullptr;
   }
 
-  s_state.imgui_wants_keyboard.store(false, std::memory_order_release);
-  s_state.imgui_wants_text_input.store(false, std::memory_order_release);
-  s_state.imgui_wants_mouse.store(false, std::memory_order_release);
+  s_state.imgui_wants_keyboard.store(false, std::memory_order_relaxed);
+  s_state.imgui_wants_text_input.store(false, std::memory_order_relaxed);
+  s_state.imgui_wants_mouse.store(false, std::memory_order_relaxed);
 }
 
 bool ImGuiManager::CreateGPUResources(Error* error)
@@ -570,6 +578,9 @@ void ImGuiManager::NewFrame(u64 current_time)
     std::max(static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_state.last_render_time)), 0.0f);
   std::tie(s_state.imgui_context->IO.MousePos.x, s_state.imgui_context->IO.MousePos.y) =
     InputManager::GetPointerAbsolutePosition(0);
+
+  // the position isn't queued, so its source isn't either
+  io.MouseSource = GetPointerMouseSource();
   s_state.last_render_time = current_time;
 
   if (s_state.scale_changed)
@@ -584,9 +595,9 @@ void ImGuiManager::NewFrame(u64 current_time)
   // Disable nav input on the implicit (Debug##Default) window. Otherwise we end up requesting keyboard
   // focus when there's nothing there. We use GetCurrentWindowRead() because otherwise it'll make it visible.
   ImGui::GetCurrentWindowRead()->Flags |= ImGuiWindowFlags_NoNavInputs;
-  s_state.imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_release);
-  s_state.imgui_wants_text_input.store(io.WantTextInput, std::memory_order_release);
-  s_state.imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
+  s_state.imgui_wants_keyboard.store(io.WantCaptureKeyboard, std::memory_order_relaxed);
+  s_state.imgui_wants_text_input.store(io.WantTextInput, std::memory_order_relaxed);
+  s_state.imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_relaxed);
 }
 
 bool ImGuiManager::CompilePipelines(Error* error)
@@ -1646,17 +1657,17 @@ void ImGuiManager::SetGamepadFaceButtonsSwapped(bool enabled)
 
 bool ImGuiManager::WantsTextInput()
 {
-  return s_state.imgui_wants_text_input.load(std::memory_order_acquire);
+  return s_state.imgui_wants_text_input.load(std::memory_order_relaxed);
 }
 
 bool ImGuiManager::WantsMouseInput()
 {
-  return s_state.imgui_wants_mouse.load(std::memory_order_acquire);
+  return s_state.imgui_wants_mouse.load(std::memory_order_relaxed);
 }
 
 void ImGuiManager::AddTextInput(std::string str)
 {
-  if (!s_state.imgui_wants_text_input.load(std::memory_order_acquire))
+  if (!s_state.imgui_wants_text_input.load(std::memory_order_relaxed))
     return;
 
   VideoThread::RunOnThread([str = std::move(str)]() {
@@ -1676,25 +1687,40 @@ void ImGuiManager::SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio)
 
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 {
-  if (key.data >= ImGuiMouseButton_COUNT || !s_state.imgui_has_context.load(std::memory_order_acquire))
+  if (key.data >= ImGuiMouseButton_COUNT || !s_state.imgui_has_context.load(std::memory_order_relaxed))
     return false;
 
   // still update state anyway
   const int button = static_cast<int>(key.data);
   const bool pressed = (value != 0.0f);
-  VideoThread::RunOnThread([button, pressed]() {
+  const ImGuiMouseSource source = GetPointerMouseSource();
+  VideoThread::RunOnThread([button, pressed, source]() {
     if (!s_state.imgui_context)
       return;
 
-    s_state.imgui_context->IO.AddMouseButtonEvent(button, pressed);
+    // ImGui sets the source from the button event when it processes it, replacing the one from NewFrame()
+    ImGuiIO& io = s_state.imgui_context->IO;
+    io.AddMouseSourceEvent(source);
+    io.AddMouseButtonEvent(button, pressed);
   });
 
-  return s_state.imgui_wants_mouse.load(std::memory_order_acquire);
+  return s_state.imgui_wants_mouse.load(std::memory_order_relaxed);
+}
+
+void ImGuiManager::SetPointerIsTouchscreen(bool touchscreen)
+{
+  s_state.pointer_is_touchscreen.store(touchscreen, std::memory_order_relaxed);
+}
+
+ImGuiMouseSource ImGuiManager::GetPointerMouseSource()
+{
+  return s_state.pointer_is_touchscreen.load(std::memory_order_relaxed) ? ImGuiMouseSource_TouchScreen :
+                                                                          ImGuiMouseSource_Mouse;
 }
 
 bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_has_context.load(std::memory_order_acquire) ||
+  if (!s_state.imgui_has_context.load(std::memory_order_relaxed) ||
       key.data < static_cast<u32>(InputPointerAxis::WheelX))
   {
     return false;
@@ -1709,12 +1735,12 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
     s_state.imgui_context->IO.AddMouseWheelEvent(horizontal ? value : 0.0f, horizontal ? 0.0f : value);
   });
 
-  return s_state.imgui_wants_mouse.load(std::memory_order_acquire);
+  return s_state.imgui_wants_mouse.load(std::memory_order_relaxed);
 }
 
 bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 {
-  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
+  if (!s_state.imgui_has_context.load(std::memory_order_relaxed))
     return false;
 
   if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(key.data))
@@ -1727,7 +1753,7 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
     });
   }
 
-  return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
+  return s_state.imgui_wants_keyboard.load(std::memory_order_relaxed);
 }
 
 void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
@@ -1745,7 +1771,7 @@ void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
 
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
 {
-  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
+  if (!s_state.imgui_has_context.load(std::memory_order_relaxed))
     return false;
 
   static constexpr std::array key_map = {
@@ -1820,12 +1846,12 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
     });
   }
 
-  return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
+  return s_state.imgui_wants_keyboard.load(std::memory_order_relaxed);
 }
 
 void ImGuiManager::ClearMouseButtonState()
 {
-  if (!s_state.imgui_has_context.load(std::memory_order_acquire))
+  if (!s_state.imgui_has_context.load(std::memory_order_relaxed))
     return;
 
   VideoThread::RunOnThread([]() {

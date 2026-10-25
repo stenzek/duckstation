@@ -120,6 +120,7 @@ static void SetMenuButtonSplitLayer(int layer);
 static void DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border);
 static void DrawMenuButtonFrameAtOnCurrentLayer(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border);
 static void PostDrawMenuButtonFrame();
+static bool ShouldHighlightHoveredItem(bool held);
 
 static void DrawBackgroundProgressDialogs(float& current_y);
 static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
@@ -2031,7 +2032,9 @@ void FullscreenUI::UpdateDragScroll()
   {
     if (s_state.drag_scroll_active)
     {
-      s_state.drag_scroll_position -= io.MouseDelta.y;
+      // a touch jumps from where the last one ended, so the press that catches a fling doesn't scroll
+      if (!io.MouseClicked[0])
+        s_state.drag_scroll_position -= io.MouseDelta.y;
       if (!io.MouseDown[0])
         s_state.drag_scroll_velocity = GetDragScrollReleaseVelocity();
     }
@@ -2998,12 +3001,23 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, bool enabled, const 
   return pressed;
 }
 
+bool FullscreenUI::ShouldHighlightHoveredItem(bool held)
+{
+  // Like Android's tap timeout, a touch only highlights once it's held without scrolling.
+  const ImGuiIO& io = ImGui::GetIO();
+  return (io.MouseSource != ImGuiMouseSource_TouchScreen || GImGui->NavCursorVisible ||
+          (held && io.MouseDownDuration[ImGuiMouseButton_Left] >= TOUCH_HIGHLIGHT_DELAY));
+}
+
 void FullscreenUI::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, bool held)
 {
+  if (!ShouldHighlightHoveredItem(held))
+    return;
+
+  const ImGuiIO& io = ImGui::GetIO();
   ImVec2 frame_min = p_min;
   ImVec2 frame_max = p_max;
 
-  const ImGuiIO& io = ImGui::GetIO();
   if (UIStyle.Animations && io.NavVisible && GImGui->CurrentWindow == GImGui->NavWindow)
   {
     if (!s_state.had_hovered_menu_item || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
@@ -4007,7 +4021,7 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   {
     bool held;
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
-    hovered |= (GImGui->NavInitResult.ID == id);
+    hovered = ((hovered && ShouldHighlightHoveredItem(held)) || GImGui->NavInitResult.ID == id);
     if (hovered)
     {
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
@@ -4629,7 +4643,7 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
   if (enabled)
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
-    hovered = (hovered || GImGui->NavInitResult.ID == id);
+    hovered = ((hovered && ShouldHighlightHoveredItem(held)) || GImGui->NavInitResult.ID == id);
   }
   else
   {
@@ -4787,7 +4801,7 @@ bool FullscreenUI::FloatingNavBarIcon(std::string_view title, ImTextureID image,
   if (enabled)
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
-    hovered = (hovered || GImGui->NavInitResult.ID == id);
+    hovered = ((hovered && ShouldHighlightHoveredItem(held)) || GImGui->NavInitResult.ID == id);
     if (hovered || is_active)
     {
       // Intentionally no animation here.
