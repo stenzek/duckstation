@@ -382,7 +382,7 @@ bool CDImageCCD::OpenAndParse(const char* path, Error* error)
     return false;
   }
 
-  m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
+  m_lba_count = leadout_lba + plba_offset;
   AddLeadOutIndex();
 
   m_path = path;
