@@ -4246,8 +4246,8 @@ Do you want to %1$s anyway?</source>
         <comment>settings_memory_card_multitap_mode</comment>
         <extracomment>Android plural quantities: one=&quot;Current Multitap Mode: %1$s (%2$d Card)&quot;; other=&quot;Current Multitap Mode: %1$s (%2$d Cards)&quot;</extracomment>
         <translation>
-            <numerusform>Modo actual de multitap: %1 (%n Memory Card)</numerusform>
-            <numerusform>Modo actual de multitap: %1 (%n Memory Cards)</numerusform>
+            <numerusform>Modo actual de multitap: %1$s (%2$d Memory Card)</numerusform>
+            <numerusform>Modo actual de multitap: %1$s (%2$d Memory Cards)</numerusform>
         </translation>
     </message>
     <message>
@@ -6231,7 +6231,7 @@ Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     <message>
         <source>The file &apos;%1$s&apos; already exists. Do you want to overwrite it? Any existing data will be lost.</source>
         <comment>transfer_data_conflict_message</comment>
-        <translation>Ya existe el archivo &quot;%s&quot;. ¿Deseas sobrescribirlo? Se perderán todos sus datos.</translation>
+        <translation>Ya existe el archivo &quot;%1$s&quot;. ¿Deseas sobrescribirlo? Se perderán todos sus datos.</translation>
     </message>
     <message>
         <source>Apply to the remaining %1$d files</source>
@@ -6514,7 +6514,7 @@ Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
     <message>
         <source>Are you sure you want to remove the BIOS named &apos;%s&apos;? This action is permanent.</source>
         <comment>bios_delete_confirm</comment>
-        <translation>¿Seguro que quieres eliminar la BIOS &quot;%1&quot;? Esta acción no se puede deshacer.</translation>
+        <translation>¿Seguro que quieres eliminar la BIOS &quot;%s&quot;? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
         <source>Import BIOS</source>
@@ -8545,7 +8545,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     </message>
     <message>
         <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
-        <translation>Selecciona el códec de vídeo que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;b&gt;</translation>
+        <translation>Selecciona el códec de vídeo que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>%1 kbps</source>
@@ -8594,7 +8594,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     </message>
     <message>
         <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
-        <translation>Selecciona el códec de audio que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;b&gt;</translation>
+        <translation>Selecciona el códec de audio que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>%1 (Unknown)</source>
@@ -17319,7 +17319,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Seleccionar un valor superior a 1x mejorará la resolución del renderizado de polígonos y líneas 3D. Solo se aplica a los renderizadores por hardware. Esta opción suele ser segura y la mayoría de juegos no dan problemas con resoluciones altas. Las resoluciones más altas requieren una GPU más potente.</translation>
+        <translation>Seleccionar un valor superior a 1x mejorará la resolución del renderizado de polígonos y líneas 3D. Solo se aplica a los renderizadores por hardware. &lt;br&gt;Esta opción suele ser segura y la mayoría de juegos no dan problemas con resoluciones altas. Las resoluciones más altas requieren una GPU más potente.</translation>
     </message>
     <message>
         <source>Down-Sampling</source>
@@ -17356,7 +17356,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
+        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado. Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
     </message>
     <message>
         <source>Dithering</source>
@@ -24333,7 +24333,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configuración del audio&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan la salida de audio de la consola.&lt;br&gt;&lt;br&gt;Pasa el puntero sobre alguna opción para que aparezca más información.</translation>
+        <translation>&lt;strong&gt;Configuración del audio&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan la salida de audio de la consola. Pasa el puntero sobre alguna opción para que aparezca más información.</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -24549,7 +24549,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Seleccionar un valor superior a 1x mejorará la resolución del renderizado de polígonos y líneas 3D. Solo se aplica a los renderizadores por hardware. Esta opción suele ser segura y la mayoría de juegos no dan problemas con resoluciones altas. Las resoluciones más altas requieren una GPU más potente.</translation>
+        <translation>Seleccionar un valor superior a 1x mejorará la resolución del renderizado de polígonos y líneas 3D. Solo se aplica a los renderizadores por hardware. &lt;br&gt;Esta opción suele ser segura y la mayoría de juegos no dan problemas con resoluciones altas. Las resoluciones más altas requieren una GPU más potente.</translation>
     </message>
     <message>
         <source>Texture Filtering:</source>
@@ -24565,7 +24565,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
+        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado. Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
