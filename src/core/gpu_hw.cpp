@@ -1064,6 +1064,7 @@ void GPU_HW::ClearFramebuffer()
   }
   if (m_vram_depth_copy_texture)
     g_gpu_device->ClearRenderTarget(m_vram_depth_copy_texture.get(), 0);
+  m_depth_dirty_rect = INVALID_RECT;
   ClearVRAMDirtyRectangle();
   if (m_use_texture_cache)
     GPUTextureCache::Invalidate();
@@ -2421,6 +2422,10 @@ void GPU_HW::UpdateDepthBufferFromMaskBit()
 
 void GPU_HW::CopyDepthBuffer(const GSVector4i rect, bool merge)
 {
+  // Merging leaves undrawn (zero) depth alone, so it only needs to cover what has been drawn since the last clear.
+  if (merge && m_depth_dirty_rect.rempty())
+    return;
+
   GL_SCOPE_FMT("Copy Depth Buffer ({})", merge ? "Merge" : "Replace");
 
   // Viewport should already be set full, only need to fudge the scissor.
@@ -2431,12 +2436,13 @@ void GPU_HW::CopyDepthBuffer(const GSVector4i rect, bool merge)
 
   // Rect can extend past the edge of VRAM when scanout wraps around.
   const GSVector4i vram_rect = m_vram_depth_copy_texture->GetRect();
+  const GSVector4i clip_rect = merge ? m_depth_dirty_rect.mul32l(GSVector4i(m_resolution_scale)) : vram_rect;
   for (s32 wrap_y = 0; wrap_y < 2; wrap_y++)
   {
     for (s32 wrap_x = 0; wrap_x < 2; wrap_x++)
     {
       const GSVector4i wrapped_rect =
-        rect.sub32(GSVector4i(wrap_x, wrap_y, wrap_x, wrap_y).mul32l(vram_rect.zwzw())).rintersect(vram_rect);
+        rect.sub32(GSVector4i(wrap_x, wrap_y, wrap_x, wrap_y).mul32l(vram_rect.zwzw())).rintersect(clip_rect);
       if (wrapped_rect.rempty())
         continue;
 
@@ -2471,21 +2477,29 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
   DebugAssert(m_pgxp_depth_buffer);
   if (only_drawing_area)
   {
-    g_gpu_device->SetPipeline(m_clear_depth_pipeline.get());
-
-    const GSVector4i clear_bounds = m_clamped_drawing_area.mul32l(GSVector4i(m_resolution_scale));
-
-    // need to re-bind for rov, because we can't turn colour writes off for only the first target
-    if (!m_use_rov_for_shader_blend)
+    // Everything outside the area drawn since the last clear is already zero.
+    const GSVector4i clear_rect = m_clamped_drawing_area.rintersect(m_depth_dirty_rect);
+    if (!clear_rect.rempty())
     {
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero());
+      g_gpu_device->SetPipeline(m_clear_depth_pipeline.get());
+
+      const GSVector4i clear_bounds = clear_rect.mul32l(GSVector4i(m_resolution_scale));
+
+      // need to re-bind for rov, because we can't turn colour writes off for only the first target
+      if (!m_use_rov_for_shader_blend)
+      {
+        DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero());
+      }
+      else
+      {
+        g_gpu_device->SetRenderTarget(m_vram_depth_texture.get());
+        DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero());
+        BindVRAMRenderTarget();
+      }
     }
-    else
-    {
-      g_gpu_device->SetRenderTarget(m_vram_depth_texture.get());
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero());
-      BindVRAMRenderTarget();
-    }
+
+    if (m_clamped_drawing_area.rcontains(m_depth_dirty_rect))
+      m_depth_dirty_rect = INVALID_RECT;
   }
   else
   {
@@ -2493,6 +2507,8 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
       g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0);
     else
       g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 0.0f);
+
+    m_depth_dirty_rect = INVALID_RECT;
   }
 
   m_last_depth_z = 1.0f;
@@ -3023,7 +3039,8 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
       continue;
     }
 
-    AddDrawnRectangle(clamped_rect);
+    // Expanded quad can extend one pixel before and two pixels past the fractional endpoints.
+    AddDrawnRectangle(rect.add32(GSVector4i::cxpr(-1, -1, 2, 2)).rintersect(m_clamped_drawing_area));
     DrawLine(cmd, bounds, start_color, end_color, start_depth, end_depth);
   }
 
@@ -4431,6 +4448,10 @@ void GPU_HW::FlushRender()
     m_batch_ubo_dirty = false;
     g_gpu_device->UploadUniformBuffer(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
   }
+
+  // Only opaque depth-tested batches write depth.
+  if (m_batch.use_depth_buffer && m_batch.transparency_mode == GPUTransparencyMode::Disabled)
+    m_depth_dirty_rect = m_depth_dirty_rect.runion(m_current_draw_rect);
 
   m_current_draw_rect = INVALID_RECT;
   m_current_uv_rect = INVALID_RECT;

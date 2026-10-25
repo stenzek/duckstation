@@ -339,6 +339,7 @@ private:
   GSVector4i m_vram_dirty_write_rect = INVALID_RECT; // TODO: Don't use in TC mode, should be kept at zero.
   GSVector4i m_current_uv_rect = INVALID_RECT;
   GSVector4i m_current_draw_rect = INVALID_RECT;
+  GSVector4i m_depth_dirty_rect = INVALID_RECT; // Bounding box of depth written since the last clear.
   GSVector4i m_display_depth_rect = GSVector4i::zero();
   alignas(8) s32 m_current_texture_page_offset[2] = {};
 
