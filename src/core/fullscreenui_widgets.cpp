@@ -6680,17 +6680,18 @@ std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialo
 bool FullscreenUI::AreAnyWidgetsDialogOpen()
 {
   return (s_state.on_screen_keyboard.open || s_state.choice_dialog.IsOpen() || s_state.dropdown_dialog.IsOpen() ||
-          s_state.file_selector_dialog.IsOpen() || s_state.input_string_dialog.IsOpen() ||
-          s_state.fixed_popup_dialog.IsOpen() || s_state.progress_dialog.IsOpen() || s_state.message_dialog.IsOpen());
+          s_state.file_selector_dialog.IsOpen() || s_state.directory_selector_dialog.IsOpen() ||
+          s_state.input_string_dialog.IsOpen() || s_state.fixed_popup_dialog.IsOpen() ||
+          s_state.progress_dialog.IsOpen() || s_state.message_dialog.IsOpen());
 }
 
 bool FullscreenUI::AreAnyWidgetsDialogInteractable()
 {
   return ((s_state.on_screen_keyboard.open && !s_state.on_screen_keyboard.closing) ||
           s_state.choice_dialog.IsInteractable() || s_state.dropdown_dialog.IsInteractable() ||
-          s_state.file_selector_dialog.IsInteractable() || s_state.input_string_dialog.IsInteractable() ||
-          s_state.fixed_popup_dialog.IsInteractable() || s_state.progress_dialog.IsInteractable() ||
-          s_state.message_dialog.IsInteractable());
+          s_state.file_selector_dialog.IsInteractable() || s_state.directory_selector_dialog.IsInteractable() ||
+          s_state.input_string_dialog.IsInteractable() || s_state.fixed_popup_dialog.IsInteractable() ||
+          s_state.progress_dialog.IsInteractable() || s_state.message_dialog.IsInteractable());
 }
 
 ImGuiID FullscreenUI::GetBackgroundProgressID(std::string_view str_id)
