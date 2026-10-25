@@ -5943,8 +5943,8 @@ void FullscreenUI::DropdownDialog::Open(std::string_view hidden_title, DropdownD
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float content_width = max_label_width + (item_x_padding * 2.0f) + (box_padding_x * 2.0f);
   const float max_width = display_size.x * 0.5f;
-  const float popup_width = std::clamp(std::max(content_width, LayoutScale(min_width)),
-                                       m_value_bb.GetWidth() + (box_padding_x * 2.0f), max_width);
+  const float popup_width = std::min(
+    std::max({content_width, LayoutScale(min_width), m_value_bb.GetWidth() + (box_padding_x * 2.0f)}), max_width);
 
   const float item_spacing = LayoutScale(LAYOUT_MENU_BUTTON_SPACING);
   const float item_height = MenuButtonBounds::GetSingleLineHeight() + item_spacing;
