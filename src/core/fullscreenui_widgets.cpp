@@ -2546,7 +2546,7 @@ bool FullscreenUI::BeginBlurWindow(const char* name, bool* p_open /* = nullptr *
   const ImVec4& background = GImGui->Style.Colors[ImGuiCol_WindowBg];
   const bool actually_blur = (blur && UIStyle.BlurMenuBackground && CanBlurBackground());
   const bool has_background = (background.w != 0.0f);
-  const bool res = ImGui::Begin(name, nullptr,
+  const bool res = ImGui::Begin(name, p_open,
                                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
                                   ImGuiWindowFlags_NoBringToFrontOnFocus |
                                   ((!has_background || actually_blur) ? ImGuiWindowFlags_NoBackground : 0) | flags);
