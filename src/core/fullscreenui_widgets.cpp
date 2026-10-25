@@ -63,6 +63,10 @@ struct OnScreenKeyboardKey;
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.25f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
+static constexpr float DRAG_SCROLL_THRESHOLD = 8.0f;     // layout units
+static constexpr float DRAG_SCROLL_MIN_VELOCITY = 50.0f; // layout units/sec
+static constexpr float DRAG_SCROLL_MAX_VELOCITY = 8000.0f;
+static constexpr float DRAG_SCROLL_FRICTION = 5.0f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
 static constexpr int MENU_BUTTON_SPLIT_LAYER_BACKGROUND = 0;
@@ -130,6 +134,8 @@ static void DrawToast(float& current_y);
 static void DrawLoadingScreen();
 
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
+
+static void UpdateDragScroll();
 
 static void UpdateOnScreenKeyboardInput();
 static void ActivateOnScreenKeyboardKey(const OnScreenKeyboardKey& key);
@@ -493,11 +499,16 @@ struct WidgetsState
   TransitionState transition_state = TransitionState::Inactive;
   TransitionEffect transition_effect = TransitionEffect::Fade;
   s8 has_pending_nav_move = static_cast<s8>(ImGuiDir_None);
+  bool drag_scroll_active = false;
   bool blur_active = false;
   bool blur_valid = false;
   bool header_background_valid = false;
 
   ImVec2 horizontal_menu_button_size = {};
+
+  ImGuiID drag_scroll_window_id = 0;
+  float drag_scroll_position = 0.0f;
+  float drag_scroll_velocity = 0.0f;
 
   LRUCache<std::string, GPUTexture*, GPUDevice::PooledTextureDeleter> texture_cache{128, true};
   std::unique_ptr<GPUTexture> placeholder_texture;
@@ -658,6 +669,8 @@ void FullscreenUI::ShutdownWidgets()
     s_state.file_selector_dialog.ClearState();
     s_state.toggle_button_animation_id = 0;
     s_state.toggle_button_animation_start_time = 0.0;
+    s_state.drag_scroll_active = false;
+    s_state.drag_scroll_window_id = 0;
   }
 
   UIStyle.Font = nullptr;
@@ -1901,9 +1914,125 @@ ImRect FullscreenUI::FitImage(const ImVec2& fit_size, const ImVec2& image_size)
   return rect;
 }
 
+void FullscreenUI::UpdateDragScroll()
+{
+  // Dragging/swiping with the pointer scrolls the window underneath, and cancels any pending button press.
+  // This runs before any widgets, so that a press can be cancelled on the same frame the pointer is released.
+  ImGuiContext& g = *GImGui;
+  const ImGuiIO& io = g.IO;
+  const ImGuiID drag_id = ImHashStr("##drag_scroll");
+
+  if (!s_state.drag_scroll_active)
+  {
+    // NewFrame() has already cleared a press on empty space if the pointer was released this frame
+    ImGuiWindow* active_window = (g.ActiveId != 0) ? g.ActiveIdWindow : nullptr;
+    ImGuiID active_id = g.ActiveId;
+    if (!active_window && io.MouseReleased[0] && g.HoveredWindow && g.ActiveIdPreviousFrame == g.HoveredWindow->MoveId)
+    {
+      active_window = g.HoveredWindow;
+      active_id = g.ActiveIdPreviousFrame;
+    }
+
+    // only take over empty space and buttons, not sliders/text inputs/scrollbars
+    const float threshold = LayoutScale(DRAG_SCROLL_THRESHOLD);
+    if (active_window && (io.MouseDown[0] || io.MouseReleased[0]) &&
+        ImLengthSqr(io.MousePos - io.MouseClickedPos[0]) > (threshold * threshold) &&
+        (active_id == active_window->MoveId ||
+         (g.ActiveIdUsingNavDirMask == 0 && !g.ActiveIdUsingAllKeyboardKeys && !g.ScrollbarHeld)))
+    {
+      ImGuiWindow* window = active_window;
+      while ((window->Flags & ImGuiWindowFlags_ChildWindow) &&
+             (window->ScrollMax.y == 0.0f || (window->Flags & ImGuiWindowFlags_NoScrollWithMouse)))
+      {
+        window = window->ParentWindow;
+      }
+      if (window->ScrollMax.y == 0.0f ||
+          (window->Flags & (ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoMouseInputs)))
+      {
+        window = nullptr;
+      }
+
+      ImGui::SetActiveID(drag_id, active_window);
+
+      // our windows are positioned every frame, so cancel any "move" from clicking on empty space
+      g.MovingWindow = nullptr;
+
+      s_state.drag_scroll_active = true;
+      s_state.drag_scroll_window_id = window ? window->ID : 0;
+      s_state.drag_scroll_position = window ? window->Scroll.y : 0.0f;
+      s_state.drag_scroll_velocity = 0.0f;
+    }
+    else if (io.MouseDown[0] || io.MouseWheel != 0.0f || g.NavMoveDir != ImGuiDir_None || g.NavActivateId != 0)
+    {
+      // stop inertia on any other input
+      s_state.drag_scroll_window_id = 0;
+    }
+  }
+  else if (g.ActiveId != drag_id)
+  {
+    // something else took over, e.g. a popup opening
+    s_state.drag_scroll_active = false;
+    s_state.drag_scroll_window_id = 0;
+  }
+
+  // stop if the window went away, or something else changed the scroll position, e.g. nav or a page change
+  ImGuiWindow* window =
+    (s_state.drag_scroll_window_id != 0) ? ImGui::FindWindowByID(s_state.drag_scroll_window_id) : nullptr;
+  if (window && (!window->WasActive || (!s_state.drag_scroll_active &&
+                                        window->ScrollExpected.y != ImRoundPositive64(s_state.drag_scroll_position))))
+  {
+    window = nullptr;
+    s_state.drag_scroll_window_id = 0;
+  }
+
+  if (window)
+  {
+    if (s_state.drag_scroll_active)
+    {
+      s_state.drag_scroll_position -= io.MouseDelta.y;
+      if (io.DeltaTime > 0.0f)
+      {
+        const float max_velocity = LayoutScale(DRAG_SCROLL_MAX_VELOCITY);
+        s_state.drag_scroll_velocity = ImClamp(
+          ImLerp(s_state.drag_scroll_velocity, -io.MouseDelta.y / io.DeltaTime, 0.5f), -max_velocity, max_velocity);
+      }
+    }
+    else
+    {
+      s_state.drag_scroll_position += s_state.drag_scroll_velocity * io.DeltaTime;
+      s_state.drag_scroll_velocity *= std::exp(-DRAG_SCROLL_FRICTION * io.DeltaTime);
+    }
+
+    // bypass smooth scrolling, we want to track the pointer exactly
+    s_state.drag_scroll_position = ImClamp(s_state.drag_scroll_position, 0.0f, window->ScrollMax.y);
+    window->Scroll.y = window->ScrollExpected.y = ImRoundPositive64(s_state.drag_scroll_position);
+  }
+
+  if (s_state.drag_scroll_active)
+  {
+    if (io.MouseDown[0])
+    {
+      ImGui::KeepAliveID(drag_id);
+    }
+    else
+    {
+      ImGui::ClearActiveID();
+      s_state.drag_scroll_active = false;
+    }
+  }
+
+  if (window && !s_state.drag_scroll_active &&
+      (std::abs(s_state.drag_scroll_velocity) < LayoutScale(DRAG_SCROLL_MIN_VELOCITY) ||
+       s_state.drag_scroll_position == 0.0f || s_state.drag_scroll_position == window->ScrollMax.y))
+  {
+    s_state.drag_scroll_window_id = 0;
+  }
+}
+
 void FullscreenUI::BeginLayout()
 {
   UpdateOnScreenKeyboardInput();
+  UpdateDragScroll();
 
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
   // we need to keep all those textures alive until the end of the frame
