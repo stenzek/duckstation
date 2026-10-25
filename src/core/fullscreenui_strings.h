@@ -167,6 +167,7 @@ TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the con
 TRANSLATE_NOOP("FullscreenUI", "Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
+TRANSLATE_NOOP("FullscreenUI", "Clear Binding");
 TRANSLATE_NOOP("FullscreenUI", "Clear Mappings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Shaders");

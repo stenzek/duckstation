@@ -429,7 +429,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     else
       s_settings_locals.input_binding_dialog.Start(bsi, type, section, name, display_name);
   }
-  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
+           (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false)))
   {
     CancelPendingMenuClose();
     bsi->DeleteValue(section, name);
@@ -2150,15 +2151,19 @@ void FullscreenUI::DrawSettingsWindow()
       std::make_pair(ICON_PF_LEFT_TRIGGER_LT ICON_PF_RIGHT_TRIGGER_RT, FSUI_VSTR("Scroll Page")),
       std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Change Page")),
       std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Navigate")),
+      is_split_window ? std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Clear Binding")) :
+                        std::pair<const char*, std::string_view>(),
       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")), std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_PAGE_UP ICON_PF_PAGE_DOWN, FSUI_VSTR("Scroll Page")),
-                                       std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Change Page")),
-                                       std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Navigate")),
-                                       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_PAGE_UP ICON_PF_PAGE_DOWN, FSUI_VSTR("Scroll Page")),
+                 std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Change Page")),
+                 std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Navigate")),
+                 is_split_window ? std::make_pair(ICON_PF_MOUSE_BUTTON_2, FSUI_VSTR("Clear Binding")) :
+                                   std::pair<const char*, std::string_view>(),
+                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
   }
 
   if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
