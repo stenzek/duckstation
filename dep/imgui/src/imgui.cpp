@@ -8180,6 +8180,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         // Apply scrolling
         window->Scroll = CalcNextScrollFromScrollTargetAndClamp(window);
         window->ScrollTarget = ImVec2(FLT_MAX, FLT_MAX);
+        window->AppearingPrevFrame = window->Appearing;
         window->DecoInnerSizeX1 = window->DecoInnerSizeY1 = 0.0f;
 
         // DRAWING
@@ -12199,7 +12200,8 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
             window->ScrollExpected[axis] = ImMin(window->ScrollExpected[axis], window->ScrollMax[axis]);
         ImGuiContext& g = *GImGui;
         const float diff = window->ScrollExpected[axis] - scroll[axis];
-        if (g.Style.ScrollSmooth <= 1.0f || ImFabs(diff) < 0.5f || window->Appearing || (g.ScrollbarHeld & 1))
+        if (g.Style.ScrollSmooth <= 1.0f || ImFabs(diff) < 0.5f || window->Appearing || window->AppearingPrevFrame ||
+            (g.ScrollbarHeld & 1))
             scroll[axis] = window->ScrollExpected[axis];
         else
             scroll[axis] += diff * (1.0f - ImPow(1.0f - 1.0f / g.Style.ScrollSmooth, g.IO.DeltaTime * 60.0f));
