@@ -4767,8 +4767,12 @@ bool FullscreenUI::BeginHorizontalMenu(const char* name, const ImVec2& position,
                       LayoutScale(UIStyle.MenuBorders ? LAYOUT_FRAME_BORDER_SIZE : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
+  // EndHorizontalMenu() is always called, so the split must be started even when hidden.
   if (!BeginFullscreenWindow(position, size, name, bg_color, 0.0f, ImVec2()))
+  {
+    BeginMenuButtonDrawSplit();
     return false;
+  }
 
   ImGui::SetCursorPos(ImFloor(ImVec2((size.x - menu_width) * 0.5f, (size.y - menu_height) * 0.5f)));
 
@@ -4908,7 +4912,11 @@ bool FullscreenUI::BeginSplitWindowSidebar(float sidebar_width /*= 0.2f*/)
   const float sidebar_width_px = ImFloor(ImGui::GetCurrentWindowRead()->WorkRect.GetWidth() * sidebar_width);
   if (!ImGui::BeginChild("sidebar", ImVec2(sidebar_width_px, 0.0f),
                          ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_NoNavCancel))
+  {
+    // EndSplitWindowSidebar() is always called, and pops the menu button state.
+    BeginMenuButtons();
     return false;
+  }
 
   if (ImGui::IsWindowFocused())
   {
