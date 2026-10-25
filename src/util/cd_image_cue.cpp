@@ -840,7 +840,6 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   // Two seconds default pregap.
   const u32 pregap_frames = 2 * FRAMES_PER_SECOND;
   Index pregap_index = {};
-  pregap_index.file_sector_size = track_sector_size;
   pregap_index.start_lba_on_disc = 0;
   pregap_index.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(pregap_frames));
   pregap_index.length = pregap_frames;
@@ -870,6 +869,7 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   // Assume a single track.
   m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0),
                            m_lba_count + pregap_frames, detected_mode.value(), SubchannelMode::None, control});
+  m_lba_count += pregap_frames;
 
   AddLeadOutIndex();
 
