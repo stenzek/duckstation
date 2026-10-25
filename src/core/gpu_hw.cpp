@@ -2446,6 +2446,7 @@ void GPU_HW::CopyDepthBuffer(const GSVector4i rect, bool merge)
       if (wrapped_rect.rempty())
         continue;
 
+      GL_INS_FMT("Copy Depth {} Wrap {}/{}", wrapped_rect, wrap_x, wrap_y);
       g_gpu_device->SetScissor(wrapped_rect);
       g_gpu_device->Draw(3, 0);
     }
@@ -2474,6 +2475,9 @@ void GPU_HW::CopyAndClearDepthBuffer(bool only_drawing_area)
 void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
 {
   GL_SCOPE_FMT("GPU_HW::ClearDepthBuffer({})", only_drawing_area ? "Only Drawing Area" : "Full Buffer");
+  GL_INS_FMT("Drawing Area: {}", m_clamped_drawing_area);
+  GL_INS_FMT("Depth Dirty Rect: {}", m_depth_dirty_rect);
+
   DebugAssert(m_pgxp_depth_buffer);
   if (only_drawing_area)
   {
@@ -2481,6 +2485,7 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
     const GSVector4i clear_rect = m_clamped_drawing_area.rintersect(m_depth_dirty_rect);
     if (!clear_rect.rempty())
     {
+      GL_INS_FMT("Clear Rect: {}", clear_rect);
       g_gpu_device->SetPipeline(m_clear_depth_pipeline.get());
 
       const GSVector4i clear_bounds = clear_rect.mul32l(GSVector4i(m_resolution_scale));
