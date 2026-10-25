@@ -254,6 +254,7 @@ struct StateVars
   bool vsync_phase_lock = false;
   bool vsync_phase_snap = false;
   u32 vsync_missed_vblank_count = 0;
+  u32 vsync_presents_per_frame = 1; // Host refreshes per frame when syncing to host.
   Timer::Value vsync_present_margin = 0;
 
   bool can_sync_to_host = false;
@@ -2421,10 +2422,11 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   // (VideoPresenter::GetLastVBlankTime). On D3D11/D3D12, the frame latency waitable object, or waiting for vblank in
   // exclusive fullscreen, provides the same blocking, see D3DCommon::PresentSwapChain().
   //
-  // When syncing to the host refresh rate, frame_period is the host refresh period, so emulation and display run at the
-  // same rate, but the throttler's schedule starts at an arbitrary point (ResetThrottler() uses the current time). The
-  // offset between present_time (P below) and the following vblank can be anywhere in the period, and every frame waits
-  // that long to be displayed. If it's very small, a little jitter makes a frame miss its vblank:
+  // When syncing to the host refresh rate, frame_period is the host refresh period (or a multiple of it, when the host
+  // refresh rate is a multiple of the console's), so emulation and display run at the same rate, but the throttler's
+  // schedule starts at an arbitrary point (ResetThrottler() uses the current time). The offset between present_time
+  // (P below) and the following vblank can be anywhere in the period, and every frame waits that long to be displayed.
+  // If it's very small, a little jitter makes a frame miss its vblank:
   //
   //                 vblank                          vblank
   //                   |                               |
@@ -2433,11 +2435,11 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   //    just missed:   |                               |P------------------------------> next vblank, a period late
   //
   // This function shifts next_frame_time so that present_time lands vsync_present_margin before a vblank. Because
-  // the periods match, only the phase needs correcting: the error is taken modulo the period and wrapped to
+  // the periods match, only the phase needs correcting: the error is taken modulo the refresh period and wrapped to
   // [-period/2, period/2), so the schedule moves whichever way is shorter. When resetting the throttler, the full
   // correction is applied at once, since nothing is running yet. Every frame after that, a small fraction is applied,
-  // clamped to period/64, to track drift between the reported and actual host refresh rates without audibly changing
-  // emulation speed.
+  // clamped to frame_period/64, to track drift between the reported and actual host refresh rates without audibly
+  // changing emulation speed.
   //
   // If there's no recent vblank time when resetting, e.g. at boot, or after a pause where nothing was presented, the
   // full correction is applied on the first frame that has one instead. Slewing there from a random phase would be
@@ -2448,13 +2450,14 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   // This doesn't recover from a missed vblank by itself. A frame that misses keeps the video thread blocked past the
   // next frame's present_time, and from then on every frame is displayed one vblank late, because the queue never
   // drains at matched rates. VideoPresenter::ShouldPresentFrame() detects that and drops one frame. Since we're still
-  // in phase, the frame after that makes its vblank again.
+  // in phase, the frame after that makes its vblank again. When each frame spans several refreshes, a frame that misses
+  // its vblank is still displayed before the next frame's present_time, so there's no backlog to recover from.
   //
   // The margin is how long the frame has to be rendered and displayed. It starts at VSYNC_PRESENT_MARGIN_MS, which is
   // enough for most setups, but some need longer, e.g. exclusive fullscreen on D3D. If a frame which was presented on
-  // time still misses its vblank, the margin is increased by VSYNC_PRESENT_MARGIN_STEP_MS, up to a quarter of a period.
-  // Frames which were presented late, e.g. because emulation or rendering took too long, don't count, since a larger
-  // margin wouldn't have helped them. It resets when the speed limiter settings are updated.
+  // time still misses its vblank, the margin is increased by VSYNC_PRESENT_MARGIN_STEP_MS, up to a quarter of a
+  // refresh. Frames which were presented late, e.g. because emulation or rendering took too long, don't count, since a
+  // larger margin wouldn't have helped them. It resets when the speed limiter settings are updated.
   //
   // Only enabled when syncing to host (the periods must match), with optimal frame pacing (we need present_time), and
   // with vsync enabled (we need blocking presents for vblank times).
@@ -2471,6 +2474,8 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
     return;
   }
 
+  const s64 frame_period = static_cast<s64>(s_state.frame_period);
+  const s64 period = frame_period / s_state.vsync_presents_per_frame;
   const u32 missed_vblank_count = VideoPresenter::GetMissedVBlankCount();
   if (missed_vblank_count != s_state.vsync_missed_vblank_count)
   {
@@ -2478,15 +2483,14 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
     s_state.vsync_present_margin =
       std::max(s_state.vsync_present_margin,
                std::min(s_state.vsync_present_margin + Timer::ConvertMillisecondsToValue(VSYNC_PRESENT_MARGIN_STEP_MS),
-                        s_state.frame_period / 4));
+                        static_cast<Timer::Value>(period / 4)));
     DEV_LOG("Frame missed vblank, increasing present margin to {:.2f} ms",
             Timer::ConvertValueToMilliseconds(s_state.vsync_present_margin));
   }
 
   // Frames are presented at the next frame time, we want that to be just before vblank. Any vblank works as a
-  // reference, since they're all a multiple of the period apart. Wrap the error to within half a period, so we
+  // reference, since they're all a multiple of the refresh period apart. Wrap the error to within half a period, so we
   // move in whichever direction is closer.
-  const s64 period = static_cast<s64>(s_state.frame_period);
   const s64 target_time = static_cast<s64>(vblank_time) - static_cast<s64>(s_state.vsync_present_margin);
   s64 error = (target_time - static_cast<s64>(s_state.next_frame_time)) % period;
   if (error >= (period / 2))
@@ -2496,7 +2500,7 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
 
   // Unless snapping, only nudge it, so that emulation speed changes by less than 2%.
   if (!std::exchange(s_state.vsync_phase_snap, false))
-    error = std::clamp<s64>(error / 8, -(period / 64), period / 64);
+    error = std::clamp<s64>(error / 8, -(frame_period / 64), frame_period / 64);
 
   s_state.next_frame_time = static_cast<Timer::Value>(static_cast<s64>(s_state.next_frame_time) + error);
 }
@@ -3794,21 +3798,29 @@ void System::UpdateSpeedLimiterState()
   s_state.pre_frame_sleep = s_state.optimal_frame_pacing && g_settings.display_pre_frame_sleep;
   s_state.can_sync_to_host = false;
   s_state.syncing_to_host = false;
+  s_state.vsync_presents_per_frame = 1;
 
   if (g_settings.sync_to_host_refresh_rate)
   {
     if (const float host_refresh_rate = VideoThread::GetRenderWindowInfo().surface_refresh_rate;
         host_refresh_rate > 0.0f)
     {
-      const float ratio = host_refresh_rate / s_state.video_frame_rate;
+      // The host refresh rate can be a multiple of ours, in which case each frame is displayed for several refreshes.
+      const float host_ratio = host_refresh_rate / s_state.video_frame_rate;
+      const u32 presents_per_frame = static_cast<u32>(std::max(static_cast<s32>(std::round(host_ratio)), 1));
+      const float ratio = host_ratio / static_cast<float>(presents_per_frame);
       s_state.can_sync_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate, s_state.video_frame_rate, ratio,
+      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Refreshes={} Ratio={} - {}", host_refresh_rate,
+               s_state.video_frame_rate, presents_per_frame, ratio,
                s_state.can_sync_to_host ? "can sync" : "can't sync");
 
       s_state.syncing_to_host =
         (s_state.can_sync_to_host && g_settings.sync_to_host_refresh_rate && s_state.target_speed == 1.0f);
       if (s_state.syncing_to_host)
+      {
         s_state.target_speed = ratio;
+        s_state.vsync_presents_per_frame = presents_per_frame;
+      }
     }
   }
 
