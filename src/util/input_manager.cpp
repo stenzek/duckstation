@@ -102,7 +102,8 @@ static void GenerateRelativeMouseEvents();
 [[maybe_unused]] static void ReloadDevices();
 
 static bool ShouldMaskBackgroundInput(InputBindingKey key);
-static bool DoEventHook(InputBindingKey key, float value);
+static bool DoBindingCaptureEvent(InputBindingKey key, float value);
+static void InvokeBindingCaptureCallback(bool completed);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
 template<typename Predicate>
@@ -114,7 +115,6 @@ static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
 static Threading::SharedLockGuard GetSourcesReadLock();
-static size_t UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all);
 static bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 static bool UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<Threading::Mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
@@ -151,6 +151,16 @@ static constexpr const std::array<const char*, 3> s_pointer_button_names = {{
 
 namespace {
 
+/// An input seen by the binding capture.
+struct BindingCaptureInput
+{
+  InputBindingKey key;
+  float initial_value;
+  float min_value;
+  float last_value;
+  bool armed;
+};
+
 struct State
 {
   BindingMap binding_map;
@@ -158,9 +168,6 @@ struct State
   PadLEDBindingArray pad_led_array;
   std::vector<MacroButton> macro_buttons;
   std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
-
-  // Hooks/intercepting (for setting bindings)
-  InputInterceptHook::Callback event_intercept_callback;
 
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
@@ -176,12 +183,23 @@ struct State
 
   bool application_in_background = false;
   bool ignore_input_events = false;
+  bool sensor_polling_enabled = false;
   bool has_pointer_device_bindings = false;
   bool relative_mouse_mode = false;
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
   bool hide_host_mouse_cursor_active = false;
   std::atomic<GamepadButtonType> last_gamepad_button_type{GamepadButtonType::Unknown};
+
+  // Binding capture (for setting bindings), which intercepts events before the normal bindings while it's running.
+  // Inputs moved past the threshold join binding_capture_keys as a chord, which is complete when one of them returns to
+  // rest.
+  std::vector<BindingCaptureInput> binding_capture_inputs;
+  std::vector<InputBindingKey> binding_capture_keys;
+  InputManager::BindingCaptureCallback binding_capture_callback;
+  bool binding_capture_running = false;
+  bool binding_capture_completed = false;
+  bool binding_capture_sensors = false;
 
 #ifdef _WIN32
   // Only written on the core thread, but read from any thread. It only bounds loops over fixed-size arrays and doesn't
@@ -1121,7 +1139,7 @@ void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-  if (DoEventHook(key, value))
+  if (DoBindingCaptureEvent(key, value))
     return;
 
   // Background input test
@@ -2250,50 +2268,222 @@ void InputManager::UpdateMacroButtons()
 }
 
 // ------------------------------------------------------------------------
-// Hooks/Event Intercepting
+// Binding Capture
 // ------------------------------------------------------------------------
 
-void InputManager::SetHook(InputInterceptHook::Callback callback)
+void InputManager::StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence /* = false */)
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-  DebugAssert(!s_state.event_intercept_callback);
-  s_state.event_intercept_callback = std::move(callback);
+  s_state.binding_capture_keys.clear();
+  s_state.binding_capture_completed = false;
+  if (continue_sequence)
+  {
+    // The resting values seen by the earlier captures are kept, and inputs still held from the previous capture can't
+    // join this one until they're released.
+    for (BindingCaptureInput& input : s_state.binding_capture_inputs)
+    {
+      input.min_value = input.initial_value;
+      input.armed = (std::abs(std::abs(input.initial_value) - std::abs(input.last_value)) <= 0.25f);
+    }
+  }
+  else
+  {
+    s_state.binding_capture_inputs.clear();
+  }
 
-  // enable sensor updates for all devices
-  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, true);
+  s_state.binding_capture_callback = std::move(callback);
+  s_state.binding_capture_running = true;
+
+  // Sensors are only captured when the user has enabled sensor mapping, so moving doesn't bind them by accident.
+  s_state.binding_capture_sensors =
+    Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableSensorMapping", false);
+  UpdateSensorPolling();
 }
 
-void InputManager::RemoveHook()
+void InputManager::AddBindingCaptureKey(InputBindingKey key)
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-  if (s_state.event_intercept_callback)
-    s_state.event_intercept_callback = {};
+  if (!s_state.binding_capture_running || s_state.binding_capture_completed)
+    return;
 
-  // disable sensor updates if the device has no bindings
-  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, false);
+  s_state.binding_capture_keys.push_back(key);
+  InvokeBindingCaptureCallback(false);
 }
 
-bool InputManager::HasHook()
+void InputManager::CompleteBindingCapture()
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-  return static_cast<bool>(s_state.event_intercept_callback);
+  if (!s_state.binding_capture_running || s_state.binding_capture_completed)
+    return;
+
+  s_state.binding_capture_completed = true;
+  InvokeBindingCaptureCallback(true);
 }
 
-bool InputManager::DoEventHook(InputBindingKey key, float value)
+void InputManager::StopBindingCapture()
+{
+  // Threading: Only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
+  if (!s_state.binding_capture_running)
+    return;
+
+  s_state.binding_capture_running = false;
+  s_state.binding_capture_callback = {};
+  UpdateSensorPolling();
+}
+
+void InputManager::UpdateSensorPolling()
+{
+  // Threading: Only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
+
+  if (s_state.binding_capture_running && s_state.binding_capture_sensors)
+  {
+    // enable all -> null devices
+    DEV_LOG("Sensor polling is now active (enabled by binding capture)");
+    for (std::unique_ptr<InputSource>& source : s_state.input_sources)
+    {
+      if (source)
+        source->SetSubclassPollDeviceList(InputSubclass::ControllerSensor, nullptr);
+    }
+
+    s_state.sensor_polling_enabled = true;
+    return;
+  }
+
+  // Sensors are only needed by a running game, so don't poll them for FullscreenUI.
+  std::vector<InputBindingKey> devices;
+  if (System::IsValidOrInitializing())
+  {
+    for (const auto& it : s_state.binding_map)
+    {
+      if (it.first.source_subtype != InputSubclass::ControllerSensor)
+        continue;
+
+      // avoid duplicates
+      const InputBindingKey& itk = it.first;
+      if (std::ranges::none_of(devices, [&itk](const InputBindingKey& dk) {
+            return (dk.source_type == itk.source_type && dk.source_index == itk.source_index &&
+                    dk.source_subtype == InputSubclass::ControllerSensor);
+          }))
+      {
+        devices.push_back(itk);
+      }
+    }
+  }
+
+  // Any change?
+  if (!s_state.sensor_polling_enabled && devices.empty())
+    return;
+
+  const std::span<const InputBindingKey> devices_span = devices;
+  for (std::unique_ptr<InputSource>& source : s_state.input_sources)
+  {
+    if (source)
+      source->SetSubclassPollDeviceList(InputSubclass::ControllerSensor, &devices_span);
+  }
+
+  DEV_LOG("Sensor polling is now {} ({} devices)", (devices.empty() ? "disabled" : "enabled"), devices.size());
+  s_state.sensor_polling_enabled = !devices.empty();
+}
+
+bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
 {
   // Threading: Only called on core thread in InvokeEvents().
-  if (!s_state.event_intercept_callback)
+  if (!s_state.binding_capture_running)
     return false;
 
-  const InputInterceptHook::CallbackResult action = s_state.event_intercept_callback(key, value);
-  if (action >= InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent)
-    s_state.event_intercept_callback = {};
+  // Inputs which can't be named, like those of a device the input source doesn't know, can't be bound.
+  auto it = std::ranges::find_if(s_state.binding_capture_inputs,
+                                 [key](const BindingCaptureInput& input) { return input.key.bits == key.bits; });
+  const bool seen = (it != s_state.binding_capture_inputs.end());
+  if ((key.source_subtype == InputSubclass::ControllerSensor && !s_state.binding_capture_sensors) ||
+      (!seen && ConvertInputBindingKeyToString(InputBindingInfo::Type::Button, key).empty()))
+  {
+    return true;
+  }
 
-  return (action == InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent ||
-          action == InputInterceptHook::CallbackResult::StopProcessingEvent);
+  // Releases of inputs pressed before the capture started pass through, so whatever saw the press sees the release,
+  // like ImGui for the button which opened a binding dialog.
+  const bool consumed = (seen || value != 0.0f);
+
+  if (seen)
+  {
+    it->min_value = std::min(it->min_value, value);
+    it->last_value = value;
+  }
+  else
+  {
+    // Inputs other than buttons are taken to be at rest when first seen. Buttons rest at zero, since there's no event
+    // for their initial state.
+    const float initial_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
+    it = s_state.binding_capture_inputs.insert(s_state.binding_capture_inputs.end(),
+                                               BindingCaptureInput{key, initial_value, initial_value, value, true});
+  }
+
+  const float initial_value = it->initial_value;
+  const float min_value = it->min_value;
+  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}",
+          ConvertInputBindingKeyToString(InputBindingInfo::Type::Unknown, key), value, initial_value, min_value);
+
+  // Once the binding is complete, events only update the state of the inputs, so releases between the steps of a
+  // sequence are still seen.
+  if (s_state.binding_capture_completed)
+    return consumed;
+
+  const float abs_value = std::abs(value);
+  const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
+  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
+                                  std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
+
+  for (InputBindingKey& other_key : s_state.binding_capture_keys)
+  {
+    if (other_key.MaskDirection() == key.MaskDirection())
+    {
+      // if this key is in our new binding list, it's a "release", and we're done
+      if (delta_from_initial > 0.25f)
+        return consumed;
+
+      // did we go the full range?
+      if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
+        other_key.modifier = InputModifier::FullAxis;
+
+      s_state.binding_capture_completed = true;
+      InvokeBindingCaptureCallback(true);
+      return consumed;
+    }
+  }
+
+  // an input held from a previous capture has to return to rest first
+  if (!it->armed)
+  {
+    it->armed = (delta_from_initial <= 0.25f);
+    return consumed;
+  }
+
+  // new binding, add it to the list, but wait for a decent distance first, and then wait for release
+  if (delta_from_initial < 0.5f)
+    return consumed;
+
+  InputBindingKey key_to_add = key;
+  key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
+  key_to_add.invert = reverse_threshold;
+  s_state.binding_capture_keys.push_back(key_to_add);
+  InvokeBindingCaptureCallback(false);
+  return consumed;
+}
+
+void InputManager::InvokeBindingCaptureCallback(bool completed)
+{
+  // Threading: Only called on core thread.
+  // The callback can stop the capture, or replace it with a new one, so it's moved out while it runs.
+  BindingCaptureCallback callback = std::move(s_state.binding_capture_callback);
+  callback(s_state.binding_capture_keys, completed);
+  if (s_state.binding_capture_running && !s_state.binding_capture_callback)
+    s_state.binding_capture_callback = std::move(callback);
 }
 
 // ------------------------------------------------------------------------
@@ -2339,7 +2529,7 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
   }
 
   // Update whether sensor polling is enabled.
-  UpdateInputSubclassPolling(InputSubclass::ControllerSensor, false);
+  UpdateSensorPolling();
 }
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
@@ -2711,49 +2901,6 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& sources_si,
   ReloadSources(sources_si, settings_lock);
   InternalReloadBindings(binding_si, hotkey_binding_si);
   UpdateRelativeMouseMode();
-}
-
-size_t InputManager::UpdateInputSubclassPolling(InputSubclass subclass, bool enable_all)
-{
-  // Threading: Utility function that is only called on core thread.
-  DebugAssert(Host::IsOnCoreThread());
-  if (enable_all)
-  {
-    // enable all -> null devices
-    for (std::unique_ptr<InputSource>& source : s_state.input_sources)
-    {
-      if (source)
-        source->SetSubclassPollDeviceList(subclass, nullptr);
-    }
-
-    return 0;
-  }
-
-  std::vector<InputBindingKey> devices;
-  for (const auto& it : s_state.binding_map)
-  {
-    if (it.first.source_subtype != subclass)
-      continue;
-
-    // avoid duplicates
-    const InputBindingKey& itk = it.first;
-    if (std::ranges::none_of(devices, [&itk, &subclass](const InputBindingKey& dk) {
-          return (dk.source_type == itk.source_type && dk.source_index == itk.source_index &&
-                  dk.source_subtype == subclass);
-        }))
-    {
-      devices.push_back(itk);
-    }
-  }
-
-  const std::span<const InputBindingKey> devices_span = devices;
-  for (std::unique_ptr<InputSource>& source : s_state.input_sources)
-  {
-    if (source)
-      source->SetSubclassPollDeviceList(subclass, &devices_span);
-  }
-
-  return devices.size();
 }
 
 #ifdef _WIN32

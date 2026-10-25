@@ -6,10 +6,12 @@
 #include <functional>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <tuple>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "common/settings_interface.h"
 #include "common/types.h"
@@ -121,20 +123,6 @@ using InputAxisEventHandler = std::function<void(float value)>;
 /// binary values when the callback is a binary/button handler. That way
 /// you don't need to convert float->bool in your callbacks.
 using InputEventHandler = std::variant<InputAxisEventHandler, InputButtonEventHandler>;
-
-/// Input monitoring for external access.
-struct InputInterceptHook
-{
-  enum class CallbackResult
-  {
-    StopProcessingEvent,
-    ContinueProcessingEvent,
-    RemoveHookAndStopProcessingEvent,
-    RemoveHookAndContinueProcessingEvent,
-  };
-
-  using Callback = std::function<CallbackResult(InputBindingKey key, float value)>;
-};
 
 /// Hotkeys are actions (e.g. toggle frame limit) which can be bound to keys or chords.
 /// The handler receives Pressed when the full chord activates, Released when a key in an active
@@ -283,6 +271,10 @@ bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMappin
 /// Synchronizes handlers with the current state of all registered bindings.
 void SynchronizeBindingHandlerState();
 
+/// Updates which devices poll their sensors, after the system starts or stops. Sensors with bindings are only polled
+/// while a game is loaded, or every sensor while a binding capture with sensor mapping is running.
+void UpdateSensorPolling();
+
 /// Re-parses the config and registers all hotkey and pad bindings.
 void ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si);
 
@@ -308,15 +300,27 @@ bool HasAnyBindingsForSource(InputBindingKey key);
 /// Clears internal state for any binds with a matching source/index.
 void ClearBindStateFromSource(InputBindingKey key);
 
-/// Sets a hook which can be used to intercept events before they're processed by the normal bindings.
-/// This is typically used when binding new controls to detect what gets pressed.
-void SetHook(InputInterceptHook::Callback callback);
+/// Receives the progress of a binding capture on the core thread: the inputs in the binding so far, in the order they
+/// joined, and whether the binding is complete.
+using BindingCaptureCallback = std::function<void(std::span<const InputBindingKey> keys, bool completed)>;
 
-/// Removes any currently-active interception hook.
-void RemoveHook();
+/// Captures a binding from the next input events, before the normal bindings see them, the same way for each frontend.
+/// Inputs moved past a threshold join the binding as a chord, which is complete when one of them returns to rest. The
+/// callback is called when an input joins, and when the binding is complete. Once complete, the capture keeps
+/// tracking inputs until it's stopped. With continue_sequence, as for each step of binding several inputs in turn,
+/// inputs still held from the previous capture are then ignored until they're released. Sensors are only polled and
+/// captured when sensor mapping is enabled. Only one capture runs at a time, so this replaces any capture in progress.
+/// Core thread only.
+void StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence = false);
 
-/// Returns true if there is an interception hook present.
-bool HasHook();
+/// Adds an input from a UI event, like a keyboard key, to the capture's binding. Core thread only.
+void AddBindingCaptureKey(InputBindingKey key);
+
+/// Completes the capture's binding now, as when an input from a UI event is released. Core thread only.
+void CompleteBindingCapture();
+
+/// Stops the capture. It can be called from the capture's callback. Core thread only.
+void StopBindingCapture();
 
 /// Internal method used by pads to dispatch LED updates to input sources.
 void SetPadLEDState(u32 pad_index, float intensity);

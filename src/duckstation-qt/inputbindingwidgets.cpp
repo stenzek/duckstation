@@ -14,7 +14,9 @@
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/thirdparty/SmallVector.h"
 
+#include <QtCore/QPointer>
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
@@ -28,8 +30,6 @@
 LOG_CHANNEL(Host);
 
 using namespace Qt::StringLiterals;
-
-InputBindingWidget* InputBindingWidget::s_current_hook_widget = nullptr;
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 {
@@ -59,22 +59,30 @@ bool InputBindingWidget::isMouseMappingEnabled()
          !InputManager::IsUsingRawInput();
 }
 
-bool InputBindingWidget::isSensorMappingEnabled()
+void InputBindingWidget::startBindingCapture(BindingCaptureUpdateFunction on_update)
 {
-  return Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableSensorMapping", false);
+  Host::RunOnCoreThread([on_update]() {
+    InputManager::StartBindingCapture([on_update](std::span<const InputBindingKey> keys, bool completed) {
+      Host::RunOnUIThread([on_update = std::move(on_update),
+                           keys = llvm::SmallVector<InputBindingKey, 4>(keys.begin(), keys.end()),
+                           completed]() { on_update(keys, completed); });
+    });
+  });
 }
 
-bool InputBindingWidget::isSensorBinding(InputBindingKey key)
+void InputBindingWidget::addBindingCaptureKey(InputBindingKey key)
 {
-  return (key.source_subtype == InputSubclass::ControllerSensor);
+  Host::RunOnCoreThread([key]() { InputManager::AddBindingCaptureKey(key); });
 }
 
-void InputBindingWidget::logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value,
-                                       float initial_value, float min_value)
+void InputBindingWidget::completeBindingCapture()
 {
-  const SmallString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
-  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}", key_str, value,
-          initial_value, min_value);
+  Host::RunOnCoreThread(&InputManager::CompleteBindingCapture);
+}
+
+void InputBindingWidget::stopBindingCapture()
+{
+  Host::RunOnCoreThread(&InputManager::StopBindingCapture);
 }
 
 void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
@@ -193,15 +201,14 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   // if the key is being released, set the input
   if (event_type == QEvent::KeyRelease || (event_type == QEvent::MouseButtonRelease && m_mouse_mapping_enabled))
   {
-    setNewBinding();
-    stopListeningForInput();
+    completeBindingCapture();
     return true;
   }
   else if (event_type == QEvent::KeyPress)
   {
     const QKeyEvent* key_event = static_cast<const QKeyEvent*>(event);
     if (const std::optional<u32> key = QtUtils::KeyEventToCode(key_event))
-      m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(key.value()));
+      addBindingCaptureKey(InputManager::MakeHostKeyboardKey(key.value()));
     return true;
   }
   else if ((event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick) &&
@@ -209,7 +216,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   {
     // double clicks get triggered if we click bind, then click again quickly.
     const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-    m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+    addBindingCaptureKey(InputManager::MakePointerButtonKey(0, button_index));
     return true;
   }
   else if (event_type == QEvent::Wheel)
@@ -221,7 +228,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelX));
       key.modifier = dx < 0.0f ? InputModifier::Negate : InputModifier::None;
-      m_new_bindings.push_back(key);
+      addBindingCaptureKey(key);
     }
 
     const float dy = std::clamp(
@@ -230,14 +237,11 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelY));
       key.modifier = dy < 0.0f ? InputModifier::Negate : InputModifier::None;
-      m_new_bindings.push_back(key);
+      addBindingCaptureKey(key);
     }
 
     if (dx != 0.0f || dy != 0.0f)
-    {
-      setNewBinding();
-      stopListeningForInput();
-    }
+      completeBindingCapture();
 
     return true;
   }
@@ -253,21 +257,20 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::X));
       key.modifier = diff.x() < 0 ? InputModifier::Negate : InputModifier::None;
-      m_new_bindings.push_back(key);
+      addBindingCaptureKey(key);
       has_one = true;
     }
     if (std::abs(diff.y()) >= THRESHOLD)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::Y));
       key.modifier = diff.y() < 0 ? InputModifier::Negate : InputModifier::None;
-      m_new_bindings.push_back(key);
+      addBindingCaptureKey(key);
       has_one = true;
     }
 
     if (has_one)
     {
-      setNewBinding();
-      stopListeningForInput();
+      completeBindingCapture();
       return true;
     }
   }
@@ -310,13 +313,12 @@ void InputBindingWidget::resizeEvent(QResizeEvent* e)
   QPushButton::resizeEvent(e);
 }
 
-void InputBindingWidget::setNewBinding()
+void InputBindingWidget::setNewBinding(std::span<const InputBindingKey> keys)
 {
-  if (m_new_bindings.empty())
+  if (keys.empty())
     return;
 
-  const SmallString new_binding =
-    InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size());
+  const SmallString new_binding = InputManager::ConvertInputBindingKeysToString(m_bind_type, keys.data(), keys.size());
   if (!new_binding.empty())
   {
     if (m_sif)
@@ -397,10 +399,7 @@ void InputBindingWidget::onInputListenTimerTimeout()
 
 void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
-  m_value_ranges.clear();
-  m_new_bindings.clear();
   m_mouse_mapping_enabled = isMouseMappingEnabled();
-  m_sensor_mapping_enabled = isSensorMappingEnabled();
   m_input_listen_start_position = QCursor::pos();
   m_input_listen_timer = new QTimer(this);
   m_input_listen_timer->setSingleShot(false);
@@ -415,7 +414,14 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
   grabKeyboard();
   grabMouse();
   setMouseTracking(true);
-  hookInputManager();
+
+  startBindingCapture([p_this = QPointer(this)](std::span<const InputBindingKey> keys, bool completed) {
+    if (!p_this || !completed || !p_this->isListeningForInput())
+      return;
+
+    p_this->setNewBinding(keys);
+    p_this->stopListeningForInput();
+  });
 }
 
 void InputBindingWidget::stopListeningForInput()
@@ -423,98 +429,12 @@ void InputBindingWidget::stopListeningForInput()
   reloadBinding();
   delete m_input_listen_timer;
   m_input_listen_timer = nullptr;
-  std::vector<InputBindingKey>().swap(m_new_bindings);
 
-  unhookInputManager();
+  stopBindingCapture();
   setMouseTracking(false);
   releaseMouse();
   releaseKeyboard();
   removeEventFilter(this);
-}
-
-void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float value)
-{
-  if (!isListeningForInput())
-    return;
-
-  float initial_value;
-  float min_value;
-  auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
-                         [key](const auto& it) { return it.first.bits == key.bits; });
-  if (it != m_value_ranges.end())
-  {
-    initial_value = it->second.first;
-    min_value = it->second.second = std::min(it->second.second, value);
-  }
-  else
-  {
-    // if this is a button, set an initial value of zero, since we won't get any event for the initial state
-    initial_value = min_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
-    m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
-  }
-
-  logInputEvent(m_bind_type, key, value, initial_value, min_value);
-
-  const float abs_value = std::abs(value);
-  const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
-  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
-                                  std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
-
-  for (InputBindingKey& other_key : m_new_bindings)
-  {
-    if (other_key.MaskDirection() == key.MaskDirection())
-    {
-      if (delta_from_initial <= 0.25f)
-      {
-        // did we go the full range?
-        if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
-          other_key.modifier = InputModifier::FullAxis;
-
-        // if this key is in our new binding list, it's a "release", and we're done
-        setNewBinding();
-        stopListeningForInput();
-        return;
-      }
-
-      // otherwise, keep waiting
-      return;
-    }
-  }
-
-  // new binding, add it to the list, but wait for a decent distance first, and then wait for release
-  if (delta_from_initial >= 0.5f)
-  {
-    InputBindingKey key_to_add = key;
-    key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
-    key_to_add.invert = reverse_threshold;
-    m_new_bindings.push_back(key_to_add);
-  }
-}
-
-void InputBindingWidget::hookInputManager()
-{
-  DebugAssert(!s_current_hook_widget);
-  s_current_hook_widget = this;
-  Host::RunOnCoreThread([sensor_enabled = m_sensor_mapping_enabled]() {
-    InputManager::SetHook([sensor_enabled](InputBindingKey key, float value) {
-      // if sensor mapping is disabled, avoid wasting time forwarding to UI thread
-      if (!sensor_enabled && isSensorBinding(key))
-        return InputInterceptHook::CallbackResult::StopProcessingEvent;
-
-      Host::RunOnUIThread([key, value]() {
-        if (s_current_hook_widget)
-          s_current_hook_widget->inputManagerHookCallback(key, value);
-      });
-
-      return InputInterceptHook::CallbackResult::StopProcessingEvent;
-    });
-  });
-}
-
-void InputBindingWidget::unhookInputManager()
-{
-  s_current_hook_widget = nullptr;
-  Host::RunOnCoreThread(&InputManager::RemoveHook);
 }
 
 void InputBindingWidget::openDialog()

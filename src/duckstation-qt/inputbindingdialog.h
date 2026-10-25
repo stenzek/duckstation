@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -38,13 +38,10 @@ protected:
   virtual void stopListeningForInput();
 
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
-  void addNewBinding();
+  void addNewBinding(std::span<const InputBindingKey> keys);
 
   void updateList();
   void saveListToSettings();
-
-  void hookInputManager();
-  void unhookInputManager();
 
   void onSensitivityChanged(int value);
   void onResetDeadzoneClicked();
@@ -55,7 +52,6 @@ protected:
   void onRemoveBindingButtonClicked();
   void onClearBindingsButtonClicked();
   void onInputListenTimerTimeout();
-  void inputManagerHookCallback(InputBindingKey key, float value);
 
   Ui::InputBindingDialog m_ui;
 
@@ -64,14 +60,9 @@ protected:
   std::string m_section_name;
   std::string m_key_name;
   std::vector<std::string> m_bindings;
-  std::vector<InputBindingKey> m_new_bindings;
-  std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
 
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
-  bool m_sensor_mapping_enabled = false;
-
-  static InputBindingDialog* s_current_hook_dialog;
 };

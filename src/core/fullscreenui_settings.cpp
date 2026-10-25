@@ -70,8 +70,6 @@ private:
   std::string m_binding_section;
   std::string m_binding_key;
   std::string m_display_name;
-  std::vector<InputBindingKey> m_new_bindings;
-  std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
   float m_time_remaining = 0.0f;
   InputBindingInfo::Type m_binding_type = InputBindingInfo::Type::Unknown;
 };
@@ -446,106 +444,42 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
                                              std::string_view section, std::string_view key,
                                              std::string_view display_name)
 {
-  if (m_binding_type != InputBindingInfo::Type::Unknown)
-    InputManager::RemoveHook();
-
   m_binding_type = type;
   m_binding_section = section;
   m_binding_key = key;
   m_display_name = display_name;
-  m_new_bindings = {};
-  m_value_ranges = {};
   m_time_remaining = INPUT_BINDING_TIMEOUT_SECONDS;
   SetTitleAndOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
 
+  // A capture started for another binding is replaced.
   const bool game_settings = IsEditingGameSettings(bsi);
+  Host::RunOnCoreThread([this, game_settings]() {
+    InputManager::StartBindingCapture([this, game_settings](std::span<const InputBindingKey> keys, bool completed) {
+      if (!completed)
+        return;
 
-  auto input_hook = [this, game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
-    // holding the settings lock here will protect the input binding list
-    const auto lock = Core::GetSettingsLock();
-
-    // shouldn't happen, just in case
-    if (m_binding_type == InputBindingInfo::Type::Unknown)
-      return InputInterceptHook::CallbackResult::RemoveHookAndContinueProcessingEvent;
-
-    // ignore sensors for now
-    if (key.source_subtype == InputSubclass::ControllerSensor)
-      return InputInterceptHook::CallbackResult::StopProcessingEvent;
-
-    float initial_value;
-    float min_value;
-    InputInterceptHook::CallbackResult default_action = InputInterceptHook::CallbackResult::StopProcessingEvent;
-    const auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
-                                 [key](const auto& it) { return it.first.bits == key.bits; });
-
-    if (it != m_value_ranges.end())
-    {
-      initial_value = it->second.first;
-      min_value = it->second.second = std::min(it->second.second, value);
-    }
-    else
-    {
-      // if this is a button, set an initial value of zero, since we won't get any event for the initial state
-      initial_value = min_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
-      m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
-
-      // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to
-      // start if we don't do this, imgui thinks the activate button is held down
-      default_action = (value == 0.0f) ? InputInterceptHook::CallbackResult::ContinueProcessingEvent :
-                                         InputInterceptHook::CallbackResult::StopProcessingEvent;
-    }
-
-    DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}",
-            InputManager::ConvertInputBindingKeyToString(m_binding_type, key), value, initial_value, min_value);
-
-    const float abs_value = std::abs(value);
-    const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
-    const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
-                                    std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
-
-    for (InputBindingKey& other_key : m_new_bindings)
-    {
-      // if this key is in our new binding list, it's a "release", and we're done
-      if (other_key.MaskDirection() == key.MaskDirection())
       {
-        if (delta_from_initial <= 0.25f)
-        {
-          // did we go the full range?
-          if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
-            other_key.modifier = InputModifier::FullAxis;
+        // holding the settings lock here will protect the input binding list
+        const auto lock = Core::GetSettingsLock();
 
+        // shouldn't happen, just in case
+        if (m_binding_type != InputBindingInfo::Type::Unknown)
+        {
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
           const SmallString new_binding =
-            InputManager::ConvertInputBindingKeysToString(m_binding_type, m_new_bindings.data(), m_new_bindings.size());
+            InputManager::ConvertInputBindingKeysToString(m_binding_type, keys.data(), keys.size());
           bsi->SetStringValue(m_binding_section.c_str(), m_binding_key.c_str(), new_binding.c_str());
           SetSettingsChanged(bsi);
 
           // don't try to process any more
           m_binding_type = InputBindingInfo::Type::Unknown;
           VideoThread::RunOnThread([this]() { StartClose(); });
-
-          return InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent;
         }
-
-        // otherwise, keep waiting
-        return default_action;
       }
-    }
 
-    // new binding, add it to the list, but wait for a decent distance first, and then wait for release
-    if (delta_from_initial >= 0.5f)
-    {
-      InputBindingKey key_to_add = key;
-      key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
-      key_to_add.invert = reverse_threshold;
-      m_new_bindings.push_back(key_to_add);
-    }
-
-    return default_action;
-  };
-
-  Host::RunOnCoreThread(
-    [input_hook = std::move(input_hook)]() mutable { InputManager::SetHook(std::move(input_hook)); });
+      InputManager::StopBindingCapture();
+    });
+  });
 }
 
 void FullscreenUI::InputBindingDialog::ClearState()
@@ -553,14 +487,12 @@ void FullscreenUI::InputBindingDialog::ClearState()
   PopupDialog::ClearState();
 
   if (m_binding_type != InputBindingInfo::Type::Unknown)
-    Host::RunOnCoreThread(&InputManager::RemoveHook);
+    Host::RunOnCoreThread(&InputManager::StopBindingCapture);
 
   m_binding_type = InputBindingInfo::Type::Unknown;
   m_binding_section = {};
   m_binding_key = {};
   m_display_name = {};
-  m_new_bindings = {};
-  m_value_ranges = {};
 }
 
 void FullscreenUI::InputBindingDialog::Draw()
@@ -576,7 +508,7 @@ void FullscreenUI::InputBindingDialog::Draw()
       // allow the dialog to fade out, but stop receiving any more events
       m_time_remaining = 0.0f;
       m_binding_type = InputBindingInfo::Type::Unknown;
-      Host::RunOnCoreThread(&InputManager::RemoveHook);
+      Host::RunOnCoreThread(&InputManager::StopBindingCapture);
       StartClose();
     }
   }
