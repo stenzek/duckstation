@@ -548,6 +548,9 @@ struct WidgetsState
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
 
+  ImGuiID toggle_button_animation_id = 0;
+  double toggle_button_animation_start_time = 0.0;
+
   // TODO: Make these dynamic rather than global state.
   OnScreenKeyboardState on_screen_keyboard;
   ChoiceDialog choice_dialog;
@@ -653,6 +656,8 @@ void FullscreenUI::ShutdownWidgets()
     s_state.choice_dialog.ClearState();
     s_state.dropdown_dialog.ClearState();
     s_state.file_selector_dialog.ClearState();
+    s_state.toggle_button_animation_id = 0;
+    s_state.toggle_button_animation_start_time = 0.0;
   }
 
   UIStyle.Font = nullptr;
@@ -3815,7 +3820,7 @@ bool FullscreenUI::ToggleButton(std::string_view title, std::string_view summary
   const MenuButtonBounds bb(title, ImVec2(toggle_size.x, toggle_size.y), summary);
 
   bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered, ImGuiButtonFlags_PressedOnClick);
+  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered, 0);
   if (!visible)
     return false;
 
@@ -3832,17 +3837,21 @@ bool FullscreenUI::ToggleButton(std::string_view title, std::string_view summary
                               ImVec2(0.0f, 0.0f), bb.summary_size.x, &bb.summary_bb);
   }
 
+  const ImGuiID id = ImGui::GetCurrentWindow()->GetID(IMSTR_START_END(title));
   if (pressed)
+  {
     *v = !*v;
+    s_state.toggle_button_animation_id = id;
+    s_state.toggle_button_animation_start_time = ImGui::GetTime();
+  }
 
   float t = *v ? 1.0f : 0.0f;
   ImDrawList* dl = ImGui::GetWindowDrawList();
-  ImGuiContext& g = *GImGui;
-  if (UIStyle.Animations &&
-      g.LastActiveId == g.CurrentWindow->GetID(IMSTR_START_END(title))) // && g.LastActiveIdTimer < ANIM_SPEED)
+  if (UIStyle.Animations && s_state.toggle_button_animation_id == id)
   {
     static constexpr const float ANIM_SPEED = 0.08f;
-    float t_anim = ImSaturate(g.LastActiveIdTimer / ANIM_SPEED);
+    float t_anim =
+      ImSaturate(static_cast<float>(ImGui::GetTime() - s_state.toggle_button_animation_start_time) / ANIM_SPEED);
     t = *v ? (t_anim) : (1.0f - t_anim);
   }
 
@@ -3878,7 +3887,7 @@ bool FullscreenUI::ThreeWayToggleButton(std::string_view title, std::string_view
   const MenuButtonBounds bb(title, ImVec2(toggle_size.x, toggle_size.y), summary);
 
   bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered, ImGuiButtonFlags_PressedOnClick);
+  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered, 0);
   if (!visible)
     return false;
 
@@ -3895,6 +3904,7 @@ bool FullscreenUI::ThreeWayToggleButton(std::string_view title, std::string_view
                               ImVec2(0.0f, 0.0f), bb.summary_size.x, &bb.summary_bb);
   }
 
+  const ImGuiID id = ImGui::GetCurrentWindow()->GetID(IMSTR_START_END(title));
   if (pressed)
   {
     if (v->has_value() && v->value())
@@ -3903,15 +3913,18 @@ bool FullscreenUI::ThreeWayToggleButton(std::string_view title, std::string_view
       v->reset();
     else
       *v = true;
+
+    s_state.toggle_button_animation_id = id;
+    s_state.toggle_button_animation_start_time = ImGui::GetTime();
   }
 
   float t = v->has_value() ? (v->value() ? 1.0f : 0.0f) : 0.5f;
   ImDrawList* dl = ImGui::GetWindowDrawList();
-  ImGuiContext& g = *GImGui;
   float ANIM_SPEED = 0.08f;
-  if (g.LastActiveId == g.CurrentWindow->GetID(IMSTR_START_END(title))) // && g.LastActiveIdTimer < ANIM_SPEED)
+  if (s_state.toggle_button_animation_id == id)
   {
-    float t_anim = ImSaturate(g.LastActiveIdTimer / ANIM_SPEED);
+    float t_anim =
+      ImSaturate(static_cast<float>(ImGui::GetTime() - s_state.toggle_button_animation_start_time) / ANIM_SPEED);
     t = (v->has_value() ? (v->value() ? std::min(t_anim + 0.5f, 1.0f) : (1.0f - t_anim)) : (t_anim * 0.5f));
   }
 
