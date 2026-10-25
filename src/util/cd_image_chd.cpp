@@ -418,7 +418,8 @@ bool CDImageCHD::Open(const char* path, Error* error)
 
 bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (index.submode == CDImage::SubchannelMode::None)
+  // Virtual pregaps aren't in the file, so they have no stored subcode.
+  if (index.submode == CDImage::SubchannelMode::None || index.file_sector_size == 0)
     return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 
   u32 hunk_offset;
