@@ -2837,7 +2837,7 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, float height, bool e
 
   *item_bb = ImRect(pos + style.FramePadding, pos + style.FramePadding + ImVec2(avail_width, height));
   const ImRect frame_bb = ImRect(pos, pos + style.FramePadding * 2.0f + ImVec2(avail_width, height));
-  return MenuButtonFrame(str_id, enabled, frame_bb, visible, hovered, 0);
+  return MenuButtonFrame(str_id, enabled, frame_bb, visible, hovered, flags);
 }
 
 void FullscreenUI::DrawWindowTitle(std::string_view title)
