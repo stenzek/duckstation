@@ -1046,7 +1046,7 @@ void SDLInputSource::SetSubclassPollDeviceList(InputSubclass subclass, const std
       }));
 
     if (cd.accel_enabled == wants_enable)
-      return;
+      continue;
 
     DEV_LOG("{} accelerometer on gamepad {}", wants_enable ? "Enabling" : "Disabling", cd.player_id);
     if (g_dyn_sdl.SDL_SetGamepadSensorEnabled(cd.gamepad, SDL_SENSOR_ACCEL, wants_enable))
