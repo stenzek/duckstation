@@ -73,6 +73,9 @@ EGLSurface OpenGLContextEGLXCB::CreatePlatformSurface(EGLConfig config, const Wi
     return EGL_NO_SURFACE;
   }
 
+  // Parent geometry may be stale if the window manager hasn't applied the new size yet.
+  subwindow.Resize(wi.surface_width, wi.surface_height);
+
   // This is hideous.. the EXT version requires a pointer to the window, whereas the base
   // version requires the window itself, casted to void*...
   surface = TryCreatePlatformSurface(config, subwindow.GetWindowPtr(), error);

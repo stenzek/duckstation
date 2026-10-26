@@ -83,8 +83,6 @@ void OpenGLContextEGLWayland::ResizeSurface(WindowInfo& wi, SurfaceHandle handle
   const auto it = m_wl_window_map.find((EGLSurface)handle);
   AssertMsg(it != m_wl_window_map.end(), "Missing WL window");
   m_wl_egl_window_resize(it->second, wi.surface_width, wi.surface_height, 0, 0);
-
-  OpenGLContextEGL::ResizeSurface(wi, handle);
 }
 
 void OpenGLContextEGLWayland::DestroyPlatformSurface(EGLSurface surface)

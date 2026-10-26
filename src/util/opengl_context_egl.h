@@ -48,7 +48,7 @@ protected:
   EGLSurface GetPBufferSurface(Error* error);
   EGLSurface GetSurfacelessSurface();
   bool CheckConfigSurfaceFormat(EGLConfig config, GPUTextureFormat format);
-  void UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) const;
+  void UpdateWindowInfoFormat(WindowInfo& wi) const;
 
   EGLDisplay m_display = EGL_NO_DISPLAY;
   EGLContext m_context = EGL_NO_CONTEXT;

@@ -284,7 +284,7 @@ OpenGLContext::SurfaceHandle OpenGLContextEGL::CreateSurface(WindowInfo& wi, Err
   if (surface == EGL_NO_SURFACE)
     return nullptr;
 
-  UpdateWindowInfoSize(wi, surface);
+  UpdateWindowInfoFormat(wi);
   return (SurfaceHandle)surface;
 }
 
@@ -306,10 +306,6 @@ void OpenGLContextEGL::DestroySurface(SurfaceHandle handle)
 
 void OpenGLContextEGL::ResizeSurface(WindowInfo& wi, SurfaceHandle handle)
 {
-  if (!handle)
-    return;
-
-  UpdateWindowInfoSize(wi, (EGLSurface)handle);
 }
 
 bool OpenGLContextEGL::SwapBuffers()
@@ -437,21 +433,8 @@ bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTextureForm
   }
 }
 
-void OpenGLContextEGL::UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) const
+void OpenGLContextEGL::UpdateWindowInfoFormat(WindowInfo& wi) const
 {
-  // Some implementations may require the size to be queried at runtime.
-  EGLint surface_width, surface_height;
-  if (eglQuerySurface(m_display, surface, EGL_WIDTH, &surface_width) &&
-      eglQuerySurface(m_display, surface, EGL_HEIGHT, &surface_height))
-  {
-    wi.surface_width = static_cast<u16>(surface_width);
-    wi.surface_height = static_cast<u16>(surface_height);
-  }
-  else
-  {
-    ERROR_LOG("eglQuerySurface() failed: 0x{:X}", eglGetError());
-  }
-
   int red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
   eglGetConfigAttrib(m_display, m_config, EGL_RED_SIZE, &red_size);
   eglGetConfigAttrib(m_display, m_config, EGL_GREEN_SIZE, &green_size);
@@ -646,7 +629,7 @@ bool OpenGLContextEGL::CreateContextAndSurface(WindowInfo& wi, SurfaceHandle* su
       return false;
     }
 
-    UpdateWindowInfoSize(wi, esurface);
+    UpdateWindowInfoFormat(wi);
     *surface = esurface;
   }
 
