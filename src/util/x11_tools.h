@@ -8,6 +8,9 @@
 #include <xcb/xcb.h>
 #include <xcb/xproto.h>
 
+#include <optional>
+#include <utility>
+
 class Error;
 struct WindowInfo;
 
@@ -41,3 +44,10 @@ private:
   u16 m_width = 0;
   u16 m_height = 0;
 };
+
+namespace X11Tools {
+
+/// Returns the size of a window as seen by the server.
+std::optional<std::pair<int, int>> GetWindowSize(xcb_connection_t* connection, xcb_window_t window);
+
+} // namespace X11Tools

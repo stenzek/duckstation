@@ -214,6 +214,11 @@ if(LINUX)
   target_link_libraries(duckstation-qt PRIVATE Qt6::DBus)
 endif()
 
+if(ENABLE_X11)
+  target_compile_definitions(duckstation-qt PRIVATE "-DENABLE_X11=1")
+  target_include_directories(duckstation-qt PRIVATE "${X11_xcb_INCLUDE_PATH}")
+endif()
+
 # Our Qt builds may have exceptions on, so force them off.
 target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS QT_NO_SIGNALS_SLOTS_KEYWORDS)
 

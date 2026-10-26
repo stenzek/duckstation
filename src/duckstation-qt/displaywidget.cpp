@@ -127,7 +127,10 @@ void DisplayWidget::setIgnoreDoubleClick(bool enabled)
 void DisplayWidget::checkForSizeChange(bool update_refresh_rate)
 {
   if (!m_window_info.has_value())
+  {
+    DEV_LOG("Ignoring display widget size change to Qt {}x{} without window info", width(), height());
     return;
+  }
 
   // avoid spamming resize events for paint events (sent on move on windows)
   const u16 prev_width = m_window_info->surface_width;

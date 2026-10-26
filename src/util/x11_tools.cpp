@@ -294,3 +294,20 @@ void X11Window::Resize(u16 width, u16 height)
     ERROR_LOG(error.GetDescription());
   }
 }
+
+std::optional<std::pair<int, int>> X11Tools::GetWindowSize(xcb_connection_t* connection, xcb_window_t window)
+{
+  if (!OpenXcb(nullptr))
+    return std::nullopt;
+
+  xcb_generic_error_t* xerror = nullptr;
+  XCBPointer<xcb_get_geometry_reply_t> gwa(
+    s_locals.xcb_get_geometry_reply(connection, s_locals.xcb_get_geometry(connection, window), &xerror));
+  if (!gwa)
+  {
+    free(xerror);
+    return std::nullopt;
+  }
+
+  return std::make_pair(static_cast<int>(gwa->width), static_cast<int>(gwa->height));
+}

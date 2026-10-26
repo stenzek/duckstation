@@ -36,6 +36,10 @@
 #include <QtDBus/QDBusReply>
 #include <qpa/qplatformnativeinterface.h>
 
+#ifdef ENABLE_X11
+#include "util/x11_tools.h"
+#endif
+
 #else
 
 #include <qpa/qplatformnativeinterface.h>
@@ -183,6 +187,24 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
     }
 
     return;
+  }
+#elif defined(ENABLE_X11)
+  // On X11, Qt's size is updated as soon as a resize is requested, and rounded from its logical size. The server's
+  // size, which is what EGL/Vulkan see, is applied later by the window manager, and can be rounded differently with
+  // fractional scaling. So use the server's size.
+  if (wi->type == WindowInfoType::XCB || wi->type == WindowInfoType::Xlib)
+  {
+    if (const auto* x11_app = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())
+    {
+      if (const std::optional<std::pair<int, int>> size =
+            X11Tools::GetWindowSize(x11_app->connection(), static_cast<xcb_window_t>(widget->winId())))
+      {
+        wi->surface_width = static_cast<u16>(size->first);
+        wi->surface_height = static_cast<u16>(size->second);
+        wi->surface_scale = static_cast<float>(widget->devicePixelRatio());
+        return;
+      }
+    }
   }
 #endif
 
