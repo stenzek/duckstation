@@ -342,8 +342,9 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   // Prefer the window size, the same as GL, and to avoid the system-level downsampling with fractional scaling on
   // MacOS. It still has to be within the surface's limits, which on X11 and Win32 means currentExtent. On X11, that
   // comes from the server, which lags behind the window manager applying the requested size (e.g. when leaving
-  // fullscreen). The swap chain becomes suboptimal or out of date once it catches up, which clears the size so we use
-  // currentExtent, and the caller is told via GPUPresentResult::SwapChainResized.
+  // fullscreen). Not all drivers report the swap chain as suboptimal or out of date once it catches up, so the host
+  // sends the size again. If they do, the size is cleared so we use currentExtent, and the caller is told via
+  // GPUPresentResult::SwapChainResized.
   VkExtent2D size = {m_window_info.surface_width, m_window_info.surface_height};
   if (size.width == 0 || size.height == 0)
     size = surface_caps.surfaceCapabilities.currentExtent;

@@ -66,6 +66,9 @@ Q_SIGNALS:
 
 protected:
   bool event(QEvent* event) override;
+#ifdef ENABLE_X11
+  bool nativeEvent(const QByteArray& event_type, void* message, qintptr* result) override;
+#endif
 
 private:
   void connectScreenChangedEvent();

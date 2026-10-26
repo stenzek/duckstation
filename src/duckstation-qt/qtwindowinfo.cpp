@@ -193,7 +193,7 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
 #elif defined(ENABLE_X11)
   // On X11, Qt's size is updated as soon as a resize is requested, and rounded from its logical size. The server's
   // size, which is what EGL/Vulkan see, is applied later by the window manager, and can be rounded differently with
-  // fractional scaling. So use the server's size.
+  // fractional scaling. So use the server's size, DisplayWidget picks up changes to it from configure events.
   if (wi->type == WindowInfoType::XCB || wi->type == WindowInfoType::Xlib)
   {
     if (const auto* x11_app = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())

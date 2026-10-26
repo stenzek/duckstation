@@ -35,6 +35,10 @@
 #include "common/windows_headers.h"
 #endif
 
+#ifdef ENABLE_X11
+#include <xcb/xcb.h>
+#endif
+
 using namespace Qt::StringLiterals;
 
 LOG_CHANNEL(Host);
@@ -581,6 +585,33 @@ bool DisplayWidget::event(QEvent* event)
       return QWidget::event(event);
   }
 }
+
+#ifdef ENABLE_X11
+
+bool DisplayWidget::nativeEvent(const QByteArray& event_type, void* message, qintptr* result)
+{
+  // On X11, the window info has the server's size, see QtUtils::UpdateSurfaceSize(). The window manager can change it
+  // at any time, e.g. some time after leaving fullscreen. Qt doesn't send a resize event if its own size doesn't
+  // change, because it already assumed the new size, or it rounds to the same logical size with fractional scaling.
+  if (event_type == "xcb_generic_event_t"_ba &&
+      (static_cast<const xcb_generic_event_t*>(message)->response_type & 0x7f) == XCB_CONFIGURE_NOTIFY)
+  {
+    const xcb_configure_notify_event_t* const ev = static_cast<const xcb_configure_notify_event_t*>(message);
+    if (m_window_info.has_value() &&
+        (ev->width != m_window_info->surface_width || ev->height != m_window_info->surface_height))
+    {
+      DEV_LOG("X11 window resized to {}x{}", ev->width, ev->height);
+      m_window_info->surface_width = ev->width;
+      m_window_info->surface_height = ev->height;
+      emit windowResizedEvent(m_window_info->surface_width, m_window_info->surface_height, m_window_info->surface_scale,
+                              m_window_info->surface_refresh_rate);
+    }
+  }
+
+  return QWidget::nativeEvent(event_type, message, result);
+}
+
+#endif
 
 DisplayContainer::DisplayContainer() : QStackedWidget(nullptr)
 {
