@@ -382,7 +382,7 @@ void QtHost::AdjustQtEnvironmentVariables()
 bool QtHost::IsRunningOnWayland()
 {
   const QString platform_name = QGuiApplication::platformName();
-  return (platform_name == "wayland"_L1);
+  return (platform_name.startsWith("wayland"_L1));
 }
 
 void QtHost::ApplyWaylandWorkarounds()

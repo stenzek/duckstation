@@ -87,7 +87,7 @@ WindowInfoType QtUtils::GetWindowInfoType()
     // See the comment below for information about this bullshit.
     return WindowInfoType::XCB;
   }
-  else if (platform_name == "wayland"_L1)
+  else if (platform_name.startsWith("wayland"_L1))
   {
     return WindowInfoType::Wayland;
   }
@@ -130,7 +130,7 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
     }
     wi.window_handle = reinterpret_cast<void*>(widget->winId());
   }
-  else if (platform_name == QStringLiteral("wayland"))
+  else if (platform_name.startsWith("wayland"_L1))
   {
     wi.type = WindowInfoType::Wayland;
     wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
