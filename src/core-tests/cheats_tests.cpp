@@ -1,13 +1,17 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "core/bus.h"
 #include "core/cheats_private.h"
+#include "core/cpu_code_cache.h"
+#include "core/cpu_core_private.h"
 #include "core/settings.h"
 
 #include "common/error.h"
 #include "common/scoped_guard.h"
 
 #include <array>
+#include <cstring>
 #include <gtest/gtest.h>
 
 namespace {
@@ -32,6 +36,20 @@ static void ExpectAssemblyInstructions(const Cheats::AssemblyCheatCode& code,
     EXPECT_EQ(code.GetInstructions()[i].new_value, expected[i].second) << i;
     EXPECT_EQ(code.GetInstructions()[i].old_value, Cheats::AssemblyCheatCode::UNINITIALIZED_OLD_VALUE) << i;
   }
+}
+
+static std::unique_ptr<Cheats::GamesharkCheatCode> ParseGamesharkCode(std::string_view input, Error* error)
+{
+  std::unique_ptr<Cheats::CheatCode> base = Cheats::ParseCode(MakeMetadata(Cheats::CodeType::Gameshark), input, error);
+  return std::unique_ptr<Cheats::GamesharkCheatCode>(static_cast<Cheats::GamesharkCheatCode*>(base.release()));
+}
+
+template<size_t N>
+static std::array<u32, N> GetBlockPayloadWords(const Cheats::GamesharkCheatCode& code)
+{
+  std::array<u32, N> words;
+  std::memcpy(words.data(), &code.GetInstructions()[1], sizeof(words));
+  return words;
 }
 
 } // namespace
@@ -353,5 +371,317 @@ TEST(Cheats, ParseAssemblyCodeErrors)
     Error error;
     EXPECT_EQ(Cheats::ParseCode(MakeMetadata(Cheats::CodeType::Assembly), input, &error), nullptr) << input;
     EXPECT_TRUE(error.IsValid()) << input;
+  }
+}
+
+TEST(Cheats, ParseGamesharkBlockWrite)
+{
+  Error error;
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode("A9000100 00000003\n"
+                                                                        "11111111 22222222\n"
+                                                                        "33333333 44444444\n",
+                                                                        &error);
+  ASSERT_NE(code, nullptr) << error.GetDescription();
+  ASSERT_EQ(code->GetInstructions().size(), 3u);
+  EXPECT_EQ(code->GetInstructions()[0].first, 0xA9000100u);
+  EXPECT_EQ((GetBlockPayloadWords<4>(*code)), (std::array<u32, 4>{0x11111111u, 0x22222222u, 0x33333333u, 0u}));
+}
+
+TEST(Cheats, ParseGamesharkBlockWriteIfMatch)
+{
+  for (const std::string_view input : {"AB000100 00000002\nC0C0C0C0 A0A0A0A0\nC1C1C1C1 A1A1A1A1\n",
+                                       "AA000100 00000002\nC0C0C0C0 A0A0A0A0\nC1C1C1C1 A1A1A1A1\n"})
+  {
+    Error error;
+    std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode(input, &error);
+    ASSERT_NE(code, nullptr) << error.GetDescription();
+    ASSERT_EQ(code->GetInstructions().size(), 3u);
+    EXPECT_EQ((GetBlockPayloadWords<4>(*code)),
+              (std::array<u32, 4>{0xC0C0C0C0u, 0xC1C1C1C1u, 0xA0A0A0A0u, 0xA1A1A1A1u}))
+      << input;
+  }
+}
+
+TEST(Cheats, ParseGamesharkBlockWriteAfterMultiLineCode)
+{
+  // F4 data line looks like a block write header, which would be incomplete.
+  Error error;
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode("F4000180 00000190\n"
+                                                                        "A9000000 00000010\n"
+                                                                        "00000000 00000000\n"
+                                                                        "00000000 00000000\n"
+                                                                        "00000000 00000000\n"
+                                                                        "A9000100 00000001\n"
+                                                                        "12345678 00000000\n",
+                                                                        &error);
+  ASSERT_NE(code, nullptr) << error.GetDescription();
+  ASSERT_EQ(code->GetInstructions().size(), 7u);
+  EXPECT_EQ(code->GetInstructions()[1].first, 0xA9000000u);
+  EXPECT_EQ(code->GetInstructions()[6].bits, UINT64_C(0x12345678));
+}
+
+TEST(Cheats, ParseGamesharkBlockWriteErrors)
+{
+  static constexpr std::array<std::string_view, 5> cases = {
+    "A9000100 00000000\n",
+    "A9000100 00000003\n11111111 22222222\n",
+    "AB000100 00000002\nC0C0C0C0 A0A0A0A0\n",
+    "AB000100 00000002\nC0C0C0C0 0000000?\n11111111 22222222\n",
+    "A9000100 0000000?\n11111111 22222222\n",
+  };
+  for (const std::string_view input : cases)
+  {
+    Error error;
+    EXPECT_EQ(ParseGamesharkCode(input, &error), nullptr) << input;
+    EXPECT_TRUE(error.IsValid()) << input;
+  }
+}
+
+namespace {
+
+class CheatsApply : public testing::Test
+{
+protected:
+  static void SetUpTestSuite()
+  {
+    g_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
+
+    Error error;
+    ASSERT_TRUE(CPU::CodeCache::ProcessStartup(&error)) << error.GetDescription();
+    ASSERT_TRUE(Bus::AllocateMemory(false, &error)) << error.GetDescription();
+    Bus::Initialize();
+    CPU::Initialize();
+    Bus::Reset();
+    CPU::Reset();
+  }
+
+  static void TearDownTestSuite()
+  {
+    CPU::CodeCache::Shutdown();
+    CPU::Shutdown();
+    Bus::Shutdown();
+    Bus::ReleaseMemory();
+    CPU::CodeCache::ProcessShutdown();
+  }
+
+  void SetUp() override { std::memset(g_bus.unprotected_ram, 0, g_bus.ram_size); }
+
+  static std::unique_ptr<Cheats::GamesharkCheatCode> Parse(std::string_view input)
+  {
+    Error error;
+    std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode(input, &error);
+    EXPECT_NE(code, nullptr) << error.GetDescription();
+    return code;
+  }
+
+  static u32 ReadWord(u32 address)
+  {
+    u32 value;
+    std::memcpy(&value, &g_bus.unprotected_ram[address], sizeof(value));
+    return value;
+  }
+
+  static void WriteWord(u32 address, u32 value) { std::memcpy(&g_bus.unprotected_ram[address], &value, sizeof(value)); }
+};
+
+} // namespace
+
+TEST_F(CheatsApply, BlockWrite)
+{
+  WriteWord(0x100C, 0xDEADBEEF);
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("A9001000 00000003\n"
+                                                           "3C028001 8C420010\n"
+                                                           "24420001 00000000\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0x3C028001u);
+  EXPECT_EQ(ReadWord(0x1004), 0x8C420010u);
+  EXPECT_EQ(ReadWord(0x1008), 0x24420001u);
+  EXPECT_EQ(ReadWord(0x100C), 0xDEADBEEFu);
+}
+
+TEST_F(CheatsApply, BlockWriteOutsideRAM)
+{
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("A91FFFFC 00000002\n"
+                                                           "11111111 22222222\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1FFFFC), 0u);
+  EXPECT_EQ(ReadWord(0), 0u);
+}
+
+TEST_F(CheatsApply, BlockWriteIfMatch)
+{
+  WriteWord(0x2000, 0x0C02A4B6);
+  WriteWord(0x2004, 0x24020001);
+  WriteWord(0x2008, 0xAE020011);
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("AB002000 00000003\n"
+                                                           "0C02A4B6 00000000\n"
+                                                           "24020001 24020000\n"
+                                                           "AE020010 AE000010\n");
+  ASSERT_NE(code, nullptr);
+  EXPECT_FALSE(code->HasRestorableOnDisableEffects());
+
+  // partial match, nothing should be written
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x2000), 0x0C02A4B6u);
+  EXPECT_EQ(ReadWord(0x2004), 0x24020001u);
+  EXPECT_EQ(ReadWord(0x2008), 0xAE020011u);
+
+  WriteWord(0x2008, 0xAE020010);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x2000), 0x00000000u);
+  EXPECT_EQ(ReadWord(0x2004), 0x24020000u);
+  EXPECT_EQ(ReadWord(0x2008), 0xAE000010u);
+
+  // disabling shouldn't restore
+  code->ApplyOnDisable(nullptr);
+  EXPECT_EQ(ReadWord(0x2000), 0x00000000u);
+}
+
+TEST_F(CheatsApply, BlockWriteIfMatchInvalidatesICache)
+{
+  const ScopedGuard clear_icache([] { CPU::ClearICache(); });
+  for (const std::string_view input :
+       {"A900200C 00000002\n24020000 AE000010\n", "AA00200C 00000002\n24020001 24020000\nAE020010 AE000010\n",
+        "AB00200C 00000002\n24020001 24020000\nAE020010 AE000010\n"})
+  {
+    SCOPED_TRACE(input);
+    for (const u32 cached_alias : {0u, 0x80000000u, 0x00200000u, 0x80200000u})
+    {
+      SCOPED_TRACE(cached_alias);
+      CPU::ClearICache();
+      WriteWord(0x200C, 0x24020001);
+      WriteWord(0x2010, 0xAE020010);
+      std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse(input);
+      ASSERT_NE(code, nullptr);
+
+      // Fetch both cache lines before applying the patch.
+      CPU::SetPC(cached_alias | 0x200C);
+      ASSERT_EQ(CPU::g_state.current_instruction.bits, 0x24020001u);
+      CPU::SetPC(cached_alias | 0x2010);
+      ASSERT_EQ(CPU::g_state.current_instruction.bits, 0xAE020010u);
+
+      code->Apply();
+      EXPECT_EQ(ReadWord(0x200C), 0x24020000u);
+      EXPECT_EQ(ReadWord(0x2010), 0xAE000010u);
+
+      CPU::SetPC(cached_alias | 0x200C);
+      EXPECT_EQ(CPU::g_state.current_instruction.bits, 0x24020000u);
+      CPU::SetPC(cached_alias | 0x2010);
+      EXPECT_EQ(CPU::g_state.current_instruction.bits, 0xAE000010u);
+    }
+  }
+}
+
+TEST_F(CheatsApply, BlockWriteIfMatchWithRestore)
+{
+  WriteWord(0x2000, 0x11111111);
+  WriteWord(0x2004, 0x22222222);
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("AA002000 00000002\n"
+                                                           "11111111 AAAAAAAA\n"
+                                                           "22222222 BBBBBBBB\n");
+  ASSERT_NE(code, nullptr);
+  EXPECT_TRUE(code->HasRestorableOnDisableEffects());
+
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x2000), 0xAAAAAAAAu);
+  EXPECT_EQ(ReadWord(0x2004), 0xBBBBBBBBu);
+
+  Cheats::RollbackLog rollback;
+  code->ApplyOnDisable(&rollback);
+  EXPECT_EQ(ReadWord(0x2000), 0x11111111u);
+  EXPECT_EQ(ReadWord(0x2004), 0x22222222u);
+  ASSERT_EQ(rollback.size(), 2u);
+  EXPECT_EQ(rollback[0].size, MemoryAccessSize::Word);
+  EXPECT_EQ(rollback[0].address, 0x2000u);
+  EXPECT_EQ(rollback[0].value, 0xAAAAAAAAu);
+  EXPECT_EQ(rollback[1].address, 0x2004u);
+  EXPECT_EQ(rollback[1].value, 0xBBBBBBBBu);
+
+  Cheats::ReapplyOnDisableCodes(rollback);
+  EXPECT_EQ(ReadWord(0x2000), 0xAAAAAAAAu);
+  EXPECT_EQ(ReadWord(0x2004), 0xBBBBBBBBu);
+}
+
+TEST_F(CheatsApply, BlockWriteSkippedByConditional)
+{
+  // Payload packs to 30000000 00000055, which would write to 0 if executed as an instruction.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("D0003000 1234\n"
+                                                           "A9001000 00000002\n"
+                                                           "00000055 30000000\n"
+                                                           "90001010 00000099\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 0x99u);
+
+  g_bus.unprotected_ram[0x3000] = 0x34;
+  g_bus.unprotected_ram[0x3001] = 0x12;
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0x55u);
+  EXPECT_EQ(ReadWord(0x1004), 0x30000000u);
+}
+
+TEST_F(CheatsApply, BlockWriteSkippedByBlockConditional)
+{
+  // Payload packs to the 00000000 FFFF separator.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("C0003000 1234\n"
+                                                           "A9001000 00000002\n"
+                                                           "0000FFFF 00000000\n"
+                                                           "90001020 00000077\n"
+                                                           "00000000 FFFF\n"
+                                                           "90001030 00000088\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1020), 0u);
+  EXPECT_EQ(ReadWord(0x1030), 0x88u);
+}
+
+TEST_F(CheatsApply, FindAndReplacePayloadSkippedByBlockConditional)
+{
+  // An F4 data word that resembles a block header must not skip the separator.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("C0003000 1234\n"
+                                                           "F4000180 00000190\n"
+                                                           "A9000000 00000010\n"
+                                                           "00000000 00000000\n"
+                                                           "00000000 00000000\n"
+                                                           "00000000 00000000\n"
+                                                           "00000000 FFFF\n"
+                                                           "90001030 00000088\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1030), 0x88u);
+}
+
+TEST_F(CheatsApply, FindAndReplacePayloadSkippedByConditional)
+{
+  // A false D0 must skip the entire F4, including data that resembles an A9 header.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("D0003000 1234\n"
+                                                           "F4000180 00000190\n"
+                                                           "A9001000 00000002\n"
+                                                           "00000055 00000066\n"
+                                                           "00000000 00000000\n"
+                                                           "00000000 00000000\n"
+                                                           "90001030 00000088\n");
+  ASSERT_NE(code, nullptr);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1004), 0u);
+  EXPECT_EQ(ReadWord(0x1030), 0x88u);
+}
+
+TEST(Cheats, BlockWritePayloadDoesNotHaveRestorableEffects)
+{
+  for (const std::string_view input :
+       {"A9000100 00000002\n00000000 AA000000\n", "AB000100 00000002\n00000000 00000000\nAA000000 00000000\n"})
+  {
+    SCOPED_TRACE(input);
+    Error error;
+    std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode(input, &error);
+    ASSERT_NE(code, nullptr) << error.GetDescription();
+    EXPECT_FALSE(code->HasRestorableOnDisableEffects());
   }
 }

@@ -3096,6 +3096,27 @@ void CPU::InvalidICacheRange(VirtualMemoryAddress start, VirtualMemoryAddress en
   }
 }
 
+void CPU::InvalidateICacheForRAM(PhysicalMemoryAddress address, u32 size)
+{
+  // Tags are virtual addresses, so compare RAM offsets to catch every segment and mirror.
+  // Aliases are a multiple of the cache size apart, so only the lines the range indexes to can hold it.
+  const u32 start = address & g_bus.ram_mask;
+  const u32 end = start + size;
+  const u32 first_line = start / ICACHE_LINE_SIZE;
+  const u32 line_count = std::min((end - 1) / ICACHE_LINE_SIZE - first_line + 1, static_cast<u32>(ICACHE_LINES));
+  for (u32 i = 0; i < line_count; i++)
+  {
+    u32& tag = g_state.icache_tags[(first_line + i) % ICACHE_LINES];
+    const u32 tag_address = tag & ICACHE_TAG_ADDRESS_MASK & KSEG_MASK;
+    if (tag_address >= Bus::RAM_MIRROR_END)
+      continue;
+
+    const u32 line_start = tag_address & g_bus.ram_mask;
+    if (line_start < end && (line_start + ICACHE_LINE_SIZE) > start)
+      tag = ICACHE_INVALID_BITS;
+  }
+}
+
 namespace CPU {
 ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
 {

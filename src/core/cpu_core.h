@@ -138,6 +138,7 @@ bool DoState(StateWrapper& sw);
 void ClearICache();
 void InvalidateICacheAt(VirtualMemoryAddress address);
 void InvalidICacheRange(VirtualMemoryAddress start, VirtualMemoryAddress end);
+void InvalidateICacheForRAM(PhysicalMemoryAddress address, u32 size);
 CPUExecutionMode GetCurrentExecutionMode();
 bool UpdateDebugDispatcherFlag();
 void UpdateMemoryPointers();

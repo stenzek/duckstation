@@ -7,6 +7,7 @@
 #include "cheats_private.h"
 #include "controller.h"
 #include "core.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "game_database.h"
@@ -2330,7 +2331,74 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Co
     code.reset();
   }
 
+  if (code && !code->DeinterleaveBlockInstructions(error))
+    code.reset();
+
   return code;
+}
+
+bool Cheats::GamesharkCheatCode::DeinterleaveBlockInstructions(Error* error)
+{
+  // Repack block write payloads into a contiguous stream of words, so they can be compared/copied directly.
+  const u32 count = static_cast<u32>(instructions.size());
+  for (u32 index = 0; index < count;)
+  {
+    const Instruction& inst = instructions[index];
+    switch (inst.code)
+    {
+      case InstructionCode::ExtBlockWrite:
+      case InstructionCode::ExtBlockWriteIfMatchWithRestore:
+      case InstructionCode::ExtBlockWriteIfMatch:
+      {
+        const u32 num_words = inst.value32;
+        const u32 payload_length = GetBlockPayloadLength(inst);
+        if (num_words == 0 || payload_length > (count - index - 1))
+        {
+          Error::SetStringFmt(error, "Incomplete block write instruction: {:08X} {:08X}", inst.first, inst.second);
+          return false;
+        }
+        for (const auto& [option_index, bitpos_start, bit_count] : option_instruction_values)
+        {
+          if (option_index >= index && option_index <= (index + payload_length))
+          {
+            Error::SetStringFmt(error, "Options are not supported in block write instruction: {:08X} {:08X}",
+                                inst.first, inst.second);
+            return false;
+          }
+        }
+
+        std::vector<u32> words;
+        words.reserve(payload_length * 2);
+        if (inst.code == InstructionCode::ExtBlockWrite)
+        {
+          for (u32 i = 0; i < payload_length; i++)
+          {
+            words.push_back(instructions[index + 1 + i].first);
+            words.push_back(instructions[index + 1 + i].second);
+          }
+          if (num_words & 1) // BlockWrite has even operands, but can have an odd word count.
+            words.back() = 0;
+        }
+        else
+        {
+          // compare words, then write words
+          for (u32 i = 0; i < payload_length; i++)
+            words.push_back(instructions[index + 1 + i].first);
+          for (u32 i = 0; i < payload_length; i++)
+            words.push_back(instructions[index + 1 + i].second);
+        }
+        std::memcpy(&instructions[index + 1], words.data(), words.size() * sizeof(u32));
+        index += 1 + payload_length;
+      }
+      break;
+
+      default:
+        index += 1 + GetPayloadLength(inst);
+        break;
+    }
+  }
+
+  return true;
 }
 
 static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
@@ -2364,6 +2432,27 @@ NEVER_INLINE static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
     CPU::SafeWriteMemoryHalfWord(address, value);
   else // if constexpr (std::is_same_v<UnsignedType, u32>)
     CPU::SafeWriteMemoryWord(address, value);
+}
+
+static u8* GetBlockRAMPointer(PhysicalMemoryAddress address, u32 size)
+{
+  // Must be entirely within RAM, no mirror wraparound.
+  if (address >= Bus::RAM_MIRROR_END || ((address & g_bus.ram_mask) + size) > g_bus.ram_size) [[unlikely]]
+    return nullptr;
+
+  return &g_bus.unprotected_ram[address & g_bus.ram_mask];
+}
+
+static void InvalidateCodeRange(PhysicalMemoryAddress address, u32 size)
+{
+  CPU::InvalidateICacheForRAM(address, size);
+
+  const u32 last_page_index = Bus::GetRAMCodePageIndex(address + size - 1);
+  for (u32 page_index = Bus::GetRAMCodePageIndex(address); page_index <= last_page_index; page_index++)
+  {
+    if (Bus::IsRAMCodePage(page_index))
+      CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+  }
 }
 
 NEVER_INLINE static u32 GetControllerButtonBits()
@@ -2483,6 +2572,40 @@ bool Cheats::GamesharkCheatCode::IsConditionalInstruction(InstructionCode code)
   }
 }
 
+u32 Cheats::GamesharkCheatCode::GetBlockPayloadLength(const Instruction& inst)
+{
+  switch (inst.code)
+  {
+    case InstructionCode::ExtBlockWrite:
+      return (inst.value32 / 2) + (inst.value32 & 1);
+
+    case InstructionCode::ExtBlockWriteIfMatchWithRestore:
+    case InstructionCode::ExtBlockWriteIfMatch:
+      return inst.value32;
+
+    default:
+      return 0;
+  }
+}
+
+u32 Cheats::GamesharkCheatCode::GetPayloadLength(const Instruction& inst)
+{
+  switch (inst.code)
+  {
+    case InstructionCode::ExtConstantForceRange16:
+    case InstructionCode::Slide:
+    case InstructionCode::ExtImprovedSlide:
+    case InstructionCode::MemoryCopy:
+      return 1;
+
+    case InstructionCode::ExtFindAndReplace:
+      return 4;
+
+    default:
+      return GetBlockPayloadLength(inst);
+  }
+}
+
 u32 Cheats::GamesharkCheatCode::GetNextNonConditionalInstruction(u32 index) const
 {
   const u32 count = static_cast<u32>(instructions.size());
@@ -2491,7 +2614,7 @@ u32 Cheats::GamesharkCheatCode::GetNextNonConditionalInstruction(u32 index) cons
     if (!IsConditionalInstruction(instructions[index].code))
     {
       // we've found the first non conditional instruction in the chain, so skip over the instruction following it
-      return index + 1;
+      return index + 1 + GetPayloadLength(instructions[index]);
     }
   }
 
@@ -2693,7 +2816,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         if (value == comparevalue)
         {
           DoMemoryWrite<u16>(inst.address, newvalue);
-          CPU::InvalidateICacheAt(inst.address);
+          CPU::InvalidateICacheForRAM(inst.address, sizeof(u16));
         }
 
         index++;
@@ -2708,7 +2831,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         if (value == comparevalue)
         {
           DoMemoryWrite<u8>(inst.address, newvalue);
-          CPU::InvalidateICacheAt(inst.address);
+          CPU::InvalidateICacheForRAM(inst.address, sizeof(u8));
         }
 
         index++;
@@ -2898,6 +3021,62 @@ void Cheats::GamesharkCheatCode::Apply() const
           }
         }
         index += 5;
+      }
+      break;
+
+      case InstructionCode::ExtBlockWrite:
+      {
+        if (GetBlockPayloadLength(inst) > (count - index - 1)) [[unlikely]]
+        {
+          ERROR_LOG("Incomplete ExtBlockWrite instruction");
+          return;
+        }
+
+        const u32 size = inst.value32 * sizeof(u32);
+        const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
+        {
+          if (std::memcmp(ram, data, size) != 0)
+          {
+            std::memcpy(ram, data, size);
+            InvalidateCodeRange(inst.address, size);
+          }
+        }
+        else
+        {
+          ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
+        }
+
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
+      case InstructionCode::ExtBlockWriteIfMatchWithRestore:
+      case InstructionCode::ExtBlockWriteIfMatch:
+      {
+        if (GetBlockPayloadLength(inst) > (count - index - 1)) [[unlikely]]
+        {
+          ERROR_LOG("Incomplete ExtBlockWriteIfMatch instruction");
+          return;
+        }
+
+        const u32 size = inst.value32 * sizeof(u32);
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        const u8* write_data = compare_data + size;
+        if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
+        {
+          if (std::memcmp(ram, compare_data, size) == 0)
+          {
+            std::memcpy(ram, write_data, size);
+            InvalidateCodeRange(inst.address, size);
+          }
+        }
+        else
+        {
+          ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
+        }
+
+        index += 1 + GetBlockPayloadLength(inst);
       }
       break;
 
@@ -3442,7 +3621,9 @@ void Cheats::GamesharkCheatCode::Apply() const
                 constexpr u64 elseif_value = UINT64_C(0x00000000E15E1F00);
                 while (index < count)
                 {
-                  const u64 bits = instructions[index++].bits;
+                  const Instruction& skipped = instructions[index++];
+                  const u64 bits = skipped.bits;
+                  index += GetPayloadLength(skipped);
                   if (bits == separator_value)
                   {
                     if (index >= count) [[unlikely]]
@@ -3496,9 +3677,12 @@ void Cheats::GamesharkCheatCode::Apply() const
         while (index < count)
         {
           // we don't want to execute the separator instruction
-          const u64 bits = instructions[index++].bits;
-          if (bits == separator_value)
+          const Instruction& skipped = instructions[index++];
+          if (skipped.bits == separator_value)
             break;
+
+          // don't treat multi-line instruction data as instructions
+          index += GetPayloadLength(skipped);
         }
       }
       break;
@@ -3559,9 +3743,12 @@ void Cheats::GamesharkCheatCode::Apply() const
         while (index < count)
         {
           // we don't want to execute the separator instruction
-          const u64 bits = instructions[index++].bits;
-          if (bits == separator_value)
+          const Instruction& skipped = instructions[index++];
+          if (skipped.bits == separator_value)
             break;
+
+          // don't treat multi-line instruction data as instructions
+          index += GetPayloadLength(skipped);
         }
       }
       break;
@@ -4050,9 +4237,12 @@ void Cheats::GamesharkCheatCode::Apply() const
         while (index < count)
         {
           // we don't want to execute the separator instruction
-          const u64 bits = instructions[index++].bits;
-          if (bits == separator_value)
+          const Instruction& skipped = instructions[index++];
+          if (skipped.bits == separator_value)
             break;
+
+          // don't treat multi-line instruction data as instructions
+          index += GetPayloadLength(skipped);
         }
       }
       break;
@@ -4371,6 +4561,10 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
       case InstructionCode::ExtFindAndReplace:
         index += 5;
         break;
+      case InstructionCode::ExtBlockWrite:
+      case InstructionCode::ExtBlockWriteIfMatch:
+        index += 1 + GetBlockPayloadLength(inst);
+        break;
         // for conditionals, we don't want to skip over in case it changed at some point
       case InstructionCode::ExtCompareEqual32:
       case InstructionCode::ExtCompareNotEqual32:
@@ -4414,7 +4608,7 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
             rollback_list->emplace_back(MemoryAccessSize::HalfWord, inst.address, newvalue);
 
           DoMemoryWrite<u16>(inst.address, comparevalue);
-          CPU::InvalidateICacheAt(inst.address);
+          CPU::InvalidateICacheForRAM(inst.address, sizeof(u16));
         }
 
         index++;
@@ -4432,10 +4626,32 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
             rollback_list->emplace_back(MemoryAccessSize::Byte, inst.address, newvalue);
 
           DoMemoryWrite<u8>(inst.address, comparevalue);
-          CPU::InvalidateICacheAt(inst.address);
+          CPU::InvalidateICacheForRAM(inst.address, sizeof(u8));
         }
 
         index++;
+      }
+      break;
+
+      case InstructionCode::ExtBlockWriteIfMatchWithRestore:
+      {
+        const u32 size = inst.value32 * sizeof(u32);
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        const u8* write_data = compare_data + size;
+        if (u8* ram = GetBlockRAMPointer(inst.address, size); ram && std::memcmp(ram, write_data, size) == 0)
+        {
+          for (u32 offset = 0; rollback_list && offset < size; offset += sizeof(u32))
+          {
+            u32 value;
+            std::memcpy(&value, write_data + offset, sizeof(value));
+            rollback_list->emplace_back(MemoryAccessSize::Word, inst.address + offset, value);
+          }
+
+          std::memcpy(ram, compare_data, size);
+          InvalidateCodeRange(inst.address, size);
+        }
+
+        index += 1 + GetBlockPayloadLength(inst);
       }
       break;
 
@@ -4468,13 +4684,18 @@ void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
 
 bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
 {
-  for (const Instruction& inst : instructions)
+  const u32 count = static_cast<u32>(instructions.size());
+  for (u32 index = 0; index < count;)
   {
+    const Instruction& inst = instructions[index];
     if (inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore16 ||
-        inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore8)
+        inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore8 ||
+        inst.code == InstructionCode::ExtBlockWriteIfMatchWithRestore)
     {
       return true;
     }
+
+    index += 1 + GetPayloadLength(inst);
   }
 
   return false;
