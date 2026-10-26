@@ -45,6 +45,10 @@
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <cfgmgr32.h>
+#include <initguid.h> // Must come before hidclass.h/ntddmou.h to define the GUIDs.
+
+#include <hidclass.h>
+#include <ntddmou.h>
 #endif
 
 LOG_CHANNEL(InputManager);
@@ -2668,20 +2672,11 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
 {
   // Threading: Only called in ReloadSourcesAndBindings() on core thread.
 #ifdef _WIN32
-  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
-  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
-  if (UpdateInputSourceState(sources_si, settings_lock, InputSourceType::RawInput,
-                             &InputSource::CreateWin32RawInputSource))
-  {
-    s_state.raw_input_enabled.store(
-      static_cast<bool>(s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)]),
-      std::memory_order_release);
-  }
-
   // Request device notifications when using raw input/dinput, as we need to manually handle device changes.
-  // XInput doesn't need them, it polls disconnected slots periodically.
-  if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
-      s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)])
+  // XInput doesn't need them, it polls disconnected slots periodically. Register before creating the sources,
+  // so that we don't miss any devices that are connected between the initial enumeration and registration.
+  if (IsInputSourceEnabled(sources_si, InputSourceType::DInput) ||
+      IsInputSourceEnabled(sources_si, InputSourceType::RawInput))
   {
     if (!s_state.device_notification_handle)
       RegisterDeviceNotificationHandle();
@@ -2690,6 +2685,16 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
   {
     if (s_state.device_notification_handle)
       UnregisterDeviceNotificationHandle();
+  }
+
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
+  UpdateInputSourceState(sources_si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
+  if (UpdateInputSourceState(sources_si, settings_lock, InputSourceType::RawInput,
+                             &InputSource::CreateWin32RawInputSource))
+  {
+    s_state.raw_input_enabled.store(
+      static_cast<bool>(s_state.input_sources[static_cast<size_t>(InputSourceType::RawInput)]),
+      std::memory_order_release);
   }
 #endif
   UpdateInputSourceState(sources_si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
@@ -2760,6 +2765,13 @@ DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Co
   if (Action != CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL && Action != CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL)
     return ERROR_SUCCESS;
 
+  // We're notified for every interface class, but only HID (dinput) and mouse (raw input) interfaces are relevant.
+  if (EventData->u.DeviceInterface.ClassGuid != GUID_DEVINTERFACE_HID &&
+      EventData->u.DeviceInterface.ClassGuid != GUID_DEVINTERFACE_MOUSE)
+  {
+    return ERROR_SUCCESS;
+  }
+
   // This comes through on a thread pool worker, so we need to queue the reload on the core thread.
   // We tend to get a few of these in quick succession, so try to batch the reloads together.
   if (!s_state.device_notification_reload_pending.exchange(true, std::memory_order_acq_rel))
@@ -2789,12 +2801,15 @@ void InputManager::RegisterDeviceNotificationHandle()
   const CONFIGRET cr = CM_Register_Notification(&filter, nullptr, &InputManager::DeviceNotificationCallback,
                                                 &s_state.device_notification_handle);
   if (cr != CR_SUCCESS)
+  {
     ERROR_LOG("CM_Register_Notification() failed: {}", cr);
+    s_state.device_notification_handle = nullptr;
+  }
 }
 
 void InputManager::UnregisterDeviceNotificationHandle()
 {
-  // Threading: Only called by core thread in ReloadSources().
+  // Threading: Only called by core thread in ReloadSources() and CloseSources().
   if (!s_state.device_notification_handle)
     return;
 
