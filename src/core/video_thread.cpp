@@ -1393,6 +1393,14 @@ void VideoThread::ResizeRenderWindow(s32 width, s32 height, float scale, float r
 {
   DebugAssert(Host::IsOnCoreThread());
 
+  // The client area is 0x0 while minimized on Windows. DXGI would resize to 8x8, and Vulkan can't create
+  // a swap chain at all, so keep the current size until the window is restored.
+  if (width <= 0 || height <= 0)
+  {
+    DEV_LOG("Ignoring render window resize to {}x{}", width, height);
+    return;
+  }
+
   const u16 clamped_width = static_cast<u16>(std::clamp<s32>(width, 1, std::numeric_limits<u16>::max()));
   const u16 clamped_height = static_cast<u16>(std::clamp<s32>(height, 1, std::numeric_limits<u16>::max()));
   const bool size_changed = (s_state.render_window_info.surface_width != clamped_width ||
