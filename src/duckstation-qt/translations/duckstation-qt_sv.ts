@@ -9273,11 +9273,11 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
-        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Automatiskt använder inställningen i speldatabasen.</translation>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Med alternativet Automatisk används inställningen i speldatabasen.</translation>
     </message>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
-        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Automatiskt använder inställningen i speldatabasen.</translation>
+        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Med alternativet Automatisk används inställningen i speldatabasen.</translation>
     </message>
 </context>
 <context>
@@ -11684,11 +11684,11 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
-        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Krävs för att PGXP ska kunna korrigera bildens instabilitet i vissa spel, men försämrar prestandan avsevärt. Automatiskt aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Krävs för att PGXP ska kunna korrigera bildens instabilitet i vissa spel, men försämrar prestandan avsevärt. Alternativet Automatisk aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
-        <translation>Använder hörnpunkternas skärmpositioner för att bestämma exakta positioner i stället för att följa minnesåtkomster. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger vanligtvis ingen fördel.&lt;/strong&gt; Automatiskt aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
+        <translation>Använder hörnpunkternas skärmpositioner för att bestämma exakta positioner i stället för att följa minnesåtkomster. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger vanligtvis ingen fördel.&lt;/strong&gt; Alternativet Automatisk aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
     </message>
     <message>
         <source>Removes the scale of each object's transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
@@ -25582,7 +25582,7 @@ Spel med flera spår i bin-format kräver en cuesheet (.cue) för att starta.</t
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
         <comment>settings_summary_pgxp_cpu</comment>
-        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Automatiskt använder inställningen i speldatabasen.</translation>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Med alternativet Automatisk används inställningen i speldatabasen.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -25617,7 +25617,7 @@ Spel med flera spår i bin-format kräver en cuesheet (.cue) för att starta.</t
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
         <comment>settings_summary_pgxp_vertex_cache</comment>
-        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Automatiskt använder inställningen i speldatabasen.</translation>
+        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Med alternativet Automatisk används inställningen i speldatabasen.</translation>
     </message>
 </context>
 <context>
