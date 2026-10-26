@@ -1438,6 +1438,33 @@ void VideoThread::ResizeRenderWindowOnThread(u32 width, u32 height, float scale,
   swap_chain->SetRefreshRate(refresh_rate);
 
   RenderWindowResizedOnThread();
+
+  // The swap chain can end up a different size to what was requested, e.g. clamped to the X11 server's size, or this
+  // was a stale size from MainSwapChainResized(). Tell the core thread the actual size so it doesn't get stuck.
+  if (swap_chain->GetWidth() != width || swap_chain->GetHeight() != height)
+    MainSwapChainResized();
+}
+
+void VideoThread::MainSwapChainResized()
+{
+  DebugAssert(IsOnThread());
+
+  const GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  const WindowInfo& wi = swap_chain->GetWindowInfo();
+  DEV_LOG("Main swap chain resized to {}x{}", wi.surface_width, wi.surface_height);
+
+  // Update ImGui now so the next frame is drawn at the new size. Can't use RenderWindowResizedOnThread(), since it
+  // presents if paused, and we're in the middle of presenting.
+  ImGuiManager::WindowResized(swap_chain->GetFormat(), static_cast<float>(std::max(swap_chain->GetWidth(), 1u)),
+                              static_cast<float>(std::max(swap_chain->GetHeight(), 1u)));
+
+  // Then go through the core thread, so it updates the window size and anything that depends on it. That comes back
+  // to RenderWindowResizedOnThread(), which re-presents if paused. Only the size comes from the swap chain, the host
+  // may have changed the scale or refresh rate since, and ours would be stale.
+  Host::RunOnCoreThread([width = wi.surface_width, height = wi.surface_height]() {
+    ResizeRenderWindow(width, height, s_state.render_window_info.surface_scale,
+                       s_state.render_window_info.surface_refresh_rate);
+  });
 }
 
 void VideoThread::RecreateRenderWindow()
@@ -1565,6 +1592,7 @@ void VideoThread::RenderWindowResizedOnThread()
   // our imgui stuff can't cope with 0x0/hidden windows
   const float f_width = static_cast<float>(std::max(swap_chain->GetWidth(), 1u));
   const float f_height = static_cast<float>(std::max(swap_chain->GetHeight(), 1u));
+  DEV_LOG("Swap chain size is {}x{}", swap_chain->GetWidth(), swap_chain->GetHeight());
   ImGuiManager::WindowResized(swap_chain->GetFormat(), f_width, f_height);
 
   // If we're paused, re-present the current frame at the new window size.

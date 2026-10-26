@@ -116,6 +116,7 @@ enum class GPUPresentResult : u8
 {
   OK,
   SkipPresent,
+  SwapChainResized, // Swap chain changed size without being asked to. From BeginPresent(), the frame is skipped.
   ExclusiveFullscreenLost,
   DeviceLost,
 };

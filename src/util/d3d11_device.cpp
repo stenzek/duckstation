@@ -784,7 +784,7 @@ GPUPresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   return GPUPresentResult::OK;
 }
 
-void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
+GPUPresentResult D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
   DebugAssert(!explicit_present && present_time == 0);
@@ -805,9 +805,10 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
     StartTimestampQuery();
 
   TrimTexturePool();
+  return GPUPresentResult::OK;
 }
 
-void D3D11Device::SubmitPresent(GPUSwapChain* swap_chain)
+GPUPresentResult D3D11Device::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

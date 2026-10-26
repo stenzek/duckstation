@@ -7012,12 +7012,15 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
     }
   }
 
-  if (g_gpu_device->BeginPresent(swap_chain) == GPUPresentResult::OK)
+  GPUPresentResult pres = g_gpu_device->BeginPresent(swap_chain);
+  if (pres == GPUPresentResult::OK)
   {
     ImGuiManager::RenderDrawLists(&draw_data, swap_chain->GetWidth(), swap_chain->GetHeight(),
                                   swap_chain->GetPreRotation());
-    g_gpu_device->EndPresent(swap_chain, false);
+    pres = g_gpu_device->EndPresent(swap_chain, false);
   }
+  if (pres == GPUPresentResult::SwapChainResized)
+    VideoThread::MainSwapChainResized();
 }
 
 void FullscreenUI::UpdateLoadingScreenRunIdle()

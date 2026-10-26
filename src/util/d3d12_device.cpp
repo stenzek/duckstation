@@ -1265,7 +1265,7 @@ GPUPresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   return GPUPresentResult::OK;
 }
 
-void D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
+GPUPresentResult D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   DebugAssert(present_time == 0);
@@ -1286,21 +1286,21 @@ void D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   SubmitCommandList(false);
   TrimTexturePool();
 
-  if (!explicit_present)
-    SubmitPresent(swap_chain);
+  return explicit_present ? GPUPresentResult::OK : SubmitPresent(swap_chain);
 }
 
-void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
+GPUPresentResult D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
 {
   D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   if (m_device_was_lost) [[unlikely]]
-    return;
+    return GPUPresentResult::DeviceLost;
 
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
     (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
   D3DCommon::PresentSwapChain(SC->GetSwapChain(), SC->GetFrameLatencyWaitable(), SC->GetFullscreenOutput(),
                               sync_interval, flags);
+  return GPUPresentResult::OK;
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

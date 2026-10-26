@@ -114,8 +114,8 @@ public:
                 u32 group_size_z) override;
 
   GPUPresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
-  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
-  void SubmitPresent(GPUSwapChain* swap_chain) override;
+  GPUPresentResult EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  GPUPresentResult SubmitPresent(GPUSwapChain* swap_chain) override;
 
   void FlushPipelineCache() override;
 

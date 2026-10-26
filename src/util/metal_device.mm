@@ -2477,7 +2477,7 @@ GPUPresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_c
   }
 }
 
-void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
+GPUPresentResult MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   DebugAssert(!explicit_present);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
@@ -2501,9 +2501,10 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
 
   SubmitCommandBuffer();
   TrimTexturePool();
+  return GPUPresentResult::OK;
 }
 
-void MetalDevice::SubmitPresent(GPUSwapChain* swap_chain)
+GPUPresentResult MetalDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

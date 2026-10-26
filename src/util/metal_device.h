@@ -314,8 +314,8 @@ public:
   float GetAndResetAccumulatedGPUTime() override;
 
   GPUPresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
-  void EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 present_time) override;
-  void SubmitPresent(GPUSwapChain* swap_chain) override;
+  GPUPresentResult EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 present_time) override;
+  GPUPresentResult SubmitPresent(GPUSwapChain* swap_chain) override;
 
   void WaitForFenceCounter(u64 counter);
 

@@ -2082,25 +2082,32 @@ GPUPresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_
     return GPUPresentResult::DeviceLost;
 
   VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
+  const u32 prev_width = SC->GetWidth();
+  const u32 prev_height = SC->GetHeight();
   VkResult res = SC->AcquireNextImage(true);
 
   // This can happen when multiple resize events happen in quick succession.
   // In this case, just wait until the next frame to try again.
-  if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+  // If the swap chain was recreated with a different size, skip this frame too, it was drawn for the old size.
+  // The acquired image is kept for the next frame.
+  const bool resized = (SC->GetWidth() != prev_width || SC->GetHeight() != prev_height);
+  if ((res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) || resized)
   {
     // Still submit the command buffer, otherwise we'll end up with several frames waiting.
     SubmitCommandBuffer(false);
     TrimTexturePool();
-    return GPUPresentResult::SkipPresent;
+    return resized ? GPUPresentResult::SwapChainResized : GPUPresentResult::SkipPresent;
   }
 
   BeginSwapChainRenderPass(SC, clear_color);
   return GPUPresentResult::OK;
 }
 
-void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
+GPUPresentResult VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
+  const u32 prev_width = SC->GetWidth();
+  const u32 prev_height = SC->GetHeight();
 
   DebugAssert(present_time == 0);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
@@ -2116,15 +2123,24 @@ void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   EndAndSubmitCommandBuffer(false, SC, explicit_present);
   InvalidateCachedState();
   TrimTexturePool();
+
+  // Presenting can recreate the swap chain if it's suboptimal or out of date.
+  return (SC->GetWidth() != prev_width || SC->GetHeight() != prev_height) ? GPUPresentResult::SwapChainResized :
+                                                                            GPUPresentResult::OK;
 }
 
-void VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
+GPUPresentResult VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   DebugAssert(swap_chain);
   if (m_device_was_lost) [[unlikely]]
-    return;
+    return GPUPresentResult::DeviceLost;
 
-  QueuePresent(static_cast<VulkanSwapChain*>(swap_chain));
+  VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
+  const u32 prev_width = SC->GetWidth();
+  const u32 prev_height = SC->GetHeight();
+  QueuePresent(SC);
+  return (SC->GetWidth() != prev_width || SC->GetHeight() != prev_height) ? GPUPresentResult::SwapChainResized :
+                                                                            GPUPresentResult::OK;
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

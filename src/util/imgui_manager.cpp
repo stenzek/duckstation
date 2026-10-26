@@ -2293,12 +2293,17 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
 
   CreateDrawLists();
 
-  const GPUPresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
+  GPUPresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
   if (pres == GPUPresentResult::OK)
   {
     RenderDrawLists(ImGui::GetDrawData(), state->swap_chain->GetWidth(), state->swap_chain->GetHeight(),
                     state->swap_chain->GetPreRotation());
-    g_gpu_device->EndPresent(state->swap_chain.get(), false);
+    pres = g_gpu_device->EndPresent(state->swap_chain.get(), false);
+  }
+  if (pres == GPUPresentResult::SwapChainResized)
+  {
+    state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
+      ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
   }
 
   ImGui::SetCurrentContext(s_state.imgui_context);

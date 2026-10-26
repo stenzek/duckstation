@@ -156,8 +156,8 @@ public:
   float GetAndResetAccumulatedGPUTime() override;
 
   GPUPresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
-  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
-  void SubmitPresent(GPUSwapChain* swap_chain) override;
+  GPUPresentResult EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  GPUPresentResult SubmitPresent(GPUSwapChain* swap_chain) override;
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }

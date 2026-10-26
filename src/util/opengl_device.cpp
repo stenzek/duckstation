@@ -873,7 +873,7 @@ GPUPresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_
   return GPUPresentResult::OK;
 }
 
-void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
+GPUPresentResult OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_current_fbo == 0);
@@ -890,9 +890,10 @@ void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
     StartTimestampQuery();
 
   TrimTexturePool();
+  return GPUPresentResult::OK;
 }
 
-void OpenGLDevice::SubmitPresent(GPUSwapChain* swap_chain)
+GPUPresentResult OpenGLDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

@@ -339,16 +339,14 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count,
           PresentModeToString(present_mode.value()));
 
-  // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here determines
-  // window size? We want to avoid the system-level downsampling with fractional scaling on MacOS too.
-  VkExtent2D size = surface_caps.surfaceCapabilities.currentExtent;
-#ifndef __APPLE__
-  if (size.width == UINT32_MAX)
-#endif
-  {
-    size.width = m_window_info.surface_width;
-    size.height = m_window_info.surface_height;
-  }
+  // Prefer the window size, the same as GL, and to avoid the system-level downsampling with fractional scaling on
+  // MacOS. It still has to be within the surface's limits, which on X11 and Win32 means currentExtent. On X11, that
+  // comes from the server, which lags behind the window manager applying the requested size (e.g. when leaving
+  // fullscreen). The swap chain becomes suboptimal or out of date once it catches up, which clears the size so we use
+  // currentExtent, and the caller is told via GPUPresentResult::SwapChainResized.
+  VkExtent2D size = {m_window_info.surface_width, m_window_info.surface_height};
+  if (size.width == 0 || size.height == 0)
+    size = surface_caps.surfaceCapabilities.currentExtent;
   size.width = std::clamp(size.width, surface_caps.surfaceCapabilities.minImageExtent.width,
                           surface_caps.surfaceCapabilities.maxImageExtent.width);
   size.height = std::clamp(size.height, surface_caps.surfaceCapabilities.minImageExtent.height,
@@ -735,6 +733,16 @@ bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res)
   if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
   {
     DEV_LOG("Swap chain is {}, recreating swap chain", (res == VK_SUBOPTIMAL_KHR) ? "suboptimal" : "out of date");
+
+    // The window was probably resized without us being told, e.g. the window manager applying a requested size late
+    // on X11. Use the surface's size instead. Wayland doesn't have one, the swap chain determines the window size.
+#ifdef __linux__
+    if (m_window_info.type != WindowInfoType::Wayland)
+#endif
+    {
+      m_window_info.surface_width = 0;
+      m_window_info.surface_height = 0;
+    }
 
     VulkanDevice& dev = VulkanDevice::GetInstance();
 

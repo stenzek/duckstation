@@ -1679,7 +1679,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     }
 
     Timer::Value present_start_time = Timer::GetCurrentValue();
-    g_gpu_device->EndPresent(swap_chain, explicit_present, timed_present ? present_time : 0);
+    pres = g_gpu_device->EndPresent(swap_chain, explicit_present, timed_present ? present_time : 0);
 
     if (g_gpu_device->IsGPUTimingEnabled())
       PerformanceCounters::AccumulateGPUTime();
@@ -1688,7 +1688,7 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
     {
       Timer::SleepUntil(present_time, true);
       present_start_time = Timer::GetCurrentValue();
-      g_gpu_device->SubmitPresent(swap_chain);
+      pres = g_gpu_device->SubmitPresent(swap_chain);
     }
 
     const Timer::Value current_time = Timer::GetCurrentValue();
@@ -1718,7 +1718,9 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
       }
     }
   }
-  else
+
+  // Can be from beginning or ending the present.
+  if (pres != GPUPresentResult::OK)
   {
     if (pres == GPUPresentResult::DeviceLost) [[unlikely]]
     {
@@ -1732,6 +1734,9 @@ bool VideoPresenter::PresentFrame(GPUBackend* backend, u64 present_time)
       WARNING_LOG("Lost exclusive fullscreen.");
       Host::RunOnCoreThread([]() { VideoThread::SetFullscreen(false); });
     }
+
+    if (pres == GPUPresentResult::SwapChainResized)
+      VideoThread::MainSwapChainResized();
 
     g_gpu_device->FlushCommands();
   }
