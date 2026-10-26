@@ -5689,17 +5689,20 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi,
     {
       const auto lock = Achievements::GetLock();
 
-      if (!Achievements::IsLoggedIn() && Achievements::IsLoggedInOrLoggingIn())
-        tstr = FSUI_VSTR("Logging In...");
-
-      const auto [points, casual_points] = Achievements::GetLoggedInUserPoints();
-      sstr.format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)"), points, casual_points);
-      if (sstr.empty())
+      if (!Achievements::IsLoggedIn())
       {
+        if (Achievements::IsLoggedInOrLoggingIn())
+          tstr = FSUI_VSTR("Logging In...");
+
         if (logged_in)
           sstr = FSUI_VSTR("Enable Achievements to see your user summary.");
         else
           sstr = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
+      }
+      else
+      {
+        const auto [points, casual_points] = Achievements::GetLoggedInUserPoints();
+        sstr.format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)"), points, casual_points);
       }
 
       RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, pos,

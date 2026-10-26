@@ -1497,7 +1497,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     if (Achievements::IsActive())
     {
       const auto lock = Achievements::GetLock();
-      if (const std::string& username = Achievements::GetLoggedInUserName(); !username.empty())
+      if (Achievements::IsLoggedIn())
       {
         // Drawn right-to-left from the time.
         float right_x = time_pos.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING);
@@ -1527,7 +1527,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
                     IMSTR_START_END(trophy_icon));
 
         right_x -= LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING);
-        draw_right_aligned(username, text_color);
+        draw_right_aligned(Achievements::GetLoggedInUserName(), text_color);
 
         if (const std::string& badge_path = Achievements::GetLoggedInUserIconURL(); !badge_path.empty())
         {
