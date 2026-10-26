@@ -2600,6 +2600,20 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
 
 Om du försöker använda denna fuskkod kommer den inte att fungera som förväntat. Vill du fortsätta?</translation>
     </message>
+    <message>
+        <source>Patch Editor</source>
+        <translation>Patchredigerare</translation>
+    </message>
+    <message>
+        <source>Failed to save code:
+%1</source>
+        <translation>Kunde inte spara koden:
+%1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ingen</translation>
+    </message>
 </context>
 <context>
     <name>Cheats</name>
@@ -9229,6 +9243,42 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
         <source>Shows the number of the current frame in the top-right corner of the display.</source>
         <translation>Visar numret på den aktuella bildrutan i övre högra hörnet av skärmen.</translation>
     </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <translation>Tillämpar ändringar i den visade bildrutebufferten mitt i en bildruta. Krävs för delad skärm i vissa spel, men orsakar bildrivning i andra.</translation>
+    </message>
+    <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>Flyttar senare polygoner närmare kameran, i miljondelar av djupet. Minskar flimmer i dekaler.</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>Rensa bindning</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Djupförskjutning</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Avläsning mitt i bildrutan</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalisera djupskala</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object's transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>Tar bort skalan för varje objekts transformation från djupvärdena. Åtgärdar geometri som saknas i vissa spel, men orsakar problem i andra.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Automatiskt använder inställningen i speldatabasen.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Automatiskt använder inställningen i speldatabasen.</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -9460,6 +9510,38 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Edit Choices...</source>
         <translation>Redigera val...</translation>
+    </message>
+    <message>
+        <source>Setting Overrides</source>
+        <translation>Åsidosatta inställningar</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>Bildförhållande:</translation>
+    </message>
+    <message>
+        <source>CPU Overclock:</source>
+        <translation>CPU-överklockning:</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Inaktivera bredbildsrendering</translation>
+    </message>
+    <message>
+        <source>Enable 8MB RAM</source>
+        <translation>Aktivera 8 MB RAM</translation>
+    </message>
+    <message>
+        <source>Disallow in Hardcore Mode</source>
+        <translation>Tillåt inte i hardcore-läge</translation>
+    </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>Tvinga PGXP att bevara projektionens precision</translation>
     </message>
 </context>
 <context>
@@ -10107,6 +10189,28 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <source>This may result in dropped controller inputs.</source>
         <translation>Detta kan resultera i förlorade handkontrollerinmatningar.</translation>
     </message>
+    <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Normalisera PGXP-djup</translation>
+    </message>
+    <message>
+        <source>Force Mid-Frame Scanout</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Tvinga avläsning mitt i bildrutan</translation>
+    </message>
+    <message>
+        <source>PGXP Vertex Cache is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>PGXP-hörnpunktscache krävs för detta spel, men är inaktiverad. Det kan orsaka renderingsfel.</translation>
+    </message>
+    <message>
+        <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
+        <translation>PGXP:s CPU-läge krävs för detta spel, men är inaktiverat. Det kan orsaka renderingsfel.</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP-djupförskjutning</translation>
+    </message>
 </context>
 <context>
     <name>GameList</name>
@@ -10427,6 +10531,18 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>&lt;br&gt;&lt;strong&gt;Not permitted in RetroAchievements hardcore mode.&lt;/strong&gt;</source>
         <translation>&lt;br&gt;&lt;strong&gt;Inte tillåtet i RetroAchievements hardcore-läge.&lt;/strong&gt;</translation>
     </message>
+    <message>
+        <source>Edit Patch</source>
+        <translation>Redigera patch</translation>
+    </message>
+    <message>
+        <source>Remove Patch</source>
+        <translation>Ta bort patch</translation>
+    </message>
+    <message>
+        <source>Option:</source>
+        <translation>Alternativ:</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchSettingsWidget</name>
@@ -10441,6 +10557,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>No patches are available for this game.</source>
         <translation>Det finns inga patchar tillgängliga för detta spel.</translation>
+    </message>
+    <message>
+        <source>Add Patch</source>
+        <translation>Lägg till patch</translation>
     </message>
 </context>
 <context>
@@ -11525,6 +11645,54 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
         <translation>Beskär hörnpunktsfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band. Detta är ett kännetecken för de ”gamla” GPU:erna som finns i tidiga konsolmodeller.</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <translation>Avläsning mitt i bildrutan</translation>
+    </message>
+    <message>
+        <source>Depth Bias:</source>
+        <translation>Djupförskjutning:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>Återställ djupförskjutning</translation>
+    </message>
+    <message>
+        <source>CPU Mode:</source>
+        <translation>CPU-läge:</translation>
+    </message>
+    <message>
+        <source>Vertex Cache:</source>
+        <translation>Hörnpunktscache:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalisera djupskala</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame, instead of at the start of the next frame. Some games rely on this for split-screen effects, but it causes tearing in games that switch framebuffers mid-frame, so only enable it for games that need it.</source>
+        <translation>Tillämpar ändringar i den visade bildrutebufferten mitt i en bildruta i stället för i början av nästa. Vissa spel behöver detta för delad skärm, men det orsakar bildrivning i spel som byter bildrutebuffert mitt i en bildruta. Aktivera det därför bara för spel som behöver det.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Djupförskjutning</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>Flyttar varje polygon närmare kameran än de polygoner som ritades före den, i miljondelar av djupet. Högre värden minskar flimmer i dekaler och skuggor, men kan göra att polygoner syns genom ytor framför dem.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Krävs för att PGXP ska kunna korrigera bildens instabilitet i vissa spel, men försämrar prestandan avsevärt. Automatiskt aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
+    </message>
+    <message>
+        <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
+        <translation>Använder hörnpunkternas skärmpositioner för att bestämma exakta positioner i stället för att följa minnesåtkomster. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger vanligtvis ingen fördel.&lt;/strong&gt; Automatiskt aktiverar det bara för spel som behöver det enligt speldatabasen.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object's transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>Tar bort skalan för varje objekts transformation från djupvärdena. Åtgärdar geometri som saknas på grund av djupbufferten i spel som minskar transformationerna för avlägsna objekt, men orsakar problem i spel som skalar modeller via transformationen. Speldatabasen aktiverar detta automatiskt vid behov.</translation>
     </message>
 </context>
 <context>
@@ -14423,6 +14591,10 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     <message>
         <source>Refresh Achievement Progress</source>
         <translation>Uppdatera prestationsförlopp</translation>
+    </message>
+    <message>
+        <source>TTY Window</source>
+        <translation>TTY-fönster</translation>
     </message>
 </context>
 <context>
@@ -17906,6 +18078,21 @@ Vill du skapa denna katalog?</translation>
         <source>Time Stretch</source>
         <comment>AudioStretchMode</comment>
         <translation>Tidsutsträckning</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Automatisk</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Aktiverad</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>SettingOverrideMode</comment>
+        <translation>Inaktiverad</translation>
     </message>
 </context>
 <context>
@@ -25102,6 +25289,358 @@ Spel med flera spår i bin-format kräver en cuesheet (.cue) för att starta.</t
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <comment>game_replace_cover_message</comment>
         <translation>En omslagsbild för detta spel finns redan. Vill du ersätta den?</translation>
+    </message>
+    <message>
+        <source>Confirm Close Game</source>
+        <comment>settings_confirm_power_off</comment>
+        <translation>Bekräfta stängning av spel</translation>
+    </message>
+    <message>
+        <source>Asks for confirmation before closing a game from the pause menu.</source>
+        <comment>settings_summary_confirm_power_off</comment>
+        <translation>Ber om bekräftelse innan ett spel stängs från pausmenyn.</translation>
+    </message>
+    <message>
+        <source>Mid-Frame Scanout</source>
+        <comment>settings_mid_frame_scanout</comment>
+        <translation>Avläsning mitt i bildrutan</translation>
+    </message>
+    <message>
+        <source>Applies changes to the displayed framebuffer partway through a frame. Needed for split-screen effects in some games, but causes tearing in others.</source>
+        <comment>settings_summary_mid_frame_scanout</comment>
+        <translation>Tillämpar ändringar i den visade bildrutebufferten mitt i en bildruta. Krävs för delad skärm i vissa spel, men orsakar bildrivning i andra.</translation>
+    </message>
+    <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>Lokalt spellager</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>Det lokala spellagret är till för enheter som inte stöder val av spelmappar via systemets filväljare (Storage Access Framework). Spel kan kopieras hit med Lägg till filer eller placeras i mappen med en filhanterare eller via USB.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>Sök igenom lokalt spellager</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>Söker efter spel i denna mapp och dess undermappar.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>Plats</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>Lägg till filer</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image's .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>Kopierar de valda filerna till det lokala spellagret. Välj skivavbildens .cue-fil tillsammans med dess .bin-filer.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>Filer</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>Det finns inga filer i det lokala spellagret.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>Kopierar %1$s (%2$d av %3$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s finns redan i det lokala spellagret. Vill du skriva över den?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>Fler filåtgärder</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>Ta bort fil</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>Är du säker på att du vill ta bort %s? Detta kan inte ångras.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>Meddelanden på skärmen</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>Överlägg på skärmen</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <comment>settings_game_list_icons</comment>
+        <translation>Listikoner</translation>
+    </message>
+    <message>
+        <source>Selects the image shown next to each game in the game list.</source>
+        <comment>settings_summary_game_list_icons</comment>
+        <translation>Väljer bilden som visas bredvid varje spel i spellistan.</translation>
+    </message>
+    <message>
+        <source>Confirm Close</source>
+        <comment>emulation_menu_confirm_close_title</comment>
+        <translation>Bekräfta stängning</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to close the current game?</source>
+        <comment>emulation_menu_confirm_close_message</comment>
+        <translation>Är du säker på att du vill stänga det aktuella spelet?</translation>
+    </message>
+    <message>
+        <source>Resume from here next time</source>
+        <comment>emulation_menu_confirm_close_save_state</comment>
+        <translation>Fortsätt härifrån nästa gång</translation>
+    </message>
+    <message>
+        <source>Port %1$s</source>
+        <comment>controller_port_format</comment>
+        <translation>Port %1$s</translation>
+    </message>
+    <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>Växla programvarurendering</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Sparar tillståndet regelbundet så att du kan spola tillbaka om du gör misstag under spelet.</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>settings_tab_memory_cards</comment>
+        <translation>Minneskort</translation>
+    </message>
+    <message>
+        <source>Create New Card</source>
+        <comment>memory_card_create_new_card</comment>
+        <translation>Skapa nytt kort</translation>
+    </message>
+    <message>
+        <source>Creates a new, formatted memory card.</source>
+        <comment>memory_card_summary_create_new_card</comment>
+        <translation>Skapar ett nytt, formaterat minneskort.</translation>
+    </message>
+    <message>
+        <source>Import Memory Card</source>
+        <comment>memory_card_import</comment>
+        <translation>Importera minneskort</translation>
+    </message>
+    <message>
+        <source>Imports a memory card from storage, converting it if necessary.</source>
+        <comment>memory_card_summary_import</comment>
+        <translation>Importerar ett minneskort från lagringsutrymmet och konverterar det vid behov.</translation>
+    </message>
+    <message>
+        <source>Memory card '%s' imported.</source>
+        <comment>memory_card_imported</comment>
+        <translation>Minneskortet '%s' har importerats.</translation>
+    </message>
+    <message>
+        <source>A memory card named '%s' already exists. Do you want to overwrite it? Any existing data will be lost.</source>
+        <comment>memory_card_import_already_exists</comment>
+        <translation>Ett minneskort med namnet '%s' finns redan. Vill du skriva över det? Alla befintliga data går förlorade.</translation>
+    </message>
+    <message>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <comment>settings_memory_card_use_playlist_title</comment>
+        <translation>Använd ett minneskort för spel med flera skivor</translation>
+    </message>
+    <message>
+        <source>When playing a multi-disc game with per-game (title) memory cards, uses a single card for all discs. If disabled, each disc uses a separate card.</source>
+        <comment>settings_summary_memory_card_use_playlist_title</comment>
+        <translation>Använder ett gemensamt minneskort för alla skivor när ett spel med flera skivor spelas med separata minneskort per spel. Om alternativet är inaktiverat används ett separat kort för varje skiva.</translation>
+    </message>
+    <message>
+        <source>The number of memory cards that can be used depends on multitap and game support.</source>
+        <comment>settings_memory_card_multitap_message</comment>
+        <translation>Antalet minneskort som kan användas beror på stödet för multitap och på spelet.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Current Multitap Mode: %1$s (%2$d Cards)</source>
+        <comment>settings_memory_card_multitap_mode</comment>
+        <extracomment>Android plural quantities: one="Current Multitap Mode: %1$s (%2$d Card)"; other="Current Multitap Mode: %1$s (%2$d Cards)"</extracomment>
+        <translation>
+            <numerusform>Aktuellt multitap-läge: %1$s (%2$d kort)</numerusform>
+            <numerusform>Aktuellt multitap-läge: %1$s (%2$d kort)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Memory Card Type</source>
+        <comment>settings_memory_card_type</comment>
+        <translation>Typ av minneskort</translation>
+    </message>
+    <message>
+        <source>Selects which memory card image is inserted in this slot.</source>
+        <comment>settings_summary_memory_card_type</comment>
+        <translation>Väljer vilken minneskortsavbild som sätts in i denna plats.</translation>
+    </message>
+    <message>
+        <source>Shared Card Name</source>
+        <comment>settings_memory_card_name</comment>
+        <translation>Namn på delat kort</translation>
+    </message>
+    <message>
+        <source>Selects the card used when the type is shared between all games.</source>
+        <comment>settings_summary_memory_card_name</comment>
+        <translation>Väljer kortet som används när typen delas mellan alla spel.</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <comment>touchscreen_controller_rewind</comment>
+        <translation>Spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Left Button</source>
+        <comment>touchscreen_controller_mouse_left</comment>
+        <translation>Vänster knapp</translation>
+    </message>
+    <message>
+        <source>Right Button</source>
+        <comment>touchscreen_controller_mouse_right</comment>
+        <translation>Höger knapp</translation>
+    </message>
+    <message>
+        <source>Scaling</source>
+        <comment>game_list_background_mode</comment>
+        <translation>Skalning</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <comment>game_list_background_mode_fit</comment>
+        <translation>Anpassa</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <comment>game_list_background_mode_fill</comment>
+        <translation>Fyll</translation>
+    </message>
+    <message>
+        <source>Stretch</source>
+        <comment>game_list_background_mode_stretch</comment>
+        <translation>Sträck ut</translation>
+    </message>
+    <message>
+        <source>Mouse</source>
+        <comment>touchscreen_layout_mouse</comment>
+        <translation>Mus</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <comment>preference_reset_to_default</comment>
+        <translation>Återställ till standardvärdet</translation>
+    </message>
+    <message>
+        <source>Current Value</source>
+        <comment>preference_reset_current_value</comment>
+        <translation>Aktuellt värde</translation>
+    </message>
+    <message>
+        <source>Default Value</source>
+        <comment>preference_reset_default_value</comment>
+        <translation>Standardvärde</translation>
+    </message>
+    <message>
+        <source>Global Setting</source>
+        <comment>preference_reset_global_value</comment>
+        <translation>Global inställning</translation>
+    </message>
+    <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>Byt till nästa skiva vid stopp</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>Byter automatiskt till nästa skiva när spelet stoppar cd-rom-enheten. Fungerar inte för alla spel.</translation>
+    </message>
+    <message>
+        <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_cpu</comment>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Automatiskt använder inställningen i speldatabasen.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>Tröskelvärde för rensning av djupbufferten</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>Bestämmer hur mycket djupet ska öka för att djupbufferten ska rensas. Kan avhjälpa djuprelaterade problem i vissa spel, men är fortfarande en tillfällig lösning.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>Djupförskjutning</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>Förskjuter varje polygon mot kameran för att minska flimmer i dekaler och skuggor. Ett för högt värde kan visa dolda ytor.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>Normalisera djupskala</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>Åtgärdar geometri som saknas på grund av djupbufferten i vissa spel, men orsakar problem i andra.</translation>
+    </message>
+    <message>
+        <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <comment>settings_summary_pgxp_vertex_cache</comment>
+        <translation>Använder skärmpositioner för att bestämma PGXP-data. Kan förbättra bilden i vissa spel. Automatiskt använder inställningen i speldatabasen.</translation>
+    </message>
+</context>
+<context>
+    <name>TTYWindow</name>
+    <message>
+        <source>TTY Window</source>
+        <translation>TTY-fönster</translation>
+    </message>
+    <message>
+        <source>TTY Window - %1 [%2]</source>
+        <translation>TTY-fönster – %1 [%2]</translation>
+    </message>
+    <message>
+        <source>&amp;Settings</source>
+        <translation>I&amp;nställningar</translation>
+    </message>
+    <message>
+        <source>Enable BIOS &amp;TTY Logging</source>
+        <translation>Aktivera &amp;TTY-loggning för BIOS</translation>
+    </message>
+    <message>
+        <source>Show &amp;Timestamps</source>
+        <translation>Visa &amp;tidsstämplar</translation>
     </message>
 </context>
 </TS>
