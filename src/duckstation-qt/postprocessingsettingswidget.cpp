@@ -21,9 +21,12 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QVBoxLayout>
 
 #include "fmt/format.h"
 
@@ -31,17 +34,59 @@
 
 using namespace Qt::StringLiterals;
 
-PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QTabWidget(parent)
+PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
-  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME),
-         tr("Display"));
-  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME),
-         tr("Internal"));
-  addTab(new PostProcessingOverlayConfigWidget(dialog, this), tr("Border Overlay"));
-  setDocumentMode(true);
+  QVBoxLayout* const layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+
+  QGroupBox* const box = new QGroupBox(this);
+  QHBoxLayout* const box_layout = new QHBoxLayout(box);
+  layout->addWidget(box);
+
+  QLabel* const icon = new QLabel(box);
+  icon->setFixedSize(32, 32);
+  icon->setPixmap(QIcon(u":/icons/monochrome/svg/sun-fill.svg"_s).pixmap(32));
+  box_layout->addWidget(icon, 0, Qt::AlignTop);
+
+  m_info_label = new QLabel(box);
+  m_info_label->setWordWrap(true);
+  box_layout->addWidget(m_info_label, 1);
+
+  QTabWidget* const tabs = new QTabWidget(this);
+  tabs->addTab(new PostProcessingChainConfigWidget(dialog, tabs, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME),
+               tr("Display"));
+  tabs->addTab(new PostProcessingChainConfigWidget(dialog, tabs, PostProcessing::Config::INTERNAL_CHAIN_SECTION_NAME),
+               tr("Internal"));
+  tabs->addTab(new PostProcessingOverlayConfigWidget(dialog, tabs), tr("Border Overlay"));
+  tabs->setDocumentMode(true);
+  layout->addWidget(tabs);
+
+  connect(tabs, &QTabWidget::currentChanged, this, &PostProcessingSettingsWidget::onCurrentTabChanged);
+  onCurrentTabChanged(tabs->currentIndex());
 }
 
 PostProcessingSettingsWidget::~PostProcessingSettingsWidget() = default;
+
+void PostProcessingSettingsWidget::onCurrentTabChanged(int index)
+{
+  if (index == 0)
+  {
+    m_info_label->setText(tr("Display shaders are applied to the final picture after it has been scaled to fit your "
+                             "screen. Use these for screen effects, such as CRT filters and scanlines."));
+  }
+  else if (index == 1)
+  {
+    m_info_label->setText(
+      tr("Internal shaders are applied to the game's picture before it is scaled, at the resolution "
+         "the game is rendered at. Use these for effects that change how the game itself looks, such "
+         "as SSAO."));
+  }
+  else
+  {
+    m_info_label->setText(tr("A border overlay is an image drawn around the game's picture, such as a TV or handheld "
+                             "frame. It is drawn on top of everything else, after all shaders have been applied."));
+  }
+}
 
 PostProcessingChainConfigWidget::PostProcessingChainConfigWidget(SettingsWindow* dialog, QWidget* parent,
                                                                  const char* section)

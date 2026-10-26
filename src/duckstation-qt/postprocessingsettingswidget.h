@@ -15,13 +15,18 @@
 class SettingsWindow;
 class PostProcessingShaderConfigWidget;
 
-class PostProcessingSettingsWidget final : public QTabWidget
+class PostProcessingSettingsWidget final : public QWidget
 {
   Q_OBJECT
 
 public:
   PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~PostProcessingSettingsWidget();
+
+private:
+  void onCurrentTabChanged(int index);
+
+  QLabel* m_info_label;
 };
 
 class PostProcessingChainConfigWidget : public QWidget
