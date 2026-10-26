@@ -10,6 +10,7 @@
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
@@ -20,6 +21,9 @@ LOG_CHANNEL(XInputSource);
 
 static constexpr u32 MOTOR_INDEX_LARGE = 0;
 static constexpr u32 MOTOR_INDEX_SMALL = 1;
+
+// Querying an empty slot is expensive, and device notifications can arrive before XInput sees the controller.
+static constexpr double DISCONNECTED_POLL_INTERVAL = 1.0;
 
 static constexpr std::array<const char*, XInputSource::NUM_AXES> s_axis_names = {{
   TRANSLATE_NOOP("XInputSource", "LeftX"),        // AXIS_LEFTX
@@ -179,7 +183,7 @@ bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<Thre
   else
     INFO_COLOR_LOG(StrongOrange, "XInputGetExtended() is not available, SCP extension features disabled.");
 
-  ReloadDevices();
+  PollEvents();
   return true;
 }
 
@@ -202,30 +206,8 @@ DWORD XInputSource::GetControllerState(u32 index, ControllerState* state)
 
 bool XInputSource::ReloadDevices()
 {
-  bool changed = false;
-  for (u32 i = 0; i < NUM_CONTROLLERS; i++)
-  {
-    ControllerState new_state;
-    const DWORD result = GetControllerState(i, &new_state);
-    if (result == ERROR_SUCCESS)
-    {
-      if (m_controllers[i].connected)
-        continue;
-
-      HandleControllerConnection(i, new_state);
-      changed = true;
-    }
-    else if (result == ERROR_DEVICE_NOT_CONNECTED)
-    {
-      if (!m_controllers[i].connected)
-        continue;
-
-      HandleControllerDisconnection(i);
-      changed = true;
-    }
-  }
-
-  return changed;
+  // Disconnected slots are periodically polled in PollEvents() instead.
+  return false;
 }
 
 void XInputSource::Shutdown()
@@ -251,10 +233,17 @@ void XInputSource::Shutdown()
 bool XInputSource::PollEvents()
 {
   bool topology_changed = false;
+
+  const u64 current_time = Timer::GetCurrentValue();
+  const bool poll_disconnected =
+    ((current_time - m_last_disconnected_poll_time) >= Timer::ConvertSecondsToValue(DISCONNECTED_POLL_INTERVAL));
+  if (poll_disconnected)
+    m_last_disconnected_poll_time = current_time;
+
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
   {
     const bool was_connected = m_controllers[i].connected;
-    if (!was_connected)
+    if (!was_connected && !poll_disconnected)
       continue;
 
     ControllerState new_state;
@@ -269,16 +258,13 @@ bool XInputSource::PollEvents()
       else
         CheckForStateChanges(i, new_state);
     }
-    else
+    else if (was_connected)
     {
       if (result != ERROR_DEVICE_NOT_CONNECTED)
         WARNING_LOG("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
 
-      if (was_connected)
-      {
-        HandleControllerDisconnection(i);
-        topology_changed = true;
-      }
+      HandleControllerDisconnection(i);
+      topology_changed = true;
     }
   }
   return topology_changed;

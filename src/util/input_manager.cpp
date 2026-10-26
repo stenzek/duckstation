@@ -2678,9 +2678,9 @@ void InputManager::ReloadSources(const SettingsInterface& sources_si, std::uniqu
       std::memory_order_release);
   }
 
-  // Request device notifications when using raw input/xinput/dinput, as we need to manually handle device changes
+  // Request device notifications when using raw input/dinput, as we need to manually handle device changes.
+  // XInput doesn't need them, it polls disconnected slots periodically.
   if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
-      s_state.input_sources[static_cast<u32>(InputSourceType::XInput)] ||
       s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)])
   {
     if (!s_state.device_notification_handle)

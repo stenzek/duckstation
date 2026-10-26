@@ -122,6 +122,7 @@ private:
   static std::string GetDeviceName(u32 index);
 
   ControllerDataArray m_controllers = {};
+  u64 m_last_disconnected_poll_time = 0;
 
   HMODULE m_xinput_module{};
   DWORD(WINAPI* m_xinput_get_state)(DWORD, XINPUT_STATE*) = nullptr;
