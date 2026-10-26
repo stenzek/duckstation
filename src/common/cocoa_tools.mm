@@ -13,6 +13,7 @@
 #include <AppKit/AppKit.h>
 #include <Cocoa/Cocoa.h>
 #include <CoreFoundation/CFUserNotification.h>
+#include <IOKit/graphics/IOGraphicsTypes.h>
 #include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
 #include <cstdio>
@@ -231,23 +232,44 @@ std::optional<double> CocoaTools::GetViewRealScalingFactor(const void* view)
     return std::nullopt;
   }
 
-  u32 max_width = 0;
+  // Prefer the native mode, the largest mode can be larger than the panel.
+  u32 native_width = 0, native_height = 0;
+  bool found_native = false;
   for (NSUInteger i = 0; i < all_modes.count; i++)
-    max_width = std::max(max_width, static_cast<u32>(CGDisplayModeGetPixelWidth((CGDisplayModeRef)all_modes[i])));
+  {
+    const CGDisplayModeRef mode = (CGDisplayModeRef)all_modes[i];
+    const u32 mode_width = static_cast<u32>(CGDisplayModeGetPixelWidth(mode));
+    found_native = (CGDisplayModeGetIOFlags(mode) & kDisplayModeNativeFlag) != 0;
+    if (found_native || mode_width > native_width)
+    {
+      native_width = mode_width;
+      native_height = static_cast<u32>(CGDisplayModeGetPixelHeight(mode));
+      if (found_native)
+        break;
+    }
+  }
   CFRelease(all_modes);
-  if (max_width == 0)
+  if (native_width == 0 || native_height == 0)
   {
     GENERIC_LOG(Log::Channel::WindowInfo, Log::Level::Dev, Log::Color::Default,
-                "GetViewRealScalingFactor(): Max width is zero");
+                "GetViewRealScalingFactor(): Native size is zero");
     return std::nullopt;
   }
 
-  // Sanity check: Scale should not be less than 100%, and cannot be more than 200%.
-  const CGFloat frame_width = nsscreen.frame.size.width;
-  const CGFloat scale = static_cast<CGFloat>(max_width) / frame_width;
+  // Rotated displays have a portrait frame, the modes may not be.
+  const NSSize frame_size = nsscreen.frame.size;
+  if ((frame_size.width < frame_size.height) != (native_width < native_height))
+    std::swap(native_width, native_height);
+
+  // Use the smaller axis, modes with a different aspect ratio to the panel are letterboxed/pillarboxed.
+  // Sanity check: Scale should not be less than 100%, and rendering above the backing scale would just be downsampled.
+  const CGFloat scale = std::min(static_cast<CGFloat>(native_width) / frame_size.width,
+                                 static_cast<CGFloat>(native_height) / frame_size.height);
   GENERIC_LOG(Log::Channel::WindowInfo, Log::Level::Dev, Log::Color::Default,
-              "GetViewRealScalingFactor(): MaxWidth={}, FrameWidth={}, Scale={}", max_width, frame_width, scale);
-  if (scale < 1.0f)
+              "GetViewRealScalingFactor(): Native={}x{}, IsNative={}, Frame={}x{}, Scale={}, BackingScale={}",
+              native_width, native_height, found_native, frame_size.width, frame_size.height, scale,
+              nsscreen.backingScaleFactor);
+  if (scale < 1.0f || scale > nsscreen.backingScaleFactor)
     return std::nullopt;
 
   return static_cast<double>(scale);
