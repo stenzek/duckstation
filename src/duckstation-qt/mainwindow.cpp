@@ -45,6 +45,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
+#include <QtCore/QDeadlineTimer>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -54,6 +55,7 @@
 #include <QtGui/QCursor>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QShortcut>
+#include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -290,12 +292,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
       restoreRenderWindowGeometryFromConfig();
     }
 
-// See note below.
-#if !defined(_WIN32) && !defined(__APPLE__)
-    QGuiApplication::sync();
-    QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-#endif
-
     updateDisplayRelatedActions();
     updateDisplayWidgetCursor();
     m_display_widget->setFocus();
@@ -311,17 +307,19 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   if (render_to_main != is_rendering_to_main)
     updateWindowTitle();
 
-  // We want to avoid nested event loops as much as possible because it's problematic on MacOS.
-  // I removed the sync/processEvents() here for this reason, except of course fucking Linux throws
-  // a wrench in the plan. On Windows and MacOS, calling show() and showFullscreen() will send resize
-  // events with the correct size before returning. On Linux with X11 and Wankland, it doesn't.
-  // So we have to force a processEvents() here to ensure the display widget is the correct size,
-  // otherwise we'll see a glitched frame at the windowed size when starting fullscreen. Linux is
-  // the odd one out again, as usual. Note: QGuiApplication::sync() is supposed to pump events
-  // before and after syncing, but it seems this alone is not sufficient for getting the resize.
-#if !defined(_WIN32) && !defined(__APPLE__)
-  QGuiApplication::sync();
-  QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+#ifdef __linux__
+  // Wayland surfaces can't be presented to until the compositor's initial configure has been acknowledged, and show()
+  // doesn't wait for it. Vulkan presents a blank frame as soon as the swap chain is created, which would be a protocol
+  // error. Qt only reports the window as exposed once it has acknowledged the configure.
+  if (QtHost::IsRunningOnWayland())
+  {
+    QWindow* const window = m_display_widget->window()->windowHandle();
+    const QDeadlineTimer deadline(1000);
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
+                                    [window, &deadline]() { return (!window->isExposed() && !deadline.hasExpired()); });
+    if (!window->isExposed())
+      WARNING_LOG("Timed out waiting for render window to be exposed.");
+  }
 #endif
 
   const std::optional<WindowInfo>& wi = m_display_widget->getWindowInfo(render_api, error);

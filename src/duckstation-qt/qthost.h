@@ -407,8 +407,15 @@ const QString& GetCurrentGamePath();
 GameHash GetCurrentGameHash();
 
 #ifdef _WIN32
+
 /// Window corner rounding on Windows.
 bool AreWindowRoundedCornersDisabled();
+
+#elifdef __linux__
+
+/// Returns true if running on Wayland, as opposed to X11.
+bool IsRunningOnWayland();
+
 #endif
 
 } // namespace QtHost
