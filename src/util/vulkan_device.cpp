@@ -2242,6 +2242,7 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
   m_features.exclusive_fullscreen = false;
   m_features.explicit_present = true;
   m_features.timed_present = false;
+  m_features.per_present_vsync = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.thread_safe_shader_compile = true;

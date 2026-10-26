@@ -3900,6 +3900,13 @@ GPUVSyncMode System::GetEffectiveVSyncMode()
   if (s_state.can_sync_to_host || (!valid_vm && g_settings.sync_to_host_refresh_rate) ||
       g_settings.display_disable_mailbox_presentation)
   {
+    // Turn vsync off while fast forwarding instead of skipping presents, if the device can switch it cheaply.
+    if (s_state.state == State::Running && IsRunningAtNonStandardSpeed() &&
+        (s_state.target_speed == 0.0f || s_state.target_speed > 1.0f) && VideoThread::HasPerPresentVSync())
+    {
+      return GPUVSyncMode::Disabled;
+    }
+
     return GPUVSyncMode::FIFO;
   }
 

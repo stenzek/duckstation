@@ -112,6 +112,7 @@ struct ALIGN_TO_CACHE_LINE State
   bool requested_fullscreen_ui = false;
   bool use_thread = false;
   bool fullscreen_state = false;
+  bool per_present_vsync = false;
 
   // Hot variables between both threads.
   ALIGN_TO_CACHE_LINE std::atomic<u32> command_fifo_write_ptr{0};
@@ -812,6 +813,7 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
     s_state.render_window_info = WindowInfo();
   s_state.render_window_info.surface_width = std::max<u16>(s_state.render_window_info.surface_width, 1);
   s_state.render_window_info.surface_height = std::max<u16>(s_state.render_window_info.surface_height, 1);
+  s_state.per_present_vsync = g_gpu_device->GetFeatures().per_present_vsync;
 
   UpdateRunIdle();
 
@@ -850,6 +852,7 @@ void VideoThread::DestroyDeviceOnThread(bool preserve_imgui_state)
 
   UpdateRunIdle();
   s_state.render_window_info = WindowInfo();
+  s_state.per_present_vsync = false;
 }
 
 bool VideoThread::CreateGPUBackendOnThread(bool hardware_renderer, bool upload_vram, const GPUSettings* old_settings,
@@ -1616,6 +1619,11 @@ void VideoThread::RenderWindowResizedOnThread()
 const WindowInfo& VideoThread::GetRenderWindowInfo()
 {
   return s_state.render_window_info;
+}
+
+bool VideoThread::HasPerPresentVSync()
+{
+  return s_state.per_present_vsync;
 }
 
 void VideoThread::SetVSync(GPUVSyncMode mode, PresentSkipMode present_skip_mode)

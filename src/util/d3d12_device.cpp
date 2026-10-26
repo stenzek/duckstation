@@ -1381,6 +1381,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.exclusive_fullscreen = true;
   m_features.explicit_present = true;
   m_features.timed_present = false;
+  m_features.per_present_vsync = true;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;

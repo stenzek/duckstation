@@ -548,6 +548,7 @@ public:
     bool exclusive_fullscreen : 1;
     bool explicit_present : 1;
     bool timed_present : 1;
+    bool per_present_vsync : 1;
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;

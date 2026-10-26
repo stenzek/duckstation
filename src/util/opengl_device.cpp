@@ -483,6 +483,7 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   m_features.exclusive_fullscreen = false;
   m_features.explicit_present = false;
   m_features.timed_present = false;
+  m_features.per_present_vsync = true;
 
   m_features.shader_cache = false;
   m_features.thread_safe_shader_compile = false;

@@ -191,6 +191,7 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
   m_features.exclusive_fullscreen = true;
   m_features.explicit_present = false;
   m_features.timed_present = false;
+  m_features.per_present_vsync = true;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
