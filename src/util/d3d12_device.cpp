@@ -928,7 +928,8 @@ bool D3D12SwapChain::CreateSwapChain(D3D12Device& dev, Error* error)
     DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
 
-    fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    // Unlike D3D11, D3D12 can use the waitable object in exclusive fullscreen.
+    fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     fs_sd_desc.Width = m_fullscreen_mode->Width;
     fs_sd_desc.Height = m_fullscreen_mode->Height;
     fs_desc.RefreshRate = m_fullscreen_mode->RefreshRate;
@@ -967,9 +968,7 @@ bool D3D12SwapChain::CreateSwapChain(D3D12Device& dev, Error* error)
   if (FAILED(hr))
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-  // Waitable object can't be used with exclusive fullscreen.
-  if (!IsExclusiveFullscreen())
-    m_frame_latency_waitable = D3DCommon::GetFrameLatencyWaitableObject(m_swap_chain.Get());
+  m_frame_latency_waitable = D3DCommon::GetFrameLatencyWaitableObject(m_swap_chain.Get());
 
   return true;
 }
@@ -1108,9 +1107,9 @@ bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, Error* error)
   DestroyRTVs();
 
   // Flags have to match what the swap chain was created with.
-  const UINT flags = IsExclusiveFullscreen() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
-                                               ((m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0) |
-                                                DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT);
+  const UINT flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT |
+                     (IsExclusiveFullscreen() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH :
+                                                (m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0));
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, flags);
   if (FAILED(hr)) [[unlikely]]
   {

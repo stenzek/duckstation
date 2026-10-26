@@ -2420,7 +2420,7 @@ void System::LockThrottlerToVBlank(Timer::Value current_time)
   // presents. With blocking (FIFO) vsync the present call doesn't return until the frame has flipped, so
   // VideoPresenter records the time it returns as the time of the most recent vblank
   // (VideoPresenter::GetLastVBlankTime). On D3D11/D3D12, the frame latency waitable object, or waiting for vblank in
-  // exclusive fullscreen, provides the same blocking, see D3DCommon::PresentSwapChain().
+  // exclusive fullscreen on D3D11, provides the same blocking, see D3DCommon::PresentSwapChain().
   //
   // When syncing to the host refresh rate, frame_period is the host refresh period (or a multiple of it, when the host
   // refresh rate is a multiple of the console's), so emulation and display run at the same rate, but the throttler's

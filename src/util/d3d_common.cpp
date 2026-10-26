@@ -210,9 +210,9 @@ HRESULT D3DCommon::PresentSwapChain(IDXGISwapChain1* swap_chain, HANDLE frame_la
   // we return at the vblank where this frame is shown. VideoPresenter takes that time as the vblank timestamp, which
   // the throttler locks its phase to (see System::LockThrottlerToVBlank()), and uses it to detect and drop late frames.
   //
-  // Exclusive fullscreen can't use the waitable object. Instead, we use the frame statistics to find how many frames
-  // are queued ahead of this one, and wait for that many vblanks on the output. Waiting for a single vblank isn't
-  // enough: if a frame missed its vblank, DXGI would still have it queued, and we'd keep presenting one frame per
+  // D3D11 can't use the waitable object in exclusive fullscreen. Instead, we use the frame statistics to find how many
+  // frames are queued ahead of this one, and wait for that many vblanks on the output. Waiting for a single vblank
+  // isn't enough: if a frame missed its vblank, DXGI would still have it queued, and we'd keep presenting one frame per
   // vblank behind it without noticing.
   //
   // Only used for vsync'ed presents.

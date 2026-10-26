@@ -50,11 +50,12 @@ bool SupportsAllowTearing(IDXGIFactory5* factory);
 
 // sets a maximum frame latency of one, and returns the waitable object, or nullptr on failure
 // the swap chain must have been created with DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT, which is only
-// allowed for windowed flip model swap chains, the handle must be closed with CloseHandle()
+// allowed for flip model swap chains, and not for exclusive fullscreen on D3D11
+// the handle must be closed with CloseHandle()
 HANDLE GetFrameLatencyWaitableObject(IDXGISwapChain1* swap_chain);
 
-// presents, and waits for the frame to be displayed if synchronized and either frame_latency_waitable (windowed) or
-// fullscreen_output (exclusive fullscreen) is provided
+// presents, and waits for the frame to be displayed if synchronized and either frame_latency_waitable or
+// fullscreen_output (exclusive fullscreen on D3D11) is provided
 // this makes vsync'ed presents block until vblank, which VideoPresenter relies on for vblank timing
 HRESULT PresentSwapChain(IDXGISwapChain1* swap_chain, HANDLE frame_latency_waitable, IDXGIOutput* fullscreen_output,
                          UINT sync_interval, UINT flags);
