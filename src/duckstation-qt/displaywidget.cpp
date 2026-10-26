@@ -553,7 +553,11 @@ bool DisplayWidget::event(QEvent* event)
 
       const QWindowStateChangeEvent* ws_event = static_cast<const QWindowStateChangeEvent*>(event);
       if (ws_event->oldState() & Qt::WindowMinimized)
+      {
+        // The client area is 0x0 while minimized, and Qt doesn't send a resize on restore if its size didn't change.
+        checkForSizeChange(false);
         emit windowRestoredEvent();
+      }
 
 #if defined(_WIN32)
       // Work around incorrect rounded windows11 theme bug.
@@ -652,7 +656,10 @@ bool DisplayContainer::event(QEvent* event)
     case QEvent::WindowStateChange:
     {
       if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+      {
+        m_display_widget->checkForSizeChange(false);
         emit m_display_widget->windowRestoredEvent();
+      }
     }
     break;
 
