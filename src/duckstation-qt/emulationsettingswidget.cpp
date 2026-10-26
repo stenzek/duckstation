@@ -182,22 +182,21 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
        "priority over fast forwarding if both hotkeys are pressed/toggled."));
   dialog->registerWidgetHelp(
     m_ui.vsync, tr("Vertical Sync (VSync)"), tr("Unchecked"),
-    tr("Synchronizes presentation of the console's frames to the host. Enabling may result in smoother animations, at "
-       "the cost of increased input lag. <strong>GSync/FreeSync users should enable Optimal Frame Pacing "
-       "instead.</strong>"));
+    tr("Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of "
+       "the screen show different frames. <strong>Leave this on if you have a GSync/FreeSync display, or you can still "
+       "get tearing.</strong>"));
   dialog->registerWidgetHelp(
     m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
-    tr(
-      "Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when VSync is "
-      "enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation "
-      "speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console's refresh rate is too far "
-      "from the host's refresh rate. Users with variable refresh rate displays should disable this option."));
+    tr("Runs the game very slightly faster or slower so its frame rate exactly matches your display's refresh rate. "
+       "With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no "
+       "effect if the two rates are too far apart. <strong>Turn this off if you have a GSync/FreeSync display, since "
+       "the display already changes its refresh rate to match the game.</strong>"));
   dialog->registerWidgetHelp(
     m_ui.optimalFramePacing, tr("Optimal Frame Pacing"),
     Settings::DEFAULT_OPTIMAL_FRAME_PACING ? tr("Checked") : tr("Unchecked"),
-    tr("Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent "
-       "rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having "
-       "difficulties maintaining full speed, or are getting audio glitches, try disabling this option."));
+    tr("Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer "
+       "can't keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or "
+       "crackling sound, but motion won't be as even."));
   dialog->registerWidgetHelp(
     m_ui.preFrameSleep, tr("Reduce Input Latency"), tr("Unchecked"),
     tr("Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause "

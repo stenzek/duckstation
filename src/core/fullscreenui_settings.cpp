@@ -3643,19 +3643,20 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
   MenuHeading(FSUI_VSTR("Latency Control"));
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TV, "Vertical Sync (VSync)"),
-                    FSUI_VSTR("Synchronizes presentation of the console's frames to the host. GSync/FreeSync users "
-                              "should enable Optimal Frame Pacing instead."),
+                    FSUI_VSTR("Waits for your display to refresh before showing each frame, which stops tearing. "
+                              "Leave this on with GSync/FreeSync displays too."),
                     Settings::DISPLAY_SECTION_NAME, "VSync", false);
 
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Sync To Host Refresh Rate"),
-    FSUI_VSTR("Adjusts the emulation speed so the console's refresh rate matches the host when VSync is enabled."),
+    FSUI_VSTR("Runs the game very slightly faster or slower to match your display's refresh rate when VSync is on. "
+              "Turn this off with GSync/FreeSync displays."),
     Settings::INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", false);
 
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Optimal Frame Pacing"),
-    FSUI_VSTR("Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, "
-              "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
+    FSUI_VSTR("Shows every frame the game draws, evenly spaced. Only turn this off if your computer can't keep the "
+              "game at full speed, and you're getting stuttering or crackling sound."),
     Settings::DISPLAY_SECTION_NAME, "OptimalFramePacing", Settings::DEFAULT_OPTIMAL_FRAME_PACING);
 
   DrawToggleSetting(
