@@ -17,6 +17,8 @@
 #include <QtGui/QScreen>
 #include <QtWidgets/QWidget>
 
+#include <cmath>
+
 #if defined(_WIN32)
 
 #include "common/windows_headers.h"
@@ -208,12 +210,12 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
   }
 #endif
 
-  // On Linux, fuck you, enjoy round trip to the X server, and on Wayland you can't query it in the first place...
-  // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
+  // On Wayland, you can't query it in the first place, the client picks the buffer size. fractional-scale-v1 defines
+  // it as the logical size multiplied by the scale, rounded half away from zero. Don't use ceil(), since float error
+  // with scales such as 140/120 can push an exact product over the next integer. Terrible fucking protocol, so broken.
   const qreal device_pixel_ratio = widget->devicePixelRatio();
-  const QSize scaled_size = ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio);
-  wi->surface_width = static_cast<u16>(scaled_size.width());
-  wi->surface_height = static_cast<u16>(scaled_size.height());
+  wi->surface_width = static_cast<u16>(std::lround(static_cast<qreal>(widget->width()) * device_pixel_ratio));
+  wi->surface_height = static_cast<u16>(std::lround(static_cast<qreal>(widget->height()) * device_pixel_ratio));
   wi->surface_scale = static_cast<float>(device_pixel_ratio);
 }
 
