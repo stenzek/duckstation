@@ -1404,6 +1404,14 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
                                    present_swap_chain->GetCurrentImageIndexPtr(),
                                    nullptr};
 
+  // Pass the present mode, so it can be switched without recreating the swap chain.
+  VkSwapchainPresentModeInfoKHR present_mode_info = {.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR,
+                                                     .pNext = nullptr,
+                                                     .swapchainCount = 1,
+                                                     .pPresentModes = present_swap_chain->GetPresentModePtr()};
+  if (present_swap_chain->IsUsingPresentModeSwitching())
+    Vulkan::AddPointerToChain(&present_info, &present_mode_info);
+
   // Acquiring the next image isn't guaranteed to block until this frame is displayed, drivers can return immediately
   // and block in the command buffer instead. With vsync, wait for it explicitly, like the frame latency waitable on
   // D3D, see D3DCommon::PresentSwapChain(). VideoPresenter uses the time we return as the vblank timestamp.
@@ -1413,7 +1421,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
                            0;
   const VkPresentIdKHR present_id_info = {VK_STRUCTURE_TYPE_PRESENT_ID_KHR, nullptr, 1, &present_id};
   if (present_id != 0)
-    present_info.pNext = &present_id_info;
+    Vulkan::AddPointerToChain(&present_info, &present_id_info);
 
   present_swap_chain->ResetImageAcquireResult();
 
@@ -1825,6 +1833,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
       return false;
 
     RenderBlankFrame(swap_chain.get());
+    m_features.per_present_vsync = swap_chain->SupportsPresentModeSwitching();
     m_main_swap_chain = std::move(swap_chain);
   }
 

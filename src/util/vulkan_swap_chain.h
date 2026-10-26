@@ -44,6 +44,13 @@ public:
     return &m_images[m_current_image].present_semaphore;
   }
   ALWAYS_INLINE u64 GetNextPresentId() { return ++m_last_present_id; }
+  ALWAYS_INLINE const VkPresentModeKHR* GetPresentModePtr() const { return &m_present_mode; }
+
+  /// Returns true if the surface allows switching between FIFO and immediate without recreating the swap chain.
+  ALWAYS_INLINE bool SupportsPresentModeSwitching() const { return m_supports_present_mode_switching; }
+
+  /// Returns true if the swap chain was created with both FIFO and immediate, and the mode is passed on each present.
+  ALWAYS_INLINE bool IsUsingPresentModeSwitching() const { return m_present_mode_switching; }
 
   bool CreateSurface(VkPhysicalDevice physical_device, Error* error);
   bool CreateSwapChain(VulkanDevice& dev, Error* error);
@@ -100,7 +107,9 @@ private:
   u64 m_last_present_id = 0;
 
   VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+  bool m_supports_present_mode_switching = false;
+  bool m_present_mode_switching = false;
 
-  std::optional<VkResult> m_image_acquire_result;
   std::optional<bool> m_exclusive_fullscreen_control;
+  std::optional<VkResult> m_image_acquire_result;
 };
