@@ -670,6 +670,23 @@ TEST(DynamicHeapArray, AlignedResize)
     EXPECT_EQ(arr[i], 42);
 }
 
+TEST(DynamicHeapArray, AlignedResizeShrink)
+{
+  constexpr size_t alignment = 64;
+  DynamicHeapArray<int, alignment> arr(32);
+  for (size_t i = 0; i < arr.size(); ++i)
+    arr[i] = static_cast<int>(i * 10);
+
+  arr.resize(7);
+
+  EXPECT_EQ(arr.size(), 7u);
+  EXPECT_EQ(arr.capacity(), 7u);
+  EXPECT_EQ(arr.size_bytes(), 7u * sizeof(int));
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(arr.data()) % alignment, 0u);
+  for (size_t i = 0; i < arr.size(); ++i)
+    EXPECT_EQ(arr[i], static_cast<int>(i * 10));
+}
+
 TEST(DynamicHeapArray, DifferentTypes)
 {
   DynamicHeapArray<double> arr(3);
