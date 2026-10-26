@@ -22,6 +22,7 @@
 #if defined(_WIN32)
 
 #include "common/windows_headers.h"
+#include <QtCore/QOperatingSystemVersion>
 #include <dwmapi.h>
 
 #elif defined(__APPLE__)
@@ -352,6 +353,10 @@ bool Host::SetScreensaverInhibit(bool inhibit, Error* error)
 
 bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, std::optional<bool> enabled)
 {
+  // DWMWA_WINDOW_CORNER_PREFERENCE was added in Windows 11, it fails on Windows 10.
+  if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11)
+    return false;
+
   const HWND window_handle = reinterpret_cast<HWND>(widget->winId());
 
   const DWM_WINDOW_CORNER_PREFERENCE wanted_value =
@@ -361,7 +366,7 @@ bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, std::optional<bool> e
     DwmGetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &current_value, sizeof(current_value));
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("DwmGetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ",
+    ERROR_LOG("DwmGetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: {}",
               Error::CreateHResult(hr).GetDescription());
   }
   else if (current_value == wanted_value)
@@ -372,7 +377,7 @@ bool QtUtils::SetWindowRoundedCornerState(QWidget* widget, std::optional<bool> e
   hr = DwmSetWindowAttribute(window_handle, DWMWA_WINDOW_CORNER_PREFERENCE, &wanted_value, sizeof(wanted_value));
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ",
+    ERROR_LOG("DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: {}",
               Error::CreateHResult(hr).GetDescription());
   }
 
