@@ -120,7 +120,7 @@ Vill du aktivera kontrollen nu?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Hardcore-läget är inte aktivt just nu. Aktivering avhardcore-läget låter dig tävla på tid, poäng och delta i spelspecifika ledartavlor.
+        <translation>Hardcore-läget är inte aktivt just nu. Aktivering av hardcore-läget låter dig tävla på tid, poäng och delta i spelspecifika ledartavlor.
 
 Dock förhindrar även Hardcore-läget att man kan spara tillstånd, använda fusk och funktioner för att spela långsamt.
 
@@ -7890,7 +7890,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation>Vertex-cache</translation>
+        <translation>Hörnpunktscache</translation>
     </message>
     <message>
         <source>Vertical Sync (VSync)</source>
@@ -8603,7 +8603,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
-        <translation>Beskär vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band.</translation>
+        <translation>Beskär hörnpunktsfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band.</translation>
     </message>
     <message>
         <source>Determines how much to crop the display area.</source>
@@ -9774,7 +9774,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Force PGXP Vertex Cache</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Tvinga PGXP Vertex Cache</translation>
+        <translation>Tvinga PGXP-hörnpunktscache</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
@@ -9848,11 +9848,11 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
-        <translation>PGXP vertexcache aktiverad.</translation>
+        <translation>PGXP-hörnpunktscache aktiverad.</translation>
     </message>
     <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation>PGXP Vertex Cache är aktiverat, men det är inte nödvändigt för detta spel. Detta kan orsaka fel i renderingen.</translation>
+        <translation>PGXP-hörnpunktscache är aktiverad, men den är inte nödvändig för detta spel. Detta kan orsaka fel i renderingen.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
@@ -10752,7 +10752,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Vertex Cache</source>
-        <translation>Vertex-cache</translation>
+        <translation>Hörnpunktscache</translation>
     </message>
     <message>
         <source>Perspective Correct Textures</source>
@@ -11140,7 +11140,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Skalar vertexpositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Skalar hörnpunktspositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -11264,7 +11264,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation>Använder perspektivkorrigerad interpolering för vertexfärger, vilket kan förbättra grafiken i vissa spel, men orsaka renderingsfel i andra. Kräver att geometrikorrigering är aktiverad.</translation>
+        <translation>Använder perspektivkorrigerad interpolering för hörnpunktsfärger, vilket kan förbättra grafiken i vissa spel, men orsaka renderingsfel i andra. Kräver att geometrikorrigering är aktiverad.</translation>
     </message>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
@@ -11280,7 +11280,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation>Använder vertexpositioner i skärmrymden för att få exakta positioner, istället för att spåra minnesåtkomst. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger i allmänhet inga fördelar.&lt;/strong&gt;</translation>
+        <translation>Använder hörnpunktspositioner i skärmrymden för att få exakta positioner, istället för att spåra minnesåtkomst. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger i allmänhet inga fördelar.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
@@ -11524,7 +11524,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
-        <translation>Beskär vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band. Detta är ett kännetecken för de ”gamla” GPU:erna som finns i tidiga konsolmodeller.</translation>
+        <translation>Beskär hörnpunktsfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band. Detta är ett kännetecken för de ”gamla” GPU:erna som finns i tidiga konsolmodeller.</translation>
     </message>
 </context>
 <context>
@@ -18518,7 +18518,7 @@ Token genererades %2</translation>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>Skalar vertexpositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte är kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Skalar hörnpunktspositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte är kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
@@ -24003,7 +24003,7 @@ Vill du importera en nu?</translation>
     <message>
         <source>Vertex Cache</source>
         <comment>settings_pgxp_vertex_cache</comment>
-        <translation>Vertex-cache</translation>
+        <translation>Hörnpunktscache</translation>
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
@@ -24128,7 +24128,7 @@ Vill du importera en nu?</translation>
     <message>
         <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
         <comment>settings_summary_enable_modulation_crop</comment>
-        <translation>Begränsar vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis ger mer synliga färgband.</translation>
+        <translation>Begränsar hörnpunktsfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis ger mer synliga färgband.</translation>
     </message>
     <message>
         <source>Disable Upscaled Direct Textures</source>
