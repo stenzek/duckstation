@@ -23,6 +23,7 @@
 #include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/settings_interface.h"
@@ -2334,6 +2335,9 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Co
   if (code && !code->DeinterleaveBlockInstructions(error))
     code.reset();
 
+  if (code)
+    code->MergeInstructions();
+
   return code;
 }
 
@@ -2392,6 +2396,15 @@ bool Cheats::GamesharkCheatCode::DeinterleaveBlockInstructions(Error* error)
       }
       break;
 
+      case InstructionCode::InternalMaskedWrite:
+      case InstructionCode::InternalMatchWrite16:
+      case InstructionCode::InternalMatchWriteWithRestore16:
+      case InstructionCode::InternalMatchWriteWithRestore8:
+      {
+        Error::SetStringFmt(error, "Reserved instruction code: {:08X} {:08X}", inst.first, inst.second);
+        return false;
+      }
+
       default:
         index += 1 + GetPayloadLength(inst);
         break;
@@ -2399,6 +2412,153 @@ bool Cheats::GamesharkCheatCode::DeinterleaveBlockInstructions(Error* error)
   }
 
   return true;
+}
+
+void Cheats::GamesharkCheatCode::MergeInstructions()
+{
+  // Merge runs of constant/match writes to nearby addresses into masked block writes, applied with vectors.
+  static constexpr u32 MAX_MERGE_GAP = 64;
+  static constexpr u32 MIN_MERGE_LINES = 4;
+
+  const u32 count = static_cast<u32>(instructions.size());
+  std::vector<bool> has_option(count);
+  for (const auto& [option_index, bitpos_start, bit_count] : option_instruction_values)
+    has_option[option_index] = true;
+
+  // Returns the internal code that a line can merge into, or Nop.
+  const auto get_merge_code = [this, &has_option](u32 index, u32* width) {
+    const Instruction& inst = instructions[index];
+    const InstructionCode merge_code = GetMergeCode(inst.code, width);
+
+    // Must be in RAM, and not cross a 2MB boundary, so the window is contiguous with mirroring.
+    const u32 address = inst.address;
+    if (merge_code == InstructionCode::Nop || has_option[index] || (address + *width) > Bus::RAM_MIRROR_END ||
+        (address / Bus::RAM_2MB_SIZE) != ((address + *width - 1) / Bus::RAM_2MB_SIZE))
+    {
+      return InstructionCode::Nop;
+    }
+
+    return merge_code;
+  };
+
+  std::vector<Instruction> merged;
+  std::vector<u32> new_index(count);
+  merged.reserve(count);
+
+  bool after_conditional = false;
+  bool any_merged = false;
+  for (u32 index = 0; index < count;)
+  {
+    const Instruction& inst = instructions[index];
+
+    // Conditionals skip the next instruction, so it can't be merged.
+    u32 width;
+    const InstructionCode merge_code = after_conditional ? InstructionCode::Nop : get_merge_code(index, &width);
+    if (merge_code != InstructionCode::Nop)
+    {
+      // Constant writes can overlap, since they're applied in order. Match writes can't, since a later
+      // line could compare against an earlier write, and lanes must be aligned for the vector compare.
+      const u32 start = inst.address;
+      u32 end = start + width;
+      u32 run_end = index + 1;
+      for (; run_end < count; run_end++)
+      {
+        u32 next_width;
+        const u32 next_address = instructions[run_end].address;
+        if (get_merge_code(run_end, &next_width) != merge_code ||
+            (merge_code == InstructionCode::InternalMaskedWrite ?
+               (next_address < start) :
+               (next_address < end || ((next_address - start) % width) != 0)) ||
+            next_address > (end + MAX_MERGE_GAP) ||
+            (start / Bus::RAM_2MB_SIZE) != ((next_address + next_width - 1) / Bus::RAM_2MB_SIZE))
+        {
+          break;
+        }
+
+        end = std::max(end, next_address + next_width);
+      }
+
+      if ((run_end - index) >= MIN_MERGE_LINES)
+      {
+        // FB: data, mask. FC-FE: compare, write, mask.
+        const u32 size = end - start;
+        Instruction header;
+        header.bits = 0;
+        header.code = merge_code;
+        header.address = start;
+        header.value32 = size;
+        merged.push_back(header);
+
+        const size_t payload_start = merged.size();
+        merged.resize(payload_start + GetBlockPayloadLength(header));
+        u8* const data = reinterpret_cast<u8*>(&merged[payload_start]);
+        u8* const mask = data + size * ((merge_code == InstructionCode::InternalMaskedWrite) ? 1 : 2);
+        for (; index < run_end; index++)
+        {
+          const Instruction& line = instructions[index];
+          const u32 offset = line.address - start;
+          switch (line.code)
+          {
+            case InstructionCode::ConstantWrite8:
+              data[offset] = line.value8;
+              mask[offset] = 0xFF;
+              break;
+
+            case InstructionCode::ConstantWrite16:
+              std::memcpy(&data[offset], &line.second, sizeof(u16));
+              std::memset(&mask[offset], 0xFF, sizeof(u16));
+              break;
+
+            case InstructionCode::ExtConstantWrite32:
+              std::memcpy(&data[offset], &line.second, sizeof(u32));
+              std::memset(&mask[offset], 0xFF, sizeof(u32));
+              break;
+
+            case InstructionCode::ExtConstantWriteIfMatch16:
+            case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+            {
+              const u16 compare_value = Truncate16(line.value32 >> 16);
+              const u16 write_value = Truncate16(line.value32 & 0xFFFFu);
+              std::memcpy(&data[offset], &compare_value, sizeof(u16));
+              std::memcpy(&data[size + offset], &write_value, sizeof(u16));
+              std::memset(&mask[offset], 0xFF, sizeof(u16));
+            }
+            break;
+
+            case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
+              data[offset] = Truncate8(line.value16 >> 8);
+              data[size + offset] = Truncate8(line.value16 & 0xFFu);
+              mask[offset] = 0xFF;
+              break;
+
+              DefaultCaseIsUnreachable();
+          }
+
+          new_index[index] = static_cast<u32>(payload_start - 1);
+        }
+
+        after_conditional = false;
+        any_merged = true;
+        continue;
+      }
+    }
+
+    // Copy through, including any payload.
+    after_conditional = IsConditionalInstruction(inst.code);
+    const u32 end_index = std::min(index + 1 + GetPayloadLength(inst), count);
+    for (; index < end_index; index++)
+    {
+      new_index[index] = static_cast<u32>(merged.size());
+      merged.push_back(instructions[index]);
+    }
+  }
+
+  if (!any_merged)
+    return;
+
+  for (auto& [option_index, bitpos_start, bit_count] : option_instruction_values)
+    option_index = new_index[option_index];
+  instructions = std::move(merged);
 }
 
 static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
@@ -2443,15 +2603,179 @@ static u8* GetBlockRAMPointer(PhysicalMemoryAddress address, u32 size)
   return &g_bus.unprotected_ram[address & g_bus.ram_mask];
 }
 
+// The icache is only read by the interpreter. Blocks only use the tags for timing, and only if enabled.
+static bool IsICacheInUse()
+{
+  return (CPU::g_state.using_interpreter || g_settings.cpu_recompiler_icache);
+}
+
+template<bool icache = true>
 static void InvalidateCodeRange(PhysicalMemoryAddress address, u32 size)
 {
-  CPU::InvalidateICacheForRAM(address, size);
+  if constexpr (icache)
+    CPU::InvalidateICacheForRAM(address, size);
 
   const u32 last_page_index = Bus::GetRAMCodePageIndex(address + size - 1);
   for (u32 page_index = Bus::GetRAMCodePageIndex(address); page_index <= last_page_index; page_index++)
   {
     if (Bus::IsRAMCodePage(page_index))
       CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+  }
+}
+
+template<bool icache>
+static void DoMaskedWrite(PhysicalMemoryAddress address, u32 size, const u8* data, const u8* mask)
+{
+  u8* ram = GetBlockRAMPointer(address, size);
+  if (!ram) [[unlikely]]
+  {
+    ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", address, size);
+    return;
+  }
+
+  // RAM is unprotected, so store unconditionally. With the icache, only the lines of bytes that changed are
+  // invalidated. Without it, only code pages need invalidating, so accumulate the changes and invalidate once.
+  GSVector4i changed_bits = GSVector4i::zero();
+  u8 tail_changed_bits = 0;
+  u32 offset = 0;
+  for (; (offset + sizeof(GSVector4i)) <= size; offset += sizeof(GSVector4i))
+  {
+    const GSVector4i value = GSVector4i::load<false>(ram + offset);
+    const GSVector4i diff = (value ^ GSVector4i::load<false>(data + offset)) & GSVector4i::load<false>(mask + offset);
+    GSVector4i::store<false>(ram + offset, value ^ diff);
+
+    if constexpr (icache)
+    {
+      const u32 changed_bytes = static_cast<u32>(diff.eq8(GSVector4i::zero()).mask()) ^ 0xFFFFu;
+      if (changed_bytes != 0)
+      {
+        const u32 first = CountTrailingZeros(changed_bytes);
+        InvalidateCodeRange(address + offset + first, (32 - CountLeadingZeros(changed_bytes)) - first);
+      }
+    }
+    else
+    {
+      changed_bits |= diff;
+    }
+  }
+  for (; offset < size; offset++)
+  {
+    const u8 diff = (ram[offset] ^ data[offset]) & mask[offset];
+    ram[offset] ^= diff;
+    if constexpr (icache)
+    {
+      if (diff != 0)
+        InvalidateCodeRange(address + offset, 1);
+    }
+    else
+    {
+      tail_changed_bits |= diff;
+    }
+  }
+
+  if constexpr (!icache)
+  {
+    if (tail_changed_bits != 0 || !changed_bits.eq(GSVector4i::zero()))
+      InvalidateCodeRange<false>(address, size);
+  }
+}
+
+template<u32 width, bool icache>
+static void DoMatchWrite(PhysicalMemoryAddress address, u32 size, const u8* compare_data, const u8* write_data,
+                         const u8* mask, Cheats::RollbackLog* rollback_list)
+{
+  static_assert(width == sizeof(u8) || width == sizeof(u16));
+  static constexpr MemoryAccessSize access_size =
+    (width == sizeof(u8)) ? MemoryAccessSize::Byte : MemoryAccessSize::HalfWord;
+  using ValueType = std::conditional_t<width == sizeof(u8), u8, u16>;
+
+  u8* ram = GetBlockRAMPointer(address, size);
+  if (!ram) [[unlikely]]
+  {
+    ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", address, size);
+    return;
+  }
+
+  // Lanes that matched are logged with the value they replace, matching the per-line codes.
+  const auto log_lane = [address, compare_data, rollback_list](u32 offset) {
+    ValueType value;
+    std::memcpy(&value, compare_data + offset, sizeof(value));
+    rollback_list->emplace_back(access_size, address + offset, value);
+  };
+
+  // RAM is unprotected, so store unconditionally. Like the per-line codes, matched lanes invalidate the icache even if
+  // they're unchanged, but lanes that didn't match must not, since the game could be relying on stale cached code.
+  // Without the icache, only code pages need invalidating, so accumulate the changes and invalidate once.
+  GSVector4i changed_bits = GSVector4i::zero();
+  bool tail_changed = false;
+  u32 offset = 0;
+  for (; (offset + sizeof(GSVector4i)) <= size; offset += sizeof(GSVector4i))
+  {
+    const GSVector4i value = GSVector4i::load<false>(ram + offset);
+    const GSVector4i compare_value = GSVector4i::load<false>(compare_data + offset);
+    const GSVector4i matched = ((width == sizeof(u8)) ? value.eq8(compare_value) : value.eq16(compare_value)) &
+                               GSVector4i::load<false>(mask + offset);
+    const GSVector4i diff = (value ^ GSVector4i::load<false>(write_data + offset)) & matched;
+    GSVector4i::store<false>(ram + offset, value ^ diff);
+
+    if constexpr (!icache)
+    {
+      changed_bits |= diff;
+      if (!rollback_list)
+        continue;
+    }
+
+    const u32 matched_bits = static_cast<u32>(matched.mask());
+    if (matched_bits == 0)
+      continue;
+
+    if (rollback_list)
+    {
+      for (u32 bits = matched_bits; bits != 0;)
+      {
+        const u32 lane = CountTrailingZeros(bits);
+        log_lane(offset + lane);
+        bits &= ~(((1u << width) - 1) << lane);
+      }
+    }
+
+    if constexpr (icache)
+    {
+      const u32 first = CountTrailingZeros(matched_bits);
+      const u32 lanes_address = address + offset + first;
+      const u32 lanes_size = (32 - CountLeadingZeros(matched_bits)) - first;
+      if (diff.eq(GSVector4i::zero()))
+        CPU::InvalidateICacheForRAM(lanes_address, lanes_size);
+      else
+        InvalidateCodeRange(lanes_address, lanes_size);
+    }
+  }
+  for (; offset < size; offset += width)
+  {
+    if (!mask[offset] || std::memcmp(ram + offset, compare_data + offset, width) != 0)
+      continue;
+
+    if (rollback_list)
+      log_lane(offset);
+
+    if (std::memcmp(ram + offset, write_data + offset, width) != 0)
+    {
+      std::memcpy(ram + offset, write_data + offset, width);
+      if constexpr (icache)
+        InvalidateCodeRange(address + offset, width);
+      else
+        tail_changed = true;
+    }
+    else if constexpr (icache)
+    {
+      CPU::InvalidateICacheForRAM(address + offset, width);
+    }
+  }
+
+  if constexpr (!icache)
+  {
+    if (tail_changed || !changed_bits.eq(GSVector4i::zero()))
+      InvalidateCodeRange<false>(address, size);
   }
 }
 
@@ -2583,6 +2907,14 @@ u32 Cheats::GamesharkCheatCode::GetBlockPayloadLength(const Instruction& inst)
     case InstructionCode::ExtBlockWriteIfMatch:
       return inst.value32;
 
+    case InstructionCode::InternalMaskedWrite:
+      return (inst.value32 * 2 + sizeof(Instruction) - 1) / sizeof(Instruction);
+
+    case InstructionCode::InternalMatchWrite16:
+    case InstructionCode::InternalMatchWriteWithRestore16:
+    case InstructionCode::InternalMatchWriteWithRestore8:
+      return (inst.value32 * 3 + sizeof(Instruction) - 1) / sizeof(Instruction);
+
     default:
       return 0;
   }
@@ -2603,6 +2935,39 @@ u32 Cheats::GamesharkCheatCode::GetPayloadLength(const Instruction& inst)
 
     default:
       return GetBlockPayloadLength(inst);
+  }
+}
+
+Cheats::GamesharkCheatCode::InstructionCode Cheats::GamesharkCheatCode::GetMergeCode(InstructionCode code, u32* width)
+{
+  switch (code)
+  {
+    case InstructionCode::ConstantWrite8:
+      *width = sizeof(u8);
+      return InstructionCode::InternalMaskedWrite;
+
+    case InstructionCode::ConstantWrite16:
+      *width = sizeof(u16);
+      return InstructionCode::InternalMaskedWrite;
+
+    case InstructionCode::ExtConstantWrite32:
+      *width = sizeof(u32);
+      return InstructionCode::InternalMaskedWrite;
+
+    case InstructionCode::ExtConstantWriteIfMatch16:
+      *width = sizeof(u16);
+      return InstructionCode::InternalMatchWrite16;
+
+    case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+      *width = sizeof(u16);
+      return InstructionCode::InternalMatchWriteWithRestore16;
+
+    case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
+      *width = sizeof(u8);
+      return InstructionCode::InternalMatchWriteWithRestore8;
+
+    default:
+      return InstructionCode::Nop;
   }
 }
 
@@ -3076,6 +3441,38 @@ void Cheats::GamesharkCheatCode::Apply() const
           ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
         }
 
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
+      case InstructionCode::InternalMaskedWrite:
+      {
+        const u32 size = inst.value32;
+        const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        (IsICacheInUse() ? DoMaskedWrite<true> : DoMaskedWrite<false>)(inst.address, size, data, data + size);
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
+      case InstructionCode::InternalMatchWrite16:
+      case InstructionCode::InternalMatchWriteWithRestore16:
+      {
+        const u32 size = inst.value32;
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        (IsICacheInUse() ? DoMatchWrite<sizeof(u16), true> :
+                           DoMatchWrite<sizeof(u16), false>)(inst.address, size, compare_data, compare_data + size,
+                                                             compare_data + size * 2, nullptr);
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
+      case InstructionCode::InternalMatchWriteWithRestore8:
+      {
+        const u32 size = inst.value32;
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        (IsICacheInUse() ? DoMatchWrite<sizeof(u8), true> :
+                           DoMatchWrite<sizeof(u8), false>)(inst.address, size, compare_data, compare_data + size,
+                                                            compare_data + size * 2, nullptr);
         index += 1 + GetBlockPayloadLength(inst);
       }
       break;
@@ -4563,6 +4960,8 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
         break;
       case InstructionCode::ExtBlockWrite:
       case InstructionCode::ExtBlockWriteIfMatch:
+      case InstructionCode::InternalMaskedWrite:
+      case InstructionCode::InternalMatchWrite16:
         index += 1 + GetBlockPayloadLength(inst);
         break;
         // for conditionals, we don't want to skip over in case it changed at some point
@@ -4655,6 +5054,29 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
       }
       break;
 
+      // restore by swapping compare and write
+      case InstructionCode::InternalMatchWriteWithRestore16:
+      {
+        const u32 size = inst.value32;
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        (IsICacheInUse() ? DoMatchWrite<sizeof(u16), true> :
+                           DoMatchWrite<sizeof(u16), false>)(inst.address, size, compare_data + size, compare_data,
+                                                             compare_data + size * 2, rollback_list);
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
+      case InstructionCode::InternalMatchWriteWithRestore8:
+      {
+        const u32 size = inst.value32;
+        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+        (IsICacheInUse() ? DoMatchWrite<sizeof(u8), true> :
+                           DoMatchWrite<sizeof(u8), false>)(inst.address, size, compare_data + size, compare_data,
+                                                            compare_data + size * 2, rollback_list);
+        index += 1 + GetBlockPayloadLength(inst);
+      }
+      break;
+
       [[unlikely]] default:
       {
         ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
@@ -4690,7 +5112,9 @@ bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
     const Instruction& inst = instructions[index];
     if (inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore16 ||
         inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore8 ||
-        inst.code == InstructionCode::ExtBlockWriteIfMatchWithRestore)
+        inst.code == InstructionCode::ExtBlockWriteIfMatchWithRestore ||
+        inst.code == InstructionCode::InternalMatchWriteWithRestore16 ||
+        inst.code == InstructionCode::InternalMatchWriteWithRestore8)
     {
       return true;
     }

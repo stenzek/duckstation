@@ -4,6 +4,9 @@
 //
 // Lightweight wrapper over native SIMD types for cross-platform vector code.
 //
+// alltrue(), anytrue() and allfalse() are only defined for comparison masks, i.e. each element is all zeros or all
+// ones. Backends may test only the top bit of each byte or element, so use eq() or compare first for other values.
+//
 
 #pragma once
 
