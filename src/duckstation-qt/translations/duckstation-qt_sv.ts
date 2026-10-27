@@ -1374,7 +1374,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
-        <translation>Ställer in dödläget för aktivering av knappar/skjutknappar, alltså den del av knappen  som kommer att ignoreras.</translation>
+        <translation>Ställer in dödläget för aktivering av knappar/skjutknappar, alltså den del av knappen som kommer att ignoreras.</translation>
     </message>
     <message>
         <source>Large Motor Vibration Bias</source>
@@ -1386,7 +1386,7 @@ Den här sessionen startar i offlineläge.</translation>
     </message>
     <message>
         <source>Small Motor Vibration Bias</source>
-        <translation>Vibrationsjustering för liten  motor</translation>
+        <translation>Vibrationsjustering för liten motor</translation>
     </message>
     <message>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
@@ -3861,8 +3861,8 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     <message numerus="yes">
         <source>Macro will toggle buttons every %n frame(s).</source>
         <translation>
-            <numerusform>Makrot kommer att växla knappar varje bildruta.</numerusform>
-            <numerusform>Makrot kommer att växla knappar var %n:e bildrutor.</numerusform>
+            <numerusform>Makrot växlar knappar var %n:e bildruta.</numerusform>
+            <numerusform>Makrot växlar knappar var %n:e bildruta.</numerusform>
         </translation>
     </message>
 </context>
@@ -3971,7 +3971,7 @@ Du kan inte ångra denna åtgärd.</translation>
 All bindings and configuration will be lost. You cannot undo this action.</source>
         <translation>Är du säker på att du vill återskapa standardkonfigurationen för handkontrollen?
 
-Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra denna åtgärd.</translation>
+Alla bindningar och konfigurationen kommer att förloras. Du kan inte ångra denna åtgärd.</translation>
     </message>
     <message>
         <source>Controller preset reset to global settings.</source>
@@ -4653,7 +4653,7 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
     <message>
         <source>&amp;Patch Instruction</source>
-        <translation>&amp;Patcha instruktion</translation>
+        <translation>Ändra &amp;instruktion</translation>
     </message>
     <message numerus="yes">
         <source>&amp;Nop %n Instruction(s)</source>
@@ -4698,7 +4698,7 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
     <message>
         <source>Patch Instruction</source>
-        <translation>Patcha instruktion</translation>
+        <translation>Ändra instruktion</translation>
     </message>
     <message>
         <source>Enter replacement instruction for 0x%1:</source>
@@ -6038,7 +6038,7 @@ Du kan inte ångra den här åtgärden.</translation>
 All bindings and configuration will be lost. You cannot undo this action.</source>
         <translation>Är du säker på att du vill återställa standardkonfigurationen för handkontrollen?
 
-Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra denna åtgärd.</translation>
+Alla bindningar och konfigurationen kommer att förloras. Du kan inte ångra denna åtgärd.</translation>
     </message>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
@@ -7416,7 +7416,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>Avrundar texturkoordinater istället för flooring vid uppskalning. Kan fixa feljusterade texturer i vissa spel, men förstöra andra, och är inkompatibel med texturfiltrering.</translation>
+        <translation>Avrundar texturkoordinater i stället för att avrunda nedåt vid uppskalning. Kan korrigera feljusterade texturer i vissa spel men försämra andra och är inte kompatibelt med texturfiltrering.</translation>
     </message>
     <message>
         <source>Runahead</source>
@@ -11200,7 +11200,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Om du ställer in detta värde till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast för hårdvarubakändar. &lt;br&gt;Det här alternativet är vanligtvis säkert, och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
+        <translation>Om värdet ställs in till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast maskinvaruåtergivarna. &lt;br&gt;Det här alternativet är vanligtvis säkert och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
     </message>
     <message>
         <source>Down-Sampling</source>
@@ -11356,7 +11356,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation>Avrundar texturkoordinater istället för flooring vid uppskalning. Kan fixa feljusterade texturer i vissa spel, men förstöra andra, och är inkompatibel med texturfiltrering.</translation>
+        <translation>Avrundar texturkoordinater i stället för att avrunda nedåt vid uppskalning. Kan korrigera feljusterade texturer i vissa spel men försämra andra och är inte kompatibelt med texturfiltrering.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -11528,7 +11528,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>&lt;h3&gt;Changing the renderer is not recommended!&lt;/h3&gt;&lt;p&gt;The &lt;strong&gt;Automatic&lt;/strong&gt; option provides the best experience, selecting the optimal renderer for your graphics adapter. There is &lt;strong&gt;no visual or performance advantage&lt;/strong&gt; to using a different renderer, and you risk the application breaking due to driver bugs.&lt;br&gt;&lt;br&gt;If you continue with changing the renderer, &lt;strong&gt;do not ask for support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Are you sure you want to change the renderer?&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;Det rekommenderas inte att byta renderare!&lt;/h3&gt;&lt;p&gt;Alternativet &lt;strong&gt;Automatisk&lt;/strong&gt; ger den bästa upplevelsen genom att välja den optimala renderaren för ditt grafikkort. Det finns &lt;strong&gt;ingen visuell eller prestandamässig fördel&lt;/strong&gt; med att använda en annan renderare, och drivrutinsfel kan få programmet att sluta fungera.&lt;br&gt;&lt;br&gt;Om du fortsätter att byta renderare ska du &lt;strong&gt;inte be om support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Är du säker på att du vill byta renderare?&lt;/p&gt;</translation>
+        <translation>&lt;h3&gt;Det rekommenderas inte att byta återgivare!&lt;/h3&gt;&lt;p&gt;Alternativet &lt;strong&gt;Automatisk&lt;/strong&gt; ger den bästa upplevelsen genom att välja den optimala återgivaren för ditt grafikkort. Det finns &lt;strong&gt;ingen visuell eller prestandamässig fördel&lt;/strong&gt; med att använda en annan återgivare och drivrutinsfel kan få programmet att sluta fungera.&lt;br&gt;&lt;br&gt;Om du fortsätter att byta återgivare ska du &lt;strong&gt;inte be om support&lt;/strong&gt;.&lt;br&gt;&lt;br&gt;Är du säker på att du vill byta återgivare?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -13978,7 +13978,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Media Capt&amp;ure</source>
-        <translation>Mediaf&amp;ångst</translation>
+        <translation>&amp;Medieinspelning</translation>
     </message>
     <message>
         <source>Starts a new session using the selected file.</source>
@@ -14086,7 +14086,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Capt&amp;ure</source>
-        <translation>F&amp;ånga</translation>
+        <translation>&amp;Fånga</translation>
     </message>
     <message>
         <source>These options determine how screenshots and videos are captured by the application.</source>
@@ -14166,7 +14166,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Add Game Director&amp;y...</source>
-        <translation>L&amp;ägg till spelkatalog...</translation>
+        <translation>&amp;Lägg till spelkatalog...</translation>
     </message>
     <message>
         <source>Adds a new directory that will be searched for game files.</source>
@@ -14262,7 +14262,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Clear List Backgro&amp;und</source>
-        <translation>T&amp;öm listbakgrund</translation>
+        <translation>&amp;Töm listbakgrund</translation>
     </message>
     <message>
         <source>Refresh &amp;Achievement Database</source>
@@ -14330,7 +14330,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Debugging</source>
-        <translation>Fels&amp;ökning</translation>
+        <translation>&amp;Felsökning</translation>
     </message>
     <message>
         <source>Enable &amp;Safe Mode</source>
@@ -14338,7 +14338,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Res&amp;ume</source>
-        <translation>&amp;Återuppta</translation>
+        <translation>Åter&amp;uppta</translation>
     </message>
     <message>
         <source>&amp;Show Toolbar</source>
@@ -14474,7 +14474,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>&amp;Change List Background...</source>
-        <translation>&amp;Ändra listbakgrund...</translation>
+        <translation>Änd&amp;ra listbakgrund...</translation>
     </message>
     <message>
         <source>Changes the background image shown in the game list/grid.</source>
@@ -14534,7 +14534,7 @@ Vill du ta bort det sparade tillståndet och starta spelet ändå?</translation>
     </message>
     <message>
         <source>Cl&amp;ose Game</source>
-        <translation>St&amp;äng spel</translation>
+        <translation>&amp;Stäng spel</translation>
     </message>
     <message>
         <source>Close</source>
@@ -18123,7 +18123,7 @@ Vill du skapa denna katalog?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Gränssnittsinställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr hur emulatorn ser ut och uppför sig.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information, och Skift+Hjul för att rulla i panelen.</translation>
+        <translation>&lt;strong&gt;Gränssnittsinställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr hur emulatorn ser ut och uppför sig.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information. Rulla i panelen med Skift+Hjul.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
@@ -18681,7 +18681,7 @@ Token genererades %2</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Om du ställer in detta värde till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast för hårdvarubackends. &lt;br&gt;Det här alternativet är vanligtvis säkert, och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
+        <translation>Om värdet ställs in till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast maskinvaruåtergivarna. &lt;br&gt;Det här alternativet är vanligtvis säkert och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
@@ -20076,7 +20076,7 @@ Aktuell bindning: %s</translation>
 
 Do you want to %1$s anyway?</source>
         <comment>emulation_menu_safety_check_message</comment>
-        <translation>VARNING: Det är för närvarande inte säkert att %1$s, och det kan leda till att data skadas. Vi rekommenderar att du återupptar spelet och väntar 5 sekunder innan du försöker igen.
+        <translation>VARNING: Det är för närvarande inte säkert att %1$s. Det kan leda till att data skadas. Vi rekommenderar att du återupptar spelet och väntar 5 sekunder innan du försöker igen.
 
 Vill du %1$s ändå?</translation>
     </message>
@@ -20746,7 +20746,7 @@ Vill du %1$s ändå?</translation>
         <comment>edit_macro_button_summary_repeat</comment>
         <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
         <translation>
-            <numerusform>%1$s utlöser %2$s varje bildruta.</numerusform>
+            <numerusform>%1$s utlöser %2$s var %3$d:e bildruta.</numerusform>
             <numerusform>%1$s utlöser %2$s var %3$d:e bildruta.</numerusform>
         </translation>
     </message>
