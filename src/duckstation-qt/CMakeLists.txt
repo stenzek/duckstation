@@ -202,6 +202,7 @@ set(TS_FILES
   translations/duckstation-qt_ru.ts
   translations/duckstation-qt_sv.ts
   translations/duckstation-qt_tr.ts
+  translations/duckstation-qt_vi.ts
   translations/duckstation-qt_zh-CN.ts
 )
 

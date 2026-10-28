@@ -1775,11 +1775,6 @@ Oxunmayan mesajlar: {}</translation>
         <translation>Təmizlə</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>Oldu</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>Tətbiq Quruluşları</translation>
@@ -2737,11 +2732,6 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <translation>Geri çəkiliş durumunun ekran çəkimi</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>Yenidən Başlatma Tələb Edir</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>Dəyişdirmə Menyusu</translation>
@@ -2815,11 +2805,6 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>Geri Çəkilişi Qoş</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>Geri çəkiliş durumu hansı tezlikdə yaradılacaq. Yüksək tezliklərin yüksək sistem gərəksinimləri var.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4092,6 +4077,86 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <translation>İstisna Edilmiş Yollardan Qaldır</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>Yerli Oyun Saxlama Yeri</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>Yerli oyun saxlama yeri sistemin fayl seçicisi (Storage Access Framework) vasitəsilə oyun qovluqlarının seçilməsini dəstəkləməyən cihazlar üçündür. Oyunları Fayllar Əlavə Et ilə buraya köçürmək, yaxud fayl meneceri və ya USB vasitəsilə bu qovluğa yerləşdirmək olar.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>Yerli Oyun Saxlama Yerini Tara</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>Bu qovluqda və alt qovluqlarında oyun axtarır.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>Yerləşmə</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>Fayllar Əlavə Et</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>Seçilmiş faylları yerli oyun saxlama yerinə köçürür. Disk obrazının .cue faylını onun .bin faylları ilə birlikdə seçin.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>Fayllar</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>Yerli oyun saxlama yerində fayl yoxdur.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>%1$s köçürülür (%3$d fayldan %2$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s artıq yerli oyun saxlama yerində mövcuddur. Onun üzərinə yazmaq istəyirsiniz?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>Başqa fayl əməliyyatları</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>Faylı Sil</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>%s faylını silmək istədiyinizə əminsiniz? Bu əməliyyatı geri qaytarmaq olmaz.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>Ekran Mesajları</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>Ekran Qaplamaları</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Oyun Ekranı</translation>
@@ -4471,6 +4536,11 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <translation>Analoq Rejimi Dəyiş</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>Proqramla İşlənişi Aç/Bağla</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Diski Dəyiş</translation>
@@ -4494,6 +4564,11 @@ Yenə də %1$s əməliyyatını etmək istəyirsiniz?</translation>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>Yönəldən Quruluşları</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Oynayarkən səhvləri geri ala bilməyiniz üçün vəziyyəti mütəmadi olaraq saxlayır.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5994,6 +6069,16 @@ ${serial}: Oyunun seriyası.
         <translation>CD-ROM Quruluşları</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>Disk Dayandıqda Növbəti Diskə Keç</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>Oyun CD-ROM-u dayandırdıqda avtomatik olaraq oyunun növbəti diskinə keçir. Bütün oyunlarda işləmir.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>Ekran Ölçəyinin Aşağı-Örnəklənişi</translation>
@@ -6002,6 +6087,36 @@ ${serial}: Oyunun seriyası.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Son görüntü üçün uyğulanacaq çözünürlük ölçəyini seçir. 1x, doğma konsol çözünürlüyünə aşağı örnəkləyəcək.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>Dərinliyin Təmizlənmə Eşiyi</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>Dərinlik buferinin təmizlənməsinə səbəb olacaq dərinlik artımını müəyyən edir. Bəzi oyunlarda dərinlik problemlərini həll etməyə kömək edə bilər, lakin yenə də problemi dolayı yolla aradan qaldıran həll üsuludur.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>Dərinlik Sürüşməsi</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>Səth təsvirlərinin və kölgələrin titrəməsini azaltmaq üçün hər çoxbucaqlını kameraya doğru sürüşdürür. Çox yüksək dəyər gizli səthlərin görünməsinə səbəb ola bilər.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>Dərinlik Miqyasını Normallaşdır</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>Bəzi oyunlarda dərinlik buferi ilə bağlı həndəsi elementlərin görünməməsi problemini həll edir, lakin digər oyunlarda problemlər yaradır.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7618,10 +7733,6 @@ Would you like to import one now?</source>
         <translation>Sürətli İrəliləyiş Ucalığını Sıfırla</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>Bütün Səsləri Susdur</translation>
-    </message>
-    <message>
         <source>Mute CD Audio</source>
         <translation>CD Səsini Susdur</translation>
     </message>
@@ -7690,8 +7801,16 @@ Would you like to import one now?</source>
         <translation>Sürətli irəliləyiş zamanı yiyədə çıxan səsin ucalığını yönəldir.</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Yamsılayıcıya hər hansı eşidiləsi səsi ürətməyi əngəlləyir.</translation>
+        <source>Menu Volume</source>
+        <translation>Menyu Səsinin Ucalığı</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Böyük Ekran Rejiminin interfeysində və uğur bildirişlərində səsləndirilən səs effektlərinin ucalığını tənzimləyir.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Oyunun hər hansı eşidilən səs çıxarmasının qarşısını alır.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -7736,6 +7855,18 @@ Would you like to import one now?</source>
     <message>
         <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
         <translation>Ən Yüksək Gecikmə: %1 msan (ən aşağı çıxarış gecikməsi bilinmir)</translation>
+    </message>
+    <message>
+        <source>Menu Volume:</source>
+        <translation>Menyu Səsinin Ucalığı:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>Menyu Səsinin Ucalığını Sıfırla</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Oyun Səsini Susdur</translation>
     </message>
     <message>
         <source>Reset Buffer Size</source>
@@ -11169,16 +11300,16 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Seçilməyib</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Konsol kadrlarının yiyəyə sunuluşunu sinxronlaşdırır. Qoşuluş, giriliş gecikməsinin artışı bahasına, daha axıcı animasiyaya gətirə bilər. &lt;strong&gt;GSync/FreeSync işlədənlər bunun yerinə Uyğun Kadr Tempini qoşmalıdır.&lt;/strong&gt;</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>Hər kadrı göstərməzdən əvvəl ekranınızın yenilənməsini gözləyir. Bu, ekranın yuxarı və aşağı hissələrində müxtəlif kadrların göstərilməsi nəticəsində yaranan görüntü cırılmasının qarşısını alır. &lt;strong&gt;GSync/FreeSync ekranınız varsa, bunu açıq saxlayın, əks halda görüntü yenə də cırıla bilər.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSync qoşuluykən konsolun yeniləniş tezliyi yiyənin yeniləniş tezliyinə uyması üçün yamsılanış sürətini ayarlayır. Yamsılanış sürətinin potensial olaraq 1%&apos;dən aşağı artışı bahasına, bu, mümkün daha axıcı animasiyaya gətirə bilər. Konsol yeniləniş tezliyi yiyə yeniləniş tezliyindən çox uzaq olduğunda, Yiyə Yeniləniş Tezliyinə Sinx etki verməyəcək. Dəyişik yeniləniş tezlikli ekranı olan işlədicilər bu seçimi qoşmamalıdır.</translation>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>Oyunun kadr tezliyinin ekranınızın yenilənmə tezliyinə tam uyğun gəlməsi üçün oyunu çox az sürətləndirir və ya yavaşladır. VSync açıq olduqda bu, ən rəvan hərəkəti təmin edir, lakin oyun normaldan 1%-ə qədər sürətli işləyə bilər. İki tezlik arasındakı fərq çox böyükdürsə, təsir göstərmir. &lt;strong&gt;GSync/FreeSync ekranınız varsa, bunu söndürün, çünki ekran artıq oyuna uyğunlaşmaq üçün öz yenilənmə tezliyini dəyişir.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Bu seçimin qoşuluşu, uyğun kadr templənişi üçün, konsolun işlədiyi hər kadrın ekranda tutarlı tezlikdə göstərilməsini sağlayacaq. GSync/FreeSync ekranınız varsa, bu seçimi qoşun. Tam sürətin sağlayışıyla çətinlik, ya da səs axsaqlıqları yaşayırsınızsa, bu seçimi qoşmamağa çalışın.</translation>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>Ən rəvan hərəkət üçün oyunun çəkdiyi hər kadrı bərabər vaxt aralıqları ilə göstərir. Bunu yalnız kompüteriniz oyunu tam sürətdə işlədə bilmədikdə söndürün. Söndürüldükdə arabir gecikən kadrın ilişməyə və ya səsdə xışıltıya səbəb olması ehtimalı azalır, lakin hərəkət əvvəlki qədər rəvan olmur.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11510,10 +11641,6 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>PGXP verilən sonrakı-proyeksiyasına artıq kəsinlik artırır. Bir sıra oyunda görüntünü gəliştirə bilər.</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>Yamsılanış sürətini ayarlayır, beləliklə, VSinx qoşuluykən konsolun yeniləyiş tezliyini yiyəyə uyğunlaşdırır.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>Gəlişmiş Quruluşlar</translation>
     </message>
@@ -11734,6 +11861,10 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Alt: </translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>Daha sonra çəkilən çoxbucaqlıları dərinliyin milyonda biri vahidləri ilə kameraya yaxınlaşdırır. Səth təsvirlərinin titrəməsini azaldır.</translation>
+    </message>
+    <message>
         <source>Buffer Size</source>
         <translation>Bufer Ölçüsü</translation>
     </message>
@@ -11826,6 +11957,10 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Təmiz Başlanış</translation>
     </message>
     <message>
+        <source>Clear Binding</source>
+        <translation>Bağlanışı Təmizlə</translation>
+    </message>
+    <message>
         <source>Clear Mappings</source>
         <translation>Xəritələnişləri Təmizlə</translation>
     </message>
@@ -11916,6 +12051,10 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <translation>Yamsılanmış GİB&apos;dəki dizerinqin uyğulanış şəklini yönəldir. Gerçək Rəng, dizerinqi qaldırır və ən gözəl görünüşlü qradientləri ürədir.</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Böyük Ekran Rejiminin interfeysində və uğur bildirişlərində səsləndirilən səs effektlərinin ucalığını tənzimləyir.</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -12056,6 +12195,10 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Delete State</source>
         <translation>Durumu Sil</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Dərinlik Sürüşməsi</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -12424,10 +12567,6 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Encore Mode</source>
         <translation>Təkrar Durumu</translation>
-    </message>
-    <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>Optimal templəniş üçün, oluşdurulmuş hər kadrın göstərilməsini sağlayır. GSync/FreeSync kimi dəyişkən yeniləyişli ekranlar üçün qoşun. Sürət və ya səs problemləriniz yaşadıqda, qoşmayın.</translation>
     </message>
     <message>
         <source>Enter Value</source>
@@ -12992,6 +13131,10 @@ Yanlış: {}
         <translation>Seçmə Qıraqları</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Menyu Səsinin Ucalığı</translation>
+    </message>
+    <message>
         <source>Merge Multi-Disc Games</source>
         <translation>Çox-Diskli Oyunları Birləşdir</translation>
     </message>
@@ -13030,10 +13173,6 @@ Yanlış: {}
     <message>
         <source>Multitap Mode</source>
         <translation>Çox-bağlantı Durumu</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>Bütün Səsləri Susdur</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -13304,10 +13443,6 @@ Yanlış: {}
         <translation>Basınc</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Yamsılayıcıya hər hansı eşidiləsi səsi ürətməyi əngəlləyir.</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Yamsılayıcı çalışarkən ekran qoruyucusunun işə düşməsini və yiyənin yatışa keçməsini əngəlləyir.</translation>
     </message>
@@ -13526,6 +13661,10 @@ Yanlış: {}
     <message>
         <source>Runahead/Rewind</source>
         <translation>Önə Atlayış/Geri Çəkiliş</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>VSync açıq olduqda ekranınızın yenilənmə tezliyinə uyğunlaşmaq üçün oyunu çox az sürətləndirir və ya yavaşladır. GSync/FreeSync ekranları ilə bunu söndürün.</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -13848,6 +13987,10 @@ Yanlış: {}
         <translation>Gəlişim quruluşlarını ekranın alt-sağ küncündə göstərir.</translation>
     </message>
     <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>Oyunun çəkdiyi hər kadrı bərabər vaxt aralıqları ilə göstərir. Bunu yalnız kompüteriniz oyunu tam sürətdə işlədə bilmədikdə və görüntüdə ilişmələr və ya səsdə xışıltı olduqda söndürün.</translation>
+    </message>
+    <message>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
         <translation>Giriliş və səs gecikməsi bilgisini ekranın üst-sağ küncündə göstərir.</translation>
     </message>
@@ -14058,10 +14201,6 @@ Yanlış: {}
     <message>
         <source>Sync To Host Refresh Rate</source>
         <translation>Yiyə Yeniləniş Tezliyinə Sinx&apos;lə</translation>
-    </message>
-    <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Konsol kadrlarının yiyəyə sunuluşunu sinxronlaşdırır. GSync/FreeSync işlədiciləri bunun yerinə Uyğun Kadr Tempini işlətməlidir.</translation>
     </message>
     <message>
         <source>Temporarily disables all enhancements, useful when testing.</source>
@@ -14688,6 +14827,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Kursoru Hərəkət Etdir</translation>
     </message>
     <message>
+        <source>Mute Game Audio</source>
+        <translation>Oyun Səsini Susdur</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>Ə/D</translation>
     </message>
@@ -14698,6 +14841,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>No devices with LEDs were detected.</source>
         <translation>İşıqlı qurğu görülmədi.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Dərinlik Miqyasını Normallaşdır</translation>
     </message>
     <message>
         <source>Notification Location</source>
@@ -14748,6 +14895,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Oyun çalışarkən pəncərə ölçüsünün dəyişimini dayandırır.</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Oyunun hər hansı eşidilən səs çıxarmasının qarşısını alır.</translation>
+    </message>
+    <message>
         <source>Progress Tracking</source>
         <translation>İrəliləyiş İzlənişi</translation>
     </message>
@@ -14762,6 +14913,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>Refresh Achievement Progress</source>
         <translation>Uğur İrəliləyişini Yenilə</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>Hər obyektin çevrilməsindəki miqyası dərinlik dəyərlərindən çıxarır. Bəzi oyunlarda həndəsi elementlərin görünməməsi problemini həll edir, lakin digər oyunlarda problemlər yaradır.</translation>
     </message>
     <message>
         <source>Reset Serial</source>
@@ -14994,6 +15149,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>Verifying Image</source>
         <translation>Görünüşü Doğrula</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>Hər kadrı göstərməzdən əvvəl ekranınızın yenilənməsini gözləyərək görüntü cırılmasının qarşısını alır. GSync/FreeSync ekranları ilə də bunu açıq saxlayın.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -15455,6 +15614,10 @@ Yenə də {1} istəyirsiniz?</translation>
         <source>Disallow in Hardcore Mode</source>
         <translation>Möhkəm Modda Qadağan Et</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>PGXP Proyeksiya Kəsinliyinin Qorunmasını Məcburi Et</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15788,6 +15951,11 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
         <translation>PGXP OİB Durumunu Gücəndir</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>PGXP Dərinliyini Normallaşdır</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Təkrar Dərləyicinin Təlimat Önyaddaşını Məcburi Qoş</translation>
@@ -15948,6 +16116,10 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Uyumluluq quruluşları bu oyun üçün uyğunlandı.</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP Dərinlik Sürüşməsi</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -16858,6 +17030,14 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Dərinlik Təmizləmə Həddini Sıfırla</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>Dərinlik Sürüşməsi:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>Dərinlik Sürüşməsini Sıfırla</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>OİB Durumu:</translation>
     </message>
@@ -16896,6 +17076,10 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
     <message>
         <source>Depth Test Transparent Polygons</source>
         <translation>Şəffaf Poliqonlarda Dərinlik Sınağını Qoş</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Dərinlik Miqyasını Normallaşdır</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17254,12 +17438,24 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Göstərilən kadr buferinə dəyişiklikləri növbəti kadrın başlanğıcında deyil, cari kadrın ortasında tətbiq edir. Bəzi oyunlar bölünmüş ekran effektləri üçün buna əsaslanır, lakin kadrın ortasında kadr buferini dəyişən oyunlarda görüntü cırılmasına səbəb olur, ona görə bunu yalnız ehtiyacı olan oyunlarda qoşun.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>Dərinlik Sürüşməsi</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>Hər çoxbucaqlını ondan əvvəl çəkilmiş çoxbucaqlılara nisbətən kameraya daha yaxın gətirir; yaxınlaşma dərinliyin milyonda biri vahidləri ilə ölçülür. Daha yüksək dəyərlər səth təsvirlərinin və kölgələrin titrəməsini azaldır, lakin ön səthlərin arxasında qalmalı olan çoxbucaqlıların görünməsinə səbəb ola bilər.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Yalnız yaddaş əməliyyatları üçün deyil, bütün təlimatlar üçün PGXP işlədir. Bəzi oyunlarda PGXP-nin titrəməni düzəltməsi üçün gərəklidir, lakin performansa böyük mənfi təsiri var. Özbaşına seçim bunu oyun verilənlər bazasına görə yalnız ehtiyacı olan oyunlarda qoşur.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Yaddaşa girişləri izləmək əvəzinə dəqiq mövqelər əldə etmək üçün ekran fəzasındakı uc mövqelərindən istifadə edir. Bəzi oyunlarda PGXP uyğunluğunu təmin edə bilər, lakin &lt;strong&gt;ümumiyyətlə heç bir fayda vermir.&lt;/strong&gt; Özbaşına seçim bunu oyun verilənlər bazasına görə yalnız ehtiyacı olan oyunlarda qoşur.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>Hər obyektin çevrilməsindəki miqyası dərinlik dəyərlərindən çıxarır. Uzaq obyektlərin çevrilmələrinin miqyasını kiçildən oyunlarda dərinlik buferi ilə bağlı həndəsi elementlərin görünməməsi problemini həll edir, lakin modelləri çevrilmə vasitəsilə miqyaslandıran oyunlarda problemlər yaradır. Oyun verilənlər bazası lazım olduqda bunu avtomatik olaraq aktivləşdirəcək.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -22271,10 +22467,6 @@ Yanlış: {1}</translation>
         <translation>Kölgəl-ri &amp;Yenidən Yüklə</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>Sonrakı İşləmləniş Zənciri</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>Artır</translation>
     </message>
@@ -22314,16 +22506,16 @@ Yanlış: {1}</translation>
         <translation>Başlıca Görkəmləniş</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Qıraq qaplaması sistem ekranı yörəsində çizilmiş görünüşdür. Qıraq qaplamaları sonrakı-işləmləniş sonrası uyğulanır. Siz aşağıdakı qıraq sıralığından seçə, və ya özəl qırağı əl ilə görkəmlədə bilərsiniz.&lt;/p&gt;&lt;p&gt;Artıq ön-quruluş qıraqlarını verilən qovluğu içindəki &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; qovluğundan artırıla bilər.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>Seçilmiş Ön-Quruluş:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>Üst Göstərici Sıralığını Yenilə</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Əlavə hazır çərçivələri məlumat qovluğundakı &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; qovluğuna əlavə etmək olar.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22474,6 +22666,18 @@ Yanlış: {1}</translation>
     <message>
         <source>Border Overlay</source>
         <translation>Çərçivə Qaplaması</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>Ekran kölgələndiriciləri son görüntü ekranınıza uyğun miqyaslandırıldıqdan sonra tətbiq olunur. Bunlardan CRT filtrləri və skan xətləri kimi ekran effektləri üçün istifadə edin.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>Daxili kölgələndiricilər oyunun görüntüsünə miqyaslandırılmadan əvvəl, oyunun çəkildiyi təsvir ölçüsündə tətbiq olunur. Bunlardan SSAO kimi oyunun öz görünüşünü dəyişən effektlər üçün istifadə edin.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>Çərçivə qaplaması oyunun görüntüsü ətrafında çəkilən, məsələn, televizor və ya əl konsolu çərçivəsini göstərən şəkildir. Bütün kölgələndiricilər tətbiq olunduqdan sonra hər şeyin üzərinə çəkilir.</translation>
     </message>
 </context>
 <context>

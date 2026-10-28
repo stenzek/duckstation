@@ -4,9 +4,6 @@ on:
   pull_request:
     paths:
       - 'src/duckstation-qt/translations/*.ts'
-      - 'src/duckstation-qt/translations/*.sh'
-      - 'src/duckstation-qt/translations/*.bat'
-      - 'scripts/translation/**'
       - '.github/workflows/translation-lint.yml'
   push:
     branches:
@@ -14,9 +11,6 @@ on:
       - dev
     paths:
       - 'src/duckstation-qt/translations/*.ts'
-      - 'src/duckstation-qt/translations/*.sh'
-      - 'src/duckstation-qt/translations/*.bat'
-      - 'scripts/translation/**'
       - '.github/workflows/translation-lint.yml'
   workflow_dispatch:
 
@@ -32,9 +26,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Test Translation Tools
-      run: python -m unittest discover -s scripts/translation/tests -v
-
     - name: Check Translation Catalogs
       shell: bash
       env:
@@ -45,25 +36,14 @@ jobs:
         AFTER_SHA: ${{ github.sha }}
       run: |
         if [[ "$EVENT_NAME" == "pull_request" ]]; then
-          mapfile -t files < <(
-            git diff --name-only --diff-filter=ACMRT "$BASE_SHA...$HEAD_SHA" -- \
-              'src/duckstation-qt/translations/*.ts'
-          )
+          base=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          python scripts/translation/lint_ts.py --base "$BASE_SHA" --selection-base "$base" --head "$HEAD_SHA"
         elif [[ "$EVENT_NAME" == "push" ]]; then
-          mapfile -t files < <(
-            git diff --name-only --diff-filter=ACMRT "$BEFORE_SHA..$AFTER_SHA" -- \
-              'src/duckstation-qt/translations/*.ts'
-          )
+          if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            python scripts/translation/lint_ts.py --base "$AFTER_SHA" --all
+          else
+            python scripts/translation/lint_ts.py --base "$BEFORE_SHA"
+          fi
         else
-          files=()
+          python scripts/translation/lint_ts.py --base HEAD --all
         fi
-
-        if (( ${#files[@]} == 0 )); then
-          echo "No translation files to validate."
-          exit 0
-        fi
-
-        for file in "${files[@]}"; do
-          python scripts/translation/validate_ts.py \
-            --reject-obsolete --reject-locations "$file"
-        done

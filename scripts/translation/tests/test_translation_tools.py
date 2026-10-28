@@ -2,29 +2,36 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = SCRIPTS_DIR.parent
 TRANSLATE = SCRIPTS_DIR / "translation" / "translate_ts.py"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from translation.translate_ts import validate_decision  # noqa: E402
+from translation import lint_ts, review_ts  # noqa: E402
+from translation.translate_ts import split_tasks, validate_decision  # noqa: E402
 from translation.ts_utils import (  # noqa: E402
     TRANSLATION_RE,
+    atomic_write_text,
     catalog_fingerprint,
     extract_placeholders,
     extract_rich_tags,
+    jsonl_text,
     parse_catalog,
     placeholder_counts_match,
     placeholders_are_subset,
     placeholders_match,
     replace_translation_node,
+    text_sha256,
     unbalanced_rich_tags,
     validate_translation,
 )
@@ -118,7 +125,7 @@ class TranslationToolTests(unittest.TestCase):
         catalog = root / "catalog.ts"
         session = root / "session"
         catalog.write_text(fixture, encoding="utf-8")
-        self.run_tool("start", catalog, "--session-dir", session, *extra)
+        self.run_tool("start", catalog, "--session-dir", session, "--require-semantic-review", *extra)
         manifest = json.loads((session / "manifest.json").read_text(encoding="utf-8"))
         return catalog, session, manifest
 
@@ -165,6 +172,20 @@ class TranslationToolTests(unittest.TestCase):
             decisions = [self.decision_for(record) for record in self.task_records(session, task)]
             self.append_decisions(self.response_path(session, task), decisions)
 
+    def approve_session(self, session: Path, *options: str) -> Path:
+        self.run_tool("prepare-review", session, *options)
+        audit = Path(json.loads((session / "quality.json").read_text())["session"])
+        manifest = json.loads((audit / "manifest.json").read_text())
+        for task in manifest["tasks"]:
+            decisions = [{"id": record["id"], "outcome": "pass", "reviewer": "fixture reviewer",
+                          "source_reason": "Reviewed fixture identifier"}
+                         for record in self.task_records(audit, task)]
+            self.append_decisions(self.response_path(audit, task), decisions)
+        result = subprocess.run([sys.executable, str(SCRIPTS_DIR / "translation/review_ts.py"),
+                                 "merge", str(audit), "--write"], capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        return audit
+
     def test_placeholder_recognition_and_compatibility(self) -> None:
         text = "At 100% speed, 5% of users: %1 %n {} {0:08X} %.1f %s ${title} {{}} %%"
         placeholders = extract_placeholders(text)
@@ -182,6 +203,7 @@ class TranslationToolTests(unittest.TestCase):
         self.assertFalse(placeholder_counts_match("Use {0}, then use {0} again", "Usar {0}"))
         self.assertTrue(placeholders_are_subset("{} of %n", "%n"))
         self.assertFalse(placeholders_are_subset("{} of %n", "%n %1"))
+        self.assertFalse(placeholders_are_subset("%n files", "%n %n ファイル"))
 
     def test_rich_text_helpers_ignore_labels_and_find_unbalanced_tags(self) -> None:
         self.assertFalse(extract_rich_tags("<Parent Directory>"))
@@ -339,6 +361,9 @@ class TranslationToolTests(unittest.TestCase):
             self.assertEqual(0, payload["tasks"][0]["unmerged"])
 
             self.append_decisions(response, [self.decision_for(record) for record in records[2:]])
+            for other_task in manifest["tasks"][1:]:
+                self.append_decisions(self.response_path(session, other_task),
+                                      [self.decision_for(record) for record in self.task_records(session, other_task)])
             self.run_tool("check", session, response, "--require-complete-task")
             self.run_tool("merge", session, "--write")
             status = json.loads(self.run_tool("status", session, "--json").stdout)
@@ -409,6 +434,10 @@ class TranslationToolTests(unittest.TestCase):
             repaired = self.run_tool("salvage", session, response, "--write")
             self.assertIn("Salvaged 2/6 valid decision(s)", repaired.stdout)
             self.assertIn("skipped 1 invalid line(s)", repaired.stdout)
+            response.write_bytes(response.read_bytes() + b'\xc3')
+            utf8_repaired = self.run_tool("salvage", session, response, "--write")
+            self.assertIn("Salvaged 2/6", utf8_repaired.stdout)
+            self.assertIn("invalid UTF-8", utf8_repaired.stdout)
             self.run_tool("check", session, response)
             self.run_tool("merge", session, "--write")
             payload = json.loads(self.run_tool("status", session, "--json").stdout)
@@ -468,7 +497,11 @@ class TranslationToolTests(unittest.TestCase):
             self.complete_responses(session, manifest)
             self.run_tool("merge", session, "--write")
             status = self.run_tool("status", session)
-            self.assertIn("REVIEW QUEUE COMPLETE", status.stdout)
+            self.assertIn("TRANSLATION QUEUE COMPLETE", status.stdout)
+            blocked = self.run_tool("apply", session, "--write", expect=1)
+            self.assertIn("semantic review is required", blocked.stdout)
+            self.assertEqual(original, catalog.read_bytes())
+            self.approve_session(session)
             self.run_tool("apply", session)
             self.assertEqual(original, catalog.read_bytes())
             self.run_tool("apply", session, "--write")
@@ -481,6 +514,9 @@ class TranslationToolTests(unittest.TestCase):
             self.assertIn('<translation type="vanished">古い文言</translation>', updated)
             self.assertIn('<translation type="obsolete">削除済み</translation>', updated)
             self.assertNotIn('type="unfinished"', updated)
+            final_status = json.loads(self.run_tool("status", session, "--json").stdout)
+            self.assertTrue(final_status["semantic_review"]["approved"])
+            self.assertEqual("final_validation", final_status["recommended_action"])
             repeated = self.run_tool("apply", session, "--write")
             self.assertIn("0 translation(s)", repeated.stdout)
             self.assertEqual(updated, catalog.read_text(encoding="utf-8"))
@@ -512,6 +548,7 @@ class TranslationToolTests(unittest.TestCase):
             self.append_decisions(self.response_path(session, task), [self.decision_for(record)])
             self.run_tool("merge", session, "--write")
 
+            self.approve_session(session, "--reviewed-only")
             dry_run = self.run_tool("apply", session, "--reviewed-only")
             self.assertIn("Would apply 1 translation(s)", dry_run.stdout)
             self.assertIn("5 remain unreviewed", dry_run.stdout)
@@ -533,6 +570,7 @@ class TranslationToolTests(unittest.TestCase):
             catalog, session, manifest = self.start_session(root)
             self.complete_responses(session, manifest)
             self.run_tool("merge", session, "--write")
+            self.approve_session(session)
             catalog.write_text(FIXTURE.replace("こんにちは</translation>", "やあ</translation>"), encoding="utf-8")
             self.run_tool("apply", session, "--write")
             self.assertIn("<translation>やあ</translation>", catalog.read_text(encoding="utf-8"))
@@ -579,6 +617,7 @@ class TranslationToolTests(unittest.TestCase):
                 self.append_decisions(response, decisions)
             self.assertEqual({"Empty active", "Missing active"}, set(found))
             self.run_tool("merge", session, "--write")
+            self.approve_session(session)
             self.run_tool("apply", session, "--write")
             self.assertEqual(2, catalog.read_text(encoding="utf-8").count("<translation>修復済み</translation>"))
 
@@ -616,6 +655,219 @@ class TranslationToolTests(unittest.TestCase):
             self.assertIn("vanished message is not permitted", obsolete.stdout)
             self.assertIn("obsolete message is not permitted", obsolete.stdout)
 
+
+    def test_partial_finished_plural_is_incomplete_and_selected_for_repair(self) -> None:
+        fixture = ('<TS language="es"><context><name>Count</name><message numerus="yes">'
+                   '<source>%n file(s)</source><translation><numerusform>%n archivo</numerusform>'
+                   '<numerusform></numerusform></translation></message></context></TS>')
+        with tempfile.TemporaryDirectory() as directory:
+            catalog, session, manifest = self.start_session(Path(directory), fixture, "--include-empty-active")
+            self.assertEqual(1, manifest["target_count"])
+            result = self.run_validator(catalog, "--require-complete", expect=1)
+            self.assertIn("plural form 2 is empty", result.stdout)
+            self.run_validator(catalog, "--check-finished", expect=1)
+
+    def test_format_details_nesting_and_protected_attributes_are_checked(self) -> None:
+        failures = [
+            ("Address {0:08X}", "アドレス {0}"),
+            ("Size %zu", "サイズ"),
+            ("Value %lld", "値 %d"),
+            ("<b><i>Warning</i></b>", "<b><i>警告</b></i>"),
+            ('<a href="https://duckstation.org/">Website</a>', '<a href="https://example.org/">サイト</a>'),
+        ]
+        for source, target in failures:
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                validate_decision({"id": "probe", "source": source}, {"id": "probe", "translation": target})
+        validate_decision({"id": "probe", "source": "{} {:08X}"},
+                          {"id": "probe", "translation": "{1:08X} {0}"})
+        validate_decision({"id": "probe", "source": "Open file {:{}}"},
+                          {"id": "probe", "translation": "Datei {0:{1}} öffnen"})
+        validate_decision({"id": "probe", "source": "{:{}} {}"},
+                          {"id": "probe", "translation": "{2} {0:{1}}"})
+        with self.assertRaises(ValueError):
+            validate_decision({"id": "probe", "source": "{:{}} {}"},
+                              {"id": "probe", "translation": "{1} {0:{2}}"})
+        self.assertEqual({}, extract_placeholders("%%s %%1"))
+        self.assertEqual({"printf:%zu": 1, "printf:%lld": 1, "printf:%.*s": 1},
+                         dict(extract_placeholders("%zu %lld %.*s")))
+
+    def test_qt_suffixes_and_percent_language_suffixes_are_not_printf_tokens(self) -> None:
+        cases = [("%1x Native", "ネイティブの%1倍"), ("%1d ago", "%1 日前"),
+                 ("less than 1%", "1%'den az"), ("{:.1f}%", "{:.1f}%'ində")]
+        for source, target in cases:
+            with self.subTest(source=source):
+                validate_decision({"id": "probe", "source": source}, {"id": "probe", "translation": target})
+
+    def test_small_contexts_share_bounded_tasks_and_review_gate_is_explicit(self) -> None:
+        records = [{"id": str(index), "context": f"Context{index}"} for index in range(117)]
+        self.assertEqual(1, len(split_tasks(records, 300, 192 * 1024)))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.ts"
+            catalog.write_text(FIXTURE)
+            session = root / "session"
+            self.run_tool("start", catalog, "--session-dir", session)
+            manifest = json.loads((session / "manifest.json").read_text())
+            self.assertFalse(manifest["require_semantic_review"])
+            self.complete_responses(session, manifest)
+            self.run_tool("merge", session, "--write")
+            self.run_tool("apply", session, "--write")
+
+    def test_needs_context_does_not_count_as_completed_work(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            _, session, manifest = self.start_session(Path(directory))
+            task = manifest["tasks"][0]
+            record = self.task_records(session, task)[0]
+            self.append_decisions(self.response_path(session, task),
+                                  [{"id": record["id"], "needs_context": "Which value does this argument represent?"}])
+            self.run_tool("merge", session, "--write")
+            status = json.loads(self.run_tool("status", session, "--json").stdout)
+            self.assertEqual(6, status["remaining"])
+            self.assertEqual(0, status["unmerged"])
+            self.assertIn(record["id"], status["tasks"][0]["needs_context"])
+
+    def test_candidate_changes_require_new_semantic_approval(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog, session, manifest = self.start_session(Path(directory))
+            self.complete_responses(session, manifest)
+            self.run_tool("merge", session, "--write")
+            first = self.approve_session(session)
+            task = manifest["tasks"][0]
+            response = self.response_path(session, task)
+            lines = [json.loads(line) for line in response.read_text().splitlines()]
+            lines[1]["translation"] = "別の %1 {0} ${title} %.1f <strong>訳</strong>"
+            response.write_text("".join(json.dumps(line, ensure_ascii=False) + "\n" for line in lines))
+            self.run_tool("merge", session, response, "--replace", "--write")
+            original = catalog.read_bytes()
+            self.run_tool("apply", session, "--write", expect=1)
+            self.assertEqual(original, catalog.read_bytes())
+            self.run_tool("prepare-review", session)
+            second = Path(json.loads((session / "quality.json").read_text())["session"])
+            self.assertNotEqual(first, second)
+            journal = [json.loads(line) for line in (second / "reviews.jsonl").read_text().splitlines()]
+            self.assertEqual(5, len(journal) - 1)
+
+    def test_language_metadata_and_message_ids_are_part_of_conflict_checks(self) -> None:
+        fixture = FIXTURE.replace('<message>', '<message id="test">', 1)
+        with tempfile.TemporaryDirectory() as directory:
+            catalog, session, _ = self.start_session(Path(directory), fixture)
+            catalog.write_text(fixture.replace('language="ja"', 'language="ko"'))
+            result = self.run_tool("status", session, expect=1)
+            self.assertIn("language/version metadata", result.stdout)
+            catalog.write_text(fixture.replace('id="test"', 'id="changed"'))
+            result = self.run_tool("status", session, expect=1)
+            self.assertIn("source identity", result.stdout)
+
+    def test_baseline_tolerates_only_unchanged_existing_defects(self) -> None:
+        fixture = ('<TS language="ja"><context><name>Menu</name><message>'
+                   '<source>&amp;Open</source><translation>開く</translation></message></context></TS>')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.ts"
+            baseline = root / "baseline.ts"
+            catalog.write_text(fixture)
+            baseline.write_text(fixture)
+            self.run_validator(catalog, "--strict-accelerators", "--baseline", baseline)
+            catalog.write_text(fixture.replace("開く", "開いて"))
+            self.run_validator(catalog, "--strict-accelerators", "--baseline", baseline, expect=1)
+
+    def test_strict_plural_validation_allows_redundant_argument_omission(self) -> None:
+        fixture = ('<TS language="de"><context><name>Count</name><message numerus="yes">'
+                   '<source>Found %n file(s) in %1 (folder: %1).</source><translation>'
+                   '<numerusform>%n Datei in %1 gefunden.</numerusform>'
+                   '<numerusform>%n Dateien in %1 (Ordner: %1) gefunden.</numerusform>'
+                   '</translation></message></context></TS>')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.ts"
+            path.write_text(fixture)
+            self.run_validator(path, "--require-complete", "--strict-placeholders")
+
+
+def catalog(first: str = "開く", second: str = "閉じる") -> str:
+    return ('<TS language="ja"><context><name>Menu</name>\n'
+            f'<message><source>Open</source><translation>{first}</translation></message>\n'
+            f'<message><source>Close</source><translation>{second}</translation></message>\n'
+            '</context></TS>')
+
+
+class ReviewTests(unittest.TestCase):
+    def run_review(self, *args: object, expect: int = 0) -> str:
+        result = subprocess.run([sys.executable, "-B", str(Path(review_ts.__file__)), *map(str, args)],
+                                text=True, capture_output=True)
+        self.assertEqual(expect, result.returncode, result.stdout + result.stderr)
+        return result.stdout
+
+    def test_partial_audit_resume_salvage_and_exact_approval(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "catalog.ts"
+            path.write_text(catalog())
+            session = review_ts.start_session(path, root / "audit", max_records=1)
+            _, manifest, records, tasks = review_ts.load_session(session)
+            task = next(iter(tasks.values()))
+            response = session / task["response_path"]
+            decision = {"id": records[0]["id"], "outcome": "pass", "reviewer": "reviewer 1"}
+            response.write_text(jsonl_text(review_ts.metadata(manifest, task), [decision]) + '{"id":')
+            original_journal = (session / "reviews.jsonl").read_bytes()
+            self.run_review("merge", session, response, "--write", expect=1)
+            self.assertEqual(original_journal, (session / "reviews.jsonl").read_bytes())
+            self.run_review("salvage", session, response, "--write")
+            response.write_bytes(response.read_bytes() + b'\xc3')
+            self.run_review("salvage", session, response, "--write")
+            self.run_review("merge", session, response, "--write")
+            payload = json.loads(self.run_review("status", session, "--json"))
+            self.assertEqual((1, 1), (payload["reviewed"], payload["remaining"]))
+            review_ts.require_approved(session, manifest["catalog_attributes"], records[:1])
+            with self.assertRaises(ValueError):
+                review_ts.require_approved(session, manifest["catalog_attributes"], records)
+            changed = {**records[0], "current_translation": "別の訳"}
+            with self.assertRaises(ValueError):
+                review_ts.require_approved(session, manifest["catalog_attributes"], [changed])
+            path.write_text(catalog(second="閉じて"))
+            self.run_review("status", session, expect=1)
+            second = review_ts.start_session(path, root / "audit-2", previous=session)
+            _, next_manifest, next_records, _ = review_ts.load_session(second)
+            retained = review_ts.load_journal(second, next_manifest, next_records)
+            self.assertEqual({records[0]["id"]}, set(retained))
+
+    def test_source_equal_requires_a_reviewed_reason_and_findings_are_validated(self):
+        record = {"id": "one", "source": "Vulkan", "current_translation": "Vulkan", "numerus": False}
+        result = {"id": "one", "outcome": "pass", "reviewer": "reviewer 2"}
+        with self.assertRaisesRegex(ValueError, "source_reason"):
+            review_ts.validate_result(record, result)
+        review_ts.validate_result(record, {**result, "source_reason": "Established API name"})
+        problem = {"id": "one", "outcome": "finding", "reviewer": "reviewer 2", "findings": [
+            {"severity": "medium", "category": "accuracy", "reason": "Incorrect argument", "translation": "値"}]}
+        record = {**record, "source": "Value %1"}
+        with self.assertRaisesRegex(ValueError, "placeholder"):
+            review_ts.validate_result(record, problem)
+
+    def test_review_response_ownership_snapshot_and_locale_are_checked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "catalog.ts"
+            path.write_text(catalog())
+            session = review_ts.start_session(path, root / "audit", max_records=1)
+            _, manifest, records, tasks = review_ts.load_session(session)
+            task = next(iter(tasks.values()))
+            response = session / task["response_path"]
+            response.write_text(jsonl_text(review_ts.metadata(manifest, task), [
+                {"id": records[1]["id"], "outcome": "pass", "reviewer": "reviewer 3"}]))
+            self.run_review("check", session, response, expect=1)
+            with self.assertRaisesRegex(ValueError, "language/version"):
+                review_ts.require_approved(session, {"language": "ko"}, records)
+            (session / "snapshot.ts").write_text(catalog(first="changed"))
+            with self.assertRaisesRegex(ValueError, "checksum"):
+                review_ts.load_session(session)
+
+    def test_atomic_update_preserves_a_concurrent_edit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.ts"
+            path.write_text("original")
+            with patch("translation.ts_utils.os.fsync", side_effect=lambda _: path.write_text("external edit")):
+                with self.assertRaisesRegex(ValueError, "changed during"):
+                    atomic_write_text(path, "replacement", expected_sha256=text_sha256("original"))
+            self.assertEqual("external edit", path.read_text())
 
 if __name__ == "__main__":
     unittest.main()

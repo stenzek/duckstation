@@ -12,6 +12,7 @@ import re
 import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable, Iterator, Sequence
 
@@ -19,11 +20,14 @@ from typing import Iterable, Iterator, Sequence
 SKIPPED_TYPES = frozenset({"vanished", "obsolete"})
 
 QT_PLACEHOLDER_RE = re.compile(r"%(?:L?\d+|Ln|n)")
-PRINTF_PLACEHOLDER_RE = re.compile(r"%(?!%)(?:(?:[-+0#]+\d*|\d+)?(?:\.\d+)?[diuoxXfFeEgGaAcsp])")
-FMT_PLACEHOLDER_RE = re.compile(r"(?<!\{)\{(?:\d+)?(?::[^{}]+)?\}(?!\})")
+PRINTF_PLACEHOLDER_RE = re.compile(
+    r"%(?!%)(?:\d+\$)?[-+0#]*(?:\d+|\*(?:\d+\$)?)?"
+    r"(?:\.(?:\d+|\*(?:\d+\$)?))?(?:hh|ll|[hljztL])?[diuoxXfFeEgGaAcsp]"
+)
+FMT_PLACEHOLDER_RE = re.compile(r"(?<!\{)\{(?:\d+)?(?::(?:[^{}]|\{\d*\})*)?\}(?!\})")
 TEMPLATE_PLACEHOLDER_RE = re.compile(r"\$\{[^{}]+\}")
 RICH_TAG_RE = re.compile(
-    r"<\s*(/?)\s*(html|head|body|p|span|strong|b|i|u|br|hr|h[1-6]|a|table|tr|td|ul|ol|li)\b[^>]*>",
+    r"<\s*(/?)\s*(html|head|body|p|div|span|strong|b|i|em|u|s|sub|sup|pre|code|font|br|hr|img|h[1-6]|a|table|tr|td|th|ul|ol|li)\b[^>]*>",
     re.IGNORECASE,
 )
 FILE_DIALOG_FILTER_RE = re.compile(r"[^\r\n]*\(([^()]*)\)\s*")
@@ -43,9 +47,10 @@ class MessageIdentity:
     extracomment: str
     numerus: bool
     occurrence: int
+    message_id: str = ""
 
     def as_payload(self) -> dict[str, object]:
-        return {
+        payload = {
             "context": self.context,
             "source": self.source,
             "comment": self.comment,
@@ -53,6 +58,9 @@ class MessageIdentity:
             "numerus": self.numerus,
             "occurrence": self.occurrence,
         }
+        if self.message_id:
+            payload["message_id"] = self.message_id
+        return payload
 
     @property
     def identifier(self) -> str:
@@ -68,6 +76,8 @@ class CatalogMessage:
     plural_translations: list[str]
     locations: list[dict[str, str]]
     catalog_line: int | None = None
+    message_line: int | None = None
+    translator_comment: str = ""
 
     @property
     def identifier(self) -> str:
@@ -83,31 +93,33 @@ class RawMessageSpan:
     translation_type: str
     numerus: bool
     catalog_line: int
+    message_line: int
 
 
 def element_text(element: ET.Element | None) -> str:
     return "" if element is None else "".join(element.itertext())
 
 
-def identity_base(context: str, message: ET.Element) -> tuple[str, str, str, str, bool]:
+def identity_base(context: str, message: ET.Element) -> tuple[str, str, str, str, bool, str]:
     return (
         context,
         message.findtext("source") or "",
         message.findtext("comment") or "",
         message.findtext("extracomment") or "",
         message.get("numerus") == "yes",
+        message.get("id", ""),
     )
 
 
 def iter_catalog_messages(root: ET.Element) -> Iterator[CatalogMessage]:
     for context_element in root.findall("context"):
         context = context_element.findtext("name") or ""
-        occurrences: collections.Counter[tuple[str, str, str, str, bool]] = collections.Counter()
+        occurrences: collections.Counter[tuple] = collections.Counter()
         for message in context_element.findall("message"):
             base = identity_base(context, message)
             occurrence = occurrences[base]
             occurrences[base] += 1
-            identity = MessageIdentity(*base, occurrence)
+            identity = MessageIdentity(*base[:5], occurrence, message_id=base[5])
             translation_element = message.find("translation")
             translation_type = "missing" if translation_element is None else translation_element.get("type", "finished")
             plural_elements = [] if translation_element is None else translation_element.findall("numerusform")
@@ -120,18 +132,26 @@ def iter_catalog_messages(root: ET.Element) -> Iterator[CatalogMessage]:
                 translation=translation,
                 plural_translations=plural_translations,
                 locations=locations,
+                translator_comment=message.findtext("translatorcomment") or "",
             )
 
 
 def parse_catalog(path: Path | str) -> tuple[ET.ElementTree, list[CatalogMessage]]:
-    tree = ET.parse(path)
-    messages = list(iter_catalog_messages(tree.getroot()))
     with Path(path).open("r", encoding="utf-8", newline="") as stream:
-        spans = scan_raw_messages(stream.read())
+        return parse_catalog_text(stream.read())
+
+
+def parse_catalog_text(text: str) -> tuple[ET.ElementTree, list[CatalogMessage]]:
+    tree = ET.ElementTree(ET.fromstring(text))
+    if tree.getroot().tag != "TS":
+        raise ValueError("Expected a Qt TS catalog")
+    messages = list(iter_catalog_messages(tree.getroot()))
+    spans = scan_raw_messages(text)
     for message in messages:
         span = spans.get(message.identifier)
         if span is not None:
             message.catalog_line = span.catalog_line
+            message.message_line = span.message_line
     return tree, messages
 
 
@@ -143,7 +163,7 @@ def catalog_fingerprint(messages: Iterable[CatalogMessage]) -> str:
 
 def extract_placeholders(text: str) -> collections.Counter[str]:
     tokens: list[str] = []
-    occupied: list[tuple[int, int]] = []
+    occupied: list[tuple[int, int]] = [match.span() for match in re.finditer(r"%%", text)]
     for kind, regex in (
         ("template", TEMPLATE_PLACEHOLDER_RE),
         ("fmt", FMT_PLACEHOLDER_RE),
@@ -156,7 +176,9 @@ def extract_placeholders(text: str) -> collections.Counter[str]:
             occupied.append(match.span())
             placeholder = match.group(0)
             if kind == "fmt" and ":" in placeholder:
-                placeholder = f"{placeholder.split(':', 1)[0]}}}"
+                field, specification = placeholder.split(":", 1)
+                tokens.extend(f"fmt:{nested.group()}" for nested in re.finditer(r"\{\d*\}", specification))
+                placeholder = f"{field}}}"
             tokens.append(f"{kind}:{placeholder}")
     return collections.Counter(tokens)
 
@@ -224,11 +246,11 @@ def placeholder_counts_match(source: str, translation: str) -> bool:
 
 def placeholders_are_subset(source: str, translation: str) -> bool:
     """Allow a plural form to omit redundant arguments without adding any."""
-    if placeholders_match(source, translation):
+    if placeholder_counts_match(source, translation):
         return True
     source_tokens = extract_placeholders(source)
     translated_tokens = extract_placeholders(translation)
-    if set(translated_tokens) <= set(source_tokens):
+    if translated_tokens <= source_tokens:
         return True
 
     source_fmt = collections.Counter(
@@ -243,7 +265,7 @@ def placeholders_are_subset(source: str, translation: str) -> bool:
     translated_non_fmt = collections.Counter(
         token for token in translated_tokens.elements() if not token.startswith("fmt:")
     )
-    if not set(translated_non_fmt) <= set(source_non_fmt) or set(source_fmt) != {"{}"}:
+    if not translated_non_fmt <= source_non_fmt or set(source_fmt) != {"{}"}:
         return False
     allowed_numbered = {f"{{{index}}}" for index in range(source_fmt["{}"])}
     return set(translated_fmt) <= allowed_numbered and all(count == 1 for count in translated_fmt.values())
@@ -263,7 +285,7 @@ def unbalanced_rich_tags(text: str) -> dict[str, tuple[int, int]]:
     closing: collections.Counter[str] = collections.Counter()
     for match in RICH_TAG_RE.finditer(text):
         tag = match.group(2).lower()
-        if tag in {"br", "hr"} or (not match.group(1) and match.group(0).rstrip().endswith("/>")):
+        if tag in {"br", "hr", "img"} or (not match.group(1) and match.group(0).rstrip().endswith("/>")):
             continue
         (closing if match.group(1) else opening)[tag] += 1
 
@@ -272,6 +294,84 @@ def unbalanced_rich_tags(text: str) -> dict[str, tuple[int, int]]:
         for tag in sorted(opening.keys() | closing.keys())
         if opening[tag] != closing[tag]
     }
+
+
+class RichTextParser(HTMLParser):
+    """Check recognized Qt rich text without treating literal angle labels as tags."""
+
+    def __init__(self, text: str):
+        super().__init__(convert_charrefs=True)
+        self.stack: list[str] = []
+        self.problems: list[str] = []
+        self.protected: collections.Counter[tuple[str, str, str]] = collections.Counter()
+        self.feed(text)
+        self.close()
+        if self.stack:
+            self.problems.append(f"unclosed rich-text tags: {self.stack}")
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if RICH_TAG_RE.fullmatch(self.get_starttag_text() or "") is None:
+            return
+        for name, value in attrs:
+            if name in {"href", "src"}:
+                self.protected[(tag, name, value or "")] += 1
+        if tag not in {"br", "hr", "img"}:
+            self.stack.append(tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_starttag(tag, attrs)
+        if self.stack and self.stack[-1] == tag:
+            self.stack.pop()
+
+    def handle_endtag(self, tag: str) -> None:
+        if RICH_TAG_RE.fullmatch(f"</{tag}>") is None or tag in {"br", "hr", "img"}:
+            return
+        if not self.stack or self.stack[-1] != tag:
+            self.problems.append(f"incorrect rich-text nesting at </{tag}>")
+        if tag in self.stack:
+            del self.stack[len(self.stack) - 1 - self.stack[::-1].index(tag):]
+
+
+def rich_text_problems(source: str, translation: str) -> list[str]:
+    original, translated = RichTextParser(source), RichTextParser(translation)
+    problems = list(translated.problems)
+    if original.protected != translated.protected:
+        problems.append("rich-text link/resource attributes differ from the source")
+    return problems
+
+
+def fmt_arguments(text: str) -> collections.Counter[tuple[int, str]]:
+    """Keep argument identities and format specifications, allowing positional reordering."""
+    result: collections.Counter[tuple[int, str]] = collections.Counter()
+    automatic = 0
+    template_spans = [match.span() for match in TEMPLATE_PLACEHOLDER_RE.finditer(text)]
+    for match in FMT_PLACEHOLDER_RE.finditer(text):
+        if any(match.start() < end and match.end() > start for start, end in template_spans):
+            continue
+        field, separator, specification = match.group()[1:-1].partition(":")
+        index = int(field) if field else automatic
+        if not field:
+            automatic += 1
+
+        def normalize_nested(match: re.Match[str]) -> str:
+            nonlocal automatic
+            nested_field = match.group()[1:-1]
+            nested_index = int(nested_field) if nested_field else automatic
+            if not nested_field:
+                automatic += 1
+            result[(nested_index, "")] += 1
+            return f"{{{nested_index}}}"
+
+        specification = re.sub(r"\{\d*\}", normalize_nested, specification)
+        result[(index, specification if separator else "")] += 1
+    return result
+
+
+def accelerator_count(text: str) -> int:
+    # HTML attributes and entities are not menu accelerators.
+    text = RICH_TAG_RE.sub("", text)
+    text = re.sub(r"&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z]+);", "", text)
+    return len(re.findall(r"(?<!&)&(?!&|\s|$)", text.replace("&&", "")))
 
 
 def file_dialog_filter_patterns(text: str) -> list[collections.Counter[str]] | None:
@@ -301,6 +401,11 @@ def validate_translation(source: str, translation: str, allow_missing_placeholde
         problems.append(
             f"placeholder mismatch: source={dict(source_placeholders)} translation={dict(translated_placeholders)}"
         )
+    original_formats, translated_formats = fmt_arguments(source), fmt_arguments(translation)
+    if not set(translated_formats) <= set(original_formats) or (
+        not allow_missing_placeholders and set(original_formats) != set(translated_formats)
+    ):
+        problems.append("fmt argument format specifications differ from the source")
     source_filters = file_dialog_filter_patterns(source)
     if source_filters is not None and file_dialog_filter_patterns(translation) != source_filters:
         problems.append(
@@ -328,6 +433,9 @@ def message_to_task_record(message: CatalogMessage) -> dict[str, object]:
         "current_translation": message.translation,
         "current_plural_translations": message.plural_translations,
         "plural_arity": len(message.plural_translations),
+        "catalog_line": message.catalog_line,
+        "message_line": message.message_line,
+        "translator_comment": message.translator_comment,
         "suggestions": [],
     }
 
@@ -354,7 +462,9 @@ def load_jsonl(paths: Sequence[Path | str]) -> tuple[list[dict[str, object]], li
     return metadata, records
 
 
-def atomic_write_text(path: Path, text: str, mode: int | None = None) -> None:
+def atomic_write_text(
+    path: Path, text: str, mode: int | None = None, expected_sha256: str | None = None
+) -> None:
     """Write text beside its destination and atomically replace the destination."""
     path.parent.mkdir(parents=True, exist_ok=True)
     if mode is None and path.exists():
@@ -370,6 +480,8 @@ def atomic_write_text(path: Path, text: str, mode: int | None = None) -> None:
             os.fsync(stream.fileno())
         if mode is not None:
             os.chmod(temporary_name, mode)
+        if expected_sha256 is not None and hashlib.sha256(path.read_bytes()).hexdigest() != expected_sha256:
+            raise ValueError(f"{path}: file changed during atomic update")
         os.replace(temporary_name, path)
     finally:
         if temporary_name and os.path.exists(temporary_name):
@@ -395,14 +507,14 @@ def scan_raw_messages(text: str) -> dict[str, RawMessageSpan]:
         if context_name_match is None:
             continue
         context_name = element_text(ET.fromstring(f"<name>{context_name_match.group(1)}</name>"))
-        occurrences: collections.Counter[tuple[str, str, str, str, bool]] = collections.Counter()
+        occurrences: collections.Counter[tuple] = collections.Counter()
         for message_match in MESSAGE_RE.finditer(context_block):
             block = message_match.group(0)
             message_element = ET.fromstring(block)
             base = identity_base(context_name, message_element)
             occurrence = occurrences[base]
             occurrences[base] += 1
-            identity = MessageIdentity(*base, occurrence)
+            identity = MessageIdentity(*base[:5], occurrence, message_id=base[5])
             translation = message_element.find("translation")
             translation_type = "missing" if translation is None else translation.get("type", "finished")
             absolute_start = context_match.start() + message_match.start()
@@ -417,6 +529,7 @@ def scan_raw_messages(text: str) -> dict[str, RawMessageSpan]:
                 translation_type=translation_type,
                 numerus=message_element.get("numerus") == "yes",
                 catalog_line=bisect.bisect_left(newline_offsets, diagnostic_offset) + 1,
+                message_line=bisect.bisect_left(newline_offsets, absolute_start) + 1,
             )
             if span.identifier in spans:
                 raise ValueError(f"duplicate stable message id: {span.identifier}")

@@ -1762,11 +1762,6 @@ This session will start in offline mode.</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>OK</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>アプリ設定</translation>
@@ -2716,11 +2711,6 @@ Do you want to %1$s anyway?</source>
         <translation>巻き戻しステートのスクリーンショット</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>再起動が必要</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>メニューを編集</translation>
@@ -2794,11 +2784,6 @@ Do you want to %1$s anyway?</source>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>巻き戻しを有効化</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>巻き戻しステートを作成する頻度を設定します。頻度が高いほどシステム要件が高くなります。</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4067,6 +4052,86 @@ Do you want to %1$s anyway?</source>
         <translation>除外パスから削除</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>ローカルゲームストレージ</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>ローカルゲームストレージは、システムのファイル選択機能 (Storage Access Framework) でゲームフォルダを選択できないデバイス向けの機能です。「ファイルを追加」でゲームをここにコピーするか、ファイルマネージャーや USB 接続を使ってこのフォルダに配置できます。</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>ローカルゲームストレージをスキャン</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>このフォルダとサブフォルダ内のゲームを検索します。</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>保存場所</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>ファイルを追加</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>選択したファイルをローカルゲームストレージにコピーします。ディスクイメージの .cue ファイルと、それに対応する .bin ファイルを一緒に選択してください。</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>ファイル</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>ローカルゲームストレージにファイルはありません。</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>%1$s をコピー中 (%3$d 件中 %2$d 件目)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s はすでにローカルゲームストレージに存在します。上書きしますか？</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>その他のファイル操作</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>ファイルを削除</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>%s を削除してもよろしいですか？この操作は取り消せません。</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>オンスクリーンメッセージ</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>オンスクリーンオーバーレイ</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>ゲーム表示</translation>
@@ -4445,6 +4510,11 @@ Do you want to %1$s anyway?</source>
         <translation>アナログモードを切り替え</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>ソフトウェアレンダリング有効/無効の切り替え</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>ディスク交換</translation>
@@ -4468,6 +4538,11 @@ Do you want to %1$s anyway?</source>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>コントローラー設定</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>定期的にステートセーブすることで、プレー中のミスを巻き戻すことができます。</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5965,6 +6040,16 @@ ${serial}: ゲームのシリアル番号。
         <translation>CD-ROM 設定</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>停止時に次のディスクへ切り替え</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>ゲームが CD-ROM を停止したときに、自動的にゲームの次のディスクに切り替えます。すべてのゲームで動作するわけではありません。</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>ダウンサンプリング表示スケール</translation>
@@ -5973,6 +6058,36 @@ ${serial}: ゲームのシリアル番号。
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>最終画像に適用される解像度のスケールを選択します。1xは元のコンソールの解像度にダウンサンプリングします。</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>深度クリアしきい値</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>深度バッファをクリアする基準となる深度の増加量を指定します。一部のゲームの深度に関する問題を改善できますが、あくまでハック的な回避策です。</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>深度バイアス</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>各ポリゴンをカメラ側にずらして、デカールや影のちらつきを抑えます。値が大きすぎると、隠れている面が見えることがあります。</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>深度スケールを正規化</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>一部のゲームで深度バッファによって形状が欠ける問題を修正しますが、他のゲームでは不具合が発生します。</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7564,6 +7679,18 @@ Would you like to import one now?</source>
         <translation>出力音量をリセット</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>メニュー音量:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>メニュー音量をリセット</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>ゲーム音声をミュート</translation>
+    </message>
+    <message>
         <source>0 ms</source>
         <translation>0 ms</translation>
     </message>
@@ -7586,10 +7713,6 @@ Would you like to import one now?</source>
     <message>
         <source>Reset Fast Forward Volume</source>
         <translation>早送り音量をリセット</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>全サウンドをミュート</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7704,6 +7827,18 @@ Would you like to import one now?</source>
         <translation>早送り時に再生される音声の音量を調整します。</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>メニュー音量</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>ビッグピクチャー UI と実績通知で再生される効果音の音量を調整します。</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>ゲームの音声を一切出力しないようにします。</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>なし</translation>
     </message>
@@ -7798,10 +7933,6 @@ Would you like to import one now?</source>
     <message>
         <source>Fast Forward Volume</source>
         <translation>早送り時の音量</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>エミュレータが音声を一切再生しないようにします。</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -11138,20 +11269,20 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>チェックなし</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>コンソールのフレーム表示をホストに同期します。有効にすると、入力遅延が増える代わりに、アニメーションが滑らかになる場合があります。&lt;strong&gt;GSync/FreeSync を使用している場合は、代わりに「最適なフレームペーシング」を有効にしてください。&lt;/strong&gt;</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>各フレームを表示する前にディスプレイの更新を待ちます。これにより、画面の上下に異なるフレームが表示されるティアリングを防ぎます。&lt;strong&gt;GSync/FreeSync 対応ディスプレイでも、この設定は有効のままにしてください。無効にするとティアリングが発生することがあります。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>VSync が有効な場合、コンソールのリフレッシュレートがホストのリフレッシュレートと一致するようにエミュレーション速度を調整します。エミュレーション速度が 1% 未満速くなる場合がありますが、可能な限り滑らかなアニメーションになります。コンソールとホストのリフレッシュレートが大きく異なる場合、「ホストのリフレッシュレートに同期」は機能しません。可変リフレッシュレート対応ディスプレイを使用している場合は、このオプションを無効にしてください。</translation>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>ゲームの実行速度をわずかに上げ下げして、フレームレートをディスプレイのリフレッシュレートに正確に合わせます。VSync が有効な場合、最も滑らかな動きになりますが、ゲームの実行速度が本来より最大 1% 速くなることがあります。両者のレートが大きく異なる場合は効果がありません。&lt;strong&gt;GSync/FreeSync 対応ディスプレイでは、ディスプレイ側がゲームに合わせてリフレッシュレートを変更するため、この設定を無効にしてください。&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>ゲームが描画するすべてのフレームを等間隔で表示し、最も滑らかな動きにします。コンピューターがゲームをフルスピードで実行できない場合に限り、この設定を無効にしてください。無効にすると、一時的なフレームの遅延によるカクつきや音のノイズが発生しにくくなりますが、動きの滑らかさは低下します。</translation>
     </message>
     <message>
         <source>Checked</source>
         <translation>オン</translation>
-    </message>
-    <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>このオプションを有効にすると、コンソールがレンダリングするすべてのフレームが一貫したレートで画面に表示され、最適なフレームペースになります。GSync/FreeSyncディスプレイを使用している場合は、このオプションを有効にしてください。フルスピードを維持するのが困難な場合、またはオーディオグリッチが発生する場合は、このオプションを無効にしてみてください。</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11594,6 +11725,10 @@ You cannot undo this action.</source>
         <translation>下: </translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>後から描画されるポリゴンを、深度の百万分の一を単位としてカメラに近づけます。デカールのちらつきを抑えます。</translation>
+    </message>
+    <message>
         <source>Buffer Size</source>
         <translation>バッファサイズ</translation>
     </message>
@@ -11662,6 +11797,10 @@ You cannot undo this action.</source>
         <translation>クリーンブート</translation>
     </message>
     <message>
+        <source>Clear Binding</source>
+        <translation>割り当てをクリア</translation>
+    </message>
+    <message>
         <source>Clear Settings</source>
         <translation>設定をクリア</translation>
     </message>
@@ -11720,6 +11859,10 @@ You cannot undo this action.</source>
     <message>
         <source>Controls</source>
         <translation>コントロール</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>ビッグピクチャー UI と実績通知で再生される効果音の音量を調整します。</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -11808,6 +11951,10 @@ You cannot undo this action.</source>
     <message>
         <source>Delete State</source>
         <translation>ステートを削除</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>深度バイアス</translation>
     </message>
     <message>
         <source>Details</source>
@@ -12520,10 +12667,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>アナログ入力が変化したときにランアヘッドを有効にします。システム要件が大幅に高くなります。</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>VSync の有効時に、コンソールのリフレッシュレートがホストに合うようにエミュレーション速度を調整します。</translation>
-    </message>
-    <message>
         <source>Advanced Display Options</source>
         <translation>高度な表示オプション</translation>
     </message>
@@ -12884,8 +13027,16 @@ You cannot undo this action.</source>
         <translation>マクロ {}</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>メニュー音量</translation>
+    </message>
+    <message>
         <source>Mid-Frame Scanout</source>
         <translation>フレーム途中のスキャンアウト</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>ゲーム音声をミュート</translation>
     </message>
     <message>
         <source>No</source>
@@ -12920,12 +13071,24 @@ You cannot undo this action.</source>
         <translation>このゲームで使用できるパッチはありません。</translation>
     </message>
     <message>
+        <source>Normalize Depth Scale</source>
+        <translation>深度スケールを正規化</translation>
+    </message>
+    <message>
         <source>PGXP Depth Buffer</source>
         <translation>PGXP深度バッファ</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>ゲームの音声を一切出力しないようにします。</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>発売日: </translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>深度値から、各オブジェクトの変換に含まれる拡大縮小の影響を取り除きます。一部のゲームで形状が欠ける問題を修正しますが、他のゲームでは不具合が発生します。</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -12986,6 +13149,10 @@ You cannot undo this action.</source>
     <message>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
         <translation>アップスケール時にテクスチャ座標を切り捨てずに丸めます。一部のゲームでずれたテクスチャを修正できますが、他のゲームで問題が起こる場合があり、テクスチャフィルタリングとは互換性がありません。</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>VSync が有効なとき、ゲームの実行速度をわずかに上げ下げして、ディスプレイのリフレッシュレートに合わせます。GSync/FreeSync 対応ディスプレイでは無効にしてください。</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -13082,6 +13249,10 @@ You cannot undo this action.</source>
     <message>
         <source>Show Nearby</source>
         <translation>周辺順位を表示</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>ゲームが描画するすべてのフレームを等間隔で表示します。コンピューターがゲームをフルスピードで実行できず、カクつきや音のノイズが発生している場合に限り、この設定を無効にしてください。</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
@@ -13230,6 +13401,10 @@ You cannot undo this action.</source>
     <message>
         <source>Value: {}</source>
         <translation>値: {}</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>各フレームを表示する前にディスプレイの更新を待ち、ティアリングを防ぎます。GSync/FreeSync 対応ディスプレイでも有効のままにしてください。</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -13434,10 +13609,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <translation>古い、精度の低い MDEC デコードルーチンを有効にします。古いリプレイスメントバックグラウンドのマッチング/ロードに必要な場合があります。</translation>
-    </message>
-    <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>生成されたすべてのフレームを表示し、最適なペーシングを確保します。GSync/FreeSync などの可変リフレッシュレート対応ディスプレイで有効にします。速度またはサウンドに問題がある場合は無効にしてください。</translation>
     </message>
     <message>
         <source>Enter Value</source>
@@ -13752,10 +13923,6 @@ Do you want to {1} anyway?</source>
         <translation>マルチタップモード</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>全サウンドをミュート</translation>
-    </message>
-    <message>
         <source>Mute CD Audio</source>
         <translation>CD オーディオをミュート</translation>
     </message>
@@ -14048,10 +14215,6 @@ Do you want to {1} anyway?</source>
         <translation>ゲームの実行中にウィンドウのサイズが変更されるのを防ぎます。</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>エミュレータがオーディオを一切再生しないようにします。</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>エミュレーションの実行中に、スクリーンセーバーの起動とホストのスリープを防ぎます。</translation>
     </message>
@@ -14258,10 +14421,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>現在の設定をコントローラープリセットに保存します。</translation>
-    </message>
-    <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>本体のフレーム表示をホストと同期します。G-Sync/FreeSync を使用する場合は、代わりに最適なフレームペーシングを有効にしてください。</translation>
     </message>
     <message>
         <source>Resume Game</source>
@@ -15413,6 +15572,10 @@ Do you want to {0} anyway?</source>
         <source>Disallow in Hardcore Mode</source>
         <translation>ハードコアモードでは使用を禁止</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>PGXP の投影精度維持を強制</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15767,6 +15930,11 @@ Are you sure you want to continue?</source>
         <translation>PGXP CPUモードを強制</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>PGXP 深度を正規化</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>リコンパイラーの命令キャッシュを強制</translation>
@@ -16035,6 +16203,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Filter Framebuffer Uploads Minimum Height</source>
         <translation>フレームバッファへのアップロードにフィルターを適用する最小高さ</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP 深度バイアス</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -16930,6 +17102,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>ダイレクトカラーテクスチャのアップスケーリングを無効化</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>深度バイアス:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>深度バイアスをリセット</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>CPU モード:</translation>
     </message>
@@ -16944,6 +17124,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Depth Test Transparent Polygons</source>
         <translation>半透明ポリゴンの深度テスト</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>深度スケールを正規化</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17378,6 +17562,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>深度バッファのクリアを引き起こす深度の増加量を指定します。一部のゲームの深度問題を改善できますが、あくまで暫定的な回避策です。</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>深度バイアス</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>各ポリゴンを、それ以前に描画されたポリゴンよりもカメラに近づけます。調整量の単位は深度の百万分の一です。値を大きくするとデカールや影のちらつきが減りますが、ポリゴンが手前の面を透過して見えることがあります。</translation>
+    </message>
+    <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>テクスチャ座標に遠近補正補間を使用し、歪んだテクスチャをまっすぐにします。ジオメトリ補正を有効にする必要があります。</translation>
     </message>
@@ -17392,6 +17584,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>投影後の PGXP データに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>深度値から、各オブジェクトの変換に含まれる拡大縮小の影響を取り除きます。遠くのオブジェクトの変換を縮小するゲームで、深度バッファによって形状が欠ける問題を修正しますが、変換によってモデルを拡大縮小するゲームでは不具合が発生します。必要な場合はゲームデータベースによって自動的に有効になります。</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -22219,10 +22415,6 @@ Error: {1}</source>
         <translation>シェーダー再読み込み(&amp;R)</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>ポストプロセスチェーン</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>追加</translation>
     </message>
@@ -22258,16 +22450,16 @@ Error: {1}</source>
         <translation>基本設定</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ボーダーオーバーレイは、システム表示の周囲に描画される画像です。ボーダーオーバーレイはポストプロセス後に適用されます。以下のボーダー一覧から選択するか、カスタムボーダーを手動で設定できます。&lt;/p&gt;&lt;p&gt;追加のプリセットボーダーは、データディレクトリ内の &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; フォルダーに追加できます。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>選択中のプリセット:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>オーバーレイリストを更新</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;データディレクトリ内の &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; フォルダに、ボーダーのプリセットを追加できます。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22418,6 +22610,18 @@ Error: {1}</source>
     <message>
         <source>Border Overlay</source>
         <translation>ボーダーオーバーレイ</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>ディスプレイシェーダーは、画面に合わせて拡大縮小された最終画像に適用されます。CRT フィルターや走査線など、画面全体にかける効果に使用してください。</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>内部シェーダーは、拡大縮小する前のゲーム画像に、ゲームの描画解像度で適用されます。SSAO など、ゲーム自体の見た目を変える効果に使用してください。</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>ボーダーオーバーレイは、テレビや携帯ゲーム機の枠のように、ゲーム画像の周囲に描画される画像です。すべてのシェーダーが適用された後、他のすべての要素の上に重ねて描画されます。</translation>
     </message>
 </context>
 <context>

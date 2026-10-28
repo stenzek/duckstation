@@ -1762,11 +1762,6 @@ Unread messages: {}</source>
         <translation>清除</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>好</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>应用设置</translation>
@@ -2716,11 +2711,6 @@ Do you want to %1$s anyway?</source>
         <translation>倒带用即时档案的屏幕截图</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>需要重启</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>编辑菜单</translation>
@@ -2794,11 +2784,6 @@ Do you want to %1$s anyway?</source>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>启用倒带</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>倒带用即时档案的创建频率。频率越高对系统的需求就越大。</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4067,6 +4052,86 @@ Do you want to %1$s anyway?</source>
         <translation>从排除的路径中移除</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>本地游戏存储</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>本地游戏存储适用于不支持通过系统文件选择器（存储访问框架）选择游戏文件夹的设备。您可以使用“添加文件”将游戏复制到此处，也可以通过文件管理器或 USB 将游戏放入此文件夹。</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>扫描本地游戏存储</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>在此文件夹及其子文件夹中搜索游戏。</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>添加文件</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>将所选文件复制到本地游戏存储。请选择光盘映像的 .cue 文件及其对应的 .bin 文件。</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>本地游戏存储中没有文件。</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>正在复制 %1$s（第 %2$d 个，共 %3$d 个）…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>本地游戏存储中已存在 %s。是否覆盖？</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>更多文件操作</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>删除文件</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>确定要删除 %s 吗？此操作无法撤销。</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>屏幕消息</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>屏幕叠加层</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>游戏显示</translation>
@@ -4445,6 +4510,11 @@ Do you want to %1$s anyway?</source>
         <translation>切换模拟摇杆模式</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>软件渲染开关</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>更换光盘</translation>
@@ -4468,6 +4538,11 @@ Do you want to %1$s anyway?</source>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>控制器设置</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>定期保存即时档案，使您可以在游戏时倒回操作失误之前。</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5965,6 +6040,16 @@ ${serial}：游戏序号。
         <translation>CD-ROM设置</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>在停止时切换到下一张光盘</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>当游戏停止光盘驱动器时，自动切换到游戏的下一张光盘。并非所有游戏都支持此功能。</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>缩减采样显示比例</translation>
@@ -5973,6 +6058,36 @@ ${serial}：游戏序号。
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>选择将应用于最终图像的分辨率比例。1x将缩减采样到原始的游戏机分辨率。</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>深度清除阈值</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>设置触发深度缓冲区清除操作的深度增量。可帮助解决某些游戏中的深度问题，但本质上仍属于变通方案。</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>深度偏移</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>将每个多边形向摄像机方向偏移，以减少贴花和阴影的闪烁。数值过高可能使被遮挡的表面显露出来。</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>归一化深度缩放</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>修复某些游戏在使用深度缓冲区时出现的几何体缺失问题，但会导致其他游戏出错。</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7548,6 +7663,18 @@ Would you like to import one now?</source>
         <translation>拉伸模式:</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>菜单音量：</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>重置菜单音量</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>游戏静音</translation>
+    </message>
+    <message>
         <source>0 ms</source>
         <translation>0毫秒</translation>
     </message>
@@ -7616,10 +7743,6 @@ Would you like to import one now?</source>
         <translation>静音CD音轨</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>静音全部声音</translation>
-    </message>
-    <message>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>控制本机播放的音频音量。</translation>
     </message>
@@ -7638,10 +7761,6 @@ Would you like to import one now?</source>
     <message>
         <source>Minimal</source>
         <translation>最小</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>防止模拟器产生任何可听见的声音。</translation>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
@@ -7666,6 +7785,18 @@ Would you like to import one now?</source>
     <message>
         <source>Unchecked</source>
         <translation>未勾选</translation>
+    </message>
+    <message>
+        <source>Menu Volume</source>
+        <translation>菜单音量</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>控制大视画界面和成就通知的音效音量。</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>使游戏不发出任何声音。</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -10953,16 +11084,8 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>涡轮速度</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>调整模拟速度，使得在垂直同步启用时，游戏机的刷新率与本机的刷新率一致。这可能会产生最流畅的动画，但潜在的代价是模拟速度增加不到1%。如果游戏机的刷新率与本机的刷新率相差太远，同步到本机的刷新率将不会生效。使用可变刷新率显示的用户应当禁用此选项。</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>已勾选</translation>
-    </message>
-    <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>启用此选项将确保游戏机渲染的每一帧都以一致的速率显示在屏幕上，以获得最佳的帧间距。如果您有GSync/FreeSync显示器，请启用此选项。如果您难以保持全速，或者出现音频故障，尝试禁用此选项。</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11209,12 +11332,20 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>设置涡轮速度。这个速度将在涡轮热键被按下/切换时使用。如果同时按下/切换两个热键，涡轮将优先于快进。</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>将游戏机的帧呈现同步到本机。启用它可能会带来更顺畅的动画，但代价是会增加输入延迟。&lt;strong&gt;GSync/FreeSync用户应改为启用最佳帧间距。&lt;/strong&gt;</translation>
-    </message>
-    <message>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>设置目标模拟速度。不能保证达到这个速度，如果不能，模拟器将以其能达到的最快速度运行。</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>在显示每一帧之前等待显示器刷新。这可防止画面撕裂，即屏幕上下部分显示不同帧的现象。&lt;strong&gt;如果您使用 GSync/FreeSync 显示器，请保持此选项开启，否则仍可能出现画面撕裂。&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>略微加快或减慢游戏运行速度，使其帧率与显示器刷新率完全一致。开启 VSync 时，这可使画面运动最为流畅，但游戏运行速度可能比正常速度快最多 1%。如果帧率与刷新率相差过大，此选项将不起作用。&lt;strong&gt;如果您使用 GSync/FreeSync 显示器，请关闭此选项，因为显示器本身已会调整刷新率来匹配游戏。&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>以均匀的间隔显示游戏绘制的每一帧，使画面运动最为流畅。仅在计算机无法让游戏保持全速运行时才关闭此选项。关闭后，偶尔出现的慢帧较不容易导致卡顿或爆音，但画面运动会变得不那么均匀。</translation>
     </message>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
@@ -11294,10 +11425,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>在模拟输入发生变化时激活超前运行，这会显著增加系统需求。</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>调整模拟速度，使得在垂直同步启用时，游戏机的刷新率与本机的刷新率一致。</translation>
     </message>
     <message>
         <source>Advanced Display Options</source>
@@ -11410,10 +11537,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Enable Cheats</source>
         <translation>启用金手指</translation>
-    </message>
-    <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>确保生成的每一帧都被显示，以获得最佳帧间距。使用GSync/FreeSync等可变刷新率显示器时应启用此选项。如果出现速度或声音问题，请禁用。</translation>
     </message>
     <message>
         <source>Enter Value</source>
@@ -11724,6 +11847,10 @@ You cannot undo this action.</source>
         <translation>底: </translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>将后绘制的多边形向摄像机方向偏移，偏移量以深度的百万分之一为单位。可减少贴花闪烁。</translation>
+    </message>
+    <message>
         <source>Buttons</source>
         <translation>按钮</translation>
     </message>
@@ -11754,6 +11881,10 @@ You cannot undo this action.</source>
     <message>
         <source>Cheats</source>
         <translation>金手指</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>清除绑定</translation>
     </message>
     <message>
         <source>Clear Mappings</source>
@@ -11802,6 +11933,10 @@ You cannot undo this action.</source>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <translation>控制在模拟GPU中应用抖动的方式。真彩色会禁用抖动并产生最好看的渐变。</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>控制大视画界面和成就通知的音效音量。</translation>
     </message>
     <message>
         <source>Copy Serial</source>
@@ -11870,6 +12005,10 @@ You cannot undo this action.</source>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
         <translation>根据您所在的司法管辖区，游戏封面可能受版权保护。您只能将此工具用于您自己的服务器和图像。</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>深度偏移</translation>
     </message>
     <message>
         <source>Determines how long action confirmation messages are displayed on screen.</source>
@@ -12016,8 +12155,20 @@ You cannot undo this action.</source>
         <translation>为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>菜单音量</translation>
+    </message>
+    <message>
         <source>Mid-Frame Scanout</source>
         <translation>帧中扫描输出</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>游戏静音</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>归一化深度缩放</translation>
     </message>
     <message>
         <source>Password</source>
@@ -12026,6 +12177,14 @@ You cannot undo this action.</source>
     <message>
         <source>Path</source>
         <translation>路径</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>使游戏不发出任何声音。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>从深度值中去除各对象变换的缩放影响。可修复某些游戏中的几何体缺失问题，但会导致其他游戏出错。</translation>
     </message>
     <message>
         <source>Rewind Save Slots</source>
@@ -12042,6 +12201,14 @@ You cannot undo this action.</source>
     <message>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>由于启用了超前运行，倒带已禁用。超前运行将显著提高对系统的需求。</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>开启 VSync 时，略微加快或减慢游戏运行速度，使其帧率与显示器刷新率一致。使用 GSync/FreeSync 显示器时请关闭此选项。</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>以均匀的间隔显示游戏绘制的每一帧。仅在计算机无法让游戏保持全速运行，且出现卡顿或爆音时才关闭此选项。</translation>
     </message>
     <message>
         <source>Shows the game list as a grid instead of a vertical list.</source>
@@ -12522,10 +12689,6 @@ Error was:</source>
         <translation>模拟设置</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>静音全部声音</translation>
-    </message>
-    <message>
         <source>Unlimited</source>
         <translation>无限制</translation>
     </message>
@@ -12816,10 +12979,6 @@ Error was:</source>
     <message>
         <source>Discord Server</source>
         <translation>Discord服务器</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>防止模拟器产生任何可听见的声音。</translation>
     </message>
     <message>
         <source>Per-Game Configuration</source>
@@ -14686,10 +14845,6 @@ Please check your username and password, and try again.</source>
         <translation>在停止时切换到下一张光盘</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>将游戏机的帧呈现同步到本机。GSync/FreeSync用户应启用最佳帧间距。</translation>
-    </message>
-    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>纹理调制裁剪 (&quot;旧版/v0&quot; GPU)</translation>
     </message>
@@ -14820,6 +14975,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Verifying Image</source>
         <translation>正在验证镜像</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>在显示每一帧之前等待显示器刷新，以防止画面撕裂。使用 GSync/FreeSync 显示器时也请保持此选项开启。</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -15410,6 +15569,10 @@ Do you want to {1} anyway?</source>
         <source>Disallow in Hardcore Mode</source>
         <translation>硬核模式下禁用</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>强制启用 PGXP 保留投影精度</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15744,6 +15907,11 @@ Are you sure you want to continue?</source>
         <translation>强制PGXP处于CPU模式</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>归一化 PGXP 深度</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制重编译器ICache</translation>
@@ -16032,6 +16200,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Filter Framebuffer Uploads Minimum Height</source>
         <translation>帧缓冲上传过滤的最小高度</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP 深度偏移</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -16975,12 +17147,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>重置深度清除阈值</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>深度偏移：</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>重置深度偏移</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>CPU模式:</translation>
     </message>
     <message>
         <source>Vertex Cache:</source>
         <translation>顶点缓存:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>归一化深度缩放</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -17363,12 +17547,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>仅过滤高度不小于此值的帧缓冲上传数据。增大此值可避免过滤纹理数据。</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>深度偏移</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>让每个多边形比之前绘制的多边形更靠近摄像机，偏移量以深度的百万分之一为单位。较高的数值可减少贴花和阴影的闪烁，但可能使多边形透过其前方的表面显现出来。</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>对所有指令使用PGXP，而不仅是内存操作。某些游戏需要此功能才能通过PGXP校正抖动，但性能开销很高。“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>使用屏幕空间中的顶点位置获取精确位置，而不是跟踪内存访问。可使某些游戏兼容PGXP，但&lt;strong&gt;通常没有益处。&lt;/strong&gt;“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>从深度值中去除各对象变换的缩放影响。对于会缩小远处对象变换矩阵的游戏，可修复使用深度缓冲区时出现的几何体缺失问题；但会导致通过变换缩放模型的游戏出错。游戏数据库会在需要时自动启用此选项。</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -22215,10 +22411,6 @@ Error: {1}</source>
         <translation>重新加载着色器(&amp;R)</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>后处理链</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>添加</translation>
     </message>
@@ -22258,12 +22450,12 @@ Error: {1}</source>
         <translation>选择的预设:</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;边框覆盖是绘制在系统显示屏周围的图像。边框覆盖是在后期处理后应用的。您可以从下面的边框列表中进行选择，也可以手动配置自定义边框。&lt;/p&gt;&lt;p&gt;其他预设边框可添加到数据目录下的&lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt;文件夹中。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Refresh Overlay List</source>
         <translation>刷新覆盖层列表</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;可将更多预设边框添加到数据目录中的 &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; 文件夹。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22414,6 +22606,18 @@ Error: {1}</source>
     <message>
         <source>Border Overlay</source>
         <translation>边框覆盖</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>显示着色器在画面缩放至适合屏幕的大小后，应用于最终画面。可用于 CRT 滤镜和扫描线等屏幕效果。</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>内部着色器在游戏画面缩放之前，以游戏的渲染分辨率应用于画面。可用于 SSAO 等改变游戏本身画面效果的处理。</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>边框覆盖是在游戏画面周围绘制的图像，例如电视机或掌机的边框。它在所有着色器应用完毕后绘制，覆盖在其他所有内容之上。</translation>
     </message>
 </context>
 <context>

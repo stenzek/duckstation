@@ -1762,11 +1762,6 @@ Sesi ini akan dimulai dalam mode offline.</translation>
         <translation>Bersihkan</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>Oke</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>Pengaturan Aplikasi</translation>
@@ -2716,11 +2711,6 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Tangkapan layar save state putar mundur</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>Memerlukan Mulai Ulang</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>Sunting Menu</translation>
@@ -2794,11 +2784,6 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>Aktifkan Putar Mundur</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>Seberapa sering save state putar mundur akan dibuat. Frekuensi yang lebih tinggi membutuhkan lebih banyak sumber daya sistem.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4067,6 +4052,86 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Hapus dari Jalur yang Dikecualikan</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>Penyimpanan Game Lokal</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>Penyimpanan game lokal ditujukan untuk perangkat yang tidak mendukung pemilihan folder game melalui pemilih berkas sistem (Storage Access Framework). Game dapat disalin ke sini dengan Tambah Berkas, atau ditempatkan di folder ini menggunakan pengelola berkas atau melalui USB.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>Pindai Penyimpanan Game Lokal</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>Mencari game di folder ini dan subfoldernya.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>Lokasi</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>Tambah Berkas</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>Menyalin berkas yang dipilih ke penyimpanan game lokal. Pilih berkas .cue dari citra cakram beserta berkas .bin-nya.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>Berkas</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>Tidak ada berkas di penyimpanan game lokal.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>Menyalin %1$s (%2$d dari %3$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s sudah ada di penyimpanan game lokal. Apakah Anda ingin menimpanya?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>Tindakan berkas lainnya</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>Hapus Berkas</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>Apakah Anda yakin ingin menghapus %s? Tindakan ini tidak dapat dibatalkan.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>Pesan di Layar</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>Hamparan di Layar</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Tampilan Game</translation>
@@ -4445,6 +4510,11 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Alihkan Mode Analog</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>Alihkan Perenderan Perangkat Lunak</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Ganti Disk</translation>
@@ -4468,6 +4538,11 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>Pengaturan Kontroler</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Menyimpan save state secara berkala agar Anda dapat memutar mundur untuk memperbaiki kesalahan saat bermain.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5965,6 +6040,16 @@ Contoh: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translat
         <translation>Pengaturan CD-ROM</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>Beralih ke Cakram Berikutnya saat Berhenti</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>Secara otomatis beralih ke cakram berikutnya dalam game saat game menghentikan CD-ROM. Tidak berfungsi untuk semua game.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>Skala Tampilan Penskalaan Turun</translation>
@@ -5973,6 +6058,36 @@ Contoh: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translat
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Memilih skala resolusi yang diterapkan pada citra akhir. 1x akan menurunkan sampel ke resolusi konsol asli.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>Ambang Penghapusan Kedalaman</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>Menentukan peningkatan kedalaman yang akan menyebabkan buffer kedalaman dihapus. Dapat membantu mengatasi masalah kedalaman pada beberapa game, tetapi tetap merupakan hack/solusi sementara.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>Bias Kedalaman</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>Menggeser setiap poligon ke arah kamera untuk mengurangi kedipan pada dekal dan bayangan. Nilai yang terlalu tinggi dapat menampakkan permukaan yang tersembunyi.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>Normalkan Skala Kedalaman</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>Memperbaiki geometri yang hilang saat menggunakan buffer kedalaman pada beberapa game, tetapi menyebabkan masalah pada game lain.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7544,6 +7659,18 @@ Apakah Anda ingin mengimpornya sekarang?</translation>
         <translation>Backend:</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>Volume Menu:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>Atur Ulang Volume Menu</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Bisukan Audio Game</translation>
+    </message>
+    <message>
         <source>Stretch Mode:</source>
         <translation>Mode Stretch:</translation>
     </message>
@@ -7570,10 +7697,6 @@ Apakah Anda ingin mengimpornya sekarang?</translation>
     <message>
         <source>Fast Forward Volume:</source>
         <translation>Volume Maju Cepat:</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>Bisukan Semua Suara</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7646,6 +7769,18 @@ Apakah Anda ingin mengimpornya sekarang?</translation>
     <message>
         <source> ms</source>
         <translation> ms</translation>
+    </message>
+    <message>
+        <source>Menu Volume</source>
+        <translation>Volume Menu</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Mengatur volume efek suara yang diputar oleh antarmuka Big Picture dan notifikasi pencapaian.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Mencegah game menghasilkan suara yang dapat didengar.</translation>
     </message>
     <message>
         <source>Stretch Sequence Length</source>
@@ -7770,10 +7905,6 @@ Apakah Anda ingin mengimpornya sekarang?</translation>
     <message>
         <source>Unchecked</source>
         <translation>Tidak Dicentang</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Mencegah emulator menghasilkan suara yang dapat didengar.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -11117,20 +11248,8 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
         <translation>Menetapkan kecepatan turbo. Kecepatan ini akan digunakan saat tombol pintas turbo ditekan/diaktifkan. Turbo akan diprioritaskan daripada fast forward jika kedua tombol pintas ditekan/diaktifkan.</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Menyinkronkan penyajian bingkai konsol dengan host. Mengaktifkannya dapat menghasilkan animasi yang lebih mulus, dengan konsekuensi peningkatan kelambatan input. &lt;strong&gt;Pengguna GSync/FreeSync sebaiknya mengaktifkan Frame Pacing Optimal sebagai gantinya.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Menyesuaikan kecepatan emulasi agar laju penyegaran konsol cocok dengan laju penyegaran host saat VSync diaktifkan. Ini menghasilkan animasi semulus mungkin, dengan kemungkinan peningkatan kecepatan emulasi kurang dari 1%. Sinkronkan dengan Laju Penyegaran Host tidak akan berlaku jika laju penyegaran konsol terlalu jauh dari laju penyegaran host. Pengguna layar dengan laju penyegaran variabel sebaiknya menonaktifkan opsi ini.</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>Dicentang</translation>
-    </message>
-    <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Mengaktifkan opsi ini akan memastikan setiap bingkai yang dirender konsol ditampilkan ke layar pada laju yang konsisten, untuk pengaturan waktu bingkai yang optimal. Jika Anda memiliki layar GSync/FreeSync, aktifkan opsi ini. Jika Anda kesulitan mempertahankan kecepatan penuh atau mengalami gangguan audio, coba nonaktifkan opsi ini.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11195,6 +11314,18 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
     <message>
         <source>Use Global Setting [Unlimited]</source>
         <translation>Gunakan Pengaturan Global [Tanpa Batas]</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>Menunggu layar Anda disegarkan sebelum menampilkan setiap bingkai. Ini mencegah gambar terbelah (tearing), yaitu ketika bagian atas dan bawah layar menampilkan bingkai yang berbeda. &lt;strong&gt;Biarkan opsi ini aktif jika Anda menggunakan layar GSync/FreeSync, karena tearing masih dapat terjadi jika opsi ini dimatikan.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>Menjalankan game sedikit lebih cepat atau lebih lambat agar kecepatan bingkainya sama persis dengan laju penyegaran layar Anda. Jika VSync aktif, gerakan akan paling mulus, tetapi game dapat berjalan hingga 1% lebih cepat dari yang seharusnya. Opsi ini tidak berpengaruh jika selisih kedua laju tersebut terlalu besar. &lt;strong&gt;Matikan opsi ini jika Anda menggunakan layar GSync/FreeSync, karena layar sudah menyesuaikan laju penyegarannya dengan game.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>Menampilkan setiap bingkai yang digambar game dengan interval yang merata agar gerakan paling mulus. Matikan opsi ini hanya jika komputer Anda tidak dapat menjalankan game pada kecepatan penuh. Jika opsi ini dimatikan, bingkai lambat yang sesekali terjadi lebih kecil kemungkinannya menyebabkan gerakan tersendat atau suara berderak, tetapi gerakan tidak akan semerata sebelumnya.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
@@ -11456,10 +11587,6 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
         <translation>Menambahkan presisi pada data PGXP pascaproyeksi. Dapat meningkatkan tampilan pada beberapa permainan.</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>Menyesuaikan kecepatan emulasi agar laju penyegaran konsol sesuai dengan host saat VSync diaktifkan.</translation>
-    </message>
-    <message>
         <source>Advanced Display Options</source>
         <translation>Opsi Tampilan Lanjutan</translation>
     </message>
@@ -11648,6 +11775,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Bawah: </translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>Mendekatkan poligon yang digambar belakangan ke kamera, dalam satuan sepersejuta kedalaman. Mengurangi kedipan pada dekal.</translation>
+    </message>
+    <message>
         <source>CD-ROM Emulation</source>
         <translation>Emulasi CD-ROM</translation>
     </message>
@@ -11704,6 +11835,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Boot Bersih</translation>
     </message>
     <message>
+        <source>Clear Binding</source>
+        <translation>Hapus Penetapan Tombol</translation>
+    </message>
+    <message>
         <source>Clear Mappings</source>
         <translation>Hapus Pemetaan</translation>
     </message>
@@ -11746,6 +11881,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
         <translation>Mengatur penerapan dithering pada GPU yang diemulasikan. True Color menonaktifkan dithering dan menghasilkan gradasi dengan tampilan terbaik.</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Mengatur volume efek suara yang diputar oleh antarmuka Big Picture dan notifikasi pencapaian.</translation>
     </message>
     <message>
         <source>Copies a BIOS image to the configured global BIOS directory.</source>
@@ -11850,6 +11989,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
         <translation>Bergantung pada yurisdiksi Anda, sampul permainan mungkin memiliki hak cipta. Anda hanya berwenang menggunakan alat ini dengan server dan citra milik Anda sendiri.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Bias Kedalaman</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -12126,10 +12269,6 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>Mengaktifkan penggantian tekstur latar belakang pada permainan yang didukung.</translation>
-    </message>
-    <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>Memastikan setiap bingkai yang dihasilkan ditampilkan untuk pengaturan waktu yang optimal. Aktifkan untuk tampilan dengan penyegaran variabel, seperti GSync/FreeSync. Nonaktifkan jika mengalami masalah kecepatan atau suara.</translation>
     </message>
     <message>
         <source>Enter a new serial for this game.</source>
@@ -13126,10 +13265,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Sinkronkan dengan Kecepatan Penyegaran Host</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Menyinkronkan penyajian bingkai konsol dengan host. Pengguna GSync/FreeSync sebaiknya mengaktifkan Frame Pacing Optimal.</translation>
-    </message>
-    <message>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Menonaktifkan sementara semua penyempurnaan, berguna saat pengujian.</translation>
     </message>
@@ -13614,14 +13749,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Mengontrol volume audio yang diputar pada host ketika melakukan maju cepat.</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>Bisukan Semua Suara</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Mencegah emulator membuat suara yang dapat didengar.</translation>
-    </message>
-    <message>
         <source>Backend Settings</source>
         <translation>Pengaturan Backend</translation>
     </message>
@@ -13804,6 +13931,10 @@ Do you want to {0} anyway?</source>
         <translation>PERINGATAN: Game Anda masih menyimpan ke kartu memori. Melanjutkan ke {0} dapat MENGHANCURKAN KARTU MEMORI ANDA SECARA PERMANEN. Sebaiknya lanjutkan game dan tunggu 5 detik hingga penyimpanan selesai.
 
 Apakah Anda tetap ingin {0}?</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>Menunggu layar Anda disegarkan sebelum menampilkan setiap bingkai untuk mencegah gambar terbelah (tearing). Biarkan opsi ini aktif juga saat menggunakan layar GSync/FreeSync.</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -14422,12 +14553,20 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Maksimum (Lebih Aman)</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Volume Menu</translation>
+    </message>
+    <message>
         <source>Message Location</source>
         <translation>Lokasi Pesan</translation>
     </message>
     <message>
         <source>Mid-Frame Scanout</source>
         <translation>Scanout di Tengah Frame</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Bisukan Audio Game</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -14448,6 +14587,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>No devices with LEDs were detected.</source>
         <translation>Tidak ada perangkat dengan LED yang terdeteksi.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalkan Skala Kedalaman</translation>
     </message>
     <message>
         <source>Notification Location</source>
@@ -14506,6 +14649,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Mencegah pengubahan ukuran jendela saat game sedang berjalan.</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Mencegah game menghasilkan suara yang dapat didengar.</translation>
+    </message>
+    <message>
         <source>Progress Indicators</source>
         <translation>Indikator Kemajuan</translation>
     </message>
@@ -14534,6 +14681,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Menyegarkan daftar pencapaian yang terbuka.</translation>
     </message>
     <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang pada beberapa game, tetapi menyebabkan masalah pada game lain.</translation>
+    </message>
+    <message>
         <source>Reset</source>
         <translation>Atur Ulang</translation>
     </message>
@@ -14560,6 +14711,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Runahead for Analog Input</source>
         <translation>Runahead untuk Input Analog</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>Menjalankan game sedikit lebih cepat atau lebih lambat agar sesuai dengan laju penyegaran layar Anda saat VSync aktif. Matikan opsi ini saat menggunakan layar GSync/FreeSync.</translation>
     </message>
     <message>
         <source>Save</source>
@@ -14680,6 +14835,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
         <translation>Menampilkan pengatur waktu di lokasi yang dipilih saat tantangan papan peringkat aktif.</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>Menampilkan setiap bingkai yang digambar game dengan interval yang merata. Matikan opsi ini hanya jika komputer Anda tidak dapat menjalankan game pada kecepatan penuh dan Anda mengalami gerakan tersendat atau suara berderak.</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
@@ -15410,6 +15569,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <source>Disallow in Hardcore Mode</source>
         <translation>Larang dalam Mode Hardcore</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>Paksa PGXP Mempertahankan Presisi Proyeksi</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15748,6 +15911,11 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Paksa Mode CPU PGXP</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Normalkan Kedalaman PGXP</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Paksa ICache Recompiler</translation>
@@ -15916,6 +16084,10 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>Filter Framebuffer Uploads Minimum Height</source>
         <translation>Tinggi Minimum Pemfilteran Unggahan Framebuffer</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>Bias Kedalaman PGXP</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -16843,12 +17015,24 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Hanya memfilter unggahan framebuffer dengan tinggi setidaknya sebesar nilai ini. Tingkatkan nilai ini untuk menghindari pemfilteran data tekstur.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>Bias Kedalaman</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>Mendekatkan setiap poligon ke kamera dibandingkan poligon yang digambar sebelumnya, dalam satuan sepersejuta kedalaman. Nilai yang lebih tinggi mengurangi kedipan pada dekal dan bayangan, tetapi dapat membuat poligon terlihat menembus permukaan di depannya.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Menggunakan PGXP untuk semua instruksi, bukan hanya operasi memori. Diperlukan agar PGXP dapat memperbaiki goyangan pada beberapa game, tetapi berdampak besar pada performa. Otomatis mengaktifkannya hanya untuk game yang memerlukannya menurut basis data game.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Menggunakan posisi vertex dalam ruang layar untuk memperoleh posisi presisi, bukan melacak akses memori. Dapat memberikan kompatibilitas PGXP untuk beberapa game, tetapi &lt;strong&gt;umumnya tidak memberikan manfaat.&lt;/strong&gt; Otomatis mengaktifkannya hanya untuk game yang memerlukannya menurut basis data game.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang saat menggunakan buffer kedalaman pada game yang memperkecil transformasi objek jauh, tetapi menyebabkan masalah pada game yang mengubah skala model melalui transformasi. Basis data game akan mengaktifkan opsi ini secara otomatis saat diperlukan.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -17167,12 +17351,24 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Atur Ulang Ambang Pengosongan Kedalaman</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>Bias Kedalaman:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>Atur Ulang Bias Kedalaman</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>Mode CPU:</translation>
     </message>
     <message>
         <source>Vertex Cache:</source>
         <translation>Cache Vertex:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalkan Skala Kedalaman</translation>
     </message>
     <message>
         <source>Enable Texture Cache</source>
@@ -22215,10 +22411,6 @@ Kesalahan: {1}</translation>
         <translation>&amp;Muat Ulang Shader</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>Rantai Pascapemrosesan</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>Tambah</translation>
     </message>
@@ -22254,16 +22446,16 @@ Kesalahan: {1}</translation>
         <translation>Konfigurasi Dasar</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hamparan bingkai adalah gambar yang digambar di sekeliling tampilan sistem. Hamparan bingkai diterapkan setelah pascaproses. Anda dapat memilih dari daftar bingkai di bawah, atau mengonfigurasi bingkai kustom secara manual.&lt;/p&gt;&lt;p&gt;Prasetel bingkai tambahan dapat ditambahkan ke folder &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; di dalam direktori data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>Prasetel Terpilih:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>Segarkan Daftar Hamparan</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bingkai prasetel tambahan dapat ditambahkan ke folder &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; di dalam direktori data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22414,6 +22606,18 @@ Kesalahan: {1}</translation>
     <message>
         <source>Border Overlay</source>
         <translation>Hamparan Bingkai</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>Shader tampilan diterapkan pada gambar akhir setelah ukurannya disesuaikan dengan layar Anda. Gunakan shader ini untuk efek layar, seperti filter CRT dan garis pindai.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>Shader internal diterapkan pada gambar game sebelum ukurannya diubah, pada resolusi perenderan game. Gunakan shader ini untuk efek yang mengubah tampilan game itu sendiri, seperti SSAO.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>Hamparan bingkai adalah gambar yang ditampilkan di sekeliling gambar game, seperti bingkai TV atau konsol genggam. Hamparan ini ditampilkan di atas semua elemen lainnya, setelah semua shader diterapkan.</translation>
     </message>
 </context>
 <context>

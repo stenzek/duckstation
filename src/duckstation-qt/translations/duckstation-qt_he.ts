@@ -1775,11 +1775,6 @@ This session will start in offline mode.</source>
         <translation>ניקוי</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>אישור</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>הגדרות היישום</translation>
@@ -2737,11 +2732,6 @@ Do you want to %1$s anyway?</source>
         <translation>צילום מסך של מצב חזרה לאחור</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>דורש הפעלה מחדש</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>עריכת תפריט</translation>
@@ -2815,11 +2805,6 @@ Do you want to %1$s anyway?</source>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>הפעלת חזרה לאחור</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>באיזו תדירות ייווצר מצב חזרה לאחור. תדירויות גבוהות יותר דורשות יותר משאבי מערכת.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4092,6 +4077,86 @@ Do you want to %1$s anyway?</source>
         <translation>הסרה מהנתיבים המוחרגים</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>אחסון משחקים מקומי</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>אחסון משחקים מקומי מיועד למכשירים שאינם תומכים בבחירת תיקיות משחקים באמצעות בורר הקבצים של המערכת (Storage Access Framework). ניתן להעתיק לכאן משחקים באמצעות הוספת קבצים, או להעביר אותם לתיקייה זו באמצעות מנהל קבצים או דרך USB.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>סריקת אחסון המשחקים המקומי</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>מחפש משחקים בתיקייה זו ובתיקיות המשנה שלה.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>מיקום</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>הוספת קבצים</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>מעתיק את הקבצים שנבחרו לאחסון המשחקים המקומי. יש לבחור את קובץ ה־.cue של תמונת התקליטור יחד עם קובצי ה־.bin שלה.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>קבצים</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>אין קבצים באחסון המשחקים המקומי.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>מעתיק את %1$s (%2$d מתוך %3$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s כבר קיים באחסון המשחקים המקומי. האם להחליף אותו?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>פעולות נוספות בקבצים</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>מחיקת קובץ</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>האם למחוק את %s? לא ניתן לבטל פעולה זו.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>הודעות על המסך</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>שכבות־על על המסך</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>תצוגת משחק</translation>
@@ -4471,6 +4536,11 @@ Do you want to %1$s anyway?</source>
         <translation>החלפת מצב אנלוגי</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>הפעלה או השבתה של רינדור תוכנה</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>החלף דיסק</translation>
@@ -4494,6 +4564,11 @@ Do you want to %1$s anyway?</source>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>הגדרות בקר משחק</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>שומר את המצב מעת לעת כדי שתוכל לחזור לאחור ולתקן טעויות במהלך המשחק.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5994,6 +6069,16 @@ ${serial}: המספר הסידורי של המשחק.
         <translation>הגדרות CD-ROM</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>מעבר לתקליטור הבא בעת עצירה</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>עובר אוטומטית לתקליטור הבא במשחק כאשר המשחק עוצר את כונן התקליטורים. אינו פועל בכל המשחקים.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>קנה מידה לתצוגת הקטנת דגימה</translation>
@@ -6002,6 +6087,36 @@ ${serial}: המספר הסידורי של המשחק.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>בוחר את קנה המידה של הרזולוציה שיוחל על התמונה הסופית. 1x יקטין את הדגימה לרזולוציית הקונסולה המקורית.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>סף ניקוי עומק</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>קובע את הגידול בעומק שיגרום לניקוי מאגר העומק. עשוי לסייע בבעיות עומק בחלק מהמשחקים, אך עדיין מדובר בפתרון עוקף.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>היסט עומק</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>מזיז כל מצולע לכיוון המצלמה כדי להפחית הבהוב של מדבקות וצללים. ערך גבוה מדי עלול לחשוף משטחים מוסתרים.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>נרמול קנה המידה של העומק</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>מתקן גאומטריה חסרה בעת שימוש במאגר העומק בחלק מהמשחקים, אך משבש משחקים אחרים.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7630,6 +7745,18 @@ Would you like to import one now?</source>
         <translation>השהיית פלט:</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>עוצמת שמע בתפריטים:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>איפוס עוצמת השמע בתפריטים</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>השתקת שמע המשחק</translation>
+    </message>
+    <message>
         <source>Stretch Mode:</source>
         <translation>מצב מתיחה:</translation>
     </message>
@@ -7652,10 +7779,6 @@ Would you like to import one now?</source>
     <message>
         <source>Reset Fast Forward Volume</source>
         <translation>איפוס עוצמת ההרצה המהירה</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>השתקת כל הצלילים</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7724,6 +7847,18 @@ Would you like to import one now?</source>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>שולט בעוצמת השמע המושמע במארח בעת הרצה מהירה.</translation>
+    </message>
+    <message>
+        <source>Menu Volume</source>
+        <translation>עוצמת שמע בתפריטים</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>שולט בעוצמת האפקטים הקוליים של ממשק התמונה הגדולה ושל התראות ההישגים.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>מונע מהמשחק להפיק צליל כלשהו.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -7820,10 +7955,6 @@ Would you like to import one now?</source>
     <message>
         <source>Unchecked</source>
         <translation>לא מסומן</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>מונע מהאמולטור להפיק צליל כלשהו.</translation>
     </message>
     <message>
         <source>%1 [Unavailable]</source>
@@ -11161,20 +11292,20 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מגדיר את מהירות הטורבו. מהירות זו תשמש בעת לחיצה על מקש הקיצור לטורבו או הפעלת המצב באמצעותו. הטורבו יקבל עדיפות על פני הרצה מהירה אם שני המצבים מופעלים באמצעות מקשי הקיצור שלהם.</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>מסנכרן את הצגת הפריימים של הקונסולה למארח. הפעלה עשויה לגרום לאנימציות חלקות יותר, במחיר של הגדלת השהיית הקלט. &lt;strong&gt;על משתמשי GSync/FreeSync להפעיל במקום זאת תזמון פריימים מיטבי.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>מתאים את מהירות האמולציה כך שקצב הרענון של הקונסולה יתאים לקצב הרענון של המארח כאשר VSync מופעל. התוצאה היא אנימציות חלקות ככל האפשר, במחיר של הגדלת מהירות האמולציה בפחות מ־1% לכל היותר. הסנכרון לקצב הרענון של המארח לא ייכנס לתוקף אם קצב הרענון של הקונסולה רחוק מדי מקצב הרענון של המארח. משתמשים במסכים עם קצב רענון משתנה צריכים להשבית אפשרות זו.</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>מסומן</translation>
     </message>
     <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>הפעלת אפשרות זו תבטיח שכל פריים שהקונסולה מעבדת יוצג במסך, בקצב עקבי, לתזמון פריימים מיטבי. אם יש לך מסך GSync/FreeSync, הפעל אפשרות זו. אם אתה מתקשה לשמור על מהירות מלאה או נתקל בהפרעות שמע, נסה להשבית אפשרות זו.</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>ממתין לרענון התצוגה לפני הצגת כל פריים. כך נמנעת קריעת תמונה, שבה החלק העליון והחלק התחתון של המסך מציגים פריימים שונים. &lt;strong&gt;יש להשאיר אפשרות זו מופעלת אם יש לך מסך GSync/FreeSync, אחרת עדיין עלולה להופיע קריעת תמונה.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>מפעיל את המשחק מעט מהר יותר או לאט יותר, כך שקצב הפריימים שלו יתאים בדיוק לקצב הרענון של התצוגה. כאשר VSync מופעל, הדבר מספק את התנועה החלקה ביותר, אך המשחק עשוי לפעול במהירות גבוהה בעד 1% מהמהירות הרצויה. לאפשרות אין השפעה אם הפער בין שני הקצבים גדול מדי. &lt;strong&gt;יש להשבית אפשרות זו אם יש לך מסך GSync/FreeSync, משום שהמסך כבר משנה את קצב הרענון שלו בהתאם למשחק.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>מציג כל פריים שהמשחק מצייר במרווחי זמן אחידים, לקבלת התנועה החלקה ביותר. יש להשבית אפשרות זו רק אם המחשב אינו מצליח להפעיל את המשחק במהירות מלאה. כשהיא מושבתת, קטן הסיכוי שפריים איטי מזדמן יגרום לגמגומים בתמונה או לפצפוצים בשמע, אך התנועה תהיה פחות אחידה.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11574,6 +11705,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מסך מלא ללא מסגרת</translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>מקרב למצלמה מצולעים שמצוירים מאוחר יותר, במיליוניות של ערך העומק. מפחית הבהוב של מדבקות.</translation>
+    </message>
+    <message>
         <source>Buffer Size</source>
         <translation>גודל המאגר</translation>
     </message>
@@ -11608,6 +11743,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Clean Boot</source>
         <translation>אתחול נקי</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>ניקוי מיפוי</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -11668,6 +11807,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Controls</source>
         <translation>בקרה</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>שולט בעוצמת האפקטים הקוליים של ממשק התמונה הגדולה ושל התראות ההישגים.</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -11744,6 +11887,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Delete State</source>
         <translation>מחיקת מצב</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>היסט עומק</translation>
     </message>
     <message>
         <source>Details</source>
@@ -12232,6 +12379,10 @@ Error was:</source>
         <translation>סוג כרטיס זיכרון {}</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>עוצמת שמע בתפריטים</translation>
+    </message>
+    <message>
         <source>Mid-Frame Scanout</source>
         <translation>סריקת תצוגה באמצע פריים</translation>
     </message>
@@ -12262,10 +12413,6 @@ Error was:</source>
     <message>
         <source>Multitap Mode</source>
         <translation>מצב Multitap</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>השתקת כל הקול</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -12370,10 +12517,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>מפעיל הרצה מקדימה כאשר הקלט האנלוגי משתנה, פעולה שמגדילה משמעותית את דרישות המערכת.</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>מתאים את מהירות האמולציה כך שקצב הרענון של הקונסולה יתאים למארח כאשר VSync מופעל.</translation>
     </message>
     <message>
         <source>Advanced Display Options</source>
@@ -12996,10 +13139,6 @@ You cannot undo this action.</source>
         <translation>מפעיל את שגרות הפענוח הישנות והפחות מדויקות של MDEC. ייתכן שהן נדרשות כדי שרקעים חלופיים ישנים יתאימו או ייטענו.</translation>
     </message>
     <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>מוודא שכל פריים שנוצר יוצג לתזמון מיטבי. הפעל עבור מסכים עם קצב רענון משתנה, כגון GSync/FreeSync. השבת אם יש בעיות במהירות או בשמע.</translation>
-    </message>
-    <message>
         <source>Enter Value</source>
         <translation>הזנת ערך</translation>
     </message>
@@ -13412,6 +13551,10 @@ Please check your username and password, and try again.</source>
         <translation>הזזת סמן</translation>
     </message>
     <message>
+        <source>Mute Game Audio</source>
+        <translation>השתקת שמע המשחק</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
@@ -13482,6 +13625,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>None (Normal Speed)</source>
         <translation>ללא (מהירות רגילה)</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>נרמול קנה המידה של העומק</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -13596,8 +13743,16 @@ Please check your username and password, and try again.</source>
         <translation>סיסמה</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>מונע מהמשחק להפיק צליל כלשהו.</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>תאריך פרסום: </translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>מסיר מערכי העומק את רכיב קנה המידה של ההתמרה של כל עצם. מתקן גאומטריה חסרה בחלק מהמשחקים, אך משבש משחקים אחרים.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13846,10 +14001,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>שומר את ההגדרות הנוכחיות בקביעת בקר.</translation>
-    </message>
-    <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>מסנכרן את הצגת הפריימים של הקונסולה למארח. משתמשי GSync/FreeSync צריכים להפעיל במקום זאת תזמון פריימים מיטבי.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14156,10 +14307,6 @@ Please check your username and password, and try again.</source>
         <translation>מונע שינוי גודל של החלון בזמן שמשחק פועל.</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>מונע מהאמולטור להפיק צליל כלשהו.</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>מונע משומר המסך לפעול ומהמארח לעבור למצב שינה בזמן שהאמולציה פועלת.</translation>
     </message>
@@ -14378,6 +14525,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Runahead/Rewind</source>
         <translation>הרצה מקדימה/חזרה לאחור</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>מפעיל את המשחק מעט מהר יותר או לאט יותר כדי להתאים לקצב הרענון של התצוגה כאשר VSync מופעל. יש להשבית אפשרות זו במסכי GSync/FreeSync.</translation>
     </message>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
@@ -14682,6 +14833,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
         <translation>מציג את הגדרות השיפורים בפינה הימנית התחתונה של המסך.</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>מציג כל פריים שהמשחק מצייר במרווחי זמן אחידים. יש להשבית אפשרות זו רק אם המחשב אינו מצליח להפעיל את המשחק במהירות מלאה, ויש גמגומים בתמונה או פצפוצים בשמע.</translation>
     </message>
     <message>
         <source>Shows persistent icons when turbo is active or when paused.</source>
@@ -15084,6 +15239,10 @@ Do you want to {0} anyway?</source>
 האם ברצונך לבצע {0} בכל זאת?</translation>
     </message>
     <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>ממתין לרענון התצוגה לפני הצגת כל פריים, וכך מונע קריעת תמונה. יש להשאיר אפשרות זו מופעלת גם במסכי GSync/FreeSync.</translation>
+    </message>
+    <message>
         <source>Warning Message Duration</source>
         <translation>משך הודעת אזהרה</translation>
     </message>
@@ -15455,6 +15614,10 @@ Do you want to {1} anyway?</source>
         <source>Disallow in Hardcore Mode</source>
         <translation>איסור במצב הארדקור</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>אילוץ שימור דיוק ההיטל של PGXP</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15793,6 +15956,11 @@ Are you sure you want to continue?</source>
         <translation>כפיית מצב CPU של PGXP</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>נרמול עומק PGXP</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>כפיית ICache של המהדר מחדש</translation>
@@ -16089,6 +16257,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>סף ניקוי עומק של PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>היסט עומק PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -16882,6 +17054,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>איפוס סף ניקוי עומק</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>היסט עומק:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>איפוס היסט העומק</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>מצב CPU:</translation>
     </message>
@@ -16924,6 +17104,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Depth Test Transparent Polygons</source>
         <translation>בדיקת עומק למצולעים שקופים</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>נרמול קנה המידה של העומק</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17378,6 +17562,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>קובע את הגידול בעומק שיגרום לניקוי מאגר העומק. עשוי לסייע בבעיות עומק בחלק מהמשחקים, אך עדיין מדובר במעקף זמני.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>היסט עומק</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>מקרב כל מצולע למצלמה ביחס למצולעים שצוירו לפניו, במיליוניות של ערך העומק. ערכים גבוהים יותר מפחיתים הבהוב של מדבקות וצללים, אך עלולים לגרום למצולעים להיראות דרך משטחים שנמצאים לפניהם.</translation>
+    </message>
+    <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>משתמש באינטרפולציה מתוקנת לפי פרספקטיבה עבור קואורדינטות טקסטורה, ומיישר טקסטורות מעוותות. דורש שתיקון הגאומטריה יהיה מופעל.</translation>
     </message>
@@ -17400,6 +17592,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>מפעיל בדיקת עומק עבור מצולעים שקופים למחצה. לרוב מדובר בצללים, והם נוטים להיחתך דרך הקרקע כאשר בדיקת העומק מופעלת. כתיבות עומק עבור מצולעים שקופים למחצה מושבתות ללא קשר להגדרה זו.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>מסיר מערכי העומק את רכיב קנה המידה של ההתמרה של כל עצם. מתקן גאומטריה חסרה בעת שימוש במאגר העומק במשחקים שמקטינים את ההתמרות של עצמים מרוחקים, אך משבש משחקים שמשנים את קנה המידה של מודלים באמצעות ההתמרה. מסד נתוני המשחקים יפעיל אפשרות זו אוטומטית בעת הצורך.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -22275,10 +22471,6 @@ Error: {1}</source>
         <translation>&amp;טען מחדש שיידרים</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>שרשרת עיבוד לאחר רינדור</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>הוסף</translation>
     </message>
@@ -22314,16 +22506,16 @@ Error: {1}</source>
         <translation>תצורה בסיסית</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;שכבת־על של מסגרת היא תמונה המצוירת סביב תצוגת המערכת. שכבות־על של מסגרות מוחלות לאחר העיבוד לאחר רינדור. ניתן לבחור מהרשימה למטה או להגדיר ידנית מסגרת מותאמת אישית.&lt;/p&gt;&lt;p&gt;ניתן להוסיף מסגרות מוגדרות מראש נוספות לתיקייה &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; שבתוך תיקיית הנתונים.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>הגדרה מראש שנבחרה:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>רענן רשימת שכבות־העל</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ניתן להוסיף מסגרות מוגדרות מראש לתיקייה &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; שבתיקיית הנתונים.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22474,6 +22666,18 @@ Error: {1}</source>
     <message>
         <source>Border Overlay</source>
         <translation>שכבת־על של מסגרת</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>שיידרים לתצוגה מוחלים על התמונה הסופית לאחר שהתאימו את גודלה למסך. יש להשתמש בהם לאפקטים של מסך, כגון מסנני CRT וקווי סריקה.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>שיידרים פנימיים מוחלים על תמונת המשחק לפני שינוי גודלה, ברזולוציה שבה המשחק מרונדר. יש להשתמש בהם לאפקטים שמשנים את מראה המשחק עצמו, כגון SSAO.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>שכבת־על של מסגרת היא תמונה שמצוירת סביב תמונת המשחק, כגון מסגרת של טלוויזיה או של מכשיר משחק נייד. היא מצוירת מעל כל השאר, לאחר החלת כל השיידרים.</translation>
     </message>
 </context>
 <context>

@@ -7,6 +7,8 @@ import argparse
 import collections
 import datetime
 import difflib
+import hashlib
+import itertools
 import json
 import os
 import shutil
@@ -22,6 +24,7 @@ if __package__ in (None, ""):
 from translation.ts_utils import (  # noqa: E402
     SKIPPED_TYPES,
     CatalogMessage,
+    accelerator_count,
     atomic_write_text,
     catalog_fingerprint,
     extra_rich_tags,
@@ -30,8 +33,10 @@ from translation.ts_utils import (  # noqa: E402
     message_to_task_record,
     missing_rich_tags,
     parse_catalog,
+    parse_catalog_text,
     placeholder_counts_match,
     replace_translation_node,
+    rich_text_problems,
     scan_raw_messages,
     text_sha256,
     unbalanced_rich_tags,
@@ -43,10 +48,10 @@ SESSION_SCHEMA = "duckstation-qt-translation-session-v2"
 TASK_SCHEMA = "duckstation-qt-translation-task-v2"
 RESPONSE_SCHEMA = "duckstation-qt-translation-response-v2"
 REVIEW_SCHEMA = "duckstation-qt-translation-reviews-v2"
-DECISION_FIELDS = ("translation", "plural_translations", "accept_current", "accept_source")
+DECISION_FIELDS = ("translation", "plural_translations", "accept_current", "accept_source", "needs_context")
 DEFAULT_MAX_RECORDS = 300
 DEFAULT_MAX_BYTES = 192 * 1024
-TASK_METADATA_RESERVE = 256
+TASK_METADATA_RESERVE = 2048
 
 
 def json_line(value: dict[str, object]) -> str:
@@ -91,7 +96,11 @@ def build_suggestion_indexes(
     exact: dict[str, list[CatalogMessage]] = collections.defaultdict(list)
     contexts: dict[str, list[CatalogMessage]] = collections.defaultdict(list)
     for message in messages:
-        if translated_text(message) is None:
+        values = message.plural_translations or [message.translation or ""]
+        if (translated_text(message) is None or any(not value.strip() for value in values)
+                or any(validate_translation(message.identity.source, value, message.identity.numerus)
+                       or missing_rich_tags(message.identity.source, value)
+                       or rich_text_problems(message.identity.source, value) for value in values)):
             continue
         exact[message.identity.source].append(message)
         contexts[message.identity.context].append(message)
@@ -142,6 +151,7 @@ def build_suggestions(
                 "context": candidate.identity.context,
                 "type": candidate.translation_type,
                 "similarity": round(similarity, 4),
+                "review_status": "unverified catalog suggestion",
             }
         )
         if len(suggestions) == limit:
@@ -161,19 +171,23 @@ def split_tasks(
     tasks: list[list[dict[str, object]]] = []
     current: list[dict[str, object]] = []
     current_bytes = TASK_METADATA_RESERVE
-    for record in records:
-        record_bytes = len((json_line(record) + "\n").encode("utf-8"))
-        if TASK_METADATA_RESERVE + record_bytes > max_bytes:
-            raise ValueError(
-                f"{record.get('id')}: serialized record exceeds --max-bytes; "
-                "increase the limit for this catalog"
-            )
-        if current and (len(current) >= max_records or current_bytes + record_bytes > max_bytes):
+    for _, group in itertools.groupby(records, key=lambda record: record.get("context")):
+        context_records = list(group)
+        sizes = [len((json_line(record) + "\n").encode("utf-8")) for record in context_records]
+        if (current and len(context_records) <= max_records and sum(sizes) + TASK_METADATA_RESERVE <= max_bytes
+                and (len(current) + len(context_records) > max_records or current_bytes + sum(sizes) > max_bytes)):
             tasks.append(current)
             current = []
             current_bytes = TASK_METADATA_RESERVE
-        current.append(record)
-        current_bytes += record_bytes
+        for record, record_bytes in zip(context_records, sizes):
+            if TASK_METADATA_RESERVE + record_bytes > max_bytes:
+                raise ValueError(f"{record.get('id')}: serialized record exceeds --max-bytes; increase the limit")
+            if current and (len(current) >= max_records or current_bytes + record_bytes > max_bytes):
+                tasks.append(current)
+                current = []
+                current_bytes = TASK_METADATA_RESERVE
+            current.append(record)
+            current_bytes += record_bytes
     if current:
         tasks.append(current)
     return tasks
@@ -211,6 +225,20 @@ def state_for_record(record: dict[str, object]) -> dict[str, object]:
     }
 
 
+def task_metadata(manifest: dict[str, object], task_id: str) -> dict[str, object]:
+    metadata = {
+        "record_type": "metadata", "schema": TASK_SCHEMA,
+        "session_id": manifest.get("session_id"), "task_id": task_id,
+    }
+    if "catalog_attributes" in manifest:
+        metadata.update({
+            "language": manifest["catalog_attributes"].get("language", ""),
+            "catalog": manifest["catalog"], "repo_root": manifest["repo_root"],
+            "guidance": manifest.get("guidance_path"),
+        })
+    return metadata
+
+
 def load_session(
     session_value: Path,
 ) -> tuple[Path, dict[str, object], list[dict[str, object]], dict[str, dict[str, object]]]:
@@ -218,6 +246,10 @@ def load_session(
     manifest = read_json(session / "manifest.json")
     if manifest.get("schema") != SESSION_SCHEMA:
         raise ValueError(f"{session}: unsupported session schema: {manifest.get('schema')!r}")
+    if manifest.get("guidance_sha256"):
+        guidance = session_file(session, "guidance.json")
+        if text_sha256(guidance.read_text(encoding="utf-8")) != manifest["guidance_sha256"]:
+            raise ValueError("immutable locale guidance checksum mismatch")
     task_records: list[dict[str, object]] = []
     tasks_by_id: dict[str, dict[str, object]] = {}
     seen_ids: set[str] = set()
@@ -235,12 +267,7 @@ def load_session(
         if text_sha256(task_text) != task_value.get("sha256"):
             raise ValueError(f"{task_path}: immutable task checksum mismatch")
         lines = read_jsonl(task_path)
-        if not lines or lines[0] != {
-            "record_type": "metadata",
-            "schema": TASK_SCHEMA,
-            "session_id": manifest.get("session_id"),
-            "task_id": task_id,
-        }:
+        if not lines or lines[0] != task_metadata(manifest, task_id):
             raise ValueError(f"{task_path}: invalid task metadata")
         records = lines[1:]
         expected_ids = task_value.get("record_ids")
@@ -285,22 +312,6 @@ def load_reviews(
     return reviews
 
 
-def accelerator_count(text: str) -> int:
-    count = 0
-    index = 0
-    while index < len(text):
-        if text[index] != "&":
-            index += 1
-            continue
-        if index + 1 < len(text) and text[index + 1] == "&":
-            index += 2
-            continue
-        if index + 1 < len(text) and not text[index + 1].isspace():
-            count += 1
-        index += 1
-    return count
-
-
 def resolved_values(
     record: dict[str, object], decision: dict[str, object]
 ) -> tuple[str | None, list[str] | None]:
@@ -320,7 +331,7 @@ def validate_decision(
     record: dict[str, object], decision: dict[str, object]
 ) -> tuple[dict[str, object], list[str]]:
     identifier = str(decision.get("id", ""))
-    unexpected = set(decision) - {"id", *DECISION_FIELDS}
+    unexpected = set(decision) - {"id", "source_reason", *DECISION_FIELDS}
     if unexpected:
         raise ValueError(f"{identifier}: unsupported response fields: {sorted(unexpected)}")
     if identifier != record.get("id"):
@@ -336,6 +347,10 @@ def validate_decision(
         raise ValueError(f"{identifier}: set exactly one reviewed decision field")
     field = selected[0]
     normalized: dict[str, object] = {"id": identifier, field: decision[field]}
+    if field == "needs_context":
+        if not isinstance(decision[field], str) or not decision[field].strip():
+            raise ValueError(f"{identifier}: needs_context requires a concrete question")
+        return normalized, [f"{identifier}: needs context: {decision[field]}"]
     numerus = record.get("numerus") is True
     source = str(record.get("source", ""))
     warnings: list[str] = []
@@ -372,12 +387,21 @@ def validate_decision(
             raise ValueError(
                 f"{identifier}: plural_translations must contain exactly {arity} nonempty strings"
             )
-        if any(value == source for value in values):
+        if any(value == source for value in values) and not str(record.get("language", "")).startswith("en"):
             raise ValueError(f"{identifier}: plural translations must not copy the source")
 
+    if "source_reason" in decision:
+        if normalized.get("accept_source") is not True or not isinstance(decision["source_reason"], str) or not decision["source_reason"].strip():
+            raise ValueError(f"{identifier}: source_reason is only valid for a justified accept_source decision")
+        normalized["source_reason"] = decision["source_reason"]
+
     singular, plurals = resolved_values(record, normalized)
+    if numerus != (plurals is not None):
+        raise ValueError(f"{identifier}: reviewed translation has the wrong singular/plural shape")
     values = plurals if plurals is not None else [singular or ""]
     for value in values:
+        if not value.strip():
+            raise ValueError(f"{identifier}: reviewed translation is empty")
         problems = validate_translation(source, value, allow_missing_placeholders=numerus)
         if problems:
             raise ValueError(f"{identifier}: {'; '.join(problems)}")
@@ -389,8 +413,11 @@ def validate_decision(
         unbalanced = unbalanced_rich_tags(value)
         if unbalanced:
             raise ValueError(f"{identifier}: unbalanced rich-text tags: {unbalanced}")
+        markup_problems = rich_text_problems(source, value)
+        if markup_problems:
+            raise ValueError(f"{identifier}: {'; '.join(markup_problems)}")
         source_accelerators = accelerator_count(source)
-        if source_accelerators and accelerator_count(value) != source_accelerators:
+        if accelerator_count(value) != source_accelerators:
             raise ValueError(
                 f"{identifier}: accelerator count mismatch: "
                 f"source={source_accelerators} translation={accelerator_count(value)}"
@@ -473,14 +500,24 @@ def catalog_path(manifest: dict[str, object]) -> Path:
 
 def command_start(args: argparse.Namespace) -> int:
     catalog = args.catalog.resolve()
-    _, messages = parse_catalog(catalog)
+    tree, messages = parse_catalog(catalog)
+    attributes = dict(tree.getroot().attrib)
+    language = attributes.get("language", "")
+    if not language:
+        raise ValueError("catalog must declare its target language")
+    guidance_text = None
+    if args.guidance:
+        guidance = read_json(args.guidance)
+        if guidance.get("language") != language:
+            raise ValueError("locale guidance language does not match the catalog")
+        guidance_text = json.dumps(guidance, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     contexts = set(args.context)
     targets: list[CatalogMessage] = []
     for message in messages:
         if message.translation_type in SKIPPED_TYPES or (contexts and message.identity.context not in contexts):
             continue
         values = message.plural_translations if message.plural_translations else [message.translation or ""]
-        is_empty = not any(value.strip() for value in values)
+        is_empty = any(not value.strip() for value in values)
         is_source_equal = (
             not message.identity.numerus
             and message.translation is not None
@@ -501,6 +538,8 @@ def command_start(args: argparse.Namespace) -> int:
         )
         for message in targets
     ]
+    for record in records:
+        record["language"] = language
     task_groups = split_tasks(records, args.max_records, args.max_bytes)
     fingerprint = catalog_fingerprint(messages)
     session_id = uuid.uuid4().hex
@@ -523,6 +562,11 @@ def command_start(args: argparse.Namespace) -> int:
         "session_id": session_id,
         "catalog": str(catalog),
         "catalog_fingerprint": fingerprint,
+        "catalog_attributes": attributes,
+        "repo_root": str(repo_root),
+        "require_semantic_review": args.require_semantic_review,
+        "guidance_path": str(session / "guidance.json") if guidance_text is not None else None,
+        "guidance_sha256": text_sha256(guidance_text) if guidance_text is not None else None,
         "target_count": len(records),
         "selection": {
             "contexts": args.context,
@@ -538,17 +582,15 @@ def command_start(args: argparse.Namespace) -> int:
     try:
         (staging / "tasks").mkdir(parents=True)
         (staging / "responses").mkdir()
+        if guidance_text is not None:
+            atomic_write_text(staging / "guidance.json", guidance_text)
         for index, group in enumerate(task_groups, 1):
             task_id = f"task-{index:04d}"
             task_relative = f"tasks/{task_id}.jsonl"
             response_relative = f"responses/{task_id}.jsonl"
-            task_metadata = {
-                "record_type": "metadata",
-                "schema": TASK_SCHEMA,
-                "session_id": session_id,
-                "task_id": task_id,
-            }
-            task_text = jsonl_text(task_metadata, group)
+            task_text = jsonl_text(task_metadata(manifest, task_id), group)
+            if len(task_text.encode("utf-8")) > args.max_bytes:
+                raise ValueError("task metadata exceeds --max-bytes; increase the limit")
             task_hash = text_sha256(task_text)
             atomic_write_text(staging / task_relative, task_text)
             initial_response_metadata = {
@@ -595,11 +637,12 @@ def command_check(args: argparse.Namespace) -> int:
     records_by_id = {str(record["id"]): record for record in records}
     task_id, decisions, warnings = load_response(args.response.resolve(), manifest, tasks_by_id, records_by_id)
     expected = len(tasks_by_id[task_id]["record_ids"])
-    if args.require_complete_task and len(decisions) != expected:
-        raise ValueError(f"{args.response}: {task_id} has {len(decisions)}/{expected} reviewed record(s)")
+    completed = sum("needs_context" not in decision for decision in decisions.values())
+    if args.require_complete_task and completed != expected:
+        raise ValueError(f"{args.response}: {task_id} has {completed}/{expected} reviewed record(s)")
     for warning in warnings:
         print(f"WARNING: {warning}")
-    print(f"Valid response for {task_id}: {len(decisions)}/{expected} reviewed record(s).")
+    print(f"Valid response for {task_id}: {completed}/{expected} reviewed record(s).")
     return 0
 
 
@@ -621,38 +664,43 @@ def command_salvage(args: argparse.Namespace) -> int:
     decisions: dict[str, dict[str, object]] = {}
     rejected: list[str] = []
     warnings: list[str] = []
-    with response.open("r", encoding="utf-8") as stream:
-        for line_number, line in enumerate(stream, 1):
-            if not line.strip():
-                continue
-            try:
-                item = json.loads(line)
-            except json.JSONDecodeError as error:
-                rejected.append(f"line {line_number}: invalid JSON: {error}")
-                continue
-            if not isinstance(item, dict):
-                rejected.append(f"line {line_number}: JSONL record is not an object")
-                continue
-            if item.get("record_type") == "metadata":
-                continue
-            identifier = str(item.get("id", ""))
-            if identifier not in task_ids:
-                rejected.append(
-                    f"line {line_number}: response id is not owned by {task_id}: "
-                    f"{identifier or '<missing>'}"
-                )
-                continue
-            try:
-                normalized, decision_warnings = validate_decision(records_by_id[identifier], item)
-            except ValueError as error:
-                rejected.append(f"line {line_number}: {error}")
-                continue
-            existing = decisions.get(identifier)
-            if existing is not None and existing != normalized:
-                rejected.append(f"line {line_number}: conflicting duplicate response id: {identifier}")
-                continue
-            decisions[identifier] = normalized
-            warnings.extend(decision_warnings)
+    original_bytes = response.read_bytes()
+    for line_number, raw_line in enumerate(original_bytes.splitlines(), 1):
+        try:
+            line = raw_line.decode("utf-8")
+        except UnicodeDecodeError as error:
+            rejected.append(f"line {line_number}: invalid UTF-8: {error}")
+            continue
+        if not line.strip():
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError as error:
+            rejected.append(f"line {line_number}: invalid JSON: {error}")
+            continue
+        if not isinstance(item, dict):
+            rejected.append(f"line {line_number}: JSONL record is not an object")
+            continue
+        if item.get("record_type") == "metadata":
+            continue
+        identifier = str(item.get("id", ""))
+        if identifier not in task_ids:
+            rejected.append(
+                f"line {line_number}: response id is not owned by {task_id}: "
+                f"{identifier or '<missing>'}"
+            )
+            continue
+        try:
+            normalized, decision_warnings = validate_decision(records_by_id[identifier], item)
+        except ValueError as error:
+            rejected.append(f"line {line_number}: {error}")
+            continue
+        existing = decisions.get(identifier)
+        if existing is not None and existing != normalized:
+            rejected.append(f"line {line_number}: conflicting duplicate response id: {identifier}")
+            continue
+        decisions[identifier] = normalized
+        warnings.extend(decision_warnings)
 
     ordered = [
         decisions[str(record["id"])]
@@ -660,7 +708,8 @@ def command_salvage(args: argparse.Namespace) -> int:
         if str(record["id"]) in decisions
     ]
     if args.write:
-        atomic_write_text(response, jsonl_text(response_metadata(manifest, task_id, task), ordered))
+        atomic_write_text(response, jsonl_text(response_metadata(manifest, task_id, task), ordered),
+                          expected_sha256=hashlib.sha256(original_bytes).hexdigest())
     for warning in warnings:
         print(f"WARNING: {warning}")
     for problem in rejected:
@@ -696,6 +745,8 @@ def command_merge(args: argparse.Namespace) -> int:
         _, decisions, response_warnings = load_response(path, manifest, tasks_by_id, records_by_id)
         warnings.extend(response_warnings)
         for identifier, decision in decisions.items():
+            if "needs_context" in decision:
+                continue
             existing = merged.get(identifier)
             if existing is not None and existing != decision and not args.replace:
                 raise ValueError(
@@ -721,7 +772,9 @@ def catalog_conflicts(
     reviews: dict[str, dict[str, object]],
 ) -> tuple[bool, list[str]]:
     catalog = catalog_path(manifest)
-    _, messages = parse_catalog(catalog)
+    tree, messages = parse_catalog(catalog)
+    if "catalog_attributes" in manifest and tree.getroot().attrib != manifest["catalog_attributes"]:
+        return True, ["catalog language/version metadata has changed since the session started"]
     if catalog_fingerprint(messages) != manifest.get("catalog_fingerprint"):
         return True, ["catalog source identity has changed since the session started"]
     messages_by_id = {message.identifier: message for message in messages}
@@ -767,7 +820,8 @@ def command_status(args: argparse.Namespace) -> int:
             continue
         response_decisions_by_task[task_id] = decisions
         unmerged_ids.update(
-            identifier for identifier, decision in decisions.items() if reviews.get(identifier) != decision
+            identifier for identifier, decision in decisions.items()
+            if "needs_context" not in decision and reviews.get(identifier) != decision
         )
     stale, conflicts = catalog_conflicts(manifest, records, reviews)
     task_status: list[dict[str, object]] = []
@@ -778,7 +832,7 @@ def command_status(args: argparse.Namespace) -> int:
         task_unmerged = {
             identifier
             for identifier, decision in checkpointed.items()
-            if reviews.get(identifier) != decision
+            if "needs_context" not in decision and reviews.get(identifier) != decision
         }
         task_status.append(
             {
@@ -790,6 +844,8 @@ def command_status(args: argparse.Namespace) -> int:
                 "remaining": len(ids) - merged_count,
                 "task": str(session_file(session, task["path"])),
                 "response": str(session_file(session, task["response_path"])),
+                "needs_context": {key: value["needs_context"] for key, value in checkpointed.items()
+                                  if "needs_context" in value},
             }
         )
     result = {
@@ -805,6 +861,31 @@ def command_status(args: argparse.Namespace) -> int:
         "invalid_response_paths": invalid_response_paths,
         "tasks": task_status,
     }
+    semantic = {"required": bool(manifest.get("require_semantic_review")), "approved": False}
+    pointer = session / "quality.json"
+    if pointer.exists():
+        try:
+            from translation import review_ts
+
+            audit = Path(read_json(pointer)["session"])
+            _, audit_manifest, audit_records, _ = review_ts.load_session(audit)
+            audited = review_ts.load_journal(audit, audit_manifest, audit_records)
+            semantic.update({"session": str(audit), "reviewed": len(audited), "total": len(audit_records),
+                             "findings": sum(item["outcome"] == "finding" for item in audited.values()),
+                             "needs_context": sum(item["outcome"] == "needs_context" for item in audited.values())})
+            expected = []
+            for record in records:
+                if str(record["id"]) not in reviews:
+                    continue
+                singular, plurals = resolved_values(record, reviews[str(record["id"])])
+                expected.append({**record, "current_type": "finished", "current_translation": singular,
+                                 "current_plural_translations": plurals or []})
+            if expected:
+                review_ts.require_approved(audit, manifest.get("catalog_attributes", audit_manifest["catalog_attributes"]), expected)
+                semantic["approved"] = True
+        except (OSError, ValueError, KeyError) as error:
+            semantic["pending_reason"] = str(error)
+    result["semantic_review"] = semantic
     if stale:
         result["queue_complete"] = False
         result["recommended_action"] = "resolve_errors"
@@ -819,7 +900,21 @@ def command_status(args: argparse.Namespace) -> int:
         result["recommended_action"] = "dispatch_workers"
     else:
         result["queue_complete"] = True
-        result["recommended_action"] = "dry_run_apply"
+        result["recommended_action"] = (
+            "prepare_semantic_review" if semantic["required"] and not semantic["approved"] else "dry_run_apply"
+        )
+        current = {message.identifier: message for message in parse_catalog(catalog_path(manifest))[1]}
+        applied = True
+        for record in records:
+            identifier = str(record["id"])
+            message = current.get(identifier)
+            singular, plurals = resolved_values(record, reviews[identifier])
+            if (message is None or message.translation_type != "finished"
+                    or (message.plural_translations or [message.translation or ""]) != (plurals or [singular or ""])):
+                applied = False
+                break
+        if records and applied and (not semantic["required"] or semantic["approved"]):
+            result["recommended_action"] = "final_validation"
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
@@ -855,7 +950,8 @@ def command_status(args: argparse.Namespace) -> int:
                     "remaining=0. Concurrent agent slots are not a total-capacity limit."
                 )
             else:
-                print("REVIEW QUEUE COMPLETE: proceed with dry-run apply, write, validation, and diff inspection.")
+                print(f"TRANSLATION QUEUE COMPLETE: next={result['recommended_action']}; "
+                      f"semantic_review_approved={semantic['approved']}.")
     return 1 if stale or invalid_responses else 0
 
 
@@ -877,12 +973,14 @@ def command_apply(args: argparse.Namespace) -> int:
         validate_decision(record, reviews[str(record["id"])])
 
     catalog = catalog_path(manifest)
-    _, messages = parse_catalog(catalog)
+    with catalog.open("r", encoding="utf-8", newline="") as stream:
+        original = stream.read()
+    tree, messages = parse_catalog_text(original)
+    if "catalog_attributes" in manifest and tree.getroot().attrib != manifest["catalog_attributes"]:
+        raise ValueError("catalog language/version metadata has changed since the session started")
     if catalog_fingerprint(messages) != manifest.get("catalog_fingerprint"):
         raise ValueError("catalog source identity has changed since the session started")
     messages_by_id = {message.identifier: message for message in messages}
-    with catalog.open("r", encoding="utf-8", newline="") as stream:
-        original = stream.read()
     spans = scan_raw_messages(original)
     replacements: list[tuple[int, int, str]] = []
     already_applied = 0
@@ -923,8 +1021,39 @@ def command_apply(args: argparse.Namespace) -> int:
         actual = message.plural_translations if message.plural_translations else [message.translation or ""]
         if actual != expected:
             raise ValueError(f"{identifier}: staged translation differs from its reviewed value")
+    if args.command == "prepare-review":
+        from translation import review_ts
+
+        preview = session / "quality" / "candidate.ts"
+        pointer = session / "quality.json"
+        previous = Path(read_json(pointer)["session"]) if pointer.exists() else None
+        if previous is not None:
+            _, old_manifest, old_records, _ = review_ts.load_session(previous)
+            staged_records = [message_to_task_record(staged_by_id[str(record["id"])]) for record in selected_records]
+            if (old_manifest["catalog_attributes"] == tree.getroot().attrib
+                    and old_manifest["snapshot_sha256"] == text_sha256(updated)
+                    and {record["id"]: review_ts.record_digest(record) for record in old_records}
+                    == {record["id"]: review_ts.record_digest(record) for record in staged_records}):
+                if preview.read_bytes() != updated.encode("utf-8"):
+                    atomic_write_text(preview, updated)
+                print(f"Semantic review already prepared: {previous}")
+                return 0
+        atomic_write_text(preview, updated)
+        quality = review_ts.start_session(preview, identifiers={str(record["id"]) for record in selected_records},
+                                          previous=previous, guidance=manifest.get("guidance_path"))
+        atomic_write_text(pointer, json.dumps({"session": str(quality)}) + "\n")
+        print(f"Semantic review: {quality}")
+        return 0
+    if manifest.get("require_semantic_review") and replacements:
+        from translation.review_ts import require_approved
+
+        pointer = session / "quality.json"
+        if not pointer.exists():
+            raise ValueError("semantic review is required; run prepare-review SESSION before apply")
+        require_approved(Path(read_json(pointer)["session"]), tree.getroot().attrib,
+                         [message_to_task_record(staged_by_id[str(record["id"])]) for record in selected_records])
     if args.write and replacements:
-        atomic_write_text(catalog, updated, mode=catalog.stat().st_mode)
+        atomic_write_text(catalog, updated, mode=catalog.stat().st_mode, expected_sha256=text_sha256(original))
     action = "Applied" if args.write else "Would apply"
     print(
         f"{action} {len(replacements)} translation(s); "
@@ -943,6 +1072,8 @@ def parse_args() -> argparse.Namespace:
     start = subparsers.add_parser("start", help="create a new resumable translation session")
     start.add_argument("catalog", type=Path)
     start.add_argument("--session-dir", type=Path)
+    start.add_argument("--guidance", type=Path, help="snapshot a reviewed locale glossary and style guide JSON")
+    start.add_argument("--require-semantic-review", action="store_true", help="require exact candidate approvals before apply")
     start.add_argument("--context", action="append", default=[])
     start.add_argument("--include-empty-active", action="store_true")
     start.add_argument("--include-source-equal", action="store_true")
@@ -989,6 +1120,10 @@ def parse_args() -> argparse.Namespace:
     )
     apply.add_argument("--write", action="store_true")
     apply.set_defaults(function=command_apply)
+    preview = subparsers.add_parser("prepare-review", help="prepare independent semantic review of staged targets")
+    preview.add_argument("session", type=Path)
+    preview.add_argument("--reviewed-only", action="store_true")
+    preview.set_defaults(function=command_apply)
     return parser.parse_args()
 
 

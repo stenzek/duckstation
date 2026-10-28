@@ -1789,11 +1789,6 @@ Ta sesja rozpocznie się w trybie offline.</translation>
         <translation>Wyczyść</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>OK</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>Ustawienia aplikacji</translation>
@@ -2759,11 +2754,6 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <translation>Zrzut ekranu stanu przewijania do tyłu</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>Wymaga ponownego uruchomienia</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>Edytuj menu</translation>
@@ -2837,11 +2827,6 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>Włącz przewijanie do tyłu</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>Określa, jak często tworzony będzie stan przewijania do tyłu. Częstsze zapisy zwiększają wymagania sprzętowe.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4118,6 +4103,86 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <translation>Usuń z wykluczonych ścieżek</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>Lokalny magazyn gier</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>Lokalny magazyn gier jest przeznaczony dla urządzeń, które nie obsługują wybierania folderów z grami za pomocą systemowego okna wyboru plików (Storage Access Framework). Gry można skopiować tutaj za pomocą opcji „Dodaj pliki” lub umieścić w tym folderze za pomocą menedżera plików albo przez USB.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>Przeskanuj lokalny magazyn gier</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>Wyszukuje gry w tym folderze i jego podfolderach.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>Lokalizacja</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>Dodaj pliki</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>Kopiuje wybrane pliki do lokalnego magazynu gier. Wybierz plik .cue obrazu płyty wraz z jego plikami .bin.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>Pliki</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>W lokalnym magazynie gier nie ma żadnych plików.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>Kopiowanie %1$s (%2$d z %3$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s już istnieje w lokalnym magazynie gier. Czy chcesz go zastąpić?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>Więcej działań dotyczących pliku</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>Usuń plik</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>Czy na pewno chcesz usunąć %s? Nie można tego cofnąć.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>Komunikaty ekranowe</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>Nakładki ekranowe</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Ekran gry</translation>
@@ -4498,6 +4563,11 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <translation>Przełącz tryb analogowy</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>Przełącz renderowanie programowe</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Zmień płytę</translation>
@@ -4521,6 +4591,11 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>Ustawienia kontrolera</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Okresowo zapisuje stan, dzięki czemu można cofnąć wszelkie błędy podczas rozgrywki.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -6024,6 +6099,16 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <translation>Ustawienia CD-ROM</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>Przełącz na następną płytę po zatrzymaniu</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>Automatycznie przełącza na następną płytę gry, gdy gra zatrzymuje napęd CD-ROM. Nie działa we wszystkich grach.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>Skala rozdzielczości po próbkowaniu w dół</translation>
@@ -6032,6 +6117,36 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Wybiera skalę rozdzielczości, która zostanie zastosowana do końcowego obrazu. 1x spowoduje zmniejszenie rozdzielczości do oryginalnej rozdzielczości konsoli.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>Próg czyszczenia głębi</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>Określa wzrost głębokości, który spowoduje wyczyszczenie bufora głębi. Może pomóc w przypadku problemów z głębią w niektórych grach, ale nadal jest to obejście.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>Przesunięcie głębi</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>Przesuwa każdy wielokąt w stronę kamery, aby ograniczyć migotanie nałożonych detali i cieni. Zbyt wysoka wartość może ujawnić ukryte powierzchnie.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>Normalizuj skalę głębi</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>Naprawia braki geometrii przy użyciu bufora głębi w niektórych grach, ale powoduje błędy w innych.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7613,6 +7728,18 @@ Czy chcesz go teraz zaimportować?</translation>
         <translation>Opóźnienie wyjścia:</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>Głośność menu:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>Zresetuj głośność menu</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Wycisz dźwięk gry</translation>
+    </message>
+    <message>
         <source>Stretch Mode:</source>
         <translation>Tryb rozciągania:</translation>
     </message>
@@ -7651,10 +7778,6 @@ Czy chcesz go teraz zaimportować?</translation>
     <message>
         <source>Reset Output Volume</source>
         <translation>Zresetuj głośność wyjściową</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>Wycisz wszystkie dźwięki</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7765,6 +7888,18 @@ Czy chcesz go teraz zaimportować?</translation>
         <translation>Ustawia głośność dźwięku odtwarzanego przez gospodarza podczas szybkiego przewijania.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Głośność menu</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Reguluje głośność efektów dźwiękowych interfejsu Big Picture i powiadomień o osiągnięciach.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Zapobiega wytwarzaniu przez grę jakiegokolwiek słyszalnego dźwięku.</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>Nie dotyczy</translation>
     </message>
@@ -7859,10 +7994,6 @@ Czy chcesz go teraz zaimportować?</translation>
     <message>
         <source>Fast Forward Volume</source>
         <translation>Głośność przy przyspieszeniu</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Zapobiega wytwarzaniu przez emulator jakiegokolwiek słyszalnego dźwięku.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -11206,20 +11337,20 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Niezaznaczone</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Synchronizuje wyświetlanie klatek konsoli z gospodarzem. Włączenie tej opcji może spowodować płynniejsze animacje kosztem zwiększonego opóźnienia wejściowego. &lt;strong&gt;Użytkownicy GSync/FreeSync powinni zamiast tego włączyć &apos;Optymalne tempo klatek&apos;.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Dostosowuje prędkość emulacji, tak aby częstotliwość odświeżania konsoli odpowiadała częstotliwości odświeżania gospodarza, gdy synchronizacja pionowa jest włączona. Zapewnia to możliwie najpłynniejszą animację kosztem potencjalnego zwiększenia prędkości emulacji o mniej niż 1%. Opcja „Synchronizuj z częstotliwością odświeżania gospodarza” nie zadziała, jeśli częstotliwość odświeżania konsoli zbyt mocno różni się od częstotliwości odświeżania gospodarza. Użytkownicy wyświetlaczy ze zmienną częstotliwością odświeżania powinni wyłączyć tę opcję.</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>Zaznaczone</translation>
     </message>
     <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Włączenie tej opcji zapewni, że każda klatka renderowana przez konsolę będzie wyświetlana na ekranie ze stałą szybkością i optymalnym tempem klatek. Jeśli masz wyświetlacz GSync/FreeSync, włącz tę opcję. Jeśli masz problemy z utrzymaniem pełnej prędkości lub występują zakłócenia dźwięku, spróbuj wyłączyć tę opcję.</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>Czeka na odświeżenie ekranu przed wyświetleniem każdej klatki. Zapobiega to rozrywaniu obrazu, przy którym górna i dolna część ekranu pokazują różne klatki. &lt;strong&gt;Pozostaw tę opcję włączoną, jeśli masz ekran z GSync/FreeSync, ponieważ w przeciwnym razie nadal może występować rozrywanie obrazu.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>Uruchamia grę nieznacznie szybciej lub wolniej, aby jej liczba klatek na sekundę dokładnie odpowiadała częstotliwości odświeżania ekranu. Przy włączonym VSync zapewnia to największą płynność ruchu, ale gra może działać nawet o 1% szybciej niż powinna. Nie ma to żadnego efektu, jeśli obie częstotliwości zbytnio się różnią. &lt;strong&gt;Wyłącz tę opcję, jeśli masz ekran z GSync/FreeSync, ponieważ ekran już dostosowuje częstotliwość odświeżania do gry.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>Wyświetla każdą klatkę rysowaną przez grę w równych odstępach czasu, aby zapewnić największą płynność ruchu. Wyłącz tę opcję tylko wtedy, gdy komputer nie jest w stanie utrzymać pełnej prędkości gry. Po jej wyłączeniu sporadyczne opóźnienie klatki rzadziej powoduje zacinanie obrazu lub trzaski w dźwięku, ale ruch nie jest tak równomierny.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11629,6 +11760,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Pełny ekran bez obramowania</translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>Przybliża później rysowane wielokąty do kamery, w milionowych częściach głębi. Ogranicza migotanie nałożonych detali.</translation>
+    </message>
+    <message>
         <source>Buffer Size</source>
         <translation>Rozmiar bufora</translation>
     </message>
@@ -11667,6 +11802,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     <message>
         <source>Clean Boot</source>
         <translation>Czysty rozruch</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>Wyczyść przypisanie</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -11731,6 +11870,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     <message>
         <source>Controls</source>
         <translation>Kontrola</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Reguluje głośność efektów dźwiękowych interfejsu Big Picture i powiadomień o osiągnięciach.</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -11811,6 +11954,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     <message>
         <source>Delete State</source>
         <translation>Usuń zapis stanu</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Przesunięcie głębi</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -12236,10 +12383,6 @@ Błąd:</translation>
         <translation>%d sektorów</translation>
     </message>
     <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>Dostosowuje prędkość emulacji, tak aby częstotliwość odświeżania konsoli była zgodna z gospodarzem, gdy włączona jest synchronizacja pionowa.</translation>
-    </message>
-    <message>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation>Wystąpił błąd podczas usuwania pustych ustawień dla gry:
@@ -12330,10 +12473,6 @@ Błąd:</translation>
     <message>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <translation>Włącza starsze, mniej dokładne procedury dekodowania MDEC. Może być wymagane, aby stare tła zastępcze pasowały lub się wczytywały.</translation>
-    </message>
-    <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>Zapewnia wyświetlanie każdej wygenerowanej klatki w optymalnym tempie. Włącz dla wyświetlaczy o zmiennym odświeżaniu, takich jak GSync/FreeSync. Wyłącz, jeśli masz problemy z szybkością lub dźwiękiem.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -12504,6 +12643,10 @@ Błąd:</translation>
         <translation>Typ karty pamięci {}</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Głośność menu</translation>
+    </message>
+    <message>
         <source>Merge Multi-Disc Games</source>
         <translation>Połącz gry na wielu płytach</translation>
     </message>
@@ -12544,12 +12687,12 @@ Błąd:</translation>
         <translation>Tryb Multitap</translation>
     </message>
     <message>
-        <source>Mute All Sound</source>
-        <translation>Wycisz wszystkie dźwięki</translation>
-    </message>
-    <message>
         <source>Mute CD Audio</source>
         <translation>Wycisz dźwięk płyty CD</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Wycisz dźwięk gry</translation>
     </message>
     <message>
         <source>Navigate</source>
@@ -12582,6 +12725,10 @@ Błąd:</translation>
     <message>
         <source>None (Normal Speed)</source>
         <translation>Brak (standardowa prędkość)</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalizuj skalę głębi</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -12649,6 +12796,10 @@ Błąd:</translation>
         <translation>Bufor głębi PGXP</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Zapobiega wytwarzaniu przez grę jakiegokolwiek słyszalnego dźwięku.</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Database</source>
         <translation>Odśwież bazę osiągnięć</translation>
     </message>
@@ -12667,6 +12818,10 @@ Błąd:</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Usuwa wszystkie przypisania dla tego portu kontrolera.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>Usuwa z wartości głębi skalę transformacji każdego obiektu. Naprawia braki geometrii w niektórych grach, ale powoduje błędy w innych.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -12739,6 +12894,10 @@ Błąd:</translation>
     <message>
         <source>Runahead for Analog Input</source>
         <translation>Wyprzedzanie klatek dla wejścia analogowego</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>Przy włączonym VSync uruchamia grę nieznacznie szybciej lub wolniej, aby dopasować jej liczbę klatek na sekundę do częstotliwości odświeżania ekranu. Wyłącz tę opcję na ekranach z GSync/FreeSync.</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -12947,6 +13106,10 @@ Błąd:</translation>
     <message>
         <source>Shows a timer in the selected location when leaderboard challenges are active.</source>
         <translation>Pokazuje licznik czasu w wybranym miejscu, gdy aktywne są wyzwania tabel wyników.</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>Wyświetla każdą klatkę rysowaną przez grę w równych odstępach czasu. Wyłącz tę opcję tylko wtedy, gdy komputer nie jest w stanie utrzymać pełnej prędkości gry i występuje zacinanie obrazu lub trzaski w dźwięku.</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
@@ -13211,6 +13374,10 @@ Błąd:</translation>
     <message>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>OSTRZEŻENIE: Włączenie poprawek do gier może spowodować nieprzewidywalne zachowanie, awarie, blokady lub uszkodzenie zapisanych gier.</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>Czeka na odświeżenie ekranu przed wyświetleniem każdej klatki, co zapobiega rozrywaniu obrazu. Pozostaw tę opcję włączoną także na ekranach z GSync/FreeSync.</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -14369,10 +14536,6 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
         <translation>Uniemożliwia zmianę rozmiaru okna podczas działania gry.</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Zapobiega wytwarzaniu przez emulator jakiegokolwiek słyszalnego dźwięku.</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Zapobiegaj aktywacji wygaszacza ekranu oraz uśpieniu, gdy emulacja jest uruchomiona.</translation>
     </message>
@@ -15013,10 +15176,6 @@ Czy mimo to chcesz wykonać czynność {1}?</translation>
         <translation>Synchronizuj z częstotliwością odświeżania gospodarza</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Synchronizuje prezentację klatek konsoli z gospodarzem. Użytkownicy GSync/FreeSync powinni zamiast tego włączyć optymalne tempo klatek.</translation>
-    </message>
-    <message>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Tymczasowo wyłącza wszystkie ulepszenia, co jest przydatne podczas testowania.</translation>
     </message>
@@ -15504,6 +15663,10 @@ Czy mimo to chcesz {0}?</translation>
         <source>Disallow in Hardcore Mode</source>
         <translation>Zabroń w trybie Hardcore</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>Wymuś zachowanie precyzji projekcji PGXP</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15938,6 +16101,11 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Wymuś tryb CPU PGXP</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Normalizuj głębię PGXP</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Wymuś pamięć podręczną instrukcji rekompilatora</translation>
@@ -16126,6 +16294,10 @@ Czy na pewno chcesz kontynuować?</translation>
     <message>
         <source>Filter Framebuffer Uploads Minimum Height</source>
         <translation>Minimalna wysokość filtrowanych danych przesyłanych do bufora ramki</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>Przesunięcie głębi PGXP</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -17041,6 +17213,14 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>Wyłącz skalowanie tekstur o bezpośrednim zapisie kolorów</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>Przesunięcie głębi:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>Zresetuj przesunięcie głębi</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>Tryb procesora:</translation>
     </message>
@@ -17051,6 +17231,10 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     <message>
         <source>Depth Test Transparent Polygons</source>
         <translation>Test głębi przezroczystych wielokątów</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Normalizuj skalę głębi</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17301,12 +17485,24 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>Filtruje tylko dane przesyłane do bufora ramki o co najmniej tej wysokości. Zwiększ tę wartość, aby uniknąć filtrowania danych tekstur.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>Przesunięcie głębi</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>Przybliża każdy wielokąt do kamery względem wielokątów narysowanych przed nim, w milionowych częściach głębi. Wyższe wartości ograniczają migotanie nałożonych detali i cieni, ale mogą sprawić, że wielokąty będą widoczne przez powierzchnie znajdujące się przed nimi.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Używa PGXP dla wszystkich instrukcji, nie tylko operacji na pamięci. Wymagane, aby PGXP korygowało drgania w niektórych grach, ale wiąże się z dużym spadkiem wydajności. Ustawienie automatyczne włącza tę opcję tylko w grach, które według bazy danych jej wymagają.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Używa pozycji wierzchołków w przestrzeni ekranu do uzyskania precyzyjnych pozycji zamiast śledzenia dostępów do pamięci. Może zapewnić zgodność z PGXP w niektórych grach, ale &lt;strong&gt;zazwyczaj nie daje żadnych korzyści.&lt;/strong&gt; Ustawienie automatyczne włącza tę opcję tylko w grach, które według bazy danych jej wymagają.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>Usuwa z wartości głębi skalę transformacji każdego obiektu. Naprawia braki geometrii przy użyciu bufora głębi w grach, które zmniejszają transformacje odległych obiektów, ale powoduje błędy w grach, które skalują modele za pomocą transformacji. Baza danych gier automatycznie włączy tę opcję, gdy będzie potrzebna.</translation>
     </message>
     <message>
         <source>Custom</source>
@@ -22340,10 +22536,6 @@ Błąd: {1}</translation>
         <translation>&amp;Wczytaj ponownie moduły cieniujące</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>Łańcuch przetwarzania końcowego</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>Dodaj</translation>
     </message>
@@ -22379,16 +22571,16 @@ Błąd: {1}</translation>
         <translation>Konfiguracja podstawowa</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nakładka obramowania to obraz rysowany wokół ekranu systemu. Nakładki obramowania są stosowane po przetwarzaniu końcowym. Możesz wybrać obramowanie z poniższej listy lub ręcznie skonfigurować własne obramowanie.&lt;/p&gt;&lt;p&gt;Dodatkowe gotowe obramowania można dodać do folderu &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; w katalogu danych.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>Wybrane ustawienie wstępne:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>Odśwież listę nakładek</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dodatkowe gotowe obramowania można dodać do folderu &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; w katalogu danych.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22539,6 +22731,18 @@ Błąd: {1}</translation>
     <message>
         <source>Border Overlay</source>
         <translation>Nakładka obramowania</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>Shadery wyświetlania są stosowane do końcowego obrazu po przeskalowaniu go do rozmiaru ekranu. Używaj ich do efektów ekranowych, takich jak filtry CRT i linie skanowania.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>Shadery wewnętrzne są stosowane do obrazu gry przed jego przeskalowaniem, w rozdzielczości, w której gra jest renderowana. Używaj ich do efektów zmieniających wygląd samej gry, takich jak SSAO.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>Nakładka obramowania to obraz rysowany wokół obrazu gry, na przykład ramka telewizora lub konsoli przenośnej. Jest rysowana na wierzchu wszystkich pozostałych elementów, po zastosowaniu wszystkich shaderów.</translation>
     </message>
 </context>
 <context>

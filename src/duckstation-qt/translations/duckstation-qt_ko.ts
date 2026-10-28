@@ -1768,11 +1768,6 @@ Error: {}</source>
         <translation>지우기</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>확인</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>앱 설정</translation>
@@ -2722,11 +2717,6 @@ Do you want to %1$s anyway?</source>
         <translation>되감기 상태 스크린샷</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>다시 시작 필요</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>편집 메뉴</translation>
@@ -2800,11 +2790,6 @@ Do you want to %1$s anyway?</source>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>되감기 활성화</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>되감기 상태를 생성하는 빈도입니다. 빈도가 높을수록 더 높은 시스템 성능이 필요합니다.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4073,6 +4058,86 @@ Do you want to %1$s anyway?</source>
         <translation>제외된 경로에서 제거</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>로컬 게임 저장소</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>로컬 게임 저장소는 시스템 파일 선택기(Storage Access Framework)로 게임 폴더를 선택할 수 없는 기기를 위한 공간입니다. &apos;파일 추가&apos;로 게임을 이곳에 복사하거나, 파일 관리자 또는 USB를 통해 이 폴더에 게임을 넣을 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>로컬 게임 저장소 검색</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>이 폴더와 하위 폴더에서 게임을 검색합니다.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>위치</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>파일 추가</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>선택한 파일을 로컬 게임 저장소에 복사합니다. 디스크 이미지의 .cue 파일과 해당 .bin 파일을 함께 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>파일</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>로컬 게임 저장소에 파일이 없습니다.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>%1$s 복사 중(%3$d개 중 %2$d개)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>로컬 게임 저장소에 %s 파일이 이미 있습니다. 덮어쓰시겠습니까?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>기타 파일 작업</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>파일 삭제</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>%s 파일을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>화면 메시지</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>화면 오버레이</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>게임 화면</translation>
@@ -4451,6 +4516,11 @@ Do you want to %1$s anyway?</source>
         <translation>아날로그 모드 전환</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>소프트웨어 렌더링 전환</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>디스크 교체</translation>
@@ -4474,6 +4544,11 @@ Do you want to %1$s anyway?</source>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>컨트롤러 설정</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5971,6 +6046,16 @@ ${serial}: 게임 일련번호.
         <translation>CD-ROM 설정</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>CD-ROM 정지 시 다음 디스크로 전환</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>게임이 CD-ROM을 정지하면 게임의 다음 디스크로 자동 전환합니다. 모든 게임에서 작동하는 것은 아닙니다.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>하향 표본화 화면 표시 크기</translation>
@@ -5979,6 +6064,36 @@ ${serial}: 게임 일련번호.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>심도 지우기 임계값</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>심도 버퍼를 지울 심도 증가량을 결정합니다. 일부 게임의 심도 문제를 해결하는 데 도움이 될 수 있지만, 여전히 편법을 이용한 우회책입니다.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>심도 바이어스</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>각 폴리곤을 카메라 쪽으로 이동시켜 데칼과 그림자의 깜박임을 줄입니다. 값을 너무 높이면 가려진 표면이 보일 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>심도 배율 정규화</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>일부 게임에서 심도 버퍼 사용 시 지오메트리가 누락되는 문제를 해결하지만, 다른 게임에서는 문제를 일으킵니다.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7558,6 +7673,18 @@ Would you like to import one now?</source>
         <translation>출력 대기 시간 :</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>메뉴 음량:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>메뉴 음량 초기화</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>게임 오디오 음소거</translation>
+    </message>
+    <message>
         <source>Stretch Mode:</source>
         <translation>스트레치 모드 :</translation>
     </message>
@@ -7584,10 +7711,6 @@ Would you like to import one now?</source>
     <message>
         <source>Fast Forward Volume:</source>
         <translation>빨리 감기 음량 :</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>모두 음소거</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7670,6 +7793,18 @@ Would you like to import one now?</source>
         <translation>빨리 감기 시, 호스트에서 재생되는 음향의 음량을 제어합니다.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>메뉴 음량</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>빅피처 UI와 도전 과제 알림에서 재생되는 효과음의 음량을 조절합니다.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>게임에서 소리가 나지 않도록 합니다.</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>없음</translation>
     </message>
@@ -7744,10 +7879,6 @@ Would you like to import one now?</source>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <oldsource>When enabled, the minimum supported output latency will be used for the host API.</oldsource>
         <translation>이 기능이 활성화되면 호스트 API에 대해 지원되는 최소 출력 지연 시간이 사용됩니다.</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>에뮬레이터에서 가청음을 생성하지 않도록 합니다.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -11150,20 +11281,20 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>선택 안 함</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>콘솔 프레임의 표시를 호스트에 동기화합니다. 활성화하면 애니메이션이 더 매끄러워질 수 있지만 입력 지연이 증가합니다. &lt;strong&gt;GSync/FreeSync 사용자는 대신 최적 프레임 페이싱을 활성화해야 합니다.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>수직 동기화가 활성화된 경우 콘솔의 새로 고침 빈도가 호스트의 새로 고침 빈도와 일치하도록 에뮬레이션 속도를 조정합니다. 이로 인해 잠재적으로 에뮬레이션 속도가 1% 미만으로 증가하는 대신 가능한 가장 부드러운 애니메이션이 생성됩니다. 콘솔의 새로 고침 빈도가 호스트의 새로 고침 빈도와 너무 먼 경우 호스트 새로 고침 빈도에 동기화가 적용되지 않습니다. 가변 새로 고침 빈도 디스플레이를 사용하는 사용자는 이 옵션을 비활성화해야 합니다.</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>선택됨</translation>
     </message>
     <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>이 옵션을 활성화하면 최적의 프레임 페이싱을 위해 콘솔이 렌더링하는 모든 프레임이 일관된 속도로 화면에 표시됩니다. 화면에 GSync/FreeSync 기능이 있으면 이 옵션을 활성화하세요. 최대 속도를 유지하는 데 어려움이 있거나 음향 오류가 발생하는 경우 이 옵션을 비활성화해 보세요.</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>디스플레이가 새로 고쳐질 때까지 기다렸다가 각 프레임을 표시합니다. 화면 위쪽과 아래쪽에 서로 다른 프레임이 표시되는 티어링 현상을 방지합니다. &lt;strong&gt;GSync/FreeSync 디스플레이에서도 이 설정을 켜 두세요. 그렇지 않으면 티어링이 발생할 수 있습니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>게임의 프레임 속도가 디스플레이의 주사율과 정확히 일치하도록 게임을 아주 조금 빠르게 또는 느리게 실행합니다. VSync가 켜져 있으면 가장 부드러운 움직임을 제공하지만, 게임이 원래보다 최대 1% 빠르게 실행될 수 있습니다. 두 값의 차이가 너무 크면 효과가 없습니다. &lt;strong&gt;GSync/FreeSync 디스플레이는 이미 게임에 맞춰 주사율을 변경하므로 이 설정을 끄세요.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>게임이 그리는 모든 프레임을 일정한 간격으로 표시하여 가장 부드러운 움직임을 제공합니다. 컴퓨터가 게임을 정상 속도로 실행할 수 없는 경우에만 이 설정을 끄세요. 끄면 가끔 프레임 처리가 늦어져도 화면이 끊기거나 소리가 지직거릴 가능성은 줄어들지만, 움직임은 덜 고르게 됩니다.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -12183,10 +12314,6 @@ You cannot undo this action.</source>
         <translation>앙코르 모드</translation>
     </message>
     <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>최적의 프레임 간격을 위해 생성된 모든 프레임이 표시되도록 합니다. GSync/FreeSync와 같은 가변 주사율 디스플레이에서는 활성화하세요. 속도나 사운드 문제가 있으면 비활성화하세요.</translation>
-    </message>
-    <message>
         <source>Enter Value</source>
         <translation>값 입력</translation>
     </message>
@@ -12734,10 +12861,6 @@ Please check your username and password, and try again.</source>
         <translation>현재 설정을 컨트롤러 사전 설정에 저장합니다.</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>콘솔 프레임의 표시를 호스트에 동기화합니다. GSync/FreeSync 사용자는 대신 최적 프레임 페이싱을 활성화해야 합니다.</translation>
-    </message>
-    <message>
         <source>Textures Directory</source>
         <translation>텍스처 디렉터리</translation>
     </message>
@@ -12892,10 +13015,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Achievements: </source>
         <translation>도전 과제 : </translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>수직 동기화가 활성화되어 있을 때, 콘솔의 재생 빈도가 호스트와 일치하도록 에뮬레이션 속도를 조정합니다.</translation>
     </message>
     <message>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
@@ -13388,10 +13507,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Multitap Mode</source>
         <translation>멀티탭 모드</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>모두 음소거</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -14248,10 +14363,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>게임 실행 중 창 크기를 조절하지 못하도록 합니다.</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>에뮬레이터에서 가청음을 생성하지 않도록 합니다.</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>에뮬레이션이 실행되는 동안 화면 보호기가 활성화되지 않고 호스트가 절전 모드로 전환되지 않도록 합니다.</translation>
     </message>
@@ -14416,6 +14527,42 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>플레이 시간 초기화</translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>나중에 그려지는 폴리곤을 심도의 백만분의 일 단위로 카메라 쪽에 더 가깝게 배치합니다. 데칼의 깜박임을 줄입니다.</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>할당 지우기</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>빅피처 UI와 도전 과제 알림에서 재생되는 효과음의 음량을 조절합니다.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>심도 바이어스</translation>
+    </message>
+    <message>
+        <source>Menu Volume</source>
+        <translation>메뉴 음량</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>게임 오디오 음소거</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>심도 배율 정규화</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>게임에서 소리가 나지 않도록 합니다.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>심도 값에서 각 오브젝트의 변환에 포함된 배율을 제거합니다. 일부 게임에서 지오메트리가 누락되는 문제를 해결하지만, 다른 게임에서는 문제를 일으킵니다.</translation>
+    </message>
+    <message>
         <source>Reset Settings</source>
         <translation>설정 초기화</translation>
     </message>
@@ -14450,6 +14597,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Runahead/Rewind</source>
         <translation>선행 실행/되감기</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>VSync가 켜져 있을 때 디스플레이 주사율에 맞춰 게임을 아주 조금 빠르게 또는 느리게 실행합니다. GSync/FreeSync 디스플레이에서는 이 설정을 끄세요.</translation>
     </message>
     <message>
         <source>SDL DualSense Player LED</source>
@@ -14730,6 +14881,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
         <translation>화면 오른쪽 하단에 향상 설정을 표시합니다.</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>게임이 그리는 모든 프레임을 일정한 간격으로 표시합니다. 컴퓨터가 게임을 정상 속도로 실행할 수 없고 화면이 끊기거나 소리가 지직거리는 경우에만 이 설정을 끄세요.</translation>
     </message>
     <message>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
@@ -15062,6 +15217,10 @@ Do you want to {0} anyway?</source>
         <translation>경고: 게임이 여전히 메모리 카드에 저장되고 있습니다. {0}을(를) 계속하면 메모리 카드가 돌이킬 수 없게 파괴될 수 있습니다. 게임을 재개하고 저장이 완료될 때까지 5초 동안 기다리는 것이 좋습니다.
 
 그래도 {0}을(를) 하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>디스플레이가 새로 고쳐질 때까지 기다렸다가 각 프레임을 표시하여 티어링을 방지합니다. GSync/FreeSync 디스플레이에서도 이 설정을 켜 두세요.</translation>
     </message>
     <message>
         <source>Warning Message Duration</source>
@@ -15444,6 +15603,10 @@ Do you want to {1} anyway?</source>
         <source>Disallow in Hardcore Mode</source>
         <translation>하드코어 모드에서 허용 안 함</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>PGXP 투영 정밀도 유지 강제 적용</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15814,6 +15977,11 @@ Are you sure you want to continue?</source>
         <translation>PGXP CPU 모드 강제 적용</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>PGXP 심도 정규화</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>리컴파일러 ICache 강제 적용</translation>
@@ -15890,6 +16058,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Filter Framebuffer Uploads Minimum Height</source>
         <translation>프레임버퍼 업로드 필터링 최소 높이</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP 심도 바이어스</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -16814,12 +16986,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>깊이 지우기 임계값 초기화</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>심도 바이어스:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>심도 바이어스 초기화</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>CPU 모드:</translation>
     </message>
     <message>
         <source>Vertex Cache:</source>
         <translation>버텍스 캐시:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>심도 배율 정규화</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17496,12 +17680,24 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>높이가 이 값 이상인 프레임버퍼 업로드만 필터링합니다. 텍스처 데이터가 필터링되지 않도록 하려면 이 값을 늘리세요.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>심도 바이어스</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>각 폴리곤을 그보다 먼저 그려진 폴리곤보다 카메라에 더 가깝게 배치합니다. 단위는 심도의 백만분의 일입니다. 값을 높이면 데칼과 그림자의 깜박임이 줄어들지만, 폴리곤이 앞에 있는 표면을 뚫고 보일 수 있습니다.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>메모리 연산뿐 아니라 모든 명령어에 PGXP를 사용합니다. 일부 게임에서 PGXP로 흔들림을 보정하려면 필요하지만 성능 부담이 큽니다. 자동으로 설정하면 게임 데이터베이스에 따라 필요한 게임에서만 활성화합니다.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>메모리 접근을 추적하는 대신 화면 공간의 정점 위치를 사용하여 정밀한 위치를 구합니다. 일부 게임에서 PGXP 호환성을 제공할 수 있지만 &lt;strong&gt;일반적으로는 이점이 없습니다.&lt;/strong&gt; 자동으로 설정하면 게임 데이터베이스에 따라 필요한 게임에서만 활성화합니다.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>심도 값에서 각 오브젝트의 변환에 포함된 배율을 제거합니다. 멀리 있는 오브젝트의 변환 배율을 줄이는 게임에서는 심도 버퍼 사용 시 지오메트리가 누락되는 문제를 해결하지만, 변환을 통해 모델 크기를 조절하는 게임에서는 문제를 일으킵니다. 필요한 경우 게임 데이터베이스에 따라 자동으로 활성화됩니다.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -22275,10 +22471,6 @@ Error: {1}</source>
         <translation>셰이더 다시 불러오기(&amp;R)</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>후처리 체인</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>추가</translation>
     </message>
@@ -22318,12 +22510,12 @@ Error: {1}</source>
         <translation>선택된 사전 설정 :</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;외곽선 오버레이는 시스템 화면 주위에 그려지는 이미지입니다. 외곽선 오버레이는 후처리 후에 적용됩니다. 아래 외곽선 목록에서 선택하거나 사용자 지정 외곽선을 직접 설정할 수 있습니다.&lt;/p&gt;&lt;p&gt;데이터 디렉터리의 &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; 폴더에 미리 설정된 외곽선을 추가할 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Refresh Overlay List</source>
         <translation>오버레이 목록 새로 고침</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;추가 프리셋 외곽선은 데이터 디렉터리 내의 &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; 폴더에 넣을 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22474,6 +22666,18 @@ Error: {1}</source>
     <message>
         <source>Border Overlay</source>
         <translation>외곽선 오버레이</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>디스플레이 셰이더는 화면 크기에 맞게 확대 또는 축소된 최종 영상에 적용됩니다. CRT 필터나 스캔라인과 같은 화면 효과에 사용하세요.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>내부 셰이더는 게임 영상이 확대 또는 축소되기 전에 게임 렌더링 해상도에서 적용됩니다. SSAO처럼 게임 자체의 모습을 바꾸는 효과에 사용하세요.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>외곽선 오버레이는 TV나 휴대용 게임기의 테두리처럼 게임 영상 주변에 그려지는 이미지입니다. 모든 셰이더가 적용된 후 다른 모든 요소 위에 그려집니다.</translation>
     </message>
 </context>
 <context>

@@ -16,6 +16,7 @@ if __package__ in (None, ""):
 from translation.ts_utils import (  # noqa: E402
     SKIPPED_TYPES,
     CatalogMessage,
+    accelerator_count,
     extra_rich_tags,
     extract_placeholders,
     load_jsonl,
@@ -23,6 +24,7 @@ from translation.ts_utils import (  # noqa: E402
     parse_catalog,
     placeholder_counts_match,
     placeholders_match,
+    rich_text_problems,
     unbalanced_rich_tags,
     validate_translation,
 )
@@ -44,6 +46,10 @@ def parse_args() -> argparse.Namespace:
         help="treat missing or unbalanced rich-text tags as errors",
     )
     parser.add_argument("--strict-extra-tags", action="store_true", help="treat added rich-text tags as errors")
+    parser.add_argument("--strict-placeholders", action="store_true", help="reject changed placeholder counts")
+    parser.add_argument("--strict-accelerators", action="store_true", help="reject lost or added menu accelerators")
+    parser.add_argument("--check-finished", action="store_true", help="reject empty forms marked finished")
+    parser.add_argument("--baseline", type=Path, help="report existing baseline defects separately from new errors")
     parser.add_argument(
         "--reject-obsolete",
         action="store_true",
@@ -77,6 +83,59 @@ def diagnostic_label(catalog: Path, message: CatalogMessage) -> str:
     return label
 
 
+def message_diagnostics(message: CatalogMessage, args: argparse.Namespace) -> list[tuple[str, str]]:
+    diagnostics: list[tuple[str, str]] = []
+    if message.translation_type in SKIPPED_TYPES:
+        return diagnostics
+    source = message.identity.source
+    values = values_for(message)
+    if not args.placeholders_only:
+        if message.identity.numerus and not message.plural_translations:
+            diagnostics.append(("ERROR", "numerus message has no <numerusform> forms"))
+        if not message.identity.numerus and message.plural_translations:
+            diagnostics.append(("ERROR", "singular message unexpectedly has plural forms"))
+        if args.require_complete and message.translation_type in {"unfinished", "missing"}:
+            diagnostics.append(("ERROR", "active translation is unfinished or missing"))
+        if args.require_complete or (args.check_finished and message.translation_type == "finished"):
+            for index, value in enumerate(values, 1):
+                if not value.strip():
+                    detail = f"plural form {index} is empty" if message.identity.numerus else "active translation is empty"
+                    diagnostics.append(("ERROR", detail))
+    for index, value in enumerate(values, 1):
+        if not value.strip():
+            continue
+        prefix = f"plural form {index}: " if message.identity.numerus else ""
+        for problem in validate_translation(source, value, allow_missing_placeholders=message.identity.numerus):
+            if not args.placeholders_only or problem.startswith(("placeholder mismatch", "fmt argument")):
+                diagnostics.append(("ERROR", prefix + problem))
+        if (not message.identity.numerus and placeholders_match(source, value)
+                and not placeholder_counts_match(source, value)):
+            detail = (
+                f"placeholder count mismatch: source={dict(extract_placeholders(source))} "
+                f"translation={dict(extract_placeholders(value))}"
+            )
+            diagnostics.append(("ERROR" if args.strict_placeholders else "WARNING", prefix + detail))
+        if not args.placeholders_only:
+            extras = extra_rich_tags(source, value)
+            if extras:
+                diagnostics.append(("ERROR" if args.strict_extra_tags else "WARNING",
+                                    prefix + f"additional rich-text tags: {dict(extras)}"))
+            required_level = "ERROR" if args.strict_required_tags or args.strict_extra_tags else "WARNING"
+            missing = missing_rich_tags(source, value)
+            if missing:
+                diagnostics.append((required_level, prefix + f"missing rich-text tags: {dict(missing)}"))
+            unbalanced = unbalanced_rich_tags(value)
+            if unbalanced:
+                diagnostics.append((required_level, prefix + f"unbalanced rich-text tags: {unbalanced}"))
+            diagnostics.extend((required_level, prefix + problem) for problem in rich_text_problems(source, value))
+            if args.strict_accelerators and accelerator_count(source) != accelerator_count(value):
+                diagnostics.append(("ERROR", prefix + "accelerator count mismatch"))
+    if (message.identity.numerus and any(value.strip() for value in values)
+            and not any(placeholder_counts_match(source, value) for value in values)):
+        diagnostics.append(("ERROR", "no plural form preserves the complete source placeholder set"))
+    return diagnostics
+
+
 def main() -> int:
     args = parse_args()
     try:
@@ -94,10 +153,22 @@ def main() -> int:
         _, records = load_jsonl(args.records)
         selected_ids = {str(record.get("id", "")) for record in records}
 
+    baseline: dict[str, set[tuple[str, str]]] = {}
+    baseline_values: dict[str, tuple] = {}
+    if args.baseline:
+        try:
+            _, old_messages = parse_catalog(args.baseline)
+        except (OSError, ValueError, ET.ParseError) as error:
+            print(f"ERROR: unable to read baseline: {error}")
+            return 1
+        baseline = {message.identifier: set(message_diagnostics(message, args)) for message in old_messages}
+        baseline_values = {message.identifier: (message.translation_type, values_for(message)) for message in old_messages}
+
     errors: list[str] = []
     warnings: list[str] = []
     checked = 0
     type_counts: collections.Counter[str] = collections.Counter()
+    known_errors = 0
     for message in messages:
         type_counts[message.translation_type] += 1
         label = diagnostic_label(args.catalog, message)
@@ -110,56 +181,12 @@ def main() -> int:
         if selected_ids is not None and message.identifier not in selected_ids:
             continue
         checked += 1
-        if not args.placeholders_only:
-            if message.identity.numerus and not message.plural_translations:
-                errors.append(f"{label}: numerus message has no <numerusform> forms")
-            if not message.identity.numerus and message.plural_translations:
-                errors.append(f"{label}: singular message unexpectedly has plural forms")
-            if args.require_complete and message.translation_type == "unfinished":
-                errors.append(f"{label}: active translation is unfinished")
-            if args.require_complete and not any(value.strip() for value in values_for(message)):
-                errors.append(f"{label}: active translation is empty")
-
-        for value in values_for(message):
-            if not value.strip() and not args.require_complete:
+        for level, detail in message_diagnostics(message, args):
+            if (level == "ERROR" and (level, detail) in baseline.get(message.identifier, set())
+                    and baseline_values[message.identifier] == (message.translation_type, values_for(message))):
+                known_errors += 1
                 continue
-            problems = validate_translation(
-                message.identity.source,
-                value,
-                allow_missing_placeholders=message.identity.numerus,
-            )
-            for problem in problems:
-                if args.placeholders_only and not problem.startswith("placeholder mismatch"):
-                    continue
-                errors.append(f"{label}: {problem}")
-            if placeholders_match(message.identity.source, value) and not placeholder_counts_match(
-                message.identity.source, value
-            ):
-                source_placeholders = extract_placeholders(message.identity.source)
-                translated_placeholders = extract_placeholders(value)
-                warnings.append(
-                    f"{label}: placeholder count mismatch: source={dict(source_placeholders)} "
-                    f"translation={dict(translated_placeholders)}"
-                )
-            if not args.placeholders_only:
-                extras = extra_rich_tags(message.identity.source, value)
-                if extras:
-                    output = errors if args.strict_extra_tags else warnings
-                    output.append(f"{label}: additional rich-text tags: {dict(extras)}")
-                extras = missing_rich_tags(message.identity.source, value)
-                if extras:
-                    output = errors if args.strict_required_tags or args.strict_extra_tags else warnings
-                    output.append(f"{label}: missing rich-text tags: {dict(extras)}")
-                unbalanced = unbalanced_rich_tags(value)
-                if unbalanced:
-                    output = errors if args.strict_required_tags or args.strict_extra_tags else warnings
-                    output.append(f"{label}: unbalanced rich-text tags (opening, closing): {unbalanced}")
-        if (
-            message.identity.numerus
-            and any(value.strip() for value in values_for(message))
-            and not any(placeholders_match(message.identity.source, value) for value in values_for(message))
-        ):
-            errors.append(f"{label}: no plural form preserves the complete source placeholder set")
+            (errors if level == "ERROR" else warnings).append(f"{label}: {detail}")
 
     if selected_ids is not None:
         found = {message.identifier for message in messages}
@@ -167,6 +194,8 @@ def main() -> int:
             errors.append(f"{args.catalog}:1: {missing}: batch record not found in catalog")
 
     print(f"Checked {checked} active message(s). Translation types: {dict(type_counts)}")
+    if args.baseline:
+        print(f"Baseline defects: {known_errors} existing error(s); new defects fail validation.")
     for warning in warnings:
         print(f"WARNING: {warning}")
     for error in errors:

@@ -1776,11 +1776,6 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>Leeg maken</translation>
     </message>
     <message>
-        <source>OK</source>
-        <comment>dialog_ok</comment>
-        <translation>OK</translation>
-    </message>
-    <message>
         <source>App Settings</source>
         <comment>action_settings</comment>
         <translation>App-instellingen</translation>
@@ -2738,11 +2733,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Schermafbeelding van terugspoelstatus</translation>
     </message>
     <message>
-        <source>Requires Restart</source>
-        <comment>settings_requires_restart</comment>
-        <translation>Herstart vereist</translation>
-    </message>
-    <message>
         <source>Edit Menu</source>
         <comment>emulation_menu_edit</comment>
         <translation>Menu bewerken</translation>
@@ -2816,11 +2806,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Enable Rewinding</source>
         <comment>settings_rewind_enable</comment>
         <translation>Terugspoelen inschakelen</translation>
-    </message>
-    <message>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <comment>settings_summary_rewind_enable</comment>
-        <translation>Hoe vaak een terugspoelstatus wordt aangemaakt. Hogere frequenties stellen hogere eisen aan het systeem.</translation>
     </message>
     <message>
         <source>Save Frequency</source>
@@ -4093,6 +4078,86 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Uit uitgesloten paden verwijderen</translation>
     </message>
     <message>
+        <source>Local Game Storage</source>
+        <comment>game_folders_tab_local_storage</comment>
+        <translation>Lokale gameopslag</translation>
+    </message>
+    <message>
+        <source>Local game storage is for devices that do not support selecting game folders through the system file picker (Storage Access Framework). Games can be copied here with Add Files, or placed in this folder with a file manager or over USB.</source>
+        <comment>local_game_storage_message</comment>
+        <translation>Lokale gameopslag is bedoeld voor apparaten waarop je geen gamemappen kunt selecteren via de bestandskiezer van het systeem (Storage Access Framework). Je kunt hier games naartoe kopiëren met Bestanden toevoegen, of ze met een bestandsbeheerder of via USB in deze map plaatsen.</translation>
+    </message>
+    <message>
+        <source>Scan Local Game Storage</source>
+        <comment>local_game_storage_scan</comment>
+        <translation>Lokale gameopslag scannen</translation>
+    </message>
+    <message>
+        <source>Searches this folder and its subfolders for games.</source>
+        <comment>local_game_storage_scan_summary</comment>
+        <translation>Zoekt in deze map en de bijbehorende submappen naar games.</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <comment>local_game_storage_location</comment>
+        <translation>Locatie</translation>
+    </message>
+    <message>
+        <source>Add Files</source>
+        <comment>local_game_storage_add_files</comment>
+        <translation>Bestanden toevoegen</translation>
+    </message>
+    <message>
+        <source>Copies the selected files into local game storage. Select a disc image&apos;s .cue file together with its .bin files.</source>
+        <comment>local_game_storage_add_files_summary</comment>
+        <translation>Kopieert de geselecteerde bestanden naar de lokale gameopslag. Selecteer het .cue-bestand van een schijfimage samen met de bijbehorende .bin-bestanden.</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>local_game_storage_files</comment>
+        <translation>Bestanden</translation>
+    </message>
+    <message>
+        <source>No files are in local game storage.</source>
+        <comment>local_game_storage_empty</comment>
+        <translation>Er staan geen bestanden in de lokale gameopslag.</translation>
+    </message>
+    <message>
+        <source>Copying %1$s (%2$d of %3$d)…</source>
+        <comment>local_game_storage_copying</comment>
+        <translation>%1$s kopiëren (%2$d van %3$d)…</translation>
+    </message>
+    <message>
+        <source>%s already exists in local game storage. Do you want to overwrite it?</source>
+        <comment>local_game_storage_overwrite_confirm</comment>
+        <translation>%s bestaat al in de lokale gameopslag. Wil je het overschrijven?</translation>
+    </message>
+    <message>
+        <source>More file actions</source>
+        <comment>local_game_storage_more_actions</comment>
+        <translation>Meer bestandsacties</translation>
+    </message>
+    <message>
+        <source>Delete File</source>
+        <comment>local_game_storage_delete</comment>
+        <translation>Bestand verwijderen</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete %s? This cannot be undone.</source>
+        <comment>local_game_storage_delete_confirm</comment>
+        <translation>Weet je zeker dat je %s wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</translation>
+    </message>
+    <message>
+        <source>On-Screen Messages</source>
+        <comment>settings_category_osd_messages</comment>
+        <translation>Meldingen op het scherm</translation>
+    </message>
+    <message>
+        <source>On-Screen Overlays</source>
+        <comment>settings_category_osd_overlays</comment>
+        <translation>Overlays op het scherm</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Gameweergave</translation>
@@ -4472,6 +4537,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Analoge modus omschakelen</translation>
     </message>
     <message>
+        <source>Toggle Software Rendering</source>
+        <comment>emulation_menu_toggle_software_rendering</comment>
+        <translation>Softwarerendering aan/uitzetten</translation>
+    </message>
+    <message>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Schijf wisselen</translation>
@@ -4495,6 +4565,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Controller Settings</source>
         <comment>emulation_menu_input_settings</comment>
         <translation>Controllerinstellingen</translation>
+    </message>
+    <message>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <comment>settings_summary_rewind_enable</comment>
+        <translation>Slaat periodiek de status op, zodat je tijdens het spelen gemaakte fouten kunt terugspoelen.</translation>
     </message>
     <message>
         <source>Unlimited</source>
@@ -5995,6 +6070,16 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <translation>CD-ROM-instellingen</translation>
     </message>
     <message>
+        <source>Switch to Next Disc on Stop</source>
+        <comment>settings_auto_disc_change</comment>
+        <translation>Bij stoppen naar volgende schijf schakelen</translation>
+    </message>
+    <message>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM. Does not work for all games.</source>
+        <comment>settings_summary_auto_disc_change</comment>
+        <translation>Schakelt automatisch naar de volgende schijf van de game wanneer de game de cd-rom stopt. Werkt niet bij alle games.</translation>
+    </message>
+    <message>
         <source>Downsampling Display Scale</source>
         <comment>settings_downsample_scale</comment>
         <translation>Schaal voor downsamplingweergave</translation>
@@ -6003,6 +6088,36 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Selecteert de resolutieschaal die op het uiteindelijke beeld wordt toegepast. Bij 1x wordt teruggeschaald naar de oorspronkelijke console-resolutie.</translation>
+    </message>
+    <message>
+        <source>Depth Clear Threshold</source>
+        <comment>settings_pgxp_depth_clear_threshold</comment>
+        <translation>Drempel voor wissen van dieptebuffer</translation>
+    </message>
+    <message>
+        <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
+        <comment>settings_summary_pgxp_depth_clear_threshold</comment>
+        <translation>Bepaalt de toename in diepte die ertoe leidt dat de dieptebuffer wordt gewist. Kan helpen bij diepteproblemen in sommige games, maar blijft een hack of workaround.</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <comment>settings_pgxp_depth_bias</comment>
+        <translation>Diepteverschuiving</translation>
+    </message>
+    <message>
+        <source>Offsets each polygon towards the camera to reduce flickering decals and shadows. Too high can show hidden surfaces.</source>
+        <comment>settings_summary_pgxp_depth_bias</comment>
+        <translation>Verschuift elke polygoon naar de camera om flikkerende decals en schaduwen te verminderen. Een te hoge waarde kan verborgen oppervlakken zichtbaar maken.</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <comment>settings_pgxp_normalize_depth</comment>
+        <translation>Diepteschaal normaliseren</translation>
+    </message>
+    <message>
+        <source>Fixes missing geometry with the depth buffer in some games, but breaks others.</source>
+        <comment>settings_summary_pgxp_normalize_depth</comment>
+        <translation>Verhelpt ontbrekende geometrie bij gebruik van de dieptebuffer in sommige games, maar veroorzaakt problemen in andere games.</translation>
     </message>
     <message>
         <source>Skip presenting frames when the image has not changed. Can help performance on very slow devices.</source>
@@ -7631,6 +7746,18 @@ Wil je er nu één importeren?</translation>
         <translation>Uitvoervertraging:</translation>
     </message>
     <message>
+        <source>Menu Volume:</source>
+        <translation>Menuvolume:</translation>
+    </message>
+    <message>
+        <source>Reset Menu Volume</source>
+        <translation>Menuvolume herstellen</translation>
+    </message>
+    <message>
+        <source>Mute Game Audio</source>
+        <translation>Gamegeluid dempen</translation>
+    </message>
+    <message>
         <source>Stretch Mode:</source>
         <translation>Rekmodus:</translation>
     </message>
@@ -7657,10 +7784,6 @@ Wil je er nu één importeren?</translation>
     <message>
         <source>Reset Fast Forward Volume</source>
         <translation>Volume voor versneld afspelen herstellen</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>Demp alles</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7723,6 +7846,18 @@ Wil je er nu één importeren?</translation>
         <translation>Regelt het volume van audio die op de host wordt afgespeeld tijdens versneld afspelen.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Menuvolume</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Regelt het volume van de geluidseffecten van de interface van de Grotebeeldmodus en van prestatiemeldingen.</translation>
+    </message>
+    <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Zorgt ervoor dat de game geen hoorbaar geluid produceert.</translation>
+    </message>
+    <message>
         <source>Stretch Mode</source>
         <translation>Rekmodus</translation>
     </message>
@@ -7749,10 +7884,6 @@ Wil je er nu één importeren?</translation>
     <message>
         <source>Unchecked</source>
         <translation>Uit</translation>
-    </message>
-    <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Zorgt ervoor dat de emulator geen geluid meer produceert.</translation>
     </message>
     <message>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
@@ -11163,20 +11294,20 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Stelt de turbosnelheid in. Deze snelheid wordt gebruikt wanneer de turbosneltoets wordt ingedrukt of omgeschakeld. Turbo heeft voorrang op vooruitspoelen als beide sneltoetsen worden ingedrukt of omgeschakeld.</translation>
     </message>
     <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
-        <translation>Synchroniseert de weergave van de frames van de console met de host. Inschakelen kan zorgen voor vloeiendere animaties, ten koste van een hogere invoerlatentie. &lt;strong&gt;Gebruikers van GSync/FreeSync moeten in plaats daarvan Optimale frameplanning inschakelen.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when VSync is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Past de emulatiesnelheid aan zodat de vernieuwingsfrequentie van de console overeenkomt met die van de host wanneer VSync is ingeschakeld. Dit levert de vloeiendst mogelijke animaties op, ten koste van een mogelijke verhoging van de emulatiesnelheid met minder dan 1%. Synchroniseren met vernieuwingsfrequentie van host heeft geen effect als de vernieuwingsfrequentie van de console te veel afwijkt van die van de host. Gebruikers met schermen met variabele vernieuwingsfrequentie moeten deze optie uitschakelen.</translation>
-    </message>
-    <message>
         <source>Checked</source>
         <translation>Aan</translation>
     </message>
     <message>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Als u deze optie inschakelt, wordt elk frame dat de console rendert met een constante snelheid op het scherm weergegeven, voor een optimale frameplanning. Schakel deze optie in als u een GSync/FreeSync-scherm hebt. Als u problemen hebt om de volledige snelheid te behouden of last hebt van haperend geluid, probeer deze optie dan uit te schakelen.</translation>
+        <source>Waits for your display to refresh before showing each frame. This stops tearing, where the top and bottom of the screen show different frames. &lt;strong&gt;Leave this on if you have a GSync/FreeSync display, or you can still get tearing.&lt;/strong&gt;</source>
+        <translation>Wacht tot je beeldscherm wordt ververst voordat elk frame wordt weergegeven. Dit voorkomt tearing, waarbij de boven- en onderkant van het scherm verschillende frames weergeven. &lt;strong&gt;Laat dit ingeschakeld als je een GSync/FreeSync-beeldscherm hebt, anders kan er nog steeds tearing optreden.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower so its frame rate exactly matches your display&apos;s refresh rate. With VSync on, this gives the smoothest motion, but the game may run up to 1% faster than it should. It has no effect if the two rates are too far apart. &lt;strong&gt;Turn this off if you have a GSync/FreeSync display, since the display already changes its refresh rate to match the game.&lt;/strong&gt;</source>
+        <translation>Laat de game een fractie sneller of langzamer draaien, zodat de framesnelheid precies overeenkomt met de verversingssnelheid van je beeldscherm. Met VSync ingeschakeld geeft dit de vloeiendste bewegingen, maar de game kan tot 1% sneller draaien dan de bedoeling is. Dit heeft geen effect als de twee snelheden te ver uit elkaar liggen. &lt;strong&gt;Schakel dit uit als je een GSync/FreeSync-beeldscherm hebt, omdat het beeldscherm zijn verversingssnelheid al aanpast aan de game.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced, for the smoothest motion. Only turn this off if your computer can&apos;t keep the game at full speed. With it off, an occasional slow frame is less likely to cause stuttering or crackling sound, but motion won&apos;t be as even.</source>
+        <translation>Toont elk frame dat de game tekent met gelijke tussenpozen, voor de vloeiendste bewegingen. Schakel dit alleen uit als je computer de game niet op volle snelheid kan laten draaien. Wanneer dit is uitgeschakeld, zal een incidenteel traag frame minder snel haperingen of krakend geluid veroorzaken, maar zullen bewegingen minder gelijkmatig zijn.</translation>
     </message>
     <message>
         <source>Reduces input latency by delaying the start of frame until closer to the presentation time. This may cause dropped frames on slower systems with higher frame time variance, if the buffer size is not sufficient.</source>
@@ -11576,6 +11707,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Randloos volledig scherm</translation>
     </message>
     <message>
+        <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
+        <translation>Brengt later getekende polygonen dichter bij de camera, in miljoensten van de diepte. Vermindert het flikkeren van decals.</translation>
+    </message>
+    <message>
         <source>Buffer Size</source>
         <translation>Buffergrootte</translation>
     </message>
@@ -11610,6 +11745,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Clean Boot</source>
         <translation>Schone opstart</translation>
+    </message>
+    <message>
+        <source>Clear Binding</source>
+        <translation>Toewijzing wissen</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -11670,6 +11809,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Controls</source>
         <translation>Bediening</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <translation>Regelt het volume van de geluidseffecten van de interface van de Grotebeeldmodus en van prestatiemeldingen.</translation>
     </message>
     <message>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
@@ -11746,6 +11889,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Delete State</source>
         <translation>State verwijderen</translation>
+    </message>
+    <message>
+        <source>Depth Bias</source>
+        <translation>Diepteverschuiving</translation>
     </message>
     <message>
         <source>Details</source>
@@ -12234,6 +12381,10 @@ De fout was:</translation>
         <translation>Type geheugenkaart {}</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <translation>Menuvolume</translation>
+    </message>
+    <message>
         <source>Mid-Frame Scanout</source>
         <translation>Scanout tijdens een frame</translation>
     </message>
@@ -12264,10 +12415,6 @@ De fout was:</translation>
     <message>
         <source>Multitap Mode</source>
         <translation>Multitapmodus</translation>
-    </message>
-    <message>
-        <source>Mute All Sound</source>
-        <translation>Alle geluid dempen</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -12372,10 +12519,6 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>Activeert runahead wanneer de analoge invoer verandert, wat de systeemeisen aanzienlijk verhoogt.</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>Past de emulatiesnelheid aan zodat de verversingssnelheid van de console overeenkomt met die van de host wanneer VSync is ingeschakeld.</translation>
     </message>
     <message>
         <source>Advanced Display Options</source>
@@ -12998,10 +13141,6 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Schakelt de oudere, minder nauwkeurige MDEC-decoderingsroutines in. Mogelijk vereist om oude vervangingsachtergronden correct te laten overeenkomen of laden.</translation>
     </message>
     <message>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>Zorgt ervoor dat elk gegenereerd frame wordt weergegeven voor een optimale timing. Schakel dit in voor schermen met variabele vernieuwingsfrequentie, zoals GSync/FreeSync. Schakel dit uit als u problemen met snelheid of geluid ondervindt.</translation>
-    </message>
-    <message>
         <source>Enter Value</source>
         <translation>Waarde invoeren</translation>
     </message>
@@ -13414,6 +13553,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Cursor verplaatsen</translation>
     </message>
     <message>
+        <source>Mute Game Audio</source>
+        <translation>Gamegeluid dempen</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
@@ -13484,6 +13627,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>None (Normal Speed)</source>
         <translation>Geen (normale snelheid)</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Diepteschaal normaliseren</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -13598,8 +13745,16 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Wachtwoord</translation>
     </message>
     <message>
+        <source>Prevents the game from producing any audible sound.</source>
+        <translation>Zorgt ervoor dat de game geen hoorbaar geluid produceert.</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>Releasedatum: </translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
+        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie in sommige games, maar veroorzaakt problemen in andere games.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13848,10 +14003,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Slaat de huidige instellingen op in een controller­voorinstelling.</translation>
-    </message>
-    <message>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>Synchroniseert de weergave van de frames van de console met de host. Gebruikers van GSync/FreeSync moeten in plaats daarvan Optimale frametiming inschakelen.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14158,10 +14309,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Voorkomt dat het venster wordt vergroot of verkleind terwijl een game actief is.</translation>
     </message>
     <message>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>Zorgt ervoor dat de emulator geen geluid meer produceert.</translation>
-    </message>
-    <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Voorkomt dat de schermbeveiliging wordt geactiveerd en dat de host in slaapstand gaat terwijl emulatie actief is.</translation>
     </message>
@@ -14380,6 +14527,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Runahead/Rewind</source>
         <translation>Vooruit simuleren/terugspoelen</translation>
+    </message>
+    <message>
+        <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
+        <translation>Laat de game een fractie sneller of langzamer draaien om bij ingeschakelde VSync overeen te komen met de verversingssnelheid van je beeldscherm. Schakel dit uit bij GSync/FreeSync-beeldschermen.</translation>
     </message>
     <message>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
@@ -14684,6 +14835,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
         <translation>Toont verbeteringsinstellingen rechtsonder in het scherm.</translation>
+    </message>
+    <message>
+        <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
+        <translation>Toont elk frame dat de game tekent met gelijke tussenpozen. Schakel dit alleen uit als je computer de game niet op volle snelheid kan laten draaien en je last hebt van haperingen of krakend geluid.</translation>
     </message>
     <message>
         <source>Shows persistent icons when turbo is active or when paused.</source>
@@ -15086,6 +15241,10 @@ Do you want to {0} anyway?</source>
 Wil je toch doorgaan met {0}?</translation>
     </message>
     <message>
+        <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
+        <translation>Wacht tot je beeldscherm wordt ververst voordat elk frame wordt weergegeven, wat tearing voorkomt. Laat dit ook ingeschakeld bij GSync/FreeSync-beeldschermen.</translation>
+    </message>
+    <message>
         <source>Warning Message Duration</source>
         <translation>Duur van waarschuwingsberichten</translation>
     </message>
@@ -15457,6 +15616,10 @@ Wil je toch doorgaan met {1}?</translation>
         <source>Disallow in Hardcore Mode</source>
         <translation>Niet toestaan in hardcoremodus</translation>
     </message>
+    <message>
+        <source>Force PGXP Preserve Projection Precision</source>
+        <translation>Behoud van PGXP-projectieprecisie afdwingen</translation>
+    </message>
 </context>
 <context>
     <name>GameCheatSettingsWidget</name>
@@ -15795,6 +15958,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>PGXP CPU-modus forceren</translation>
     </message>
     <message>
+        <source>Normalize PGXP Depth</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>PGXP-diepte normaliseren</translation>
+    </message>
+    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Recompiler-ICache forceren</translation>
@@ -16091,6 +16259,10 @@ Weet u zeker dat u wilt doorgaan?</translation>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP-drempel voor wissen van diepte</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Bias</source>
+        <translation>PGXP-diepteverschuiving</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -16884,6 +17056,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Drempelwaarde voor dieptewissen herstellen</translation>
     </message>
     <message>
+        <source>Depth Bias:</source>
+        <translation>Diepteverschuiving:</translation>
+    </message>
+    <message>
+        <source>Reset Depth Bias</source>
+        <translation>Diepteverschuiving herstellen</translation>
+    </message>
+    <message>
         <source>CPU Mode:</source>
         <translation>CPU-modus:</translation>
     </message>
@@ -16926,6 +17106,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Depth Test Transparent Polygons</source>
         <translation>Dieptetest voor transparante polygonen</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale</source>
+        <translation>Diepteschaal normaliseren</translation>
     </message>
     <message>
         <source>Texture Replacement</source>
@@ -17380,6 +17564,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Bepaalt de toename in diepte die ertoe leidt dat de dieptebuffer wordt gewist. Kan helpen bij diepteproblemen in sommige games, maar blijft een hack of workaround.</translation>
     </message>
     <message>
+        <source>Depth Bias</source>
+        <translation>Diepteverschuiving</translation>
+    </message>
+    <message>
+        <source>Brings each polygon closer to the camera than the polygons drawn before it, in millionths of depth. Higher values reduce flickering of decals and shadows, but can cause polygons to show through surfaces in front of them.</source>
+        <translation>Brengt elke polygoon dichter bij de camera dan de eerder getekende polygonen, in miljoensten van de diepte. Hogere waarden verminderen het flikkeren van decals en schaduwen, maar kunnen ervoor zorgen dat polygonen zichtbaar worden door oppervlakken die ervoor liggen.</translation>
+    </message>
+    <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>Gebruikt perspectiefcorrecte interpolatie voor textuurcoördinaten, waardoor vervormde texturen worden rechtgetrokken. Vereist dat geometriecorrectie is ingeschakeld.</translation>
     </message>
@@ -17402,6 +17594,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Schakelt dieptetesten voor semi-transparante polygonen in. Dit zijn doorgaans schaduwen, die bij ingeschakelde dieptetesten vaak door de grond heen worden geknipt. Diepteschrijfbewerkingen voor semi-transparante polygonen zijn ongeacht deze instelling uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
+        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie bij gebruik van de dieptebuffer in games die de transformaties van verre objecten verkleinen, maar veroorzaakt problemen in games die modellen via de transformatie schalen. De gamedatabase schakelt dit automatisch in wanneer dat nodig is.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -22277,10 +22473,6 @@ Fout: {1}</translation>
         <translation>&amp;Shaders opnieuw laden</translation>
     </message>
     <message>
-        <source>Post Processing Chain</source>
-        <translation>Nabewerkingsketen</translation>
-    </message>
-    <message>
         <source>Add</source>
         <translation>Toevoegen</translation>
     </message>
@@ -22316,16 +22508,16 @@ Fout: {1}</translation>
         <translation>Basisconfiguratie</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Een randoverlay is een afbeelding die rondom het systeembeeld wordt getekend. Randoverlays worden na de nabewerking toegepast. U kunt een rand uit de onderstaande lijst kiezen of handmatig een aangepaste rand configureren.&lt;/p&gt;&lt;p&gt;Extra vooraf ingestelde randen kunnen worden toegevoegd aan de map &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; in de gegevensmap.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Selected Preset:</source>
         <translation>Geselecteerde voorinstelling:</translation>
     </message>
     <message>
         <source>Refresh Overlay List</source>
         <translation>Overlaylijst vernieuwen</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Extra vooraf ingestelde randen kunnen worden toegevoegd aan de map &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; in de gegevensmap.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Custom Configuration</source>
@@ -22476,6 +22668,18 @@ Fout: {1}</translation>
     <message>
         <source>Border Overlay</source>
         <translation>Randoverlay</translation>
+    </message>
+    <message>
+        <source>Display shaders are applied to the final picture after it has been scaled to fit your screen. Use these for screen effects, such as CRT filters and scanlines.</source>
+        <translation>Weergaveshaders worden op het uiteindelijke beeld toegepast nadat het is geschaald om op je scherm te passen. Gebruik deze voor schermeffecten, zoals CRT-filters en scanlijnen.</translation>
+    </message>
+    <message>
+        <source>Internal shaders are applied to the game&apos;s picture before it is scaled, at the resolution the game is rendered at. Use these for effects that change how the game itself looks, such as SSAO.</source>
+        <translation>Interne shaders worden op het beeld van de game toegepast voordat het wordt geschaald, op de resolutie waarop de game wordt gerenderd. Gebruik deze voor effecten die het uiterlijk van de game zelf veranderen, zoals SSAO.</translation>
+    </message>
+    <message>
+        <source>A border overlay is an image drawn around the game&apos;s picture, such as a TV or handheld frame. It is drawn on top of everything else, after all shaders have been applied.</source>
+        <translation>Een randoverlay is een afbeelding die rond het beeld van de game wordt getekend, zoals een rand van een tv of handheld. Deze wordt boven op al het andere getekend, nadat alle shaders zijn toegepast.</translation>
     </message>
 </context>
 <context>
