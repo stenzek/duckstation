@@ -7,6 +7,7 @@
 #include "core/cpu_core_private.h"
 #include "core/mips_encoder.h"
 #include "core/settings.h"
+#include "core/system.h"
 #include "core/timing_event.h"
 
 #include "common/error.h"
@@ -58,6 +59,9 @@ protected:
     CPU::Initialize();
     TimingEvents::Initialize();
     Bus::Reset();
+
+    // Otherwise the interpreter stays on the debug dispatcher waiting for the entry point.
+    System::SetGameStarted();
     CPU::Reset();
 
     // The CPU needs something to count down to.

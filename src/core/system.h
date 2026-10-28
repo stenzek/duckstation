@@ -163,7 +163,8 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
 
 std::string GetGameHashId(GameHash hash);
 bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
-                             std::optional<std::array<u8, 16>>* out_achievements_hash);
+                             std::optional<std::array<u8, 16>>* out_achievements_hash,
+                             std::pair<u32, u32>* out_entry_point = nullptr);
 GameHash GetGameHashFromFile(const char* path);
 GameHash GetGameHashFromBuffer(const std::string_view path, const std::span<const u8> data);
 DiscRegion GetRegionForSerial(const std::string_view serial);
@@ -251,6 +252,18 @@ bool IsRunningGameCustomTitle();
 bool IsRunningUnknownGame();
 bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
+
+/// Returns true once the game's boot executable has started, i.e. the BIOS is no longer running.
+bool IsGameStarted();
+
+/// Returns the entry point of the boot executable on the current disc, or 0xFFFFFFFF if unknown.
+u32 GetGameEntryPC();
+
+/// Returns true if the specified address/instruction is the entry point of the boot executable.
+bool IsGameEntryPoint(u32 pc, u32 instruction_bits);
+
+/// Marks the game as started, called when the entry point is executed or executables are sideloaded.
+void SetGameStarted();
 void ChangeExeOverrideAndReset(std::string path);
 bool ChangeGPUDump(std::string new_path);
 

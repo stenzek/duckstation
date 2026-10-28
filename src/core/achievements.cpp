@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-// TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
-
 #include "achievements.h"
 #include "achievements_private.h"
 #include "bus.h"

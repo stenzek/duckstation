@@ -2189,9 +2189,10 @@ bool CPU::UpdateDebugDispatcherFlag()
   const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
                                     dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();
 
-  const bool use_debug_dispatcher =
-    has_any_breakpoints || has_cop0_breakpoints || s_locals.trace_to_log ||
-    (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
+  // Interpreter uses the debug dispatcher while booting to check for the game entry point.
+  const bool use_debug_dispatcher = has_any_breakpoints || has_cop0_breakpoints || s_locals.trace_to_log ||
+                                    (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter &&
+                                     (g_settings.bios_tty_logging || !System::IsGameStarted()));
   if (use_debug_dispatcher == g_state.using_debug_dispatcher)
     return false;
 
@@ -2686,6 +2687,15 @@ template<PGXPMode pgxp_mode, bool debug>
             HandleA0Syscall();
           else if (masked_pc == 0xB0) [[unlikely]]
             HandleB0Syscall();
+        }
+
+        // interpreter uses the debug dispatcher to check for the entry point until the game starts
+        if (!System::IsGameStarted() &&
+            System::IsGameEntryPoint(g_state.current_instruction_pc, g_state.current_instruction.bits)) [[unlikely]]
+        {
+          System::SetGameStarted();
+          if (UpdateDebugDispatcherFlag())
+            System::InterruptExecution();
         }
       }
 

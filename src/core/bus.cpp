@@ -1194,6 +1194,8 @@ void Bus::KernelInitializedHook()
       // Clear all state, since we're blatently overwriting memory.
       CPU::CodeCache::Reset();
       CPU::ClearICache();
+      System::SetGameStarted();
+      CPU::UpdateDebugDispatcherFlag();
 
       // Stop executing the current block and shell init, and jump straight to the new code.
       DebugAssert(!TimingEvents::IsRunningEvents());

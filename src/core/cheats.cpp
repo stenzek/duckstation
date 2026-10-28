@@ -992,8 +992,12 @@ bool Cheats::EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_ac
 void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
                           bool show_disabled_codes)
 {
-  for (const CheatCode* code : s_locals.frame_end_codes)
-    code->ApplyOnDisable(nullptr);
+  // Codes were never applied if the game hasn't started.
+  if (System::IsGameStarted())
+  {
+    for (const CheatCode* code : s_locals.frame_end_codes)
+      code->ApplyOnDisable(nullptr);
+  }
 
   // Reload files if cheats or patches are enabled, and they were not previously.
   const bool patches_are_enabled = AreAnyPatchesEnabled();
@@ -1186,13 +1190,21 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
 
 void Cheats::ApplyFrameEndCodes()
 {
+  // Writing to memory while the BIOS is running/loading the game can break booting.
+  if (!System::IsGameStarted())
+    return;
+
   for (const CheatCode* code : s_locals.frame_end_codes)
     code->Apply();
 }
 
 Cheats::RollbackLog Cheats::ApplyOnDisableCodes()
 {
+  // Codes were never applied, so there's nothing to roll back.
   RollbackLog ret;
+  if (!System::IsGameStarted())
+    return ret;
+
   for (const CheatCode* code : s_locals.frame_end_codes)
     code->ApplyOnDisable(&ret);
   return ret;
@@ -1223,6 +1235,9 @@ void Cheats::ReapplyOnDisableCodes(const RollbackLog& rollback_list)
 
 void Cheats::ApplyAllOnDisableCodes()
 {
+  if (!System::IsGameStarted())
+    return;
+
   for (const CheatCode* code : s_locals.frame_end_codes)
   {
     if (code->HasRestorableOnDisableEffects())

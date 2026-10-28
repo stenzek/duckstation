@@ -7,6 +7,7 @@
 #include "cpu_disasm.h"
 #include "cpu_pgxp.h"
 #include "settings.h"
+#include "system.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -90,6 +91,10 @@ void CPU::Recompiler::Recompiler::BeginBlock()
     else if (masked_pc == 0xb0)
       GenerateCall(reinterpret_cast<const void*>(&CPU::HandleB0Syscall));
   }
+
+  // Called every time the block is executed, so that rewinding/runahead to before the game started still works.
+  if (System::IsGameEntryPoint(m_block->pc, m_block->Instructions()->bits)) [[unlikely]]
+    GenerateCall(reinterpret_cast<const void*>(&System::SetGameStarted));
 
   inst = m_block->Instructions();
   iinfo = m_block->InstructionsInfo();

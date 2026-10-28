@@ -317,6 +317,13 @@ void Host::PumpMessagesOnCoreThread()
   s_frames_remaining--;
   if (s_frames_remaining == 0)
   {
+    // Make it obvious when running over a large number of games, cheats/achievements would not be active.
+    if (!System::IsGameStarted() && !System::IsReplayingGPUDump())
+    {
+      ERROR_LOG("*** GAME NOT STARTED *** Entry point 0x{:08X} was not reached after {} frames.",
+                System::GetGameEntryPC(), s_frames_to_run);
+    }
+
     RegTestHost::DumpSystemStateHashes();
     System::ShutdownSystem(false);
   }

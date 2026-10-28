@@ -815,6 +815,15 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateCachedInterpreterBlock(u32 pc)
 {
   BlockMetadata metadata = {};
   ReadBlockInstructions(pc, &s_locals.block_instructions, &metadata);
+
+  // Blocks are created immediately before they're executed, so this is a good place to detect the game starting.
+  // Doesn't handle rewinding/runahead to before the game started, but that's not a big deal.
+  if (!s_locals.block_instructions.empty() &&
+      System::IsGameEntryPoint(pc, s_locals.block_instructions.front().first.bits)) [[unlikely]]
+  {
+    System::SetGameStarted();
+  }
+
   return CreateBlock(pc, s_locals.block_instructions, metadata);
 }
 

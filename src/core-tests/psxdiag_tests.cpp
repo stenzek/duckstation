@@ -121,7 +121,11 @@ protected:
     TimingEvents::Initialize();
     System::UpdateOverclock();
     Bus::Reset();
+
+    // Otherwise the interpreter stays on the debug dispatcher waiting for the entry point.
+    System::SetGameStarted();
     CPU::Reset();
+
     InterruptController::Reset();
     Timers::Initialize();
     DMA::Initialize();

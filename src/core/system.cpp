@@ -112,6 +112,7 @@ static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
 static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
 static constexpr u8 MEMORY_CARD_FAST_FORWARD_FRAMES = 30;
+static constexpr u32 INVALID_GAME_ENTRY_PC = 0xFFFFFFFFu;
 
 namespace {
 
@@ -164,6 +165,7 @@ static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bo
 static bool LoadBIOS(bool* using_auto_select, Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
 static void InternalReset();
+static void ResetGameStarted();
 static void ClearRunningGame();
 static void DestroySystem();
 
@@ -308,6 +310,9 @@ struct StateVars
   const GameDatabase::Entry* running_game_entry = nullptr;
   GameHash running_game_hash = 0;
   bool running_game_custom_title = false;
+  bool game_started = false;
+  u32 game_entry_pc = INVALID_GAME_ENTRY_PC;
+  u32 game_entry_instruction = 0;
 
   std::atomic_bool startup_cancelled{false};
 
@@ -578,6 +583,39 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
+bool System::IsGameStarted()
+{
+  return s_state.game_started;
+}
+
+u32 System::GetGameEntryPC()
+{
+  return s_state.game_entry_pc;
+}
+
+bool System::IsGameEntryPoint(u32 pc, u32 instruction_bits)
+{
+  return (pc == s_state.game_entry_pc && instruction_bits == s_state.game_entry_instruction);
+}
+
+void System::SetGameStarted()
+{
+  if (s_state.game_started)
+    return;
+
+  INFO_LOG("Game started at entry point 0x{:08X}.",
+           s_state.exe_override.empty() ? s_state.game_entry_pc : CPU::g_state.pc);
+  s_state.game_started = true;
+}
+
+void System::ResetGameStarted()
+{
+  // Discs are started when the entry point is reached, EXEs/PSFs when they're sideloaded.
+  // Anything else (no disc, audio CDs, entry point not found) is always considered started. Swapping to a game disc
+  // from the shell afterwards won't be detected, but that's very unlikely.
+  s_state.game_started = (s_state.game_entry_pc == INVALID_GAME_ENTRY_PC && s_state.exe_override.empty());
+}
+
 void System::ChangeExeOverrideAndReset(std::string path)
 {
   Assert(IsValid());
@@ -685,7 +723,8 @@ std::string System::GetGameHashId(GameHash hash)
 }
 
 bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
-                                     std::optional<std::array<u8, 16>>* out_achievements_hash)
+                                     std::optional<std::array<u8, 16>>* out_achievements_hash,
+                                     std::pair<u32, u32>* out_entry_point)
 {
   IsoReader iso;
   std::string id;
@@ -699,6 +738,8 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
       *out_hash = 0;
     if (out_achievements_hash)
       out_achievements_hash->reset();
+    if (out_entry_point)
+      *out_entry_point = {INVALID_GAME_ENTRY_PC, 0};
     return false;
   }
 
@@ -745,6 +786,24 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
     *out_hash = hash;
   if (out_achievements_hash)
     *out_achievements_hash = GetAchievementsHash(exe_name, exe_buffer);
+
+  if (out_entry_point)
+  {
+    // Need the first instruction as well, in case the shell happens to execute the same address.
+    *out_entry_point = {INVALID_GAME_ENTRY_PC, 0};
+    const BIOS::PSEXEHeader* header = reinterpret_cast<const BIOS::PSEXEHeader*>(exe_buffer.data());
+    if (exe_buffer.size() >= sizeof(BIOS::PSEXEHeader) && BIOS::IsValidPSExeHeader(*header, exe_buffer.size()))
+    {
+      const u32 offset = header->initial_pc - header->load_address;
+      const size_t data_size = exe_buffer.size() - sizeof(BIOS::PSEXEHeader);
+      if ((offset % sizeof(u32)) == 0 && offset < data_size && (data_size - offset) >= sizeof(u32))
+      {
+        u32 instruction;
+        std::memcpy(&instruction, &exe_buffer[sizeof(BIOS::PSEXEHeader) + offset], sizeof(instruction));
+        *out_entry_point = {header->initial_pc, instruction};
+      }
+    }
+  }
 
   return true;
 }
@@ -2155,7 +2214,13 @@ void System::FrameDone()
     HTTPDownloader::PollRequests();
 
     if (Achievements::IsActive())
-      Achievements::FrameUpdate();
+    {
+      // Don't process achievements while the BIOS is booting/loading the game, memory is meaningless.
+      if (s_state.game_started)
+        Achievements::FrameUpdate();
+      else
+        Achievements::IdleUpdate();
+    }
   }
 
   DiscordPresence::Poll();
@@ -2567,6 +2632,11 @@ bool System::DoState(StateWrapper& sw, bool update_display)
 
   sw.Do(&s_state.frame_number);
   sw.Do(&s_state.internal_frame_number);
+  sw.DoEx(&s_state.game_started, 93, true);
+
+  // Current media might not have a detectable entry point, in which case it should always be started.
+  if (sw.IsReading() && !s_state.game_started)
+    ResetGameStarted();
 
   BIOS::ImageInfo::Hash bios_hash = s_state.bios_hash;
   sw.DoBytesEx(bios_hash.data(), BIOS::ImageInfo::HASH_SIZE, 58, s_state.bios_hash.data());
@@ -2864,6 +2934,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
 #endif
   sw.Do(&s_state.frame_number);
   sw.Do(&s_state.internal_frame_number);
+  sw.Do(&s_state.game_started);
 
   SAVE_COMPONENT("CPU", CPU::DoState(sw));
   CPU::PGXP::DoState(sw);
@@ -2924,6 +2995,7 @@ void System::InternalReset()
   SetTaintsFromSettings();
 
   TimingEvents::Reset();
+  ResetGameStarted();
   CPU::Reset();
   CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
@@ -4278,6 +4350,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   s_state.running_game_entry = nullptr;
   s_state.running_game_hash = 0;
   s_state.running_game_custom_title = false;
+  s_state.game_entry_pc = INVALID_GAME_ENTRY_PC;
+  s_state.game_entry_instruction = 0;
 
   std::optional<Achievements::GameHash> achievements_hash;
   if (!path.empty())
@@ -4339,7 +4413,12 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
       if (image->GetTrack(1).mode != CDImage::TrackMode::Audio)
       {
         std::string id;
-        GetGameDetailsFromImage(image, &id, &s_state.running_game_hash, &achievements_hash);
+        std::pair<u32, u32> entry_point;
+        GetGameDetailsFromImage(image, &id, &s_state.running_game_hash, &achievements_hash, &entry_point);
+        s_state.game_entry_pc = entry_point.first;
+        s_state.game_entry_instruction = entry_point.second;
+        if (s_state.game_entry_pc == INVALID_GAME_ENTRY_PC) [[unlikely]]
+          WARNING_LOG("Failed to locate boot executable entry point, game will be considered started immediately.");
 
         // Custom serial?
         s_state.running_game_entry = s_state.running_game_serial.empty() ?
@@ -4374,6 +4453,11 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
       }
     }
   }
+
+  // Re-arm the entry point check if the disc was changed before the game started, e.g. in the shell.
+  // When booting, this happens in InternalReset() instead, once the boot mode is known.
+  if (!booting && !s_state.game_started)
+    ResetGameStarted();
 
   UpdateGameSettingsLayer(Core::GetSettingsLock());
   ApplySettings(true);
