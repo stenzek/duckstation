@@ -424,6 +424,52 @@ void DebuggerWindow::onStackItemDoubleClicked(const QModelIndex& index)
   scrollToMemoryAddress(address.value());
 }
 
+void DebuggerWindow::onRegisterItemDoubleClicked(const QModelIndex& index)
+{
+  // only editable while paused, $zero is hardwired
+  const u32 reg_index = static_cast<u32>(index.row());
+  if (!m_ui.actionStepInto->isEnabled() || reg_index == 0 || reg_index >= CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES)
+    return;
+
+  const CPU::DebuggerRegisterListEntry& reg = CPU::g_debugger_register_list[reg_index];
+  const QString reg_name = QString::fromUtf8(reg.name);
+  const std::optional<u32> value = QtUtils::PromptForHexValue(
+    this, tr("Modify Register"), tr("Enter new value for %1:").arg(reg_name), *reg.value_ptr);
+  if (!value.has_value())
+    return;
+
+  if (reg.value_ptr == &CPU::g_state.pc && !Common::IsAlignedPow2(value.value(), 4))
+  {
+    QtUtils::MessageBoxCritical(this, tr("Modify Register"), tr("The PC must be a 4-byte aligned address."));
+    return;
+  }
+
+  Host::RunOnCoreThread([win = QPointer(this), reg_index, reg_name, value = value.value()]() mutable {
+    if (!System::IsValid())
+      return;
+
+    u32* const value_ptr = CPU::g_debugger_register_list[reg_index].value_ptr;
+    if (value_ptr == &CPU::g_state.pc)
+    {
+      CPU::SetPC(value);
+    }
+    else
+    {
+      *value_ptr = value;
+      if (value_ptr == &CPU::g_state.cop0_regs.sr.bits)
+        CPU::UpdateMemoryPointers();
+    }
+
+    Host::RunOnUIThread([win = std::move(win), reg_name, value]() {
+      if (!win)
+        return;
+
+      win->refreshAll();
+      win->reportMessage(tr("Set %1 to 0x%2.").arg(reg_name).arg(static_cast<uint>(value), 8, 16, QChar('0')));
+    });
+  });
+}
+
 void DebuggerWindow::startPatchInstruction(VirtualMemoryAddress address)
 {
   u32 instruction_bits;
@@ -762,6 +808,7 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.callStackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onCallStackItemDoubleClicked);
   connect(m_ui.stackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onStackItemDoubleClicked);
   connect(m_ui.threadsView, &QTreeView::doubleClicked, this, &DebuggerWindow::onThreadItemDoubleClicked);
+  connect(m_ui.registerView, &QTreeView::doubleClicked, this, &DebuggerWindow::onRegisterItemDoubleClicked);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointListItemChanged);
