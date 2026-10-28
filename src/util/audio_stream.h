@@ -56,6 +56,9 @@ public:
 
   static u32 FramesToMS(u32 sample_rate, u32 frames);
 
+  /// Scales samples by the specified volume, in percent.
+  static void ApplyVolume(SampleType* samples, u32 num_samples, u32 volume);
+
   /// Returns a list of available driver names for the specified backend.
   static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
 

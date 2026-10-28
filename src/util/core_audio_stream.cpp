@@ -360,39 +360,7 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
   }
 
   if (m_volume != 100)
-  {
-    u32 num_samples = num_frames * NUM_CHANNELS;
-
-    const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
-    num_samples -= aligned_samples;
-
-    const float volume_mult = static_cast<float>(m_volume) / 100.0f;
-    const GSVector4 volume_multv = GSVector4(volume_mult);
-    const SampleType* const aligned_samples_end = samples + aligned_samples;
-    for (; samples != aligned_samples_end; samples += 8)
-    {
-      GSVector4i iv = GSVector4i::load<false>(samples); // [0, 1, 2, 3, 4, 5, 6, 7]
-      GSVector4i iv1 = iv.upl16(iv);                    // [0, 0, 1, 1, 2, 2, 3, 3]
-      GSVector4i iv2 = iv.uph16(iv);                    // [4, 4, 5, 5, 6, 6, 7, 7]
-      iv1 = iv1.sra32<16>();                            // [0, 1, 2, 3]
-      iv2 = iv2.sra32<16>();                            // [4, 5, 6, 7]
-      GSVector4 fv1 = GSVector4(iv1);                   // [f0, f1, f2, f3]
-      GSVector4 fv2 = GSVector4(iv2);                   // [f4, f5, f6, f7]
-      fv1 = fv1 * volume_multv;                         // [f0, f1, f2, f3]
-      fv2 = fv2 * volume_multv;                         // [f4, f5, f6, f7]
-      iv1 = GSVector4i(fv1);                            // [0, 1, 2, 3]
-      iv2 = GSVector4i(fv2);                            // [4, 5, 6, 7]
-      iv = iv1.ps32(iv2);                               // [0, 1, 2, 3, 4, 5, 6, 7]
-      GSVector4i::store<false>(samples, iv);
-    }
-
-    while (num_samples > 0)
-    {
-      *samples = static_cast<s16>(std::clamp(static_cast<float>(*samples) * volume_mult, -32768.0f, 32767.0f));
-      samples++;
-      num_samples--;
-    }
-  }
+    AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, m_volume);
 }
 
 void CoreAudioStream::InternalWriteFrames(s16* data, u32 num_frames)
