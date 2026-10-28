@@ -1014,7 +1014,7 @@ inline void BindSliderAndLabelToIntSetting(SettingsInterface* sif, QSlider* slid
           const QSignalBlocker blocker(slider);
           slider->setValue(default_value);
         }
-        Core::DeleteBaseSettingValue(section.c_str(), key.c_str());
+        Core::SetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
         Host::CommitBaseSettingChanges();
         g_core_thread->applySettings();
         label->setText(QStringLiteral("%1%2").arg(slider->value()).arg(label_suffix));
