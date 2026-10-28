@@ -5020,6 +5020,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.disable_background_input != old_settings.disable_background_input)
     InputManager::UpdateInputIgnoreState();
 
+  if (g_settings.audio_sound_effect_volume != old_settings.audio_sound_effect_volume)
+    SoundEffectManager::SetVolume(g_settings.audio_sound_effect_volume);
+
   Achievements::UpdateSettings(old_settings);
 
   if (g_settings.enable_discord_presence != old_settings.enable_discord_presence)

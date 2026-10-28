@@ -27,6 +27,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel,
                                                       m_ui.resetFastForwardVolume, Settings::AUDIO_SECTION_NAME,
                                                       "FastForwardVolume", 100, tr("%"));
+  SettingWidgetBinder::BindSliderAndLabelToIntSetting(sif, m_ui.soundEffectVolume, m_ui.soundEffectVolumeLabel,
+                                                      m_ui.resetSoundEffectVolume, Settings::AUDIO_SECTION_NAME,
+                                                      "SoundEffectVolume", 100, tr("%"));
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, Settings::AUDIO_SECTION_NAME, "OutputMuted", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, Settings::AUDIO_SECTION_NAME, "Backend",
                                                &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
@@ -99,8 +102,11 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                              tr("Controls the volume of the audio played on the host."));
   dialog->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
                              tr("Controls the volume of the audio played on the host when fast forwarding."));
-  dialog->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
-                             tr("Prevents the emulator from producing any audible sound."));
+  dialog->registerWidgetHelp(m_ui.soundEffectVolume, tr("Menu Volume"), "100%",
+                             tr("Controls the volume of sound effects played by the Big Picture UI and "
+                                "achievement notifications."));
+  dialog->registerWidgetHelp(m_ui.muted, tr("Mute Game Audio"), tr("Unchecked"),
+                             tr("Prevents the game from producing any audible sound."));
   dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
                              tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
                                 "background music in some games."));
@@ -112,6 +118,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                              m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
                                                              tr("Resets volume back to the default, i.e. full."));
   dialog->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
+                             m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
+                                                             tr("Resets volume back to the default, i.e. full."));
+  dialog->registerWidgetHelp(m_ui.resetSoundEffectVolume, tr("Reset Menu Volume"), tr("N/A"),
                              m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
                                                              tr("Resets volume back to the default, i.e. full."));
   dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Stretch Sequence Length"),

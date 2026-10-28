@@ -11,6 +11,7 @@
 #include "gdb_server.h"
 #include "host.h"
 #include "settings.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 #include "system_private.h"
 #include "video_thread.h"
@@ -733,6 +734,7 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
     s_locals.async_task_queue.SetWorkerCount(0, MAX_ASYNC_WORKER_THREADS);
 
   System::LoadSettings(false);
+  SoundEffectManager::SetVolume(g_settings.audio_sound_effect_volume);
 
   LogStartupInformation();
 

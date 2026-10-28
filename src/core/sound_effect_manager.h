@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "common/types.h"
+
 #include <string_view>
 
 namespace SoundEffectManager {
@@ -24,6 +26,9 @@ void EnqueueSoundEffect(std::string_view name);
 /// Streams a WAV file for playback.
 /// This will bypass the cache and read directly from disk.
 void StreamSoundEffect(std::string path);
+
+/// Sets the volume of sound effects, in percent.
+void SetVolume(u8 volume);
 
 /// Stops all currently playing sound effects.
 void StopAll();

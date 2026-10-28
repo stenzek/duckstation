@@ -403,6 +403,7 @@ struct Settings : public GPUSettings
   PIODeviceType pio_device_type = DEFAULT_PIO_DEVICE_TYPE;
 
   AudioBackend audio_backend = AudioStream::DEFAULT_BACKEND;
+  u8 audio_sound_effect_volume = 100;
   AudioStreamParameters audio_stream_parameters;
 
   std::string gpu_adapter;

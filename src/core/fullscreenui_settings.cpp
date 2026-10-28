@@ -5595,8 +5595,12 @@ void FullscreenUI::DrawAudioSettingsPage()
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_FORWARD, "Fast Forward Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host when fast forwarding."),
                       Settings::AUDIO_SECTION_NAME, "FastForwardVolume", 100, 0, 200, "%d%%");
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Mute All Sound"),
-                    FSUI_VSTR("Prevents the emulator from producing any audible sound."), Settings::AUDIO_SECTION_NAME,
+  DrawIntRangeSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_LOW, "Menu Volume"),
+    FSUI_VSTR("Controls the volume of sound effects played by the Big Picture UI and achievement notifications."),
+    Settings::AUDIO_SECTION_NAME, "SoundEffectVolume", 100, 0, 200, "%d%%");
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Mute Game Audio"),
+                    FSUI_VSTR("Prevents the game from producing any audible sound."), Settings::AUDIO_SECTION_NAME,
                     "OutputMuted", false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Mute CD Audio"),
                     FSUI_VSTR("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to "

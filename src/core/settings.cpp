@@ -527,6 +527,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   audio_stream_parameters.Load(si, AUDIO_SECTION_NAME);
   audio_output_volume = si.GetSaturatedIntValue<u8>(AUDIO_SECTION_NAME, "OutputVolume", 100);
   audio_fast_forward_volume = si.GetSaturatedIntValue<u8>(AUDIO_SECTION_NAME, "FastForwardVolume", 100);
+  audio_sound_effect_volume = si.GetSaturatedIntValue<u8>(AUDIO_SECTION_NAME, "SoundEffectVolume", 100);
   audio_output_muted = si.GetBoolValue(AUDIO_SECTION_NAME, "OutputMuted", false);
 
   bios_tty_logging = si.GetBoolValue(BIOS_SECTION_NAME, "TTYLogging", false);
@@ -918,6 +919,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   audio_stream_parameters.Save(si, AUDIO_SECTION_NAME);
   si.SetUIntValue(AUDIO_SECTION_NAME, "OutputVolume", audio_output_volume);
   si.SetUIntValue(AUDIO_SECTION_NAME, "FastForwardVolume", audio_fast_forward_volume);
+  si.SetUIntValue(AUDIO_SECTION_NAME, "SoundEffectVolume", audio_sound_effect_volume);
   si.SetBoolValue(AUDIO_SECTION_NAME, "OutputMuted", audio_output_muted);
 
   si.SetBoolValue(BIOS_SECTION_NAME, "TTYLogging", bios_tty_logging);

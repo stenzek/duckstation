@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "sound_effect_manager.h"
+#include "core.h"
 #include "host.h"
 #include "settings.h"
 
@@ -17,6 +18,7 @@
 #include "common/log.h"
 #include "common/lru_cache.h"
 #include "common/path.h"
+#include "common/settings_interface.h"
 #include "common/threading.h"
 
 #include <algorithm>
@@ -98,6 +100,7 @@ struct Locals
   LRUCache<std::string, CachedEffectPtr> effect_cache{MAX_CACHE_SIZE};
   EffectAudioStream audio_stream_source;
   u32 silence_frames = 0;
+  u8 volume = 100;
   bool stream_started = false;
   bool stream_stop_pending = false;
 };
@@ -159,14 +162,39 @@ bool SoundEffectManager::LockedIsInitialized()
 
 void SoundEffectManager::EnsureInitialized()
 {
-  std::lock_guard lock(s_locals.state_mutex);
+  std::unique_lock lock(s_locals.state_mutex);
+  if (s_locals.audio_stream)
+    return;
+
+  // this is a little messy, we don't want to hold the settings lock and the state lock at the same time, so we read the
+  // settings first and then create the stream while holding the state lock.
+  lock.unlock();
+
+  // can be called from any thread, so read from the settings interface instead of g_settings
+  // volume is not read here, it's set on startup and whenever settings change via SetVolume()
+  AudioBackend audio_backend;
+  std::string audio_driver;
+  std::string audio_output_device;
+  {
+    const auto settings_lock = Core::GetSettingsLock();
+    const SettingsInterface* si = Core::GetSettingsInterface();
+    audio_backend =
+      AudioStream::ParseBackendName(si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "Backend",
+                                                           AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)))
+        .value_or(AudioStream::DEFAULT_BACKEND);
+    audio_driver = si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "Driver");
+    audio_output_device = si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "OutputDevice");
+  }
+
+  // another thread could have opened in the meantime
+  lock.lock();
   if (s_locals.audio_stream)
     return;
 
   Error error;
-  s_locals.audio_stream = AudioStream::CreateStream(
-    g_settings.audio_backend, SAMPLE_RATE, NUM_CHANNELS, OUTPUT_LATENCY_FRAMES, false, g_settings.audio_driver,
-    g_settings.audio_output_device, &s_locals.audio_stream_source, false, &error);
+  s_locals.audio_stream =
+    AudioStream::CreateStream(audio_backend, SAMPLE_RATE, NUM_CHANNELS, OUTPUT_LATENCY_FRAMES, false, audio_driver,
+                              audio_output_device, &s_locals.audio_stream_source, false, &error);
   if (!s_locals.audio_stream)
   {
     ERROR_LOG("Failed to create stream: {}", error.GetDescription());
@@ -365,6 +393,12 @@ bool SoundEffectManager::EnsureStreamStarted()
   return true;
 }
 
+void SoundEffectManager::SetVolume(u8 volume)
+{
+  std::lock_guard lock(s_locals.state_mutex);
+  s_locals.volume = volume;
+}
+
 void SoundEffectManager::StopAll()
 {
   std::lock_guard lock(s_locals.state_mutex);
@@ -413,6 +447,9 @@ void SoundEffectManager::EffectAudioStream::ReadFrames(SampleType* samples, u32 
   {
     // Reset silence counter since we have active sounds
     s_locals.silence_frames = 0;
+
+    if (s_locals.volume != 100)
+      AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, s_locals.volume);
   }
   else
   {
