@@ -106,8 +106,9 @@ void OpenURL(QWidget* parent, const QUrl& qurl);
 /// Opens a URL string with the default handler.
 void OpenURL(QWidget* parent, const std::string_view url);
 
-/// Prompts for an address in hex.
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
+/// Prompts for a 32-bit value in hex.
+std::optional<unsigned> PromptForHexValue(QWidget* parent, const QString& title, const QString& label,
+                                          std::optional<unsigned> initial_value = std::nullopt);
 
 /// Converts a std::string_view to a QString safely.
 QString StringViewToQString(std::string_view str);

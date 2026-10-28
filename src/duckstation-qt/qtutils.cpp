@@ -199,32 +199,32 @@ void QtUtils::OpenURL(QWidget* parent, const std::string_view url)
   return OpenURL(parent, QUrl::fromEncoded(QByteArray(url.data(), static_cast<int>(url.length()))));
 }
 
-std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString& title, const QString& label,
-                                                  bool code)
+std::optional<unsigned> QtUtils::PromptForHexValue(QWidget* parent, const QString& title, const QString& label,
+                                                   std::optional<unsigned> initial_value)
 {
-  const QString address_str(
-    QInputDialog::getText(parent, title, QCoreApplication::translate("DebuggerWindow", "Enter memory address:")));
-  if (address_str.isEmpty())
+  const QString value_str =
+    QInputDialog::getText(parent, title, label, QLineEdit::Normal,
+                          initial_value.has_value() ? QString::asprintf("0x%08X", initial_value.value()) : QString())
+      .trimmed();
+  if (value_str.isEmpty())
     return std::nullopt;
 
   bool ok;
-  uint address;
-  if (address_str.startsWith("0x"))
-    address = address_str.mid(2).toUInt(&ok, 16);
+  uint value;
+  if (value_str.startsWith("0x"))
+    value = value_str.mid(2).toUInt(&ok, 16);
   else
-    address = address_str.toUInt(&ok, 16);
-  if (code)
-    address = address & 0xFFFFFFFC; // disassembly address should be divisible by 4 so make sure
+    value = value_str.toUInt(&ok, 16);
 
   if (!ok)
   {
     MessageBoxCritical(
       parent, title,
-      QCoreApplication::translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      QCoreApplication::translate("DebuggerWindow", "Invalid value. It should be in hex (0x12345678 or 12345678)"));
     return std::nullopt;
   }
 
-  return address;
+  return value;
 }
 
 QString QtUtils::StringViewToQString(std::string_view str)

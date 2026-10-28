@@ -187,17 +187,18 @@ void DebuggerWindow::onGoToPCTriggered()
 void DebuggerWindow::onGoToAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"), true);
+    QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter code address:"));
   if (!address.has_value())
     return;
 
-  scrollToCodeAddress(address.value(), true);
+  // disassembly address should be divisible by 4 so make sure
+  scrollToCodeAddress(address.value() & ~3u, true);
 }
 
 void DebuggerWindow::onDumpAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"), false);
+    QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter memory address:"));
   if (!address.has_value())
     return;
 

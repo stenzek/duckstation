@@ -93,7 +93,7 @@ void MemoryEditorWindow::onAddressEditingFinished()
 void MemoryEditorWindow::onDumpAddressTriggered()
 {
   std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter memory address:"), false);
+    QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter memory address:"));
   if (!address.has_value())
     return;
 

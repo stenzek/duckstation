@@ -327,7 +327,7 @@ void MemoryScannerWindow::addToWatchClicked()
 
 void MemoryScannerWindow::addManualWatchAddressClicked()
 {
-  std::optional<unsigned> address = QtUtils::PromptForAddress(this, windowTitle(), tr("Enter manual address:"), false);
+  std::optional<unsigned> address = QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter manual address:"));
   if (!address.has_value())
     return;
 
