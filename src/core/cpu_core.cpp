@@ -2679,11 +2679,14 @@ template<PGXPMode pgxp_mode, bool debug>
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
         // handle all mirrors of the syscall trampoline. will catch 200000A0 etc, but those aren't fetchable anyway
-        const u32 masked_pc = (g_state.current_instruction_pc & KSEG_MASK);
-        if (masked_pc == 0xA0) [[unlikely]]
-          HandleA0Syscall();
-        else if (masked_pc == 0xB0) [[unlikely]]
-          HandleB0Syscall();
+        if (g_settings.bios_tty_logging) [[unlikely]]
+        {
+          const u32 masked_pc = (g_state.current_instruction_pc & KSEG_MASK);
+          if (masked_pc == 0xA0) [[unlikely]]
+            HandleA0Syscall();
+          else if (masked_pc == 0xB0) [[unlikely]]
+            HandleB0Syscall();
+        }
       }
 
 #if 0 // GTE flag test debugging
