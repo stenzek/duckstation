@@ -1743,7 +1743,9 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
       cs.current_scanline = 0;
       if (s_locals.GPUSTAT.vertical_interlace)
       {
-        cs.interlaced_field ^= 1u;
+        // the 480i display field was latched at vblank start, which may have been before the switch to 480i
+        cs.interlaced_field =
+          s_locals.GPUSTAT.InInterleaved480iMode() ? cs.interlaced_display_field : (cs.interlaced_field ^ 1u);
         s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(cs.interlaced_field));
       }
       else

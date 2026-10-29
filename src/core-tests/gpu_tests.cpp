@@ -130,6 +130,32 @@ TEST_F(GPUFrontend, LineParityBitClearDuringVBlank)
   EXPECT_GT(set_reads, 0u);
 }
 
+// The 480i display field is latched at vblank start, so switching to 480i after that doesn't advance the field at the
+// end of the frame, and the next field after the switch is the odd one.
+TEST_F(GPUFrontend, SwitchTo480iInVBlankKeepsLatchedField)
+{
+  const auto run_lines = [](u32 lines) {
+    const u32 target = Timers::ReadRegister(0x10) + lines;
+    while (Timers::ReadRegister(0x10) < target)
+    {
+      CPU::AddPendingTicks(1);
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+    }
+  };
+
+  // Y1 == Y2 stays in vblank, so the frame wraps without the display updating. Count lines with timer 1, past the
+  // first wrap.
+  GPU::WriteRegister(4, 0x07000000 | 100 | (100 << 10));
+  Timers::WriteRegister(0x14, 0x0100); // hblank clock
+  run_lines(263 + 5);
+  ASSERT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
+
+  GPU::WriteRegister(4, 0x08000024); // 480i
+  run_lines(263);
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
+}
+
 TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
 {
   GPU::WriteRegister(0, 0x1F000000);
