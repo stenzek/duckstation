@@ -1735,9 +1735,11 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   // I hate this so much. There's some games that are extremely timing sensitive in their disc code, and if we return
   // the same seek times repeatedly, end up locking up in an infinite loop. e.g. Resident Evil, Dino Crisis, etc.
-  // Add some randomness to timing if we detect them repeatedly seeking, otherwise don't. This somewhat simulates how
-  // the real hardware behaves, by adding an additional 0.5-1ms to every seek.
-  ticks += s_state.prng.NextRange<u32>(System::MASTER_CLOCK / 2000, System::MASTER_CLOCK / 1000);
+  // Add some randomness to every seek, which somewhat simulates how the real hardware behaves. The head doesn't land
+  // at the same position after a jump each time, so the wait for the target sector varies by around a sector.
+  // The Meiro (SLPM-86715) needs at least ~5.5ms of variance to escape a retry loop on short backwards seeks.
+  ticks += s_state.prng.NextRange<u32>(System::MASTER_CLOCK / 2000,
+                                       System::MASTER_CLOCK / 1000 + static_cast<u32>(ticks_per_sector));
 
   if (g_settings.cdrom_seek_speedup > 1)
     ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_SEEK_TICKS);
