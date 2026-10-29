@@ -154617,6 +154617,8 @@ SLUS-00728:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Required for the hidden Lunar 2 trailer, BIOS pad can't handle analog.
   metadata:
     publisher: "Spaz (Working Designs)"
     developer: "Treasure"
@@ -154638,6 +154640,8 @@ SLPS-01449:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Required for the hidden Lunar 2 trailer, BIOS pad can't handle analog.
   metadata:
     publisher: "ESP"
     developer: "Treasure"
