@@ -562,8 +562,8 @@ void GPU::SoftReset()
   s_locals.drawing_area_changed = true;
   s_locals.drawing_offset = {};
   std::memset(&s_locals.crtc_state.regs, 0, sizeof(s_locals.crtc_state.regs));
-  s_locals.crtc_state.regs.horizontal_display_range = 0xC60260;
-  s_locals.crtc_state.regs.vertical_display_range = 0x3FC10;
+  s_locals.crtc_state.regs.horizontal_display_range = 0xC00200;
+  s_locals.crtc_state.regs.vertical_display_range = 0x40010;
   s_locals.blitter_state = BlitterState::Idle;
   s_locals.pending_command_ticks = 0;
   s_locals.command_total_words = 0;
