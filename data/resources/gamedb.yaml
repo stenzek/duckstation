@@ -102418,6 +102418,8 @@ SLPS-02743:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen # Game is 2D, and breaks HUD elements.
   metadata:
     publisher: "Micro Cabin"
     developer: "Micro Cabin"
@@ -102439,6 +102441,8 @@ SLPM-87004:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen # Game is 2D, and breaks HUD elements.
   metadata:
     publisher: "Micro Cabin"
     developer: "Micro Cabin"
