@@ -24,24 +24,27 @@ jobs:
     steps:
     - uses: actions/checkout@v7
       with:
-        fetch-depth: 0
+        # Include the PR merge commit and its parents so HEAD^1 is available as the target-branch baseline.
+        fetch-depth: 2
 
     - name: Check Translation Catalogs
       shell: bash
       env:
         EVENT_NAME: ${{ github.event_name }}
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         BEFORE_SHA: ${{ github.event.before }}
         AFTER_SHA: ${{ github.sha }}
       run: |
         if [[ "$EVENT_NAME" == "pull_request" ]]; then
-          base=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
-          python scripts/translation/lint_ts.py --base "$BASE_SHA" --selection-base "$base" --head "$HEAD_SHA"
+          # The checkout is the PR merge result, its first parent is the target branch.
+          python scripts/translation/lint_ts.py --base HEAD^1
         elif [[ "$EVENT_NAME" == "push" ]]; then
           if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
             python scripts/translation/lint_ts.py --base "$AFTER_SHA" --all
           else
+            # The old tip may be outside the shallow history, especially after a force push.
+            if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+              git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
+            fi
             python scripts/translation/lint_ts.py --base "$BEFORE_SHA"
           fi
         else
