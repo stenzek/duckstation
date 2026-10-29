@@ -1764,7 +1764,8 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
   else
   {
     cs.active_line_lsb = 0;
-    s_locals.GPUSTAT.display_line_lsb = ConvertToBoolUnchecked((cs.regs.Y + cs.current_scanline) & u32(1));
+    s_locals.GPUSTAT.display_line_lsb =
+      !cs.in_vblank && ConvertToBoolUnchecked((cs.regs.Y + cs.current_scanline) & u32(1));
   }
 
   RescheduleCRTC();

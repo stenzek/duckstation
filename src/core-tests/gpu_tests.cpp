@@ -98,6 +98,38 @@ TEST_F(GPUFrontend, ReversedRangeEndsVBlankAtY1)
   EXPECT_NEAR(Timers::ReadRegister(0x10), 10, 1);
 }
 
+TEST_F(GPUFrontend, LineParityBitClearDuringVBlank)
+{
+  const auto run = [](u32 ticks) {
+    for (u32 i = 0; i < ticks; i++)
+    {
+      CPU::AddPendingTicks(1);
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+    }
+  };
+
+  // 240p, starting at line 0 with the display at lines 16..256. Count lines with timer 1.
+  Timers::WriteRegister(0x14, 0x0100); // hblank clock
+
+  // Lines 0..15 are vblank, so GPUSTAT.31 stays clear.
+  u32 set_reads = 0;
+  while (Timers::ReadRegister(0x10) < 15)
+  {
+    set_reads += GPU::ReadRegister(4) >> 31;
+    run(100);
+  }
+  EXPECT_EQ(set_reads, 0u);
+
+  // It toggles per line once the display starts.
+  while (Timers::ReadRegister(0x10) < 40)
+  {
+    set_reads += GPU::ReadRegister(4) >> 31;
+    run(100);
+  }
+  EXPECT_GT(set_reads, 0u);
+}
+
 TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
 {
   GPU::WriteRegister(0, 0x1F000000);
