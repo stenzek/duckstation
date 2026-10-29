@@ -117,8 +117,9 @@ static bool IsDisplayDisabled();
 static bool IsInterlacedRenderingEnabled();
 
 /// Returns the number of pending GPU ticks.
-TickCount GetPendingCRTCTicks();
-TickCount GetPendingCommandTicks();
+static TickCount GetPendingCRTCTicks();
+static TickCount GetPendingCommandTicks();
+static TickCount GetTicksUntilLine(u32 line);
 
 /// Returns true if a raster scanline or command execution is pending.
 static bool IsCommandCompletionPending();
@@ -1557,22 +1558,25 @@ ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
   return SystemTicksToGPUTicks(s_locals.command_tick_event.GetTicksSinceLastExecution());
 }
 
+ALWAYS_INLINE_RELEASE TickCount GPU::GetTicksUntilLine(u32 line)
+{
+  const CRTCState& cs = s_locals.crtc_state;
+  line = line ? line : cs.vertical_total;
+  return static_cast<TickCount>((line > cs.current_scanline) ? (line - cs.current_scanline) :
+                                                               (cs.vertical_total - cs.current_scanline + line));
+}
+
 void GPU::RescheduleCRTC()
 {
   CRTCState& cs = s_locals.crtc_state;
 
   // figure out how many GPU ticks until the next vblank or event
   // line 0 is reached at the wrap, as in CRTCTickEvent(), and Y1 can be after or before Y2
-  const auto lines_until = [&](u32 line) {
-    line = line ? line : cs.vertical_total;
-    return static_cast<TickCount>((line > cs.current_scanline) ? (line - cs.current_scanline) :
-                                                                 (cs.vertical_total - cs.current_scanline + line));
-  };
-  TickCount lines_until_event = lines_until(cs.vertical_display_end);
+  TickCount lines_until_event = GetTicksUntilLine(cs.vertical_display_end);
 
   // when the timer sync is enabled we need to sync at vblank start and end
   if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX))
-    lines_until_event = std::min(lines_until_event, lines_until(cs.vertical_display_start));
+    lines_until_event = std::min(lines_until_event, GetTicksUntilLine(cs.vertical_display_start));
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
