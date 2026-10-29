@@ -781,17 +781,17 @@ void DMA::UnhaltTransfer(void*, TickCount ticks)
 
   // TODO: Use channel priority. But doing it in ascending order is probably good enough.
   // Main thing is that OTC happens after GPU, because otherwise it'll wipe out the LL.
+  // A channel exhausting its slice must not prevent later manual transfers from running. They ignore the halt,
+  // and can otherwise be starved by a long GPU transfer (e.g. CDROM reads in Tondemo Crisis).
   for (u32 i = 0; i < NUM_CHANNELS; i++)
   {
     if (CanTransferChannel(static_cast<Channel>(i), false))
-    {
-      if (!s_channel_transfer_functions[i]())
-        return;
-    }
+      s_channel_transfer_functions[i]();
   }
 
   // We didn't run too long, so reset timer.
-  s_state.halt_ticks_remaining = 0;
+  if (!IsTransferHalted())
+    s_state.halt_ticks_remaining = 0;
 }
 
 template<DMA::Channel channel>
