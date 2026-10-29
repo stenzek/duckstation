@@ -119766,8 +119766,6 @@ SLPS-01774:
   saveName: "Next Tetris, The (Japan)"
   controllers:
     - DigitalController
-  traits:
-    - ForceRecompilerICache
   codes:
     - SLPS-01774
     - SLPS-02701
@@ -119794,8 +119792,6 @@ SLUS-00862:
     versionTested: "0.1-1638-g0af22825"
   controllers:
     - DigitalController
-  traits:
-    - ForceRecompilerICache
   metadata:
     publisher: "Atari / Hasbro Interactive"
     developer: "Blue Planet Interactive"
@@ -125260,10 +125256,6 @@ SLPS-02459:
     comments: "Does not boot with analog controller."
   controllers:
     - DigitalController
-  traits:
-    - ForceRecompilerICache # Works around crash on startup.
-  settings:
-    cpuOverclockPercent: 95 # Works around crash on startup.
   metadata:
     publisher: "Nichibutsu"
     developer: "Nichibutsu"
