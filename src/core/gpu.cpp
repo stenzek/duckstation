@@ -331,10 +331,11 @@ struct Locals
 
   GPUSTATReg GPUSTAT = {};
 
-  bool console_is_pal = false;
+  bool force_progressive_scan : 1 = false;
+  bool console_is_pal : 1 = false;
+
   bool enable_upper_vram = false;
   bool drawing_area_changed = false;
-  bool force_progressive_scan = false;
   bool texture_enable_mask = false;
   bool force_raw_texture = false;
 
