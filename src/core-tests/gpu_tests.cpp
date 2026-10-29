@@ -68,6 +68,36 @@ TEST_F(GPUFrontend, Timer1PausedDuringInitialVBlank)
   EXPECT_EQ(Timers::ReadRegister(0x10), 0u);
 }
 
+// With Y2 moved before Y1 in vblank, the CRTC still has to run when the scan reaches Y1 for timer 1's gate.
+TEST_F(GPUFrontend, ReversedRangeEndsVBlankAtY1)
+{
+  const auto run = [](u32 ticks) {
+    for (u32 i = 0; i < ticks; i++)
+    {
+      CPU::AddPendingTicks(1);
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+    }
+  };
+
+  // Count lines up to line 150 while the display is at 200..256, so it stays in vblank.
+  GPU::WriteRegister(4, 0x07000000 | 200 | (256 << 10));
+  Timers::WriteRegister(0x14, 0x0100); // hblank clock
+  u32 ticks = 0;
+  while (Timers::ReadRegister(0x10) < 150)
+  {
+    run(100);
+    ticks += 100;
+  }
+  const u32 ticks_per_line = ticks / 150;
+
+  // Move Y2 to 100, then count hblanks outside vblank for 60 lines, with nothing synchronizing the CRTC.
+  GPU::WriteRegister(4, 0x07000000 | 200 | (100 << 10));
+  Timers::WriteRegister(0x14, 0x0101); // hblank clock, pause during vblank
+  run(ticks_per_line * 60);
+  EXPECT_NEAR(Timers::ReadRegister(0x10), 10, 1);
+}
+
 TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
 {
   GPU::WriteRegister(0, 0x1F000000);

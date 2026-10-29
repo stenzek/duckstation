@@ -1562,22 +1562,17 @@ void GPU::RescheduleCRTC()
   CRTCState& cs = s_locals.crtc_state;
 
   // figure out how many GPU ticks until the next vblank or event
-  TickCount lines_until_event;
+  // line 0 is reached at the wrap, as in CRTCTickEvent(), and Y1 can be after or before Y2
+  const auto lines_until = [&](u32 line) {
+    line = line ? line : cs.vertical_total;
+    return static_cast<TickCount>((line > cs.current_scanline) ? (line - cs.current_scanline) :
+                                                                 (cs.vertical_total - cs.current_scanline + line));
+  };
+  TickCount lines_until_event = lines_until(cs.vertical_display_end);
+
+  // when the timer sync is enabled we need to sync at vblank start and end
   if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX))
-  {
-    // when the timer sync is enabled we need to sync at vblank start and end
-    lines_until_event =
-      (cs.current_scanline >= cs.vertical_display_end) ?
-        (cs.vertical_total - cs.current_scanline + cs.vertical_display_start) :
-        ((cs.current_scanline < cs.vertical_display_start) ? (cs.vertical_display_start - cs.current_scanline) :
-                                                             (cs.vertical_display_end - cs.current_scanline));
-  }
-  else
-  {
-    lines_until_event = (cs.current_scanline >= cs.vertical_display_end) ?
-                          (cs.vertical_total - cs.current_scanline + cs.vertical_display_end) :
-                          (cs.vertical_display_end - cs.current_scanline);
-  }
+    lines_until_event = std::min(lines_until_event, lines_until(cs.vertical_display_start));
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
 
