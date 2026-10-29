@@ -6,6 +6,7 @@
 #include "core/gpu_sw_rasterizer.h"
 #include "core/interrupt_controller.h"
 #include "core/settings.h"
+#include "core/timers.h"
 #include "core/timing_event.h"
 
 #include <gtest/gtest.h>
@@ -26,6 +27,7 @@ protected:
     CPU::g_state.pending_ticks = 0;
     TimingEvents::Reset();
     InterruptController::Reset();
+    Timers::Initialize();
     GPU::Initialize();
     GPU::Reset(false);
   }
@@ -33,6 +35,7 @@ protected:
   void TearDown() override
   {
     GPU::Shutdown();
+    Timers::Shutdown();
     g_settings = m_old_settings;
   }
 
@@ -54,6 +57,15 @@ TEST_F(GPUFrontend, ResetAcknowledgesInterrupt)
   InterruptController::WriteRegister(0, ~(1u << 1));
   GPU::WriteRegister(0, 0x1F000000);
   EXPECT_NE(InterruptController::ReadRegister(0) & (1u << 1), 0u);
+}
+
+// Line 0 is in vblank, so timer 1 pausing during vblank doesn't count until the display starts.
+TEST_F(GPUFrontend, Timer1PausedDuringInitialVBlank)
+{
+  Timers::WriteRegister(0x14, 0x0001); // sync enable, pause during vblank
+  Timers::WriteRegister(0x10, 0);
+  CPU::AddPendingTicks(100);
+  EXPECT_EQ(Timers::ReadRegister(0x10), 0u);
 }
 
 TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)

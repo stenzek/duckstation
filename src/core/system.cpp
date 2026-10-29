@@ -3005,10 +3005,10 @@ void System::InternalReset()
   PIO::Reset();
   DMA::Reset();
   InterruptController::Reset();
+  Timers::Reset();
   GPU::Reset(true);
   CDROM::Reset();
   Pad::Reset();
-  Timers::Reset();
   SPU::Reset();
   MDEC::Reset();
   SIO::Reset();
