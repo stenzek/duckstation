@@ -1728,12 +1728,18 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     DebugAssert(cs.current_scanline <= cs.vertical_total);
     lines_to_draw -= lines_to_draw_this_loop;
 
-    // clear the vblank flag if the beam would pass through the display area
-    if (prev_scanline < cs.vertical_display_start && cs.current_scanline >= cs.vertical_display_end)
+    // Vblank starts when the scan reaches Y2 and ends when it reaches Y1, the current line isn't compared against the
+    // range. Line 0 is reached at the wrap. If both are passed, apply them in scan order, Y2 wins on the same line.
+    const u32 start_line = cs.vertical_display_start ? cs.vertical_display_start : cs.vertical_total;
+    const u32 end_line = cs.vertical_display_end ? cs.vertical_display_end : cs.vertical_total;
+    const bool reached_start = (prev_scanline < start_line && cs.current_scanline >= start_line);
+    const bool reached_end = (prev_scanline < end_line && cs.current_scanline >= end_line);
+    if (reached_start && (!reached_end || start_line < end_line))
       SetCRTCVBlank(false);
-
-    frame_done |=
-      SetCRTCVBlank(cs.current_scanline < cs.vertical_display_start || cs.current_scanline >= cs.vertical_display_end);
+    if (reached_end)
+      frame_done |= SetCRTCVBlank(true);
+    if (reached_start && reached_end && end_line < start_line)
+      SetCRTCVBlank(false);
 
     // past the end of vblank?
     if (cs.current_scanline == cs.vertical_total)
