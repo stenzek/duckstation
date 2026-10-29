@@ -27,6 +27,7 @@ enum class CodeActivation : u8
 {
   Manual,
   EndFrame,
+  StartFrame,
   Count,
 };
 
@@ -170,6 +171,9 @@ void ApplySettingOverrides();
 
 /// Applies all currently-registered frame end cheat codes.
 void ApplyFrameEndCodes();
+
+/// Applies automatic codes which run when vblank ends.
+void ApplyVBlankEndCodes();
 
 /// Reverses all reversible codes before creating a save state.
 RollbackLog ApplyOnDisableCodes();

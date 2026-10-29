@@ -3,6 +3,7 @@
 
 #include "gpu.h"
 #include "bus.h"
+#include "cheats.h"
 #include "core.h"
 #include "cpu_pgxp.h"
 #include "dma.h"
@@ -333,6 +334,7 @@ struct Locals
 
   bool force_progressive_scan : 1 = false;
   bool console_is_pal : 1 = false;
+  bool vblank_end_cheats_enabled : 1 = false;
 
   bool enable_upper_vram = false;
   bool drawing_area_changed = false;
@@ -431,6 +433,7 @@ void GPU::Shutdown()
   s_locals.command_tick_event.Deactivate();
   s_locals.crtc_tick_event.Deactivate();
   s_locals.frame_done_event.Deactivate();
+  s_locals.vblank_end_cheats_enabled = false;
 
   StopRecordingGPUDump();
 }
@@ -1575,8 +1578,8 @@ void GPU::RescheduleCRTC()
   // line 0 is reached at the wrap, as in CRTCTickEvent(), and Y1 can be after or before Y2
   TickCount lines_until_event = GetTicksUntilLine(cs.vertical_display_end);
 
-  // when the timer sync is enabled we need to sync at vblank start and end
-  if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX))
+  // when the timer sync is enabled or vblank end cheats are active we need to sync at vblank start and end
+  if (Timers::IsSyncEnabled(HBLANK_TIMER_INDEX) || s_locals.vblank_end_cheats_enabled)
     lines_until_event = std::min(lines_until_event, GetTicksUntilLine(cs.vertical_display_start));
   if (Timers::IsExternalIRQEnabled(HBLANK_TIMER_INDEX))
     lines_until_event = std::min(lines_until_event, Timers::GetTicksUntilIRQ(HBLANK_TIMER_INDEX));
@@ -1605,6 +1608,22 @@ void GPU::RescheduleCRTC()
   }
 
   s_locals.crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, cs.fractional_ticks));
+}
+
+void GPU::SetVBlankEndCheatsEnabled(bool enabled)
+{
+  if (s_locals.vblank_end_cheats_enabled == enabled)
+    return;
+
+  // Can be behind if stopped mid-frame, e.g. at a breakpoint.
+  // Frame done runs from the CRTC event, so it's current there.
+  if (System::IsValid() && !TimingEvents::IsRunningEvents())
+    SynchronizeCRTC();
+
+  // Synchronizing doesn't reschedule if no time has passed.
+  s_locals.vblank_end_cheats_enabled = enabled;
+  if (System::IsValid())
+    RescheduleCRTC();
 }
 
 bool GPU::IsCRTCScanlinePending()
@@ -1653,6 +1672,9 @@ bool GPU::SetCRTCVBlank(bool new_vblank)
   Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
   InterruptController::SetLineState(InterruptController::IRQ::VBLANK, new_vblank);
   cs.in_vblank = new_vblank;
+  if (!new_vblank && s_locals.vblank_end_cheats_enabled)
+    Cheats::ApplyVBlankEndCodes();
+
   return new_vblank;
 }
 

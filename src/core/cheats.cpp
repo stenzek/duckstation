@@ -11,6 +11,7 @@
 #include "cpu_core.h"
 #include "cpu_disasm.h"
 #include "game_database.h"
+#include "gpu.h"
 #include "host.h"
 #include "system.h"
 
@@ -228,6 +229,7 @@ struct Locals
   EnableCodeList enabled_patches;
 
   ActiveCodeList frame_end_codes;
+  ActiveCodeList vblank_end_codes;
 
   u32 active_patch_count = 0;
   u32 active_cheat_count = 0;
@@ -320,9 +322,16 @@ std::optional<Cheats::CodeType> Cheats::ParseTypeName(const std::string_view str
   return std::nullopt;
 }
 
-static std::array<const char*, 2> s_cheat_code_activation_names = {{"Manual", "EndFrame"}};
-static std::array<const char*, 2> s_cheat_code_activation_display_names{
-  {TRANSLATE_NOOP("Cheats", "Manual"), TRANSLATE_NOOP("Cheats", "Automatic (Frame End)")}};
+static std::array<const char*, 3> s_cheat_code_activation_names = {{
+  "Manual",
+  "EndFrame",
+  "StartFrame",
+}};
+static std::array<const char*, 3> s_cheat_code_activation_display_names{{
+  TRANSLATE_NOOP("Cheats", "Manual"),
+  TRANSLATE_NOOP("Cheats", "Automatic (Frame End)"),
+  TRANSLATE_NOOP("Cheats", "Automatic (Frame Start)"),
+}};
 
 const char* Cheats::GetActivationName(CodeActivation activation)
 {
@@ -933,6 +942,10 @@ u32 Cheats::EnablePatches(const CheatCodeList& patches, const EnableCodeList& en
         s_locals.frame_end_codes.push_back(p.get());
         break;
 
+      case CodeActivation::StartFrame:
+        s_locals.vblank_end_codes.push_back(p.get());
+        break;
+
       default:
         break;
     }
@@ -997,6 +1010,8 @@ void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verb
   {
     for (const CheatCode* code : s_locals.frame_end_codes)
       code->ApplyOnDisable(nullptr);
+    for (const CheatCode* code : s_locals.vblank_end_codes)
+      code->ApplyOnDisable(nullptr);
   }
 
   // Reload files if cheats or patches are enabled, and they were not previously.
@@ -1052,6 +1067,8 @@ void Cheats::UnloadAll()
   s_locals.active_cheat_count = 0;
   s_locals.active_patch_count = 0;
   s_locals.frame_end_codes = ActiveCodeList();
+  s_locals.vblank_end_codes = ActiveCodeList();
+  GPU::SetVBlankEndCheatsEnabled(false);
   s_locals.enabled_patches = EnableCodeList();
   s_locals.enabled_cheats = EnableCodeList();
   s_locals.cheat_codes = CheatCodeList();
@@ -1110,8 +1127,9 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   if (reload_enabled_list)
     ReloadEnabledLists();
 
-  const size_t prev_count = s_locals.frame_end_codes.size();
+  const size_t prev_count = s_locals.frame_end_codes.size() + s_locals.vblank_end_codes.size();
   s_locals.frame_end_codes.clear();
+  s_locals.vblank_end_codes.clear();
 
   s_locals.active_patch_count = 0;
   s_locals.active_cheat_count = 0;
@@ -1130,9 +1148,11 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
                                                        0;
   }
 
+  GPU::SetVBlankEndCheatsEnabled(!s_locals.vblank_end_codes.empty());
+
   // Display message on first boot when we load patches.
   // Except when it's just GameDB.
-  const size_t new_count = s_locals.frame_end_codes.size();
+  const size_t new_count = s_locals.frame_end_codes.size() + s_locals.vblank_end_codes.size();
   if (verbose || (verbose_if_changed && prev_count != new_count))
   {
     if (s_locals.active_patch_count > 0)
@@ -1198,6 +1218,15 @@ void Cheats::ApplyFrameEndCodes()
     code->Apply();
 }
 
+void Cheats::ApplyVBlankEndCodes()
+{
+  if (!System::IsGameStarted())
+    return;
+
+  for (const CheatCode* code : s_locals.vblank_end_codes)
+    code->Apply();
+}
+
 Cheats::RollbackLog Cheats::ApplyOnDisableCodes()
 {
   // Codes were never applied, so there's nothing to roll back.
@@ -1206,6 +1235,8 @@ Cheats::RollbackLog Cheats::ApplyOnDisableCodes()
     return ret;
 
   for (const CheatCode* code : s_locals.frame_end_codes)
+    code->ApplyOnDisable(&ret);
+  for (const CheatCode* code : s_locals.vblank_end_codes)
     code->ApplyOnDisable(&ret);
   return ret;
 }
@@ -1239,6 +1270,11 @@ void Cheats::ApplyAllOnDisableCodes()
     return;
 
   for (const CheatCode* code : s_locals.frame_end_codes)
+  {
+    if (code->HasRestorableOnDisableEffects())
+      code->Apply();
+  }
+  for (const CheatCode* code : s_locals.vblank_end_codes)
   {
     if (code->HasRestorableOnDisableEffects())
       code->Apply();
@@ -5148,9 +5184,9 @@ Cheats::AssemblyCheatCode::~AssemblyCheatCode() = default;
 std::unique_ptr<Cheats::AssemblyCheatCode> Cheats::AssemblyCheatCode::Parse(CodeMetadata metadata,
                                                                             std::string_view data, Error* error)
 {
-  if (metadata.activation != CodeActivation::EndFrame)
+  if (metadata.activation != CodeActivation::EndFrame && metadata.activation != CodeActivation::StartFrame)
   {
-    Error::SetStringView(error, "Assembly codes only support EndFrame activation.");
+    Error::SetStringView(error, "Assembly codes only support automatic activation.");
     return {};
   }
 

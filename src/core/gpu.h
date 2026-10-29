@@ -77,6 +77,9 @@ void SynchronizeCRTC();
 /// Reschedules the CRTC after changing a timer it updates. The CRTC must be synchronized before the change.
 void RescheduleCRTC();
 
+/// Enables the extra CRTC update required by active VBlank-end cheats.
+void SetVBlankEndCheatsEnabled(bool enabled);
+
 /// Recompile shaders/recreate framebuffers when needed.
 void UpdateSettings(const Settings& old_settings);
 

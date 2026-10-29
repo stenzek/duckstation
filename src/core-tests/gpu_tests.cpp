@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <string_view>
 
 namespace {
 
@@ -39,10 +40,36 @@ protected:
     g_settings = m_old_settings;
   }
 
+  static TimingEvent* FindEvent(std::string_view name)
+  {
+    for (TimingEvent* event = *TimingEvents::GetHeadEventPtr(); event; event = event->next)
+    {
+      if (name == event->GetName())
+        return event;
+    }
+    return nullptr;
+  }
+
   Settings m_old_settings;
 };
 
 } // namespace
+
+TEST_F(GPUFrontend, VBlankEndCheatsOnlyScheduleWhenEnabled)
+{
+  TimingEvent* const crtc_event = FindEvent("GPU CRTC Tick");
+  ASSERT_NE(crtc_event, nullptr);
+  const TickCount normal_ticks = crtc_event->GetTicksUntilNextExecution();
+
+  // These tests initialize the GPU without a running system, so explicitly update its schedule.
+  GPU::SetVBlankEndCheatsEnabled(true);
+  GPU::RescheduleCRTC();
+  EXPECT_LT(crtc_event->GetTicksUntilNextExecution(), normal_ticks / 8);
+
+  GPU::SetVBlankEndCheatsEnabled(false);
+  GPU::RescheduleCRTC();
+  EXPECT_EQ(crtc_event->GetTicksUntilNextExecution(), normal_ticks);
+}
 
 TEST_F(GPUFrontend, ResetAcknowledgesInterrupt)
 {

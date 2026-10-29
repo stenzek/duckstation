@@ -135,6 +135,24 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
   EXPECT_EQ(Cheats::FormatCodeForFile(code), input);
 }
 
+TEST(Cheats, ParseAndFormatStartFrameCode)
+{
+  for (const auto& [type, body] : {std::pair{Cheats::CodeType::Gameshark, "80010000 0001\n"},
+                                   std::pair{Cheats::CodeType::Assembly, ".org 0x80010000\naddiu t0, zero, 1\n"}})
+  {
+    const std::string input =
+      fmt::format("[Late Code]\nType = {}\nActivation = StartFrame\n{}", Cheats::GetTypeName(type), body);
+    Cheats::CodeInfoList codes;
+    Error error;
+    ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+      << error.GetDescription();
+    ASSERT_EQ(codes.size(), 1u);
+    EXPECT_EQ(codes.front().activation, Cheats::CodeActivation::StartFrame);
+    EXPECT_EQ(Cheats::FormatCodeForFile(codes.front()), input);
+    EXPECT_NE(Cheats::ParseCode(codes.front(), codes.front().body, &error), nullptr) << error.GetDescription();
+  }
+}
+
 TEST(Cheats, PGXPPreserveProjectionPrecisionOverride)
 {
   const Settings old_settings = g_settings;
