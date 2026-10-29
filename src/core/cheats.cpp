@@ -2441,19 +2441,19 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
     has_option[option_index] = true;
 
   // Returns the internal code that a line can merge into, or Nop.
-  const auto get_merge_code = [this, &has_option](u32 index, u32* width) {
+  const auto get_merge_code = [this, &has_option](u32 index) -> std::tuple<InstructionCode, u32> {
     const Instruction& inst = instructions[index];
-    const InstructionCode merge_code = GetMergeCode(inst.code, width);
+    const auto& [merge_code, merge_width] = GetMergeCode(inst.code);
 
     // Must be in RAM, and not cross a 2MB boundary, so the window is contiguous with mirroring.
     const u32 address = inst.address;
-    if (merge_code == InstructionCode::Nop || has_option[index] || (address + *width) > Bus::RAM_MIRROR_END ||
-        (address / Bus::RAM_2MB_SIZE) != ((address + *width - 1) / Bus::RAM_2MB_SIZE))
+    if (merge_code == InstructionCode::Nop || has_option[index] || (address + merge_width) > Bus::RAM_MIRROR_END ||
+        (address / Bus::RAM_2MB_SIZE) != ((address + merge_width - 1) / Bus::RAM_2MB_SIZE))
     {
-      return InstructionCode::Nop;
+      return {InstructionCode::Nop, 0};
     }
 
-    return merge_code;
+    return {merge_code, merge_width};
   };
 
   std::vector<Instruction> merged;
@@ -2467,23 +2467,23 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
     const Instruction& inst = instructions[index];
 
     // Conditionals skip the next instruction, so it can't be merged.
-    u32 width;
-    const InstructionCode merge_code = after_conditional ? InstructionCode::Nop : get_merge_code(index, &width);
+    const auto& [merge_code, merge_width] =
+      after_conditional ? std::make_tuple(InstructionCode::Nop, 0u) : get_merge_code(index);
     if (merge_code != InstructionCode::Nop)
     {
       // Constant writes can overlap, since they're applied in order. Match writes can't, since a later
       // line could compare against an earlier write, and lanes must be aligned for the vector compare.
       const u32 start = inst.address;
-      u32 end = start + width;
+      u32 end = start + merge_width;
       u32 run_end = index + 1;
       for (; run_end < count; run_end++)
       {
-        u32 next_width;
         const u32 next_address = instructions[run_end].address;
-        if (get_merge_code(run_end, &next_width) != merge_code ||
+        const auto& [next_merge_code, next_width] = get_merge_code(run_end);
+        if (next_merge_code != merge_code ||
             (merge_code == InstructionCode::InternalMaskedWrite ?
                (next_address < start) :
-               (next_address < end || ((next_address - start) % width) != 0)) ||
+               (next_address < end || ((next_address - start) % merge_width) != 0)) ||
             next_address > (end + MAX_MERGE_GAP) ||
             (start / Bus::RAM_2MB_SIZE) != ((next_address + next_width - 1) / Bus::RAM_2MB_SIZE))
         {
@@ -2953,36 +2953,31 @@ u32 Cheats::GamesharkCheatCode::GetPayloadLength(const Instruction& inst)
   }
 }
 
-Cheats::GamesharkCheatCode::InstructionCode Cheats::GamesharkCheatCode::GetMergeCode(InstructionCode code, u32* width)
+std::tuple<Cheats::GamesharkCheatCode::InstructionCode, u32>
+Cheats::GamesharkCheatCode::GetMergeCode(InstructionCode code)
 {
   switch (code)
   {
     case InstructionCode::ConstantWrite8:
-      *width = sizeof(u8);
-      return InstructionCode::InternalMaskedWrite;
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u8))};
 
     case InstructionCode::ConstantWrite16:
-      *width = sizeof(u16);
-      return InstructionCode::InternalMaskedWrite;
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u16))};
 
     case InstructionCode::ExtConstantWrite32:
-      *width = sizeof(u32);
-      return InstructionCode::InternalMaskedWrite;
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u32))};
 
     case InstructionCode::ExtConstantWriteIfMatch16:
-      *width = sizeof(u16);
-      return InstructionCode::InternalMatchWrite16;
+      return {InstructionCode::InternalMatchWrite16, static_cast<u32>(sizeof(u16))};
 
     case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
-      *width = sizeof(u16);
-      return InstructionCode::InternalMatchWriteWithRestore16;
+      return {InstructionCode::InternalMatchWriteWithRestore16, static_cast<u32>(sizeof(u16))};
 
     case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
-      *width = sizeof(u8);
-      return InstructionCode::InternalMatchWriteWithRestore8;
+      return {InstructionCode::InternalMatchWriteWithRestore8, static_cast<u32>(sizeof(u8))};
 
     default:
-      return InstructionCode::Nop;
+      return {InstructionCode::Nop, 0};
   }
 }
 

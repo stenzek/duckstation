@@ -162,7 +162,7 @@ private:
   static bool IsConditionalInstruction(InstructionCode code);
   static u32 GetBlockPayloadLength(const Instruction& inst);
   static u32 GetPayloadLength(const Instruction& inst);
-  static InstructionCode GetMergeCode(InstructionCode code, u32* width);
+  static std::tuple<InstructionCode, u32> GetMergeCode(InstructionCode code);
 };
 
 class AssemblyCheatCode final : public CheatCode
