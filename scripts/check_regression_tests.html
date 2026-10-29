@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!-- SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> -->
+<!-- SPDX-License-Identifier: CC-BY-NC-ND-4.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regression Comparison</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #111317;
+  --panel: #1a1d23;
+  --border: #2e333d;
+  --text: #e6e8eb;
+  --muted: #8b93a1;
+  --accent: #5aa9ff;
+  --warn: #f0b050;
+  --bad: #ff6b6b;
+  --gain: 4;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; }
+body { display: flex; flex-direction: column; }
+button, input { font: inherit; color: inherit; }
+
+header { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+header h1 { font-size: 16px; margin: 0; }
+.summary { color: var(--muted); }
+.summary b { color: var(--text); font-weight: 600; }
+.summary .bad { color: var(--bad); }
+.dirs { flex-basis: 100%; color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+.controls { margin-left: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { background: none; border: 0; color: var(--muted); padding: 4px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--accent); color: #000; }
+#gainCtl { display: none; align-items: center; gap: 6px; color: var(--muted); }
+body[data-mode=diff] #gainCtl { display: inline-flex; }
+input[type=search] { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; width: 180px; }
+.hint { color: var(--muted); font-size: 12px; }
+kbd { border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; font: 11px ui-monospace, monospace; }
+
+.layout { flex: 1; min-height: 0; display: flex; }
+nav { width: 260px; flex-shrink: 0; overflow: auto; border-right: 1px solid var(--border); padding: 6px 0; }
+nav a { display: flex; gap: 8px; justify-content: space-between; padding: 3px 12px; color: var(--text); text-decoration: none; }
+nav a:hover { background: var(--panel); }
+nav a span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { flex-shrink: 0; color: var(--bad); font-variant-numeric: tabular-nums; }
+.badge.warn { color: var(--warn); }
+main { flex: 1; min-width: 0; overflow: auto; padding: 0 16px 16px; }
+@media (max-width: 800px) { nav { display: none; } }
+
+.game { padding-top: 16px; }
+.game h2 { font-size: 16px; margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
+.game h2 .badge { font-size: 13px; font-weight: normal; }
+.note { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+.note.warn { color: var(--warn); }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); }
+body[data-mode=side] .grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 760px), 1fr)); }
+.card { margin: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.card figcaption { display: flex; gap: 10px; padding: 4px 8px; font-size: 12px; color: var(--muted); }
+.card .fnum { color: var(--text); font-variant-numeric: tabular-nums; }
+.dims.bad { color: var(--bad); }
+.state { margin-left: auto; font-weight: 600; }
+.card .cmp { cursor: zoom-in; }
+.card .cmp img { display: block; width: 100%; height: auto; }
+
+/* Compare widget: two images, laid out according to the global mode. */
+.cmp { position: relative; display: grid; background: #000; }
+.cmp > img { grid-area: 1 / 1; }
+body[data-mode=side] .cmp { grid-template-columns: 1fr 1fr; gap: 2px; }
+body[data-mode=side] .cmp > img.after { grid-area: 1 / 2; }
+body[data-mode=swipe] .cmp > img.after { clip-path: inset(0 0 0 var(--split, 50%)); }
+body[data-mode=swipe] .cmp::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--split, 50%); width: 1px; background: #fffa; pointer-events: none; }
+body[data-mode=flip] .cmp > img.after { visibility: hidden; }
+body[data-mode=flip].show-after .cmp > img.after { visibility: visible; }
+body[data-mode=diff] .cmp { isolation: isolate; filter: brightness(var(--gain)); }
+body[data-mode=diff] .cmp > img.after { mix-blend-mode: difference; }
+
+/* Highlight overlay: difference of the two images, pushed through an SVG filter that maps any change to solid colour. */
+.cmp > .hl { grid-area: 1 / 1; display: none; isolation: isolate; filter: url(#hlFilter); pointer-events: none; }
+.hl > img { grid-area: 1 / 1; }
+.hl > img.after { mix-blend-mode: difference; }
+body.highlight .cmp > .hl { display: grid; }
+body.highlight[data-mode=diff] .cmp > .hl { display: none; }
+body[data-mode=side] .cmp > .hl { grid-area: 1 / 2; }
+body[data-mode=swipe] .cmp > .hl { clip-path: inset(0 0 0 var(--split, 50%)); }
+#hlToggle { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); padding: 4px 10px; cursor: pointer; }
+#hlToggle:hover { color: var(--text); }
+body.highlight #hlToggle { background: #ff00ff; border-color: #ff00ff; color: #000; }
+body[data-mode=diff] #hlToggle { display: none; }
+
+body[data-mode=side] .state::after { content: "baseline | test"; }
+body[data-mode=swipe] .state::after { content: "baseline \2190  \2192  test"; }
+body[data-mode=flip] .state::after { content: "BASELINE"; color: var(--warn); }
+body[data-mode=flip].show-after .state::after { content: "TEST"; color: var(--accent); }
+body[data-mode=diff] .state::after { content: "difference"; }
+
+#viewer { position: fixed; inset: 0; z-index: 10; background: #000; display: flex; flex-direction: column; }
+#viewer[hidden] { display: none; }
+.vbar { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding: 6px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+#vtitle { font-weight: 600; }
+#vclose { margin-left: 8px; background: none; border: 0; font-size: 20px; line-height: 1; cursor: pointer; color: var(--muted); }
+#vclose:hover { color: var(--text); }
+.vbody { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#viewer .cmp img { image-rendering: pixelated; object-fit: contain; width: 100vw; height: calc(100vh - 44px); }
+body[data-mode=side] #viewer .cmp img { width: calc(50vw - 1px); }
+</style>
+</head>
+<body data-mode="side">
+<header>
+  <h1>Regression Comparison</h1>
+  <span class="summary" id="summary"></span>
+  <div class="controls">
+    <div class="seg" id="modes">
+      <button data-mode="side" title="Side by side (1)">Side by side</button>
+      <button data-mode="swipe" title="Swipe (2)">Swipe</button>
+      <button data-mode="flip" title="Flip (3, Space)">Flip</button>
+      <button data-mode="diff" title="Difference (4)">Diff</button>
+    </div>
+    <button id="hlToggle" title="Highlight changed pixels (H)">Highlight</button>
+    <label id="gainCtl">Gain <input type="range" id="gain" min="1" max="32" value="4"><span id="gainVal">4&times;</span></label>
+    <input type="search" id="filter" placeholder="Filter games&hellip;">
+  </div>
+  <div class="dirs" id="dirs"></div>
+</header>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<svg width="0" height="0" style="position: absolute">
+  <filter id="hlFilter" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
+    <feColorMatrix type="matrix" values="255 255 255 0 0  0 0 0 0 0  255 255 255 0 0  255 255 255 0 0" />
+    <feMorphology operator="dilate" radius="1" />
+  </filter>
+</svg>
+<div id="viewer" hidden>
+  <div class="vbar">
+    <span id="vtitle"></span>
+    <span class="hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd> frame &middot; <kbd>Space</kbd> flip &middot; <kbd>1</kbd>&ndash;<kbd>4</kbd> mode &middot; <kbd>H</kbd> highlight &middot; <kbd>Esc</kbd> close</span>
+    <span class="state"></span>
+    <button id="vclose" title="Close (Esc)">&times;</button>
+  </div>
+  <div class="vbody"></div>
+</div>
+<script>
+const DATA = __DATA__;
+const MODES = ["side", "swipe", "flip", "diff"];
+const $ = (sel) => document.querySelector(sel);
+const main = $("#main"), nav = $("#nav"), viewer = $("#viewer");
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function plural(n, word) { return n + " " + word + (n == 1 ? "" : "s"); }
+
+function addImages(parent, frame, lazy) {
+  for (const which of ["before", "after"]) {
+    const img = el("img", which);
+    if (lazy) img.loading = "lazy";
+    img.alt = which == "before" ? "baseline" : "test";
+    img.src = frame[which];
+    parent.append(img);
+  }
+}
+
+function makeCompare(frame, lazy) {
+  const cmp = el("div", "cmp");
+  addImages(cmp, frame, lazy);
+  const hl = el("div", "hl");
+  addImages(hl, frame, lazy);
+  cmp.append(hl);
+  return cmp;
+}
+
+function watchSize(cmp, label) {
+  const [a, b] = cmp.querySelectorAll("img");
+  const update = () => {
+    if (!a.naturalWidth || !b.naturalWidth) return;
+    const same = a.naturalWidth == b.naturalWidth && a.naturalHeight == b.naturalHeight;
+    label.textContent = a.naturalWidth + "\u00d7" + a.naturalHeight + (same ? "" : " \u2192 " + b.naturalWidth + "\u00d7" + b.naturalHeight);
+    label.classList.toggle("bad", !same);
+  };
+  a.addEventListener("load", update);
+  b.addEventListener("load", update);
+}
+
+// Build page.
+const flat = [];
+let totalFrames = 0;
+DATA.games.forEach((game, gi) => {
+  const sec = el("section", "game");
+  sec.id = "g" + gi;
+  const h = el("h2", null, game.name);
+  let badge;
+  if (game.missingDir)
+    badge = el("span", "badge warn", "missing from test set");
+  else if (game.diffFrames.length)
+    badge = el("span", "badge", plural(game.diffFrames.length, "frame") + " differ");
+  else
+    badge = el("span", "badge warn", plural(game.missingFrames.length, "frame") + " missing");
+  h.append(badge);
+  sec.append(h);
+  totalFrames += game.diffFrames.length;
+
+  if (game.diffFrames.length) {
+    let text = "Differs at: " + game.diffFrames.join(", ");
+    if (game.frames.length < game.diffFrames.length)
+      text += " (showing last " + game.frames.length + ")";
+    sec.append(el("p", "note", text));
+  }
+  if (game.missingFrames.length)
+    sec.append(el("p", "note warn", "Missing in test set: " + game.missingFrames.join(", ")));
+
+  const grid = el("div", "grid");
+  for (const frame of game.frames) {
+    const idx = flat.length;
+    const card = el("figure", "card");
+    const cap = el("figcaption");
+    const dims = el("span", "dims");
+    cap.append(el("span", "fnum", "Frame " + frame.n), dims, el("span", "state"));
+    const cmp = makeCompare(frame, true);
+    watchSize(cmp, dims);
+    cmp.addEventListener("click", () => openViewer(idx));
+    card.append(cap, cmp);
+    grid.append(card);
+    flat.push({ game, frame, card });
+  }
+  sec.append(grid);
+  main.append(sec);
+
+  const link = el("a");
+  link.href = "#" + sec.id;
+  link.append(el("span", null, game.name), el("span", badge.className, game.missingDir ? "dir" : (game.diffFrames.length || game.missingFrames.length)));
+  nav.append(link);
+  game.elems = [sec, link];
+});
+
+$("#summary").innerHTML = "<b class=bad>" + plural(DATA.games.length, "game") + "</b> with differences (" +
+  plural(totalFrames, "frame") + "), <b>" + DATA.passed + "</b> passed";
+$("#dirs").textContent = "baseline: " + DATA.baseline + "    test: " + DATA.test;
+
+// Mode handling.
+function setMode(mode) {
+  document.body.dataset.mode = mode;
+  for (const b of document.querySelectorAll("#modes button"))
+    b.classList.toggle("active", b.dataset.mode == mode);
+  try { localStorage.setItem("regtest-mode", mode); } catch (e) {}
+}
+
+function toggleFlip() {
+  if (document.body.dataset.mode != "flip")
+    setMode("flip");
+  document.body.classList.toggle("show-after");
+}
+
+function toggleHighlight() {
+  const on = document.body.classList.toggle("highlight");
+  try { localStorage.setItem("regtest-highlight", on ? "1" : ""); } catch (e) {}
+}
+
+let savedMode = null;
+try {
+  savedMode = localStorage.getItem("regtest-mode");
+  document.body.classList.toggle("highlight", !!localStorage.getItem("regtest-highlight"));
+} catch (e) {}
+setMode(MODES.includes(savedMode) ? savedMode : "side");
+$("#hlToggle").addEventListener("click", toggleHighlight);
+
+document.querySelectorAll("#modes button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+$("#gain").addEventListener("input", (ev) => {
+  document.body.style.setProperty("--gain", ev.target.value);
+  $("#gainVal").textContent = ev.target.value + "\u00d7";
+});
+
+document.addEventListener("pointermove", (ev) => {
+  if (document.body.dataset.mode != "swipe") return;
+  const cmp = ev.target.closest && ev.target.closest(".cmp");
+  if (!cmp) return;
+  const r = cmp.getBoundingClientRect();
+  cmp.style.setProperty("--split", Math.min(100, Math.max(0, (ev.clientX - r.left) / r.width * 100)) + "%");
+});
+
+$("#filter").addEventListener("input", (ev) => {
+  const q = ev.target.value.toLowerCase();
+  for (const game of DATA.games)
+    for (const e of game.elems)
+      e.hidden = !game.name.toLowerCase().includes(q);
+});
+
+// Full-screen viewer.
+let current = -1;
+function openViewer(idx) {
+  if (idx < 0 || idx >= flat.length) return;
+  current = idx;
+  const { game, frame } = flat[idx];
+  $("#vtitle").textContent = "(" + (idx + 1) + "/" + flat.length + ") " + game.name + " \u2014 frame " + frame.n;
+  $("#viewer .vbody").replaceChildren(makeCompare(frame, false));
+  viewer.hidden = false;
+  if (idx + 1 < flat.length) {
+    new Image().src = flat[idx + 1].frame.before;
+    new Image().src = flat[idx + 1].frame.after;
+  }
+}
+
+function closeViewer() {
+  viewer.hidden = true;
+  if (current >= 0) flat[current].card.scrollIntoView({ block: "nearest" });
+  current = -1;
+}
+
+$("#vclose").addEventListener("click", closeViewer);
+$("#viewer .vbody").addEventListener("click", (ev) => { if (ev.target == ev.currentTarget) closeViewer(); });
+
+function jumpGame(dir) {
+  const top = main.getBoundingClientRect().top;
+  const secs = [...main.querySelectorAll(".game:not([hidden])")];
+  const target = (dir > 0) ? secs.find(s => s.getBoundingClientRect().top > top + 1)
+                           : secs.findLast(s => s.getBoundingClientRect().top < top - 1);
+  if (target) target.scrollIntoView();
+}
+
+document.addEventListener("keydown", (ev) => {
+  if (ev.defaultPrevented || ev.ctrlKey || ev.metaKey || ev.altKey || ev.target.matches("input")) return;
+  const k = ev.key, inViewer = !viewer.hidden;
+  if (k == " ") toggleFlip();
+  else if (k.length == 1 && k >= "1" && k <= "4") setMode(MODES[k - 1]);
+  else if (k == "h" || k == "H") toggleHighlight();
+  else if (inViewer && (k == "ArrowLeft" || k == "ArrowRight")) openViewer(current + (k == "ArrowLeft" ? -1 : 1));
+  else if (inViewer && k == "Escape") closeViewer();
+  else if (!inViewer && (k == "j" || k == "k")) jumpGame(k == "j" ? 1 : -1);
+  else return;
+  ev.preventDefault();
+});
+</script>
+</body>
+</html>
