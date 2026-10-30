@@ -471,53 +471,59 @@ void CPU::X64Recompiler::BeginBlock()
 
 void CPU::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
 {
-  // store it first to reduce code size, because we can offset
   cg->mov(RXARG1, static_cast<size_t>(reinterpret_cast<uintptr_t>(ram_ptr)));
+
+  // small blocks can compare against the instruction bits directly, no need for the shadow copy
+  if (size < 16)
+  {
+    u32 offset = 0;
+    if (size >= 8)
+    {
+      u64 bits;
+      std::memcpy(&bits, shadow_ptr, sizeof(bits));
+      cg->mov(RXARG2, bits);
+      cg->cmp(cg->qword[RXARG1], RXARG2);
+      cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
+      offset = 8;
+    }
+    if (offset < size)
+    {
+      u32 bits;
+      std::memcpy(&bits, shadow_ptr + offset, sizeof(bits));
+      cg->cmp(cg->dword[RXARG1 + offset], bits);
+      cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
+    }
+    return;
+  }
+
+  // store it first to reduce code size, because we can offset
+  // shadow copy is 16-byte aligned, so it can be used as a pcmpeqd memory operand
+  DebugAssert(Common::IsAlignedPow2(reinterpret_cast<uintptr_t>(shadow_ptr), 16));
   cg->mov(RXARG2, static_cast<size_t>(reinterpret_cast<uintptr_t>(shadow_ptr)));
+  cg->movups(cg->xmm0, cg->xword[RXARG1]);
+  cg->pcmpeqd(cg->xmm0, cg->xword[RXARG2]);
 
-  bool first = true;
-  u32 offset = 0;
-  while (size >= 16)
+  u32 offset = 16;
+  for (; (offset + 16) <= size; offset += 16)
   {
-    const Xbyak::Xmm& dst = first ? cg->xmm0 : cg->xmm1;
-    cg->movups(dst, cg->xword[RXARG1 + offset]);
-    cg->pcmpeqd(dst, cg->xword[RXARG2 + offset]);
-    if (!first)
-      cg->pand(cg->xmm0, dst);
-    else
-      first = false;
-
-    offset += 16;
-    size -= 16;
+    cg->movups(cg->xmm1, cg->xword[RXARG1 + offset]);
+    cg->pcmpeqd(cg->xmm1, cg->xword[RXARG2 + offset]);
+    cg->pand(cg->xmm0, cg->xmm1);
   }
 
-  // TODO: better codegen for 16 byte aligned blocks
-  if (!first)
+  // remaining 4/8/12 bytes overlap with the previous vector, the shadow copy is unaligned here
+  if (offset < size)
   {
-    cg->movmskps(cg->eax, cg->xmm0);
-    cg->cmp(cg->eax, 0xf);
-    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
+    offset = size - 16;
+    cg->movups(cg->xmm1, cg->xword[RXARG1 + offset]);
+    cg->movups(cg->xmm2, cg->xword[RXARG2 + offset]);
+    cg->pcmpeqd(cg->xmm1, cg->xmm2);
+    cg->pand(cg->xmm0, cg->xmm1);
   }
 
-  while (size >= 8)
-  {
-    cg->mov(RXARG3, cg->qword[RXARG1 + offset]);
-    cg->cmp(RXARG3, cg->qword[RXARG2 + offset]);
-    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
-    offset += 8;
-    size -= 8;
-  }
-
-  while (size >= 4)
-  {
-    cg->mov(RWARG3, cg->dword[RXARG1 + offset]);
-    cg->cmp(RWARG3, cg->dword[RXARG2 + offset]);
-    cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
-    offset += 4;
-    size -= 4;
-  }
-
-  DebugAssert(size == 0);
+  cg->movmskps(cg->eax, cg->xmm0);
+  cg->cmp(cg->eax, 0xf);
+  cg->jne(CodeCache::g_recompiler_functions.discard_and_recompile_block);
 }
 
 void CPU::X64Recompiler::GenerateICacheCheckAndUpdate()

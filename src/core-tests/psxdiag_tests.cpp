@@ -15,6 +15,7 @@
 #include "core/sio.h"
 #include "core/spu.h"
 #include "core/system.h"
+#include "core/system_private.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
 
@@ -629,6 +630,58 @@ TEST_P(PsxDiag, DoubleLoadDelayAcrossBlocks)
 
     EXPECT_EQ(prog.Result(before), 0x12345678u) << (taken ? "taken" : "not taken");
     EXPECT_EQ(prog.Result(after), 0xBBBBBBBBu) << (taken ? "taken" : "not taken");
+  }
+}
+
+TEST_P(PsxDiag, ManualProtectionDetectsChangedCode)
+{
+  // A block with its delay slot in the next page always uses manual protection, so changes are only picked up by the
+  // check at the start of the block. Change each instruction of different sized blocks without invalidating it.
+  const u32 page_end_pc = PROGRAM_BASE + HOST_PAGE_SIZE * 2;
+  const u32 exit_pc = PROGRAM_BASE + HOST_PAGE_SIZE * 3;
+  const auto write_code = [](u32 address, std::initializer_list<u32> code) {
+    std::memcpy(&g_bus.ram[address & g_bus.ram_mask], std::data(code), code.size() * sizeof(u32));
+  };
+
+  std::vector<u32> sizes;
+  for (u32 size = 2; size <= 24; size++)
+    sizes.push_back(size);
+  for (u32 size : {63u, 64u, 65u, 66u, 258u, 259u, 260u, 261u, 262u, 263u, 300u})
+    sizes.push_back(size);
+
+  for (const u32 size : sizes)
+  {
+    const u32 block_pc = page_end_pc - (size - 1) * sizeof(u32);
+    for (u32 changed = 0; changed < size; changed++)
+    {
+      // Don't change the branch.
+      if (changed == (size - 2))
+        continue;
+
+      // Pages with blocks in them are read-only. Blocks recompiled too often within 15 frames get interpreted instead.
+      CPU::CodeCache::InvalidateAllRAMBlocks();
+      for (u32 i = 0; i < 15; i++)
+        System::IncrementFrameNumber();
+      for (u32 i = 0; i < (size - 2); i++)
+        write_code(block_pc + i * sizeof(u32), {addiu(Reg::V0, Reg::V0, 1)});
+      write_code(page_end_pc - sizeof(u32), {j(exit_pc), addiu(Reg::V0, Reg::V0, 1)});
+      write_code(exit_pc,
+                 {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT), nop(), nop()});
+
+      // Second run executes the already compiled block.
+      Program prog;
+      prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+      prog.Emit(j(block_pc));
+      prog.Emit(addu(Reg::V0, Reg::R0, Reg::R0));
+      prog.Run(2);
+      ASSERT_EQ(prog.Result(0), size - 1) << size << " instructions";
+
+      write_code(block_pc + changed * sizeof(u32), {addiu(Reg::V0, Reg::V0, 2)});
+      CPU::ClearICache();
+      CPU::SetPC(PROGRAM_BASE);
+      CPU::Execute();
+      ASSERT_EQ(prog.Result(0), size) << size << " instructions, changed " << changed;
+    }
   }
 }
 
