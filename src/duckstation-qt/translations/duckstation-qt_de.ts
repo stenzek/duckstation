@@ -913,8 +913,8 @@ Diese Sitzung startet im Offline-Modus.</translation>
         <source>This subset has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>Diese Teilmenge hat %n Leaderboard.</numerusform>
-            <numerusform>Diese Teilmenge hat %n Leaderboards.</numerusform>
+            <numerusform>Diese Untergruppe hat %n Leaderboard.</numerusform>
+            <numerusform>Diese Untergruppe hat %n Leaderboards.</numerusform>
         </translation>
     </message>
     <message>
@@ -927,27 +927,27 @@ Diese Sitzung startet im Offline-Modus.</translation>
     </message>
     <message>
         <source>Game was beaten {0}, and completed {1}.</source>
-        <translation>Das Spiel wurde am {0} durchgespielt und am {1} abgeschlossen.</translation>
+        <translation>Das Spiel wurde {0} durchgespielt und {1} abgeschlossen.</translation>
     </message>
     <message>
         <source>Subset was beaten {0}, and completed {1}.</source>
-        <translation>Die Untergruppe wurde am {0} durchgespielt und am {1} abgeschlossen.</translation>
+        <translation>Die Untergruppe wurde {0} durchgespielt und {1} abgeschlossen.</translation>
     </message>
     <message>
         <source>Game was beaten {0}.</source>
-        <translation>Das Spiel wurde am {0} durchgespielt.</translation>
+        <translation>Das Spiel wurde {0} durchgespielt.</translation>
     </message>
     <message>
         <source>Subset was beaten {0}.</source>
-        <translation>Die Untergruppe wurde am {0} durchgespielt.</translation>
+        <translation>Die Untergruppe wurde {0} durchgespielt.</translation>
     </message>
     <message>
         <source>Game was completed {0}.</source>
-        <translation>Das Spiel wurde am {0} abgeschlossen.</translation>
+        <translation>Das Spiel wurde {0} abgeschlossen.</translation>
     </message>
     <message>
         <source>Subset was completed {0}.</source>
-        <translation>Die Untergruppe wurde am {0} abgeschlossen.</translation>
+        <translation>Die Untergruppe wurde {0} abgeschlossen.</translation>
     </message>
     <message>
         <source>Unlocked in Casual</source>
@@ -1050,7 +1050,7 @@ Diese Sitzung startet im Offline-Modus.</translation>
     </message>
     <message>
         <source>Interface Settings</source>
-        <translation>Schnittstelleneinstellungen</translation>
+        <translation>Oberflächeneinstellungen</translation>
     </message>
     <message>
         <source>Show Frame Number</source>
@@ -2316,8 +2316,8 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <comment>achievement_subset_summary_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d achievement in this subset, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.&quot;</extracomment>
         <translation>
-            <numerusform>Sie haben %1$d von %2$d Achievement in dieser Teilmenge freigeschaltet und %3$d von %4$d möglichen Punkten erhalten.</numerusform>
-            <numerusform>Sie haben %1$d von %2$d Achievements in dieser Teilmenge freigeschaltet und %3$d von %4$d möglichen Punkten erhalten.</numerusform>
+            <numerusform>Sie haben %1$d von %2$d Achievement in dieser Untergruppe freigeschaltet und %3$d von %4$d möglichen Punkten erhalten.</numerusform>
+            <numerusform>Sie haben %1$d von %2$d Achievements in dieser Untergruppe freigeschaltet und %3$d von %4$d möglichen Punkten erhalten.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -2325,8 +2325,8 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <comment>achievement_subset_all_unlocked_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;You have unlocked all achievements in this subset and earned %1$d point!&quot;; other=&quot;You have unlocked all achievements in this subset and earned %1$d points!&quot;</extracomment>
         <translation>
-            <numerusform>Sie haben alle Achievements in dieser Teilmenge freigeschaltet und %1$d Punkt erhalten!</numerusform>
-            <numerusform>Sie haben alle Achievements in dieser Teilmenge freigeschaltet und %1$d Punkte erhalten!</numerusform>
+            <numerusform>Sie haben alle Achievements in dieser Untergruppe freigeschaltet und %1$d Punkt erhalten!</numerusform>
+            <numerusform>Sie haben alle Achievements in dieser Untergruppe freigeschaltet und %1$d Punkte erhalten!</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -2346,7 +2346,7 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
     <message>
         <source>Subset was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_subset_beaten_completed_format_string</comment>
-        <translation>Die Teilmenge wurde am %1$s durchgespielt und am %2$s vollständig abgeschlossen.</translation>
+        <translation>Die Untergruppe wurde am %1$s durchgespielt und am %2$s vollständig abgeschlossen.</translation>
     </message>
     <message>
         <source>Game was beaten on %1$s.</source>
@@ -2356,7 +2356,7 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
     <message>
         <source>Subset was beaten on %1$s.</source>
         <comment>achievement_subset_beaten_format_string</comment>
-        <translation>Die Teilmenge wurde am %1$s durchgespielt.</translation>
+        <translation>Die Untergruppe wurde am %1$s durchgespielt.</translation>
     </message>
     <message>
         <source>Game was completed on %1$s.</source>
@@ -2366,7 +2366,7 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
     <message>
         <source>Subset was completed on %1$s.</source>
         <comment>achievement_subset_completed_format_string</comment>
-        <translation>Die Teilmenge wurde am %1$s vollständig abgeschlossen.</translation>
+        <translation>Die Untergruppe wurde am %1$s vollständig abgeschlossen.</translation>
     </message>
     <message>
         <source>Unlocked %1$s</source>
@@ -8216,7 +8216,7 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
     </message>
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
-        <translation>Speichert alle Images, die im Flash-Speicher der Cartridge erstellt wurden, wieder im Dateisystem des Hosts. &lt;strong&gt;Dadurch wird Ihr Cartridge-Dump überschrieben,&lt;/strong&gt; stellen Sie daher sicher, dass Sie vorher ein Backup haben.</translation>
+        <translation>Speichert Änderungen am Flash-Speicher der Cartridge wieder im Dateisystem des Hosts. &lt;strong&gt;Dadurch wird Ihr Cartridge-Dump überschrieben,&lt;/strong&gt; stellen Sie daher sicher, dass Sie vorher ein Backup haben.</translation>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
@@ -8973,7 +8973,7 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>Gibt die Standard-Taktfrequenz in Prozent an, mit der die emulierte Hardware läuft.</translation>
+        <translation>Legt fest, mit welchem Prozentsatz der normalen Taktfrequenz die emulierte Hardware läuft.</translation>
     </message>
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
@@ -10149,9 +10149,9 @@ Alle Zuordnungen und Einstellungen gehen verloren. Sie können diese Aktion nich
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
-        <translation>WARNUNG: Ihr Spiel speichert noch auf die Speicherkarte. Wenn Sie mit %1 fortfahren, kann Ihre SPEICHERKARTE IRREVERSIBEL BESCHÄDIGT WERDEN. Wir empfehlen, das Spiel fortzusetzen und 5 Sekunden zu warten, bis der Speichervorgang abgeschlossen ist.
+        <translation>WARNUNG: Ihr Spiel speichert noch auf die Speicherkarte. Wenn Sie die Aktion „%1“ ausführen, kann Ihre SPEICHERKARTE IRREVERSIBEL BESCHÄDIGT WERDEN. Wir empfehlen, das Spiel fortzusetzen und 5 Sekunden zu warten, bis der Speichervorgang abgeschlossen ist.
 
-Möchten Sie trotzdem %1?</translation>
+Möchten Sie die Aktion „%1“ trotzdem ausführen?</translation>
     </message>
     <message>
         <source>Achievement Unlocks Unconfirmed</source>
@@ -10161,9 +10161,9 @@ Möchten Sie trotzdem %1?</translation>
         <source>%1 achievement unlocks have not been confirmed by the server. Continuing to %2 will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to %2 anyway?</source>
-        <translation>Die Freischaltungen für %1 Erfolge wurden vom Server noch nicht bestätigt. Wenn Sie mit %2 fortfahren, gehen diese Freischaltungen verloren. Sobald die Netzwerkverbindung wiederhergestellt ist, werden sie automatisch bestätigt.
+        <translation>Die Freischaltungen für %1 Erfolge wurden vom Server noch nicht bestätigt. Wenn Sie die Aktion „%2“ ausführen, gehen diese Freischaltungen verloren. Sobald die Netzwerkverbindung wiederhergestellt ist, werden sie automatisch bestätigt.
 
-Möchten Sie trotzdem %2?</translation>
+Möchten Sie die Aktion „%2“ trotzdem ausführen?</translation>
     </message>
     <message>
         <source>shut down</source>
@@ -11193,7 +11193,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>Rewind</source>
-        <translation>Zurückspulen (Taste gedrückt halten)</translation>
+        <translation>Zurückspulen</translation>
     </message>
     <message>
         <source> Frames</source>
@@ -11411,7 +11411,7 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>Das Zurückspulen ist deaktiviert. Das Aktivieren dieser Funktion erhöht die Systemanforderungen.</translation>
+        <translation>Das Zurückspulen ist deaktiviert. Bitte beachten Sie, dass das Aktivieren dieser Funktion die Systemanforderungen erheblich erhöhen kann.</translation>
     </message>
 </context>
 <context>
@@ -13125,7 +13125,7 @@ Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
         <source>Enables manual fine cropping of the display area, while preserving the aspect ratio of the image. Useful for removing black borders in certain games.</source>
-        <translation>Aktiviert das manuelle Feincropping des Anzeigebereichs bei beibehaltener Bildseitenratio. Nützlich, um schwarze Ränder in bestimmten Spielen zu entfernen.</translation>
+        <translation>Ermöglicht einen manuellen, präzisen Zuschnitt des Anzeigebereichs unter Beibehaltung des Seitenverhältnisses. Nützlich zum Entfernen schwarzer Ränder in bestimmten Spielen.</translation>
     </message>
     <message>
         <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
@@ -13685,7 +13685,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Open To Game List</source>
-        <translation>Zur Spieleliste öffnen</translation>
+        <translation>Mit Spieleliste öffnen</translation>
     </message>
     <message>
         <source>Open in File Browser</source>
@@ -14057,7 +14057,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Trigger</source>
-        <translation>&quot;Trigger&quot;-Taste</translation>
+        <translation>Auslöser</translation>
     </message>
     <message>
         <source>Unofficial achievement unlock reset.</source>
@@ -14345,7 +14345,7 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>Drücken Sie jetzt eine Controller-Taste oder -Achse.</translation>
+        <translation>Drücken Sie jetzt eine Controller-Taste oder bewegen Sie eine Controller-Achse.</translation>
     </message>
     <message>
         <source>Quick Message Duration</source>
@@ -15239,9 +15239,9 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translation>WARNUNG: Ihr Spiel speichert noch auf die Speicherkarte. Wenn Sie mit {0} fortfahren, kann Ihre Speicherkarte UNWIDERRUFLICH ZERSTÖRT werden. Wir empfehlen, Ihr Spiel fortzusetzen und 5 Sekunden zu warten, bis das Speichern abgeschlossen ist.
+        <translation>WARNUNG: Ihr Spiel speichert noch auf die Speicherkarte. Wenn Sie die Aktion „{0}“ ausführen, kann Ihre Speicherkarte UNWIDERRUFLICH ZERSTÖRT werden. Wir empfehlen, Ihr Spiel fortzusetzen und 5 Sekunden zu warten, bis das Speichern abgeschlossen ist.
 
-Möchten Sie trotzdem {0}?</translation>
+Möchten Sie die Aktion „{0}“ trotzdem ausführen?</translation>
     </message>
     <message>
         <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
@@ -15319,9 +15319,9 @@ Möchten Sie trotzdem {0}?</translation>
         <source>{0} achievement unlocks have not been confirmed by the server. Continuing to {1} will result in loss of these unlocks. Once network connectivity has been re-established, these unlocks will be confirmed automatically.
 
 Do you want to {1} anyway?</source>
-        <translation>{0} Achievement-Freischaltungen wurden vom Server noch nicht bestätigt. Wenn Sie mit {1} fortfahren, gehen diese Freischaltungen verloren. Sobald die Netzwerkverbindung wiederhergestellt ist, werden diese Freischaltungen automatisch bestätigt.
+        <translation>{0} Achievement-Freischaltungen wurden vom Server noch nicht bestätigt. Wenn Sie die Aktion „{1}“ ausführen, gehen diese Freischaltungen verloren. Sobald die Netzwerkverbindung wiederhergestellt ist, werden diese Freischaltungen automatisch bestätigt.
 
-Möchten Sie trotzdem {1}?</translation>
+Möchten Sie die Aktion „{1}“ trotzdem ausführen?</translation>
     </message>
     <message>
         <source>{} Frames</source>
@@ -16451,7 +16451,7 @@ Möchten Sie fortfahren?</translation>
     <name>GameListSettingsWidget</name>
     <message>
         <source>Search Directories (will be scanned for games)</source>
-        <translation>Verzeichnisse durchsuchen (diese werden nach Spielen durchsucht)</translation>
+        <translation>Suchverzeichnisse (diese werden nach Spielen durchsucht)</translation>
     </message>
     <message>
         <source>Add</source>
@@ -18314,7 +18314,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
-        <translation>PGXP-Projektionspräzision beibehalten aktivieren/deaktivieren</translation>
+        <translation>Beibehaltung der PGXP-Projektionspräzision aktivieren/deaktivieren</translation>
     </message>
     <message>
         <source>Toggle VRAM View</source>
@@ -20494,7 +20494,7 @@ Die Spielstände können nicht wiederhergestellt werden.</translation>
     </message>
     <message>
         <source>Save was created %1.</source>
-        <translation>Der Spielstand wurde am %1 erstellt.</translation>
+        <translation>Der Spielstand wurde %1 erstellt.</translation>
     </message>
     <message>
         <source>Confirm Disc Change</source>
@@ -21078,7 +21078,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation>Die Datei &apos;%1&apos; konnte nicht wiederhergestellt werden. Die Datei wurde möglicherweise durch eine andere Speicherung überschrieben.</translation>
+        <translation>Die Datei %1 konnte nicht wiederhergestellt werden. Sie wurde möglicherweise teilweise durch einen anderen Spielstand überschrieben.</translation>
     </message>
     <message>
         <source>Select Import File</source>
@@ -21979,7 +21979,7 @@ Fehler: {1}</translation>
     </message>
     <message>
         <source>Now showing display.</source>
-        <translation>Anzeige wird jetzt angezeigt.</translation>
+        <translation>Spielbild wird jetzt angezeigt.</translation>
     </message>
     <message>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
@@ -23773,7 +23773,7 @@ Möchten Sie dieses Verzeichnis erstellen?</translation>
     <message>
         <source>Stretch To Fill</source>
         <comment>DisplayAspectRatio</comment>
-        <translation>Bis zur Füllung strecken</translation>
+        <translation>Bildschirmfüllend strecken</translation>
     </message>
     <message>
         <source>PAR 1:1</source>
@@ -24384,7 +24384,7 @@ Möchten Sie fortfahren?</translation>
     </message>
     <message>
         <source>Confirm Restore Defaults</source>
-        <translation>Standardeinstellungen wiederherstellen bestätigen</translation>
+        <translation>Wiederherstellen der Standardeinstellungen bestätigen</translation>
     </message>
     <message>
         <source>Recommended Value</source>
@@ -24487,7 +24487,7 @@ Möchten Sie fortfahren?</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation durchsucht und erkennt die unten ausgewählten Verzeichnisse automatisch nach Spielen und füllt die Spielliste. Diese Spiele sollten von Discs stammen, die Sie besitzen. Mit Hilfsprogrammen wie ImgBurn können Abbilddateien von Spiele-Discs im .bin/.cue-Format erstellt werden.&lt;/p&gt;&lt;p&gt;Unterstützte Formate für Abbilder sind: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation durchsucht die unten ausgewählten Verzeichnisse automatisch nach Spielen, erkennt diese und füllt die Spieleliste. Diese Spiele sollten von Discs stammen, die Sie besitzen. Mit Hilfsprogrammen wie ImgBurn können Abbilddateien von Spiele-Discs im .bin/.cue-Format erstellt werden.&lt;/p&gt;&lt;p&gt;Unterstützte Formate für Abbilder sind: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -25254,7 +25254,7 @@ Sie müssen auf eine Speicherkarte speichern und das Spiel zurücksetzen, um etw
     </message>
     <message>
         <source>Loaded undo save state created {}.</source>
-        <translation>Rückgängig-Speicherstand erstellt am {} geladen.</translation>
+        <translation>Rückgängig-Speicherstand (erstellt {}) geladen.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>

@@ -9861,7 +9861,7 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
-        <translation>Tekan untuk Alihkan</translation>
+        <translation>Tekan untuk Mengalihkan</translation>
     </message>
     <message>
         <source>Deadzone:</source>
@@ -14078,11 +14078,11 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>Port {} Controller Type</source>
-        <translation>Port {} Tipe Kontroler</translation>
+        <translation>Tipe Kontroler Port {}</translation>
     </message>
     <message>
         <source>Select Macro {} Binds</source>
-        <translation>Pilih Makro {} Penetapan Tombol</translation>
+        <translation>Pilih Penetapan Tombol Makro {}</translation>
     </message>
     <message>
         <source>All Time: {}</source>
@@ -14198,7 +14198,7 @@ Apakah Anda tetap ingin {0}?</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
-        <translation>Tekan untuk Alihkan</translation>
+        <translation>Tekan untuk Mengalihkan</translation>
     </message>
     <message>
         <source>Deadzone</source>

@@ -389,7 +389,7 @@ Voulez-vous activer le mode Hardcore?</translation>
         <source>Logged in as %1
 Token generated %2</source>
         <translation>Connecté en tant que %1
-Jeton généré le %2</translation>
+Jeton généré %2</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -1464,7 +1464,7 @@ Messages non lus : {}</translation>
     </message>
     <message>
         <source>Mode Toggle</source>
-        <translation>Basculer Mode</translation>
+        <translation>Basculer le mode</translation>
     </message>
     <message>
         <source>Left Stick Left</source>
@@ -1854,7 +1854,7 @@ Messages non lus : {}</translation>
     <message>
         <source>Optimal Frame Pacing</source>
         <comment>settings_optimal_frame_pacing</comment>
-        <translation>Rythme optimal d&apos;image</translation>
+        <translation>Cadencement optimal des images</translation>
     </message>
     <message>
         <source>Log To File</source>
@@ -3215,7 +3215,7 @@ Voulez-vous effectuer l&apos;action « %1$s » malgré tout ?</translation>
     <message>
         <source>This will restore all application settings to their defaults. You will not be able to recover these changes.</source>
         <comment>settings_restore_defaults_message</comment>
-        <translation>Tous les paramètres de l&apos;application seront restaurés à leurs valeurs par défaut. Vous ne pourrez pas récupérer ces modifications.</translation>
+        <translation>Tous les paramètres de l'application seront restaurés à leurs valeurs par défaut. Vous ne pourrez pas annuler cette opération.</translation>
     </message>
     <message>
         <source>This will restore all controller settings, including the touchscreen, to their defaults. Do you want to continue?</source>
@@ -7682,7 +7682,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Backend:</source>
-        <translation>Moteur de rendu :</translation>
+        <translation>Moteur audio :</translation>
     </message>
     <message>
         <source>Buffer Size:</source>
@@ -7726,7 +7726,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Reset Output Volume</source>
-        <translation>Réinitialiser Volume Sortie</translation>
+        <translation>Réinitialiser le volume de sortie</translation>
     </message>
     <message>
         <source>Fast Forward Volume:</source>
@@ -7734,7 +7734,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Reset Fast Forward Volume</source>
-        <translation>Réinitialiser Volume Accéléré</translation>
+        <translation>Réinitialiser le volume de l’avance rapide</translation>
     </message>
     <message>
         <source>Mute CD Audio</source>
@@ -7862,7 +7862,7 @@ Voulez-vous en importer une maintenant ?</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
-        <translation>Mode étiré</translation>
+        <translation>Mode d’étirement</translation>
     </message>
     <message>
         <source>Time Stretching</source>
@@ -8751,11 +8751,11 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     </message>
     <message>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{0} et {1} désactivés par le mode hardcore/mode sécurisé des succès.</translation>
+        <translation>{0} et {1} désactivés par le mode Hardcore des succès ou le mode sans échec.</translation>
     </message>
     <message>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{} désactivé par le mode hardcore/mode sécurisé des succès.</translation>
+        <translation>Désactivation de {} par le mode Hardcore des succès ou le mode sans échec.</translation>
     </message>
     <message>
         <source>Cheat &apos;{}&apos; applied.</source>
@@ -8971,11 +8971,11 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
         <translatorcomment>Cf. https://fr.wikipedia.org/wiki/Bulle_(informatique)</translatorcomment>
-        <translation>Simule des bulles dans le recompilateur quand le processeur émulé a à récupérer les instructions vers son cache. Rapproche les jeux de leur taux d&apos;image console, au coût d&apos;un léger impact des performances. Le mode interpréteur simule toujours le cache d&apos;instruction.</translation>
+        <translation>Simule des temps d'attente dans les recompilateurs lorsque le processeur émulé doit charger des instructions dans son cache. Rapproche la fréquence d'images des jeux de celle de la console, au prix d'une légère baisse des performances. Le mode interpréteur simule toujours le cache d'instructions.</translation>
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Active un ajout de 6MB de RAM pour obtenir un total de 2+6 = 8MB, habituellement présent sur les consoles de dév. Les jeux doivent utiliser un tas plus large pour que cette RAM additionnelle soit utilisable. Les titres qui s&apos;appuient sur les miroirs mémoire peuvent casser, cela ne devrait être seulement utilisé qu&apos;avec les mods compatibles.</translation>
+        <translation>Active 6 Mo de RAM supplémentaires pour obtenir un total de 2+6 = 8 Mo, habituellement présents sur les consoles de développement. Les jeux doivent utiliser un tas plus grand pour que cette RAM supplémentaire soit utilisable. Les titres qui s'appuient sur les miroirs mémoire peuvent ne plus fonctionner ; cette option ne doit donc être utilisée qu'avec des mods compatibles.</translation>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
@@ -9453,12 +9453,12 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE: &lt;/span&gt;Mouse mapping must be enabled in Global Settings to bind your PC&apos;s mouse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, les pistolets optiques utiliseront le pointeur de la souris. Pour utiliser la souris, vous &lt;span style=&quot; font-weight:700;&quot;&gt;n&apos;avez pas&lt;/span&gt; besoin de configurer de raccourcis hormis la gâchette et les boutons. Le pointage ne doit être configuré que lorsque vous souhaitez utiliser plusieurs souris.&lt;/p&gt;&lt;p&gt;Si vous souhaitez utiliser une manette, ou un pistolet optique simulant une manette au lieu d&apos;une souris, vous devriez alors le lier à Viser Relatif. Sinon, Viser Relatif devrait être &lt;span style=&quot; font-weight:700;&quot;&gt;laissé non lié&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;NOTE : &lt;/span&gt;Le mappage de la souris doit être activé dans les Paramètres Généraux pour lier la souris de votre PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Par défaut, les pistolets optiques utiliseront le pointeur de la souris. Pour utiliser la souris, vous &lt;span style=" font-weight:700;"&gt;n'avez pas&lt;/span&gt; besoin de configurer de raccourcis hormis la gâchette et les boutons. Le pointage ne doit être configuré que lorsque vous souhaitez utiliser plusieurs souris.&lt;/p&gt;&lt;p&gt;Si vous souhaitez utiliser une manette, ou un pistolet optique simulant une manette au lieu d'une souris, vous devriez alors le lier à Visée relative. Sinon, Visée relative devrait être &lt;span style=" font-weight:700;"&gt;laissée non liée&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:700;"&gt;NOTE : &lt;/span&gt;Le mappage de la souris doit être activé dans les Paramètres Généraux pour lier la souris de votre PC.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-        <translation>Viser Relatif</translation>
+        <translation>Visée relative</translation>
     </message>
     <message>
         <source>Down</source>
@@ -10448,7 +10448,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <name>DebuggerStackModel</name>
     <message>
         <source>&lt;invalid&gt;</source>
-        <translation>&lt;invalid&gt;</translation>
+        <translation>&lt;invalide&gt;</translation>
     </message>
     <message>
         <source>Address</source>
@@ -10868,7 +10868,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
     <message>
         <source>Display Active End Offset</source>
-        <translation>Décalage de fin active d&apos;affichage</translation>
+        <translation>Décalage de fin de la zone d’affichage active</translation>
     </message>
     <message>
         <source>Display Line Start Offset</source>
@@ -11128,7 +11128,7 @@ Cliquer sur Réinitialiser restaurera le numéro de série à la valeur scannée
     </message>
     <message>
         <source>Optimal Frame Pacing</source>
-        <translation>Rythme optimal d&apos;image</translation>
+        <translation>Cadencement optimal des images</translation>
     </message>
     <message>
         <source> MB</source>
@@ -11753,7 +11753,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
-        <translation>Seuil de suppression de profondeur</translation>
+        <translation>Seuil de vidage du tampon de profondeur</translation>
     </message>
     <message>
         <source>Depth Test Transparent Polygons</source>
@@ -11865,7 +11865,7 @@ Vous ne pourrez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation>Active la mise en cache des textures invité, nécessaire pour le remplacement de textures.</translation>
+        <translation>Active la mise en cache des textures du système émulé, nécessaire pour le remplacement de textures.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
@@ -13297,7 +13297,7 @@ Vous ne pouvez pas annuler cette action.</translation>
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>Détermine la taille des messages à l&apos;écran et du moniteur.</translation>
+        <translation>Détermine la taille des messages et des indicateurs de suivi à l’écran.</translation>
     </message>
     <message>
         <source>Determines how long action confirmation messages are displayed on screen.</source>
@@ -14147,7 +14147,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Open Containing Directory</source>
-        <translation>Ouvrir le répertoire contenant</translation>
+        <translation>Ouvrir le répertoire contenant le fichier</translation>
     </message>
     <message>
         <source>Open To Game List</source>
@@ -14455,7 +14455,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Rescan All Games</source>
-        <translation>Reanalyser tous les jeux</translation>
+        <translation>Réanalyser tous les jeux</translation>
     </message>
     <message>
         <source>Reset Controller Settings</source>
@@ -14727,7 +14727,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
-        <translation>Définit un seuil pour ignorer le tampon de profondeur émulé. Peut aider dans certains jeux.</translation>
+        <translation>Définit un seuil de vidage du tampon de profondeur émulé. Peut aider dans certains jeux.</translation>
     </message>
     <message>
         <source>Sets the custom scale percentage for achievement notifications.</source>
@@ -15011,7 +15011,7 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     </message>
     <message>
         <source>Stretch Mode</source>
-        <translation>Mode étiré</translation>
+        <translation>Mode d’étirement</translation>
     </message>
     <message>
         <source>Summary</source>
@@ -16259,7 +16259,7 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     </message>
     <message>
         <source>PGXP Depth Clear Threshold</source>
-        <translation>Seuil de nettoyage de profondeur PGXP</translation>
+        <translation>Seuil de vidage du tampon de profondeur PGXP</translation>
     </message>
     <message>
         <source>PGXP Depth Bias</source>
@@ -17051,11 +17051,11 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Depth Clear Threshold:</source>
-        <translation>Seuil de nettoyage de profondeur :</translation>
+        <translation>Seuil de vidage du tampon de profondeur :</translation>
     </message>
     <message>
         <source>Reset Depth Clear Threshold</source>
-        <translation>Réinitialiser le seuil d&apos;effacement de profondeur</translation>
+        <translation>Réinitialiser le seuil de vidage du tampon de profondeur</translation>
     </message>
     <message>
         <source>Depth Bias:</source>
@@ -17559,7 +17559,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Depth Clear Threshold</source>
-        <translation>Seuil de nettoyage de profondeur</translation>
+        <translation>Seuil de vidage du tampon de profondeur</translation>
     </message>
     <message>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
@@ -17603,7 +17603,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation>Active la mise en cache des textures invitées, nécessaire pour le remplacement des textures. &lt;strong&gt;Le cache de texture est actuellement expérimental et peut provoquer des erreurs de rendu dans certains jeux.&lt;/strong&gt;</translation>
+        <translation>Active la mise en cache des textures du système émulé, nécessaire pour le remplacement des textures. &lt;strong&gt;Le cache de texture est actuellement expérimental et peut provoquer des erreurs de rendu dans certains jeux.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -17834,7 +17834,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation>Mets à l&apos;échelle les coordonnées X par rapport au centre de l&apos;écran.</translation>
+        <translation>Met à l'échelle les coordonnées X par rapport au centre de l'écran.</translation>
     </message>
     <message>
         <source>Line Offset</source>
@@ -18445,7 +18445,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <source>Toggle Mute</source>
-        <translation>Passer en Muet</translation>
+        <translation>Activer/désactiver le mode muet</translation>
     </message>
     <message>
         <source>Toggle CD Audio Mute</source>
@@ -19165,7 +19165,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
-        <translation>Décalage appliqué à la position verticale du pistolet optique sur lequel le Justifier se déclenchera pour la dernière fois.</translation>
+        <translation>Décalage appliqué à la position verticale du pistolet optique sur laquelle le Justifier se déclenchera pour la dernière fois.</translation>
     </message>
     <message>
         <source>Tick Offset</source>
@@ -19173,7 +19173,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
-        <translation>Décalage appliqué à la position horizontale du pistolet optique sur lequel le Justifier se déclenchera.</translation>
+        <translation>Décalage appliqué à la position horizontale du pistolet optique sur laquelle le Justifier se déclenchera.</translation>
     </message>
     <message>
         <source>Off-Screen Out-Of-Bounds Frames</source>
@@ -19193,7 +19193,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Number of frames that the Justifier is pointed out-of-bounds after the trigger is released, for an off-screen shot.</source>
-        <translation>Nombre d&apos;images pendant lesquelles le Justifier est pointé hors champ après que la gâchette soit relâchée, pour un tir hors écran.</translation>
+        <translation>Nombre d'images pendant lesquelles le Justifier est pointé hors champ après que la gâchette est relâchée, pour un tir hors écran.</translation>
     </message>
 </context>
 <context>
@@ -19457,7 +19457,7 @@ Shift+clic pour définir plusieurs assignations.</translation>
     </message>
     <message>
         <source>Ad&amp;vanced</source>
-        <translation>A&amp;vancé</translation>
+        <translation>A&amp;dvancé</translation>
     </message>
     <message>
         <source>&amp;Debugging</source>
@@ -20409,7 +20409,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et démarrer le jeu malgré tou
     </message>
     <message>
         <source>Open Containing Directory...</source>
-        <translation>Ouvrir le Répertoire Contenant...</translation>
+        <translation>Ouvrir le répertoire contenant le fichier...</translation>
     </message>
     <message>
         <source>Browse ISO...</source>
@@ -20489,7 +20489,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et démarrer le jeu malgré tou
     </message>
     <message>
         <source>RA: Logged in as %1 (%2 points, %3 casual). %4 unread messages.</source>
-        <translation>RA : Connecté en tant que %1 (%2 points, %3 décontracté). %4 messages non lus.</translation>
+        <translation>RA : Connecté en tant que %1 (%2 points, %3 points en mode décontracté). %4 messages non lus.</translation>
     </message>
     <message>
         <source>Refresh Achievement Progress</source>
@@ -20525,7 +20525,7 @@ Voulez-vous supprimer l&apos;état de sauvegarde et démarrer le jeu malgré tou
     </message>
     <message>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
-        <translation>N&apos;a pas réussi à supprimer la couverture existante &apos;%1&apos;</translation>
+        <translation>Échec de la suppression de la jaquette existante '%1'</translation>
     </message>
     <message>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
@@ -23491,7 +23491,7 @@ Voulez-vous créer ce répertoire ?</translation>
     <message>
         <source>Nearest-Neighbor</source>
         <comment>GPUTextureFilter</comment>
-        <translation>Voisinage le plus proche</translation>
+        <translation>Plus proche voisin</translation>
     </message>
     <message>
         <source>Bilinear</source>
@@ -23836,12 +23836,12 @@ Voulez-vous créer ce répertoire ?</translation>
     <message>
         <source>Nearest-Neighbor</source>
         <comment>DisplayScalingMode</comment>
-        <translation>Voisinage le plus proche</translation>
+        <translation>Plus proche voisin</translation>
     </message>
     <message>
         <source>Nearest-Neighbor (Integer)</source>
         <comment>DisplayScalingMode</comment>
-        <translation>Voisinage le plus proche (entier)</translation>
+        <translation>Plus proche voisin (entier)</translation>
     </message>
     <message>
         <source>Bilinear (Smooth)</source>
@@ -24813,7 +24813,7 @@ Le scan récursif prend plus de temps, mais permettra d&apos;identifier les fich
         <source>Logged in as %1
 Token generated %2</source>
         <translation>Connecté en tant que %1
-Jeton généré le %2</translation>
+Jeton généré %2</translation>
     </message>
     <message>
         <source>Logout</source>
@@ -25094,7 +25094,7 @@ Le nom du fichier SBI doit correspondre au nom de l&apos;image disque.</translat
     <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
-        <translation>Cet état de sauvegarde a été créé avec les options altérées suivantes, et pourrait être instable.
+        <translation>Cet état de sauvegarde a été créé avec les options à risque suivantes et pourrait être instable.
 Vous devez sauvegarder sur une carte mémoire et réinitialiser le jeu pour annuler tout effet.</translation>
     </message>
     <message>

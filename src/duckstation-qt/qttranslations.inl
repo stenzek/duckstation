@@ -5,6 +5,7 @@
 
 TRANSLATION_LIST_ENTRY("English", "en", "en-US", QLocale::English, QLocale::UnitedStates)
 TRANSLATION_LIST_ENTRY("Azərbaycanca", "az", "az-AZ", QLocale::Azerbaijani, QLocale::Azerbaijan)
+TRANSLATION_LIST_ENTRY("Dansk", "da", "da-DK", QLocale::Danish, QLocale::Denmark)
 TRANSLATION_LIST_ENTRY("Deutsch", "de", "de-DE", QLocale::German, QLocale::Germany)
 TRANSLATION_LIST_ENTRY("Español de Hispanoamérica", "es", "es-ES", QLocale::Spanish, QLocale::LatinAmerica)
 TRANSLATION_LIST_ENTRY("Español de España", "es-ES", "es-ES", QLocale::Spanish, QLocale::Spain)
@@ -15,6 +16,7 @@ TRANSLATION_LIST_ENTRY("日本語", "ja", "ja-JA", QLocale::Japanese, QLocale::J
 TRANSLATION_LIST_ENTRY("한국어", "ko", "ko-KO", QLocale::Korean, QLocale::SouthKorea)
 TRANSLATION_LIST_ENTRY("Italiano", "it", "it-IT", QLocale::Italian, QLocale::Italy)
 TRANSLATION_LIST_ENTRY("Nederlands", "nl", "nl-NL", QLocale::Dutch, QLocale::Netherlands)
+TRANSLATION_LIST_ENTRY("Norsk", "no", "no-NO", QLocale::NorwegianBokmal, QLocale::Norway)
 TRANSLATION_LIST_ENTRY("Polski", "pl", "pl-PL", QLocale::Polish, QLocale::Poland)
 TRANSLATION_LIST_ENTRY("Português (Pt)", "pt-PT", "pt-PT", QLocale::Portuguese, QLocale::Portugal)
 TRANSLATION_LIST_ENTRY("Português (Br)", "pt-BR", "pt-BR", QLocale::Portuguese, QLocale::Brazil)

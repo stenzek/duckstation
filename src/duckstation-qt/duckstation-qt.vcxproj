@@ -284,6 +284,12 @@
     </QtTs>
   </ItemGroup>
   <ItemGroup>
+    <QtTs Include="translations\duckstation-qt_da.ts">
+      <FileType>Document</FileType>
+    </QtTs>
+    <QtTs Include="translations\duckstation-qt_no.ts">
+      <FileType>Document</FileType>
+    </QtTs>
     <QtTs Include="translations\duckstation-qt_vi.ts">
       <FileType>Document</FileType>
     </QtTs>

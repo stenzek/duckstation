@@ -8190,7 +8190,7 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
-        <translation>BIOS 呼び出しを printf() に記録します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
+        <translation>BIOS の printf() 呼び出しをログに記録します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -11254,7 +11254,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation>早送り速度を設定します。この速度は、ホットキーの早送りを押すか切り替え時に適用されます。</translation>
+        <translation>早送り速度を設定します。早送りのホットキーを押すか、早送りをオンに切り替えたときに使用する速度です。</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -11262,7 +11262,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation>ターボ速度を設定します。この速度は、ホットキーのターボを押すか切り替え時に適用されます。 &lt;br&gt;早送りとターボ、両方のホットキーが押された/切り替えられた場合、ターボを優先します。</translation>
+        <translation>ターボ速度を設定します。ターボのホットキーを押すか、ターボをオンに切り替えたときに使用する速度です。早送りとターボの両方が有効な場合は、ターボを優先します。</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -17854,7 +17854,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>on {}</source>
-        <translation>{} に</translation>
+        <translation>{}</translation>
     </message>
     <message>
         <source>Now</source>
@@ -18559,7 +18559,7 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message numerus="yes">
         <source>%n bindings</source>
         <translation>
-            <numerusform>%n の割り当て</numerusform>
+            <numerusform>%n 個の割り当て</numerusform>
         </translation>
     </message>
     <message>
@@ -20362,7 +20362,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Set Cover Image...</source>
-        <translation>カバーイメージ画像を設定...</translation>
+        <translation>カバー画像を設定...</translation>
     </message>
     <message>
         <source>Default Boot</source>
@@ -20450,7 +20450,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Select Cover Image</source>
-        <translation>カバーイメージ画像を選択</translation>
+        <translation>カバー画像を選択</translation>
     </message>
     <message>
         <source>Cover Already Exists</source>

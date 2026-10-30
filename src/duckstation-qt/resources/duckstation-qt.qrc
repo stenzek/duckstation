@@ -21,6 +21,8 @@
 		<file>icons/debug-pc@2x.png</file>
 		<file>icons/flags/az.png</file>
 		<file>icons/flags/az@2x.png</file>
+		<file>icons/flags/da.png</file>
+		<file>icons/flags/da@2x.png</file>
 		<file>icons/flags/de.png</file>
 		<file>icons/flags/de@2x.png</file>
 		<file>icons/flags/en.png</file>
@@ -43,6 +45,8 @@
 		<file>icons/flags/ko@2x.png</file>
 		<file>icons/flags/nl.png</file>
 		<file>icons/flags/nl@2x.png</file>
+		<file>icons/flags/no.png</file>
+		<file>icons/flags/no@2x.png</file>
 		<file>icons/flags/pl.png</file>
 		<file>icons/flags/pl@2x.png</file>
 		<file>icons/flags/pt-BR.png</file>

@@ -29,7 +29,7 @@
     </message>
     <message>
         <source>Icon by</source>
-        <translation>Ikona</translation>
+        <translation>Ikona autorstwa</translation>
     </message>
     <message>
         <source>License</source>
@@ -37,11 +37,11 @@
     </message>
     <message>
         <source>DuckStation Third-Party Notices</source>
-        <translation>Powiadomienia stron trzecich DuckStation</translation>
+        <translation>Informacje prawne dotyczące składników zewnętrznych DuckStation</translation>
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation>Brakuje pliku thirdparty.html. Należy poprosić o niego źródło, z którego uzyskano DuckStation.</translation>
+        <translation>Brakuje pliku thirdparty.html. Należy poprosić o niego osobę lub serwis, od których uzyskano DuckStation.</translation>
     </message>
 </context>
 <context>
@@ -703,7 +703,7 @@ Ta sesja rozpocznie się w trybie offline.</translation>
     </message>
     <message>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation>{0} nie może być wykonane gdy tryb hardkorowy jest aktywny. Czy chcesz wyłączyć tryb hardkorowy? {0} będzie anulowany jeśli wybierzesz &quot;nie&quot;.</translation>
+        <translation>Nie można wykonać czynności „{0}”, gdy tryb Hardcore jest aktywny. Czy chcesz wyłączyć tryb Hardcore? Wybranie odpowiedzi „Nie” spowoduje anulowanie czynności „{0}”.</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
@@ -4977,7 +4977,7 @@ Czy mimo to chcesz wykonać działanie „%1$s”?</translation>
 
 You can change this later with the &quot;Start in Big Picture Mode&quot; option in Interface Settings.</source>
         <comment>setup_wizard_interface_message</comment>
-        <translation>Wybierz interfejs, który DuckStation ma wyświetlać po uruchomieniu. Tryb standardowy jest przeznaczony do ekranów dotykowych, a tryb dużego obrazu to interfejs pełnoekranowy przeznaczony do nawigacji za pomocą kontrolera.
+        <translation>Wybierz interfejs, który DuckStation ma wyświetlać po uruchomieniu. Tryb standardowy jest przeznaczony do ekranów dotykowych, a tryb Big Picture to interfejs pełnoekranowy przeznaczony do nawigacji za pomocą kontrolera.
 
 Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Picture” w ustawieniach interfejsu.</translation>
     </message>
@@ -4989,12 +4989,12 @@ Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Pictur
     <message>
         <source>Big Picture Mode</source>
         <comment>setup_wizard_big_picture_mode</comment>
-        <translation>Tryb dużego obrazu</translation>
+        <translation>Tryb Big Picture</translation>
     </message>
     <message>
         <source>Big Picture Mode is not recommended for phones</source>
         <comment>setup_wizard_big_picture_warning_title</comment>
-        <translation>Tryb dużego obrazu nie jest zalecany na telefonach</translation>
+        <translation>Tryb Big Picture nie jest zalecany na telefonach</translation>
     </message>
     <message>
         <source>It is intended for TVs and handheld gaming devices used with a controller. It currently uses more battery than Standard Mode.</source>
@@ -5029,7 +5029,7 @@ Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Pictur
     <message>
         <source>Use Debug GPU Device</source>
         <comment>settings_use_debug_device</comment>
-        <translation>Użyj debugowania urządzenia karty graficznej</translation>
+        <translation>Użyj urządzenia GPU z debugowaniem</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
@@ -6276,7 +6276,7 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>Umożliwia dodatkowe 6MB pamięci RAM, aby uzyskać w sumie 2 + 6 = 8MB, zwykle obecne na konsolach deweloperskich.</translation>
+        <translation>Włącza dodatkowe 6 MB pamięci RAM, zwiększając jej łączną ilość do 2 + 6 = 8 MB, zwykle dostępnych na konsolach deweloperskich.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8674,7 +8674,7 @@ Zrzut może być uszkodzony lub płyta jest porysowana.</translation>
     </message>
     <message>
         <source>Enter name for the code group. Using backslashes (\) will create sub-trees.</source>
-        <translation>Wprowadź nazwę grupy kodów. Użycie ukośników odwrotnych (\\) utworzy poddrzewa.</translation>
+        <translation>Wprowadź nazwę grupy kodów. Użycie ukośników odwrotnych (\) utworzy poddrzewa.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -10600,11 +10600,11 @@ Ten plik ma około 206 KB. Czy chcesz go teraz pobrać?</translation>
     </message>
     <message>
         <source>Step Into</source>
-        <translation>Krok w</translation>
+        <translation>Krok z wejściem</translation>
     </message>
     <message>
         <source>&amp;Step Into</source>
-        <translation>&amp;Krok w</translation>
+        <translation>&amp;Krok z wejściem</translation>
     </message>
     <message>
         <source>F11</source>
@@ -10612,11 +10612,11 @@ Ten plik ma około 206 KB. Czy chcesz go teraz pobrać?</translation>
     </message>
     <message>
         <source>Step Over</source>
-        <translation>Krok nad</translation>
+        <translation>Krok z pominięciem</translation>
     </message>
     <message>
         <source>Step &amp;Over</source>
-        <translation>Krok &amp;nad</translation>
+        <translation>Krok z &amp;pominięciem</translation>
     </message>
     <message>
         <source>F10</source>
@@ -11625,7 +11625,7 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     </message>
     <message>
         <source>Adds a new directory to the game search list.</source>
-        <translation>Dodaje nowy katalog do listy wyszukiwanych gier.</translation>
+        <translation>Dodaje nowy katalog do listy katalogów przeszukiwanych w poszukiwaniu gier.</translation>
     </message>
     <message>
         <source>Adds a new shader to the chain.</source>
@@ -12145,7 +12145,7 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     </message>
     <message>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Umożliwia dodatkowe 6MB pamięci RAM, aby uzyskać w sumie 2 + 6 = 8MB, zwykle obecne na konsolach deweloperskich.</translation>
+        <translation>Włącza dodatkowe 6 MB pamięci RAM, zwiększając jej łączną ilość do 2 + 6 = 8 MB, zwykle dostępnych na konsolach deweloperskich.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13005,7 +13005,7 @@ Błąd:</translation>
     </message>
     <message>
         <source>Selects the color style to be used for Big Picture UI.</source>
-        <translation>Wybiera styl kolorów używany w interfejsie dużego obrazu.</translation>
+        <translation>Wybiera styl kolorów używany w interfejsie Big Picture.</translation>
     </message>
     <message>
         <source>Selects the font used for UI text.</source>
@@ -13161,11 +13161,11 @@ Błąd:</translation>
     </message>
     <message>
         <source>Start In Big Picture Mode</source>
-        <translation>Uruchamiaj w trybie dużego obrazu</translation>
+        <translation>Uruchamiaj w trybie Big Picture</translation>
     </message>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
-        <translation>Uruchamia aplikację w trybie dużego obrazu zamiast w interfejsie pulpitu.</translation>
+        <translation>Uruchamia aplikację w trybie Big Picture zamiast w interfejsie pulpitu.</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -13393,7 +13393,7 @@ Błąd:</translation>
     </message>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
-        <translation>Po uruchomieniu trybu dużego obrazu zostanie wyświetlona lista gier zamiast menu głównego.</translation>
+        <translation>Po uruchomieniu trybu Big Picture zostanie wyświetlona lista gier zamiast menu głównego.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -14561,7 +14561,7 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>Naciśnij teraz przycisk lub oś kontrolera.</translation>
+        <translation>Naciśnij teraz przycisk kontrolera lub porusz jego osią.</translation>
     </message>
     <message>
         <source>Quick Message Duration</source>
@@ -14625,7 +14625,7 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>Zapisuje tła, które można zastąpić w katalogu zrzutu.</translation>
+        <translation>Zapisuje do katalogu zrzutu tła, które można zastąpić.</translation>
     </message>
     <message>
         <source>Xbox</source>
@@ -14893,7 +14893,7 @@ Czy mimo to chcesz wykonać czynność {1}?</translation>
     </message>
     <message>
         <source>Select Macro {} Binds</source>
-        <translation>Wybierz przypisanie dla makro {}</translation>
+        <translation>Wybierz przypisania dla makra {}</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -15258,7 +15258,7 @@ Czy mimo to chcesz wykonać czynność {1}?</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
-        <translation>Użyj debugowania urządzenia karty graficznej</translation>
+        <translation>Użyj urządzenia GPU z debugowaniem</translation>
     </message>
     <message>
         <source>Use Global Setting</source>
@@ -15308,9 +15308,9 @@ Czy mimo to chcesz wykonać czynność {1}?</translation>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translation>OSTRZEŻENIE: Twoja gra nadal zapisuje się na karcie pamięci. Kontynuowanie {0} może NIEODWRACALNIE ZNISZCZYĆ TWOJĄ KARTĘ PAMIĘCI. Zalecamy wznowienie gry i odczekanie 5 sekund na zakończenie jej zapisywania.
+        <translation>OSTRZEŻENIE: Twoja gra nadal zapisuje się na karcie pamięci. Wykonanie polecenia „{0}” może NIEODWRACALNIE ZNISZCZYĆ TWOJĄ KARTĘ PAMIĘCI. Zalecamy wznowienie gry i odczekanie 5 sekund na zakończenie zapisywania.
 
-Czy mimo to chcesz {0}?</translation>
+Czy mimo to wykonać polecenie „{0}”?</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
@@ -15554,7 +15554,7 @@ Czy mimo to chcesz {0}?</translation>
     <name>GameCheatCodeChoiceEditorDialog</name>
     <message>
         <source>Cheat Choice Editor</source>
-        <translation>Edytor wyboru kodów cheat</translation>
+        <translation>Edytor opcji kodu cheat</translation>
     </message>
     <message>
         <source>Name</source>
@@ -15633,7 +15633,7 @@ Czy mimo to chcesz {0}?</translation>
     </message>
     <message>
         <source>Edit Choices...</source>
-        <translation>Edytuj wybory...</translation>
+        <translation>Edytuj opcje...</translation>
     </message>
     <message>
         <source>Setting Overrides</source>
@@ -16845,7 +16845,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <source>%n player(s)</source>
         <translation>
             <numerusform>%n gracz</numerusform>
-            <numerusform>%n graczy</numerusform>
+            <numerusform>%n gracze</numerusform>
             <numerusform>%n graczy</numerusform>
         </translation>
     </message>
@@ -17186,7 +17186,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     </message>
     <message>
         <source>Disable Texture Copy To Self</source>
-        <translation>Wyłącz kopiowanie samej siebie dla tekstur</translation>
+        <translation>Wyłącz kopiowanie tekstur do samych siebie</translation>
     </message>
     <message>
         <source>Disable Dual-Source Blending</source>
@@ -17666,7 +17666,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     </message>
     <message>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>Zapisuje tła, które można zastąpić w katalogu zrzutu.</translation>
+        <translation>Zapisuje do katalogu zrzutu tła, które można zastąpić.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -17698,7 +17698,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     </message>
     <message>
         <source>Disable Texture Copies To Self</source>
-        <translation>Wyłącz kopiowanie samej siebie dla tekstur</translation>
+        <translation>Wyłącz kopiowanie tekstur do samych siebie</translation>
     </message>
     <message>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -18835,7 +18835,7 @@ Kliknij z klawiszem Shift, aby ustawić wiele powiązań.</translation>
     </message>
     <message>
         <source>Start In Big Picture Mode</source>
-        <translation>Uruchamiaj w trybie dużego obrazu</translation>
+        <translation>Uruchamiaj w trybie Big Picture</translation>
     </message>
     <message>
         <source>Display System Log In Main Window</source>
@@ -18935,7 +18935,7 @@ Kliknij z klawiszem Shift, aby ustawić wiele powiązań.</translation>
     </message>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
-        <translation>Uruchamia aplikację w trybie dużego obrazu zamiast w interfejsie pulpitu.</translation>
+        <translation>Uruchamia aplikację w trybie Big Picture zamiast w interfejsie pulpitu.</translation>
     </message>
     <message>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
@@ -19567,7 +19567,7 @@ Kliknij z klawiszem Shift, aby ustawić wiele powiązań.</translation>
     </message>
     <message>
         <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
-        <translation>Otwiera lub zamyka tryb „dużego obrazu” obsługiwany kontrolerem.</translation>
+        <translation>Otwiera lub zamyka tryb Big Picture obsługiwany kontrolerem.</translation>
     </message>
     <message>
         <source>Big Picture</source>
@@ -21194,7 +21194,7 @@ Błąd: {1}</translation>
     <name>MemoryCardSettingsWidget</name>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>Wszystkie typy Karty Pamięci (*.mcd *.mcr *.mc)</translation>
+        <translation>Wszystkie typy kart pamięci (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>Open...</source>
@@ -22194,7 +22194,7 @@ Błąd: {1}</translation>
     </message>
     <message>
         <source>Error Duration:</source>
-        <translation>Czas trwania błędu:</translation>
+        <translation>Czas wyświetlania błędów:</translation>
     </message>
     <message>
         <source> seconds</source>
@@ -22202,15 +22202,15 @@ Błąd: {1}</translation>
     </message>
     <message>
         <source>Warning Duration:</source>
-        <translation>Czas trwania ostrzeżenia:</translation>
+        <translation>Czas wyświetlania ostrzeżeń:</translation>
     </message>
     <message>
         <source>Information Duration:</source>
-        <translation>Czas trwania informacji:</translation>
+        <translation>Czas wyświetlania informacji:</translation>
     </message>
     <message>
         <source>Action Duration:</source>
-        <translation>Czas trwania działania:</translation>
+        <translation>Czas wyświetlania potwierdzeń:</translation>
     </message>
     <message>
         <source>Display Location:</source>
@@ -24702,9 +24702,9 @@ Czy chcesz kontynuować?</translation>
         <source>Choose the interface DuckStation should show when it starts. Desktop Mode is designed for mouse and keyboard use, while Big Picture Mode is optimized for navigation with a controller on a TV.
 
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
-        <translation>Wybierz interfejs, który DuckStation ma pokazywać po uruchomieniu. Tryb pulpitu jest przeznaczony do używania myszy i klawiatury, natomiast Tryb dużego obrazu jest zoptymalizowany do nawigacji kontrolerem na telewizorze.
+        <translation>Wybierz interfejs, który DuckStation ma pokazywać po uruchomieniu. Tryb pulpitu jest przeznaczony do używania myszy i klawiatury, natomiast tryb Big Picture jest zoptymalizowany do nawigacji kontrolerem na telewizorze.
 
-Możesz to później zmienić, przełączając ustawienie „Uruchom w trybie dużego obrazu” w Ustawieniach interfejsu.</translation>
+Możesz to później zmienić, przełączając ustawienie „Uruchamiaj w trybie Big Picture” w Ustawieniach interfejsu.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -24712,15 +24712,15 @@ Możesz to później zmienić, przełączając ustawienie „Uruchom w trybie du
     </message>
     <message>
         <source>Big Picture Mode</source>
-        <translation>Tryb dużego obrazu</translation>
+        <translation>Tryb Big Picture</translation>
     </message>
     <message>
         <source>Choose how games should initially be displayed in both Desktop and Big Picture Mode. List View shows detailed information in columns, while Grid View shows game cover art.
 
 You can change this option at a later time by using the toolbar in Desktop Mode or shortcuts in Big Picture Mode.</source>
-        <translation>Wybierz sposób początkowego wyświetlania gier zarówno w Trybie pulpitu, jak i Trybie dużego obrazu. Widok listy pokazuje szczegółowe informacje w kolumnach, a Widok siatki prezentuje okładki gier.
+        <translation>Wybierz sposób początkowego wyświetlania gier zarówno w Trybie pulpitu, jak i trybie Big Picture. Widok listy pokazuje szczegółowe informacje w kolumnach, a Widok siatki prezentuje okładki gier.
 
-Możesz później zmienić tę opcję za pomocą paska narzędzi w Trybie pulpitu lub skrótów w Trybie dużego obrazu.</translation>
+Możesz później zmienić tę opcję za pomocą paska narzędzi w Trybie pulpitu lub skrótów w trybie Big Picture.</translation>
     </message>
     <message>
         <source>List View</source>
@@ -24732,7 +24732,7 @@ Możesz później zmienić tę opcję za pomocą paska narzędzi w Trybie pulpit
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text- indent:0px;&quot;&gt;&lt;span style=&quot;font-size:xx-large;font-weight:700;&quot;&gt;Konfiguracja ukończona!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Możesz teraz uruchamiać gry.&lt;/p&gt;&lt;p&gt;Dalsze opcje są dostępne w menu ustawień. Możesz także używać interfejsu Big Picture do nawigacji wyłącznie za pomocą kontrolera.&lt;/p&gt;&lt;p&gt;Mamy nadzieję, że korzystanie z DuckStation będzie Ci się podobać.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=" margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style="font-size:xx-large;font-weight:700;"&gt;Konfiguracja ukończona!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Możesz teraz uruchamiać gry.&lt;/p&gt;&lt;p&gt;Dalsze opcje są dostępne w menu ustawień. Możesz także używać interfejsu Big Picture do nawigacji wyłącznie za pomocą kontrolera.&lt;/p&gt;&lt;p&gt;Mamy nadzieję, że korzystanie z DuckStation będzie Ci się podobać.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language</source>
@@ -25364,7 +25364,7 @@ Aby usunąć wszelkie skutki, musisz zapisać grę na karcie pamięci i zresetow
     </message>
     <message>
         <source>Failed to create media capture: {0}</source>
-        <translation>Nie udało się przechwyczyć: {0}</translation>
+        <translation>Nie udało się utworzyć przechwytywania multimediów: {0}</translation>
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>

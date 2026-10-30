@@ -37,7 +37,7 @@
     </message>
     <message>
         <source>DuckStation Third-Party Notices</source>
-        <translation>Уведомления третьих лиц DuckStation</translation>
+        <translation>Уведомления о сторонних компонентах DuckStation</translation>
     </message>
     <message>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
@@ -542,7 +542,7 @@ Error: {}</source>
     </message>
     <message>
         <source>RetroAchievements Login Failed</source>
-        <translation>RetroAchievements Не удалось войти в систему</translation>
+        <translation>Не удалось войти в RetroAchievements</translation>
     </message>
     <message numerus="yes">
         <source>Prefetching achievement badges (%n remaining)...</source>
@@ -1420,7 +1420,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
-        <translation>Позволяет использовать левый аналоговый стик для управления d-pad в цифровом режиме, а также кнопки.</translation>
+        <translation>Позволяет использовать левый аналоговый стик для управления крестовиной в цифровом режиме в дополнение к кнопкам крестовины.</translation>
     </message>
     <message>
         <source>Use Right Analog for Shoulder Buttons</source>
@@ -1958,7 +1958,7 @@ This session will start in offline mode.</source>
     <message>
         <source>OSD Scale</source>
         <comment>settings_osd_scale</comment>
-        <translation>Масштаб экранного меню</translation>
+        <translation>Масштаб экранных индикаторов</translation>
     </message>
     <message>
         <source>Show Latency Statistics</source>
@@ -6908,7 +6908,7 @@ Would you like to import one now?</source>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <comment>settings_summary_pgxp_preserve_proj_fp</comment>
-        <translation>Добавляет дополнительную точность постпроецированию данных PGXP. Может улучшить визуальную составляющую в некоторых играх.</translation>
+        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
@@ -7268,7 +7268,7 @@ Would you like to import one now?</source>
     <message>
         <source>Fine Crop Mode</source>
         <comment>settings_fine_crop_mode</comment>
-        <translation>Режим «Fine Crop»</translation>
+        <translation>Режим точной обрезки</translation>
     </message>
     <message>
         <source>Left Crop</source>
@@ -7962,7 +7962,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Controls how wide a window the algorithm searches for the best overlap position when joining consecutive sequences. Larger windows may yield better joins at the cost of increased CPU work.</source>
-        <translation>Определяет ширину окна, в пределах которого алгоритм ищет оптимальное положение перекрытия при соединении последовательных последовательностей. Использование более широких окон может обеспечить более качественное соединение, но при этом увеличится нагрузка на процессор.</translation>
+        <translation>Определяет ширину окна, в пределах которого алгоритм ищет оптимальное положение перекрытия при соединении соседних фрагментов. Более широкие окна могут обеспечить более качественное соединение, но увеличивают нагрузку на процессор.</translation>
     </message>
     <message>
         <source>Stretch Overlap Length</source>
@@ -7970,7 +7970,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Specifies how long two consecutive sequences are overlapped when mixed back together. Greater overlap can make transitions smoother but increases latency.</source>
-        <translation>Определяет длительность перекрытия двух последовательных последовательностей при их последующем смешивании. Большее перекрытие может сделать переходы более плавными, но увеличивает задержку.</translation>
+        <translation>Определяет длительность перекрытия двух соседних фрагментов при их последующем смешивании. Большее перекрытие может сделать переходы более плавными, но увеличивает задержку.</translation>
     </message>
     <message>
         <source>Enable Quick Seek</source>
@@ -10636,11 +10636,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Into</source>
-        <translation>Войти в</translation>
+        <translation>Шаг с заходом</translation>
     </message>
     <message>
         <source>&amp;Step Into</source>
-        <translation>&amp;Войти в</translation>
+        <translation>&amp;Шаг с заходом</translation>
     </message>
     <message>
         <source>F11</source>
@@ -10676,11 +10676,11 @@ This file is approximately 206KB, do you want to download it now?</source>
     </message>
     <message>
         <source>Step Out</source>
-        <translation>Выйти из</translation>
+        <translation>Шаг с выходом</translation>
     </message>
     <message>
         <source>Step O&amp;ut</source>
-        <translation>В&amp;ыйти из</translation>
+        <translation>Шаг с в&amp;ыходом</translation>
     </message>
     <message>
         <source>Ctrl+F11</source>
@@ -10838,7 +10838,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation>Не удалось добавить точку останова, вы находитесь в допустимой функции?</translation>
+        <translation>Не удалось добавить точку останова для выхода из функции. Вы находитесь в допустимой функции?</translation>
     </message>
     <message numerus="yes">
         <source>&amp;Nop %n Instruction(s)</source>
@@ -13609,7 +13609,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Always Track Uploads</source>
-        <translation>Всегда отслеживать выгрузку</translation>
+        <translation>Всегда отслеживать загрузку текстур</translation>
     </message>
     <message>
         <source>An error occurred while deleting empty game settings:
@@ -13885,11 +13885,11 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Fine Crop Amount</source>
-        <translation>Величина «Fine Crop»</translation>
+        <translation>Величина точной обрезки</translation>
     </message>
     <message>
         <source>Fine Crop Mode</source>
-        <translation>Режим «Fine Crop»</translation>
+        <translation>Режим точной обрезки</translation>
     </message>
     <message>
         <source>Font</source>
@@ -14543,7 +14543,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Push a controller button or axis now.</source>
-        <translation>Теперь нажмите кнопку контроллера или ось.</translation>
+        <translation>Нажмите кнопку контроллера или переместите его ось.</translation>
     </message>
     <message>
         <source>Quick Message Duration</source>
@@ -14912,7 +14912,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation>Периодически сохраняет состояние, чтобы вы могли перематывать любые ошибки во время игры.</translation>
+        <translation>Периодически сохраняет состояние, чтобы можно было перемотать игру назад и исправить допущенные ошибки.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15197,7 +15197,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
-        <translation>Пропускает презентацию/отображение кадров, которые не являются уникальными. Может привести к ухудшению темпа кадров.</translation>
+        <translation>Пропускает вывод кадров, которые не отличаются от предыдущих. Может привести к менее равномерному выводу кадров.</translation>
     </message>
     <message>
         <source>Slow Boot</source>
@@ -15454,7 +15454,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
-        <translation>Использование интерполяции с учетом перспективы для цветов, которые могут улучшить изображение в некоторых играх.</translation>
+        <translation>Использует интерполяцию цветов с учётом перспективы, что может улучшить изображение в некоторых играх.</translation>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
@@ -15770,7 +15770,7 @@ Do you want to {0} anyway?</source>
     <name>GameCheatCodeChoiceEditorDialog</name>
     <message>
         <source>Cheat Choice Editor</source>
-        <translation>Редактор чит-выборов</translation>
+        <translation>Редактор вариантов чита</translation>
     </message>
     <message>
         <source>Name</source>
@@ -15849,7 +15849,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Edit Choices...</source>
-        <translation>Изменить выбор...</translation>
+        <translation>Изменить варианты...</translation>
     </message>
     <message>
         <source>Setting Overrides</source>
@@ -17447,15 +17447,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Fine Crop Mode:</source>
-        <translation>Режим «Fine Crop»:</translation>
+        <translation>Режим точной обрезки:</translation>
     </message>
     <message>
         <source>Reset Fine Cropping</source>
-        <translation>Сбросить «Fine Crop»</translation>
+        <translation>Сбросить точную обрезку</translation>
     </message>
     <message>
         <source>Fine Crop Size:</source>
-        <translation>Размер «Fine Crop»:</translation>
+        <translation>Размер точной обрезки:</translation>
     </message>
     <message>
         <source>Left:</source>
@@ -17675,7 +17675,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Fine Crop Mode</source>
-        <translation>Режим «Fine Crop»</translation>
+        <translation>Режим точной обрезки</translation>
     </message>
     <message>
         <source>None</source>
@@ -17767,7 +17767,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>Выбирает движок, который будет использоваться для отрисовки консоли/игры. &lt;br&gt;В зависимости от вашей системы и аппаратного обеспечения могут быть доступны аппаратные движки Direct3D 11 и OpenGL. &lt;br&gt;Программная отрисовка обеспечивает наилучшую совместимость, но является самым медленным и не предлагает никаких улучшений.</translation>
+        <translation>Выбирает движок для отрисовки изображения консоли или игры. &lt;br&gt;В зависимости от вашей системы и оборудования могут быть доступны аппаратные движки Direct3D 11 и OpenGL. &lt;br&gt;Программный отрисовщик обеспечивает наилучшую совместимость, но работает медленнее всего и не поддерживает улучшения.</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
@@ -18067,7 +18067,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Shoot Offscreen</source>
-        <translation>Выстрел за кадром</translation>
+        <translation>Выстрел за пределы экрана</translation>
     </message>
     <message>
         <source>A</source>
@@ -18895,7 +18895,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Нажмите кнопку/ось... [%1]</translation>
+        <translation>Нажмите кнопку или переместите ось... [%1]</translation>
     </message>
     <message>
         <source>%1%</source>
@@ -18929,7 +18929,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Push Button/Axis... [%1]</source>
-        <translation>Нажмите кнопку/Ось... [%1]</translation>
+        <translation>Нажмите кнопку или переместите ось... [%1]</translation>
     </message>
     <message>
         <source>Error</source>
@@ -19833,7 +19833,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>View Third-Party Notices...</source>
-        <translation>Просмотреть уведомления третьих лиц...</translation>
+        <translation>Просмотреть уведомления о сторонних компонентах...</translation>
     </message>
     <message>
         <source>Shows copyright and license notices for third-party libraries included with the application.</source>
@@ -20418,7 +20418,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Show Grid Ca&amp;ptions</source>
-        <translation>Показать заголовки &amp;сетки</translation>
+        <translation>Показать &amp;подписи в сетке</translation>
     </message>
     <message>
         <source>&amp;Refresh Grid Covers</source>
@@ -21099,7 +21099,7 @@ This build of DuckStation requires FFmpeg v{}, with library versions:
     </message>
     <message>
         <source>Insufficient free blocks, {} blocks are needed, but only have {}.</source>
-        <translation>Недостаточно свободных блоков, нужны блоки {}, но есть только {}.</translation>
+        <translation>Недостаточно свободных блоков: требуется {}, доступно только {}.</translation>
     </message>
     <message>
         <source>File name must be at maximum {} characters long.</source>
@@ -21155,7 +21155,7 @@ This build of DuckStation requires FFmpeg v{}, with library versions:
     </message>
     <message>
         <source>Insufficient free blocks, needs {} blocks, but only have {}.</source>
-        <translation>Недостаточно свободных блоков, нужны блоки {}, но есть только {}.</translation>
+        <translation>Недостаточно свободных блоков: требуется {}, доступно только {}.</translation>
     </message>
     <message>
         <source>File does not exist, or is empty.</source>
@@ -21498,7 +21498,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Specifies the directory where save states will be saved.</source>
-        <translation>Указывает каталог, в котором будут сохранённые состояния.</translation>
+        <translation>Указывает каталог, в котором будут сохраняться состояния.</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -21551,7 +21551,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>При игре на нескольких дисках и использовании карт памяти для каждой игры (название) для всех дисков будет использоваться одна карта памяти. Если флажок снят, для каждого диска будет использоваться отдельная карта.</translation>
+        <translation>При запуске многодисковой игры с отдельными картами памяти по названию игры для всех дисков используется одна карта памяти. Если флажок снят, для каждого диска используется отдельная карта.</translation>
     </message>
     <message>
         <source>Select Memory Card Directory</source>
@@ -22339,7 +22339,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Switching to {}{} GPU renderer.</source>
-        <translation>Переключение на отрисовку с использованием GPU {}{}.</translation>
+        <translation>Переключение на отрисовщик ГП {}{}.</translation>
     </message>
     <message>
         <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
@@ -24540,7 +24540,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation>&lt;strong&gt;Сводка&lt;/strong&gt;&lt;hr&gt;На этой странице отображается информация о выбранной игре и позволяет вам проверить правильность дампа вашего диска.</translation>
+        <translation>&lt;strong&gt;Сводка&lt;/strong&gt;&lt;hr&gt;На этой странице отображается информация о выбранной игре. Здесь также можно проверить правильность создания образа вашего диска.</translation>
     </message>
     <message>
         <source>Game List</source>
@@ -24568,11 +24568,11 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию моделируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию моделируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, а для прокрутки этой панели вращайте колесо мыши, удерживая Shift.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Настройки эмуляции&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют скорость и поведение системы на опережение.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки эмуляции&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют скорость и поведение системы на опережение.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, а для прокрутки этой панели вращайте колесо мыши, удерживая Shift.</translation>
     </message>
     <message>
         <source>Patches</source>
@@ -24626,7 +24626,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Расширенные настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют ведением журнала и внутренним поведением эмулятора. Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Расширенные настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют ведением журнала и внутренним поведением эмулятора. Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, а для прокрутки этой панели вращайте колесо мыши, удерживая Shift.</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -24654,7 +24654,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Настройки интерфейса&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют внешним видом и поведением эмулятора.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки интерфейса&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют внешним видом и поведением эмулятора.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, а для прокрутки этой панели вращайте колесо мыши, удерживая Shift.</translation>
     </message>
     <message>
         <source>Graphics</source>
@@ -24662,7 +24662,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options control how the graphics of the emulated console are rendered. Not all options are available for the software renderer. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Настройки графики&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют отображением графики эмулируемой консоли. Не все параметры доступны для программного средства визуализации. Наведите указатель мыши на каждый параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки графики&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют отображением графики эмулируемой консоли. Не все параметры доступны для программного средства визуализации. Наведите указатель мыши на каждый параметр, чтобы получить дополнительную информацию, а для прокрутки этой панели вращайте колесо мыши, удерживая Shift.</translation>
     </message>
     <message>
         <source>Audio</source>
@@ -25105,9 +25105,9 @@ Any changes have been saved, and the wizard will run again next time you start D
         <source>%n BIOS images found. You can install additional BIOS images if desired.</source>
         <comment>BIOS Count</comment>
         <translation>
-            <numerusform>Найден образ BIOS: %n. При желании можно установить дополнительные образы BIOS.</numerusform>
-            <numerusform>Найдено образа BIOS: %n. При желании можно установить дополнительные образы BIOS.</numerusform>
-            <numerusform>Найдено образов BIOS: %n. При желании можно установить дополнительные образы BIOS.</numerusform>
+            <numerusform>Найден %n образ BIOS. При желании можно установить дополнительные образы BIOS.</numerusform>
+            <numerusform>Найдено %n образа BIOS. При желании можно установить дополнительные образы BIOS.</numerusform>
+            <numerusform>Найдено %n образов BIOS. При желании можно установить дополнительные образы BIOS.</numerusform>
         </translation>
     </message>
     <message>
@@ -25760,7 +25760,7 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
     </message>
     <message>
         <source>The texture dumping system can either operate in page mode, or write-tracking mode. Replacements can be loaded from either dump method.</source>
-        <translation>Система дампа текстур может работать либо в страничном режиме, либо в режиме отслеживания записи. Замены можно загрузить любым методом дампа.</translation>
+        <translation>Система дампа текстур может работать в страничном режиме или в режиме отслеживания записи. Можно загружать замены, созданные любым из этих методов дампа.</translation>
     </message>
     <message>
         <source>Write Tracking Options</source>

@@ -99,9 +99,9 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>硬核模式当前没有启用。启用硬核模式允许您设置时间，得分，并参与特定于游戏的排行榜。
+        <translation>硬核模式当前未启用。启用硬核模式后，您可以记录用时和得分，并参与各游戏的排行榜。
 
-然而，硬核模式也会禁止使用即时存档，金手指和减速功能。
+不过，硬核模式也会禁止使用即时存档、金手指和减速功能。
 
 您想要启用硬核模式吗？</translation>
     </message>
@@ -458,7 +458,7 @@ Token generated %2</source>
         <source>%n achievements are not supported by DuckStation.</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>%n成就不被DuckStation支持。</numerusform>
+            <numerusform>DuckStation 不支持 %n 项成就。</numerusform>
         </translation>
     </message>
     <message>
@@ -520,7 +520,7 @@ Token generated %2</source>
     <message>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
-        <translation>本次阶段将不会提交成就解锁.
+        <translation>本次会话将不会提交成就解锁记录。
 错误: {}</translation>
     </message>
     <message>
@@ -601,7 +601,7 @@ This session will start in offline mode.</source>
     </message>
     <message>
         <source>Server error in {}</source>
-        <translation>服务器错误在{}</translation>
+        <translation>{}中发生服务器错误</translation>
     </message>
     <message>
         <source>An unlock request could not be completed.
@@ -638,7 +638,7 @@ We will keep trying to submit this request.</source>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
-            <numerusform>%n成就不被DuckStation支持，因此无法解锁。</numerusform>
+            <numerusform>DuckStation 不支持 %n 项成就，因此无法解锁。</numerusform>
         </translation>
     </message>
     <message>
@@ -671,7 +671,7 @@ We will keep trying to submit this request.</source>
     </message>
     <message>
         <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>您已解锁 {1} 项非官方成就中的 {0} 项，获得 {3} 个可能点数中的 {2} 个。</translation>
+        <translation>您已解锁 {1} 项非官方成就中的 {0} 项，获得了总计 {3} 点中的 {2} 点。</translation>
     </message>
     <message>
         <source>Game was beaten {0}, and completed {1}.</source>
@@ -763,7 +763,7 @@ We will keep trying to submit this request.</source>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
-            <numerusform>%n成就</numerusform>
+            <numerusform>%n项成就</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -902,7 +902,7 @@ Unread messages: {}</source>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>此游戏有%n排行榜。</numerusform>
+            <numerusform>此游戏有%n个排行榜。</numerusform>
         </translation>
     </message>
     <message>
@@ -974,7 +974,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>Resuming state</source>
-        <translation>继续档</translation>
+        <translation>恢复即时存档</translation>
     </message>
     <message>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
@@ -6374,7 +6374,7 @@ Would you like to import one now?</source>
     <message>
         <source>Internal Resolution</source>
         <comment>settings_resolution_scale</comment>
-        <translation>内置分辨率</translation>
+        <translation>内部分辨率</translation>
     </message>
     <message>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
@@ -6847,7 +6847,7 @@ Would you like to import one now?</source>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
         <comment>settings_summary_scaled_interlacing</comment>
-        <translation>将隔行渲染中的跳行缩放到内置分辨率，使其不那么明显。通常可以安全启用。</translation>
+        <translation>将隔行渲染中的跳行缩放到内部分辨率，使其不那么明显。通常可以安全启用。</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -7764,7 +7764,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>缓冲大小决定本机将拉动的音频块的大小。较小的值可减少输出延迟，但如果模拟速度不一致，则可能引起故障。请注意，Cubeb后端使用更小的块而不管该值如何，因此在这里使用低值可能不会显著改变延迟。</translation>
+        <translation>缓冲大小决定本机每次提取的音频数据块大小。较小的值可减少输出延迟，但如果模拟速度不稳定，可能引起声音卡顿。请注意，无论此值如何，Cubeb后端都会使用更小的数据块，因此在这里使用较低的值可能不会显著改变延迟。</translation>
     </message>
     <message>
         <source>Controls</source>
@@ -7932,7 +7932,7 @@ Would you like to import one now?</source>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
-        <translation>确定从本机API捕获音频到通过扬声器播放之间存在多少延迟。</translation>
+        <translation>确定音频被本机API接收后，到通过扬声器播放之间的延迟。</translation>
     </message>
     <message>
         <source>Minimal Output Latency</source>
@@ -8444,7 +8444,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
-        <translation>确定将保存屏幕截图的分辨率。内置分辨率能保留更多细节，但会影响文件大小。</translation>
+        <translation>确定保存屏幕截图时使用的分辨率。内部分辨率能保留更多细节，但文件会更大。</translation>
     </message>
     <message>
         <source>Save Location</source>
@@ -8540,7 +8540,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     </message>
     <message>
         <source>When checked, the video capture resolution will follows the internal resolution of the running game. &lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can cause system slowdown.&lt;/b&gt;</source>
-        <translation>当勾选后，视频捕获分辨率将与运行中游戏的内置分辨率一致。&lt;b&gt;使用此设置时要小心，尤其是在进行放大时，因为较高的内置分辨率 (4倍以上) 可能会导致系统运行速度变慢。&lt;/b&gt;</translation>
+        <translation>当勾选后，视频捕获分辨率将与运行中游戏的内部分辨率一致。&lt;b&gt;使用此设置时要小心，尤其是在进行放大时，因为较高的内部分辨率 (4倍以上) 可能会导致系统运行速度变慢。&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Enable Extra Video Arguments</source>
@@ -8682,14 +8682,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
-            <numerusform>%n游戏补丁处于活动状态。</numerusform>
+            <numerusform>%n个游戏补丁处于活动状态。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n cheats are enabled.</source>
         <comment>OSD Message</comment>
         <translation>
-            <numerusform>%n金手指已启用。</numerusform>
+            <numerusform>%n条金手指已启用。</numerusform>
         </translation>
     </message>
     <message>
@@ -8704,14 +8704,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
-            <numerusform>%n金手指</numerusform>
+            <numerusform>%n条金手指</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
-            <numerusform>%n补丁</numerusform>
+            <numerusform>%n个补丁</numerusform>
         </translation>
     </message>
     <message>
@@ -8898,7 +8898,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>选择模拟硬件将运行时正常主频的百分比。</translation>
+        <translation>选择模拟硬件运行时的主频相对于正常主频的百分比。</translation>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
@@ -9183,7 +9183,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>面按钮</translation>
+        <translation>正面按钮</translation>
     </message>
     <message>
         <source>Small Motor</source>
@@ -9274,7 +9274,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>面按钮</translation>
+        <translation>正面按钮</translation>
     </message>
 </context>
 <context>
@@ -9341,7 +9341,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>面按钮</translation>
+        <translation>正面按钮</translation>
     </message>
 </context>
 <context>
@@ -9543,7 +9543,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>面按钮</translation>
+        <translation>正面按钮</translation>
     </message>
 </context>
 <context>
@@ -9582,7 +9582,7 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <source>Face Buttons</source>
-        <translation>面按钮</translation>
+        <translation>正面按钮</translation>
     </message>
     <message>
         <source>I</source>
@@ -9887,7 +9887,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     </message>
     <message>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>选择触发器以激活此宏。这可以是单个按钮，也可以是多个按钮的组合 (和弦)。按住Shift后点击下方，可绑多个触发器。</translation>
+        <translation>选择激活此宏的触发器。可以是单个按钮，也可以是多个按钮同时按下的组合。按住Shift后点击可绑定多个触发器。</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -10117,9 +10117,9 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to %1 anyway?</source>
-        <translation>警告：您的游戏仍在向记忆卡保存数据。继续%1可能会不可逆转地破坏您的记忆卡。我们建议您继续游戏运行，并等待它5秒以完成保存。
+        <translation>警告：您的游戏仍在向记忆卡保存数据。继续%1可能会不可逆转地破坏您的记忆卡。我们建议您恢复游戏并等待5秒，让游戏完成保存。
 
-您到底想不想%1？</translation>
+您仍然想要%1吗？</translation>
     </message>
     <message>
         <source>Achievement Unlocks Unconfirmed</source>
@@ -10596,8 +10596,8 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation>追踪日志记录开始写入cpu_log.txt。
-此文件能达到几个GB，所以请注意固态硬盘的耐受。</translation>
+        <translation>追踪日志已开始写入cpu_log.txt。
+此文件可能达到数GB，请注意固态硬盘的写入损耗。</translation>
     </message>
     <message>
         <source>Address</source>
@@ -10909,7 +10909,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>CD-ROM Disable Speedup on MDEC</source>
-        <translation>CD-ROM禁用MDEC上的加速</translation>
+        <translation>MDEC工作时禁用CD-ROM加速</translation>
     </message>
     <message>
         <source>CD-ROM Region Check</source>
@@ -11209,7 +11209,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Reset Turbo Speed</source>
-        <translation>重置加速速度</translation>
+        <translation>重置涡轮速度</translation>
     </message>
     <message>
         <source>Latency Control</source>
@@ -11612,7 +11612,7 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
     <message>
         <source>Internal Resolution</source>
-        <translation>内置分辨率</translation>
+        <translation>内部分辨率</translation>
     </message>
     <message>
         <source>Latency Control</source>
@@ -11816,7 +11816,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Automatically resizes the window to match the internal resolution.</source>
-        <translation>自动调整窗口大小以匹配内置分辨率。</translation>
+        <translation>自动调整窗口大小以匹配内部分辨率。</translation>
     </message>
     <message>
         <source>Automatically saves the system state when closing the game or exiting. You can then resume directly from where you left off next time.</source>
@@ -12056,7 +12056,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Disable Speedup on MDEC</source>
-        <translation>禁用MDEC上的加速</translation>
+        <translation>MDEC工作时禁用加速</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -12104,7 +12104,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <source>Do you want to continue from the automatic save created {}?</source>
-        <translation>是否要从自动创建的存档 {} 继续？</translation>
+        <translation>是否要从{}创建的自动存档继续？</translation>
     </message>
     <message>
         <source>Draws a border around the currently-selected item for readability.</source>
@@ -12386,9 +12386,9 @@ You cannot undo this action.</source>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translation>警告：您的游戏仍在向记忆卡保存数据。继续{0}可能会不可逆转地破坏您的记忆卡。我们建议您继续游戏运行，并等待它5秒以完成保存。
+        <translation>警告：您的游戏仍在向记忆卡保存数据。继续{0}可能会不可逆转地破坏您的记忆卡。我们建议您恢复游戏并等待5秒，让游戏完成保存。
 
-您到底想不想{0}？</translation>
+您仍然想要{0}吗？</translation>
     </message>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
@@ -12448,7 +12448,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Game Slot {0}##game_slot_{0}</source>
-        <translation>游戏档位{0}##游戏_档位_{0}</translation>
+        <translation>游戏档位{0}##game_slot_{0}</translation>
     </message>
     <message>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
@@ -12580,7 +12580,7 @@ Do you want to {0} anyway?</source>
     </message>
     <message>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
-        <translation>使用透视校正插值的颜色，这可以改善某些游戏的视觉效果。</translation>
+        <translation>对颜色使用透视校正插值，可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
@@ -13242,7 +13242,7 @@ Error was:</source>
     </message>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation>周期地自动保存即时档案以使您可以在游戏时倒回任何错误。</translation>
+        <translation>定期创建即时存档，让您可以在游戏时倒回操作失误之前。</translation>
     </message>
     <message>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
@@ -13350,7 +13350,7 @@ Error was:</source>
     </message>
     <message>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation>在玩多光盘游戏且选用每个游戏独立记忆卡 (标题) 时，请为所有光盘使用同一张记忆卡。</translation>
+        <translation>在玩多光盘游戏且使用按游戏（标题）分配的记忆卡时，所有光盘共用一张记忆卡。</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -13494,7 +13494,7 @@ Error was:</source>
     </message>
     <message>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>选择模拟硬件将运行时正常主频的百分比。</translation>
+        <translation>选择模拟硬件运行时的主频相对于正常主频的百分比。</translation>
     </message>
     <message>
         <source>Game path copied to clipboard.</source>
@@ -13510,7 +13510,7 @@ Error was:</source>
     </message>
     <message>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
-        <translation>确定从本机API捕获音频到通过扬声器播放之间存在多少延迟。</translation>
+        <translation>确定音频被本机API接收后，到通过扬声器播放之间的延迟。</translation>
     </message>
     <message>
         <source>Controller Type</source>
@@ -13862,7 +13862,7 @@ Error was:</source>
     </message>
     <message>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
-        <translation>确定显示将绘制的覆盖图像的区域。</translation>
+        <translation>确定覆盖图像中用于绘制游戏画面的区域。</translation>
     </message>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
@@ -14542,7 +14542,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Saved {}</source>
-        <translation>已保存{}</translation>
+        <translation>保存时间：{}</translation>
     </message>
     <message>
         <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
@@ -14554,7 +14554,7 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>将隔行渲染中的跳行缩放到内置分辨率，使其不那么明显。通常可以安全启用。</translation>
+        <translation>将隔行渲染中的跳行缩放到内部分辨率，使其不那么明显。通常可以安全启用。</translation>
     </message>
     <message>
         <source>Screen Margins</source>
@@ -15341,7 +15341,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>保存多画格帧GPU追踪到&apos;{1}&apos;。</translation>
+        <translation>正在将多帧GPU追踪保存到'{1}'。</translation>
     </message>
     <message>
         <source>Failed to close GPU trace:</source>
@@ -15372,7 +15372,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
-        <translation>内置分辨率设置为{0}x ({1}x{2})。</translation>
+        <translation>内部分辨率设置为{0}x ({1}x{2})。</translation>
     </message>
     <message>
         <source>Internal resolution set to {0}x.</source>
@@ -15824,7 +15824,7 @@ Are you sure you want to continue?</source>
     <message>
         <source>Disable CD-ROM Speedup on MDEC</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>禁用MDEC上的CD-ROM加速</translation>
+        <translation>MDEC工作时禁用CD-ROM加速</translation>
     </message>
     <message>
         <source>Disable True Color</source>
@@ -16021,7 +16021,7 @@ Are you sure you want to continue?</source>
     </message>
     <message>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
-        <translation>禁用MDEC上的CD-ROM加速已启用，但该游戏并不需要此功能。</translation>
+        <translation>“MDEC工作时禁用CD-ROM加速”已启用，但此游戏不需要该功能。</translation>
     </message>
     <message>
         <source>Dithering set to {}.</source>
@@ -16697,7 +16697,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>%1-%2 memory card blocks</source>
-        <translation>%1-%2记忆卡格</translation>
+        <translation>%1-%2个记忆卡区块</translation>
     </message>
     <message>
         <source>Game Specific Configuration</source>
@@ -16793,7 +16793,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>%1-%2 players</source>
-        <translation>%1-%2玩家</translation>
+        <translation>%1-%2名玩家</translation>
     </message>
     <message>
         <source>Release Info:</source>
@@ -16816,7 +16816,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Internal Resolution:</source>
-        <translation>内置分辨率:</translation>
+        <translation>内部分辨率:</translation>
     </message>
     <message>
         <source>Automatic (Based on Window Size)</source>
@@ -17012,7 +17012,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Disable on 2D Polygons</source>
-        <translation>禁用在2D多边形</translation>
+        <translation>在2D多边形上禁用</translation>
     </message>
     <message>
         <source>Depth Test Transparent Polygons</source>
@@ -17248,7 +17248,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Internal Resolution</source>
-        <translation>内置分辨率</translation>
+        <translation>内部分辨率</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
@@ -17476,7 +17476,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>将隔行渲染中的跳行缩放到内置分辨率。这会使梳齿状瑕疵在较高分辨率下不那么明显。通常可以安全启用。</translation>
+        <translation>将隔行渲染中的跳行缩放到内部分辨率。这会使梳齿状瑕疵在较高分辨率下不那么明显。通常可以安全启用。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -17851,7 +17851,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>on {}</source>
-        <translation>于 {}</translation>
+        <translation>{}</translation>
     </message>
     <message>
         <source>Now</source>
@@ -18576,7 +18576,7 @@ Shift-click to set multiple bindings.</source>
     <message numerus="yes">
         <source>%n bindings</source>
         <translation>
-            <numerusform>%n绑定</numerusform>
+            <numerusform>%n个绑定</numerusform>
         </translation>
     </message>
 </context>
@@ -18851,7 +18851,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
-        <translation>自动调整窗口大小以匹配内置分辨率。&lt;strong&gt;对于高内置分辨率，这将创建非常大的窗口。&lt;/strong&gt;</translation>
+        <translation>自动调整窗口大小以匹配内部分辨率。&lt;strong&gt;对于高内部分辨率，这将创建非常大的窗口。&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content.</source>
@@ -20720,11 +20720,11 @@ This build of DuckStation requires FFmpeg v{}, with library versions:
     </message>
     <message>
         <source>Insufficient free blocks, {} blocks are needed, but only have {}.</source>
-        <translation>空闲块不足，{}个块被需要，但是只有{}个。</translation>
+        <translation>空闲块不足，需要{}个块，但只有{}个。</translation>
     </message>
     <message>
         <source>File name must be at maximum {} characters long.</source>
-        <translation>文件名长度最多必须为{}个字符。</translation>
+        <translation>文件名长度最多为{}个字符。</translation>
     </message>
     <message>
         <source>Save file with the same name &apos;{}&apos; already exists in memory card.</source>
@@ -22221,7 +22221,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
-        <translation>在显示右上角显示游戏的内置帧率。</translation>
+        <translation>在屏幕右上角显示游戏的内部帧率。</translation>
     </message>
     <message>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
@@ -22256,7 +22256,7 @@ Error: {1}</source>
     <name>Pad</name>
     <message>
         <source>Save state contains controller type {0} in Port {1}.</source>
-        <translation>即时存档包含控制器类型{0}位于端口{1}中。</translation>
+        <translation>即时存档中的端口{1}使用控制器类型{0}。</translation>
     </message>
     <message>
         <source>Leaving {0} connected.</source>
@@ -22601,7 +22601,7 @@ Error: {1}</source>
     </message>
     <message>
         <source>Internal</source>
-        <translation>内置</translation>
+        <translation>内部</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -23140,7 +23140,7 @@ Would you like to update the shortcut to point to the current location?</source>
     </message>
     <message>
         <source>Saved {}</source>
-        <translation>已保存 {}</translation>
+        <translation>保存时间：{}</translation>
     </message>
     <message>
         <source>No save present in this slot.</source>
@@ -23697,7 +23697,7 @@ Do you want to create this directory?</source>
     <message>
         <source>Internal Resolution</source>
         <comment>DisplayFineCropMode</comment>
-        <translation>内置分辨率</translation>
+        <translation>内部分辨率</translation>
     </message>
     <message>
         <source>Window Resolution</source>
@@ -23842,12 +23842,12 @@ Do you want to create this directory?</source>
     <message>
         <source>Internal Resolution</source>
         <comment>DisplayScreenshotMode</comment>
-        <translation>内置分辨率</translation>
+        <translation>内部分辨率</translation>
     </message>
     <message>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <comment>DisplayScreenshotMode</comment>
-        <translation>内置分辨率 (宽高比未校正)</translation>
+        <translation>内部分辨率 (宽高比未校正)</translation>
     </message>
     <message>
         <source>PNG</source>
@@ -24239,7 +24239,7 @@ Do you want to create this directory?</source>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;高级设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的日志记录和内置行为。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
+        <translation>&lt;strong&gt;高级设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的日志记录和内部行为。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.
@@ -24438,7 +24438,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <source>Internal Resolution:</source>
-        <translation>内置分辨率:</translation>
+        <translation>内部分辨率:</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
@@ -24922,7 +24922,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>切换为子镜像{} ({}) 在&apos;{}&apos;。</translation>
+        <translation>已切换到子镜像{}（{}），位于'{}'中。</translation>
     </message>
     <message>
         <source>Current game does not have multiple discs.</source>
@@ -25253,11 +25253,11 @@ Using shared card instead.</source>
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>正在开始{0}到&apos;{1}&apos;。</translation>
+        <translation>开始{0}，保存至'{1}'。</translation>
     </message>
     <message>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>停止{0}到&apos;{1}&apos;。</translation>
+        <translation>已停止{0}，文件保存在'{1}'。</translation>
     </message>
     <message>
         <source>Stopped {0}: {1}.</source>
