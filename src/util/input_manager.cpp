@@ -2434,8 +2434,10 @@ bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
   if (s_state.binding_capture_completed)
     return consumed;
 
-  const float abs_value = std::abs(value);
-  const float delta_from_initial = std::abs(std::abs(initial_value) - abs_value);
+  // Sensors can rest away from zero, e.g. a pad held tilted towards the player, so use the movement from rest.
+  const bool is_sensor = (key.source_subtype == InputSubclass::ControllerSensor);
+  const float delta_from_initial =
+    is_sensor ? std::abs(value - initial_value) : std::abs(std::abs(initial_value) - std::abs(value));
   const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
                                   std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
 
@@ -2469,7 +2471,8 @@ bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
     return consumed;
 
   InputBindingKey key_to_add = key;
-  key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
+  key_to_add.modifier =
+    ((is_sensor ? (value - initial_value) : value) < 0.0f) ? InputModifier::Negate : InputModifier::None;
   key_to_add.invert = reverse_threshold;
   s_state.binding_capture_keys.push_back(key_to_add);
   InvokeBindingCaptureCallback(false);
