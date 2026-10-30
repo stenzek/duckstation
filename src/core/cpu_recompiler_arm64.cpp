@@ -723,63 +723,89 @@ void CPU::ARM64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8
 {
   // store it first to reduce code size, because we can offset
   armMoveAddressToReg(armAsm, RXARG1, ram_ptr);
-  armMoveAddressToReg(armAsm, RXARG2, shadow_ptr);
 
+  // differences are accumulated, so only one branch is needed at the end
   bool first = true;
   u32 offset = 0;
-  Label block_changed;
-
-  while (size >= 16)
+  if (size >= 16)
   {
-    const VRegister vtmp = v2.V4S();
-    const VRegister dst = first ? v0.V4S() : v1.V4S();
-    armAsm->ldr(dst, MemOperand(RXARG1, offset));
-    armAsm->ldr(vtmp, MemOperand(RXARG2, offset));
-    armAsm->cmeq(dst, dst, vtmp);
-    if (!first)
-      armAsm->and_(v0.V16B(), v0.V16B(), dst.V16B());
+    armMoveAddressToReg(armAsm, RXARG2, shadow_ptr);
+
+    // ldp offset is limited to 1008
+    for (; (offset + 32) <= size && offset <= 1008; offset += 32)
+    {
+      armAsm->ldp(q1, q2, MemOperand(RXARG1, offset));
+      armAsm->ldp(q3, q4, MemOperand(RXARG2, offset));
+      armAsm->eor(v1.V16B(), v1.V16B(), v3.V16B());
+      armAsm->eor(v2.V16B(), v2.V16B(), v4.V16B());
+      if (!first)
+      {
+        armAsm->orr(v1.V16B(), v1.V16B(), v2.V16B());
+        armAsm->orr(v0.V16B(), v0.V16B(), v1.V16B());
+      }
+      else
+      {
+        armAsm->orr(v0.V16B(), v1.V16B(), v2.V16B());
+        first = false;
+      }
+    }
+
+    for (; (offset + 16) <= size; offset += 16)
+    {
+      armAsm->ldr(q1, MemOperand(RXARG1, offset));
+      armAsm->ldr(q3, MemOperand(RXARG2, offset));
+      if (!first)
+      {
+        armAsm->eor(v1.V16B(), v1.V16B(), v3.V16B());
+        armAsm->orr(v0.V16B(), v0.V16B(), v1.V16B());
+      }
+      else
+      {
+        armAsm->eor(v0.V16B(), v1.V16B(), v3.V16B());
+        first = false;
+      }
+    }
+
+    // low 64 bits are non-zero if any lane differs
+    armAsm->umaxp(v0.V4S(), v0.V4S(), v0.V4S());
+    armAsm->fmov(RXARG3, d0);
+    armAsm->cmp(RXARG3, 0);
+  }
+
+  // remaining 4/8/12 bytes, small blocks compare against the instruction bits directly
+  while (offset < size)
+  {
+    const u32 bytes = ((size - offset) >= 8) ? 8 : 4;
+    const Register ram_reg = (bytes == 8) ? RXARG3 : RWARG3;
+    const Register shadow_reg = (bytes == 8) ? RXSCRATCH : RWSCRATCH;
+    armAsm->ldr(ram_reg, MemOperand(RXARG1, offset));
+    if (size >= 16)
+    {
+      armAsm->ldr(shadow_reg, MemOperand(RXARG2, offset));
+    }
     else
+    {
+      u64 bits = 0;
+      std::memcpy(&bits, shadow_ptr + offset, bytes);
+      armEmitMov(armAsm, shadow_reg, bits);
+    }
+
+    if (!first)
+    {
+      armAsm->ccmp(ram_reg, shadow_reg, NoFlag, eq);
+    }
+    else
+    {
+      armAsm->cmp(ram_reg, shadow_reg);
       first = false;
+    }
 
-    offset += 16;
-    size -= 16;
+    offset += bytes;
   }
 
-  if (!first)
-  {
-    // TODO: make sure this doesn't choke on ffffffff
-    armAsm->uminv(s0, v0.V4S());
-    armAsm->fcmp(s0, 0.0);
-    armAsm->b(&block_changed, eq);
-  }
-
-  while (size >= 8)
-  {
-    armAsm->ldr(RXARG3, MemOperand(RXARG1, offset));
-    armAsm->ldr(RXSCRATCH, MemOperand(RXARG2, offset));
-    armAsm->cmp(RXARG3, RXSCRATCH);
-    armAsm->b(&block_changed, ne);
-    offset += 8;
-    size -= 8;
-  }
-
-  while (size >= 4)
-  {
-    armAsm->ldr(RWARG3, MemOperand(RXARG1, offset));
-    armAsm->ldr(RWSCRATCH, MemOperand(RXARG2, offset));
-    armAsm->cmp(RWARG3, RWSCRATCH);
-    armAsm->b(&block_changed, ne);
-    offset += 4;
-    size -= 4;
-  }
-
-  DebugAssert(size == 0);
-
-  Label block_unchanged;
-  armAsm->b(&block_unchanged);
-  armAsm->bind(&block_changed);
+  SwitchToFarCode(true, ne);
   armEmitJmp(armAsm, CodeCache::g_recompiler_functions.discard_and_recompile_block, false);
-  armAsm->bind(&block_unchanged);
+  SwitchToNearCode(false);
 }
 
 void CPU::ARM64Recompiler::GenerateICacheCheckAndUpdate()
