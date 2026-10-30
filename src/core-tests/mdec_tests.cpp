@@ -28,6 +28,9 @@ enum : u32
 
   STATUS_DATA_OUT_FIFO_EMPTY = (1u << 31),
   STATUS_COMMAND_BUSY = (1u << 29),
+  STATUS_DATA_IN_REQUEST = (1u << 28),
+
+  CONTROL_ENABLE_DMA_IN = (1u << 30),
 };
 
 using Random = XorShift128PlusPlus;
@@ -386,4 +389,43 @@ TEST(MDEC, CustomTablesMatchReference)
 
     TestDecode(tables, GenerateStream(rng, 6 * 20, (i % 2) != 0));
   }
+}
+
+TEST(MDEC, DataInRequestOnlyWhileCommandNeedsParameters)
+{
+  // Games such as GameShark 4 write the command word with the CPU, and start an input DMA with a block count of zero.
+  // The DMA must stall once the command has its parameters, instead of feeding the rest of RAM in as commands.
+  TimingEvent idle_event("MDEC Test Idle", 1, 1, [](void*, TickCount) {}, nullptr);
+  CPU::g_state.pending_ticks = 0;
+  TimingEvents::Reset();
+  idle_event.Schedule(std::numeric_limits<TickCount>::max());
+
+  MDEC::Initialize();
+  MDEC::WriteRegister(4, CONTROL_ENABLE_DMA_IN);
+  EXPECT_FALSE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+
+  // Set scale table, 32 parameter words.
+  MDEC::WriteRegister(0, (3u << 29));
+  EXPECT_TRUE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+
+  std::array<u32, 32> words;
+  for (u32 i = 0; i < 32; i++)
+    words[i] = ZeroExtend32(s_scale_table[i * 2]) | (ZeroExtend32(s_scale_table[i * 2 + 1]) << 16);
+  MDEC::DMAWrite(words.data(), static_cast<u32>(words.size()));
+  EXPECT_FALSE(MDEC::ReadRegister(4) & STATUS_COMMAND_BUSY);
+  EXPECT_FALSE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+
+  // Decode macroblock with only padding, still wants data until all parameters have been received.
+  MDEC::WriteRegister(0, (1u << 29) | (DEPTH_24BIT << 27) | 64);
+  EXPECT_TRUE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+
+  words.fill(0xFE00FE00u);
+  MDEC::DMAWrite(words.data(), static_cast<u32>(words.size()));
+  EXPECT_TRUE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+  MDEC::DMAWrite(words.data(), static_cast<u32>(words.size()));
+  EXPECT_FALSE(MDEC::ReadRegister(4) & STATUS_COMMAND_BUSY);
+  EXPECT_FALSE(MDEC::ReadRegister(4) & STATUS_DATA_IN_REQUEST);
+
+  MDEC::Shutdown();
+  idle_event.Deactivate();
 }
