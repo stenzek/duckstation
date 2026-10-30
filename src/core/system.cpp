@@ -4680,9 +4680,15 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   }
 
   const std::string_view& next_serial = s_state.running_game_entry->disc_set->serials[current_index];
-  const auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryBySerial(next_serial);
-  if (!entry)
+  std::string next_path;
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryBySerial(next_serial);
+    if (entry)
+      next_path = entry->path;
+  }
+
+  if (next_path.empty())
   {
     if (display_osd_message)
     {
@@ -4693,7 +4699,7 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
     return false;
   }
 
-  return InsertMedia(entry->path.c_str());
+  return InsertMedia(next_path.c_str());
 }
 
 std::string_view System::GetCurrentGameSaveTitle()
