@@ -199,7 +199,8 @@ static void fastResizePixmap(QPixmap& pm, const QSize& expected_size)
   }
 }
 
-static void resizeGameIcon(QPixmap& pm, int icon_size)
+template<class T>
+static void resizeGameIcon(T& pm, int icon_size)
 {
   const int pm_width = pm.width();
   const int pm_height = pm.height();
@@ -228,9 +229,6 @@ GameListModel::GameListModel(GameListWidget* parent)
 
   loadCommonImages();
   loadCoverScaleDependentPixmaps();
-
-  if (hasMemoryCardIcons())
-    GameList::ReloadMemcardTimestampCache();
 
   connect(g_core_thread, &CoreThread::gameListRowsChanged, this, &GameListModel::rowsChanged);
 }
@@ -509,6 +507,103 @@ void GameListModel::coverLoaded(const std::string& path, const QImage& image, fl
   invalidateColumnForPath(path, Column_Cover, false);
 }
 
+void GameListModel::loadOrGenerateIcon(const GameList::Entry* ge)
+{
+  Host::QueueAsyncTask([list = QPointer(this), path = ge->path, icon_source = m_icon_source, icon_size = m_icon_size,
+                        dpr = m_device_pixel_ratio]() mutable {
+    static constexpr auto finish_load = [](const std::span<const u8> data, std::string&& path, std::string&& serial,
+                                           const QPointer<GameListModel>& list, int icon_size,
+                                           GameList::IconSource icon_source, qreal dpr, const TinyString& extension) {
+      QImage image;
+      if (!image.loadFromData(data.data(), static_cast<int>(data.size()), extension.c_str()))
+        return;
+
+      image.setDevicePixelRatio(dpr);
+      if (icon_source == GameList::IconSource::MemoryCard)
+      {
+        resizeGameIcon(image, icon_size);
+      }
+      else
+      {
+        const int device_size = static_cast<int>(static_cast<qreal>(icon_size) * dpr);
+        resizeImage(&image, QSize(device_size, device_size));
+      }
+
+      Host::RunOnUIThread([path = std::move(path), serial = std::move(serial), image = std::move(image), list,
+                           icon_size, icon_source]() mutable {
+        // old request before mode or icon size change?
+        std::string& key = (icon_source == GameList::IconSource::Cover) ? path : serial;
+        if (!list || list->m_icon_source != icon_source || list->m_icon_size != icon_size ||
+            !list->m_icon_pixmap_cache.Lookup(key))
+        {
+          return;
+        }
+
+        // ughhhhh
+        if (icon_source == GameList::IconSource::Cover)
+        {
+          list->invalidateColumnForPath(path, Column_Icon, false);
+        }
+        else
+        {
+          list->invalidateRowsMatchingFunc([&serial](const GameList::Entry* ge) { return ge->serial == serial; },
+                                           Column_Icon, false);
+        }
+
+        list->m_icon_pixmap_cache.Insert(std::move(key), QPixmap::fromImage(image));
+      });
+    };
+
+    std::string serial;
+    std::string cover_path;
+    {
+      // need the lock because of memory card extraction
+      const auto lock = GameList::GetLock();
+      const GameList::Entry* ge = GameList::GetEntryForPath(path);
+      if (!ge)
+        return;
+
+      cover_path = GameList::GetGameIconPath(ge, icon_source);
+      if (cover_path.empty())
+        return;
+
+      serial = ge->serial;
+    }
+
+    if (HTTPCache::IsHTTPURL(cover_path))
+    {
+      // if it's in the cache, we can load it immediately
+      HTTPCache::LookupResult result = HTTPCache::Lookup(path, nullptr);
+      const TinyString extension(Path::GetExtension(HTTPCache::GetURLFilename(cover_path)));
+      if (result.status() == HTTPCache::LookupStatus::Miss)
+      {
+        // gotta defer, but can still hit due to a race
+        result = HTTPCache::LookupOrFetch(
+          cover_path, nullptr,
+          [path, serial, list, icon_size, icon_source, dpr, extension](std::span<const u8> data) mutable {
+            if (data.empty())
+              return;
+
+            finish_load(data, std::move(path), std::move(serial), list, icon_size, icon_source, dpr, extension);
+          });
+      }
+
+      if (result.status() == HTTPCache::LookupStatus::Hit)
+        finish_load(result.value(), std::move(path), std::move(serial), list, icon_size, icon_source, dpr, extension);
+    }
+    else
+    {
+      // load immediately
+      std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(cover_path.c_str());
+      if (data.has_value())
+      {
+        finish_load(data->cspan(), std::move(path), std::move(serial), list, icon_size, icon_source, dpr,
+                    TinyString(Path::GetExtension(cover_path)));
+      }
+    }
+  });
+}
+
 void GameListModel::rowsChanged(const QList<int>& rows)
 {
   QList<int> roles_changed{Qt::DisplayRole, Qt::ToolTipRole};
@@ -573,6 +668,44 @@ void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true
   emit dataChanged(index(0, column), index(rowCount() - 1, column), getRolesToInvalidate(column));
 }
 
+template<class F>
+ALWAYS_INLINE_RELEASE void GameListModel::invalidateRowsMatchingFunc(F&& pred, int column, bool only_first)
+{
+  const auto remove_entry = [this, &column](const GameList::Entry* ge, int row) {
+    const QModelIndex mi(index(row, column));
+    emit dataChanged(mi, mi, getRolesToInvalidate(column));
+  };
+
+  if (hasTakenGameList())
+  {
+    for (u32 i = 0; i < static_cast<u32>(m_taken_entries->size()); i++)
+    {
+      if (pred(&m_taken_entries.value()[i]))
+      {
+        remove_entry(&m_taken_entries.value()[i], static_cast<int>(i));
+        if (only_first)
+          return;
+      }
+    }
+  }
+  else
+  {
+    // This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
+    auto lock = GameList::GetLock();
+    const size_t count = GameList::GetEntryCount();
+    for (size_t i = 0; i < count; i++)
+    {
+      const GameList::Entry* const entry = GameList::GetEntryByIndex(static_cast<u32>(i));
+      if (pred(entry))
+      {
+        remove_entry(entry, static_cast<int>(i));
+        if (only_first)
+          return;
+      }
+    }
+  }
+}
+
 void GameListModel::invalidateColumnForPath(const std::string& path, int column, bool invalidate_cache /* = true */)
 {
   // if we're changing the title, the cover could change
@@ -597,37 +730,7 @@ void GameListModel::invalidateColumnForPath(const std::string& path, int column,
     }
   }
 
-  const auto remove_entry = [this, &column](const GameList::Entry* ge, int row) {
-    const QModelIndex mi(index(row, column));
-    emit dataChanged(mi, mi, getRolesToInvalidate(column));
-  };
-
-  if (hasTakenGameList())
-  {
-    for (u32 i = 0; i < static_cast<u32>(m_taken_entries->size()); i++)
-    {
-      if (path == m_taken_entries.value()[i].path)
-      {
-        remove_entry(&m_taken_entries.value()[i], static_cast<int>(i));
-        return;
-      }
-    }
-  }
-  else
-  {
-    // This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
-    auto lock = GameList::GetLock();
-    const size_t count = GameList::GetEntryCount();
-    for (size_t i = 0; i < count; i++)
-    {
-      const GameList::Entry* const entry = GameList::GetEntryByIndex(static_cast<u32>(i));
-      if (entry->path == path)
-      {
-        remove_entry(entry, static_cast<int>(i));
-        return;
-      }
-    }
-  }
+  invalidateRowsMatchingFunc([path](const GameList::Entry* ge) { return ge->path == path; }, column, true);
 }
 
 const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
@@ -659,90 +762,16 @@ const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 
 const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
 {
-  if (m_icon_source == GameList::IconSource::Cover)
-  {
-    // Covers are per-path, not per-serial.
-    if (const QPixmap* item = m_icon_pixmap_cache.Lookup(ge->path))
-      return item->isNull() ? nullptr : item;
-
-    // Insert an empty pixmap so we don't repeatedly queue loading jobs for this game.
-    m_icon_pixmap_cache.Insert(ge->path, {});
-    const_cast<GameListModel*>(this)->loadCoverIcon(ge);
+  // Covers are per-path, not per-serial.
+  const std::string& key = (m_icon_source == GameList::IconSource::Cover) ? ge->path : ge->serial;
+  if (key.empty())
     return nullptr;
-  }
+  else if (const QPixmap* item = m_icon_pixmap_cache.Lookup(key))
+    return item->isNull() ? nullptr : item;
 
-  // We only do this for discs/disc sets for now.
-  if (hasMemoryCardIcons() && !ge->serial.empty() && ge->IsDiscOrDiscSet())
-  {
-    QPixmap* item = m_icon_pixmap_cache.Lookup(ge->serial);
-    if (item)
-    {
-      if (!item->isNull())
-        return item;
-    }
-    else
-    {
-      // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge, m_icon_source);
-      if (HTTPCache::IsHTTPURL(path))
-      {
-        if (AsyncPixmapLoader::isQueueNeeded(path))
-        {
-          // callback can fire immediately, so fill it first
-          m_icon_pixmap_cache.Insert(ge->serial, {});
-
-          AsyncPixmapLoader* loader = new AsyncPixmapLoader();
-          connect(loader, &AsyncPixmapLoader::pixmapLoaded, this, [this, serial = ge->serial](QPixmap& pm) mutable {
-            if (pm.isNull())
-              return;
-
-            pm.setDevicePixelRatio(m_device_pixel_ratio);
-            resizeGameIcon(pm, m_icon_size);
-            m_icon_pixmap_cache.Insert(serial, pm);
-
-            // invalidate rows with this serial
-            const auto lock = GameList::GetLock();
-            for (size_t i = 0, count = GameList::GetEntryCount(); i < count; i++)
-            {
-              const GameList::Entry* entry = GameList::GetEntryByIndex(i);
-              if (entry->serial != serial)
-                continue;
-
-              const QModelIndex idx = index(static_cast<int>(i), Column_Icon);
-              emit const_cast<GameListModel*>(this)->dataChanged(idx, idx, getRolesToInvalidate(Column_Icon));
-            }
-          });
-
-          loader->enqueue(path);
-
-          // just in case it fires immediately
-          item = m_icon_pixmap_cache.Lookup(ge->serial);
-          return (item && !item->isNull()) ? item : nullptr;
-        }
-        else
-        {
-          QPixmap pm = AsyncPixmapLoader::load(path);
-          pm.setDevicePixelRatio(m_device_pixel_ratio);
-          resizeGameIcon(pm, m_icon_size);
-          return m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
-        }
-      }
-      else
-      {
-        QPixmap pm;
-        if (!path.empty() && pm.load(QString::fromStdString(path)))
-        {
-          pm.setDevicePixelRatio(m_device_pixel_ratio);
-          resizeGameIcon(pm, m_icon_size);
-          return m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
-        }
-
-        // Stop it trying again in the future.
-        m_icon_pixmap_cache.Insert(ge->serial, {});
-      }
-    }
-  }
-
+  // Insert an empty pixmap so we don't repeatedly queue loading jobs for this game.
+  m_icon_pixmap_cache.Insert(key, {});
+  const_cast<GameListModel*>(this)->loadOrGenerateIcon(ge);
   return nullptr;
 }
 
@@ -778,10 +807,6 @@ void GameListModel::setIconSource(GameList::IconSource source)
     return;
 
   m_icon_source = source;
-
-  if (hasMemoryCardIcons())
-    GameList::ReloadMemcardTimestampCache();
-
   invalidateColumn(Column_Icon);
 }
 
@@ -790,61 +815,15 @@ bool GameListModel::hasMemoryCardIcons() const
   return (m_icon_source == GameList::IconSource::MemoryCard || m_icon_source == GameList::IconSource::Achievements);
 }
 
-void GameListModel::loadCoverIcon(const GameList::Entry* ge)
-{
-  QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
-                             is_custom_title = ge->has_custom_title, list = this, icon_size = m_icon_size,
-                             dpr = m_device_pixel_ratio]() mutable {
-    QImage image;
-    const std::string cover_path = GameList::GetCoverImagePath(path, serial, save_title, is_custom_title);
-    if (!cover_path.empty() && image.load(QString::fromStdString(cover_path)))
-    {
-      const int device_size = static_cast<int>(static_cast<qreal>(icon_size) * dpr);
-      resizeImage(&image, QSize(device_size, device_size));
-      image.setDevicePixelRatio(dpr);
-    }
-
-    return [path = std::move(path), image = std::move(image), list, icon_size]() {
-      list->coverIconLoaded(path, image, icon_size);
-    };
-  });
-}
-
-void GameListModel::coverIconLoaded(const std::string& path, const QImage& image, int icon_size)
-{
-  // old request before mode or icon size change?
-  if (m_icon_source != GameList::IconSource::Cover || m_icon_size != icon_size || image.isNull() ||
-      !m_icon_pixmap_cache.Lookup(path))
-  {
-    return;
-  }
-
-  m_icon_pixmap_cache.Insert(path, QPixmap::fromImage(image));
-  invalidateColumnForPath(path, Column_Icon, false);
-}
-
 QIcon GameListModel::getIconForGame(const QString& path)
 {
-  QIcon ret;
-
   if (m_icon_source == GameList::IconSource::None || path.isEmpty())
-    return ret;
+    return {};
 
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
   if (!entry)
-    return ret;
-
-  if (m_icon_source == GameList::IconSource::Cover)
-  {
-    if (const std::string cover_path = GameList::GetCoverImagePathForEntry(entry); !cover_path.empty())
-      ret = QIcon(QString::fromStdString(cover_path));
-
-    return ret;
-  }
-
-  if (entry->serial.empty() || !entry->IsDiscOrDiscSet())
-    return ret;
+    return {};
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
   // Provides a small performance boost when using default size icons.
@@ -853,31 +832,33 @@ QIcon GameListModel::getIconForGame(const QString& path)
     if (const QPixmap* pm = m_icon_pixmap_cache.Lookup(entry->serial))
     {
       // If we already have the icon cached, return it.
-      ret = QIcon(*pm);
-      return ret;
+      return QIcon(*pm);
     }
   }
 
   // If it's not a HTTP URL, this is straightforward.
   const std::string icon_path = GameList::GetGameIconPath(entry, m_icon_source);
+  if (icon_path.empty())
+    return {};
+
   if (HTTPCache::IsHTTPURL(icon_path))
   {
     // Can't really download here since it's not asynchronous. But we can still check the cache.
     const HTTPCache::LookupResult result = HTTPCache::Lookup(icon_path, nullptr);
-    if (result.has_value())
-    {
-      QPixmap pm;
-      const TinyString extension(Path::GetExtension(HTTPCache::GetURLFilename(icon_path)));
-      if (pm.loadFromData(result->data(), static_cast<int>(result->size()), extension.c_str()))
-        ret = QIcon(pm);
-    }
-  }
-  else if (!icon_path.empty())
-  {
-    ret = QIcon(QString::fromStdString(icon_path));
-  }
+    if (!result.has_value())
+      return {};
 
-  return ret;
+    QPixmap pm;
+    const TinyString extension(Path::GetExtension(HTTPCache::GetURLFilename(icon_path)));
+    if (pm.loadFromData(result->data(), static_cast<int>(result->size()), extension.c_str()))
+      return QIcon(pm);
+    else
+      return {};
+  }
+  else
+  {
+    return QIcon(QString::fromStdString(icon_path));
+  }
 }
 
 QSize GameListModel::getCoverArtSize() const
@@ -1392,7 +1373,6 @@ private:
 };
 
 namespace {
-
 class GameListCenterIconStyleDelegate final : public QStyledItemDelegate
 {
 public:

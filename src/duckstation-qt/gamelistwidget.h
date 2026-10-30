@@ -147,8 +147,7 @@ private:
   void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
-  void loadCoverIcon(const GameList::Entry* ge);
-  void coverIconLoaded(const std::string& path, const QImage& image, int icon_size);
+  void loadOrGenerateIcon(const GameList::Entry* ge);
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                   qreal dpr, const std::string& path, const std::string& serial,
@@ -160,6 +159,9 @@ private:
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
+
+  template<class F>
+  void invalidateRowsMatchingFunc(F&& func, int column, bool only_first);
 
   qreal m_device_pixel_ratio = 1.0;
 
@@ -262,9 +264,8 @@ class GameListWidget final : public QWidget
 
 public:
   explicit GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
-                          QAction* action_merge_disc_sets, QMenu* menu_icon_source,
-                          QAction* action_animate_list_icons, QAction* action_show_grid_titles,
-                          QAction* action_show_localized_titles);
+                          QAction* action_merge_disc_sets, QMenu* menu_icon_source, QAction* action_animate_list_icons,
+                          QAction* action_show_grid_titles, QAction* action_show_localized_titles);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }

@@ -651,11 +651,11 @@ std::string System::GetGameIconPath(bool allow_achievements_badge)
   u32 achievements_game_id = allow_achievements_badge ? Achievements::GetGameID() : 0;
 
   const auto lock = GameList::GetLock();
-  return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?
-                                     std::string_view(s_state.running_game_title) :
-                                     std::string_view(),
-                                   s_state.running_game_serial, s_state.running_game_path, achievements_game_id,
-                                   GameList::IconSource::MemoryCard);
+  const GameList::Entry* entry = GameList::GetEntryForPath(s_state.running_game_path);
+  if (!entry)
+    return {};
+
+  return GameList::GetGameIconPath(entry, GameList::IconSource::MemoryCard);
 }
 
 bool System::IsUsingKnownPS1BIOS()

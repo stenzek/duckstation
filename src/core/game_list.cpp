@@ -151,6 +151,7 @@ static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::strin
                                      std::string_view value);
 
 static std::string GetMemcardTimestampCachePath();
+static void LoadMemcardTimestampCache();
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
 
 struct State
@@ -159,6 +160,7 @@ struct State
   std::recursive_mutex mutex;
   std::vector<MemcardTimestampCacheEntry> memcard_timestamp_cache_entries;
   ListState game_list_loaded = ListState::Unloaded;
+  bool memcard_timestamp_cache_loaded = false;
 };
 
 ALIGN_TO_CACHE_LINE static State s_state;
@@ -2340,10 +2342,8 @@ std::string GameList::GetMemcardTimestampCachePath()
   return Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
 }
 
-void GameList::ReloadMemcardTimestampCache()
+void GameList::LoadMemcardTimestampCache()
 {
-  s_state.memcard_timestamp_cache_entries.clear();
-
   Error error;
   FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetMemcardTimestampCachePath().c_str(), false, &error);
   if (!fp)
@@ -2384,32 +2384,28 @@ void GameList::ReloadMemcardTimestampCache()
 
 std::string GameList::GetGameIconPath(const GameList::Entry* entry, IconSource source)
 {
-  return GetGameIconPath(entry->title, entry->serial, entry->path, entry->achievements_game_id, source);
-}
-
-std::string GameList::GetGameIconPath(std::string_view custom_title, std::string_view serial, std::string_view path,
-                                      u32 achievements_game_id, IconSource source)
-{
-  if (source != IconSource::MemoryCard && source != IconSource::Achievements)
+  if (source == IconSource::Cover)
+    return GetCoverImagePathForEntry(entry);
+  else if (source != IconSource::MemoryCard && source != IconSource::Achievements)
     return {};
 
   std::string achievements_icon_path;
-  if (achievements_game_id != 0)
+  if (entry->achievements_game_id != 0)
   {
-    achievements_icon_path = Achievements::GetGameBadgeURL(achievements_game_id);
+    achievements_icon_path = Achievements::GetGameBadgeURL(entry->achievements_game_id);
     if (!achievements_icon_path.empty() && source == IconSource::Achievements)
       return achievements_icon_path;
   }
 
-  if (serial.empty())
+  if (entry->serial.empty())
     return achievements_icon_path;
 
   // might exist already, or the user used a custom icon
-  std::string ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
+  std::string ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", entry->serial));
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
 
-  ret = ExtractMemoryCardIcon(custom_title, serial, path);
+  ret = ExtractMemoryCardIcon(entry->title, entry->serial, entry->path);
   if (ret.empty())
     return achievements_icon_path;
   else
@@ -2435,6 +2431,12 @@ std::string GameList::ExtractMemoryCardIcon(std::string_view custom_title, std::
   TinyString index_serial;
   index_serial.assign(
     serial.substr(0, std::min<size_t>(serial.length(), MemcardTimestampCacheEntry::MAX_SERIAL_LENGTH - 1)));
+
+  if (!s_state.memcard_timestamp_cache_loaded)
+  {
+    s_state.memcard_timestamp_cache_loaded = true;
+    LoadMemcardTimestampCache();
+  }
 
   MemcardTimestampCacheEntry* cache_entry = nullptr;
   for (MemcardTimestampCacheEntry& it : s_state.memcard_timestamp_cache_entries)

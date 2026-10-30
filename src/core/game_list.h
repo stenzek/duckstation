@@ -228,18 +228,11 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 
 /// Returns the memory card icon or achievements badge for a game, in the order selected by source. Returns an empty
 /// string for the None and Cover sources, covers are looked up separately with GetCoverImagePath().
-std::string GetGameIconPath(std::string_view title, std::string_view serial, std::string_view path,
-                            u32 achievements_game_id, IconSource source);
 std::string GetGameIconPath(const GameList::Entry* entry, IconSource source);
 
 /// Extracts the icon of the first save on the game's memory card to the game icons directory, consulting the
 /// memory card timestamp cache. Returns the path to the extracted icon, or an empty string. Requires the lock.
 std::string ExtractMemoryCardIcon(std::string_view title, std::string_view serial, std::string_view path);
-
-/// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
-/// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
-/// timestamp of the memory card has changed.
-void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.
 void UpdateAchievementData(std::span<const u8, 16> hash, u32 game_id, u32 num_achievements, u32 num_unlocked,
