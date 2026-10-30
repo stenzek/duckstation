@@ -1540,7 +1540,7 @@ bool SDLInputSource::HandleGamepadSensorEvent(const SDL_GamepadSensorEvent* ev)
     return false;
 
   // Accelerometer data is in m/s^2, normalize by gravity to get [-1, 1] range
-  // ev->data[0] = X (left/right tilt), ev->data[1] = Y (forward/back tilt), ev->data[2] = Z (up/down)
+  // ev->data[0] = X (left/right tilt), ev->data[1] = Y (up/down, gravity at rest), ev->data[2] = Z (forward/back tilt)
 
   const float turn = std::clamp(-ev->data[0] / SDL_STANDARD_GRAVITY, -1.0f, 1.0f);
   if (turn != it->last_accel_turn)
@@ -1549,7 +1549,7 @@ bool SDLInputSource::HandleGamepadSensorEvent(const SDL_GamepadSensorEvent* ev)
     InputManager::InvokeEvents(MakeGenericControllerSensorKey(InputSourceType::SDL, it->player_id, 0), turn);
   }
 
-  const float tilt = std::clamp(-ev->data[1] / SDL_STANDARD_GRAVITY, -1.0f, 1.0f);
+  const float tilt = std::clamp(-ev->data[2] / SDL_STANDARD_GRAVITY, -1.0f, 1.0f);
   if (tilt != it->last_accel_tilt)
   {
     it->last_accel_tilt = tilt;
