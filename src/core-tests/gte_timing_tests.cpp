@@ -1,31 +1,17 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "core/bus.h"
+#include "cpu_test_harness.h"
+
 #include "core/cpu_code_cache.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
-#include "core/mips_encoder.h"
-#include "core/settings.h"
-#include "core/system.h"
-#include "core/timing_event.h"
-
-#include "common/error.h"
-
-#include <gtest/gtest.h>
-
-#include <cstring>
-#include <memory>
-#include <vector>
 
 namespace {
 
+using namespace CPUTestHarness;
 using namespace Mips::Encoder;
 
-// pcsx_debugbreak(), used to get out of the execution loop.
-static constexpr u32 ADDR_EXIT = 0x1F802081u;
-
-static constexpr u32 PROGRAM_BASE = 0x80010000u;
 static constexpr u32 PADDING_NOPS = 8;
 
 static constexpr u32 CFC2_FLAG = 0x4849F800u; // cfc2 $t1, $31
@@ -44,45 +30,12 @@ static constexpr GTECommand s_commands[] = {
   {"RTPS", 0x4A180001u, 15},
 };
 
-class GTETiming : public ::testing::TestWithParam<CPUExecutionMode>
+class GTETiming : public ExecutionModeTest
 {
 protected:
-  static void SetUpTestSuite()
-  {
-    g_settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
-    g_settings.pcsx_expansion_region_enable = true;
-
-    Error error;
-    ASSERT_TRUE(CPU::CodeCache::ProcessStartup(&error)) << error.GetDescription();
-    ASSERT_TRUE(Bus::AllocateMemory(false, &error)) << error.GetDescription();
-    Bus::Initialize();
-    CPU::Initialize();
-    TimingEvents::Initialize();
-    Bus::Reset();
-
-    // Otherwise the interpreter stays on the debug dispatcher waiting for the entry point.
-    System::SetGameStarted();
-    CPU::Reset();
-
-    // The CPU needs something to count down to.
-    s_event = std::make_unique<TimingEvent>("Test Event", 1000000, 1000000, [](void*, TickCount) {}, nullptr);
-    s_event->Activate();
-  }
-
-  static void TearDownTestSuite()
-  {
-    s_event->Deactivate();
-    s_event.reset();
-    CPU::CodeCache::Shutdown();
-    CPU::Shutdown();
-    Bus::Shutdown();
-    Bus::ReleaseMemory();
-    CPU::CodeCache::ProcessShutdown();
-  }
-
   void SetUp() override
   {
-    g_settings.cpu_execution_mode = GetParam();
+    ExecutionModeTest::SetUp();
     CPU::g_state.cop0_regs.sr.CE2 = true;
   }
 
@@ -140,8 +93,6 @@ protected:
     const u32 remaining = (cycles > instructions_between) ? (cycles - instructions_between) : 0;
     return (remaining > 1) ? remaining : 0;
   }
-
-  static inline std::unique_ptr<TimingEvent> s_event;
 };
 
 } // namespace
@@ -198,9 +149,4 @@ TEST_P(GTETiming, StallAcrossBranch)
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(ExecutionModes, GTETiming,
-                         ::testing::Values(CPUExecutionMode::Interpreter, CPUExecutionMode::CachedInterpreter,
-                                           CPUExecutionMode::Recompiler),
-                         [](const ::testing::TestParamInfo<CPUExecutionMode>& info) {
-                           return std::string(Settings::GetCPUExecutionModeName(info.param));
-                         });
+INSTANTIATE_TEST_SUITE_P(ExecutionModes, GTETiming, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);

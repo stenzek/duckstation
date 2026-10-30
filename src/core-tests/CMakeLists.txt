@@ -6,7 +6,11 @@ add_executable(core-tests
   cheats_tests.cpp
   controller_helpers_tests.cpp
   cpu_disasm_tests.cpp
+  cpu_execution_tests.cpp
   cpu_pgxp_tests.cpp
+  cpu_test_harness.cpp
+  cpu_test_harness.h
+  dma_tests.cpp
   gpu_sw_rasterizer_tests.cpp
   gpu_tests.cpp
   gte_tests.cpp

@@ -7,7 +7,10 @@
     <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="controller_helpers_tests.cpp" />
     <ClCompile Include="cpu_disasm_tests.cpp" />
+    <ClCompile Include="cpu_execution_tests.cpp" />
     <ClCompile Include="cpu_pgxp_tests.cpp" />
+    <ClCompile Include="cpu_test_harness.cpp" />
+    <ClCompile Include="dma_tests.cpp" />
     <ClCompile Include="gpu_sw_rasterizer_tests.cpp" />
     <ClCompile Include="gpu_tests.cpp" />
     <ClCompile Include="gte_tests.cpp" />
@@ -19,6 +22,9 @@
     <ClCompile Include="spu_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
     <ClCompile Include="timers_tests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cpu_test_harness.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">
