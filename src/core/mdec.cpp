@@ -475,7 +475,6 @@ void MDEC::Execute()
 
         s_state.remaining_halfwords = num_words * 2;
         s_state.state = new_state;
-        UpdateStatus();
         continue;
       }
 
@@ -512,7 +511,6 @@ void MDEC::Execute()
 
         HandleSetQuantTableCommand();
         s_state.state = State::Idle;
-        UpdateStatus();
         continue;
       }
 
@@ -523,7 +521,6 @@ void MDEC::Execute()
 
         HandleSetScaleCommand();
         s_state.state = State::Idle;
-        UpdateStatus();
         continue;
       }
 
@@ -537,7 +534,6 @@ void MDEC::Execute()
           goto finished;
 
         s_state.state = State::Idle;
-        UpdateStatus();
         continue;
       }
 
