@@ -646,18 +646,6 @@ void System::ChangeExeOverrideAndReset(std::string path)
   ResetSystem();
 }
 
-std::string System::GetGameIconPath(bool allow_achievements_badge)
-{
-  u32 achievements_game_id = allow_achievements_badge ? Achievements::GetGameID() : 0;
-
-  const auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(s_state.running_game_path);
-  if (!entry)
-    return {};
-
-  return GameList::GetGameIconPath(entry, GameList::IconSource::MemoryCard);
-}
-
 bool System::IsUsingKnownPS1BIOS()
 {
   return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type1);

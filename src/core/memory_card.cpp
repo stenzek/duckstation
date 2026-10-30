@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memory_card.h"
+#include "game_list.h"
 #include "host.h"
 #include "system_private.h"
 
@@ -383,15 +384,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   s_save_pending[m_index].store(true, std::memory_order_release);
 
   // Game state has to be read on the core thread.
-  std::string icon_path;
-  if (display_osd_message)
-  {
-    icon_path = System::GetGameIconPath(false);
-    if (icon_path.empty())
-      icon_path = ICON_PF_MEMORY_CARD;
-  }
-
-  Host::QueueAsyncTask([this, data = m_data, display_osd_message, icon_path = std::move(icon_path)]() mutable {
+  Host::QueueAsyncTask([this, data = m_data, display_osd_message, game_path = System::GetGamePath()]() mutable {
     const std::string_view filename = Path::GetFileName(m_path);
     INFO_LOG("Saving memory card to {}...", filename);
 
@@ -401,13 +394,24 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
       if (display_osd_message)
       {
         Host::AddIconOSDMessage(
-          OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
+          OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_NO_ENTRY_SIGN,
           fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
           fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"), filename, error.GetDescription()));
       }
     }
     else if (display_osd_message)
     {
+      // Game icon I/O is deliberately kept on the worker.
+      std::string icon_path;
+      {
+        const auto lock = GameList::GetLock();
+        const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
+        if (entry)
+          icon_path = GameList::GetGameIconPath(entry, GameList::IconSource::MemoryCard);
+      }
+      if (icon_path.empty())
+        icon_path = ICON_PF_MEMORY_CARD;
+
       Host::AddIconOSDMessage(OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
                               fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
                               fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), filename));

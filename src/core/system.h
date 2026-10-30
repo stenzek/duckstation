@@ -267,9 +267,6 @@ void SetGameStarted();
 void ChangeExeOverrideAndReset(std::string path);
 bool ChangeGPUDump(std::string new_path);
 
-/// Returns a path to the game icon, if any.
-std::string GetGameIconPath(bool allow_achievements_badge);
-
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
 
