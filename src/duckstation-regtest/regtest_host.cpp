@@ -13,6 +13,7 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/host.h"
+#include "core/pad.h"
 #include "core/performance_counters.h"
 #include "core/spu.h"
 #include "core/system.h"
@@ -45,6 +46,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <csignal>
 #include <cstdio>
 #include <ctime>
@@ -63,6 +65,17 @@ static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
 static void ProcessCoreThreadEvents();
+static bool ResolveScheduledInputs();
+static void ApplyScheduledInputs(u32 frame);
+
+struct ScheduledInput
+{
+  u32 frame;
+  u32 pad;
+  std::string binding;
+  u32 bind_index;
+  float value;
+};
 
 struct RegTestHostState
 {
@@ -73,6 +86,9 @@ struct RegTestHostState
 };
 
 static RegTestHostState s_state;
+
+static std::vector<ScheduledInput> s_scheduled_inputs;
+static size_t s_next_input = 0;
 
 } // namespace RegTestHost
 
@@ -315,6 +331,7 @@ void Host::PumpMessagesOnCoreThread()
   RegTestHost::ProcessCoreThreadEvents();
 
   s_frames_remaining--;
+  RegTestHost::ApplyScheduledInputs(s_frames_to_run - s_frames_remaining);
   if (s_frames_remaining == 0)
   {
     // Make it obvious when running over a large number of games, cheats/achievements would not be active.
@@ -326,6 +343,45 @@ void Host::PumpMessagesOnCoreThread()
 
     RegTestHost::DumpSystemStateHashes();
     System::ShutdownSystem(false);
+  }
+}
+
+bool RegTestHost::ResolveScheduledInputs()
+{
+  for (ScheduledInput& input : s_scheduled_inputs)
+  {
+    const Controller* controller = Pad::GetController(input.pad);
+    const Controller::ControllerBindingInfo* bi = nullptr;
+    if (controller)
+    {
+      for (const Controller::ControllerBindingInfo& it : Controller::GetControllerInfo(controller->GetType()).bindings)
+      {
+        if (input.binding == it.name)
+        {
+          bi = &it;
+          break;
+        }
+      }
+    }
+    if (!bi)
+    {
+      ERROR_LOG("Controller {} has no binding '{}'.", input.pad + 1, input.binding);
+      return false;
+    }
+
+    input.bind_index = bi->bind_index;
+  }
+
+  return true;
+}
+
+void RegTestHost::ApplyScheduledInputs(u32 frame)
+{
+  for (; s_next_input < s_scheduled_inputs.size() && s_scheduled_inputs[s_next_input].frame <= frame; s_next_input++)
+  {
+    const ScheduledInput& input = s_scheduled_inputs[s_next_input];
+    INFO_LOG("Frame {}: controller {} {} = {}", frame, input.pad + 1, input.binding, input.value);
+    Pad::GetController(input.pad)->SetBindState(input.bind_index, input.value);
   }
 }
 
@@ -711,6 +767,9 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -dumpdir: Set frame dump base directory (will be dumped to basedir/gametitle).\n");
   std::fprintf(stderr, "  -dumpinterval: Dumps every N frames.\n");
   std::fprintf(stderr, "  -frames: Sets the number of frames to execute.\n");
+  std::fprintf(stderr, "  -input <frame>:<pad>:<binding>:<value>: Sets binding (e.g. Cross) on pad (1-8) to value\n"
+                       "    (0-1, scaled by stick sensitivity for axes) after frame completes. Frame 0 is before\n"
+                       "    execution, after any save state is loaded. Can be repeated.\n");
   std::fprintf(stderr, "  -state <path>: Loads the specified save state after booting.\n");
   std::fprintf(stderr, "  -log <level>: Sets the log level. Defaults to verbose.\n");
   std::fprintf(stderr, "  -console: Enables console logging output.\n");
@@ -789,6 +848,27 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-input"))
+      {
+        const std::vector<std::string_view> fields = StringUtil::SplitString(argv[++i], ':', false);
+        std::optional<u32> frame, pad;
+        std::optional<float> value;
+        if (fields.size() == 4)
+        {
+          frame = StringUtil::FromChars<u32>(fields[0]);
+          pad = StringUtil::FromChars<u32>(fields[1]);
+          value = StringUtil::FromChars<float>(fields[3]);
+        }
+        if (!frame.has_value() || !pad.has_value() || pad.value() == 0 || pad.value() > NUM_CONTROLLER_AND_CARD_PORTS ||
+            fields[2].empty() || !value.has_value() || !(value.value() >= 0.0f && value.value() <= 1.0f))
+        {
+          ERROR_LOG("Invalid input: {}", argv[i]);
+          return false;
+        }
+
+        s_scheduled_inputs.push_back({frame.value(), pad.value() - 1, std::string(fields[2]), 0, value.value()});
         continue;
       }
       else if (CHECK_ARG_PARAM("-log"))
@@ -904,6 +984,8 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
     AutoBoot(autoboot)->path += argv[i];
   }
 
+  std::stable_sort(s_scheduled_inputs.begin(), s_scheduled_inputs.end(),
+                   [](const ScheduledInput& lhs, const ScheduledInput& rhs) { return lhs.frame < rhs.frame; });
   return true;
 }
 
@@ -1011,8 +1093,23 @@ int main(int argc, char* argv[])
     INFO_LOG("Dumping every {}th frame to '{}'.", s_frame_dump_interval, s_dump_base_directory);
   }
 
+  if (!RegTestHost::s_scheduled_inputs.empty() && RegTestHost::s_scheduled_inputs.back().frame >= s_frames_to_run)
+  {
+    ERROR_LOG("Input frame {} must be less than the run length {}.", RegTestHost::s_scheduled_inputs.back().frame,
+              s_frames_to_run);
+    System::ShutdownSystem(false);
+    goto cleanup;
+  }
+
+  if (!RegTestHost::ResolveScheduledInputs())
+  {
+    System::ShutdownSystem(false);
+    goto cleanup;
+  }
+
   INFO_LOG("Running for {} frames...", s_frames_to_run);
   s_frames_remaining = s_frames_to_run;
+  RegTestHost::ApplyScheduledInputs(0);
 
   {
     const Timer::Value start_time = Timer::GetCurrentValue();
