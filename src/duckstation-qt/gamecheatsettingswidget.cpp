@@ -221,7 +221,14 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.remove, &QPushButton::clicked, this, &GameCheatSettingsWidget::onRemoveCodeClicked);
   connect(m_ui.disableAll, &QPushButton::clicked, this, &GameCheatSettingsWidget::disableAllCheats);
   connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
-  connect(m_ui.importCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onImportClicked);
+
+  QMenu* const import_menu = QtUtils::NewPopupMenu(m_ui.importCheats, false);
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("From File..."), this,
+                         &GameCheatSettingsWidget::onImportFromFileTriggered);
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s), tr("From Text..."), this,
+                         &GameCheatSettingsWidget::onImportFromTextTriggered);
+  m_ui.importCheats->setMenu(import_menu);
+
   connect(m_ui.exportCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onExportClicked);
   connect(m_ui.clearCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onClearClicked);
 }
@@ -586,16 +593,6 @@ void GameCheatSettingsWidget::expandAllItems()
 {
   for (const auto& it : m_parent_map)
     m_ui.cheatList->setExpanded(m_sort_model->mapFromSource(it.second->index()), true);
-}
-
-void GameCheatSettingsWidget::onImportClicked()
-{
-  QMenu* const menu = QtUtils::NewPopupMenu(this);
-  menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("From File..."), this,
-                  &GameCheatSettingsWidget::onImportFromFileTriggered);
-  menu->addAction(QIcon(u":/icons/monochrome/svg/file-list-line.svg"_s), tr("From Text..."), this,
-                  &GameCheatSettingsWidget::onImportFromTextTriggered);
-  menu->popup(QCursor::pos());
 }
 
 void GameCheatSettingsWidget::onImportFromFileTriggered()

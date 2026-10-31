@@ -58,7 +58,6 @@ private:
   void onCheatListContextMenuRequested(const QPoint& pos);
   void onRemoveCodeClicked();
   void onReloadClicked();
-  void onImportClicked();
   void onImportFromFileTriggered();
   void onImportFromTextTriggered();
   void onExportClicked();
