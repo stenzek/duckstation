@@ -2193,15 +2193,6 @@ Pemetaan Saat Ini: %s</translation>
         <translation>Pemeriksaan Keamanan Gagal</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>PERINGATAN: Saat ini tidak aman untuk %1$s, dan melakukannya dapat menyebabkan kerusakan data. Kami menyarankan untuk melanjutkan game dan menunggu 5 detik, lalu mencoba lagi.
-
-Apakah Anda tetap ingin %1$s?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Waktu Pembuatan Token</translation>
@@ -2616,11 +2607,6 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Keluar dari Editor</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Mode Multitap</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Aktifkan Kontroler Layar Sentuh</translation>
@@ -2684,16 +2670,6 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Putar Mundur</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Muat Save State Putar Mundur</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Frame ke-%1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4177,6 +4153,41 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Rendering Lanjutan</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Keluarkan Cakram</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>PERINGATAN: Gim Anda masih menyimpan ke kartu memori. Melanjutkan sekarang dapat menyebabkan kerusakan data. Kami menyarankan untuk melanjutkan gim Anda dan menunggu 5 detik, lalu mencoba lagi.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Tetap tutup gim?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Tetap mulai ulang gim?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Tetap muat status?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Tetap simpan status?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Tetap ganti cakram?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Aktifkan Pencapaian</translation>
@@ -4430,6 +4441,31 @@ Apakah Anda tetap ingin %1$s?</translation>
         <translation>Memilih jenis kontroler yang diemulasikan.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Lewati</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Petakan Semua Input</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Meminta setiap tombol dan sumbu secara bergantian agar Anda dapat memetakannya dengan menekannya pada pengontrol.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d dari %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Aktifkan Pemetaan Sensor</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Tampilkan Input Kontroler</translation>
@@ -4448,6 +4484,11 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>Mengedit tata letak di &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Ubah Mode Multitap</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4518,6 +4559,26 @@ Apakah Anda tetap ingin %1$s?</translation>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Ganti Disk</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Putar Mundur ke Sini</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Status %1$d dari %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Terbaru</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5039,6 +5100,129 @@ Anda dapat mengubahnya nanti melalui opsi &quot;Mulai dalam Mode Big Picture&quo
         <translation>Menerapkan rantai pascapemrosesan yang dikonfigurasi di bawah.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Shader Tampilan</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Shader Internal</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Aktifkan Shader Tampilan</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Diterapkan setelah penskalaan ke layar, misalnya filter CRT.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Aktifkan Shader Internal</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Diterapkan pada resolusi internal sebelum penskalaan, misalnya SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Subbingkai</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Menampilkan bingkai tambahan untuk efek seperti penyisipan bingkai hitam.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Otomatis</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d Bingkai</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Tindakan tahap</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Ketuk untuk mengubah opsi shader.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Prasetel</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Kustom</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Jalur Gambar</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Tidak ada gambar yang dipilih.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Awal Tampilan X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Awal Tampilan Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Akhir Tampilan X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Akhir Tampilan Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Pencampuran Alfa</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Menerapkan transparansi gambar lapisan.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Pencampuran Alfa Tujuan</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Memadukan gim dengan transparansi gambar lapisan.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Tambah Shader</translation>
@@ -5133,6 +5317,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Hamparan bingkai tambahan dapat ditambahkan di
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Shader GLSL, ReShade, dan Slang tambahan dapat ditambahkan di %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Lapisan bingkai tambahan dapat ditambahkan di %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5628,6 +5822,36 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Kemudi</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>N/A</translation>
@@ -5636,6 +5860,11 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Semua File</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Tidak ada item yang cocok.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5787,6 +6016,16 @@ Contoh: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translat
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>Pengunduhan selesai.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6058,6 +6297,16 @@ Contoh: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translat
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Memilih skala resolusi yang diterapkan pada citra akhir. 1x akan menurunkan sampel ke resolusi konsol asli.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Atur Ulang SPU Saat Gim Dimulai</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Mengatur ulang SPU saat gim dimulai, menghapus sisa gema reverb BIOS pada gim yang tidak menginisialisasinya. Tidak berpengaruh saat boot cepat.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8137,6 +8386,10 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
         <translation>Aktifkan Pencatatan TTY</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Atur Ulang SPU Saat Gim Dimulai</translation>
+    </message>
+    <message>
         <source>BIOS Selection</source>
         <translation>Pilihan BIOS</translation>
     </message>
@@ -8191,6 +8444,10 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Mencatat panggilan BIOS ke printf(). Tidak semua game berisi pesan debug.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Mengatur ulang SPU saat gim dimulai, menghapus sisa gema reverb BIOS pada gim yang tidak menginisialisasinya. Tidak berpengaruh saat boot cepat.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8677,6 +8934,10 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Otomatis (Akhir Bingkai)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Otomatis (Awal Bingkai)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10146,10 +10407,6 @@ Apakah Anda tetap ingin %2?</translation>
         <translation>mengganti cakram</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Gagal beralih ke sub-citra %1</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Konfirmasi Unduhan</translation>
     </message>
@@ -10738,6 +10995,22 @@ Berkas ini dapat berukuran beberapa gigabita, jadi perhatikan keausan SSD.</tran
         <translation>&amp;Ikuti Muat/Simpan</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Ubah Register</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Masukkan nilai baru untuk %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PC harus berupa alamat yang sejajar dengan batas 4 bita.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1 telah diatur ke 0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Gagal membaca instruksi pada 0x%1.</translation>
     </message>
@@ -10791,6 +11064,10 @@ Berkas ini dapat berukuran beberapa gigabita, jadi perhatikan keausan SSD.</tran
     <message>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Gagal menghapus breakpoint. Breakpoint ini mungkin tidak ada.</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Nilai tidak valid. Harus dalam heksadesimal (0x12345678 atau 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11731,6 +12008,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Direktori BIOS</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>Citra BIOS</translation>
+    </message>
+    <message>
         <source>BIOS Install Error</source>
         <translation>Kesalahan Pemasangan BIOS</translation>
     </message>
@@ -12041,6 +12322,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>Menentukan format penyimpanan/kompresi tangkapan layar.</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Menentukan gambar yang ditampilkan di samping setiap gim dalam tampilan daftar.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -13249,6 +13534,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Mode Peregangan</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Subbingkai</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>Dukungan untuk pengontrol yang menggunakan protokol XInput. XInput hanya boleh digunakan jika Anda menggunakan pustaka pembungkus XInput.</translation>
     </message>
@@ -13779,6 +14068,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Minimal Output Latency</source>
         <translation>Latensi Output Minimal</translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>Waktu habis dalam {}...</translation>
     </message>
     <message>
         <source>Undo Load State</source>
@@ -14529,6 +14822,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Mode Daftar Ringkas</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>Ikon Daftar</translation>
+    </message>
+    <message>
         <source>Load Resume State</source>
         <translation>Muat Save State untuk Melanjutkan</translation>
     </message>
@@ -14641,6 +14938,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Pramuat Lencana</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Menampilkan bingkai tambahan untuk efek seperti penyisipan bingkai hitam. Memerlukan VSync.</translation>
+    </message>
+    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Mencegah input diproses saat aplikasi lain aktif.</translation>
     </message>
@@ -14689,6 +14990,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Atur Ulang</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Atur Ulang SPU Saat Gim Dimulai</translation>
+    </message>
+    <message>
         <source>Reset Serial</source>
         <translation>Atur Ulang Serial</translation>
     </message>
@@ -14699,6 +15004,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Reset To Default</source>
         <translation>Atur Ulang ke Bawaan</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Mengatur ulang SPU saat gim dimulai, menghapus sisa gema reverb BIOS pada gim yang tidak menginisialisasinya. Tidak berpengaruh saat boot cepat.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14909,10 +15218,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Waktu Bermain: </translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Waktu habis dalam {:.0f} detik...</translation>
-    </message>
-    <message>
         <source>Title (*)</source>
         <translation>Judul (*)</translation>
     </message>
@@ -15035,10 +15340,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Exit</source>
         <translation>Keluar</translation>
-    </message>
-    <message>
-        <source>Set Input Binding</source>
-        <translation>Atur Pengikatan Input</translation>
     </message>
     <message>
         <source>Region</source>
@@ -15308,6 +15609,13 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <comment>Loading time</comment>
         <translation>
             <numerusform>tersisa %n menit</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n Bingkai</numerusform>
         </translation>
     </message>
 </context>
@@ -15946,6 +16254,11 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Paksa Scanout di Tengah Frame</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Atur Ulang SPU Saat Gim Dimulai</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Tidak Diketahui</translation>
     </message>
@@ -16359,6 +16672,26 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Kompatibilitas</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Tidak Ada</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Sampul</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Kartu Memori</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Memindai direktori &apos;{}&apos;...</translation>
     </message>
@@ -16388,6 +16721,10 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 terbuka dalam mode hardcore</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Ikon</translation>
     </message>
 </context>
 <context>
@@ -16491,8 +16828,8 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Tampilkan Judul yang Dilokalkan</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Tampilkan Ikon Game</translation>
+        <source>Game List Icons</source>
+        <translation>Ikon Daftar Gim</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16521,6 +16858,10 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
 .ccd (Citra CloneCD)
 .chd (Citra Compressed Hunks of Data)
 .pbp (PlayStation Portable, Hanya yang Didekripsi)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Ikon Daftar Gim: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19374,6 +19715,10 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>S&amp;impan Status</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;Ikon Daftar Gim</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Pengambilan &amp;Media</translation>
     </message>
@@ -19602,10 +19947,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>&amp;Animasikan Ikon Game</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Utamakan Ikon &amp;Pencapaian</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>Log Sist&amp;em</translation>
     </message>
@@ -19802,14 +20143,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Membuka jendela pemindai memori.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Tampilkan Iko&amp;n Game</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Menampilkan ikon dari kartu memori setiap game dalam tampilan daftar.</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>Tangkap</translation>
     </message>
@@ -19912,10 +20245,6 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Menganimasikan ikon dalam tampilan daftar saat dipilih.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Memprioritaskan lencana game yang digunakan untuk RetroAchievements dibandingkan ikon kartu memori.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22429,6 +22758,26 @@ Kesalahan: {1}</translation>
     <message>
         <source>Move Down</source>
         <translation>Pindahkan ke Bawah</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Subbingkai (bingkai pascapemrosesan per bingkai gim):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Otomatis</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> Bingkai</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Subbingkai</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Menampilkan bingkai tambahan di antara setiap bingkai yang dirender konsol, yang dapat digunakan shader pascapemrosesan untuk efek seperti penyisipan bingkai hitam. Otomatis menampilkan subbingkai sebanyak yang diizinkan laju penyegaran layar, tetapi hanya saat shader yang menggunakannya aktif. Atur ke 0 untuk menonaktifkan subbingkai jika menyebabkan masalah pada shader.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25086,10 +25435,6 @@ Menggunakan citra CD saat ini; hal ini dapat menyebabkan ketidakstabilan.</trans
         <translation>Tidak ada game valid yang sedang berjalan.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Gagal beralih ke sub-citra {} dalam &apos;{}&apos;: {}.</translation>
-    </message>
-    <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Save state ini dibuat dengan opsi tercemar berikut dan mungkin tidak stabil.
@@ -25198,6 +25543,10 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
     <message>
         <source>Fast boot disabled.</source>
         <translation>Boot cepat dinonaktifkan.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Pengaturan ulang SPU saat gim dimulai dinonaktifkan.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>

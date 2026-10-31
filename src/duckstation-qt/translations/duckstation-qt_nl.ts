@@ -2207,15 +2207,6 @@ Huidige toewijzing: %s</translation>
         <translation>Veiligheidscontrole mislukt</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>WAARSCHUWING: Het is momenteel niet veilig om %1$s uit te voeren. Dit kan gegevens beschadigen. We raden aan je game te hervatten, 5 seconden te wachten en het dan opnieuw te proberen.
-
-Wil je %1$s toch uitvoeren?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Tijdstip van tokengeneratie</translation>
@@ -2638,11 +2629,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Editor sluiten</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Multitapmodus</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Aanraakschermcontroller inschakelen</translation>
@@ -2706,16 +2692,6 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Terugspoelen</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Terugspoelstatus laden</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Frame %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4203,6 +4179,41 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Geavanceerde rendering</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Schijf verwijderen</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>WAARSCHUWING: je spel slaat nog gegevens op een geheugenkaart op. Als je nu doorgaat, kunnen gegevens beschadigd raken. We raden aan het spel te hervatten, 5 seconden te wachten en het dan opnieuw te proberen.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Wil je het spel toch sluiten?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Wil je het spel toch opnieuw starten?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Wil je toch een opslagstatus laden?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Wil je toch een opslagstatus opslaan?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Wil je de schijf toch wisselen?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Prestaties inschakelen</translation>
@@ -4457,6 +4468,31 @@ Wil je %1$s toch uitvoeren?</translation>
         <translation>Selecteert het geëmuleerde controllertype.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Overslaan</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Alle invoer toewijzen</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Vraagt achtereenvolgens om elke knop en as, zodat je deze kunt toewijzen door ze op je controller te bedienen.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d van %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Sensortoewijzing inschakelen</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Controllerinvoer tonen</translation>
@@ -4475,6 +4511,11 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>Indeling bewerken in &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Multitapmodus wijzigen</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4545,6 +4586,26 @@ Wil je %1$s toch uitvoeren?</translation>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Schijf wisselen</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Hierheen terugspoelen</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Opslagstatus %1$d van %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Nieuwste</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -4953,7 +5014,7 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <comment>setup_wizard_interface_message</comment>
         <translation>Kies welke interface DuckStation bij het opstarten moet tonen. De standaardmodus is ontworpen voor aanraakschermen, terwijl de Big Picture-modus een interface op volledig scherm is die is ontworpen voor navigatie met een controller.
 
-U kunt dit later wijzigen met de optie "Starten in Big Picture-modus" in de Interface-instellingen.</translation>
+U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; in de Interface-instellingen.</translation>
     </message>
     <message>
         <source>Standard Mode</source>
@@ -5066,6 +5127,130 @@ U kunt dit later wijzigen met de optie "Starten in Big Picture-modus" in de Inte
         <translation>Past de hieronder ingestelde nabewerkingsketen toe.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Weergaveshaders</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Interne shaders</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Weergaveshaders inschakelen</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Wordt toegepast na het schalen naar het scherm, bijvoorbeeld CRT-filters.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Interne shaders inschakelen</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Wordt toegepast op de interne resolutie vóór het schalen, bijvoorbeeld SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Subframes</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Toont extra frames voor effecten zoals het invoegen van zwarte frames.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Automatisch</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d frame</numerusform>
+            <numerusform>%d frames</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Acties voor shaderfase</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Tik om shaderopties te wijzigen.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Voorinstelling</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Aangepast</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Afbeeldingspad</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Geen afbeelding geselecteerd.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Weergavestart X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Weergavestart Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Weergave-einde X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Weergave-einde Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Alfavermenging</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Past de transparantie van de overlayafbeelding toe.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Vermenging met doelalfa</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Vermengt het spel met de transparantie van de overlayafbeelding.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Shader toevoegen</translation>
@@ -5160,6 +5345,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Aanvullende randoverlays kunnen worden toegevoegd in
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Extra GLSL-, ReShade- en Slang-shaders kunnen worden toegevoegd in %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Extra randoverlays kunnen worden toegevoegd in %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5656,6 +5851,36 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Modus</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Sturen</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>N.v.t.</translation>
@@ -5664,6 +5889,11 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Alle bestanden</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Geen overeenkomende items.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5815,6 +6045,16 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>Download voltooid.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6088,6 +6328,16 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Selecteert de resolutieschaal die op het uiteindelijke beeld wordt toegepast. Bij 1x wordt teruggeschaald naar de oorspronkelijke console-resolutie.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>SPU resetten bij starten van spel</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Reset de SPU wanneer het spel start en verwijdert achtergebleven BIOS-galm in spellen die de SPU niet initialiseren. Heeft geen effect bij snel opstarten.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8173,6 +8423,10 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
         <translation>TTY-logboekregistratie inschakelen</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>SPU resetten bij starten van spel</translation>
+    </message>
+    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>BIOS-aanroepen naar printf() loggen. Niet alle games bevatten foutopsporingsberichten.</translation>
     </message>
@@ -8263,6 +8517,10 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
         <translation>Slaat images die naar de flashopslag van de cartridge zijn geschreven weer op in het bestandssysteem van de host. &lt;strong&gt;Hiermee wordt uw cartridge-dump overschreven,&lt;/strong&gt; zorg dus eerst voor een back-up.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Reset de SPU wanneer het spel start en verwijdert achtergebleven BIOS-galm in spellen die de SPU niet initialiseren. Heeft geen effect bij snel opstarten.</translation>
     </message>
     <message>
         <source>%1 (Missing)</source>
@@ -8710,6 +8968,10 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Automatisch (einde van frame)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Automatisch (begin van frame)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10180,10 +10442,6 @@ Wilt u toch doorgaan met %2?</translation>
         <translation>schijf wisselen</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Overschakelen naar subimage %1 mislukt</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Download bevestigen</translation>
     </message>
@@ -10744,6 +11002,22 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <translation>&amp;Laden/opslaan volgen</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Register wijzigen</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Voer een nieuwe waarde in voor %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>De PC moet een adres zijn dat is uitgelijnd op een grens van 4 bytes.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1 ingesteld op 0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Kan de instructie op 0x%1 niet lezen.</translation>
     </message>
@@ -10833,6 +11107,10 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Ongeldig adres. Het moet hexadecimaal zijn (0x12345678 of 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Ongeldige waarde. Deze moet hexadecimaal zijn (0x12345678 of 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11675,6 +11953,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>BIOS-map</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOS-images</translation>
+    </message>
+    <message>
         <source>BIOS Selection</source>
         <translation>BIOS-selectie</translation>
     </message>
@@ -11933,6 +12215,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Bepaalt het type geëmuleerde hardware.</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Bepaalt welke afbeelding naast elk spel in de lijstweergave wordt getoond.</translation>
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
@@ -12295,6 +12581,10 @@ De fout was:</translation>
     <message>
         <source>Leaderboards</source>
         <translation>Klassementen</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <translation>Lijstpictogrammen</translation>
     </message>
     <message>
         <source>Load Devices From Save States</source>
@@ -13745,6 +14035,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Wachtwoord</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Toont extra frames voor effecten zoals het invoegen van zwarte frames. Vereist VSync.</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Zorgt ervoor dat de game geen hoorbaar geluid produceert.</translation>
     </message>
@@ -13769,6 +14063,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Controllerinstellingen resetten</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>SPU resetten bij starten van spel</translation>
+    </message>
+    <message>
         <source>Reset Title</source>
         <translation>Titel resetten</translation>
     </message>
@@ -13791,6 +14089,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Zet alle instellingen terug op de standaardwaarden.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Reset de SPU wanneer het spel start en verwijdert achtergebleven BIOS-galm in spellen die de SPU niet initialiseren. Heeft geen effect bij snel opstarten.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14005,6 +14307,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Slaat de huidige instellingen op in een controller­voorinstelling.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Subframes</translation>
+    </message>
+    <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
         <translation>De ontgrendelingsstatus voor &apos;{}&apos; wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
     </message>
@@ -14019,6 +14325,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Time Played: </source>
         <translation>Gespeelde tijd: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>Time-out over {}...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -14701,10 +15011,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Coverafbeelding instellen</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Invoerbinding instellen</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Stelt een drempel in waarboven nauwkeurige waarden worden weggegooid. Kan helpen bij glitches in sommige games.</translation>
     </message>
@@ -15069,10 +15375,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Rendering met threads</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Time-out over {:.0f} seconden...</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>Titel</translation>
     </message>
@@ -15354,6 +15656,14 @@ Wil je toch doorgaan met {1}?</translation>
         <translation>
             <numerusform>Nog %n minuut</numerusform>
             <numerusform>Nog %n minuten</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n frame</numerusform>
+            <numerusform>%n frames</numerusform>
         </translation>
     </message>
 </context>
@@ -15993,6 +16303,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Scanout tijdens een frame forceren</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>SPU resetten bij starten van spel</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Onbekend</translation>
     </message>
@@ -16402,6 +16717,26 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Compatibiliteit</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Geen</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Hoes</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Geheugenkaarten</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Map &apos;{}&apos; wordt gescand...</translation>
     </message>
@@ -16435,6 +16770,10 @@ Weet u zeker dat u wilt doorgaan?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 ontgrendeld in hardcoremodus</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Pictogram</translation>
     </message>
 </context>
 <context>
@@ -16538,8 +16877,8 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Gelokaliseerde titels tonen</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Gamepictogrammen tonen</translation>
+        <source>Game List Icons</source>
+        <translation>Pictogrammen in spellijst</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16568,6 +16907,10 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
 .ccd (CloneCD-schijfkopie)
 .chd (Gecomprimeerde gegevensblokken)
 .pbp (PlayStation Portable, alleen ontsleuteld)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Pictogrammen in spellijst: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19586,6 +19929,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Status o&amp;pslaan</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>P&amp;ictogrammen in spellijst</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Media-&amp;opname</translation>
     </message>
@@ -19818,10 +20165,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>&amp;Spelpictogrammen animeren</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Voorkeur voor prestatiep&amp;ictogrammen</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>Syste&amp;emlogboek</translation>
     </message>
@@ -20002,14 +20345,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Opent het venster van de geheugenscanner.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Spelpictogramme&amp;n weergeven</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Toont pictogrammen van de geheugenkaart van elk spel in lijstweergave.</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>Opname</translation>
     </message>
@@ -20116,10 +20451,6 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Animeert pictogrammen in de lijstweergave wanneer ze worden geselecteerd.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Geeft de spelbadges voor RetroAchievements voorrang boven geheugenkaartpictogrammen.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22493,6 +22824,26 @@ Fout: {1}</translation>
         <translation>Omlaag verplaatsen</translation>
     </message>
     <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Subframes (nabewerkingsframes per spelframe):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> frames</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Subframes</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Toont extra frames tussen de frames die de console rendert. Nabewerkingsshaders kunnen deze gebruiken voor effecten zoals het invoegen van zwarte frames. Automatisch toont zoveel subframes als de verversingssnelheid van het scherm toelaat, maar alleen wanneer een shader actief is die ze gebruikt. Stel dit in op 0 om subframes uit te schakelen als ze problemen met een shader veroorzaken.</translation>
+    </message>
+    <message>
         <source>Clear Shader Stages</source>
         <translation>Shaderfasen wissen</translation>
     </message>
@@ -24641,7 +24992,7 @@ Wilt u doorgaan?</translation>
 You can change this at a later time by toggling the &quot;Start In Big Picture Mode&quot; setting in Interface Settings.</source>
         <translation>Kies welke interface DuckStation bij het opstarten moet tonen. De desktopmodus is ontworpen voor gebruik met muis en toetsenbord, terwijl de Big Picture-modus is geoptimaliseerd voor navigatie met een controller op een tv.
 
-U kunt dit later wijzigen door de instelling "Starten in Big Picture-modus" in de Interface-instellingen aan of uit te zetten.</translation>
+U kunt dit later wijzigen door de instelling &quot;Starten in Big Picture-modus&quot; in de Interface-instellingen aan of uit te zetten.</translation>
     </message>
     <message>
         <source>Desktop Mode</source>
@@ -24669,7 +25020,7 @@ U kunt deze optie later wijzigen via de werkbalk in de desktopmodus of via snelt
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=" margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:xx-large; font-weight:700;"&gt;Configuratie voltooid!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;U kunt nu games uitvoeren.&lt;/p&gt;&lt;p&gt;Meer opties zijn beschikbaar in het instellingenmenu. U kunt de Big Picture-interface ook volledig met een gamepad bedienen.&lt;/p&gt;&lt;p&gt;We hopen dat u DuckStation met plezier gebruikt.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Configuratie voltooid!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;U kunt nu games uitvoeren.&lt;/p&gt;&lt;p&gt;Meer opties zijn beschikbaar in het instellingenmenu. U kunt de Big Picture-interface ook volledig met een gamepad bedienen.&lt;/p&gt;&lt;p&gt;We hopen dat u DuckStation met plezier gebruikt.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language</source>
@@ -25046,10 +25397,6 @@ Uw dump is onvolledig; u moet het SBI-bestand toevoegen om deze game uit te voer
 De naam van het SBI-bestand moet overeenkomen met de naam van de schijfimage.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Overschakelen naar subimage {} in &apos;{}&apos; mislukt: {}.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Overgeschakeld naar subimage {} ({}) in &apos;{}&apos;.</translation>
     </message>
@@ -25198,6 +25545,10 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
     <message>
         <source>Fast boot disabled.</source>
         <translation>Snel opstarten uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>SPU resetten bij starten van spel uitgeschakeld.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>

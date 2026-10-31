@@ -2656,6 +2656,11 @@ Gjeldende tilordning: %s</translation>
         <translation>Annen fil…</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Ta ut plate</translation>
+    </message>
+    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Gjeldende</translation>
@@ -2684,15 +2689,6 @@ Gjeldende tilordning: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Sikkerhetskontrollen mislyktes</translation>
-    </message>
-    <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>ADVARSEL: Det er ikke trygt å %1$s nå, og det kan føre til ødelagte data. Vi anbefaler at du fortsetter spillet og venter i 5 sekunder før du prøver igjen.
-
-Vil du %1$s likevel?</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -3391,11 +3387,6 @@ Vil du %1$s likevel?</translation>
         <translation>Redigerer oppsett i &apos;%s&apos;.</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Multitap-modus</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Aktiver berøringskontroller</translation>
@@ -3541,14 +3532,84 @@ Vil du %1$s likevel?</translation>
         <translation>Tilbakespoling</translation>
     </message>
     <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Last tilbakespolingstilstand</translation>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>ADVARSEL: Spillet lagrer fortsatt til et minnekort. Hvis du fortsetter nå, kan data bli ødelagt. Vi anbefaler at du gjenopptar spillet og venter i 5 sekunder før du prøver igjen.</translation>
     </message>
     <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Bilde %1$d</translation>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Vil du avslutte spillet likevel?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Vil du starte spillet på nytt likevel?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Vil du laste en lagret tilstand likevel?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Vil du lagre en tilstand likevel?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Vil du bytte plate likevel?</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Hopp over</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Tilordne alle inndata</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Ber om hver knapp og akse etter tur, slik at du kan tilordne dem ved å bruke dem på kontrolleren.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d av %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Aktiver sensortilordning</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Endre multitapmodus</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Spol tilbake hit</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Tilstand %1$d av %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Nyeste</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4740,6 +4801,130 @@ Du kan endre dette senere med «Start i Big Picture-modus» i grensesnittinnstil
         <translation>Bruker etterbehandlingskjeden som er konfigurert nedenfor.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Visningsshadere</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Interne shadere</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Aktiver visningsshadere</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Brukes etter skalering til skjermen, f.eks. CRT-filtre.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Aktiver interne shadere</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Brukes med intern oppløsning før skalering, f.eks. SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Underbilder</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Viser ekstra bilder for effekter som innsetting av svarte bilder.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Automatisk</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d bilde</numerusform>
+            <numerusform>%d bilder</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Handlinger for trinn</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Trykk for å endre shaderalternativer.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Forhåndsinnstilling</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Egendefinert</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Bildesti</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Ingen bilder valgt.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Visningsstart X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Visningsstart Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Visningsslutt X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Visningsslutt Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Alfablanding</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Bruker gjennomsiktigheten til overleggsbildet.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Blanding med mål-alfa</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Blander spillet med gjennomsiktigheten til overleggsbildet.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Legg til shader</translation>
@@ -4834,6 +5019,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Flere kantoverlegg kan legges i
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Flere GLSL-, ReShade- og Slang-shadere kan legges til i %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Flere rammeoverlegg kan legges til i %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5575,6 +5770,36 @@ Er du sikker på at du vil fortsette?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Modus</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Styring</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <comment>touchscreen_controller_mouse_left</comment>
         <translation>Venstre knapp</translation>
@@ -5638,6 +5863,11 @@ Er du sikker på at du vil fortsette?</translation>
         <source>No matching settings.</source>
         <comment>settings_search_no_results</comment>
         <translation>Ingen samsvarende innstillinger.</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Ingen samsvarende elementer.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5956,6 +6186,16 @@ Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Mouse</source>
         <comment>touchscreen_layout_mouse</comment>
         <translation>Mus</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Edit Layout</source>
@@ -7022,6 +7262,16 @@ Vil du importere en nå?</translation>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <comment>settings_summary_tty_logging</comment>
         <translation>Logger BIOS-kall til printf(). Ikke alle spill inneholder feilsøkingsmeldinger.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Tilbakestill SPU ved spillstart</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Tilbakestiller SPU når spillet starter, og fjerner gjenværende BIOS-romklang i spill som ikke initialiserer SPU. Har ingen effekt ved hurtigoppstart.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -8171,6 +8421,10 @@ Du kan oppdatere DuckStation manuelt ved å laste ned den nyeste utgaven på nyt
         <translation>Aktiver TTY-logging</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Tilbakestill SPU ved spillstart</translation>
+    </message>
+    <message>
         <source>Select BIOS Directory</source>
         <translation>Velg BIOS-mappe</translation>
     </message>
@@ -8225,6 +8479,10 @@ Du kan oppdatere DuckStation manuelt ved å laste ned den nyeste utgaven på nyt
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Logger BIOS-kall til printf(). Ikke alle spill inneholder feilsøkingsmeldinger.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Tilbakestiller SPU når spillet starter, og fjerner gjenværende BIOS-romklang i spill som ikke initialiserer SPU. Har ingen effekt ved hurtigoppstart.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8708,6 +8966,10 @@ Denne juksekoden vil ikke fungere som forventet. Vil du fortsette?</translation>
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Automatisk (ved bildeslutt)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Automatisk (bildestart)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10176,10 +10438,6 @@ Vil du %2 likevel?</translation>
     <message>
         <source>change disc</source>
         <translation>bytte plate</translation>
-    </message>
-    <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Kunne ikke bytte til delavbildning %1</translation>
     </message>
     <message>
         <source>Confirm Download</source>
@@ -11945,6 +12203,10 @@ Denne handlingen kan ikke angres.</translation>
         <translation>BIOS-mappe</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOS-avbildninger</translation>
+    </message>
+    <message>
         <source>BIOS Install Error</source>
         <translation>Feil ved BIOS-installasjon</translation>
     </message>
@@ -12495,6 +12757,10 @@ Denne handlingen kan ikke angres.</translation>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>Bestemmer hvor ofte makroen slår knappene av og på (automatisk skyting).</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Bestemmer bildet som vises ved siden av hvert spill i listevisningen.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -13363,6 +13629,10 @@ Feilen var:</translation>
         <translation>Kompakt listemodus</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>Listeikoner</translation>
+    </message>
+    <message>
         <source>List Settings</source>
         <translation>Listeinnstillinger</translation>
     </message>
@@ -13903,6 +14173,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Forhåndslast erstatningsteksturer</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Viser ekstra bilder for effekter som innsetting av svarte bilder. Krever VSync.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Bevar projeksjonspresisjon</translation>
     </message>
@@ -14083,6 +14357,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Tilbakestill spilletid</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Tilbakestill SPU ved spillstart</translation>
+    </message>
+    <message>
         <source>Reset Serial</source>
         <translation>Tilbakestill serienummer</translation>
     </message>
@@ -14117,6 +14395,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Tilbakestiller alle innstillinger til standardverdiene.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Tilbakestiller SPU når spillet starter, og fjerner gjenværende BIOS-romklang i spill som ikke initialiserer SPU. Har ingen effekt ved hurtigoppstart.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14483,8 +14765,8 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Angi omslagsbilde</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Angi inndatatilordning</translation>
+        <source>Timing out in {}...</source>
+        <translation>Tidsavbrudd om {}...</translation>
     </message>
     <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
@@ -14851,6 +15133,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Strekkmodus</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Underbilder</translation>
+    </message>
+    <message>
         <source>Summary</source>
         <translation>Sammendrag</translation>
     </message>
@@ -14937,10 +15223,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Time Played: </source>
         <translation>Spilletid: </translation>
-    </message>
-    <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Tidsavbrudd om {:.0f} sekunder...</translation>
     </message>
     <message>
         <source>Title</source>
@@ -15372,6 +15654,14 @@ Vil du {1} likevel?</translation>
         <translation>
             <numerusform>%n minutt gjenstår</numerusform>
             <numerusform>%n minutter gjenstår</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n bilde</numerusform>
+            <numerusform>%n bilder</numerusform>
         </translation>
     </message>
 </context>
@@ -16011,6 +16301,11 @@ Er du sikker på at du vil fortsette?</translation>
         <translation>Tving utskanning midt i bildet</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Tilbakestill SPU ved spillstart</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Ukjent</translation>
     </message>
@@ -16424,6 +16719,26 @@ Er du sikker på at du vil fortsette?</translation>
         <translation>Kompatibilitet</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Omslag</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Minnekort</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Skanner mappen «{}»...</translation>
     </message>
@@ -16453,6 +16768,10 @@ Er du sikker på at du vil fortsette?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 låst opp i hardcore-modus</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Ikon</translation>
     </message>
 </context>
 <context>
@@ -16556,8 +16875,8 @@ Rekursiv skanning tar lengre tid, men finner filer i undermapper.</translation>
         <translation>Vis lokaliserte titler</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Vis spillikoner</translation>
+        <source>Game List Icons</source>
+        <translation>Ikoner i spillisten</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16586,6 +16905,10 @@ Rekursiv skanning tar lengre tid, men finner filer i undermapper.</translation>
 .ccd (CloneCD-avbildning)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, kun dekryptert)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Ikoner i spillisten: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19388,6 +19711,10 @@ Shift-klikk for å angi flere tilordninger.</translation>
         <translation>Sorter &amp;etter</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;Ikoner i spillisten</translation>
+    </message>
+    <message>
         <source>&amp;Toolbar</source>
         <translation>&amp;Verktøylinje</translation>
     </message>
@@ -20008,14 +20335,6 @@ Shift-klikk for å angi flere tilordninger.</translation>
         <translation>Åpner minneskannervinduet.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Vis spill&amp;ikoner</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Viser ikoner fra minnekortet til hvert spill i listevisningen.</translation>
-    </message>
-    <message>
         <source>Media Ca&amp;pture</source>
         <translation>Medie&amp;opptak</translation>
     </message>
@@ -20162,14 +20481,6 @@ Shift-klikk for å angi flere tilordninger.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Animerer ikoner i listevisningen når de er valgt.</translation>
-    </message>
-    <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Foretrekk &amp;prestasjonsikoner</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Prioriterer spillmerkene som brukes til RetroAchievements fremfor minnekortikoner.</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -22509,6 +22820,26 @@ Feil: {1}</translation>
     <message>
         <source>Move Down</source>
         <translation>Flytt ned</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Underbilder (etterbehandlingsbilder per spillbilde):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Automatisk</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> bilder</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Underbilder</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Viser ekstra bilder mellom hvert bilde konsollen gjengir. Etterbehandlingsshadere kan bruke disse til effekter som innsetting av svarte bilder. Automatisk viser så mange underbilder som skjermens oppdateringsfrekvens tillater, men bare når en shader som bruker dem er aktiv. Sett verdien til 0 for å deaktivere underbilder hvis de forårsaker problemer med en shader.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25112,10 +25443,6 @@ Avbildningen er ufullstendig. Du må legge til SBI-filen for å kjøre dette spi
 SBI-filen må ha samme navn som plateavbildningen.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Kunne ikke bytte til delavbildning {} i &apos;{}&apos;: {}.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Byttet til delavbildning {} ({}) i &apos;{}&apos;.</translation>
     </message>
@@ -25248,6 +25575,10 @@ Du må lagre til et minnekort og tilbakestille spillet for å fjerne virkningene
     <message>
         <source>Fast boot disabled.</source>
         <translation>Hurtigoppstart deaktivert.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Tilbakestilling av SPU ved spillstart deaktivert.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>

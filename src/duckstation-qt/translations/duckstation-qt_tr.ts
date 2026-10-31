@@ -2193,15 +2193,6 @@ Mevcut Atama: %s</translation>
         <translation>Güvenlik Denetimi Başarısız</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>UYARI: Şu anda %1$s işlemini yapmak güvenli değil ve bu işlem verilerin bozulmasına neden olabilir. Oyununuza devam edip 5 saniye beklemenizi, ardından yeniden denemenizi öneririz.
-
-Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Erişim Belirteci Oluşturma Zamanı</translation>
@@ -2616,11 +2607,6 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Düzenleyiciden Çık</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Multitap Modu</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Dokunmatik Oyun Kolunu Etkinleştir</translation>
@@ -2684,16 +2670,6 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Geri Sar</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Geri Sarma Durumunu Yükle</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Kare %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4177,6 +4153,41 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Gelişmiş Çizim</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>CD&apos;yi Çıkar</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>UYARI: Oyununuz hâlâ bir hafıza kartına kayıt yapıyor. Şimdi devam etmek verilerin bozulmasına neden olabilir. Oyuna dönmenizi, 5 saniye beklemenizi ve ardından tekrar denemenizi öneririz.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Yine de oyunu kapatmak istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Yine de oyunu yeniden başlatmak istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Yine de bir durum kaydı yüklemek istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Yine de bir durum kaydı kaydetmek istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Yine de diski değiştirmek istiyor musunuz?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Başarımları Etkinleştir</translation>
@@ -4430,6 +4441,31 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <translation>Öykünülen kol tipini seçer.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Atla</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Tüm Girdileri Ata</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Her düğmeyi ve ekseni sırayla sorar; böylece kontrolcünüzde bunlara basarak veya eksenleri hareket ettirerek atama yapabilirsiniz.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d / %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Sensör Eşlemeyi Etkinleştir</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Kol Girişlerini Göster</translation>
@@ -4448,6 +4484,11 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>&apos;%s&apos; içindeki düzen düzenleniyor.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Multitap Modunu Değiştir</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4518,6 +4559,26 @@ Yine de %1$s işlemini yapmak istiyor musunuz?</translation>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>CD Değiştir</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Buraya Geri Sar</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Durum Kaydı %1$d / %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>En Yeni</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5039,6 +5100,129 @@ Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat
         <translation>Aşağıda yapılandırılan görsel efekt zincirini uygular.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Ekran Gölgelendiricileri</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Dahili Gölgelendiriciler</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Ekran Gölgelendiricilerini Etkinleştir</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Ekrana ölçeklendirmeden sonra uygulanır; örneğin CRT filtreleri.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Dahili Gölgelendiricileri Etkinleştir</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Ölçeklendirmeden önce dahili çözünürlükte uygulanır; örneğin SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Alt Kareler</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Siyah kare ekleme gibi efektler için ek kareler sunar.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Otomatik</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d Kare</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Aşama işlemleri</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Gölgelendirici seçeneklerini değiştirmek için dokunun.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Ön Ayar</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Özel</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Görüntü Yolu</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Görüntü seçilmedi.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Görüntü Başlangıcı X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Görüntü Başlangıcı Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Görüntü Sonu X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Görüntü Sonu Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Alfa Harmanlaması</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Kaplama görüntüsünün saydamlığını uygular.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Hedef Alfa Harmanlaması</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Oyun görüntüsünü kaplama görüntüsünün saydamlığıyla harmanlar.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Gölgelendirici Ekle</translation>
@@ -5133,6 +5317,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Ek kenar kaplamaları şu dizine eklenebilir:
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Ek GLSL, ReShade ve Slang gölgelendiricileri %1$s konumuna eklenebilir.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Ek kenarlık kaplamaları %1$s konumuna eklenebilir.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5628,6 +5822,36 @@ Devam etmek istediğinize emin misiniz?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L (Sol)</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R (Sağ)</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Mod</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Direksiyon</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>Yok</translation>
@@ -5636,6 +5860,11 @@ Devam etmek istediğinize emin misiniz?</translation>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Tüm Dosyalar</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Eşleşen öğe yok.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5787,6 +6016,16 @@ ${serial}: Oyunun seri numarası.
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>İndirme tamamlandı.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6058,6 +6297,16 @@ ${serial}: Oyunun seri numarası.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Son görüntüye uygulanacak çözünürlük ölçeğini seçer. 1x, görüntüyü konsolun orijinal çözünürlüğüne küçültür.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Oyun Başlangıcında SPU’yu Sıfırla</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Oyun başladığında SPU’yu sıfırlayarak SPU’yu başlatmayan oyunlarda BIOS’tan kalan yankıları giderir. Hızlı başlatmada etkisi yoktur.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8141,6 +8390,10 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
         <translation>TTY Kaydını Aç</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Oyun Başlangıcında SPU’yu Sıfırla</translation>
+    </message>
+    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>BIOS çağrılarını printf()&apos;e kaydet. Her oyunda hata ayıklama mesajları yoktur.</translation>
     </message>
@@ -8191,6 +8444,10 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
         <translation>Kartuşun flash depolamasına yazılan imajları ana sistemin dosya sistemine geri kaydeder. &lt;strong&gt;Bu işlem kartuş dökümünüzün üzerine yazacaktır;&lt;/strong&gt; önce bir yedeğiniz olduğundan emin olmalısınız.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Oyun başladığında SPU’yu sıfırlayarak SPU’yu başlatmayan oyunlarda BIOS’tan kalan yankıları giderir. Hızlı başlatmada etkisi yoktur.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8677,6 +8934,10 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Otomatik (Kare Sonu)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Otomatik (Kare Başlangıcı)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10142,10 +10403,6 @@ Yine de %2 istiyor musunuz?</translation>
         <translation>diski değiştirmek</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>%1 numaralı alt görüntüye geçilemedi</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>İndirmeyi Onayla</translation>
     </message>
@@ -10696,6 +10953,22 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         <translation>Yükleme/Saklama Adresini &amp;İzle</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Yazmacı Değiştir</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>%1 için yeni değeri girin:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PC, 4 baytlık sınıra hizalanmış bir adres olmalıdır.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1, 0x%2 olarak ayarlandı.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>0x%1 adresindeki yönerge okunamadı.</translation>
     </message>
@@ -10791,6 +11064,10 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Geçersiz adres. Onaltılık biçimde olmalıdır (0x12345678 veya 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Geçersiz değer. Onaltılık olmalıdır (0x12345678 veya 12345678)</translation>
     </message>
 </context>
 <context>
@@ -12087,6 +12364,10 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Makronun tuşları aç kapa yapma sıklığını ayarlar. (Autofire diye geçer).</translation>
     </message>
     <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Liste görünümünde her oyunun yanında gösterilen görüntüyü belirler.</translation>
+    </message>
+    <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
         <translation>Ekranın kenarı ile ekranda beliren mesajların arasını ayarlar.</translation>
     </message>
@@ -12449,6 +12730,10 @@ Hata şuydu:</translation>
         <translation>Uzunluk: {}</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>Liste Simgeleri</translation>
+    </message>
+    <message>
         <source>Load Devices From Save States</source>
         <translation>Cihazları Durum Kayıtlarından Yükle</translation>
     </message>
@@ -12597,6 +12882,10 @@ Hata şuydu:</translation>
         <translation>Tuş atamaları yapılmış bir kol çıkarılınca emülasyonu duraklatır.</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Siyah kare ekleme gibi efektler için ek kareler sunar. VSync gerektirir.</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>Aç/Kapa İçin Bas</translation>
     </message>
@@ -12673,6 +12962,10 @@ Hata şuydu:</translation>
         <translation>Kol Ayarlarını Resetle</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Oyun Başlangıcında SPU’yu Sıfırla</translation>
+    </message>
+    <message>
         <source>Reset Serial</source>
         <translation>Seri Numarasını Sıfırla</translation>
     </message>
@@ -12687,6 +12980,10 @@ Hata şuydu:</translation>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Tüm ayarları varsayılanlara çevirir.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Oyun başladığında SPU’yu sıfırlayarak SPU’yu başlatmayan oyunlarda BIOS’tan kalan yankıları giderir. Hızlı başlatmada etkisi yoktur.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -12771,6 +13068,10 @@ Hata şuydu:</translation>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
         <translation>Çözünürlük yükseltilmeden yapılan rasterleştirmeye bağlı, bir piksel yüksekliğindeki veya genişliğindeki çizgileri algılayarak çözünürlük yükseltmenin oluşturduğu boşlukları doldurmaya çalışır.</translation>
+    </message>
+    <message>
+        <source>BIOS Images</source>
+        <translation>BIOS Görüntüleri</translation>
     </message>
     <message>
         <source>Back</source>
@@ -13273,6 +13574,10 @@ Hata şuydu:</translation>
         <translation>Şimdiki ayarları kol profiline kaydeder.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Alt Kareler</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>XInput protokolünü kullanan denetleyiciler için destek sağlar. XInput yalnızca bir XInput sarmalayıcı kitaplığı kullanıyorsanız kullanılmalıdır.</translation>
     </message>
@@ -13315,6 +13620,10 @@ Hata şuydu:</translation>
     <message>
         <source>Time Played: </source>
         <translation>Oynanan Süre: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>{} sonra zaman aşımı...</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -14758,10 +15067,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Oturum: {}</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Girdi Tuş Atamasını Ayarla</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Aşıldığında hassas değerlerin atılması için bir eşik belirler. Bazı oyunlardaki hatalara yardımcı olabilir.</translation>
     </message>
@@ -15066,10 +15371,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Ayrı İş Parçacıklı Çizim</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Zaman aşımına {:.0f} saniye kaldı...</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>İsim</translation>
     </message>
@@ -15309,6 +15610,13 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
         <comment>Loading time</comment>
         <translation>
             <numerusform>%n dakika kaldı</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n Kare</numerusform>
         </translation>
     </message>
 </context>
@@ -16007,6 +16315,11 @@ Devam etmekten emin misiniz?</translation>
         <translation>Kare Ortasında Ekrana Aktarımı Zorla</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Oyun Başlangıcında SPU’yu Sıfırla</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>Hızlı Başlangıç Kapatıldı.</translation>
     </message>
@@ -16356,6 +16669,26 @@ Devam etmekten emin misiniz?</translation>
         <translation>Uyumluluk</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Hiç</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Kapak</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Hafıza Kartları</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>&apos;{}&apos; dizini taranıyor...</translation>
     </message>
@@ -16389,6 +16722,10 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>Zor modda %1 açıldı</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Simge</translation>
     </message>
 </context>
 <context>
@@ -16492,8 +16829,8 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>Yerelleştirilmiş Başlıkları Göster</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Oyun Simgelerini Göster</translation>
+        <source>Game List Icons</source>
+        <translation>Oyun Listesi Simgeleri</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16522,6 +16859,10 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
 .ccd (CloneCD Görüntüsü)
 .chd (Sıkıştırılmış Parçalar Görüntüsü)
 .pbp (PlayStation Portable, Yalnızca Şifresi Çözülmüş)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Oyun Listesi Simgeleri: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19367,6 +19708,10 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
         <translation>Durum Kaydını &amp;Kaydet</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>Oyun Listesi &amp;Simgeleri</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Medya &amp;Yakalama</translation>
     </message>
@@ -19595,10 +19940,6 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
         <translation>Oyun Simgelerini &amp;Canlandır</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Başarım Simgelerini &amp;Tercih Et</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>Sistem &amp;Günlüğü</translation>
     </message>
@@ -19787,14 +20128,6 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
         <translation>Bellek tarayıcısı penceresini açar.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Oyun Simgelerini G&amp;öster</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Liste görünümünde her oyunun hafıza kartındaki simgeleri gösterir.</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>Yakala</translation>
     </message>
@@ -19897,10 +20230,6 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Seçildiğinde liste görünümündeki simgeleri canlandırır.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>RetroAchievements için kullanılan oyun rozetlerine, hafıza kartı simgelerine göre öncelik verir.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22430,6 +22759,26 @@ Hata: {1}</translation>
     <message>
         <source>Move Down</source>
         <translation>Aşağı İndir</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Alt kareler (oyun karesi başına son işleme karesi):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Otomatik</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> Kare</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Alt Kareler</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Konsolun oluşturduğu her karenin arasında ek kareler sunar. Son işleme gölgelendiricileri bu kareleri siyah kare ekleme gibi efektler için kullanabilir. Otomatik ayar, ekranın yenileme hızının izin verdiği kadar alt kare sunar; ancak yalnızca bunları kullanan bir gölgelendirici etkinken. Alt kareler bir gölgelendiricide sorun yaratıyorsa bunları devre dışı bırakmak için 0 olarak ayarlayın.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25067,10 +25416,6 @@ Mevcut CD görüntüsü kullanılıyor; bu kararsızlığa neden olabilir.</tran
         <translation>Geçerli bir oyun çalışmıyor.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>{} numaralı alt görüntüye &apos;{}&apos; içinde geçilemedi: {}.</translation>
-    </message>
-    <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Bu durum kaydı aşağıdaki riskli seçeneklerle oluşturuldu ve kararsız olabilir.
@@ -25179,6 +25524,10 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     <message>
         <source>Fast boot disabled.</source>
         <translation>Hızlı Başlangıç Kapatıldı.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Oyun başlangıcında SPU sıfırlama devre dışı bırakıldı.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>

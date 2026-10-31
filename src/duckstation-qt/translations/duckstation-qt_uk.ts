@@ -2219,15 +2219,6 @@ Current Binding: %s</source>
         <translation>Перевірка безпеки не пройдена</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>ПОПЕРЕДЖЕННЯ: зараз небезпечно виконувати дію «%1$s», оскільки це може призвести до пошкодження даних. Рекомендуємо продовжити гру, зачекати 5 секунд і повторити спробу.
-
-Виконати дію «%1$s» попри це?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Час створення токена</translation>
@@ -2658,11 +2649,6 @@ Do you want to %1$s anyway?</source>
         <translation>Вийти з редактора</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Режим мультитапу</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Увімкнути сенсорний контролер</translation>
@@ -2726,16 +2712,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Перемотування назад</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Завантажити стан перемотування назад</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Кадр %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4227,6 +4203,41 @@ Do you want to %1$s anyway?</source>
         <translation>Додаткові налаштування рендерингу</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Вийняти диск</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>УВАГА: гра все ще зберігає дані на картку пам’яті. Якщо продовжити зараз, дані може бути пошкоджено. Радимо повернутися до гри, зачекати 5 секунд і спробувати знову.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Усе одно закрити гру?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Усе одно перезапустити гру?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Усе одно завантажити стан?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Усе одно зберегти стан?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Усе одно змінити диск?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Увімкнути досягнення</translation>
@@ -4482,6 +4493,31 @@ Do you want to %1$s anyway?</source>
         <translation>Вибирає тип емульованого контролера.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Пропустити</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Призначити всі елементи керування</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>По черзі запитує кожну кнопку й вісь, щоб ви могли призначити їх, натискаючи відповідні кнопки та рухаючи осі на контролері.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d з %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Увімкнути зіставлення датчиків</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Показати введення контролера</translation>
@@ -4500,6 +4536,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>Редагування розкладки в &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Змінити режим Multitap</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4570,6 +4611,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Змінити диск</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Перемотати сюди</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Стан %1$d з %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Останній</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5091,6 +5152,131 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>Застосовує налаштований нижче ланцюжок постобробки.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Шейдери екрана</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Внутрішні шейдери</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Увімкнути шейдери екрана</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Застосовуються після масштабування під екран, наприклад фільтри ЕПТ.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Увімкнути внутрішні шейдери</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Застосовуються у внутрішній роздільній здатності до масштабування, наприклад SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Підкадри</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Виводить додаткові кадри для таких ефектів, як вставлення чорних кадрів.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Автоматично</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d кадр</numerusform>
+            <numerusform>%d кадри</numerusform>
+            <numerusform>%d кадрів</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Дії з етапом</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Торкніться, щоб змінити параметри шейдера.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Попереднє налаштування</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Власне</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Шлях до зображення</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Зображення не вибрано.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Початок області виведення за X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Початок області виведення за Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Кінець області виведення за X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Кінець області виведення за Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Альфа-змішування</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Застосовує прозорість зображення накладання.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Альфа-змішування призначення</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Змішує зображення гри з урахуванням прозорості зображення накладання.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Додати шейдер</translation>
@@ -5185,6 +5371,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Додаткові накладення рамок можна додати в
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Додаткові шейдери GLSL, ReShade та Slang можна додати до %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Додаткові рамки накладання можна додати до %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5682,6 +5878,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Режим</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Кермування</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>Н/Д</translation>
@@ -5690,6 +5916,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Усі файли</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Немає відповідних елементів.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5841,6 +6072,16 @@ ${serial}: Серійний номер гри.
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>Завантаження завершено.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6116,6 +6357,16 @@ ${serial}: Серійний номер гри.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Вибір масштабу роздільної здатності, який буде застосовано до кінцевого зображення. Значення 1x знизить роздільну здатність до початкової роздільної здатності консолі.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Скидати SPU під час запуску гри</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Скидає SPU під час запуску гри, усуваючи залишкове відлуння реверберації BIOS в іграх, які не ініціалізують SPU. Не діє під час швидкого завантаження.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8201,6 +8452,10 @@ DuckStation можна оновити вручну, повторно заван�
         <translation>Увімкнути ведення журналу TTY</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Скидати SPU під час запуску гри</translation>
+    </message>
+    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Записує в журнал виклики printf() у BIOS. Не всі ігри містять налагоджувальні повідомлення.</translation>
     </message>
@@ -8251,6 +8506,10 @@ DuckStation можна оновити вручну, повторно заван�
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
         <translation>Зберігає всі зміни, внесені до флеш-пам&apos;яті картриджа, назад у файлову систему хоста. &lt;strong&gt;Це перезапише ваш дамп картриджа,&lt;/strong&gt; тому спочатку переконайтеся, що у вас є резервна копія.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Скидає SPU під час запуску гри, усуваючи залишкове відлуння реверберації BIOS в іграх, які не ініціалізують SPU. Не діє під час швидкого завантаження.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8739,6 +8998,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Автоматично (кінець кадру)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Автоматично (на початку кадру)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10214,10 +10477,6 @@ Do you want to %2 anyway?</source>
         <translation>змінити диск</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Не вдалося переключитися на підобраз %1</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Підтвердити завантаження</translation>
     </message>
@@ -10768,6 +11027,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;Відстежувати завантаження/збереження</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Змінити регістр</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Введіть нове значення для %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>Адреса в PC має бути вирівняна по межі 4 байтів.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>Установлено значення %1: 0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Не вдалося прочитати інструкцію за адресою 0x%1.</translation>
     </message>
@@ -10871,6 +11146,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Неправильна адреса. Вона має бути у шістнадцятковому форматі (0x12345678 або 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Неприпустиме значення. Воно має бути шістнадцятковим (0x12345678 або 12345678)</translation>
     </message>
 </context>
 <context>
@@ -12933,6 +13212,10 @@ Please check your username and password, and try again.</source>
         <translation>Віддавати перевагу контексту OpenGL ES</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Виводить додаткові кадри для таких ефектів, як вставлення чорних кадрів. Потрібна вертикальна синхронізація.</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>Натисніть для перемикання</translation>
     </message>
@@ -12965,6 +13248,10 @@ Please check your username and password, and try again.</source>
         <translation>Скидання налаштувань контролера</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Скидати SPU під час запуску гри</translation>
+    </message>
+    <message>
         <source>Reset Unlock</source>
         <translation>Скинути розблокування</translation>
     </message>
@@ -12979,6 +13266,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Скидання всіх налаштувань до значень за замовчуванням.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Скидає SPU під час запуску гри, усуваючи залишкове відлуння реверберації BIOS в іграх, які не ініціалізують SPU. Не діє під час швидкого завантаження.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -13241,6 +13532,10 @@ Please check your username and password, and try again.</source>
         <translation>Зберігає поточні налаштування у пресет контролера.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Підкадри</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>Підтримка контролерів, які використовують протокол XInput. XInput слід використовувати лише тоді, коли ви використовуєте бібліотеку-обгортку XInput.</translation>
     </message>
@@ -13259,10 +13554,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>Час гри:</translation>
-    </message>
-    <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Тайм-аут через {:.0f} секунд...</translation>
     </message>
     <message>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
@@ -13505,6 +13796,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Автоматично зберігає стан системи під час закриття гри або виходу з неї. Наступного разу ви зможете відновити гру прямо з того місця, де зупинилися.</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>Образи BIOS</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <translation>Прив&apos;язки</translation>
     </message>
@@ -13607,6 +13902,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>Визначити частоту, з якою макрос включатиме і вимикатиме кнопки (так званий автоматичний вогонь).</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Визначає зображення, яке показується поруч із кожною грою в режимі списку.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -13945,6 +14244,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Таблиці лідерів</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>Піктограми списку</translation>
+    </message>
+    <message>
         <source>List Settings</source>
         <translation>Налаштування списку</translation>
     </message>
@@ -13966,7 +14269,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
-        <translation>Завантажує образ гри в оперативну пам'ять. Корисно для мережевих шляхів, які можуть стати ненадійними під час гри.</translation>
+        <translation>Завантажує образ гри в оперативну пам&apos;ять. Корисно для мережевих шляхів, які можуть стати ненадійними під час гри.</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -14829,10 +15132,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Сесія: {}</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Встановити прив&apos;язку введення</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Встановлює поріг для відкидання точних значень при перевищенні. Може допомогти з багами в деяких іграх.</translation>
     </message>
@@ -15125,6 +15424,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Потокове відображення</translation>
     </message>
     <message>
+        <source>Timing out in {}...</source>
+        <translation>Час очікування спливе за {}...</translation>
+    </message>
+    <message>
         <source>Title</source>
         <translation>Заголовок</translation>
     </message>
@@ -15396,6 +15699,15 @@ Do you want to {0} anyway?</source>
             <numerusform>Залишилася %n хвилина</numerusform>
             <numerusform>Залишилося %n хвилини</numerusform>
             <numerusform>Залишилося %n хвилин</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n кадр</numerusform>
+            <numerusform>%n кадри</numerusform>
+            <numerusform>%n кадрів</numerusform>
         </translation>
     </message>
 </context>
@@ -16120,6 +16432,11 @@ Are you sure you want to continue?</source>
         <translation>Примусове виведення зображення посеред кадру</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Скидати SPU під час запуску гри</translation>
+    </message>
+    <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Прискорений доступ до картки пам&apos;яті вимкнено.</translation>
     </message>
@@ -16445,6 +16762,26 @@ Are you sure you want to continue?</source>
         <translation>Сумісність</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Немає</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Обкладинка</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Картки пам&apos;яті</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Сканування каталогу &apos;{}&apos;...</translation>
     </message>
@@ -16478,6 +16815,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 розблоковано в режимі «Хардкор»</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Значок</translation>
     </message>
 </context>
 <context>
@@ -16581,8 +16922,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Показати локалізовані назви</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Показати піктограми ігор</translation>
+        <source>Game List Icons</source>
+        <translation>Значки списку ігор</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16611,6 +16952,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd (образ CloneCD)
 .chd (стиснені блоки даних)
 .pbp (PlayStation Portable, лише розшифровані)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Значки списку ігор: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19484,6 +19829,10 @@ Shift-click to set multiple bindings.</source>
         <translation>З&amp;берегти стан</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;Значки списку ігор</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Захоплення &amp;медіа</translation>
     </message>
@@ -19708,14 +20057,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Відкриває вікно сканера пам&apos;яті.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Показати зна&amp;чки ігор</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Показує значки з картки пам&apos;яті кожної гри у вигляді списку.</translation>
-    </message>
-    <message>
         <source>Controller Prese&amp;ts</source>
         <translation>Передустановки кон&amp;тролера</translation>
     </message>
@@ -19766,10 +20107,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Анімує значки у вигляді списку, коли вони вибрані.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Встановлює пріоритет значків ігор, які використовуються для RetroAchievements, над значками карток пам&apos;яті.</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
@@ -20214,10 +20551,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>&amp;Animate Game Icons</source>
         <translation>&amp;Анімувати значки ігор</translation>
-    </message>
-    <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Надавати перевагу значкам досягнен&amp;ь</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -22546,6 +22879,26 @@ Error: {1}</source>
     <message>
         <source>Move Down</source>
         <translation>Перемістити вниз</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Підкадри (кадрів післяобробки на кадр гри):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Автоматично</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> кадрів</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Підкадри</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Виводить додаткові кадри між кадрами, які відтворює консоль. Шейдери післяобробки можуть використовувати їх для таких ефектів, як вставлення чорних кадрів. Автоматичний режим виводить стільки підкадрів, скільки дозволяє частота оновлення екрана, але лише коли активний шейдер, що їх використовує. Установіть 0, щоб вимкнути підкадри, якщо вони спричиняють проблеми з шейдером.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25105,7 +25458,7 @@ The name of the SBI file must match the name of the disc image.</source>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>Цей збережений стан було створено з використанням наведених нижче небезпечних налаштувань і може бути нестабільним.
-Щоб усунути всі наслідки, необхідно зберегти гру на картку пам'яті та перезапустити її.</translation>
+Щоб усунути всі наслідки, необхідно зберегти гру на картку пам&apos;яті та перезапустити її.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
@@ -25225,10 +25578,6 @@ Using current CD image, this may result in instability.</source>
         <translation>Картку змінено на {}.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Не вдалося переключитися на підобраз {} у &apos;{}&apos;: {}.</translation>
-    </message>
-    <message>
         <source>Texture filtering disabled.</source>
         <translation>Фільтрування текстур вимкнено.</translation>
     </message>
@@ -25311,6 +25660,10 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>Fast boot disabled.</source>
         <translation>Швидке завантаження вимкнено.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Скидання SPU під час запуску гри вимкнено.</translation>
     </message>
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>

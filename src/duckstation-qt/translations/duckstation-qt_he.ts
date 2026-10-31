@@ -2206,15 +2206,6 @@ Current Binding: %s</source>
         <translation>בדיקת הבטיחות נכשלה</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>אזהרה: כרגע לא בטוח לבצע את הפעולה %1$s, וביצועה עלול לגרום להשחתת נתונים. מומלץ להמשיך במשחק ולהמתין 5 שניות, ואז לנסות שוב.
-
-האם לבצע את הפעולה %1$s בכל זאת?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>זמן יצירת האסימון</translation>
@@ -2637,11 +2628,6 @@ Do you want to %1$s anyway?</source>
         <translation>יציאה מהעורך</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>מצב Multitap</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>הפעלת בקר מסך המגע</translation>
@@ -2705,16 +2691,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>חזרה לאחור</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>טעינת מצב חזרה לאחור</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>פריים %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4202,6 +4178,41 @@ Do you want to %1$s anyway?</source>
         <translation>רינדור מתקדם</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>הסר דיסק</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>אזהרה: המשחק עדיין שומר נתונים לכרטיס זיכרון. המשך כעת עלול לגרום להשחתת נתונים. מומלץ להמשיך במשחק ולהמתין 5 שניות, ואז לנסות שוב.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>האם לסגור את המשחק בכל זאת?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>האם להפעיל מחדש את המשחק בכל זאת?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>האם לטעון מצב בכל זאת?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>האם לשמור מצב בכל זאת?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>האם להחליף את הדיסק בכל זאת?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>הפעלת הישגים</translation>
@@ -4456,6 +4467,31 @@ Do you want to %1$s anyway?</source>
         <translation>בוחר את סוג הבקר המדומה.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>דילוג</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>מיפוי כל הקלטים</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>מבקש כל כפתור וציר בתורם, כדי שתוכל למפות אותם באמצעות הפעלתם בבקר שלך.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d מתוך %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>הפעלת מיפוי חיישנים</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>הצגת קלט בקר</translation>
@@ -4474,6 +4510,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>עריכת פריסה ב-&apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>שינוי מצב Multitap</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4544,6 +4585,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>החלף דיסק</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>חזרה לאחור עד לכאן</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>מצב %1$d מתוך %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>האחרון</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5065,6 +5126,130 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>מחיל את שרשרת העיבוד לאחר רינדור שהוגדרה למטה.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>מצללי תצוגה</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>מצללים פנימיים</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>הפעלת מצללי תצוגה</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>מוחלים לאחר התאמת הגודל למסך, למשל מסנני CRT.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>הפעלת מצללים פנימיים</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>מוחלים ברזולוציה הפנימית לפני שינוי הגודל, למשל SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>תת־פריימים</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>מציג פריימים נוספים לאפקטים כגון הוספת פריימים שחורים.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>אוטומטי</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d פריים</numerusform>
+            <numerusform>%d פריימים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>פעולות שלב</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>הקש לשינוי אפשרויות המצלל.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>הגדרה קבועה מראש</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>מותאם אישית</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>נתיב לתמונה</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>לא נבחרה תמונה.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>תחילת תצוגה X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>תחילת תצוגה Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>סוף תצוגה X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>סוף תצוגה Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>מיזוג אלפא</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>מחיל את השקיפות של תמונת השכבה העליונה.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>מיזוג אלפא של היעד</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>ממזג את המשחק עם השקיפות של תמונת השכבה העליונה.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>הוספת שיידר</translation>
@@ -5159,6 +5344,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 ניתן להוסיף שכבות־על נוספות של מסגרת בנתיב
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>ניתן להוסיף מצללי GLSL,‏ ReShade ו־Slang נוספים ב־%1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>ניתן להוסיף שכבות מסגרת נוספות ב־%1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5655,6 +5850,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>מצב</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>היגוי</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>לא זמין</translation>
@@ -5663,6 +5888,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>כל הקבצים</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>אין פריטים תואמים.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5814,6 +6044,16 @@ ${serial}: המספר הסידורי של המשחק.
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>ההורדה הושלמה.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6087,6 +6327,16 @@ ${serial}: המספר הסידורי של המשחק.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>בוחר את קנה המידה של הרזולוציה שיוחל על התמונה הסופית. 1x יקטין את הדגימה לרזולוציית הקונסולה המקורית.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>איפוס SPU בתחילת המשחק</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>מאפס את ה־SPU בתחילת המשחק ומסיר הדי הדהוד שנותרו מה־BIOS במשחקים שאינם מאתחלים אותו. אין לכך השפעה בעת אתחול מהיר.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8171,6 +8421,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>הפעלת רישום TTY</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>איפוס SPU בתחילת המשחק</translation>
+    </message>
+    <message>
         <source>Unchecked</source>
         <translation>לא מסומן</translation>
     </message>
@@ -8225,6 +8479,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>מתעד קריאות BIOS באמצעות printf(). לא כל המשחקים כוללים הודעות ניפוי.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>מאפס את ה־SPU בתחילת המשחק ומסיר הדי הדהוד שנותרו מה־BIOS במשחקים שאינם מאתחלים אותו. אין לכך השפעה בעת אתחול מהיר.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8708,6 +8966,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatic (Frame End)</source>
         <translation>אוטומטי (סוף פריים)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>אוטומטי (תחילת פריים)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10178,10 +10440,6 @@ Do you want to %2 anyway?</source>
         <translation>החלפת דיסק</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>המעבר לתת־תמונה %1 נכשל</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>אישור הורדה</translation>
     </message>
@@ -10742,6 +11000,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;מעקב אחר טעינה/שמירה</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>שינוי אוגר</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>הזן ערך חדש עבור %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>ה־PC חייב להיות כתובת המיושרת לגבול של 4 בתים.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1 הוגדר ל־0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>נכשל בקריאת הפקודה ב־0x%1.</translation>
     </message>
@@ -10831,6 +11105,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>כתובת לא חוקית. עליה להיות בהקסדצימלי (0x12345678 או 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>ערך לא תקין. עליו להיות בהקסדצימלי (0x12345678 או 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11673,6 +11951,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>תיקיית BIOS</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>תמונות BIOS</translation>
+    </message>
+    <message>
         <source>BIOS Selection</source>
         <translation>בחירת BIOS</translation>
     </message>
@@ -11931,6 +12213,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Determines the emulated hardware type.</source>
         <translation>קובע את סוג החומרה המדומה.</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>קובע איזו תמונה תוצג לצד כל משחק בתצוגת הרשימה.</translation>
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
@@ -12293,6 +12579,10 @@ Error was:</source>
     <message>
         <source>Leaderboards</source>
         <translation>לוחות תוצאות</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <translation>סמלי הרשימה</translation>
     </message>
     <message>
         <source>Load Devices From Save States</source>
@@ -13743,6 +14033,10 @@ Please check your username and password, and try again.</source>
         <translation>סיסמה</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>מציג פריימים נוספים לאפקטים כגון הוספת פריימים שחורים. דורש VSync.</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>מונע מהמשחק להפיק צליל כלשהו.</translation>
     </message>
@@ -13767,6 +14061,10 @@ Please check your username and password, and try again.</source>
         <translation>איפוס הגדרות הבקר</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>איפוס SPU בתחילת המשחק</translation>
+    </message>
+    <message>
         <source>Reset Title</source>
         <translation>איפוס הכותרת</translation>
     </message>
@@ -13789,6 +14087,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>מאפס את כל ההגדרות לברירות המחדל.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>מאפס את ה־SPU בתחילת המשחק ומסיר הדי הדהוד שנותרו מה־BIOS במשחקים שאינם מאתחלים אותו. אין לכך השפעה בעת אתחול מהיר.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14003,6 +14305,10 @@ Please check your username and password, and try again.</source>
         <translation>שומר את ההגדרות הנוכחיות בקביעת בקר.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>תת־פריימים</translation>
+    </message>
+    <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
         <translation>מצב הפתיחה של &apos;{}&apos; יוסר. לא ניתן לבטל פעולה זו.</translation>
     </message>
@@ -14017,6 +14323,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>זמן משחק: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>הזמן הקצוב יסתיים בעוד {}...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -14699,10 +15009,6 @@ Please check your username and password, and try again.</source>
         <translation>הגדרת תמונת עטיפה</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>הגדרת מיפוי קלט</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>מגדיר סף להשלכת ערכים מדויקים כאשר הוא נחצה. עשוי לסייע בתקלות בחלק מהמשחקים.</translation>
     </message>
@@ -15067,10 +15373,6 @@ Please check your username and password, and try again.</source>
         <translation>רינדור בתהליכון נפרד</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>פסק זמן בעוד {:.0f} שניות...</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>כותרת</translation>
     </message>
@@ -15352,6 +15654,14 @@ Do you want to {1} anyway?</source>
         <translation>
             <numerusform>נותרה עוד %n דקה</numerusform>
             <numerusform>נותרו עוד %n דקות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n פריים</numerusform>
+            <numerusform>%n פריימים</numerusform>
         </translation>
     </message>
 </context>
@@ -15991,6 +16301,11 @@ Are you sure you want to continue?</source>
         <translation>כפיית סריקת תצוגה באמצע פריים</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>איפוס SPU בתחילת המשחק</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>לא ידוע</translation>
     </message>
@@ -16400,6 +16715,26 @@ Are you sure you want to continue?</source>
         <translation>תאימות</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>ללא</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>עטיפה</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>כרטיסי זיכרון</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>סורק את התיקייה &apos;{}&apos;...</translation>
     </message>
@@ -16433,6 +16768,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 נפתח במצב הארדקור</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>סמל</translation>
     </message>
 </context>
 <context>
@@ -16536,8 +16875,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>הצגת כותרות מתורגמות</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>הצגת סמלי משחקים</translation>
+        <source>Game List Icons</source>
+        <translation>סמלי רשימת המשחקים</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16566,6 +16905,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd (תמונת CloneCD)
 .chd (נתונים דחוסים)
 .pbp (PlayStation Portable, לאחר פענוח בלבד)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>סמלי רשימת המשחקים: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19476,6 +19819,10 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>שמירת מ&amp;צב</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;סמלי רשימת המשחקים</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>לכידת &amp;מדיה</translation>
     </message>
@@ -19708,10 +20055,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>&amp;הנפשת סמלי משחקים</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>העדפת &amp;סמלי הישגים</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>רישום מערכ&amp;ת</translation>
     </message>
@@ -19904,14 +20247,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
         <translation>פותח את חלון סורק הזיכרון.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>הצגת סמלי &amp;משחקים</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>מציג סמלים מכרטיס הזיכרון של כל משחק בתצוגת רשימה.</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>לכידה</translation>
     </message>
@@ -20018,10 +20353,6 @@ Shift-לחץ כדי להגדיר קישורים מרובים.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>מנפיש סמלים בתצוגת הרשימה בעת בחירתם.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>מעדיף את תגי המשחקים המשמשים עבור RetroAchievements על פני סמלי כרטיסי הזיכרון.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22489,6 +22820,26 @@ Error: {1}</source>
     <message>
         <source>Move Down</source>
         <translation>העבר למטה</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>תת־פריימים (פריימים של עיבוד לאחר רינדור לכל פריים משחק):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>אוטומטי</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> פריימים</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>תת־פריימים</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>מציג פריימים נוספים בין הפריימים שהקונסולה מרנדרת. מצללים של עיבוד לאחר רינדור יכולים להשתמש בהם לאפקטים כגון הוספת פריימים שחורים. במצב אוטומטי מוצגים תת־פריימים רבים ככל שקצב רענון המסך מאפשר, אך רק כשפעיל מצלל המשתמש בהם. הגדר ל־0 כדי להשבית תת־פריימים אם הם גורמים לבעיות במצלל.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25044,10 +25395,6 @@ The name of the SBI file must match the name of the disc image.</source>
 שם קובץ ה־SBI חייב להתאים לשם תמונת התקליטור.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>המעבר לתת־תמונה {} בתוך &apos;{}&apos; נכשל: {}.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>בוצע מעבר לתת־תמונה {} ({}) בתוך &apos;{}&apos;.</translation>
     </message>
@@ -25196,6 +25543,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Fast boot disabled.</source>
         <translation>אתחול מהיר מושבת.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>איפוס SPU בתחילת המשחק הושבת.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>

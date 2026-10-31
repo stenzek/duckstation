@@ -2193,15 +2193,6 @@ Current Binding: %s</source>
         <translation>安全检查失败</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>警告：目前执行%1$s操作并不安全，可能导致数据损坏。建议恢复游戏并等待 5 秒后再重试。
-
-仍要执行%1$s操作吗？</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>令牌生成时间</translation>
@@ -2616,11 +2607,6 @@ Do you want to %1$s anyway?</source>
         <translation>退出编辑器</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>多接头模式</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>启用触屏控制器</translation>
@@ -2684,16 +2670,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>倒带</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>载入倒带用即时档案</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>第 %1$d 帧</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4177,6 +4153,41 @@ Do you want to %1$s anyway?</source>
         <translation>高级渲染</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>移除光盘</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>警告：游戏仍在向记忆卡保存数据。现在继续操作可能导致数据损坏。建议返回游戏，等待5秒后再试。</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>仍要关闭游戏吗？</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>仍要重新启动游戏吗？</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>仍要载入即时档案吗？</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>仍要保存即时档案吗？</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>仍要更换光盘吗？</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>启用成就</translation>
@@ -4430,6 +4441,31 @@ Do you want to %1$s anyway?</source>
         <translation>选择模拟的控制器类型。</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>跳过</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>绑定所有输入</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>依次提示设置每个按键和轴，以便您通过按下控制器上的按键或移动相应轴来完成绑定。</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s（%2$d/%3$d）</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>启用传感器映射</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>显示控制器输入</translation>
@@ -4448,6 +4484,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>正在编辑“%s”中的布局。</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>更改Multitap模式</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4518,6 +4559,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>更换光盘</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>倒带至此处</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>即时档案%1$d/%2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>最新</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5039,6 +5100,129 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>应用下方配置的后处理链。</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>显示着色器</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>内部着色器</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>启用显示着色器</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>在缩放至屏幕大小后应用，例如CRT滤镜。</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>启用内部着色器</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>在缩放前以内部解析度应用，例如SSAO。</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>子帧</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>呈现额外帧，用于插入黑帧等效果。</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>自动</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d帧</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>阶段操作</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>点按以更改着色器选项。</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>预设</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>自定义</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>图像路径</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>未选择图像。</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>显示起点X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>显示起点Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>显示终点X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>显示终点Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Alpha混合</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>应用叠加图像的透明度。</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>目标Alpha混合</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>根据叠加图像的透明度混合游戏画面。</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>添加着色器</translation>
@@ -5133,6 +5317,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders。
 可将其他边框覆盖添加到
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays。</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>可在%1$s中添加额外的GLSL、ReShade和Slang着色器。</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>可在%1$s中添加额外的边框叠加图像。</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5628,6 +5822,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>转向</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>N/A</translation>
@@ -5636,6 +5860,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>所有文件</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>没有匹配的项目。</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5787,6 +6016,16 @@ ${serial}：游戏序号。
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>下载完成。</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6058,6 +6297,16 @@ ${serial}：游戏序号。
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>选择将应用于最终图像的分辨率比例。1x将缩减采样到原始的游戏机分辨率。</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>游戏启动时重置SPU</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>游戏启动时重置SPU，消除未初始化SPU的游戏中残留的BIOS混响回声。快速启动时无效。</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8117,6 +8366,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>将新的 BIOS 镜像安装到模拟器的 BIOS 目录中。</translation>
     </message>
     <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>游戏启动时重置SPU，消除未初始化SPU的游戏中残留的BIOS混响回声。快速启动时无效。</translation>
+    </message>
+    <message>
         <source>Select BIOS Image</source>
         <translation>选择 BIOS 镜像</translation>
     </message>
@@ -8199,6 +8452,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Options</source>
         <translation>选项</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>游戏启动时重置SPU</translation>
     </message>
     <message>
         <source>DuckStation will search for BIOS images in this directory.</source>
@@ -8677,6 +8934,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧结束)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>自动（帧开始时）</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10146,10 +10407,6 @@ Do you want to %2 anyway?</source>
         <translation>更换光盘</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>切换到子镜像%1失败</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>确认下载</translation>
     </message>
@@ -10700,6 +10957,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>跟随加载/存储(&amp;F)</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>修改寄存器</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>输入%1的新值：</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PC必须是按4字节对齐的地址。</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>已将%1设为0x%2。</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>无法读取位于0x%1的指令。</translation>
     </message>
@@ -10791,6 +11064,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>地址无效。地址应为十六进制格式（0x12345678 或 12345678）</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>无效值。应为十六进制数（0x12345678或12345678）</translation>
     </message>
 </context>
 <context>
@@ -11827,6 +12104,10 @@ You cannot undo this action.</source>
         <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的下一张光盘。并非对所有游戏都有效。</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOS镜像</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <translation>绑定</translation>
     </message>
@@ -12035,6 +12316,10 @@ You cannot undo this action.</source>
         <translation>确定屏幕截图的文件名格式。</translation>
     </message>
     <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>决定在列表视图中每个游戏旁显示的图像。</translation>
+    </message>
+    <message>
         <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
         <translation>确定24位内容处于活动状态时所使用的缩放算法，通常是FMV。</translation>
     </message>
@@ -12155,6 +12440,10 @@ You cannot undo this action.</source>
         <translation>为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>列表图标</translation>
+    </message>
+    <message>
         <source>Menu Volume</source>
         <translation>菜单音量</translation>
     </message>
@@ -12179,12 +12468,24 @@ You cannot undo this action.</source>
         <translation>路径</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>呈现额外帧，用于插入黑帧等效果。需要垂直同步。</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>使游戏不发出任何声音。</translation>
     </message>
     <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
         <translation>从深度值中去除各对象变换的缩放影响。可修复某些游戏中的几何体缺失问题，但会导致其他游戏出错。</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>游戏启动时重置SPU</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>游戏启动时重置SPU，消除未初始化SPU的游戏中残留的BIOS混响回声。快速启动时无效。</translation>
     </message>
     <message>
         <source>Rewind Save Slots</source>
@@ -13249,10 +13550,6 @@ Error was:</source>
         <translation>设置记录的消息的冗长程度。更高的级别将记录更多的消息。</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>{:.0f}秒钟后超时…</translation>
-    </message>
-    <message>
         <source>Preserve Projection Precision</source>
         <translation>保留投影精度</translation>
     </message>
@@ -13395,10 +13692,6 @@ Error was:</source>
     <message>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
         <translation>您确定想要清除当前的后处理链吗？全部配置都将丢失。</translation>
-    </message>
-    <message>
-        <source>Set Input Binding</source>
-        <translation>设置输入绑定</translation>
     </message>
     <message>
         <source>Leaderboard Notifications</source>
@@ -14829,6 +15122,10 @@ Please check your username and password, and try again.</source>
         <translation>将当前设置存储到控制器预置。</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>子帧</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>支持使用XInput协议的控制器。仅当您使用XInput包装器库时才应使用XInput。</translation>
     </message>
@@ -14871,6 +15168,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>游玩时长: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>将在{}后超时…</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -15310,6 +15611,13 @@ Do you want to {1} anyway?</source>
             <numerusform>剩余%n分</numerusform>
         </translation>
     </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n帧</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -15341,7 +15649,7 @@ Do you want to {1} anyway?</source>
     </message>
     <message>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation>正在将多帧GPU追踪保存到'{1}'。</translation>
+        <translation>正在将多帧GPU追踪保存到&apos;{1}&apos;。</translation>
     </message>
     <message>
         <source>Failed to close GPU trace:</source>
@@ -15942,6 +16250,11 @@ Are you sure you want to continue?</source>
         <translation>强制帧中扫描输出</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>游戏启动时重置SPU</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>快速启动已禁用。</translation>
     </message>
@@ -16355,6 +16668,26 @@ Are you sure you want to continue?</source>
         <translation>兼容性</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>无</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>封面</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>记忆卡</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>URL template must contain at least one of ${title}, ${localizedtitle}, ${savetitle}, ${filetitle}, or ${serial}.</source>
         <translation>URL模板必须包含${title}、${localizedtitle}、${savetitle}、${filetitle}或${serial}中的至少一个变量。</translation>
     </message>
@@ -16388,6 +16721,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1在硬核模式下解锁</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>图标</translation>
     </message>
 </context>
 <context>
@@ -16491,8 +16828,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>显示本地化标题</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>显示游戏图标</translation>
+        <source>Game List Icons</source>
+        <translation>游戏列表图标</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16521,6 +16858,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd（CloneCD镜像）
 .chd（压缩数据块）
 .pbp（PlayStation Portable，仅解密版）</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>游戏列表图标：%1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19750,6 +20091,10 @@ This action cannot be undone.</source>
         <translation>保存状态(&amp;V)</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>游戏列表图标(&amp;I)</translation>
+    </message>
+    <message>
         <source>Allows you to record audio and/or video from the content.</source>
         <translation>允许从内容中录制音频和/或视频。</translation>
     </message>
@@ -19902,10 +20247,6 @@ This action cannot be undone.</source>
         <translation>TTY窗口</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>优先使用成就图标(&amp;H)</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>系统日志(&amp;E)</translation>
     </message>
@@ -20050,10 +20391,6 @@ This action cannot be undone.</source>
         <translation>封面下载器(&amp;D)</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>显示游戏图标(&amp;N)</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>捕获</translation>
     </message>
@@ -20092,14 +20429,6 @@ This action cannot be undone.</source>
     <message>
         <source>Editor</source>
         <translation>编辑器</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>优先显示用于RetroAchievements的游戏徽章，而非记忆卡图标。</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>以列表视图显示每个游戏的记忆卡图标。</translation>
     </message>
     <message>
         <source>Controller Prese&amp;ts</source>
@@ -22429,6 +22758,26 @@ Error: {1}</source>
     <message>
         <source>Move Down</source>
         <translation>下移</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>子帧（每个游戏帧对应的后处理帧数）：</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> 帧</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>子帧</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>在主机渲染的每个帧之间呈现额外帧，后处理着色器可将其用于插入黑帧等效果。自动模式会在屏幕刷新率允许的范围内呈现尽可能多的子帧，但仅在启用了使用子帧的着色器时生效。如果子帧导致着色器出现问题，可设为0来禁用子帧。</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -24922,7 +25271,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>已切换到子镜像{}（{}），位于'{}'中。</translation>
+        <translation>已切换到子镜像{}（{}），位于&apos;{}&apos;中。</translation>
     </message>
     <message>
         <source>Current game does not have multiple discs.</source>
@@ -25066,10 +25415,6 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <translation>没有正在运行的有效游戏。</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>切换到子镜像{}失败，所在镜像为&apos;{}&apos;：{}。</translation>
-    </message>
-    <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>此即时存档是在启用以下可能影响模拟稳定性的选项时创建的，可能不稳定。
@@ -25176,6 +25521,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>快速启动已禁用。</translation>
     </message>
     <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>已禁用游戏启动时重置SPU。</translation>
+    </message>
+    <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM子通道Q偏斜已启用。这会破坏游戏。</translation>
     </message>
@@ -25253,11 +25602,11 @@ Using shared card instead.</source>
     </message>
     <message>
         <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>开始{0}，保存至'{1}'。</translation>
+        <translation>开始{0}，保存至&apos;{1}&apos;。</translation>
     </message>
     <message>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>已停止{0}，文件保存在'{1}'。</translation>
+        <translation>已停止{0}，文件保存在&apos;{1}&apos;。</translation>
     </message>
     <message>
         <source>Stopped {0}: {1}.</source>

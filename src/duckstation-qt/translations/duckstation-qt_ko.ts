@@ -2199,15 +2199,6 @@ Current Binding: %s</source>
         <translation>안전 확인 실패</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>경고: 현재 %1$s 작업을 수행하는 것은 안전하지 않으며, 데이터가 손상될 수 있습니다. 게임을 재개하고 5초를 기다린 다음 다시 시도하는 것이 좋습니다.
-
-그래도 %1$s 작업을 수행하시겠습니까?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>토큰 생성 시간</translation>
@@ -2622,11 +2613,6 @@ Do you want to %1$s anyway?</source>
         <translation>편집기 종료</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>멀티탭 모드</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>터치스크린 컨트롤러 활성화</translation>
@@ -2690,16 +2676,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>되감기</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>되감기 상태 불러오기</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>프레임 %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4183,6 +4159,41 @@ Do you want to %1$s anyway?</source>
         <translation>고급 렌더링</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>디스크 꺼내기</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>경고: 게임이 아직 메모리 카드에 저장 중입니다. 지금 계속하면 데이터가 손상될 수 있습니다. 게임을 재개하고 5초 기다린 다음 다시 시도하는 것이 좋습니다.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>그래도 게임을 종료하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>그래도 게임을 다시 시작하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>그래도 상태를 불러오시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>그래도 상태를 저장하시겠습니까?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>그래도 디스크를 교체하시겠습니까?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>도전 과제 활성화</translation>
@@ -4436,6 +4447,31 @@ Do you want to %1$s anyway?</source>
         <translation>에뮬레이션할 컨트롤러 유형을 선택합니다.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>건너뛰기</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>모든 입력 매핑</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>각 버튼과 축을 차례로 요청하므로 컨트롤러에서 해당 입력을 조작하여 매핑할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d/%3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>센서 매핑 활성화</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>컨트롤러 입력 표시</translation>
@@ -4454,6 +4490,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>&apos;%s&apos;의 레이아웃을 편집 중입니다.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>멀티탭 모드 변경</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4524,6 +4565,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>디스크 교체</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>여기까지 되감기</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>상태 %1$d/%2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>최신</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5045,6 +5106,129 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>아래에 설정한 후처리 체인을 적용합니다.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>디스플레이 셰이더</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>내부 셰이더</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>디스플레이 셰이더 활성화</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>화면 크기로 조정한 후 적용됩니다. 예: CRT 필터.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>내부 셰이더 활성화</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>크기 조정 전 내부 해상도에서 적용됩니다. 예: SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>서브프레임</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>검은 프레임 삽입 등의 효과를 위해 추가 프레임을 표시합니다.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>자동</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d프레임</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>단계 작업</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>탭하여 셰이더 옵션을 변경합니다.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>프리셋</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>사용자 지정</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>이미지 경로</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>선택한 이미지가 없습니다.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>표시 시작 X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>표시 시작 Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>표시 끝 X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>표시 끝 Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>알파 블렌딩</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>오버레이 이미지의 투명도를 적용합니다.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>대상 알파 블렌딩</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>오버레이 이미지의 투명도를 사용하여 게임을 혼합합니다.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>셰이더 추가</translation>
@@ -5139,6 +5323,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 외곽선 오버레이를 다음 위치에 추가할 수 있습니다:
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>추가 GLSL, ReShade 및 Slang 셰이더를 %1$s에 추가할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>추가 테두리 오버레이를 %1$s에 추가할 수 있습니다.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5634,6 +5828,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>모드</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>조향</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>해당 없음</translation>
@@ -5642,6 +5866,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>모든 파일</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>일치하는 항목이 없습니다.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5793,6 +6022,16 @@ ${serial}: 게임 일련번호.
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>내려받기를 완료했습니다.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>네지콘</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6064,6 +6303,16 @@ ${serial}: 게임 일련번호.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>게임 시작 시 SPU 초기화</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>게임 시작 시 SPU를 초기화하여 SPU를 초기화하지 않는 게임에서 남아 있는 BIOS 잔향을 제거합니다. 빠른 부팅 시에는 효과가 없습니다.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8124,6 +8373,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>TTY 로그 기록 활성화</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>게임 시작 시 SPU 초기화</translation>
+    </message>
+    <message>
         <source>Parallel Port</source>
         <translation>병렬 포트</translation>
     </message>
@@ -8202,6 +8455,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Select BIOS Directory</source>
         <translation>바이오스 디렉터리 선택</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>게임 시작 시 SPU를 초기화하여 SPU를 초기화하지 않는 게임에서 남아 있는 BIOS 잔향을 제거합니다. 빠른 부팅 시에는 효과가 없습니다.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8688,6 +8945,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatic (Frame End)</source>
         <translation>자동(프레임 종단)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>자동 (프레임 시작)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10154,10 +10415,6 @@ Do you want to %2 anyway?</source>
         <translation>디스크 교체</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>하위 이미지 %1(으)로 전환하지 못했습니다</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>내려받기 확인</translation>
     </message>
@@ -10217,7 +10474,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
         <oldsource>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</oldsource>
-        <translation>기본적으로 내려받은 커버는 게임 타이틀을 파일 이름으로 사용하여 저장됩니다. 이를 원하지 않으면 아래의 "시리얼 파일 이름 사용" 상자를 선택하세요. 게임 타이틀 대신 일련번호를 사용하면 같은 게임의 여러 지역 버전을 사용할 때 충돌을 방지할 수 있습니다.</translation>
+        <translation>기본적으로 내려받은 커버는 게임 타이틀을 파일 이름으로 사용하여 저장됩니다. 이를 원하지 않으면 아래의 &quot;시리얼 파일 이름 사용&quot; 상자를 선택하세요. 게임 타이틀 대신 일련번호를 사용하면 같은 게임의 여러 지역 버전을 사용할 때 충돌을 방지할 수 있습니다.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -10755,6 +11012,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>로드/스토어 따라가기(&amp;F)</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>레지스터 수정</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>%1의 새 값 입력:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PC는 4바이트 경계에 정렬된 주소여야 합니다.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1을(를) 0x%2(으)로 설정했습니다.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>0x%1에서 명령어를 읽지 못했습니다.</translation>
     </message>
@@ -10812,6 +11085,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>잘못된 주소입니다. 주소는 16진수(0x12345678 또는 12345678)여야 함</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>잘못된 값입니다. 16진수여야 합니다 (0x12345678 또는 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11744,6 +12021,10 @@ You cannot undo this action.</source>
         <translation>바이오스 디렉터리</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOS 이미지</translation>
+    </message>
+    <message>
         <source>BIOS Selection</source>
         <translation>바이오스 선택</translation>
     </message>
@@ -12096,6 +12377,10 @@ You cannot undo this action.</source>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>매크로가 버튼을 누르고 떼는 빈도를 결정합니다(연사라고도 함).</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>목록 보기에서 각 게임 옆에 표시할 이미지를 결정합니다.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -12500,6 +12785,10 @@ Error was:</source>
         <translation>목록 압축 모드</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>목록 아이콘</translation>
+    </message>
+    <message>
         <source>Load Database Cheats</source>
         <translation>데이터베이스 치트 불러오기</translation>
     </message>
@@ -12621,6 +12910,10 @@ Please check your username and password, and try again.</source>
         <translation>아래에 retroachievements.org의 아이디와 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>검은 프레임 삽입 등의 효과를 위해 추가 프레임을 표시합니다. VSync가 필요합니다.</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>전환하려면 누르기</translation>
     </message>
@@ -12641,6 +12934,10 @@ Please check your username and password, and try again.</source>
         <translation>컨트롤러 설정 초기화</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>게임 시작 시 SPU 초기화</translation>
+    </message>
+    <message>
         <source>Reset Unlock</source>
         <translation>잠금 해제 초기화</translation>
     </message>
@@ -12651,6 +12948,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Reset Unofficial Achievement Unlocks</source>
         <translation>비공식 도전 과제 잠금 해제 초기화</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>게임 시작 시 SPU를 초기화하여 SPU를 초기화하지 않는 게임에서 남아 있는 BIOS 잔향을 제거합니다. 빠른 부팅 시에는 효과가 없습니다.</translation>
     </message>
     <message>
         <source>Resume Last Session</source>
@@ -12861,16 +13162,16 @@ Please check your username and password, and try again.</source>
         <translation>현재 설정을 컨트롤러 사전 설정에 저장합니다.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>서브프레임</translation>
+    </message>
+    <message>
         <source>Textures Directory</source>
         <translation>텍스처 디렉터리</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
         <translation>&apos;{}&apos;의 잠금 해제 상태가 제거됩니다. 이 작업은 되돌릴 수 없습니다.</translation>
-    </message>
-    <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>{:.0f}초 후 시간 초과...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -13833,6 +14134,10 @@ Please check your username and password, and try again.</source>
         <translation>플레이 시간 : </translation>
     </message>
     <message>
+        <source>Timing out in {}...</source>
+        <translation>{} 후 시간 초과...</translation>
+    </message>
+    <message>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
         <translation>도전 과제를 사용하려면 retroachievements.org 계정으로 로그인하세요.</translation>
     </message>
@@ -14775,10 +15080,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>세션 : {}</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>입력 할당 설정</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>임계값을 초과하면 정확한 값을 삭제하는 임계값을 설정합니다. 일부 게임에서 글리치를 해결하는 데 도움이 될 수 있습니다.</translation>
     </message>
@@ -15342,6 +15643,13 @@ Do you want to {1} anyway?</source>
         <comment>Loading time</comment>
         <translation>
             <numerusform>%n분 남음</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n프레임</numerusform>
         </translation>
     </message>
 </context>
@@ -16012,6 +16320,11 @@ Are you sure you want to continue?</source>
         <translation>프레임 중간 스캔아웃 강제 적용</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>게임 시작 시 SPU 초기화</translation>
+    </message>
+    <message>
         <source>Fast boot disabled.</source>
         <translation>빠른 부팅이 비활성화되었습니다.</translation>
     </message>
@@ -16396,6 +16709,26 @@ Are you sure you want to continue?</source>
         <translation>호환성</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>없음</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>표지</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>메모리 카드</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>레트로어치브먼트</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>디렉터리 &apos;{}&apos; 검색 중...</translation>
     </message>
@@ -16433,6 +16766,10 @@ Are you sure you want to continue?</source>
         <source>%1 unlocked in hardcore mode</source>
         <oldsource>Enable Hardcore Mode</oldsource>
         <translation>하드코어 모드에서 %1 잠금 해제</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>아이콘</translation>
     </message>
 </context>
 <context>
@@ -16537,9 +16874,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>현지화 타이틀 표시</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <oldsource>Show Game Icons (List View)</oldsource>
-        <translation>게임 아이콘 표시</translation>
+        <source>Game List Icons</source>
+        <translation>게임 목록 아이콘</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16568,6 +16904,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd (CloneCD 이미지)
 .chd (압축 헝크 데이터)
 .pbp (PlayStation Portable, 복호화된 파일만)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>게임 목록 아이콘: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19435,6 +19775,10 @@ Shift 키를 누른 채 클릭하면 여러 할당을 설정할 수 있습니다
         <translation>상태 저장(&amp;V)</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>게임 목록 아이콘(&amp;I)</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>미디어 캡처(&amp;U)</translation>
     </message>
@@ -19647,10 +19991,6 @@ Shift 키를 누른 채 클릭하면 여러 할당을 설정할 수 있습니다
         <translation>게임 아이콘 애니메이션(&amp;A)</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>도전 과제 아이콘 우선 사용(&amp;H)</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>시스템 로그(&amp;E)</translation>
     </message>
@@ -19843,14 +20183,6 @@ Shift 키를 누른 채 클릭하면 여러 할당을 설정할 수 있습니다
         <translation>메모리 스캐너 창을 엽니다.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>게임 아이콘 표시(&amp;N)</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>목록 보기에서 각 게임의 메모리 카드 아이콘을 표시합니다.</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>캡처</translation>
     </message>
@@ -19961,10 +20293,6 @@ Shift 키를 누른 채 클릭하면 여러 할당을 설정할 수 있습니다
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>목록 보기에서 선택할 때 아이콘을 애니메이션으로 표시합니다.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>메모리 카드 아이콘보다 RetroAchievements에 사용되는 게임 배지를 우선합니다.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22491,6 +22819,26 @@ Error: {1}</source>
         <translation>아래로</translation>
     </message>
     <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>서브프레임 (게임 프레임당 후처리 프레임 수):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>자동</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> 프레임</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>서브프레임</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>콘솔이 렌더링하는 각 프레임 사이에 추가 프레임을 표시하여 후처리 셰이더에서 검은 프레임 삽입 등의 효과에 사용할 수 있게 합니다. 자동으로 설정하면 서브프레임을 사용하는 셰이더가 활성화된 경우에만 디스플레이 주사율이 허용하는 만큼의 서브프레임을 표시합니다. 셰이더에 문제가 발생하면 0으로 설정하여 서브프레임을 비활성화하세요.</translation>
+    </message>
+    <message>
         <source>Clear Shader Stages</source>
         <translation>셰이더 단계 지우기</translation>
     </message>
@@ -24431,7 +24779,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=" margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-size:xx-large; font-weight:700;"&gt;DuckStation에 오신 것을 환영합니다!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;이 마법사는 앱을 사용하는 데 필요한 구성 단계를 안내합니다. DuckStation을 처음 설치하는 경우 &lt;a href="https://github.com/stenzek/duckstation#downloading-and-running"&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;에서 설치 가이드를 참조하는 것이 좋습니다.&lt;/p&gt;&lt;p&gt;기본적으로 DuckStation은 &lt;a href="https://github.com/"&gt;github.com&lt;/a&gt;의 서버에 연결하여 업데이트를 확인하고, 사용 가능하고 확인된 경우 &lt;a href="https://github.com/"&gt;github.com&lt;/a&gt;에서 업데이트 패키지를 내려받습니다. 시작 시, DuckStation이 네트워크에 연결하지 않도록 하려면 지금 자동 업데이트 옵션을 선택 취소해야 합니다. 자동 업데이트 설정은 나중에 인터페이스 설정에서 언제든지 변경할 수 있습니다.&lt;/p&gt;&lt;p&gt;시작할 언어와 테마를 선택하세요.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;DuckStation에 오신 것을 환영합니다!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;이 마법사는 앱을 사용하는 데 필요한 구성 단계를 안내합니다. DuckStation을 처음 설치하는 경우 &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;에서 설치 가이드를 참조하는 것이 좋습니다.&lt;/p&gt;&lt;p&gt;기본적으로 DuckStation은 &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;의 서버에 연결하여 업데이트를 확인하고, 사용 가능하고 확인된 경우 &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;에서 업데이트 패키지를 내려받습니다. 시작 시, DuckStation이 네트워크에 연결하지 않도록 하려면 지금 자동 업데이트 옵션을 선택 취소해야 합니다. 자동 업데이트 설정은 나중에 인터페이스 설정에서 언제든지 변경할 수 있습니다.&lt;/p&gt;&lt;p&gt;시작할 언어와 테마를 선택하세요.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Language:</source>
@@ -25115,10 +25463,6 @@ Using current CD image, this may result in instability.</source>
         <translation>유효한 게임이 실행되고 있지 않습니다.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>하위 이미지 {}(으)로 전환하지 못했습니다(파일: &apos;{}&apos;): {}.</translation>
-    </message>
-    <message>
         <source>This save state was created with the following tainted options, and may be unstable.
 You must save to a memory card and reset the game to clear any effects.</source>
         <translation>이 저장 상태는 안정성에 영향을 줄 수 있는 다음 옵션으로 생성되었으며 불안정할 수 있습니다.
@@ -25207,6 +25551,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Fast boot disabled.</source>
         <translation>빠른 부팅이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>게임 시작 시 SPU 초기화가 비활성화되었습니다.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>

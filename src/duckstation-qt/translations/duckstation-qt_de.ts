@@ -2206,15 +2206,6 @@ Aktuelle Belegung: %s</translation>
         <translation>Sicherheitsprüfung fehlgeschlagen</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>WARNUNG: Die Aktion „%1$s“ kann derzeit nicht sicher ausgeführt werden und könnte Daten beschädigen. Wir empfehlen, das Spiel fortzusetzen, 5 Sekunden zu warten und es dann erneut zu versuchen.
-
-Möchten Sie „%1$s“ trotzdem ausführen?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Token-Erstellungszeit</translation>
@@ -2637,11 +2628,6 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <translation>Editor verlassen</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Multitap-Modus</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Touchscreen-Controller aktivieren</translation>
@@ -2705,16 +2691,6 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Zurückspulen</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Rückspulzustand laden</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Frame %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4202,6 +4178,41 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <translation>Erweiterte Grafikeinstellungen</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>CD entfernen</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>WARNUNG: Dein Spiel speichert noch auf eine Speicherkarte. Wenn du jetzt fortfährst, können Daten beschädigt werden. Wir empfehlen, das Spiel fortzusetzen, 5 Sekunden zu warten und es dann erneut zu versuchen.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Möchtest du das Spiel trotzdem schließen?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Möchtest du das Spiel trotzdem neu starten?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Möchtest du trotzdem einen Speicherstand laden?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Möchtest du trotzdem einen Speicherstand erstellen?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Möchtest du die CD trotzdem wechseln?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Achievements aktivieren</translation>
@@ -4456,6 +4467,31 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <translation>Wählt den emulierten Controllertyp aus.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Überspringen</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Alle Eingaben zuweisen</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Fragt nacheinander jede Taste und Achse ab, sodass du sie durch Betätigen auf deinem Controller zuweisen kannst.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d von %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Sensorzuordnung aktivieren</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Controllereingaben anzeigen</translation>
@@ -4474,6 +4510,11 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>Layout in &apos;%s&apos; wird bearbeitet.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Multitap-Modus ändern</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4544,6 +4585,26 @@ Möchten Sie „%1$s“ trotzdem ausführen?</translation>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>CD wechseln</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Hierher zurückspulen</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Speicherstand %1$d von %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Neuester</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5065,6 +5126,130 @@ Sie können dies später mit der Option „Im Big-Picture-Modus starten“ in de
         <translation>Wendet die unten konfigurierte Nachbearbeitungskette an.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Anzeige-Shader</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Interne Shader</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Anzeige-Shader aktivieren</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Werden nach der Skalierung auf die Bildschirmgröße angewendet, z. B. CRT-Filter.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Interne Shader aktivieren</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Werden vor der Skalierung in der internen Auflösung angewendet, z. B. SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Teilbilder</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Gibt zusätzliche Bilder für Effekte wie das Einfügen schwarzer Bilder aus.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Automatisch</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d Bild</numerusform>
+            <numerusform>%d Bilder</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Aktionen für die Stufe</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Tippe, um die Shader-Optionen zu ändern.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Voreinstellung</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Benutzerdefiniert</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Bildpfad</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Kein Bild ausgewählt.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Anzeigebeginn X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Anzeigebeginn Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Anzeigeende X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Anzeigeende Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Alpha-Blending</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Wendet die Transparenz des Overlay-Bildes an.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Ziel-Alpha-Blending</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Mischt das Spiel mit der Transparenz des Overlay-Bildes.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Shader hinzufügen</translation>
@@ -5159,6 +5344,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders hinzugefügt werden.
 Zusätzliche Rahmen-Overlays können unter
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays hinzugefügt werden.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Zusätzliche GLSL-, ReShade- und Slang-Shader können in %1$s hinzugefügt werden.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Zusätzliche Rahmen-Overlays können in %1$s hinzugefügt werden.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5655,6 +5850,36 @@ Möchten Sie wirklich fortfahren?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Modus</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Lenkung</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>k. A.</translation>
@@ -5663,6 +5888,11 @@ Möchten Sie wirklich fortfahren?</translation>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Alle Dateien</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Keine passenden Einträge.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5814,6 +6044,16 @@ Beispiel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>Download abgeschlossen.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6087,6 +6327,16 @@ Beispiel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Wählt die Auflösungsskala, die auf das Endbild angewendet wird. 1x skaliert auf die ursprüngliche Konsolenauflösung herunter.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>SPU beim Spielstart zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Setzt die SPU beim Spielstart zurück und entfernt dadurch verbleibende BIOS-Halleffekte in Spielen, die sie nicht initialisieren. Hat beim Schnellstart keine Wirkung.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8171,6 +8421,10 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
         <translation>TTY-Logging aktivieren</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>SPU beim Spielstart zurücksetzen</translation>
+    </message>
+    <message>
         <source>Select BIOS Directory</source>
         <translation>BIOS-Verzeichnis auswählen</translation>
     </message>
@@ -8221,6 +8475,10 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Protokolliert BIOS-Aufrufe an printf(). Nicht alle Spiele enthalten Debug-Nachrichten.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Setzt die SPU beim Spielstart zurück und entfernt dadurch verbleibende BIOS-Halleffekte in Spielen, die sie nicht initialisieren. Hat beim Schnellstart keine Wirkung.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8708,6 +8966,10 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Automatisch (Frame-Ende)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Automatisch (Bildbeginn)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10178,10 +10440,6 @@ Möchten Sie die Aktion „%2“ trotzdem ausführen?</translation>
         <translation>Disc wechseln</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Wechsel zu Unterabbild %1 fehlgeschlagen</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Download bestätigen</translation>
     </message>
@@ -10742,6 +11000,22 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
         <translation>&amp;Load/Store verfolgen</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Register ändern</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Neuen Wert für %1 eingeben:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>Der PC muss eine an einer 4-Byte-Grenze ausgerichtete Adresse sein.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1 auf 0x%2 gesetzt.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Das Lesen der Anweisung bei 0x%1 ist fehlgeschlagen.</translation>
     </message>
@@ -10831,6 +11105,10 @@ Diese Datei kann mehrere Gigabyte groß sein, achte also auf die Abnutzung der S
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Ungültige Adresse. Sie sollte in Hex sein (0x12345678 oder 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Ungültiger Wert. Er muss hexadezimal sein (0x12345678 oder 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11673,6 +11951,10 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
         <translation>BIOS-Verzeichnis</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOS-Abbilder</translation>
+    </message>
+    <message>
         <source>BIOS Selection</source>
         <translation>BIOS-Auswahl</translation>
     </message>
@@ -11931,6 +12213,10 @@ Wenn Sie auf Zurücksetzen klicken, wird die Seriennummer wieder auf den aus dem
     <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Bestimmt den zu emulierenden Hardwaretyp.</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Legt fest, welches Bild neben jedem Spiel in der Listenansicht angezeigt wird.</translation>
     </message>
     <message>
         <source>Determines the position on the screen when black borders must be added.</source>
@@ -12294,6 +12580,10 @@ Fehler war:
     <message>
         <source>Leaderboards</source>
         <translation>Bestenlisten</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <translation>Listensymbole</translation>
     </message>
     <message>
         <source>Load Devices From Save States</source>
@@ -13744,6 +14034,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Passwort</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Gibt zusätzliche Bilder für Effekte wie das Einfügen schwarzer Bilder aus. Erfordert VSync.</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Verhindert, dass das Spiel hörbaren Ton erzeugt.</translation>
     </message>
@@ -13768,6 +14062,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Controller-Einstellungen zurücksetzen</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>SPU beim Spielstart zurücksetzen</translation>
+    </message>
+    <message>
         <source>Reset Title</source>
         <translation>Titel zurücksetzen</translation>
     </message>
@@ -13790,6 +14088,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Setzt alle Einstellungen auf die Standardwerte zurück.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Setzt die SPU beim Spielstart zurück und entfernt dadurch verbleibende BIOS-Halleffekte in Spielen, die sie nicht initialisieren. Hat beim Schnellstart keine Wirkung.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14008,6 +14310,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Speichert die aktuellen Einstellungen in einer Controller-Vorgabe.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Teilbilder</translation>
+    </message>
+    <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
         <translation>Die BIOS-Datei &apos;{}&apos; ist bereits installiert. Möchten Sie sie überschreiben?</translation>
     </message>
@@ -14026,6 +14332,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
     <message>
         <source>Time Played: </source>
         <translation>Spielzeit: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>Zeitüberschreitung in {}...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -14708,10 +15018,6 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Cover-Bild festlegen</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Eingabebindung festlegen</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Legt einen Schwellenwert fest, bei dessen Überschreitung präzise Werte verworfen werden. Kann bei Fehlern in einigen Spielen helfen.</translation>
     </message>
@@ -15072,10 +15378,6 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Thread-Rendering</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Zeitüberschreitung in {:.0f} Sekunden...</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>Titel</translation>
     </message>
@@ -15353,6 +15655,14 @@ Möchten Sie die Aktion „{1}“ trotzdem ausführen?</translation>
         <translation>
             <numerusform>Noch %n Minute</numerusform>
             <numerusform>Noch %n Minuten</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n Bild</numerusform>
+            <numerusform>%n Bilder</numerusform>
         </translation>
     </message>
 </context>
@@ -15992,6 +16302,11 @@ Möchten Sie fortfahren?</translation>
         <translation>Scanout während des Frames erzwingen</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>SPU beim Spielstart zurücksetzen</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Unbekannt</translation>
     </message>
@@ -16401,6 +16716,26 @@ Möchten Sie fortfahren?</translation>
         <translation>Kompatibilität</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Keine</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Coverbild</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Speicherkarten</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Durchsuche Verzeichnis &apos;{}&apos;...</translation>
     </message>
@@ -16434,6 +16769,10 @@ Möchten Sie fortfahren?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 im Hardcore-Modus freigeschaltet</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Symbol</translation>
     </message>
 </context>
 <context>
@@ -16537,8 +16876,8 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
         <translation>Lokalisierte Titel anzeigen</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Spielsymbole anzeigen</translation>
+        <source>Game List Icons</source>
+        <translation>Spiellistensymbole</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16567,6 +16906,10 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
 .ccd (CloneCD-Image)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, nur entschlüsselt)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Spiellistensymbole: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19433,6 +19776,10 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
         <translation>Spielstand &amp;speichern</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>Spiellisten&amp;symbole</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Medien&amp;aufnahme</translation>
     </message>
@@ -19705,10 +20052,6 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
         <translation>&amp;Spielsymbole animieren</translation>
     </message>
     <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>&amp;Erfolgssymbole bevorzugen</translation>
-    </message>
-    <message>
         <source>Syst&amp;em Log</source>
         <translation>S&amp;ystemprotokoll</translation>
     </message>
@@ -19759,14 +20102,6 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     <message>
         <source>Opens the memory scanner window.</source>
         <translation>Öffnet das Speicher-Scanner-Fenster.</translation>
-    </message>
-    <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Spielsymbole a&amp;nzeigen</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Zeigt in der Listenansicht die Symbole von der Memory Card jedes Spiels an.</translation>
     </message>
     <message>
         <source>Capture</source>
@@ -19875,10 +20210,6 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Animiert die Symbole in der Listenansicht beim Auswählen.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Bevorzugt die Spielabzeichen von RetroAchievements gegenüber den Memory-Card-Symbolen.</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22492,6 +22823,26 @@ Fehler: {1}</translation>
         <translation>Nach unten verschieben</translation>
     </message>
     <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Teilbilder (Nachbearbeitungsbilder pro Spielbild):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> Bilder</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Teilbilder</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Gibt zusätzliche Bilder zwischen den von der Konsole gerenderten Bildern aus. Nachbearbeitungs-Shader können sie für Effekte wie das Einfügen schwarzer Bilder verwenden. Automatisch gibt so viele Teilbilder aus, wie die Bildwiederholfrequenz des Bildschirms erlaubt, aber nur, wenn ein Shader aktiv ist, der sie verwendet. Setze den Wert auf 0, um Teilbilder zu deaktivieren, falls sie Probleme mit einem Shader verursachen.</translation>
+    </message>
+    <message>
         <source>Clear Shader Stages</source>
         <translation>Shaderstufen löschen</translation>
     </message>
@@ -25029,10 +25380,6 @@ Das aktuelle CD-Image wird verwendet; dies kann zu Instabilität führen.</trans
         <translation>Es läuft kein gültiges Spiel.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Wechsel zu Unterabbild {} in &apos;{}&apos;: {} fehlgeschlagen.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Zu Unterabbild {} ({}) in &apos;{}&apos; gewechselt.</translation>
     </message>
@@ -25181,6 +25528,10 @@ Sie müssen auf eine Speicherkarte speichern und das Spiel zurücksetzen, um etw
     <message>
         <source>Fast boot disabled.</source>
         <translation>Schnellstart deaktiviert.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Zurücksetzen der SPU beim Spielstart deaktiviert.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>

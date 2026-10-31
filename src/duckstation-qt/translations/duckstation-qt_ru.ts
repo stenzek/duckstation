@@ -2235,15 +2235,6 @@ Current Binding: %s</source>
         <translation>Проверка безопасности не пройдена</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>ВНИМАНИЕ: сейчас небезопасно выполнить действие «%1$s», поскольку это может привести к повреждению данных. Рекомендуем продолжить игру, подождать 5 секунд и повторить попытку.
-
-Всё равно выполнить действие «%1$s»?</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>Время создания токена</translation>
@@ -2674,11 +2665,6 @@ Do you want to %1$s anyway?</source>
         <translation>Выйти из редактора</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Режим мультитапа</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Включить экранный контроллер</translation>
@@ -2742,16 +2728,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>Перемотка назад</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Загрузить состояние перемотки назад</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Кадр %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4243,6 +4219,41 @@ Do you want to %1$s anyway?</source>
         <translation>Расширенные настройки отрисовки</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Извлечь диск</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>ВНИМАНИЕ: игра всё ещё сохраняет данные на карту памяти. Продолжение сейчас может привести к повреждению данных. Рекомендуем вернуться в игру, подождать 5 секунд и повторить попытку.</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Всё равно закрыть игру?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Всё равно перезапустить игру?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Всё равно загрузить состояние?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Всё равно сохранить состояние?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Всё равно сменить диск?</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>Включить достижения</translation>
@@ -4498,6 +4509,31 @@ Do you want to %1$s anyway?</source>
         <translation>Выбирает тип эмулируемого контроллера.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Пропустить</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Назначить все элементы управления</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>По очереди запрашивает каждую кнопку и ось, чтобы вы могли назначить их, нажимая соответствующие элементы на контроллере.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d из %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Включить сопоставление датчиков</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>Показать ввод контроллера</translation>
@@ -4516,6 +4552,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>Редактирование раскладки в &apos;%s&apos;.</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Изменить режим Multitap</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4586,6 +4627,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>Сменить диск</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Перемотать сюда</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Состояние %1$d из %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Последнее</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5107,6 +5168,131 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>Применяет настроенную ниже цепочку постобработки.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Шейдеры экрана</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Внутренние шейдеры</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Включить шейдеры экрана</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Применяются после масштабирования под экран, например фильтры ЭЛТ.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Включить внутренние шейдеры</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Применяются во внутреннем разрешении до масштабирования, например SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Подкадры</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Выводит дополнительные кадры для таких эффектов, как вставка чёрных кадров.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Автоматически</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d кадр</numerusform>
+            <numerusform>%d кадра</numerusform>
+            <numerusform>%d кадров</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Действия с этапом</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Нажмите, чтобы изменить параметры шейдера.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Предустановка</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Пользовательский</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Путь к изображению</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Изображение не выбрано.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Начало области вывода по X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Начало области вывода по Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Конец области вывода по X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Конец области вывода по Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Альфа-смешивание</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Применяет прозрачность изображения наложения.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Альфа-смешивание назначения</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Смешивает изображение игры с учётом прозрачности изображения наложения.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Добавить шейдер</translation>
@@ -5201,6 +5387,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Дополнительные наложения границ можно добавить в
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Дополнительные шейдеры GLSL, ReShade и Slang можно добавить в %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Дополнительные рамки наложения можно добавить в %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5698,6 +5894,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Режим</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Рулевое управление</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>Н/Д</translation>
@@ -5706,6 +5932,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>Все файлы</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Совпадений нет.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5857,6 +6088,16 @@ ${serial}: Серийный номер игры.
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>Загрузка завершена.</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6132,6 +6373,16 @@ ${serial}: Серийный номер игры.
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>Выбор масштаба разрешения, который будет применяться к конечному изображению. При значении 1x разрешение будет понижено до исходного разрешения консоли.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Сбрасывать SPU при запуске игры</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Сбрасывает SPU при запуске игры, устраняя остаточное эхо реверберации BIOS в играх, которые не инициализируют SPU. Не действует при быстрой загрузке.</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8219,6 +8470,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>Включить ведение журнала TTY</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Сбрасывать SPU при запуске игры</translation>
+    </message>
+    <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Записывает в журнал вызовы функции printf() BIOS. Не все игры содержат отладочные сообщения.</translation>
     </message>
@@ -8269,6 +8524,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
         <translation>Сохраняет образы, созданные на флеш-памяти картриджа, обратно в файловую систему хоста. &lt;strong&gt;Это перезапишет ваш дамп картриджа,&lt;/strong&gt; поэтому вам следует убедиться, что у вас есть резервная копия.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Сбрасывает SPU при запуске игры, устраняя остаточное эхо реверберации BIOS в играх, которые не инициализируют SPU. Не действует при быстрой загрузке.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8762,6 +9021,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <source>Automatic (Frame End)</source>
         <translatorcomment>*Автоматический</translatorcomment>
         <translation>Автоматически (конец кадра)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Автоматически (в начале кадра)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10246,10 +10509,6 @@ Do you want to %2 anyway?</source>
         <translation>сменить диск</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Не удалось переключиться на подобраз %1</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Подтвердить загрузку</translation>
     </message>
@@ -10805,6 +11064,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>&amp;Перейти к адресу чтения/записи</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Изменить регистр</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Введите новое значение для %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>Адрес в PC должен быть выровнен по границе 4 байт.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>Установлено значение %1: 0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Не удалось прочитать инструкцию по адресу 0x%1.</translation>
     </message>
@@ -10909,6 +11184,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Неверный адрес. Он должен быть в шестнадцатеричном формате (0x12345678 или 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Недопустимое значение. Введите его в шестнадцатеричном виде (0x12345678 или 12345678)</translation>
     </message>
 </context>
 <context>
@@ -13044,6 +13323,10 @@ Please check your username and password, and try again.</source>
         <translation>Предпочитать контекст OpenGL ES</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Выводит дополнительные кадры для таких эффектов, как вставка чёрных кадров. Требуется вертикальная синхронизация.</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>Нажмите для переключения</translation>
     </message>
@@ -13077,6 +13360,10 @@ Please check your username and password, and try again.</source>
         <translation>Сброс настроек контроллера</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Сбрасывать SPU при запуске игры</translation>
+    </message>
+    <message>
         <source>Reset Unlock</source>
         <translation>Сбросить разблокировку</translation>
     </message>
@@ -13091,6 +13378,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Сброс всех настроек к значениям по умолчанию.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Сбрасывает SPU при запуске игры, устраняя остаточное эхо реверберации BIOS в играх, которые не инициализируют SPU. Не действует при быстрой загрузке.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -13371,6 +13662,10 @@ Please check your username and password, and try again.</source>
         <translation>Сохраняет текущие настройки в предустановке контроллера.</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Подкадры</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>Поддержка контроллеров, использующих протокол XInput. XInput следует использовать только в том случае, если вы используете библиотеку-обертку XInput.</translation>
     </message>
@@ -13389,10 +13684,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>Время игры: </translation>
-    </message>
-    <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Тайм-аут через {:.0f} секунд...</translation>
     </message>
     <message>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
@@ -13650,6 +13941,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Автоматически сохраняет состояние системы при закрытии игры или выходе из нее. В следующий раз вы сможете возобновить игру прямо с того места, на котором остановились.</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>Образы BIOS</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <translation>Привязки</translation>
     </message>
@@ -13760,6 +14055,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>Определить частоту, с которой макрос будет включать и выключать кнопки (так называемый автоматический огонь).</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Определяет изображение, отображаемое рядом с каждой игрой в режиме списка.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -14109,6 +14408,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <source>Leaderboards</source>
         <translatorcomment>Таблица-Таблицы список-списки</translatorcomment>
         <translation>Список лидеров</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <translation>Значки в списке</translation>
     </message>
     <message>
         <source>List Settings</source>
@@ -15016,10 +15319,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Сессия: {}</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Установить привязку ввода</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Устанавливает порог для отбрасывания точных значений при превышении. Может помочь с глюками в некоторых играх.</translation>
     </message>
@@ -15329,6 +15628,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Потоковая отрисовка</translation>
     </message>
     <message>
+        <source>Timing out in {}...</source>
+        <translation>До истечения времени ожидания: {}...</translation>
+    </message>
+    <message>
         <source>Title</source>
         <translation>Заголовок</translation>
     </message>
@@ -15615,6 +15918,15 @@ Do you want to {0} anyway?</source>
             <numerusform>Осталась %n минута</numerusform>
             <numerusform>Осталось %n минуты</numerusform>
             <numerusform>Осталось %n минут</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n кадр</numerusform>
+            <numerusform>%n кадра</numerusform>
+            <numerusform>%n кадров</numerusform>
         </translation>
     </message>
 </context>
@@ -16345,6 +16657,11 @@ Are you sure you want to continue?</source>
         <translation>Принудительный вывод изображения в середине кадра</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Сбрасывать SPU при запуске игры</translation>
+    </message>
+    <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Ускоренный доступ к карте памяти отключён.</translation>
     </message>
@@ -16672,6 +16989,26 @@ Are you sure you want to continue?</source>
         <translation>Совместимость</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Нет</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Обложка</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Карты памяти</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Сканирование каталога &apos;{}&apos;...</translation>
     </message>
@@ -16705,6 +17042,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 разблокировано в режиме «Хардкор»</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Значок</translation>
     </message>
 </context>
 <context>
@@ -16811,8 +17152,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Показать локализованные названия</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Показать значки игр</translation>
+        <source>Game List Icons</source>
+        <translation>Значки списка игр</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16841,6 +17182,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd (образ CloneCD)
 .chd (сжатые фрагменты данных)
 .pbp (PlayStation Portable, только расшифрованные)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Значки списка игр: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19752,6 +20097,10 @@ Shift-click to set multiple bindings.</source>
         <translation>&amp;Сохранить состояние</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;Значки списка игр</translation>
+    </message>
+    <message>
         <source>Media Capt&amp;ure</source>
         <translation>Захват &amp;медиа</translation>
     </message>
@@ -19976,14 +20325,6 @@ Shift-click to set multiple bindings.</source>
         <translation>Открывает окно сканера памяти.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Показать зна&amp;чки игр</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Показывает значки с карты памяти каждой игры в виде списка.</translation>
-    </message>
-    <message>
         <source>Controller Prese&amp;ts</source>
         <translation>Предустановки к&amp;онтроллера</translation>
     </message>
@@ -20034,10 +20375,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Анимирует значки в списке при выборе.</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Устанавливает приоритет значков игр, используемых для RetroAchievements, над значками карт памяти.</translation>
     </message>
     <message>
         <source>Start Big Picture Mode</source>
@@ -20471,10 +20808,6 @@ Shift-click to set multiple bindings.</source>
     <message>
         <source>&amp;Animate Game Icons</source>
         <translation>&amp;Анимировать значки игр</translation>
-    </message>
-    <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Предпочитать значки &amp;достижений</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -22823,6 +23156,26 @@ Error: {1}</source>
     <message>
         <source>Move Down</source>
         <translation>Переместить вниз</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Подкадры (кадров постобработки на кадр игры):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Автоматически</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> кадр.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Подкадры</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Выводит дополнительные кадры между кадрами, отрисованными консолью. Шейдеры постобработки могут использовать их для таких эффектов, как вставка чёрных кадров. В автоматическом режиме выводится столько подкадров, сколько позволяет частота обновления экрана, но только при активном шейдере, использующем их. Установите 0, чтобы отключить подкадры, если они вызывают проблемы с шейдером.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25509,10 +25862,6 @@ Using current CD image, this may result in instability.</source>
         <translation>Карта сменилась на {}.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Не удалось переключиться на подобраз {} в &apos;{}&apos;: {}.</translation>
-    </message>
-    <message>
         <source>Texture filtering disabled.</source>
         <translation>Фильтрация текстур отключена.</translation>
     </message>
@@ -25595,6 +25944,10 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>Fast boot disabled.</source>
         <translation>Быстрая загрузка отключена.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Сброс SPU при запуске игры отключён.</translation>
     </message>
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
