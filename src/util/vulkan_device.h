@@ -10,13 +10,13 @@
 #include "vulkan_stream_buffer.h"
 
 #include "common/dimensional_array.h"
+#include "common/move_only_function.h"
 #include "common/threading.h"
 
 #include <array>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
-#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -399,7 +399,7 @@ private:
   float m_accumulated_gpu_time = 0.0f;
   u32 m_current_frame = 0;
   std::array<CommandBuffer, NUM_COMMAND_BUFFERS> m_frame_resources;
-  std::deque<std::pair<u64, std::function<void()>>> m_cleanup_objects; // [fence_counter, callback]
+  std::deque<std::pair<u64, MoveOnlyFunction<void()>>> m_cleanup_objects; // [fence_counter, callback]
   u64 m_next_fence_counter = 1;
   u64 m_completed_fence_counter = 0;
 

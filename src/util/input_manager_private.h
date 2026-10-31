@@ -5,6 +5,7 @@
 
 #include "input_manager.h"
 
+#include "common/move_only_function.h"
 #include "common/thirdparty/SmallVector.h"
 #include "common/threading.h"
 #include "common/timer.h"
@@ -95,7 +96,7 @@ using VibrationBindingArray = std::vector<PadVibrationBinding>;
 using PadLEDBindingArray = std::vector<PadLEDBinding>;
 
 /// Callback for pointer movement events. The key is the pointer key, and the value is the axis value.
-using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
+using PointerMoveCallback = MoveOnlyFunction<void(InputBindingKey key, float value)>;
 
 /// Returns a write-lock for input state. Use to prevent other threads from reading source state.
 std::lock_guard<Threading::SharedMutex> GetSourcesWriteLock();

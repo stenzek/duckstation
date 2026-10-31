@@ -9,6 +9,7 @@
 
 #include "common/small_string.h"
 #include "common/types.h"
+#include "common/move_only_function.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
@@ -17,7 +18,6 @@
 
 #include "fmt/format.h"
 
-#include <functional>
 #include <memory>
 #include <optional>
 #include <span>
@@ -315,7 +315,7 @@ enum class TransitionEffect : u8
   SlideRight,
 };
 
-using TransitionStartCallback = std::function<void()>;
+using TransitionStartCallback = MoveOnlyFunction<void()>;
 void BeginTransition(TransitionStartCallback func, float time = DEFAULT_TRANSITION_TIME);
 void BeginTransition(float time, TransitionStartCallback func);
 void BeginTransition(TransitionEffect effect, float time, TransitionStartCallback func);
@@ -594,27 +594,27 @@ bool InputTextWithSuffix(const char* str_id, std::string_view suffix, char* buf,
 bool AreAnyWidgetsDialogOpen();
 bool AreAnyWidgetsDialogInteractable();
 
-using FileSelectorCallback = std::function<void(std::string path)>;
+using FileSelectorCallback = MoveOnlyFunction<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
 bool IsFileSelectorOpen();
 void OpenFileSelector(std::string_view title, FileSelectorFilters filters, std::string initial_directory,
                       FileSelectorCallback callback);
 void CloseFileSelector();
 
-using DirectorySelectorCallback = std::function<void(std::string path)>;
+using DirectorySelectorCallback = MoveOnlyFunction<void(std::string path)>;
 bool IsDirectorySelectorOpen();
 void OpenDirectorySelector(std::string_view title, std::string initial_directory, std::string default_directory,
                            DirectorySelectorCallback callback);
 void CloseDirectorySelector();
 
-using ChoiceDialogCallback = std::function<void(s32 index, const std::string& title, bool checked)>;
+using ChoiceDialogCallback = MoveOnlyFunction<void(s32 index, const std::string& title, bool checked)>;
 using ChoiceDialogOptions = std::vector<std::pair<std::string, bool>>;
 bool IsChoiceDialogOpen();
 void OpenChoiceDialog(std::string_view title, bool checkable, ChoiceDialogOptions options,
                       ChoiceDialogCallback callback);
 void CloseChoiceDialog();
 
-using DropdownDialogCallback = std::function<void(s32 index, const std::string& title)>;
+using DropdownDialogCallback = MoveOnlyFunction<void(s32 index, const std::string& title)>;
 using DropdownDialogOptions = std::vector<std::pair<std::string, bool>>;
 bool IsDropdownDialogOpen();
 std::string_view GetDropdownDialogHiddenTitle();
@@ -622,15 +622,15 @@ void OpenDropdownDialog(std::string_view hidden_title, DropdownDialogOptions opt
                         float min_width = 0.0f);
 void CloseDropdownDialog();
 
-using InputStringDialogCallback = std::function<void(std::string text)>;
+using InputStringDialogCallback = MoveOnlyFunction<void(std::string text)>;
 bool IsInputDialogOpen();
 void OpenInputStringDialog(std::string_view title, std::string message, std::string caption, std::string ok_button_text,
                            std::string initial_value, InputStringDialogCallback callback);
 void CloseInputDialog();
 
-using ConfirmMessageDialogCallback = std::function<void(bool)>;
-using InfoMessageDialogCallback = std::function<void()>;
-using MessageDialogCallback = std::function<void(s32)>;
+using ConfirmMessageDialogCallback = MoveOnlyFunction<void(bool)>;
+using InfoMessageDialogCallback = MoveOnlyFunction<void()>;
+using MessageDialogCallback = MoveOnlyFunction<void(s32)>;
 bool IsMessageBoxDialogOpen();
 void OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                               ConfirmMessageDialogCallback callback,

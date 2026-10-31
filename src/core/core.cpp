@@ -794,7 +794,7 @@ bool Host::IsOnCoreThread()
   return Core::s_locals.core_thread_handle.IsCallingThread();
 }
 
-void Host::QueueAsyncTask(std::function<void()> function)
+void Host::QueueAsyncTask(MoveOnlyFunction<void()> function)
 {
   Core::s_locals.async_task_queue.SubmitTask(std::move(function));
 }

@@ -91,7 +91,7 @@ size_t MemoryViewWidget::readData(size_t offset, void* dst, size_t size) const
 }
 
 bool MemoryViewWidget::writeData(size_t offset, const void* src, size_t size,
-                                 std::function<void()> on_complete /* = {} */)
+                                 MoveOnlyFunction<void()> on_complete /* = {} */)
 {
   std::array<u8, 8> bytes;
   if (!m_data || !m_data_editable || size > bytes.size() || offset >= m_data_size || size > (m_data_size - offset))
@@ -107,7 +107,7 @@ bool MemoryViewWidget::writeData(size_t offset, const void* src, size_t size,
     if (edit_callback)
       edit_callback(offset, size);
 
-    Host::RunOnUIThread([widget = std::move(widget), on_complete = std::move(on_complete)]() {
+    Host::RunOnUIThread([widget = std::move(widget), on_complete = std::move(on_complete)]() mutable {
       if (!widget)
         return;
 

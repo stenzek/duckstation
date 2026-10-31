@@ -5,7 +5,8 @@
 
 #include "types.h"
 
-#include <functional>
+#include "common/move_only_function.h"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -188,7 +189,7 @@ void ApplyAllOnDisableCodes();
 bool AreCheatsEnabled();
 
 /// Enumerates the names of all manually-activated codes.
-bool EnumerateManualCodes(std::function<bool(const std::string& name)> callback);
+bool EnumerateManualCodes(MoveOnlyFunction<bool(const std::string& name)> callback);
 
 /// Invokes/applies the specified manually-activated code.
 bool ApplyManualCode(const std::string_view name);

@@ -8,9 +8,10 @@
 
 #include "util/image.h"
 
+#include "common/move_only_function.h"
+
 #include <array>
 #include <ctime>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <span>
@@ -311,7 +312,7 @@ size_t GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp, bool enable_tex
 /// Loads state from the specified path.
 std::optional<bool> LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
 bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
-               std::function<void(bool, const Error& error)> completion_callback = {});
+               MoveOnlyFunction<void(bool, const Error& error)> completion_callback = {});
 bool SaveResumeState(Error* error);
 
 /// Saves/load state to/from slot.

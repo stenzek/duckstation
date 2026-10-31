@@ -287,7 +287,7 @@ public:
   void Draw();
 
 private:
-  static void InvokeCallback(const CallbackVariant& cb, std::optional<s32> choice);
+  static void InvokeCallback(CallbackVariant& cb, std::optional<s32> choice);
 
   std::string m_icon;
   std::string m_message;
@@ -5554,7 +5554,7 @@ void FullscreenUI::FileSelectorDialog::Draw()
 
   if (!BeginRender(LayoutScale(10.0f), LayoutScale(20.0f), LayoutScale(1000.0f, 650.0f)))
   {
-    const FileSelectorCallback callback = std::move(m_callback);
+    FileSelectorCallback callback = std::move(m_callback);
     ClearState();
     if (callback)
       callback(std::string());
@@ -5606,7 +5606,7 @@ void FullscreenUI::FileSelectorDialog::Draw()
     if (selected->is_file)
     {
       std::string path = std::exchange(selected->full_path, std::string());
-      const FileSelectorCallback callback = std::exchange(m_callback, FileSelectorCallback());
+      FileSelectorCallback callback = std::exchange(m_callback, FileSelectorCallback());
       StartClose();
       callback(std::move(path));
     }
@@ -5741,7 +5741,7 @@ void FullscreenUI::DirectorySelectorDialog::Draw()
 
   if (!BeginRender(LayoutScale(10.0f), LayoutScale(20.0f), LayoutScale(1000.0f, 650.0f)))
   {
-    const DirectorySelectorCallback callback = std::move(m_callback);
+    DirectorySelectorCallback callback = std::move(m_callback);
     ClearState();
     if (callback)
       callback(std::string());
@@ -5816,7 +5816,7 @@ void FullscreenUI::DirectorySelectorDialog::Draw()
   }
   else if (!selected_directory.empty())
   {
-    const DirectorySelectorCallback callback = std::exchange(m_callback, DirectorySelectorCallback());
+    DirectorySelectorCallback callback = std::exchange(m_callback, DirectorySelectorCallback());
     StartClose();
     callback(std::move(selected_directory));
   }
@@ -5889,7 +5889,7 @@ void FullscreenUI::ChoiceDialog::Draw()
 
   if (!BeginRender(window_y_padding, LayoutScale(20.0f), ImVec2(width, height)))
   {
-    const ChoiceDialogCallback callback = std::move(m_callback);
+    ChoiceDialogCallback callback = std::move(m_callback);
     ClearState();
     if (callback)
       callback(-1, std::string(), false);
@@ -5975,10 +5975,12 @@ void FullscreenUI::ChoiceDialog::Draw()
     // because the callback may open another dialog, and we don't want to close that one. checkable dialogs stay
     // open, so the callback has to be kept for the next toggle.
     const auto selected = m_options[choice];
-    const ChoiceDialogCallback callback = m_checkable ? m_callback : std::exchange(m_callback, ChoiceDialogCallback());
+    ChoiceDialogCallback callback = std::exchange(m_callback, ChoiceDialogCallback());
     if (!m_checkable)
       StartClose();
     callback(choice, selected.first, selected.second);
+    if (m_checkable && !m_callback)
+      m_callback = std::move(callback);
   }
 }
 
@@ -6109,7 +6111,7 @@ void FullscreenUI::DropdownDialog::Draw()
   if (!BeginRender(window_y_padding, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING), m_popup_size, &m_anchor_pos,
                    &m_anchor_pivot))
   {
-    const DropdownDialogCallback callback = std::move(m_callback);
+    DropdownDialogCallback callback = std::move(m_callback);
     ClearState();
     if (callback)
       callback(-1, std::string());
@@ -6164,7 +6166,7 @@ void FullscreenUI::DropdownDialog::Draw()
   if (choice >= 0)
   {
     const auto selected = m_options[choice];
-    const DropdownDialogCallback callback = std::exchange(m_callback, DropdownDialogCallback());
+    DropdownDialogCallback callback = std::exchange(m_callback, DropdownDialogCallback());
     StartClose();
     callback(choice, selected.first);
   }
@@ -6275,7 +6277,7 @@ void FullscreenUI::InputStringDialog::Draw()
   if (HorizontalMenuButton(m_ok_text, ok_enabled) && ok_enabled)
   {
     // have to move out in case they open another dialog in the callback
-    const InputStringDialogCallback cb = std::exchange(m_callback, InputStringDialogCallback());
+    InputStringDialogCallback cb = std::exchange(m_callback, InputStringDialogCallback());
     std::string text = std::exchange(m_text, std::string());
     StartClose();
     cb(std::move(text));
@@ -6409,21 +6411,22 @@ void FullscreenUI::MessageDialog::Draw()
   {
     // have to move out in case they open another dialog in the callback
     StartClose();
-    InvokeCallback(std::exchange(m_callback, CallbackVariant()), result);
+    CallbackVariant cb = std::exchange(m_callback, CallbackVariant());
+    InvokeCallback(cb, result);
   }
 }
 
-void FullscreenUI::MessageDialog::InvokeCallback(const CallbackVariant& cb, std::optional<s32> choice)
+void FullscreenUI::MessageDialog::InvokeCallback(CallbackVariant& cb, std::optional<s32> choice)
 {
   if (std::holds_alternative<InfoMessageDialogCallback>(cb))
   {
-    const InfoMessageDialogCallback& func = std::get<InfoMessageDialogCallback>(cb);
+    InfoMessageDialogCallback& func = std::get<InfoMessageDialogCallback>(cb);
     if (func)
       func();
   }
   else if (std::holds_alternative<ConfirmMessageDialogCallback>(cb))
   {
-    const ConfirmMessageDialogCallback& func = std::get<ConfirmMessageDialogCallback>(cb);
+    ConfirmMessageDialogCallback& func = std::get<ConfirmMessageDialogCallback>(cb);
     if (func)
       func(choice.value_or(1) == 0);
   }

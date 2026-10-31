@@ -833,7 +833,7 @@ void GPUBackend::RenderScreenshotToFile(std::string path, DisplayScreenshotMode 
                               fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
     }
 
-    Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
+    Host::QueueAsyncTask([path = std::move(path), fp = std::move(fp), quality,
                           flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
                           osd_key = std::move(osd_key), callback, callback_data]() mutable {
       Error error;
@@ -861,7 +861,7 @@ void GPUBackend::RenderScreenshotToFile(std::string path, DisplayScreenshotMode 
       {
         image.SetAllPixelsOpaque();
 
-        result = image.SaveToFile(path.c_str(), fp, quality, &error);
+        result = image.SaveToFile(path.c_str(), fp.get(), quality, &error);
         if (!result)
           ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
       }
@@ -874,8 +874,6 @@ void GPUBackend::RenderScreenshotToFile(std::string path, DisplayScreenshotMode 
                                                      TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
                                             Path::GetFileName(path)));
       }
-
-      std::fclose(fp);
 
       if (callback)
         callback(callback_data, true, path, error);

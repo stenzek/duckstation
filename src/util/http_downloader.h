@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "common/move_only_function.h"
 #include "common/types.h"
 
-#include <functional>
 #include <optional>
 #include <span>
 #include <string>
@@ -35,8 +35,8 @@ using RequestData = std::vector<u8>;
 /// @param error_message Populated with a description when status_code < HTTP_STATUS_OK.
 /// @param content_type  Value of the response Content-Type header; empty if unavailable.
 /// @param data          Response body; empty if the request did not succeed.
-using RequestCallback =
-  std::function<void(s32 status_code, std::string_view error_message, std::string_view content_type, RequestData data)>;
+using RequestCallback = MoveOnlyFunction<void(s32 status_code, std::string_view error_message,
+                                              std::string_view content_type, RequestData data)>;
 
 /// Synthetic status codes used in place of a real HTTP status on failure.
 enum : s32
@@ -93,15 +93,15 @@ void WaitForAllRequests();
 /// Like WaitForAllRequests(), but invokes before_sleep_cb / after_sleep_cb around
 /// each sleep interval. The internal lock is released before before_sleep_cb and
 /// re-acquired inside after_sleep_cb, allowing the caller to yield to other work.
-void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
+void WaitForAllRequestsWithYield(MoveOnlyFunction<void()> before_sleep_cb, MoveOnlyFunction<void()> after_sleep_cb);
 
 /// Blocks until all requests associated with owner have completed.
 /// Passing nullptr is equivalent to WaitForAllRequests().
 void WaitForAllRequestsFromOwner(const void* owner);
 
 /// Like WaitForAllRequestsFromOwner(), but invokes yield callbacks around each sleep.
-void WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
-                                          std::function<void()> after_sleep_cb);
+void WaitForAllRequestsFromOwnerWithYield(const void* owner, MoveOnlyFunction<void()> before_sleep_cb,
+                                          MoveOnlyFunction<void()> after_sleep_cb);
 
 /// Returns true if there are any requests currently queued or in-flight.
 bool HasAnyRequests();

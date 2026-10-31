@@ -1510,7 +1510,7 @@ void VideoThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallT
   }
 
   s_state.fullscreen_state = fullscreen;
-  RunOnThread([fullscreen, completion_handler = std::move(completion_handler)]() {
+  RunOnThread([fullscreen, completion_handler = std::move(completion_handler)]() mutable {
     RecreateRenderWindowOnThread(fullscreen, true);
     if (completion_handler)
       completion_handler();

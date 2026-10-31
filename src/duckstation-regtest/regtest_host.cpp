@@ -80,7 +80,7 @@ struct ScheduledInput
 struct RegTestHostState
 {
   ALIGN_TO_CACHE_LINE Threading::Mutex core_thread_events_mutex;
-  std::deque<std::function<void()>> cpu_thread_events;
+  std::deque<MoveOnlyFunction<void()>> cpu_thread_events;
 };
 
 static RegTestHostState s_state;
@@ -383,7 +383,7 @@ void RegTestHost::ApplyScheduledInputs(u32 frame)
   }
 }
 
-void Host::RunOnCoreThread(std::function<void()> function)
+void Host::RunOnCoreThread(MoveOnlyFunction<void()> function)
 {
   using namespace RegTestHost;
 
@@ -408,7 +408,7 @@ void RegTestHost::ProcessCoreThreadEvents()
   }
 }
 
-void Host::RunOnUIThread(std::function<void()> function)
+void Host::RunOnUIThread(MoveOnlyFunction<void()> function)
 {
   RunOnCoreThread(std::move(function));
 }
@@ -530,7 +530,7 @@ void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
     return;
   }
 
-  Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
+  Host::QueueAsyncTask([path = std::move(path), fp = std::move(fp), image = std::move(image)]() mutable {
     Error error;
 
     if (image.GetFormat() != ImageFormat::RGBA8)
@@ -553,12 +553,11 @@ void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
     {
       image.SetAllPixelsOpaque();
 
-      result = image.SaveToFile(path.c_str(), fp, Image::DEFAULT_SAVE_QUALITY, &error);
+      result = image.SaveToFile(path.c_str(), fp.get(), Image::DEFAULT_SAVE_QUALITY, &error);
       if (!result)
         ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
     }
 
-    std::fclose(fp);
     return result;
   });
 }

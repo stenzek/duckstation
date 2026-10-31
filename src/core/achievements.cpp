@@ -2376,7 +2376,7 @@ void Achievements::Logout()
   ClearUnofficialAchievementUnlocksDatabase();
 }
 
-void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback)
+void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, MoveOnlyFunction<void(bool)> callback)
 {
   Host::ConfirmMessageAsync(
     RA_LOGO_SVG_ICON_NAME, TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
@@ -2385,7 +2385,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std
                 trigger),
     [callback = std::move(callback)](bool res) mutable {
       // don't run the callback in the middle of rendering the UI
-      Host::RunOnCoreThread([callback = std::move(callback), res]() {
+      Host::RunOnCoreThread([callback = std::move(callback), res]() mutable {
         if (res)
           DisableHardcoreMode(true, true);
         if (callback)

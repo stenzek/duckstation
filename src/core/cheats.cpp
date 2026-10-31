@@ -1281,7 +1281,7 @@ void Cheats::ApplyAllOnDisableCodes()
   }
 }
 
-bool Cheats::EnumerateManualCodes(std::function<bool(const std::string& name)> callback)
+bool Cheats::EnumerateManualCodes(MoveOnlyFunction<bool(const std::string& name)> callback)
 {
   for (const std::unique_ptr<CheatCode>& code : s_locals.cheat_codes)
   {

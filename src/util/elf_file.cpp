@@ -157,7 +157,7 @@ bool ELFFile::Open(DataArray data, Error* error)
   return true;
 }
 
-bool ELFFile::LoadExecutableSections(const LoadExecutableSectionCallback& callback, Error* error) const
+bool ELFFile::LoadExecutableSections(LoadExecutableSectionCallback callback, Error* error) const
 {
   const u32 entry = GetELFHeader().e_entry;
   bool loaded_entry = false;

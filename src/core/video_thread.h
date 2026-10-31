@@ -5,7 +5,8 @@
 
 #include "types.h"
 
-#include <functional>
+#include "common/move_only_function.h"
+
 #include <optional>
 #include <utility>
 
@@ -26,7 +27,7 @@ class GPUBackend;
 struct VideoThreadCommand;
 
 namespace VideoThread {
-using AsyncCallType = std::function<void()>;
+using AsyncCallType = MoveOnlyFunction<void()>;
 using AsyncBufferCallType = void (*)(void*);
 
 enum class RunIdleReason : u8

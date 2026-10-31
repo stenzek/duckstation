@@ -2,8 +2,9 @@
 
 #include "common/types.h"
 
+#include "common/move_only_function.h"
+
 #include <QtWidgets/QAbstractScrollArea>
-#include <functional>
 #include <vector>
 
 // Based on https://stackoverflow.com/questions/46375673/how-can-realize-my-own-memory-viewer-by-qt
@@ -43,7 +44,7 @@ public:
   size_t readData(size_t offset, void* dst, size_t size) const;
 
   /// Writes data on the core thread, then refreshes the view and calls on_complete on the UI thread.
-  bool writeData(size_t offset, const void* src, size_t size, std::function<void()> on_complete = {});
+  bool writeData(size_t offset, const void* src, size_t size, MoveOnlyFunction<void()> on_complete = {});
 
 Q_SIGNALS:
   void topAddressChanged(size_t address);

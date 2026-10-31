@@ -61,12 +61,12 @@ bool InputBindingWidget::isMouseMappingEnabled()
 
 void InputBindingWidget::startBindingCapture(BindingCaptureUpdateFunction on_update)
 {
-  Host::RunOnCoreThread([on_update]() {
-    InputManager::StartBindingCapture([on_update](std::span<const InputBindingKey> keys, bool completed) {
-      Host::RunOnUIThread([on_update = std::move(on_update),
-                           keys = llvm::SmallVector<InputBindingKey, 4>(keys.begin(), keys.end()),
-                           completed]() { on_update(keys, completed); });
-    });
+  Host::RunOnCoreThread([on_update = std::move(on_update)]() mutable {
+    InputManager::StartBindingCapture(
+      [on_update = std::move(on_update)](std::span<const InputBindingKey> keys, bool completed) {
+        Host::RunOnUIThread([on_update, keys = llvm::SmallVector<InputBindingKey, 4>(keys.begin(), keys.end()),
+                             completed]() { on_update(keys, completed); });
+      });
   });
 }
 

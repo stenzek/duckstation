@@ -736,7 +736,7 @@ void MainWindow::onStartFileActionTriggered()
   startFileOrChangeDisc(filename);
 }
 
-void MainWindow::openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback)
+void MainWindow::openSelectDiscDialog(const QString& title, MoveOnlyFunction<void(std::string)> callback)
 {
   std::vector<std::pair<std::string, std::string>> devices = CDImage::GetDeviceList();
   if (devices.empty())

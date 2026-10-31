@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "move_only_function.h"
 #include "types.h"
 
 #include <atomic>
-#include <functional>
 
 #if defined(_DEBUG) || defined(_DEVEL)
 #define THREADING_DEBUG_CHECKS
@@ -88,7 +88,7 @@ protected:
 class Thread : public ThreadHandle
 {
 public:
-  using EntryPoint = std::function<void()>;
+  using EntryPoint = MoveOnlyFunction<void()>;
 
   Thread();
   Thread(Thread&& thread);

@@ -4,9 +4,9 @@
 #pragma once
 
 #include "common/heap_array.h"
+#include "common/move_only_function.h"
 #include "common/types.h"
 
-#include <functional>
 #include <string_view>
 
 class Error;
@@ -112,8 +112,8 @@ public:
   bool Open(DataArray data, Error* error);
 
   using LoadExecutableSectionCallback =
-    std::function<bool(std::span<const u8> data, u32 dest_vaddr, u32 dest_size, Error* error)>;
-  bool LoadExecutableSections(const LoadExecutableSectionCallback& callback, Error* error) const;
+    MoveOnlyFunction<bool(std::span<const u8> data, u32 dest_vaddr, u32 dest_size, Error* error)>;
+  bool LoadExecutableSections(LoadExecutableSectionCallback callback, Error* error) const;
 
 private:
   DataArray m_data;

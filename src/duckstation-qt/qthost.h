@@ -164,8 +164,9 @@ public:
   void redrawRenderWindow();
   void toggleFullscreen();
   void setFullscreen(bool fullscreen);
-  void setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler);
+  void setFullscreenWithCompletionHandler(bool fullscreen, MoveOnlyFunction<void()> completion_handler);
   void recreateRenderWindow();
+  void updateDisplayWindow();
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
@@ -202,7 +203,7 @@ private:
   void bootOrLoadState(std::string path);
 
   void confirmActionWithSafetyCheck(const QString& action, bool check_achievements, bool cancel_resume_on_accept,
-                                    std::function<void(bool)> callback) const;
+                                    MoveOnlyFunction<void(bool)> callback) const;
 
   QThread* m_ui_thread;
   QEventLoop* m_event_loop = nullptr;
@@ -359,7 +360,7 @@ void UpdateFolderPaths();
 
 /// Downloads the specified URL to the provided path.
 void DownloadFile(QWidget* parent, std::string url, std::string path,
-                  std::function<void(bool result, std::string path, const Error& error)> completion_callback);
+                  MoveOnlyFunction<void(bool result, std::string path, const Error& error)> completion_callback);
 
 /// Thread-safe settings access.
 void QueueSettingsSave();

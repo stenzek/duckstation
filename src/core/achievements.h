@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "common/move_only_function.h"
 #include "common/small_string.h"
 #include "common/types.h"
 
 #include <array>
-#include <functional>
 #include <mutex>
 #include <optional>
 #include <span>
@@ -124,7 +124,7 @@ bool DoState(StateWrapper& sw);
 
 /// Attempts to log in to RetroAchievements using the specified credentials.
 /// If the login is successful, the token returned by the server will be saved.
-using LoginCompletionCallback = std::function<void(bool result, std::string&& error_message, LoginResult&& details)>;
+using LoginCompletionCallback = MoveOnlyFunction<void(bool result, std::string&& error_message, LoginResult&& details)>;
 void LoginAsync(const char* username, const char* password, LoginCompletionCallback callback);
 
 /// Stores credentials from a successful login in the specified settings interface.
@@ -140,7 +140,7 @@ void Logout();
 void DisableHardcoreMode(bool show_message, bool display_game_summary);
 
 /// Prompts the user to disable hardcore mode. Invokes callback with result.
-void ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback);
+void ConfirmHardcoreModeDisableAsync(std::string_view trigger, MoveOnlyFunction<void(bool)> callback);
 
 /// Returns true if hardcore mode is active, and functionality should be restricted.
 /// NOTE: Only safe to call on the core thread.

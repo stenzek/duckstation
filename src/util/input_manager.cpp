@@ -1458,7 +1458,7 @@ void InputManager::GenerateRelativeMouseEvents()
       // and pointer events only when it hasn't moved
       if (delta != 0.0f && system_running)
       {
-        for (const std::pair<u32, PointerMoveCallback>& pmc : s_state.pointer_move_callbacks)
+        for (std::pair<u32, PointerMoveCallback>& pmc : s_state.pointer_move_callbacks)
         {
           if (pmc.first == device)
             pmc.second(key, delta);

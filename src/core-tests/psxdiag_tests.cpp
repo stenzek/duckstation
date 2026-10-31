@@ -7,7 +7,7 @@
 
 #include "core/cpu_core.h"
 
-#include <functional>
+#include "common/move_only_function.h"
 
 namespace {
 
@@ -139,7 +139,7 @@ public:
 
   /// Compares the readback against the expected value, which can depend on a value read before the writes.
   void Check(const WriteTestRegister& reg, const char* what, u32 garbage_mask, u32 old_slot,
-             std::function<u32(u32)> expected)
+             MoveOnlyFunction<u32(u32)> expected)
   {
     m_checks.push_back({&reg, what, Read(), old_slot, garbage_mask, std::move(expected)});
   }
@@ -152,9 +152,9 @@ public:
     Store(&sw, 0, original);
   }
 
-  void Verify(u32 r7) const
+  void Verify(u32 r7)
   {
-    for (const CheckInfo& ci : m_checks)
+    for (CheckInfo& ci : m_checks)
     {
       const u32 old = (ci.old_slot != NO_SLOT) ? Result(ci.old_slot) : 0;
       EXPECT_EQ(Result(ci.got_slot) & ci.garbage_mask, ci.expected(old) & ci.garbage_mask)
@@ -172,7 +172,7 @@ private:
     u32 got_slot;
     u32 old_slot;
     u32 garbage_mask;
-    std::function<u32(u32)> expected;
+    MoveOnlyFunction<u32(u32)> expected;
   };
 
   std::vector<CheckInfo> m_checks;

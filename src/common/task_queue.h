@@ -3,13 +3,13 @@
 
 #pragma once
 
+#include "move_only_function.h"
 #include "threading.h"
 #include "types.h"
 
 #include <atomic>
 #include <condition_variable>
 #include <deque>
-#include <functional>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -18,7 +18,7 @@
 class TaskQueue
 {
 public:
-  using TaskFunctionType = std::function<void()>;
+  using TaskFunctionType = MoveOnlyFunction<void()>;
 
   TaskQueue();
   ~TaskQueue();

@@ -326,7 +326,8 @@ void HTTPCache::Prefetch(std::string_view url, PrefetchCallback callback)
     return;
   }
 
-  QueueDownload(url, [callback = std::move(callback)](std::span<const u8> data) { callback(!data.empty()); }, nullptr);
+  QueueDownload(
+    url, [callback = std::move(callback)](std::span<const u8> data) mutable { callback(!data.empty()); }, nullptr);
 }
 
 void HTTPCache::WaitForAllPrefetchRequests()

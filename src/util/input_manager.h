@@ -13,6 +13,7 @@
 #include <variant>
 #include <vector>
 
+#include "common/move_only_function.h"
 #include "common/settings_interface.h"
 #include "common/types.h"
 
@@ -111,9 +112,11 @@ enum class InputButtonEvent : s8
 };
 
 /// Callback type for a binary event. Usually used for hotkeys.
+/// NOTE: Intentionally uses copyable functions because actions can be applied separately to multiple bindings.
 using InputButtonEventHandler = std::function<void(InputButtonEvent event)>;
 
 /// Callback types for a normalized event. Usually used for pads.
+/// NOTE: Intentionally uses copyable functions because actions can be applied separately to multiple bindings.
 using InputAxisEventHandler = std::function<void(float value)>;
 
 /// ------------------------------------------------------------------------
@@ -302,7 +305,7 @@ void ClearBindStateFromSource(InputBindingKey key);
 
 /// Receives the progress of a binding capture on the core thread: the inputs in the binding so far, in the order they
 /// joined, and whether the binding is complete.
-using BindingCaptureCallback = std::function<void(std::span<const InputBindingKey> keys, bool completed)>;
+using BindingCaptureCallback = MoveOnlyFunction<void(std::span<const InputBindingKey> keys, bool completed)>;
 
 /// Captures a binding from the next input events, before the normal bindings see them, the same way for each frontend.
 /// Inputs moved past a threshold join the binding as a chord, which is complete when one of them returns to rest. The

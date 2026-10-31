@@ -3377,7 +3377,7 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
 }
 
 bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
-                       std::function<void(bool, const Error& error)> completion_callback)
+                       MoveOnlyFunction<void(bool, const Error& error)> completion_callback)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -3404,7 +3404,7 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
   s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
   Host::QueueAsyncTask([path = std::move(path), buffer = std::move(buffer),
                         completion_callback = std::move(completion_callback), backup_existing_save,
-                        compression = g_settings.save_state_compression]() {
+                        compression = g_settings.save_state_compression]() mutable {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;

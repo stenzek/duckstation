@@ -30,6 +30,7 @@ public:
   static bool isMouseMappingEnabled();
 
   /// Passes the progress of the binding capture to a widget or dialog, on the UI thread.
+  /// Copyable rather than move-only, since each capture event queues its own UI thread call with a copy of it.
   using BindingCaptureUpdateFunction = std::function<void(std::span<const InputBindingKey> keys, bool completed)>;
 
   /// Starts or stops the binding capture of the widget or dialog which is listening for input. Only one runs at once.

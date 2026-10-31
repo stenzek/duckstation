@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "common/move_only_function.h"
 #include "common/types.h"
 
 #include <functional>
@@ -31,7 +32,7 @@ void ReportStatusMessage(std::string_view message);
 
 /// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
 /// The callback may be executed on a different thread. Use RunOnCoreThread() in the callback to ensure safety.
-using ConfirmMessageAsyncCallback = std::function<void(bool)>;
+using ConfirmMessageAsyncCallback = MoveOnlyFunction<void(bool)>;
 void ConfirmMessageAsync(std::string_view icon, std::string_view title, std::string_view message,
                          ConfirmMessageAsyncCallback callback, std::string_view yes_text = std::string_view(),
                          std::string_view no_text = std::string_view());
@@ -61,13 +62,13 @@ const Threading::ThreadHandle& GetCoreThreadHandle();
 bool IsOnCoreThread();
 
 /// Safely executes a function on the VM thread.
-void RunOnCoreThread(std::function<void()> function);
+void RunOnCoreThread(MoveOnlyFunction<void()> function);
 
 /// Safely executes a function on the main/UI thread.
-void RunOnUIThread(std::function<void()> function);
+void RunOnUIThread(MoveOnlyFunction<void()> function);
 
 /// Asynchronous work tasks, complete on worker thread.
-void QueueAsyncTask(std::function<void()> function);
+void QueueAsyncTask(MoveOnlyFunction<void()> function);
 void WaitForAllAsyncTasks();
 
 /// Commits any changes made to the base settings layer to the host.

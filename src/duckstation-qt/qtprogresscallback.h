@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "common/move_only_function.h"
 #include "common/progress_callback.h"
 #include "common/timer.h"
 
@@ -48,8 +49,8 @@ class QtAsyncTaskWithProgress final : public QObject, private ProgressCallback
   Q_OBJECT
 
 public:
-  using CompletionCallback = std::function<void()>;
-  using WorkCallback = std::function<CompletionCallback(ProgressCallback*)>;
+  using CompletionCallback = MoveOnlyFunction<void()>;
+  using WorkCallback = MoveOnlyFunction<CompletionCallback(ProgressCallback*)>;
 
   ~QtAsyncTaskWithProgress() override;
 
@@ -91,8 +92,8 @@ class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCall
   Q_OBJECT
 
 public:
-  using CompletionCallback = std::function<void()>;
-  using WorkCallback = std::function<CompletionCallback(ProgressCallbackWithPrompt*)>;
+  using CompletionCallback = MoveOnlyFunction<void()>;
+  using WorkCallback = MoveOnlyFunction<CompletionCallback(ProgressCallbackWithPrompt*)>;
 
   static QtAsyncTaskWithProgressDialog* create(QWidget* parent, std::string_view initial_title,
                                                std::string_view initial_status_text, bool initial_message_log,

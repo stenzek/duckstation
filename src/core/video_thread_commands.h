@@ -7,8 +7,8 @@
 #include "settings.h"
 
 #include "common/align.h"
+#include "common/move_only_function.h"
 
-#include <functional>
 #include <string>
 #include <vector>
 
@@ -115,9 +115,9 @@ struct VideoThreadUpdateGameInfoCommand : public VideoThreadCommand
 struct VideoThreadAsyncCallCommand : public VideoThreadCommand
 {
   VideoThreadAsyncCallCommand() = default;
-  VideoThreadAsyncCallCommand(std::function<void()> func_) : func(std::move(func_)) {}
+  VideoThreadAsyncCallCommand(MoveOnlyFunction<void()> func_) : func(std::move(func_)) {}
 
-  std::function<void()> func;
+  MoveOnlyFunction<void()> func;
 };
 
 struct VideoThreadAsyncBufferCallCommand : public VideoThreadCommand

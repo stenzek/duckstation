@@ -142,6 +142,8 @@ public:
   AtomicRenamedFileDeleter(std::string temp_path, std::string final_path);
   ~AtomicRenamedFileDeleter();
 
+  ALWAYS_INLINE const std::string& get_final_path() const { return m_final_path; }
+
   void operator()(std::FILE* fp);
   bool commit(std::FILE* fp, Error* error); // closes file
   void discard();

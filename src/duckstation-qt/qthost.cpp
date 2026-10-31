@@ -203,7 +203,6 @@ void QtHost::RegisterTypes()
   // Register any standard types we need elsewhere
   qRegisterMetaType<std::optional<WindowInfo>>("std::optional<WindowInfo>()");
   qRegisterMetaType<std::optional<bool>>();
-  qRegisterMetaType<std::function<void()>>("std::function<void()>");
   qRegisterMetaType<std::shared_ptr<SystemBootParameters>>();
   qRegisterMetaType<const GameList::Entry*>();
   qRegisterMetaType<RenderAPI>("RenderAPI");
@@ -799,7 +798,7 @@ QPixmap QtHost::GetAppLogo()
 }
 
 void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
-                          std::function<void(bool result, std::string path, const Error& error)> completion_callback)
+                          MoveOnlyFunction<void(bool result, std::string path, const Error& error)> completion_callback)
 {
   INFO_LOG("Download from {}, saving to {}.", url, path);
 
@@ -1272,19 +1271,22 @@ void CoreThread::setFullscreen(bool fullscreen)
   VideoThread::SetFullscreen(fullscreen);
 }
 
-void CoreThread::setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler)
+void CoreThread::setFullscreenWithCompletionHandler(bool fullscreen, MoveOnlyFunction<void()> completion_handler)
 {
   if (!isCurrentThread())
   {
     DebugAssert(QThread::isMainThread());
-    QMetaObject::invokeMethod(this, &CoreThread::setFullscreenWithCompletionHandler, Qt::QueuedConnection, fullscreen,
-                              [completion_handler = std::move(completion_handler)]() mutable {
-                                Host::RunOnUIThread(std::move(completion_handler));
-                              });
-    return;
+    Host::RunOnCoreThread([fullscreen, completion_handler = std::move(completion_handler)]() mutable {
+      VideoThread::SetFullscreenWithCompletionHandler(fullscreen,
+                                                      [completion_handler = std::move(completion_handler)]() mutable {
+                                                        Host::RunOnUIThread(std::move(completion_handler));
+                                                      });
+    });
   }
-
-  VideoThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
+  else
+  {
+    VideoThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
+  }
 }
 
 void CoreThread::recreateRenderWindow()
@@ -1398,7 +1400,7 @@ void Host::OnVideoThreadRunIdleChanged(bool is_active)
 }
 
 void CoreThread::confirmActionWithSafetyCheck(const QString& action, bool check_achievements,
-                                              bool cancel_resume_on_accept, std::function<void(bool)> callback) const
+                                              bool cancel_resume_on_accept, MoveOnlyFunction<void(bool)> callback) const
 {
   DebugAssert(isCurrentThread());
   if (!System::IsValid())
@@ -1445,7 +1447,7 @@ void CoreThread::confirmActionWithSafetyCheck(const QString& action, bool check_
       if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
         lock.cancelResume();
 
-      Host::RunOnCoreThread([result, callback = std::move(callback)]() { callback(result); });
+      Host::RunOnCoreThread([result, callback = std::move(callback)]() mutable { callback(result); });
     });
 }
 
@@ -1694,12 +1696,12 @@ void CoreThread::openGamePropertiesForCurrentGame(const QString& category)
   }
 }
 
-void Host::RunOnCoreThread(std::function<void()> function)
+void Host::RunOnCoreThread(MoveOnlyFunction<void()> function)
 {
   QMetaObject::invokeMethod(g_core_thread, std::move(function), Qt::QueuedConnection);
 }
 
-void Host::RunOnUIThread(std::function<void()> function)
+void Host::RunOnUIThread(MoveOnlyFunction<void()> function)
 {
   QMetaObject::invokeMethod(qApp, std::move(function), Qt::QueuedConnection);
 }
@@ -2337,7 +2339,7 @@ void Host::ConfirmMessageAsync(std::string_view icon, std::string_view title, st
                               callback = std::move(callback), yes_text = std::string(yes_text),
                               no_text = std::string(no_text), needs_pause]() mutable {
       // Need to reset run idle state _again_ after displaying.
-      auto final_callback = [callback = std::move(callback), needs_pause](bool result) {
+      auto final_callback = [callback = std::move(callback), needs_pause](bool result) mutable {
         FullscreenUI::UpdateRunIdleState();
         if (needs_pause)
         {
@@ -2383,19 +2385,20 @@ void Host::ConfirmMessageAsync(std::string_view icon, std::string_view title, st
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);
 
-      QObject::connect(msgbox, &QMessageBox::finished, dialog_parent,
-                       [msgbox, yes_button, callback = std::move(callback), lock = std::move(lock), needs_pause]() {
-                         const bool result = (msgbox->clickedButton() == yes_button);
-                         callback(result);
+      QObject::connect(
+        msgbox, &QMessageBox::finished, dialog_parent,
+        [msgbox, yes_button, callback = std::move(callback), lock = std::move(lock), needs_pause]() mutable {
+          const bool result = (msgbox->clickedButton() == yes_button);
+          callback(result);
 
-                         if (needs_pause)
-                         {
-                           Host::RunOnCoreThread([]() {
-                             if (System::IsValid())
-                               System::PauseSystem(false);
-                           });
-                         }
-                       });
+          if (needs_pause)
+          {
+            Host::RunOnCoreThread([]() {
+              if (System::IsValid())
+                System::PauseSystem(false);
+            });
+          }
+        });
       msgbox->open();
     });
   }

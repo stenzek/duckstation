@@ -4,10 +4,10 @@
 #pragma once
 
 #include "common/heap_array.h"
+#include "common/move_only_function.h"
 #include "common/optional_with_status.h"
 #include "common/types.h"
 
-#include <functional>
 #include <string_view>
 
 class Error;
@@ -30,10 +30,10 @@ enum class LookupStatus
 using LookupResult = OptionalWithStatus<LookupData, LookupStatus>;
 
 /// Callback invoked with the downloaded or cached data. Receives an empty span on download failure.
-using FetchCallback = std::function<void(std::span<const u8> data)>;
+using FetchCallback = MoveOnlyFunction<void(std::span<const u8> data)>;
 
 /// Callback invoked when prefetching for a given completes.
-using PrefetchCallback = std::function<void(bool success)>;
+using PrefetchCallback = MoveOnlyFunction<void(bool success)>;
 
 /// Returns true if @p url uses the HTTP or HTTPS scheme.
 bool IsHTTPURL(std::string_view url);

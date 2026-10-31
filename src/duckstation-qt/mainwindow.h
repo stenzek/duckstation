@@ -10,6 +10,8 @@
 #include "util/imgui_manager.h"
 #include "util/window_info.h"
 
+#include "common/move_only_function.h"
+
 #include <QtGui/QShortcut>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
@@ -203,7 +205,7 @@ private:
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(u32 category = 0);
 
-  void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
+  void openSelectDiscDialog(const QString& title, MoveOnlyFunction<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void destroySubWindows();

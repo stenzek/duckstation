@@ -2034,7 +2034,7 @@ GameList::GetEntriesInDiscSet(const GameDatabase::DiscSetEntry* dsentry, bool lo
 
 bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial,
                               ProgressCallback* progress, Error* error,
-                              std::function<void(const Entry*, std::string)> save_callback)
+                              MoveOnlyFunction<void(const Entry*, std::string)> save_callback)
 {
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;

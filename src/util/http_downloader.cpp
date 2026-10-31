@@ -433,8 +433,8 @@ void HTTPDownloader::WaitForAllRequests()
   }
 }
 
-void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb,
-                                                 std::function<void()> after_sleep_cb)
+void HTTPDownloader::WaitForAllRequestsWithYield(MoveOnlyFunction<void()> before_sleep_cb,
+                                                 MoveOnlyFunction<void()> after_sleep_cb)
 {
   std::unique_lock lock(s_locals.pending_http_request_lock);
   while (!s_locals.pending_http_requests.empty())
@@ -473,8 +473,8 @@ void HTTPDownloader::WaitForAllRequestsFromOwner(const void* owner)
   }
 }
 
-void HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(const void* owner, std::function<void()> before_sleep_cb,
-                                                          std::function<void()> after_sleep_cb)
+void HTTPDownloader::WaitForAllRequestsFromOwnerWithYield(const void* owner, MoveOnlyFunction<void()> before_sleep_cb,
+                                                          MoveOnlyFunction<void()> after_sleep_cb)
 {
   if (!owner)
   {

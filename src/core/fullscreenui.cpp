@@ -82,7 +82,7 @@ static void DoStartFile();
 static void DoStartBIOS();
 static void DoStartDisc();
 static void DoToggleFastForward();
-static void ConfirmWithSafetyCheck(std::string action, bool check_achievements, std::function<void(bool)> callback);
+static void ConfirmWithSafetyCheck(std::string action, bool check_achievements, MoveOnlyFunction<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestRestart();
 static void BeginChangeDiscOnCoreThread(bool return_to_game);
@@ -918,7 +918,7 @@ void FullscreenUI::DoStartDisc()
 }
 
 void FullscreenUI::ConfirmWithSafetyCheck(std::string action, bool check_achievements,
-                                          std::function<void(bool)> callback)
+                                          MoveOnlyFunction<void(bool)> callback)
 {
   Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback), check_achievements]() mutable {
     const u32 pending_unlock_count = check_achievements ? Achievements::GetPendingUnlockCount() : 0;
