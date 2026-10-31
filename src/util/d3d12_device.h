@@ -314,6 +314,11 @@ private:
   bool UpdateParametersForHWBatchLayout(GPUPipeline::Layout layout, u32 dirty);
   bool UpdateRootParameters(u32 dirty);
 
+  void RegisterDebugMessageCallback();
+  void UnregisterDebugMessageCallback();
+  static void CALLBACK DebugMessageCallback(D3D12_MESSAGE_CATEGORY category, D3D12_MESSAGE_SEVERITY severity,
+                                            D3D12_MESSAGE_ID id, LPCSTR description, void* context);
+
   ComPtr<IDXGIAdapter1> m_adapter;
   ComPtr<ID3D12Device1> m_device;
   ComPtr<ID3D12CommandQueue> m_command_queue;

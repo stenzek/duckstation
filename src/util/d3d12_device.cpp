@@ -49,6 +49,7 @@ static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
 
 // We just need to keep this alive, never reference it.
 static DynamicHeapArray<u8> s_pipeline_cache_data;
+static DWORD s_debug_message_callback_cookie = 0;
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
 #include "WinPixEventRuntime/pix3.h"
@@ -204,12 +205,6 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
     ComPtr<ID3D12InfoQueue> info_queue;
     if (SUCCEEDED(m_device.As(&info_queue)))
     {
-      if (IsDebuggerPresent())
-      {
-        info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-        info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
-      }
-
       D3D12_INFO_QUEUE_FILTER filter = {};
       std::array<D3D12_MESSAGE_ID, 6> id_list{
         D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
@@ -223,6 +218,8 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateF
       filter.DenyList.pIDList = id_list.data();
       info_queue->PushStorageFilter(&filter);
     }
+
+    RegisterDebugMessageCallback();
   }
 
   GPUDriverType driver_type = GPUDriverType::Unknown;
@@ -316,9 +313,63 @@ void D3D12Device::DestroyDevice()
 
   m_allocator.Reset();
   m_command_queue.Reset();
+  UnregisterDebugMessageCallback();
   m_device.Reset();
   m_adapter.Reset();
   m_dxgi_factory.Reset();
+}
+
+void D3D12Device::RegisterDebugMessageCallback()
+{
+  // ID3D12InfoQueue1 requires the Windows 11 debug layer.
+  ComPtr<ID3D12InfoQueue1> info_queue;
+  HRESULT hr = m_device.As(&info_queue);
+  if (FAILED(hr))
+  {
+    WARNING_LOG("D3D12: Debug message callback requested, but ID3D12InfoQueue1 is not available.");
+    return;
+  }
+
+  hr = info_queue->RegisterMessageCallback(&D3D12Device::DebugMessageCallback, D3D12_MESSAGE_CALLBACK_FLAG_NONE,
+                                           nullptr, &s_debug_message_callback_cookie);
+  if (FAILED(hr))
+  {
+    ERROR_LOG("RegisterMessageCallback() failed: {:08X}", static_cast<unsigned>(hr));
+    s_debug_message_callback_cookie = 0;
+  }
+}
+
+void D3D12Device::UnregisterDebugMessageCallback()
+{
+  if (s_debug_message_callback_cookie == 0)
+    return;
+
+  ComPtr<ID3D12InfoQueue1> info_queue;
+  if (m_device && SUCCEEDED(m_device.As(&info_queue)))
+    info_queue->UnregisterMessageCallback(s_debug_message_callback_cookie);
+
+  s_debug_message_callback_cookie = 0;
+}
+
+void D3D12Device::DebugMessageCallback(D3D12_MESSAGE_CATEGORY category, D3D12_MESSAGE_SEVERITY severity,
+                                       D3D12_MESSAGE_ID id, LPCSTR description, void* context)
+{
+  switch (severity)
+  {
+    case D3D12_MESSAGE_SEVERITY_CORRUPTION:
+    case D3D12_MESSAGE_SEVERITY_ERROR:
+      ERROR_LOG("D3D12 debug message: ({}) {}", static_cast<int>(id), description);
+      break;
+
+    case D3D12_MESSAGE_SEVERITY_WARNING:
+      WARNING_LOG("D3D12 debug message: ({}) {}", static_cast<int>(id), description);
+      break;
+
+    default:
+      // Info messages include every object creation/destruction, too noisy for the info level.
+      DEV_LOG("D3D12 debug message: ({}) {}", static_cast<int>(id), description);
+      break;
+  }
 }
 
 void D3D12Device::GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr)
