@@ -149,6 +149,12 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_exportFile->setIcon(QIcon(u":/icons/monochrome/svg/export-line.svg"_s));
   m_extractIcon = m_ui.centerButtonBox->addButton(tr("Extract Icon"), QDialogButtonBox::ActionRole);
   m_extractIcon->setIcon(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s));
+  QMenu* const extract_icon_menu = QtUtils::NewPopupMenu(m_extractIcon, false);
+  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Extract Icon"), this,
+                               &MemoryCardEditorWindow::doExtractIcon);
+  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/add-animation.svg"_s), tr("Extract Animated Icon"), this,
+                               &MemoryCardEditorWindow::doExtractAnimatedIcon);
+  m_extractIcon->setMenu(extract_icon_menu);
   m_moveLeft = m_ui.centerButtonBox->addButton(QString(), QDialogButtonBox::ActionRole);
   m_moveLeft->setIcon(style()->standardIcon(QStyle::SP_ArrowLeft));
   m_moveRight = m_ui.centerButtonBox->addButton(QString(), QDialogButtonBox::ActionRole);
@@ -288,7 +294,13 @@ void MemoryCardEditorWindow::connectCardUi(Card* card)
   connect(card->open_button, &QPushButton::clicked, [this, card] { openCard(card); });
   connect(card->save_button, &QPushButton::clicked, [this, card] { saveCard(card); });
   connect(card->format_button, &QPushButton::clicked, [this, card] { formatCard(card); });
-  connect(card->import_button, &QPushButton::clicked, [this, card] { onImportClicked(card); });
+
+  QMenu* const import_menu = QtUtils::NewPopupMenu(card->import_button, false);
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/file-line.svg"_s), tr("Import Single Save File..."),
+                         [this, card] { importSaveFile(card); });
+  import_menu->addAction(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Import Entire Memory Card..."),
+                         [this, card] { importCard(card); });
+  card->import_button->setMenu(import_menu);
 }
 
 void MemoryCardEditorWindow::connectUi()
@@ -304,7 +316,6 @@ void MemoryCardEditorWindow::connectUi()
   connect(m_undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doUndeleteFile);
   connect(m_renameFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doRenameSaveFile);
   connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doExportSaveFile);
-  connect(m_extractIcon, &QPushButton::clicked, this, &MemoryCardEditorWindow::onExtractIconClicked);
   connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
   connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
 }
@@ -734,16 +745,6 @@ void MemoryCardEditorWindow::doExportSaveFile()
   }
 }
 
-void MemoryCardEditorWindow::onExtractIconClicked()
-{
-  QMenu* const extract_icon_menu = QtUtils::NewPopupMenu(m_extractIcon);
-  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/image-fill.svg"_s), tr("Extract Icon"), this,
-                               &MemoryCardEditorWindow::doExtractIcon);
-  extract_icon_menu->addAction(QIcon(u":/icons/monochrome/svg/add-animation.svg"_s), tr("Extract Animated Icon"), this,
-                               &MemoryCardEditorWindow::doExtractAnimatedIcon);
-  extract_icon_menu->popup(QCursor::pos());
-}
-
 void MemoryCardEditorWindow::doExtractIcon()
 {
   const auto& [card, fi] = getSelectedFile();
@@ -837,16 +838,6 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   });
 
   dlg->open();
-}
-
-void MemoryCardEditorWindow::onImportClicked(Card* card)
-{
-  QMenu* const import_menu = QtUtils::NewPopupMenu(card->import_button);
-  import_menu->addAction(QIcon(u":/icons/monochrome/svg/file-line.svg"_s), tr("Import Single Save File..."),
-                         [this, card] { importSaveFile(card); });
-  import_menu->addAction(QIcon(u":/icons/monochrome/svg/memcard-line.svg"_s), tr("Import Entire Memory Card..."),
-                         [this, card] { importCard(card); });
-  import_menu->popup(QCursor::pos());
 }
 
 void MemoryCardEditorWindow::importCard(Card* card)

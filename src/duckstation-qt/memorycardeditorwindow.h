@@ -72,13 +72,11 @@ private:
   void saveCard(Card* card);
   void promptForSave(Card* card);
   void formatCard(Card* card);
-  void onImportClicked(Card* card);
   void importCard(Card* card);
   void importSaveFile(Card* card);
 
   void doRenameSaveFile();
   void doExportSaveFile();
-  void onExtractIconClicked();
   void doExtractIcon();
   void doExtractAnimatedIcon();
 
