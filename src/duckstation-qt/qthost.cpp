@@ -177,6 +177,8 @@ struct State
 #ifdef __linux__
   bool wayland_workarounds = false;
 #endif
+
+  std::atomic_bool clipboard_read_done;
 };
 } // namespace
 
@@ -2438,15 +2440,21 @@ void Host::OpenURL(std::string_view url)
 
 std::string Host::GetClipboardText()
 {
-  // Hope this doesn't deadlock...
+  using namespace QtHost;
+
+  // Only called from the video thread for imgui.
+  DebugAssert(VideoThread::IsOnThread());
+
   std::string ret;
-  Host::RunOnUIThread(
-    [&ret]() {
-      QClipboard* clipboard = QGuiApplication::clipboard();
-      if (clipboard)
-        ret = clipboard->text().toStdString();
-    },
-    true);
+  s_state.clipboard_read_done.store(false, std::memory_order_relaxed);
+  Host::RunOnUIThread([&ret]() {
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    if (clipboard)
+      ret = clipboard->text().toStdString();
+    s_state.clipboard_read_done.store(true, std::memory_order_release);
+    s_state.clipboard_read_done.notify_one();
+  });
+  s_state.clipboard_read_done.wait(false, std::memory_order_acquire);
   return ret;
 }
 
