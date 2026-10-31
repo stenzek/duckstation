@@ -3442,12 +3442,23 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_dat
     // Display value using user-provided display format so user can add prefix/suffix/decorations to the value.
     const bool is_mixed = (g.LastItemData.ItemFlags & ImGuiItemFlags_MixedValue) != 0;
     char value_buf[64];
-    const char* value_buf_end = value_buf + DataTypeFormatString(value_buf, IM_COUNTOF(value_buf), data_type, p_data, (is_mixed && g.MixedValueLabel != NULL) ? g.MixedValueLabel : format);
+    const char* value_buf_start;
+    const char* value_buf_end;
+    if (!(flags & ImGuiSliderFlags_NoFormat))
+    {
+        value_buf_start = value_buf;
+        value_buf_end = (value_buf_start + DataTypeFormatString(value_buf, IM_COUNTOF(value_buf), data_type, p_data, (is_mixed && g.MixedValueLabel != NULL) ? g.MixedValueLabel : format));
+    }
+    else
+    {
+        value_buf_start = format;
+        value_buf_end = value_buf_start + ImStrlen(value_buf_start);
+    }
     if (g.LogEnabled)
         LogSetNextTextDecoration("{", "}");
     if (is_mixed)
         PushStyleColor(ImGuiCol_Text, g.Style.Colors[ImGuiCol_TextMixedValue]);
-    RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
+    RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf_start, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
     if (is_mixed)
         PopStyleColor();
 
