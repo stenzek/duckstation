@@ -560,7 +560,7 @@ void GameListModel::loadOrGenerateIcon(const GameList::Entry* ge)
     if (HTTPCache::IsHTTPURL(cover_path))
     {
       // if it's in the cache, we can load it immediately
-      HTTPCache::LookupResult result = HTTPCache::Lookup(path, nullptr);
+      HTTPCache::LookupResult result = HTTPCache::Lookup(cover_path, nullptr);
       const TinyString extension(Path::GetExtension(HTTPCache::GetURLFilename(cover_path)));
       if (result.status() == HTTPCache::LookupStatus::Miss)
       {
