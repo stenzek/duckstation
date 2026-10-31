@@ -97,7 +97,7 @@ bool D3D12StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     {
       // Reset offset to zero, since we're allocating behind the gpu now
       m_current_offset = 0;
-      m_current_space = m_current_gpu_position;
+      m_current_space = m_current_gpu_position - 1;
       return true;
     }
   }
@@ -111,7 +111,7 @@ bool D3D12StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
     {
       // Place at the current position, since this is still behind the GPU.
       m_current_offset = Common::AlignUp(m_current_offset, alignment);
-      m_current_space = m_current_gpu_position - m_current_offset;
+      m_current_space = m_current_gpu_position - m_current_offset - 1;
       return true;
     }
   }
@@ -237,7 +237,7 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
       if (gpu_position > num_bytes)
       {
         new_offset = 0;
-        new_space = gpu_position;
+        new_space = gpu_position - 1;
         new_gpu_position = gpu_position;
         break;
       }
@@ -252,7 +252,7 @@ bool D3D12StreamBuffer::WaitForClearSpace(u32 num_bytes)
       {
         // Leave the offset as-is, but update the GPU position.
         new_offset = m_current_offset;
-        new_space = gpu_position - m_current_offset;
+        new_space = available_space_inbetween - 1;
         new_gpu_position = gpu_position;
         break;
       }
