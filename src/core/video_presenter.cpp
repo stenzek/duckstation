@@ -1523,8 +1523,8 @@ bool VideoPresenter::IsPresentLate(u64 present_time)
     s_locals.backlog_probe_interval = std::min(s_locals.backlog_probe_interval * 2.0, MAX_BACKLOG_PROBE_INTERVAL);
   }
 
-  // If the previous frame was presented on time, the throttler's margin wasn't enough to display it.
-  if (s_locals.last_present_on_time)
+  // If the previous present was on time, the throttler's margin wasn't enough to display it.
+  if (std::exchange(s_locals.last_present_on_time, false))
     s_locals.missed_vblank_count.fetch_add(1, std::memory_order_release);
 
   return true;
