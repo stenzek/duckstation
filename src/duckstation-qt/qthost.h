@@ -281,27 +281,6 @@ private:
   EffectList m_effects;
 };
 
-class QtAsyncTask : public QObject
-{
-  Q_OBJECT
-
-public:
-  using CompletionCallback = std::function<void()>;
-  using WorkCallback = std::function<CompletionCallback()>;
-
-  ~QtAsyncTask();
-
-  static void create(QObject* owner, WorkCallback callback);
-
-Q_SIGNALS:
-  void completed(QtAsyncTask* self);
-
-private:
-  explicit QtAsyncTask(WorkCallback callback);
-
-  std::variant<WorkCallback, CompletionCallback> m_callback;
-};
-
 extern CoreThread* g_core_thread;
 
 namespace QtHost {
