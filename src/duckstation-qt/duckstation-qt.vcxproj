@@ -8,7 +8,6 @@
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="animatedstackedwidget.cpp" />
     <ClCompile Include="asynchttprequest.cpp" />
-    <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
@@ -96,7 +95,6 @@
     <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
     <QtMoc Include="capturesettingswidget.h" />
-    <QtMoc Include="asyncpixmaploader.h" />
     <QtMoc Include="asynchttprequest.h" />
     <QtMoc Include="collapsiblewidget.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />

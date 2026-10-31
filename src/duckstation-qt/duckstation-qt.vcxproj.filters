@@ -53,7 +53,6 @@
     <ClCompile Include="qtwindowinfo.cpp" />
     <ClCompile Include="osdsettingswidget.cpp" />
     <ClCompile Include="capturesettingswidget.cpp" />
-    <ClCompile Include="asyncpixmaploader.cpp" />
     <ClCompile Include="debuggingsettingswidget.cpp" />
     <ClCompile Include="asynchttprequest.cpp" />
     <ClCompile Include="svgiconengine.cpp" />
@@ -123,7 +122,6 @@
     <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="osdsettingswidget.h" />
     <QtMoc Include="capturesettingswidget.h" />
-    <QtMoc Include="asyncpixmaploader.h" />
     <QtMoc Include="debuggingsettingswidget.h" />
     <QtMoc Include="asynchttprequest.h" />
     <QtMoc Include="svgiconengine.h" />

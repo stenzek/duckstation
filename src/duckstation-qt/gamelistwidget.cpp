@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamelistwidget.h"
-#include "asyncpixmaploader.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"

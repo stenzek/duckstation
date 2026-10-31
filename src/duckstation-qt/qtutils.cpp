@@ -2,23 +2,27 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qtutils.h"
-#include "asyncpixmaploader.h"
 #include "qthost.h"
 
 #include "core/core.h"
 #include "core/game_list.h"
+#include "core/host.h"
 #include "core/settings.h"
 #include "core/system.h"
 
+#include "util/http_cache.h"
 #include "util/input_manager.h"
 
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
+#include "common/path.h"
+#include "common/small_string.h"
 #include "common/threading.h"
 
 #include <QtCore/QIODevice>
 #include <QtCore/QMetaObject>
+#include <QtCore/QPointer>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
@@ -441,24 +445,60 @@ QMenu* QtUtils::NewPopupMenu(QWidget* parent, bool delete_on_close /*= true*/)
 
 void QtUtils::SetLabelPixmapPathOrURL(QLabel* label, std::string_view path_or_url, bool ignore_if_invalid)
 {
-  if (!AsyncPixmapLoader::isQueueNeeded(path_or_url))
+  // Bump the generation so any loads still in flight for this label are discarded.
+  static constexpr const char* GENERATION_PROPERTY = "pixmapLoadGeneration";
+  const qulonglong generation = label->property(GENERATION_PROPERTY).toULongLong() + 1;
+  label->setProperty(GENERATION_PROPERTY, generation);
+
+  if (!HTTPCache::IsHTTPURL(path_or_url))
   {
-    const QPixmap pm = AsyncPixmapLoader::load(path_or_url);
+    const QPixmap pm(StringViewToQString(path_or_url));
     if (!pm.isNull() || !ignore_if_invalid)
       label->setPixmap(pm);
 
     return;
   }
 
-  AsyncPixmapLoader* loader = new AsyncPixmapLoader();
-  QObject::connect(loader, &AsyncPixmapLoader::pixmapLoaded, label, [label, ignore_if_invalid](QPixmap& pm) {
-    if (pm.isNull() && ignore_if_invalid)
-      return;
+  Host::QueueAsyncTask([label = QPointer(label), url = std::string(path_or_url), ignore_if_invalid,
+                        dpr = label->devicePixelRatio(), generation]() mutable {
+    static constexpr auto finish_load = [](std::span<const u8> data, const QPointer<QLabel>& label,
+                                           std::string_view url, bool ignore_if_invalid, qreal dpr,
+                                           qulonglong generation) {
+      QImage image;
+      const TinyString extension(Path::GetExtension(HTTPCache::GetURLFilename(url)));
+      if (!data.empty() && image.loadFromData(data.data(), static_cast<int>(data.size()),
+                                              extension.empty() ? nullptr : extension.c_str()))
+      {
+        image.setDevicePixelRatio(dpr);
+      }
+      else
+      {
+        ERROR_LOG("Failed to load pixmap for URL '{}'", url);
+        if (ignore_if_invalid)
+          return;
+      }
 
-    pm.setDevicePixelRatio(label->devicePixelRatio());
-    label->setPixmap(pm);
+      Host::RunOnUIThread([label, image = std::move(image), generation]() {
+        if (label && label->property(GENERATION_PROPERTY).toULongLong() == generation)
+          label->setPixmap(QPixmap::fromImage(image));
+      });
+    };
+
+    Error error;
+    const HTTPCache::LookupResult result =
+      HTTPCache::LookupOrFetch(url, &error, [label, url, ignore_if_invalid, dpr, generation](std::span<const u8> data) {
+        finish_load(data, label, url, ignore_if_invalid, dpr, generation);
+      });
+    if (result.status() == HTTPCache::LookupStatus::Hit)
+    {
+      finish_load(result->cspan(), label, url, ignore_if_invalid, dpr, generation);
+    }
+    else if (result.status() == HTTPCache::LookupStatus::Error)
+    {
+      ERROR_LOG("Failed to lookup pixmap for URL '{}': {}", url, error.GetDescription());
+      finish_load({}, label, url, ignore_if_invalid, dpr, generation);
+    }
   });
-  loader->enqueue(path_or_url);
 }
 
 QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,

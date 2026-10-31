@@ -27,8 +27,6 @@ set(SRCS
   animatedstackedwidget.h
   asynchttprequest.cpp
   asynchttprequest.h
-  asyncpixmaploader.cpp
-  asyncpixmaploader.h
   audiosettingswidget.cpp
   audiosettingswidget.h
   audiosettingswidget.ui
