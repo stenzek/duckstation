@@ -70,6 +70,7 @@ private:
   std::string m_binding_section;
   std::string m_binding_key;
   std::string m_display_name;
+  std::string m_capture_binding;
   float m_time_remaining = 0.0f;
   InputBindingInfo::Type m_binding_type = InputBindingInfo::Type::Unknown;
 };
@@ -448,6 +449,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
   m_binding_section = section;
   m_binding_key = key;
   m_display_name = display_name;
+  m_capture_binding = {};
   m_time_remaining = INPUT_BINDING_TIMEOUT_SECONDS;
   SetTitleAndOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
 
@@ -456,7 +458,20 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
   Host::RunOnCoreThread([this, game_settings]() {
     InputManager::StartBindingCapture([this, game_settings](std::span<const InputBindingKey> keys, bool completed) {
       if (!completed)
+      {
+        // show the binding as it's built up
+        const auto lock = Core::GetSettingsLock();
+        if (m_binding_type != InputBindingInfo::Type::Unknown)
+        {
+          VideoThread::RunOnThread([this, binding = InputManager::ConvertInputBindingKeysToString(
+                                            m_binding_type, keys.data(), keys.size())]() mutable {
+            InputManager::PrettifyInputBinding(binding, true, &GetControllerIconMapping);
+            m_capture_binding = binding.view();
+          });
+        }
+
         return;
+      }
 
       {
         // holding the settings lock here will protect the input binding list
@@ -493,6 +508,7 @@ void FullscreenUI::InputBindingDialog::ClearState()
   m_binding_section = {};
   m_binding_key = {};
   m_display_name = {};
+  m_capture_binding = {};
 }
 
 void FullscreenUI::InputBindingDialog::Draw()
@@ -520,11 +536,25 @@ void FullscreenUI::InputBindingDialog::Draw()
     return;
   }
 
-  ImGui::TextWrapped(
-    "%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), m_binding_section, m_display_name).c_str());
-  ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
-  ImGui::NewLine();
-  ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), m_time_remaining));
+  const float width = ImGui::GetContentRegionAvail().x;
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
+  ImGui::TextAligned(
+    0.5f, width, "%s",
+    SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), m_binding_section, m_display_name).c_str());
+  ImGui::PopFont();
+  ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+  if (!m_capture_binding.empty())
+    ImGui::TextAligned(0.5f, width, m_capture_binding.c_str());
+  else
+    ImGui::TextAligned(0.5f, width, FSUI_CSTR("Push a controller button or axis now."));
+
+  ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+  ImGui::PushFont(nullptr, UIStyle.MediumLargeFontSize, -1.0f);
+  ImGui::TextAligned(0.5f, width,
+                     SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), m_time_remaining));
+  ImGui::PopFont();
 
   EndRender();
 }

@@ -167,7 +167,10 @@ void InputBindingDialog::onInputListenTimerTimeout()
     return;
   }
 
-  m_ui.status->setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
+  m_ui.status->setText(
+    m_input_listen_binding.isEmpty() ?
+      tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds) :
+      QStringLiteral("%1... [%2]").arg(m_input_listen_binding).arg(m_input_listen_remaining_seconds));
 }
 
 void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
@@ -181,6 +184,7 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
   m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this,
                                 &InputBindingDialog::onInputListenTimerTimeout);
   m_input_listen_remaining_seconds = timeout_in_seconds;
+  m_input_listen_binding.clear();
   m_ui.status->setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
   m_ui.addBinding->setEnabled(false);
   m_ui.removeBinding->setEnabled(false);
@@ -194,12 +198,25 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 
   InputBindingWidget::startBindingCapture(
     [p_this = QPointer(this)](std::span<const InputBindingKey> keys, bool completed) {
-      if (!p_this || !completed || !p_this->isListeningForInput())
+      if (!p_this || !p_this->isListeningForInput())
         return;
+
+      if (!completed)
+      {
+        // show the binding as it's built up
+        SmallString binding =
+          InputManager::ConvertInputBindingKeysToString(p_this->m_bind_type, keys.data(), keys.size());
+        InputManager::PrettifyInputBinding(binding, false);
+        p_this->m_input_listen_binding = QtUtils::StringViewToQString(binding);
+        p_this->m_ui.status->setText(
+          QStringLiteral("%1 [%2]").arg(p_this->m_input_listen_binding).arg(p_this->m_input_listen_remaining_seconds));
+        return;
+      }
 
       p_this->addNewBinding(keys);
       p_this->stopListeningForInput();
-    });
+    },
+    true);
 }
 
 void InputBindingDialog::stopListeningForInput()
