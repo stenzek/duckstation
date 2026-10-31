@@ -3980,6 +3980,8 @@ SLUS-00023:
 PTPX-97002:
   name: "Aging Disk"
   saveName: "Aging Disk (Japan)"
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
 SLPS-00840:
   name: "Ai Shogi [Reprint]"
   controllers:
@@ -25925,6 +25927,8 @@ SLPM-86845:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Hudson / Infogrames"
     developer: "Appaloosa Interactive Corp"
@@ -32739,6 +32743,7 @@ SLES-00593:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -32771,6 +32776,7 @@ SLUS-00530:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -32901,6 +32907,7 @@ SLPS-01055:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Media Quest"
     developer: "Argonaut Games"
@@ -39311,6 +39318,8 @@ SLES-03627:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "BAM! Entertainment"
     developer: "Red Lemon Studios"
@@ -39331,6 +39340,8 @@ SLES-03829:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "BAM! Entertainment"
     developer: "Red Lemon Studios"
@@ -39352,6 +39363,8 @@ SLUS-01421:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "BAM! Entertainment"
     developer: "Red Lemon Studios"
@@ -41259,6 +41272,8 @@ SCES-00894:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -41655,6 +41670,8 @@ SCES-00895:
     versionTested: "0.1-4423-g32ab7c13"
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42150,6 +42167,8 @@ SCES-01516:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -42171,6 +42190,8 @@ SCES-01518:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -42195,6 +42216,8 @@ SCES-01519:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -42427,6 +42450,8 @@ SCES-00891:
   saveName: "Disney's Action Game featuring Hercules (Europe)"
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42447,6 +42472,8 @@ SCES-00896:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42966,6 +42993,8 @@ SLUS-00529:
     versionTested: "0.1-1333-g5a955a4"
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Virgin Interactive / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42988,6 +43017,8 @@ SLUS-01029:
     versionTested: "0.1-2538-g5c6ee953"
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Majesco"
     developer: "Eurocom Developments Ltd"
@@ -43335,6 +43366,8 @@ SCES-01431:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -43357,6 +43390,8 @@ SLPM-86383:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Konami"
     developer: "Eurocom Developments Ltd"
@@ -43377,6 +43412,8 @@ SCES-02185:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -43401,6 +43438,8 @@ SCUS-94456:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -43421,6 +43460,8 @@ SLUS-01537:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Traveller's Tales / Eurocom Developments Ltd. / Doki Denki"
@@ -44738,6 +44779,8 @@ SCES-02184:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -45027,6 +45070,8 @@ SCES-00893:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -45292,6 +45337,8 @@ SCES-02181:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -45313,6 +45360,8 @@ SCES-01517:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -45334,6 +45383,8 @@ SCES-02183:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -45354,6 +45405,8 @@ SCES-02182:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
@@ -120805,6 +120858,7 @@ SCES-00582:
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
     - ForceFullBoot # Full boot improves reliability.
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Entertainment"
@@ -120828,6 +120882,7 @@ SCES-00684:
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
     - ForceFullBoot # Full boot improves reliability.
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Entertainment"
@@ -120852,6 +120907,7 @@ SIPS-60027:
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
     - ForceFullBoot # Full boot improves reliability.
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Sony"
     developer: "Kalisto Entertainment"
@@ -120887,6 +120943,7 @@ SLUS-00582:
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
     - ForceFullBoot # Full boot improves reliability.
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Entertainment"
@@ -137779,6 +137836,8 @@ SLES-01534:
     - AnalogJoystick
     - DigitalController
     - PlayStationMouse
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
     developer: "Hammerhead"
@@ -137804,6 +137863,8 @@ SLUS-00757:
     - AnalogJoystick
     - DigitalController
     - PlayStationMouse
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
     developer: "Hammerhead"
@@ -153876,6 +153937,8 @@ SLPS-01202:
     rating: NoIssues
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Kodansha"
     developer: "Japan Vistec"
@@ -186523,6 +186586,8 @@ SLPS-00015:
   saveName: "TwinBee Taisen Puzzle-dama (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   codes:
     - HASH-2B14286763558FA8
   metadata:
@@ -192623,6 +192688,8 @@ SLES-02468:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Infogrames"
     developer: "Appaloosa Interactive Corp"
@@ -201320,6 +201387,8 @@ SLPM-86857:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Unbalance"
     developer: "Unbalance"
