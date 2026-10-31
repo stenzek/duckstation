@@ -49,7 +49,12 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.logToFile, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   onAnyLogSinksChanged(); // initialize enabled/disabled state of checkboxes
 
-  connect(m_ui.logChannels, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
+  QMenu* const log_channels_menu = QtUtils::NewPopupMenu(m_ui.logChannels, false);
+  connect(log_channels_menu, &QMenu::aboutToShow, this, [log_channels_menu]() {
+    log_channels_menu->clear();
+    LogWindow::populateFilterMenu(log_channels_menu);
+  });
+  m_ui.logChannels->setMenu(log_channels_menu);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, Settings::INTERFACE_SECTION_NAME,
                                                "ShowDebugMenu", false);
@@ -121,13 +126,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
-
-void AdvancedSettingsWidget::onLogChannelsButtonClicked()
-{
-  QMenu* const menu = QtUtils::NewPopupMenu(this);
-  LogWindow::populateFilterMenu(menu);
-  menu->popup(QCursor::pos());
-}
 
 void AdvancedSettingsWidget::onAnyLogSinksChanged()
 {

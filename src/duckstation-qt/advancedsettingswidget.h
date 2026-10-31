@@ -18,7 +18,6 @@ public:
   ~AdvancedSettingsWidget();
 
 private:
-  void onLogChannelsButtonClicked();
   void onAnyLogSinksChanged();
   void onShowDebugOptionsStateChanged();
   void refreshWebCacheSize();
