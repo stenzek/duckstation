@@ -722,7 +722,8 @@ protected:
   static constexpr float OPEN_TIME = 0.2f;
   static constexpr float CLOSE_TIME = 0.1f;
 
-  void SetTitleAndOpen(std::string title);
+  // Titles starting with "##" have no title bar, and therefore no close button.
+  void SetTitleAndOpen(std::string title, bool user_closeable = true);
 
   bool BeginRender(float scaled_window_padding = LayoutScale(20.0f), float scaled_window_rounding = LayoutScale(20.0f),
                    const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f), const ImVec2* position = nullptr,

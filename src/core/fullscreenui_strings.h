@@ -762,7 +762,6 @@ TRANSLATE_NOOP("FullscreenUI", "Serial (*)");
 TRANSLATE_NOOP("FullscreenUI", "Serial:");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "Set Cover Image");
-TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding the emulated depth buffer. May help in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the custom scale percentage for achievement notifications.");

@@ -451,7 +451,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
   m_display_name = display_name;
   m_capture_binding = {};
   m_time_remaining = INPUT_BINDING_TIMEOUT_SECONDS;
-  SetTitleAndOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
+  SetTitleAndOpen("##input_binding_dialog");
 
   // A capture started for another binding is replaced.
   const bool game_settings = IsEditingGameSettings(bsi);

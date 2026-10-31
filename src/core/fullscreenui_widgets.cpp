@@ -5267,10 +5267,11 @@ void FullscreenUI::PopupDialog::ClearState()
   m_title = {};
 }
 
-void FullscreenUI::PopupDialog::SetTitleAndOpen(std::string title)
+void FullscreenUI::PopupDialog::SetTitleAndOpen(std::string title, bool user_closeable /* = true */)
 {
   DebugAssert(!title.empty());
   m_title = std::move(title);
+  m_user_closeable = user_closeable;
   m_animation_time_remaining = UIStyle.Animations ? OPEN_TIME : 0.0f;
 
   if (m_state == State::Inactive)
@@ -5394,11 +5395,12 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   // Based on BeginPopupModal(), because we need to control is_open smooth closing.
   const bool popup_open =
     ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(IMSTR_START_END(m_title)), ImGuiPopupFlags_None);
+  const bool has_title = !m_title.starts_with("##");
   const ImGuiWindowFlags window_flags = ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoCollapse |
                                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                        (m_title.starts_with("##") ? ImGuiWindowFlags_NoTitleBar : 0);
+                                        (has_title ? 0 : ImGuiWindowFlags_NoTitleBar);
   bool is_open = true;
-  if (popup_open && !ImGui::Begin(m_title.c_str(), m_user_closeable ? &is_open : nullptr, window_flags))
+  if (popup_open && !ImGui::Begin(m_title.c_str(), (has_title && m_user_closeable) ? &is_open : nullptr, window_flags))
     is_open = false;
 
   if (popup_open && !is_open && m_state != State::ClosingTrigger)
