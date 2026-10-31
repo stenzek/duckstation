@@ -428,83 +428,70 @@ void GameListModel::reloadThemeSpecificImages()
 
 void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 {
-  QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
-                             display_title = QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles)),
-                             placeholder_image = m_placeholder_image, list = this, size = getDeviceScaledCoverArtSize(),
-                             scale = m_cover_scale, dpr = m_device_pixel_ratio,
-                             is_custom_title = ge->has_custom_title]() mutable {
+  Host::QueueAsyncTask([path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
+                        display_title = QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles)),
+                        placeholder_image = m_placeholder_image, list = QPointer(this),
+                        size = getDeviceScaledCoverArtSize(), scale = m_cover_scale, dpr = m_device_pixel_ratio,
+                        is_custom_title = ge->has_custom_title]() mutable {
     QImage image;
-    loadOrGenerateCover(image, placeholder_image, size, scale, dpr, path, serial, save_title, display_title,
-                        is_custom_title);
-    return [path = std::move(path), image = std::move(image), list, scale]() { list->coverLoaded(path, image, scale); };
-  });
-}
 
-void GameListModel::createPlaceholderImage(QImage& image, const QImage& placeholder_image, const QSize& size,
-                                           float scale, const QString& title)
-{
-  image = placeholder_image.copy();
-  if (image.isNull())
-    return;
-
-  resizeImage(&image, size);
-
-  QPainter painter;
-  if (painter.begin(&image))
-  {
-    QFont font;
-    font.setPixelSize(std::max(static_cast<int>(64.0f * scale), 1));
-    font.setFamilies(QtHost::GetRobotoFontFamilies());
-    painter.setFont(font);
-
-    const int margin = static_cast<int>(30.0f * scale);
-    const QSize unscaled_size = QtUtils::GetDeviceIndependentSize(image.size(), image.devicePixelRatio());
-    const QRect text_rc(margin, margin, static_cast<int>(static_cast<float>(unscaled_size.width() - margin - margin)),
-                        static_cast<int>(static_cast<float>(unscaled_size.height() - margin - margin)));
-
-    // draw shadow first
-    painter.setPen(QColor(0, 0, 0, 160)); // semi-transparent black
-    painter.drawText(text_rc.translated(1, 1), Qt::AlignCenter | Qt::TextWordWrap, title);
-
-    painter.setPen(Qt::white);
-    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, title);
-
-    painter.end();
-  }
-}
-
-void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
-                                        qreal dpr, const std::string& path, const std::string& serial,
-                                        const std::string& save_title, const QString& display_title,
-                                        bool is_custom_title)
-{
-  const std::string cover_path = GameList::GetCoverImagePath(path, serial, save_title, is_custom_title);
-  if (!cover_path.empty())
-  {
-    image.load(QString::fromStdString(cover_path));
-    if (!image.isNull())
+    const std::string cover_path = GameList::GetCoverImagePath(path, serial, save_title, is_custom_title);
+    if (!cover_path.empty())
     {
-      image.setDevicePixelRatio(dpr);
-      resizeImage(&image, size);
+      image.load(QString::fromStdString(cover_path));
+      if (!image.isNull())
+      {
+        image.setDevicePixelRatio(dpr);
+        resizeImage(&image, size);
+      }
     }
-  }
 
-  if (image.isNull())
-    createPlaceholderImage(image, placeholder_image, size, scale, display_title);
-}
+    // generate cover if one doesn't exist
+    if (image.isNull())
+    {
+      image = placeholder_image.copy();
+      if (image.isNull())
+        return;
 
-void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
-{
-  // old request before cover scale change?
-  CoverPixmapCacheEntry* pmp;
-  if (m_cover_scale != scale || image.isNull() || !(pmp = m_cover_pixmap_cache.Lookup(path)))
-    return;
+      resizeImage(&image, size);
 
-  pmp->pixmap = QPixmap::fromImage(image);
-  pmp->scale = scale;
-  pmp->is_loading = false;
+      QPainter painter;
+      if (!painter.begin(&image))
+        return;
 
-  invalidateColumnForPath(path, Column_Cover, false);
+      QFont font;
+      font.setPixelSize(std::max(static_cast<int>(64.0f * scale), 1));
+      font.setFamilies(QtHost::GetRobotoFontFamilies());
+      painter.setFont(font);
+
+      const int margin = static_cast<int>(30.0f * scale);
+      const QSize unscaled_size = QtUtils::GetDeviceIndependentSize(image.size(), image.devicePixelRatio());
+      const QRect text_rc(margin, margin, static_cast<int>(static_cast<float>(unscaled_size.width() - margin - margin)),
+                          static_cast<int>(static_cast<float>(unscaled_size.height() - margin - margin)));
+
+      // draw shadow first
+      painter.setPen(QColor(0, 0, 0, 160)); // semi-transparent black
+      painter.drawText(text_rc.translated(1, 1), Qt::AlignCenter | Qt::TextWordWrap, display_title);
+
+      painter.setPen(Qt::white);
+      painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, display_title);
+
+      painter.end();
+    }
+
+    Host::RunOnUIThread([path = std::move(path), image = std::move(image), list = std::move(list), scale]() {
+      // old request before cover scale change?
+      CoverPixmapCacheEntry* pmp;
+      if (!list || list->m_cover_scale != scale || !(pmp = list->m_cover_pixmap_cache.Lookup(path)))
+        return;
+
+      pmp->pixmap = QPixmap::fromImage(image);
+      pmp->scale = scale;
+      pmp->is_loading = false;
+
+      list->invalidateColumnForPath(path, Column_Cover, false);
+    });
+  });
 }
 
 void GameListModel::loadOrGenerateIcon(const GameList::Entry* ge)
