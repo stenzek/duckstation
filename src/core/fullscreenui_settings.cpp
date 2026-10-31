@@ -3021,7 +3021,7 @@ void FullscreenUI::DrawGameListSettingsPage()
 
   MenuHeading(FSUI_VSTR("Cover Settings"));
   {
-    DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Covers Directory"), Settings::FOLDERS_SECTION_NAME, "Covers",
+    DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Covers Directory"), EmuFolders::CONFIG_SECTION_NAME, "Covers",
                       EmuFolders::Covers);
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Covers"),
                    FSUI_VSTR("Downloads covers from a user-specified URL template.")))
@@ -4462,7 +4462,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"),
                     Settings::MEMORY_CARDS_SECTION_NAME, "Directory", EmuFolders::MemoryCards);
 
-  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Save State Directory"), Settings::FOLDERS_SECTION_NAME,
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Save State Directory"), EmuFolders::CONFIG_SECTION_NAME,
                     "SaveStates", EmuFolders::SaveStates);
 
   MenuHeading(FSUI_VSTR("Settings"));
@@ -5015,7 +5015,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                   "ScreenshotFileNameFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT,
                   &Settings::ParseCaptureFileNameFormat, &Settings::GetCaptureFileNameFormatName,
                   &Settings::GetCaptureFileNameFormatDisplayName, CaptureFileNameFormat::Count);
-  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Screenshot Directory"), Settings::FOLDERS_SECTION_NAME,
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Screenshot Directory"), EmuFolders::CONFIG_SECTION_NAME,
                     "Screenshots", EmuFolders::Screenshots);
 
   MenuHeading(FSUI_VSTR("Texture Replacements"));
@@ -5063,7 +5063,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                               "replacement backgrounds to match/load."),
                     Settings::HACKS_SECTION_NAME, "UseOldMDECRoutines", false);
 
-  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Textures Directory"), Settings::FOLDERS_SECTION_NAME,
+  DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "Textures Directory"), EmuFolders::CONFIG_SECTION_NAME,
                     "Textures", EmuFolders::Textures);
 
   EndMenuButtons();

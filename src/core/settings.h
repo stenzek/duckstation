@@ -683,7 +683,6 @@ struct Settings : public GPUSettings
   static const char* const CONTROLLER_PORTS_SECTION_NAME;
   static const char* const HOTKEYS_SECTION_NAME;
   static const char* const BORDER_OVERLAY_SECTION_NAME;
-  static const char* const FOLDERS_SECTION_NAME;
   static const char* const DEBUG_WINDOWS_SECTION_NAME;
 };
 
@@ -691,6 +690,7 @@ ALIGN_TO_CACHE_LINE extern Settings g_settings;        // CPU thread copy.
 ALIGN_TO_CACHE_LINE extern GPUSettings g_gpu_settings; // GPU thread copy.
 
 namespace EmuFolders {
+
 extern std::string AppRoot;
 extern std::string DataRoot;
 extern std::string Bios;
@@ -712,6 +712,8 @@ extern std::string Textures;
 extern std::string UserResources;
 extern std::string Videos;
 
+extern const char* const CONFIG_SECTION_NAME;
+
 // Assumes that AppRoot and DataRoot have been initialized.
 void SetDefaults();
 void EnsureFoldersExist();
@@ -726,4 +728,5 @@ std::string GetOverridableResourcePath(std::string_view name);
 
 /// Returns true if the application is running in portable mode.
 bool IsRunningInPortableMode();
+
 } // namespace EmuFolders

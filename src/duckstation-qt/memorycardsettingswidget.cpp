@@ -125,7 +125,7 @@ void MemoryCardSettingsWidget::createUi()
 
       SettingWidgetBinder::BindWidgetToFolderSetting(
         m_dialog->getSettingsInterface(), directory, browse, tr("Select Save States Directory"), open, reset,
-        Settings::FOLDERS_SECTION_NAME, "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
+        EmuFolders::CONFIG_SECTION_NAME, "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
 
       m_dialog->registerWidgetHelp(directory, tr("Save States Location"), tr("Default"),
                                    tr("Specifies the directory where save states will be saved."));

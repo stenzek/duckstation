@@ -62,10 +62,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToFolderSetting(
     sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
-    m_ui.cacheDirectoryReset, Settings::FOLDERS_SECTION_NAME, "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
-  SettingWidgetBinder::BindWidgetToFolderSetting(
-    sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse, tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
-    m_ui.coversDirectoryReset, Settings::FOLDERS_SECTION_NAME, "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
+    m_ui.cacheDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
+  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse,
+                                                 tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
+                                                 m_ui.coversDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Covers",
+                                                 Path::Combine(EmuFolders::DataRoot, "covers"));
 
   connect(m_ui.refreshWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::refreshWebCacheSize);
   connect(m_ui.clearWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onClearWebCacheClicked);

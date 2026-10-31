@@ -311,7 +311,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesDirectoryBrowse,
                                                    tr("Select Textures Directory"), m_ui.texturesDirectoryOpen,
-                                                   m_ui.texturesDirectoryReset, Settings::FOLDERS_SECTION_NAME,
+                                                   m_ui.texturesDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
                                                    "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
   }
   else

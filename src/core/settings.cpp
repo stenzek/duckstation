@@ -178,7 +178,6 @@ const char* const Settings::LOGGING_SECTION_NAME = "Logging";
 const char* const Settings::CONTROLLER_PORTS_SECTION_NAME = "ControllerPorts";
 const char* const Settings::HOTKEYS_SECTION_NAME = "Hotkeys";
 const char* const Settings::BORDER_OVERLAY_SECTION_NAME = "BorderOverlay";
-const char* const Settings::FOLDERS_SECTION_NAME = "Folders";
 const char* const Settings::DEBUG_WINDOWS_SECTION_NAME = "DebugWindows";
 
 std::span<const char* const> Settings::GetSectionSaveOrder()
@@ -190,7 +189,7 @@ std::span<const char* const> Settings::GetSectionSaveOrder()
     INTERFACE_SECTION_NAME,
     UI_SECTION_NAME,
     "AutoUpdater",
-    FOLDERS_SECTION_NAME,
+    EmuFolders::CONFIG_SECTION_NAME,
     GameList::CONFIG_SECTION_NAME,
     ACHIEVEMENTS_SECTION_NAME,
     LOGGING_SECTION_NAME,
@@ -2956,6 +2955,8 @@ std::string Textures;
 std::string UserResources;
 std::string Videos;
 
+const char* const CONFIG_SECTION_NAME = "Folders";
+
 } // namespace EmuFolders
 
 std::string EmuFolders::GetDefaultPath(const std::string* ref_folder)
@@ -3020,23 +3021,23 @@ std::string EmuFolders::LoadPathFromSettings(const SettingsInterface& si, const 
 void EmuFolders::LoadConfig(const SettingsInterface& si)
 {
   Bios = LoadPathFromSettings(si, DataRoot, Settings::BIOS_SECTION_NAME, "SearchDirectory", "bios");
-  Cache = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Cache", "cache");
-  Cheats = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Cheats", "cheats");
-  Covers = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Covers", "covers");
-  GameIcons = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "GameIcons", "gameicons");
-  GameSettings = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "GameSettings", "gamesettings");
-  InputProfiles = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "InputProfiles", "inputprofiles");
+  Cache = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Cache", "cache");
+  Cheats = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Cheats", "cheats");
+  Covers = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Covers", "covers");
+  GameIcons = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "GameIcons", "gameicons");
+  GameSettings = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "GameSettings", "gamesettings");
+  InputProfiles = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, Settings::MEMORY_CARDS_SECTION_NAME, "Directory", "memcards");
-  Overlays = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Overlays",
-                                  "resources" FS_OSPATH_SEPARATOR_STR "overlays");
-  Patches = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Patches", "patches");
-  SaveStates = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "SaveStates", "savestates");
-  Screenshots = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Screenshots", "screenshots");
-  Shaders = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Shaders", "shaders");
-  Subchannels = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Subchannels", "subchannels");
-  Textures = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Textures", "textures");
-  UserResources = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "UserResources", "resources");
-  Videos = LoadPathFromSettings(si, DataRoot, Settings::FOLDERS_SECTION_NAME, "Videos", "videos");
+  Overlays =
+    LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Overlays", "resources" FS_OSPATH_SEPARATOR_STR "overlays");
+  Patches = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Patches", "patches");
+  SaveStates = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "SaveStates", "savestates");
+  Screenshots = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Screenshots", "screenshots");
+  Shaders = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Shaders", "shaders");
+  Subchannels = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Subchannels", "subchannels");
+  Textures = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Textures", "textures");
+  UserResources = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "UserResources", "resources");
+  Videos = LoadPathFromSettings(si, DataRoot, CONFIG_SECTION_NAME, "Videos", "videos");
 
   DEV_LOG("BIOS Directory: {}", Bios);
   DEV_LOG("Cache Directory: {}", Cache);
@@ -3062,25 +3063,23 @@ void EmuFolders::Save(SettingsInterface& si)
 {
   // convert back to relative
   si.SetStringValue(Settings::BIOS_SECTION_NAME, "SearchDirectory", Path::MakeRelative(Bios, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "InputProfiles",
-                    Path::MakeRelative(InputProfiles, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue(Settings::MEMORY_CARDS_SECTION_NAME, "Directory",
                     Path::MakeRelative(MemoryCards, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Overlays", Path::MakeRelative(Overlays, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Subchannels", Path::MakeRelative(Subchannels, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "UserResources",
-                    Path::MakeRelative(UserResources, DataRoot).c_str());
-  si.SetStringValue(Settings::FOLDERS_SECTION_NAME, "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Overlays", Path::MakeRelative(Overlays, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Subchannels", Path::MakeRelative(Subchannels, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
+  si.SetStringValue(CONFIG_SECTION_NAME, "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
 }
 
 void EmuFolders::EnsureFolderExists(const std::string& path)

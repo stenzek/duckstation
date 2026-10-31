@@ -69,11 +69,11 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.screenshotsDirectory, m_ui.screenshotsDirectoryBrowse,
                                                    tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryOpen,
-                                                   m_ui.screenshotsDirectoryReset, Settings::FOLDERS_SECTION_NAME,
+                                                   m_ui.screenshotsDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
                                                    "Screenshots", Path::Combine(EmuFolders::DataRoot, "screenshots"));
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videosDirectory, m_ui.videosDirectoryBrowse,
                                                    tr("Select Media Capture Directory"), m_ui.videosDirectoryOpen,
-                                                   m_ui.videosDirectoryReset, Settings::FOLDERS_SECTION_NAME, "Videos",
+                                                   m_ui.videosDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Videos",
                                                    Path::Combine(EmuFolders::DataRoot, "videos"));
   }
   else
