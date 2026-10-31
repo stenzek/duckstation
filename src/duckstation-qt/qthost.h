@@ -181,6 +181,7 @@ public:
   void updateFullscreenUITheme();
 
 protected:
+  bool event(QEvent* event) override;
   void run() override;
 
 private:

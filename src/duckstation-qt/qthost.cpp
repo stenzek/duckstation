@@ -156,8 +156,33 @@ static void CheckDesktopFile();
 #endif
 
 namespace {
+
+/// Posted to run a function on the receiver's thread.
+class FunctionEvent final : public QEvent
+{
+public:
+  explicit FunctionEvent(MoveOnlyFunction<void()> function);
+
+  void run() { m_function(); }
+
+private:
+  MoveOnlyFunction<void()> m_function;
+};
+
+/// Lives on the UI thread, runs posted FunctionEvents.
+class UIThreadFunctionReceiver final : public QObject
+{
+public:
+  using QObject::QObject;
+
+protected:
+  bool event(QEvent* event) override;
+};
+
 struct State
 {
+  UIThreadFunctionReceiver* ui_function_receiver = nullptr;
+  QEvent::Type function_event_type = QEvent::None;
   std::unique_ptr<QTimer> settings_save_timer;
   std::vector<QTranslator*> translators;
   QIcon app_icon;
@@ -212,6 +237,8 @@ void QtHost::RegisterTypes()
   qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<std::vector<std::pair<std::string, std::string>>>(
     "std::vector<std::pair<std::string, std::string>>");
+
+  s_state.function_event_type = static_cast<QEvent::Type>(QEvent::registerEventType());
 }
 
 bool QtHost::PerformEarlyHardwareChecks()
@@ -1696,14 +1723,41 @@ void CoreThread::openGamePropertiesForCurrentGame(const QString& category)
   }
 }
 
+QtHost::FunctionEvent::FunctionEvent(MoveOnlyFunction<void()> function)
+  : QEvent(s_state.function_event_type), m_function(std::move(function))
+{
+}
+
+bool CoreThread::event(QEvent* event)
+{
+  if (event->type() == QtHost::s_state.function_event_type)
+  {
+    static_cast<QtHost::FunctionEvent*>(event)->run();
+    return true;
+  }
+
+  return QThread::event(event);
+}
+
+bool QtHost::UIThreadFunctionReceiver::event(QEvent* event)
+{
+  if (event->type() == s_state.function_event_type)
+  {
+    static_cast<FunctionEvent*>(event)->run();
+    return true;
+  }
+
+  return QObject::event(event);
+}
+
 void Host::RunOnCoreThread(MoveOnlyFunction<void()> function)
 {
-  QMetaObject::invokeMethod(g_core_thread, std::move(function), Qt::QueuedConnection);
+  QCoreApplication::postEvent(g_core_thread, new QtHost::FunctionEvent(std::move(function)));
 }
 
 void Host::RunOnUIThread(MoveOnlyFunction<void()> function)
 {
-  QMetaObject::invokeMethod(qApp, std::move(function), Qt::QueuedConnection);
+  QCoreApplication::postEvent(QtHost::s_state.ui_function_receiver, new QtHost::FunctionEvent(std::move(function)));
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
@@ -3559,6 +3613,9 @@ int main(int argc, char* argv[])
 
   // Type registration has to happen after hardware checks, clang emits ptest instructions otherwise.
   RegisterTypes();
+
+  // Owned by the application, so it's around for as long as there's an event loop to run functions.
+  s_state.ui_function_receiver = new UIThreadFunctionReceiver(&app);
 
   std::shared_ptr<SystemBootParameters> autoboot;
   if (!ParseCommandLineParametersAndInitializeConfig(app, autoboot))
