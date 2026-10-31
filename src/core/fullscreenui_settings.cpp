@@ -3251,7 +3251,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
     }
   }
 
-  MenuHeading(FSUI_VSTR("Options"));
+  MenuHeading(FSUI_VSTR("BIOS Images"));
 
   if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE_IMPORT, "Install BIOS"),
                  FSUI_VSTR("Copies a BIOS image to the configured global BIOS directory.")))
@@ -3262,9 +3262,15 @@ void FullscreenUI::DrawBIOSSettingsPage()
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER, "BIOS Directory"), Settings::BIOS_SECTION_NAME,
                     "SearchDirectory", EmuFolders::Bios);
 
+  MenuHeading(FSUI_VSTR("Options"));
+
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SCROLL, "Enable TTY Logging"),
                     FSUI_VSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."),
                     Settings::BIOS_SECTION_NAME, "TTYLogging", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Reset SPU On Game Start"),
+                    FSUI_VSTR("Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that "
+                              "do not initialize it. Has no effect when fast booting."),
+                    Settings::BIOS_SECTION_NAME, "ResetSPUOnGameStart", false);
 
   EndMenuButtons();
 }

@@ -532,6 +532,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   bios_tty_logging = si.GetBoolValue(BIOS_SECTION_NAME, "TTYLogging", false);
   bios_patch_fast_boot = si.GetBoolValue(BIOS_SECTION_NAME, "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
   bios_fast_forward_boot = si.GetBoolValue(BIOS_SECTION_NAME, "FastForwardBoot", false);
+  bios_reset_spu_on_game_start = si.GetBoolValue(BIOS_SECTION_NAME, "ResetSPUOnGameStart", false);
 
   multitap_mode = ParseMultitapModeName(controller_si.GetStringViewValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
                                                                          GetMultitapModeName(DEFAULT_MULTITAP_MODE)))
@@ -924,6 +925,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(BIOS_SECTION_NAME, "TTYLogging", bios_tty_logging);
   si.SetBoolValue(BIOS_SECTION_NAME, "PatchFastBoot", bios_patch_fast_boot);
   si.SetBoolValue(BIOS_SECTION_NAME, "FastForwardBoot", bios_fast_forward_boot);
+  si.SetBoolValue(BIOS_SECTION_NAME, "ResetSPUOnGameStart", bios_reset_spu_on_game_start);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -1260,6 +1262,7 @@ void Settings::ApplySettingRestrictions()
     texture_replacements.enable_vram_write_replacements = false;
     mdec_use_old_routines = false;
     bios_patch_fast_boot = false;
+    bios_reset_spu_on_game_start = false;
     runahead_frames = 0;
     runahead_for_analog_input = false;
     rewind_enable = false;

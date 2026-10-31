@@ -73,6 +73,7 @@ enum class Trait : u32
   DisableUpscaledDirectTextures,
   FilterFramebufferUploads,
   ForceMidFrameScanout,
+  ResetSPUOnGameStart,
 
   MaxCount
 };

@@ -31,6 +31,8 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, Settings::BIOS_SECTION_NAME, "TTYLogging",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.resetSPUOnGameStart, Settings::BIOS_SECTION_NAME,
+                                               "ResetSPUOnGameStart", false);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pioDeviceType, Settings::PIO_SECTION_NAME, "DeviceType",
                                                &Settings::ParsePIODeviceTypeName, &Settings::GetPIODeviceTypeModeName,
@@ -128,6 +130,9 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
        "overwrite your cartridge dump,</strong> you should ensure you have a backup first."));
   dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
                              tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
+  dialog->registerWidgetHelp(m_ui.resetSPUOnGameStart, tr("Reset SPU On Game Start"), tr("Unchecked"),
+                             tr("Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games "
+                                "that do not initialize it. Has no effect when fast booting."));
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;

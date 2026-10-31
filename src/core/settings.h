@@ -325,6 +325,7 @@ struct Settings : public GPUSettings
   bool bios_tty_logging : 1 = false;
   bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
   bool bios_fast_forward_boot : 1 = false;
+  bool bios_reset_spu_on_game_start : 1 = false;
 
   bool rewind_enable : 1 = false;
   bool runahead_for_analog_input : 1 = false;

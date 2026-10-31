@@ -607,6 +607,10 @@ void System::SetGameStarted()
   INFO_LOG("Game started at entry point 0x{:08X}.",
            s_state.exe_override.empty() ? s_state.game_entry_pc : CPU::g_state.pc);
   s_state.game_started = true;
+
+  // Some games don't initialize the SPU, leaving the shell's reverb buffer looping. Make it look like a fast boot.
+  if (g_settings.bios_reset_spu_on_game_start)
+    SPU::Reset();
 }
 
 void System::ResetGameStarted()
@@ -5283,6 +5287,8 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "PCSX Expansion Region disabled."));
     if (g_settings.bios_patch_fast_boot)
       append(TRANSLATE_SV("System", "Fast boot disabled."));
+    if (g_settings.bios_reset_spu_on_game_start)
+      append(TRANSLATE_SV("System", "Reset SPU on game start disabled."));
 
     Host::AddIconOSDMessage(OSDMessageType::Warning, std::string(safe_mode_osd_key), ICON_EMOJI_WARNING,
                             TRANSLATE_STR("System", "Safe mode is enabled."), std::string(messages.view()));

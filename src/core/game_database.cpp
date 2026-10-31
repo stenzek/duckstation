@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 38,
+  GAME_DATABASE_CACHE_VERSION = 39,
 };
 
 /// Map of track hashes for image verification
@@ -157,6 +157,7 @@ static constexpr const std::array s_trait_names = {
   "DisableUpscaledDirectTextures",
   "FilterFramebufferUploads",
   "ForceMidFrameScanout",
+  "ResetSPUOnGameStart",
 };
 static_assert(s_trait_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -199,6 +200,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaled Direct Textures", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Filter Framebuffer Uploads", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Mid-Frame Scanout", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Reset SPU On Game Start", "GameDatabase::Trait"),
 };
 static_assert(s_trait_display_names.size() == static_cast<size_t>(Trait::MaxCount));
 
@@ -985,6 +987,12 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     WARNING_LOG("CD-ROM SubQ Skew forced by compatibility settings.");
     settings.cdrom_subq_skew = true;
+  }
+
+  if (HasTrait(Trait::ResetSPUOnGameStart) && !settings.disable_all_enhancements)
+  {
+    WARNING_LOG("SPU reset on game start forced by compatibility settings.");
+    settings.bios_reset_spu_on_game_start = true;
   }
 
   if (!messages.empty())
