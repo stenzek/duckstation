@@ -21,6 +21,7 @@
 #include "common/log.h"
 
 #include <QtCore/QDir>
+#include <QtCore/QPointer>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -760,7 +761,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   {
     m_adapters_render_api = render_api;
 
-    QtAsyncTask::create(this, [this, render_api]() {
+    Host::QueueAsyncTask([widget = QPointer(this), render_api]() {
       Error error;
       std::optional<GPUDevice::AdapterInfoList> adapters =
         GPUDevice::GetAdapterListForAPI(render_api, QtUtils::GetWindowInfoType(), &error);
@@ -771,13 +772,13 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
         adapters.emplace();
       }
 
-      return [this, adapters = std::move(adapters.value()), render_api]() mutable {
-        if (m_adapters_render_api != render_api)
+      Host::RunOnUIThread([widget = std::move(widget), adapters = std::move(adapters.value()), render_api]() mutable {
+        if (!widget || widget->m_adapters_render_api != render_api)
           return;
 
-        m_adapters = std::move(adapters);
-        populateGPUAdaptersAndResolutions(render_api);
-      };
+        widget->m_adapters = std::move(adapters);
+        widget->populateGPUAdaptersAndResolutions(render_api);
+      });
     });
 
     return;

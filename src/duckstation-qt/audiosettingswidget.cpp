@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "audiosettingswidget.h"
@@ -13,6 +13,8 @@
 #include "util/audio_stream.h"
 
 #include <cmath>
+
+#include <QtCore/QPointer>
 
 #include "moc_audiosettingswidget.cpp"
 
@@ -226,50 +228,53 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
 
   const AudioBackend backend = getEffectiveBackend();
   std::string driver_name = m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "Driver");
-  QtAsyncTask::create(this, [this, driver_name = std::move(driver_name), backend]() {
+  Host::QueueAsyncTask([widget = QPointer(this), driver_name = std::move(driver_name), backend]() {
     std::vector<AudioStream::DeviceInfo> devices =
       AudioStream::GetOutputDevices(backend, driver_name, SPU::SAMPLE_RATE);
-    return [this, devices = std::move(devices), driver_name = std::move(driver_name), backend]() {
+    Host::RunOnUIThread([widget = std::move(widget), devices = std::move(devices), driver_name = std::move(driver_name),
+                         backend]() {
       // just in case we executed out of order...
-      if (backend != getEffectiveBackend() ||
-          driver_name != m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "Driver"))
+      if (!widget || backend != widget->getEffectiveBackend() ||
+          driver_name != widget->m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "Driver"))
+      {
         return;
+      }
 
       if (devices.empty())
       {
-        m_ui.outputDevice->addItem(tr("Default"));
+        widget->m_ui.outputDevice->addItem(tr("Default"));
       }
       else
       {
         const std::string current_device =
-          m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "OutputDevice");
+          widget->m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "OutputDevice");
 
-        m_ui.outputDevice->setEnabled(true);
+        widget->m_ui.outputDevice->setEnabled(true);
 
         bool is_known_device = false;
         for (const AudioStream::DeviceInfo& di : devices)
         {
-          m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
+          widget->m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
           if (di.name == current_device)
           {
-            m_output_device_latency = di.minimum_latency_frames;
+            widget->m_output_device_latency = di.minimum_latency_frames;
             is_known_device = true;
           }
         }
 
         if (!is_known_device)
         {
-          m_ui.outputDevice->addItem(tr("%1 [Unavailable]").arg(QString::fromStdString(current_device)),
-                                     QString::fromStdString(current_device));
+          widget->m_ui.outputDevice->addItem(tr("%1 [Unavailable]").arg(QString::fromStdString(current_device)),
+                                             QString::fromStdString(current_device));
         }
 
-        SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice,
-                                                       Settings::AUDIO_SECTION_NAME, "OutputDevice",
-                                                       std::move(devices.front().name));
+        SettingWidgetBinder::BindWidgetToStringSetting(widget->m_dialog->getSettingsInterface(),
+                                                       widget->m_ui.outputDevice, Settings::AUDIO_SECTION_NAME,
+                                                       "OutputDevice", std::move(devices.front().name));
       }
 
-      updateMinimumLatencyLabel();
-    };
+      widget->updateMinimumLatencyLabel();
+    });
   });
 }
 
