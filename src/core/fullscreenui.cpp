@@ -2038,7 +2038,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->summary = fmt::format(FSUI_FSTR("Saved {}"), Host::FormatRelativeDateTime(ssi->timestamp, false, false));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
-  li->game_path = std::move(ssi->media_path);
+  li->game_path = ssi->GetBootPath();
   li->global = global;
   if (ssi->screenshot.IsValid())
     li->preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);

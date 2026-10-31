@@ -121,6 +121,7 @@ struct SaveStateBuffer
   std::string serial;
   std::string title;
   std::string media_path;
+  std::string exe_override;
   u32 media_subimage_index;
   u32 version;
   Image screenshot;
@@ -206,7 +207,7 @@ static void UpdateMemoryCards();
 static std::string GetMemoryCardPathForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
-static std::string GetMediaPathFromSaveState(const char* path);
+static std::string GetBootPathFromSaveState(const char* path);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
 static bool LoadOneRewindState();
@@ -1733,8 +1734,8 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
 
   if (!parameters.save_state.empty())
   {
-    // loading a state, so pull the media path from the save state to avoid a double change
-    std::string state_media(GetMediaPathFromSaveState(parameters.save_state.c_str()));
+    // loading a state, so pull the media/exe path from the save state to avoid a double change
+    std::string state_media(GetBootPathFromSaveState(parameters.save_state.c_str()));
     if (FileSystem::FileExists(state_media.c_str()))
       parameters.path = std::move(state_media);
   }
@@ -3084,14 +3085,14 @@ size_t System::GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp, bool en
          (pgxp ? CPU::PGXP::GetStateSize(enable_8mb_ram) : 0);
 }
 
-std::string System::GetMediaPathFromSaveState(const char* path)
+std::string System::GetBootPathFromSaveState(const char* path)
 {
   SaveStateBuffer buffer;
   auto fp = FileSystem::OpenManagedCFile(path, "rb", nullptr);
   if (fp)
     LoadStateBufferFromFile(&buffer, fp.get(), nullptr, false, true, false, false);
 
-  return std::move(buffer.media_path);
+  return std::move(buffer.media_path.empty() ? buffer.exe_override : buffer.media_path);
 }
 
 std::optional<bool> System::LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display)
@@ -3179,11 +3180,23 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
       }
     }
   }
-  else
+
+  // Restore the exe override, so that resetting sideloads the same executable.
+  // Older states don't record it, so they keep whichever override is active.
+  if (buffer.version >= 94 && s_state.exe_override != buffer.exe_override)
   {
-    // state has no disc
-    if (CDROM::RemoveMedia(false))
-      UpdateRunningGame(std::string(), nullptr, false);
+    s_state.exe_override = buffer.exe_override;
+    if (!s_state.exe_override.empty())
+      s_state.boot_mode = IsPsfPath(s_state.exe_override) ? BootMode::BootPSF : BootMode::BootEXE;
+    else if (s_state.boot_mode == BootMode::BootEXE || s_state.boot_mode == BootMode::BootPSF)
+      s_state.boot_mode = BootMode::FullBoot;
+  }
+
+  if (buffer.media_path.empty())
+  {
+    // State has no disc, so the running game is the executable, if any.
+    if (CDROM::RemoveMedia(false) || s_state.running_game_path != s_state.exe_override)
+      UpdateRunningGame(s_state.exe_override, nullptr, false);
   }
 
   ClearMemorySaveStates(false, false);
@@ -3243,8 +3256,16 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
     return false;
   }
 
+  // Older headers are shorter, so these fields hold the start of whatever followed the header.
+  if (header.version < 94)
+  {
+    header.exe_override_length = 0;
+    header.offset_to_exe_override = 0;
+  }
+
   // Validate offsets.
   if ((static_cast<s64>(header.offset_to_media_path) + header.media_path_length) > file_size ||
+      (static_cast<s64>(header.offset_to_exe_override) + header.exe_override_length) > file_size ||
       (static_cast<s64>(header.offset_to_screenshot) + header.screenshot_compressed_size) > file_size ||
       header.screenshot_width >= 32768 || header.screenshot_height >= 32768 ||
       (static_cast<s64>(header.offset_to_data) + header.data_compressed_size) > file_size ||
@@ -3262,21 +3283,33 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
     buffer->serial.assign(header.serial, StringUtil::Strnlen(header.serial, std::size(header.serial)));
   }
 
-  // Read media path.
+  // Read media path and exe override.
   if (read_media_path)
   {
-    buffer->media_path.resize(header.media_path_length);
-    buffer->media_subimage_index = header.media_subimage_index;
-    if (header.media_path_length > 0)
-    {
-      if (!FileSystem::FSeek64(fp, header.offset_to_media_path, SEEK_SET, error)) [[unlikely]]
+    const auto read_string = [fp, error](std::string* str, u32 offset, u32 length, const char* name) {
+      str->resize(length);
+      if (length == 0)
+        return true;
+
+      if (!FileSystem::FSeek64(fp, offset, SEEK_SET, error)) [[unlikely]]
         return false;
 
-      if (std::fread(buffer->media_path.data(), buffer->media_path.length(), 1, fp) != 1) [[unlikely]]
+      if (std::fread(str->data(), length, 1, fp) != 1) [[unlikely]]
       {
-        Error::SetErrno(error, "fread() for media path failed: ", errno);
+        const int err = errno;
+        Error::SetErrno(error, TinyString::from_format("fread() for {} failed: ", name), err);
         return false;
       }
+
+      return true;
+    };
+
+    buffer->media_subimage_index = header.media_subimage_index;
+    if (!read_string(&buffer->media_path, header.offset_to_media_path, header.media_path_length, "media path") ||
+        !read_string(&buffer->exe_override, header.offset_to_exe_override, header.exe_override_length,
+                     "exe override"))
+    {
+      return false;
     }
   }
 
@@ -3552,6 +3585,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 {
   buffer->title = s_state.running_game_title;
   buffer->serial = s_state.running_game_serial;
+  buffer->exe_override = s_state.exe_override;
   buffer->version = SAVE_STATE_VERSION;
   buffer->media_subimage_index = 0;
 
@@ -3661,6 +3695,19 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
       return false;
     }
     file_position += static_cast<u32>(buffer.media_path.length());
+  }
+
+  if (!buffer.exe_override.empty())
+  {
+    DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
+    header.exe_override_length = static_cast<u32>(buffer.exe_override.length());
+    header.offset_to_exe_override = file_position;
+    if (std::fwrite(buffer.exe_override.data(), buffer.exe_override.length(), 1, fp) != 1)
+    {
+      Error::SetErrno(error, "fwrite() for exe override failed: ", errno);
+      return false;
+    }
+    file_position += static_cast<u32>(buffer.exe_override.length());
   }
 
   if (buffer.screenshot.IsValid())
@@ -4370,7 +4417,8 @@ bool System::InsertMedia(const char* path, u32 subimage_index)
 void System::RemoveMedia()
 {
   ClearMemorySaveStates(true, true);
-  CDROM::RemoveMedia(false);
+  if (CDROM::RemoveMedia(false))
+    UpdateRunningGame(std::string(), nullptr, false);
 }
 
 void System::UpdateRunningGame(const std::string& path, CDImage* image, bool booting)
@@ -5669,6 +5717,7 @@ std::optional<ExtendedSaveStateInfo> System::GetUndoSaveStateInfo()
     ssi->title = s_state.undo_load_state->title;
     ssi->serial = s_state.undo_load_state->serial;
     ssi->media_path = s_state.undo_load_state->media_path;
+    ssi->exe_override = s_state.undo_load_state->exe_override;
     ssi->screenshot = s_state.undo_load_state->screenshot;
     ssi->timestamp = s_state.undo_load_state->timestamp;
   }
@@ -6136,6 +6185,7 @@ std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char
       ssi->title = std::move(buffer.title);
       ssi->serial = std::move(buffer.serial);
       ssi->media_path = std::move(buffer.media_path);
+      ssi->exe_override = std::move(buffer.exe_override);
       ssi->screenshot = std::move(buffer.screenshot);
 
       FILESYSTEM_STAT_DATA sd;

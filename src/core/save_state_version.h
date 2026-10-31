@@ -6,7 +6,7 @@
 #include "common/types.h"
 
 inline constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-inline constexpr u32 SAVE_STATE_VERSION = 93;
+inline constexpr u32 SAVE_STATE_VERSION = 94;
 inline constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
@@ -50,5 +50,9 @@ struct SAVE_STATE_HEADER
   u32 data_compressed_size;
   u32 data_uncompressed_size;
   u32 offset_to_data;
+
+  // EXE/PSF override added in version 94. Older headers are shorter, so these must be ignored for them.
+  u32 exe_override_length;
+  u32 offset_to_exe_override;
 };
 #pragma pack(pop)

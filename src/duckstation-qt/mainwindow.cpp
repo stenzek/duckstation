@@ -1275,7 +1275,7 @@ bool MainWindow::openResumeStateDialog(const std::string& path, std::string save
   }
 
   // Prefer using the supplied path in case it's been moved.
-  std::string media_path = path.empty() ? std::string(std::move(ssi->media_path)) : std::string(path);
+  std::string media_path = path.empty() ? ssi->GetBootPath() : std::string(path);
 
   QDialogButtonBox* const bbox = new QDialogButtonBox(Qt::Horizontal, dlg);
 

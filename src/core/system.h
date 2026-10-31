@@ -82,9 +82,13 @@ struct ExtendedSaveStateInfo
   std::string title;
   std::string serial;
   std::string media_path;
+  std::string exe_override;
   std::time_t timestamp;
 
   Image screenshot;
+
+  /// Returns the path to boot to load this state: the disc, or the executable when no disc was inserted.
+  ALWAYS_INLINE const std::string& GetBootPath() const { return media_path.empty() ? exe_override : media_path; }
 };
 
 struct MediaChangeEntry
