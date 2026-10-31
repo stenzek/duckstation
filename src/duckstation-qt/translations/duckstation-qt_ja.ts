@@ -2193,15 +2193,6 @@ Current Binding: %s</source>
         <translation>安全性の確認に失敗しました</translation>
     </message>
     <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>警告: 現在は %1$s を安全に行うことができません。実行するとデータが破損する可能性があります。ゲームを再開し、5秒待ってから再試行することをお勧めします。
-
-それでも %1$s を実行しますか？</translation>
-    </message>
-    <message>
         <source>Token Generation Time</source>
         <comment>settings_achievements_token_generation_time</comment>
         <translation>トークン生成日時</translation>
@@ -2616,11 +2607,6 @@ Do you want to %1$s anyway?</source>
         <translation>エディタを終了</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>マルチタップモード</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>タッチスクリーンコントローラを有効化</translation>
@@ -2684,16 +2670,6 @@ Do you want to %1$s anyway?</source>
         <source>Rewind</source>
         <comment>emulation_menu_rewind</comment>
         <translation>巻き戻し</translation>
-    </message>
-    <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>巻き戻しステートを読み込み</translation>
-    </message>
-    <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>フレーム %1$d</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4177,6 +4153,41 @@ Do you want to %1$s anyway?</source>
         <translation>高度なレンダリング</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>ディスク取り出し</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>警告: ゲームはまだメモリーカードに保存しています。今続行するとデータが破損する可能性があります。ゲームを再開して5秒待ってから、もう一度お試しください。</translation>
+    </message>
+    <message>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>それでもゲームを終了しますか？</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>それでもゲームを再起動しますか？</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>それでもステートを読み込みますか？</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>それでもステートを保存しますか？</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>それでもディスクを交換しますか？</translation>
+    </message>
+    <message>
         <source>Enable Achievements</source>
         <comment>settings_enabled</comment>
         <translation>実績を有効にする</translation>
@@ -4430,6 +4441,31 @@ Do you want to %1$s anyway?</source>
         <translation>エミュレートするコントローラーの種類を選択します。</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>スキップ</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>すべての入力を割り当て</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>ボタンと軸を順番に指定します。コントローラーでそれぞれを操作して割り当てることができます。</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%3$d 中 %2$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>センサーの割り当てを有効化</translation>
+    </message>
+    <message>
         <source>Show Controller Input</source>
         <comment>settings_show_inputs</comment>
         <translation>コントローラー入力を表示</translation>
@@ -4448,6 +4484,11 @@ Do you want to %1$s anyway?</source>
         <source>Editing layout in &apos;%s&apos;.</source>
         <comment>touchscreen_controller_editing_layout</comment>
         <translation>「%s」のレイアウトを編集中。</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>マルチタップモードを変更</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4518,6 +4559,26 @@ Do you want to %1$s anyway?</source>
         <source>Change Disc</source>
         <comment>emulation_menu_change_media</comment>
         <translation>ディスク交換</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>ここまで巻き戻す</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>ステート %1$d / %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>最新</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -5039,6 +5100,129 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>以下で設定したポストプロセスチェーンを適用します。</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>表示シェーダー</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>内部シェーダー</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>表示シェーダーを有効化</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>画面サイズへの拡大縮小後に適用されます。例: CRTフィルター。</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>内部シェーダーを有効化</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>拡大縮小前の内部解像度で適用されます。例: SSAO。</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>サブフレーム</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>黒フレーム挿入などの効果のために追加フレームを表示します。</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>自動</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d フレーム</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>ステージの操作</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>タップしてシェーダーのオプションを変更します。</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>プリセット</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>カスタム</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>画像のパス</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>画像が選択されていません。</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>表示開始 X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>表示開始 Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>表示終了 X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>表示終了 Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>アルファブレンディング</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>オーバーレイ画像の透明度を適用します。</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>出力先アルファブレンディング</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>オーバーレイ画像の透明度を使ってゲームを合成します。</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>シェーダーを追加</translation>
@@ -5133,6 +5317,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders。
 追加のボーダーオーバーレイは、次の場所に追加できます:
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays。</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>GLSL、ReShade、Slangのシェーダーを%1$sに追加できます。</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>縁取りオーバーレイを%1$sに追加できます。</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5628,6 +5822,36 @@ Are you sure you want to continue?</source>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>モード</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>ステアリング</translation>
+    </message>
+    <message>
         <source>N/A</source>
         <comment>game_list_no_achievements</comment>
         <translation>なし</translation>
@@ -5636,6 +5860,11 @@ Are you sure you want to continue?</source>
         <source>All Files</source>
         <comment>game_list_filter_all</comment>
         <translation>すべてのファイル</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>一致する項目はありません。</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5787,6 +6016,16 @@ ${serial}: ゲームのシリアル番号。
         <source>Download complete.</source>
         <comment>game_list_download_covers_complete</comment>
         <translation>ダウンロード完了。</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>ネジコン</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Transfer Data</source>
@@ -6058,6 +6297,16 @@ ${serial}: ゲームのシリアル番号。
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <comment>settings_summary_downsample_scale</comment>
         <translation>最終画像に適用される解像度のスケールを選択します。1xは元のコンソールの解像度にダウンサンプリングします。</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>ゲーム開始時にSPUをリセット</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>ゲーム開始時にSPUをリセットし、SPUを初期化しないゲームで残るBIOSの残響を除去します。高速起動時には効果がありません。</translation>
     </message>
     <message>
         <source>Depth Clear Threshold</source>
@@ -8141,6 +8390,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>TTYログを有効にする</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>ゲーム開始時にSPUをリセット</translation>
+    </message>
+    <message>
         <source>Select BIOS Directory</source>
         <translation>BIOS ディレクトリを選択</translation>
     </message>
@@ -8191,6 +8444,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>BIOS の printf() 呼び出しをログに記録します。すべてのゲームにデバッグメッセージが含まれているわけではありません。</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>ゲーム開始時にSPUをリセットし、SPUを初期化しないゲームで残るBIOSの残響を除去します。高速起動時には効果がありません。</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8677,6 +8934,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatic (Frame End)</source>
         <translation>自動（フレーム終了時）</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>自動 (フレーム開始時)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10143,10 +10404,6 @@ Do you want to %2 anyway?</source>
         <translation>ディスクを交換</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>サブイメージ %1 への切り替えに失敗しました</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>ダウンロードの確認</translation>
     </message>
@@ -10697,6 +10954,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>ロード/ストアを追跡(&amp;F)</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>レジスターを変更</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>%1 の新しい値を入力:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PCは4バイト境界に整列したアドレスである必要があります。</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>%1 を 0x%2 に設定しました。</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>0x%1 の命令を読み取れませんでした。</translation>
     </message>
@@ -10792,6 +11065,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>無効なアドレスです。16進数で指定してください (0x12345678 または 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>無効な値です。16進数で指定してください (0x12345678 または 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11665,6 +11942,10 @@ You cannot undo this action.</source>
         <translation>BIOS ディレクトリ</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>BIOSイメージ</translation>
+    </message>
+    <message>
         <source>BIOS Install Error</source>
         <translation>BIOSインストールエラー</translation>
     </message>
@@ -12035,6 +12316,10 @@ You cannot undo this action.</source>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>マクロがボタンのオンとオフを切り替える頻度 (連射) を設定します。</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>リスト表示で各ゲームの横に表示する画像を指定します。</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -12469,6 +12754,10 @@ Error was:</source>
     <message>
         <source>Length: {}</source>
         <translation>長さ: {}</translation>
+    </message>
+    <message>
+        <source>List Icons</source>
+        <translation>リストのアイコン</translation>
     </message>
     <message>
         <source>Load Devices From Save States</source>
@@ -13079,6 +13368,10 @@ You cannot undo this action.</source>
         <translation>PGXP深度バッファ</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>黒フレーム挿入などの効果のために追加フレームを表示します。VSyncが必要です。</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>ゲームの音声を一切出力しないようにします。</translation>
     </message>
@@ -13103,6 +13396,10 @@ You cannot undo this action.</source>
         <translation>コントローラー設定をリセット</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>ゲーム開始時にSPUをリセット</translation>
+    </message>
+    <message>
         <source>Reset Title</source>
         <translation>タイトルをリセット</translation>
     </message>
@@ -13113,6 +13410,10 @@ You cannot undo this action.</source>
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>すべての設定をデフォルトに戻します。</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>ゲーム開始時にSPUをリセットし、SPUを初期化しないゲームで残るBIOSの残響を除去します。高速起動時には効果がありません。</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -13287,6 +13588,10 @@ You cannot undo this action.</source>
         <translation>2D オブジェクト上の拡大テクスチャのブロック感を滑らかにします。</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>サブフレーム</translation>
+    </message>
+    <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
         <translation>&apos;{}&apos; の解除状態を削除します。この操作は元に戻せません。</translation>
     </message>
@@ -13301,6 +13606,10 @@ You cannot undo this action.</source>
     <message>
         <source>Time Played: </source>
         <translation>プレイ時間: </translation>
+    </message>
+    <message>
+        <source>Timing out in {}...</source>
+        <translation>あと {} でタイムアウト...</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
@@ -14664,10 +14973,6 @@ Do you want to {1} anyway?</source>
         <translation>カバー画像を設定</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>入力割り当てを設定</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>超過時に精密値を破棄するしきい値を設定します。一部のゲームの不具合に効果がある場合があります。</translation>
     </message>
@@ -15032,10 +15337,6 @@ Do you want to {1} anyway?</source>
         <translation>スレッド化レンダリング</translation>
     </message>
     <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>タイムアウトまで {:.0f} 秒...</translation>
-    </message>
-    <message>
         <source>Title</source>
         <translation>ゲーム名</translation>
     </message>
@@ -15311,6 +15612,13 @@ Do you want to {0} anyway?</source>
         <comment>Loading time</comment>
         <translation>
             <numerusform>残り %n 分</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n フレーム</numerusform>
         </translation>
     </message>
 </context>
@@ -15965,6 +16273,11 @@ Are you sure you want to continue?</source>
         <translation>フレーム途中のスキャンアウトを強制</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>ゲーム開始時にSPUをリセット</translation>
+    </message>
+    <message>
         <source>CPU recompiler disabled.</source>
         <translation>CPUリコンパイラーが無効になりました。</translation>
     </message>
@@ -16358,6 +16671,26 @@ Are you sure you want to continue?</source>
         <translation>互換性</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>カバー</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>メモリーカード</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>ディレクトリ「{}」をスキャンしています...</translation>
     </message>
@@ -16391,6 +16724,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>ハードコアモードで %1 個解除</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>アイコン</translation>
     </message>
 </context>
 <context>
@@ -16494,8 +16831,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>ローカライズされたタイトルを表示</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>ゲームアイコンを表示</translation>
+        <source>Game List Icons</source>
+        <translation>ゲームリストのアイコン</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16524,6 +16861,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 .ccd（クローンCDイメージ）
 .chd（圧縮データ）
 .pbp（PlayStation Portable、復号化済みのみ）</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>ゲームリストのアイコン: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19397,6 +19738,10 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>並べ替え(&amp;Y)</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>ゲームリストのアイコン(&amp;I)</translation>
+    </message>
+    <message>
         <source>Allows you to record audio and/or video from the content.</source>
         <translation>コンテンツの音声や映像を録画できます。</translation>
     </message>
@@ -19677,14 +20022,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>メモリースキャナーウィンドウを開きます。</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>ゲームアイコンを表示(&amp;N)</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>リスト表示で各ゲームのメモリーカードから取得したアイコンを表示します。</translation>
-    </message>
-    <message>
         <source>Media Ca&amp;pture</source>
         <translation>メディアキャプチャー(&amp;P)</translation>
     </message>
@@ -19731,10 +20068,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>&amp;Animate Game Icons</source>
         <translation>ゲームアイコンをアニメーション表示(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>実績アイコンを優先(&amp;H)</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -19839,10 +20172,6 @@ Shift+クリックで複数のバインドを設定します。</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>リスト表示で選択したアイコンをアニメーション表示します。</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>メモリーカードアイコンより RetroAchievements のゲームバッジを優先します。</translation>
     </message>
     <message>
         <source>Start &amp;Capture</source>
@@ -22435,6 +22764,26 @@ Error: {1}</source>
         <translation>下へ</translation>
     </message>
     <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>サブフレーム (ゲームの1フレームあたりの後処理フレーム数):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>自動</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> フレーム</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>サブフレーム</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>本体が描画する各フレームの間に追加フレームを表示し、後処理シェーダーが黒フレーム挿入などの効果に利用できるようにします。「自動」では、サブフレームを利用するシェーダーが有効な場合にのみ、ディスプレイのリフレッシュレートで許容される数のサブフレームを表示します。シェーダーで問題が発生する場合は、0に設定してサブフレームを無効にしてください。</translation>
+    </message>
+    <message>
         <source>Clear Shader Stages</source>
         <translation>シェーダーステージをクリア</translation>
     </message>
@@ -24994,10 +25343,6 @@ The name of the SBI file must match the name of the disc image.</source>
 SBIファイルの名前はディスクイメージの名前と一致させてください。</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>サブイメージ {}（「{}」内）への切り替えに失敗しました: {}。</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>サブイメージ{} ({})（「{}」内）に切り替えました。</translation>
     </message>
@@ -25146,6 +25491,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Fast boot disabled.</source>
         <translation>高速ブートが無効になりました。</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>ゲーム開始時のSPUリセットが無効になりました。</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>

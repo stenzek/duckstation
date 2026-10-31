@@ -2643,6 +2643,11 @@ Nút gán hiện tại: %s</translation>
         <translation>Tệp khác…</translation>
     </message>
     <message>
+        <source>Remove Disc</source>
+        <comment>emulation_menu_change_media_remove_disc</comment>
+        <translation>Tháo đĩa</translation>
+    </message>
+    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Hiện tại</translation>
@@ -2671,15 +2676,6 @@ Nút gán hiện tại: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Kiểm tra an toàn thất bại</translation>
-    </message>
-    <message>
-        <source>WARNING: It is not currently safe to %1$s, and doing so may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.
-
-Do you want to %1$s anyway?</source>
-        <comment>emulation_menu_safety_check_message</comment>
-        <translation>CẢNH BÁO: Hiện không an toàn để %1$s, thao tác này có thể làm hỏng dữ liệu. Bạn nên tiếp tục trò chơi và chờ 5 giây rồi thử lại.
-
-Bạn vẫn muốn %1$s chứ?</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -3369,11 +3365,6 @@ Bạn vẫn muốn %1$s chứ?</translation>
         <translation>Đang chỉnh sửa bố cục trong &apos;%s&apos;.</translation>
     </message>
     <message>
-        <source>Multitap Mode</source>
-        <comment>settings_multitap_mode</comment>
-        <translation>Chế độ Multitap</translation>
-    </message>
-    <message>
         <source>Enable Touchscreen Controller</source>
         <comment>settings_enable_touchscreen_controller</comment>
         <translation>Bật tay cầm cảm ứng</translation>
@@ -3519,14 +3510,84 @@ Bạn vẫn muốn %1$s chứ?</translation>
         <translation>Tua lại</translation>
     </message>
     <message>
-        <source>Load Rewind State</source>
-        <comment>emulation_menu_rewind_load</comment>
-        <translation>Nạp trạng thái tua lại</translation>
+        <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
+        <comment>emulation_menu_safety_check_message</comment>
+        <translation>CẢNH BÁO: Trò chơi vẫn đang lưu vào thẻ nhớ. Tiếp tục lúc này có thể làm hỏng dữ liệu. Bạn nên quay lại trò chơi, chờ 5 giây rồi thử lại.</translation>
     </message>
     <message>
-        <source>Frame %1$d</source>
-        <comment>emulation_menu_rewind_frame</comment>
-        <translation>Khung hình %1$d</translation>
+        <source>Do you want to close the game anyway?</source>
+        <comment>emulation_menu_safety_check_close_game</comment>
+        <translation>Bạn vẫn muốn đóng trò chơi?</translation>
+    </message>
+    <message>
+        <source>Do you want to restart the game anyway?</source>
+        <comment>emulation_menu_safety_check_restart_game</comment>
+        <translation>Bạn vẫn muốn khởi động lại trò chơi?</translation>
+    </message>
+    <message>
+        <source>Do you want to load a state anyway?</source>
+        <comment>emulation_menu_safety_check_load_state</comment>
+        <translation>Bạn vẫn muốn tải trạng thái?</translation>
+    </message>
+    <message>
+        <source>Do you want to save a state anyway?</source>
+        <comment>emulation_menu_safety_check_save_state</comment>
+        <translation>Bạn vẫn muốn lưu trạng thái?</translation>
+    </message>
+    <message>
+        <source>Do you want to change the disc anyway?</source>
+        <comment>emulation_menu_safety_check_change_disc</comment>
+        <translation>Bạn vẫn muốn đổi đĩa?</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <comment>controller_binding_skip</comment>
+        <translation>Bỏ qua</translation>
+    </message>
+    <message>
+        <source>Bind All Inputs</source>
+        <comment>controller_settings_bind_all</comment>
+        <translation>Gán tất cả đầu vào</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
+        <comment>controller_settings_summary_bind_all</comment>
+        <translation>Lần lượt yêu cầu từng nút và trục để bạn có thể gán chúng bằng cách nhấn nút hoặc di chuyển trục tương ứng trên tay cầm.</translation>
+    </message>
+    <message>
+        <source>%1$s (%2$d of %3$d)</source>
+        <comment>controller_bind_all_title</comment>
+        <translation>%1$s (%2$d trên %3$d)</translation>
+    </message>
+    <message>
+        <source>Enable Sensor Mapping</source>
+        <comment>controller_settings_enable_sensor_mapping</comment>
+        <translation>Bật gán cảm biến</translation>
+    </message>
+    <message>
+        <source>Change Multitap Mode</source>
+        <comment>settings_change_multitap_mode</comment>
+        <translation>Đổi chế độ Multitap</translation>
+    </message>
+    <message>
+        <source>Rewind Here</source>
+        <comment>emulation_menu_rewind_load</comment>
+        <translation>Tua lại đến đây</translation>
+    </message>
+    <message>
+        <source>State %1$d of %2$d</source>
+        <comment>emulation_menu_rewind_position</comment>
+        <translation>Trạng thái %1$d trên %2$d</translation>
+    </message>
+    <message>
+        <source>-%1$s</source>
+        <comment>emulation_menu_rewind_seconds_behind</comment>
+        <translation>-%1$s</translation>
+    </message>
+    <message>
+        <source>Latest</source>
+        <comment>emulation_menu_rewind_latest</comment>
+        <translation>Mới nhất</translation>
     </message>
     <message>
         <source>No rewind states are available.</source>
@@ -4714,6 +4775,129 @@ Bạn có thể thay đổi sau bằng tùy chọn &quot;Khởi động ở ch�
         <translation>Áp dụng chuỗi hậu xử lý được cấu hình bên dưới.</translation>
     </message>
     <message>
+        <source>Display Shaders</source>
+        <comment>postfx_display_chain</comment>
+        <translation>Shader hiển thị</translation>
+    </message>
+    <message>
+        <source>Internal Shaders</source>
+        <comment>postfx_internal_chain</comment>
+        <translation>Shader nội bộ</translation>
+    </message>
+    <message>
+        <source>Enable Display Shaders</source>
+        <comment>postfx_setting_enable_display</comment>
+        <translation>Bật shader hiển thị</translation>
+    </message>
+    <message>
+        <source>Applied after scaling to the screen, e.g. CRT filters.</source>
+        <comment>postfx_setting_summary_enable_display</comment>
+        <translation>Áp dụng sau khi co giãn cho vừa màn hình, ví dụ bộ lọc CRT.</translation>
+    </message>
+    <message>
+        <source>Enable Internal Shaders</source>
+        <comment>postfx_setting_enable_internal</comment>
+        <translation>Bật shader nội bộ</translation>
+    </message>
+    <message>
+        <source>Applied at the internal resolution before scaling, e.g. SSAO.</source>
+        <comment>postfx_setting_summary_enable_internal</comment>
+        <translation>Áp dụng ở độ phân giải nội bộ trước khi co giãn, ví dụ SSAO.</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <comment>postfx_setting_subframes</comment>
+        <translation>Khung hình phụ</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <comment>postfx_setting_summary_subframes</comment>
+        <translation>Hiển thị thêm khung hình cho các hiệu ứng như chèn khung hình đen.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>postfx_subframes_automatic</comment>
+        <translation>Tự động</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d Frames</source>
+        <comment>postfx_subframes_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d Frame&quot;; other=&quot;%d Frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d khung hình</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Stage actions</source>
+        <comment>postfx_stage_actions</comment>
+        <translation>Thao tác với giai đoạn</translation>
+    </message>
+    <message>
+        <source>Tap to change shader options.</source>
+        <comment>postfx_stage_summary</comment>
+        <translation>Chạm để thay đổi tùy chọn shader.</translation>
+    </message>
+    <message>
+        <source>Preset</source>
+        <comment>postfx_border_overlay_preset_name</comment>
+        <translation>Thiết lập sẵn</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <comment>postfx_border_overlay_custom</comment>
+        <translation>Tùy chỉnh</translation>
+    </message>
+    <message>
+        <source>Image Path</source>
+        <comment>postfx_border_overlay_image_path</comment>
+        <translation>Đường dẫn ảnh</translation>
+    </message>
+    <message>
+        <source>No image selected.</source>
+        <comment>postfx_border_overlay_image_path_unset</comment>
+        <translation>Chưa chọn ảnh.</translation>
+    </message>
+    <message>
+        <source>Display Start X</source>
+        <comment>postfx_border_overlay_display_start_x</comment>
+        <translation>Điểm bắt đầu hiển thị X</translation>
+    </message>
+    <message>
+        <source>Display Start Y</source>
+        <comment>postfx_border_overlay_display_start_y</comment>
+        <translation>Điểm bắt đầu hiển thị Y</translation>
+    </message>
+    <message>
+        <source>Display End X</source>
+        <comment>postfx_border_overlay_display_end_x</comment>
+        <translation>Điểm kết thúc hiển thị X</translation>
+    </message>
+    <message>
+        <source>Display End Y</source>
+        <comment>postfx_border_overlay_display_end_y</comment>
+        <translation>Điểm kết thúc hiển thị Y</translation>
+    </message>
+    <message>
+        <source>Alpha Blending</source>
+        <comment>postfx_border_overlay_alpha_blend</comment>
+        <translation>Hòa trộn alpha</translation>
+    </message>
+    <message>
+        <source>Applies the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_alpha_blend</comment>
+        <translation>Áp dụng độ trong suốt của ảnh lớp phủ.</translation>
+    </message>
+    <message>
+        <source>Destination Alpha Blending</source>
+        <comment>postfx_border_overlay_destination_alpha_blend</comment>
+        <translation>Hòa trộn alpha đích</translation>
+    </message>
+    <message>
+        <source>Blends the game with the transparency of the overlay image.</source>
+        <comment>postfx_border_overlay_summary_destination_alpha_blend</comment>
+        <translation>Hòa trộn hình ảnh trò chơi theo độ trong suốt của ảnh lớp phủ.</translation>
+    </message>
+    <message>
         <source>Add Shader</source>
         <comment>postfx_setting_add_shader</comment>
         <translation>Thêm bộ đổ bóng</translation>
@@ -4808,6 +4992,16 @@ Additional border overlays can be added in
         [storage]/Android/data/com.github.stenzek.duckstation/files/shaders.
 Có thể thêm lớp phủ viền tại
         [storage]/Android/data/com.github.stenzek.duckstation/files/resources/overlays.</translation>
+    </message>
+    <message>
+        <source>Additional GLSL, ReShade, and Slang shaders can be added in %1$s.</source>
+        <comment>postfx_additional_shaders_location</comment>
+        <translation>Có thể thêm shader GLSL, ReShade và Slang vào %1$s.</translation>
+    </message>
+    <message>
+        <source>Additional border overlays can be added in %1$s.</source>
+        <comment>postfx_additional_overlays_location</comment>
+        <translation>Có thể thêm lớp phủ khung viền vào %1$s.</translation>
     </message>
     <message>
         <source>Border Overlay</source>
@@ -5548,6 +5742,36 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>B</translation>
     </message>
     <message>
+        <source>I</source>
+        <comment>touchscreen_controller_i</comment>
+        <translation>I</translation>
+    </message>
+    <message>
+        <source>II</source>
+        <comment>touchscreen_controller_ii</comment>
+        <translation>II</translation>
+    </message>
+    <message>
+        <source>L</source>
+        <comment>touchscreen_controller_l</comment>
+        <translation>L</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <comment>touchscreen_controller_r</comment>
+        <translation>R</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <comment>touchscreen_controller_mode</comment>
+        <translation>Chế độ</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <comment>touchscreen_controller_steering</comment>
+        <translation>Lái</translation>
+    </message>
+    <message>
         <source>Left Button</source>
         <comment>touchscreen_controller_mouse_left</comment>
         <translation>Nút trái</translation>
@@ -5611,6 +5835,11 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <source>No matching settings.</source>
         <comment>settings_search_no_results</comment>
         <translation>Không có cài đặt phù hợp.</translation>
+    </message>
+    <message>
+        <source>No matching items.</source>
+        <comment>list_selection_no_matches</comment>
+        <translation>Không có mục phù hợp.</translation>
     </message>
     <message>
         <source>Merge Disc Sets</source>
@@ -5929,6 +6158,16 @@ Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Mouse</source>
         <comment>touchscreen_layout_mouse</comment>
         <translation>Chuột</translation>
+    </message>
+    <message>
+        <source>NeGcon</source>
+        <comment>touchscreen_layout_negcon</comment>
+        <translation>NeGcon</translation>
+    </message>
+    <message>
+        <source>JogCon</source>
+        <comment>touchscreen_layout_jogcon</comment>
+        <translation>JogCon</translation>
     </message>
     <message>
         <source>Edit Layout</source>
@@ -6992,6 +7231,16 @@ Bạn có muốn nhập ngay không?</translation>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <comment>settings_summary_tty_logging</comment>
         <translation>Ghi nhật ký các lệnh gọi BIOS tới printf(). Không phải mọi trò chơi đều có thông báo gỡ lỗi.</translation>
+    </message>
+    <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>settings_reset_spu_on_game_start</comment>
+        <translation>Đặt lại SPU khi bắt đầu trò chơi</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <comment>settings_summary_reset_spu_on_game_start</comment>
+        <translation>Đặt lại SPU khi trò chơi bắt đầu, loại bỏ tiếng vang BIOS còn sót lại trong các trò chơi không khởi tạo SPU. Không có tác dụng khi khởi động nhanh.</translation>
     </message>
     <message>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
@@ -8141,6 +8390,10 @@ Bạn có thể cập nhật DuckStation thủ công bằng cách tải lại b�
         <translation>Bật ghi nhật ký TTY</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Đặt lại SPU khi bắt đầu trò chơi</translation>
+    </message>
+    <message>
         <source>Select BIOS Directory</source>
         <translation>Chọn thư mục BIOS</translation>
     </message>
@@ -8195,6 +8448,10 @@ Bạn có thể cập nhật DuckStation thủ công bằng cách tải lại b�
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Ghi nhật ký các lệnh gọi printf() của BIOS. Không phải trò chơi nào cũng có thông báo gỡ lỗi.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Đặt lại SPU khi trò chơi bắt đầu, loại bỏ tiếng vang BIOS còn sót lại trong các trò chơi không khởi tạo SPU. Không có tác dụng khi khởi động nhanh.</translation>
     </message>
     <message>
         <source>Select BIOS Image</source>
@@ -8677,6 +8934,10 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
     <message>
         <source>Automatic (Frame End)</source>
         <translation>Tự động (Cuối khung hình)</translation>
+    </message>
+    <message>
+        <source>Automatic (Frame Start)</source>
+        <translation>Tự động (đầu khung hình)</translation>
     </message>
     <message numerus="yes">
         <source>%n game patches are active.</source>
@@ -10142,10 +10403,6 @@ Bạn vẫn muốn %2 chứ?</translation>
         <translation>đổi đĩa</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Không thể chuyển sang ảnh con %1</translation>
-    </message>
-    <message>
         <source>Confirm Download</source>
         <translation>Xác nhận tải xuống</translation>
     </message>
@@ -10724,6 +10981,22 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
         <translation>&amp;Theo địa chỉ tải/lưu</translation>
     </message>
     <message>
+        <source>Modify Register</source>
+        <translation>Sửa thanh ghi</translation>
+    </message>
+    <message>
+        <source>Enter new value for %1:</source>
+        <translation>Nhập giá trị mới cho %1:</translation>
+    </message>
+    <message>
+        <source>The PC must be a 4-byte aligned address.</source>
+        <translation>PC phải là địa chỉ căn chỉnh theo ranh giới 4 byte.</translation>
+    </message>
+    <message>
+        <source>Set %1 to 0x%2.</source>
+        <translation>Đã đặt %1 thành 0x%2.</translation>
+    </message>
+    <message>
         <source>Failed to read the instruction at 0x%1.</source>
         <translation>Không thể đọc lệnh tại 0x%1.</translation>
     </message>
@@ -10791,6 +11064,10 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
         <translation>
             <numerusform>Đã tải %n điểm dừng đã lưu.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
+        <translation>Giá trị không hợp lệ. Phải ở dạng thập lục phân (0x12345678 hoặc 12345678)</translation>
     </message>
 </context>
 <context>
@@ -11883,6 +12160,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Thư mục BIOS</translation>
     </message>
     <message>
+        <source>BIOS Images</source>
+        <translation>Ảnh BIOS</translation>
+    </message>
+    <message>
         <source>BIOS Install Error</source>
         <translation>Lỗi cài đặt BIOS</translation>
     </message>
@@ -12433,6 +12714,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>Xác định tần suất macro bật và tắt các nút (còn gọi là bắn tự động).</translation>
+    </message>
+    <message>
+        <source>Determines the image shown next to each game in the list view.</source>
+        <translation>Xác định hình ảnh hiển thị bên cạnh mỗi trò chơi trong chế độ xem danh sách.</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -13301,6 +13586,10 @@ Lỗi:</translation>
         <translation>Chế độ danh sách gọn</translation>
     </message>
     <message>
+        <source>List Icons</source>
+        <translation>Biểu tượng danh sách</translation>
+    </message>
+    <message>
         <source>List Settings</source>
         <translation>Cài đặt danh sách</translation>
     </message>
@@ -13841,6 +14130,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Tải trước họa tiết thay thế</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
+        <translation>Hiển thị thêm khung hình cho các hiệu ứng như chèn khung hình đen. Yêu cầu VSync.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Giữ độ chính xác phép chiếu</translation>
     </message>
@@ -14021,6 +14314,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Đặt lại thời gian chơi</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <translation>Đặt lại SPU khi bắt đầu trò chơi</translation>
+    </message>
+    <message>
         <source>Reset Serial</source>
         <translation>Đặt lại mã sê-ri</translation>
     </message>
@@ -14055,6 +14352,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Đặt lại mọi cài đặt về mặc định.</translation>
+    </message>
+    <message>
+        <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
+        <translation>Đặt lại SPU khi trò chơi bắt đầu, loại bỏ tiếng vang BIOS còn sót lại trong các trò chơi không khởi tạo SPU. Không có tác dụng khi khởi động nhanh.</translation>
     </message>
     <message>
         <source>Restart Game</source>
@@ -14421,8 +14722,8 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Đặt ảnh bìa</translation>
     </message>
     <message>
-        <source>Set Input Binding</source>
-        <translation>Gán đầu vào</translation>
+        <source>Timing out in {}...</source>
+        <translation>Sẽ hết thời gian chờ sau {}...</translation>
     </message>
     <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
@@ -14789,6 +15090,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Chế độ co giãn</translation>
     </message>
     <message>
+        <source>Subframes</source>
+        <translation>Khung hình phụ</translation>
+    </message>
+    <message>
         <source>Summary</source>
         <translation>Tóm tắt</translation>
     </message>
@@ -14875,10 +15180,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Time Played: </source>
         <translation>Thời gian đã chơi: </translation>
-    </message>
-    <message>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>Hết thời gian chờ sau {:.0f} giây...</translation>
     </message>
     <message>
         <source>Title</source>
@@ -15308,6 +15609,13 @@ Bạn vẫn muốn {1} chứ?</translation>
         <comment>Loading time</comment>
         <translation>
             <numerusform>Còn %n phút</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n Frames</source>
+        <comment>Subframe count</comment>
+        <translation>
+            <numerusform>%n khung hình</numerusform>
         </translation>
     </message>
 </context>
@@ -15946,6 +16254,11 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Buộc quét xuất giữa khung hình</translation>
     </message>
     <message>
+        <source>Reset SPU On Game Start</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Đặt lại SPU khi bắt đầu trò chơi</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Không rõ</translation>
     </message>
@@ -16359,6 +16672,26 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Tương thích</translation>
     </message>
     <message>
+        <source>None</source>
+        <comment>IconSource</comment>
+        <translation>Không có</translation>
+    </message>
+    <message>
+        <source>Cover</source>
+        <comment>IconSource</comment>
+        <translation>Ảnh bìa</translation>
+    </message>
+    <message>
+        <source>Memory Cards</source>
+        <comment>IconSource</comment>
+        <translation>Thẻ nhớ</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <comment>IconSource</comment>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
         <source>Scanning directory &apos;{}&apos;...</source>
         <translation>Đang quét thư mục &apos;{}&apos;...</translation>
     </message>
@@ -16388,6 +16721,10 @@ Bạn có chắc muốn tiếp tục không?</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>Đã mở khóa %1 trong chế độ Hardcore</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Biểu tượng</translation>
     </message>
 </context>
 <context>
@@ -16491,8 +16828,8 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <translation>Hiện tên bản địa hóa</translation>
     </message>
     <message>
-        <source>Show Game Icons</source>
-        <translation>Hiện biểu tượng trò chơi</translation>
+        <source>Game List Icons</source>
+        <translation>Biểu tượng danh sách trò chơi</translation>
     </message>
     <message>
         <source>Show Titles</source>
@@ -16521,6 +16858,10 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
 .ccd (Ảnh đĩa CloneCD)
 .chd (Compressed Hunks of Data)
 .pbp (PlayStation Portable, chỉ hỗ trợ dạng đã giải mã)</translation>
+    </message>
+    <message>
+        <source>Game List Icons: %1</source>
+        <translation>Biểu tượng danh sách trò chơi: %1</translation>
     </message>
     <message>
         <source>Cover scale: %1%</source>
@@ -19310,6 +19651,10 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
         <translation>Sắp xếp &amp;theo</translation>
     </message>
     <message>
+        <source>Game List &amp;Icons</source>
+        <translation>&amp;Biểu tượng danh sách trò chơi</translation>
+    </message>
+    <message>
         <source>&amp;Toolbar</source>
         <translation>&amp;Thanh công cụ</translation>
     </message>
@@ -19930,14 +20275,6 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
         <translation>Mở cửa sổ quét bộ nhớ.</translation>
     </message>
     <message>
-        <source>Show Game Ico&amp;ns</source>
-        <translation>Hiện biểu &amp;tượng trò chơi</translation>
-    </message>
-    <message>
-        <source>Shows icons from the memory card of each game in list view.</source>
-        <translation>Hiện biểu tượng từ thẻ nhớ của mỗi trò chơi ở dạng danh sách.</translation>
-    </message>
-    <message>
         <source>Media Ca&amp;pture</source>
         <translation>Ghi &amp;hình/âm thanh</translation>
     </message>
@@ -20084,14 +20421,6 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
     <message>
         <source>Animates icons in the list view when selected.</source>
         <translation>Tạo hoạt ảnh cho biểu tượng được chọn trong dạng danh sách.</translation>
-    </message>
-    <message>
-        <source>Prefer Ac&amp;hievement Icons</source>
-        <translation>Ưu tiên biểu tượng thành &amp;tích</translation>
-    </message>
-    <message>
-        <source>Prioritizes the games badges used for RetroAchievements over memory card icons.</source>
-        <translation>Ưu tiên huy hiệu trò chơi dùng cho RetroAchievements hơn biểu tượng thẻ nhớ.</translation>
     </message>
     <message>
         <source>Syst&amp;em Log</source>
@@ -22429,6 +22758,26 @@ Lỗi: {1}</translation>
     <message>
         <source>Move Down</source>
         <translation>Di chuyển xuống</translation>
+    </message>
+    <message>
+        <source>Subframes (post-processing frames per game frame):</source>
+        <translation>Khung hình phụ (khung hình hậu xử lý trên mỗi khung hình trò chơi):</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Tự động</translation>
+    </message>
+    <message>
+        <source> Frames</source>
+        <translation> khung hình</translation>
+    </message>
+    <message>
+        <source>Subframes</source>
+        <translation>Khung hình phụ</translation>
+    </message>
+    <message>
+        <source>Presents additional frames between each frame the console renders, which post-processing shaders can use for effects such as black frame insertion. Automatic presents as many subframes as the display&apos;s refresh rate allows, but only when a shader that uses them is active. Set to 0 to disable subframes if they cause problems with a shader.</source>
+        <translation>Hiển thị thêm khung hình giữa các khung hình do máy chơi game kết xuất. Shader hậu xử lý có thể dùng chúng cho các hiệu ứng như chèn khung hình đen. Chế độ tự động hiển thị số khung hình phụ tối đa mà tần số quét màn hình cho phép, nhưng chỉ khi có shader sử dụng chúng đang hoạt động. Đặt thành 0 để tắt khung hình phụ nếu chúng gây vấn đề với shader.</translation>
     </message>
     <message>
         <source>Clear Shader Stages</source>
@@ -25030,10 +25379,6 @@ Bản trích xuất của bạn chưa đầy đủ, bạn phải thêm tệp SBI
 Tên tệp SBI phải khớp tên ảnh đĩa.</translation>
     </message>
     <message>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>Không thể chuyển sang ảnh con {} trong &apos;{}&apos;: {}.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Đã chuyển sang ảnh con {} ({}) trong &apos;{}&apos;.</translation>
     </message>
@@ -25166,6 +25511,10 @@ Bạn phải lưu vào thẻ nhớ và đặt lại trò chơi để xóa mọi 
     <message>
         <source>Fast boot disabled.</source>
         <translation>Đã tắt khởi động nhanh.</translation>
+    </message>
+    <message>
+        <source>Reset SPU on game start disabled.</source>
+        <translation>Đã tắt đặt lại SPU khi bắt đầu trò chơi.</translation>
     </message>
     <message>
         <source>Safe mode is enabled.</source>
