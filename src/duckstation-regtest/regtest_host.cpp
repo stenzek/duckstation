@@ -80,9 +80,7 @@ struct ScheduledInput
 struct RegTestHostState
 {
   ALIGN_TO_CACHE_LINE Threading::Mutex core_thread_events_mutex;
-  Threading::ConditionVariable core_thread_event_done;
-  std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
-  u32 blocking_cpu_events_pending = 0;
+  std::deque<std::function<void()>> cpu_thread_events;
 };
 
 static RegTestHostState s_state;
@@ -385,15 +383,12 @@ void RegTestHost::ApplyScheduledInputs(u32 frame)
   }
 }
 
-void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(std::function<void()> function)
 {
   using namespace RegTestHost;
 
   std::unique_lock lock(s_state.core_thread_events_mutex);
-  s_state.cpu_thread_events.emplace_back(std::move(function), block);
-  s_state.blocking_cpu_events_pending += BoolToUInt32(block);
-  if (block)
-    s_state.core_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+  s_state.cpu_thread_events.emplace_back(std::move(function));
 }
 
 void RegTestHost::ProcessCoreThreadEvents()
@@ -408,20 +403,14 @@ void RegTestHost::ProcessCoreThreadEvents()
     auto event = std::move(s_state.cpu_thread_events.front());
     s_state.cpu_thread_events.pop_front();
     lock.unlock();
-    event.first();
+    event();
     lock.lock();
-
-    if (event.second)
-    {
-      s_state.blocking_cpu_events_pending--;
-      s_state.core_thread_event_done.notify_one();
-    }
   }
 }
 
-void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnUIThread(std::function<void()> function)
 {
-  RunOnCoreThread(std::move(function), block);
+  RunOnCoreThread(std::move(function));
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)

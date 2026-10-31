@@ -61,10 +61,10 @@ const Threading::ThreadHandle& GetCoreThreadHandle();
 bool IsOnCoreThread();
 
 /// Safely executes a function on the VM thread.
-void RunOnCoreThread(std::function<void()> function, bool block = false);
+void RunOnCoreThread(std::function<void()> function);
 
 /// Safely executes a function on the main/UI thread.
-void RunOnUIThread(std::function<void()> function, bool block = false);
+void RunOnUIThread(std::function<void()> function);
 
 /// Asynchronous work tasks, complete on worker thread.
 void QueueAsyncTask(std::function<void()> function);

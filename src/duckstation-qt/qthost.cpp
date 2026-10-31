@@ -1699,20 +1699,15 @@ void CoreThread::runOnCoreThread(const std::function<void()>& callback)
   callback();
 }
 
-void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(std::function<void()> function)
 {
-  const bool self = g_core_thread->isCurrentThread();
-
-  QMetaObject::invokeMethod(g_core_thread, &CoreThread::runOnCoreThread,
-                            (block && !self) ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
-                            std::move(function));
+  QMetaObject::invokeMethod(g_core_thread, &CoreThread::runOnCoreThread, Qt::QueuedConnection, std::move(function));
 }
 
-void Host::RunOnUIThread(std::function<void()> function, bool block /* = false*/)
+void Host::RunOnUIThread(std::function<void()> function)
 {
   // main window always exists, so it's fine to attach it to that.
-  QMetaObject::invokeMethod(g_main_window, &MainWindow::runOnUIThread,
-                            block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, std::move(function));
+  QMetaObject::invokeMethod(g_main_window, &MainWindow::runOnUIThread, Qt::QueuedConnection, std::move(function));
 }
 
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
