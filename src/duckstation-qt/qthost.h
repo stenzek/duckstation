@@ -178,7 +178,6 @@ public:
   void setGDBActiveClients(bool active);
   void setVideoThreadRunIdle(bool active);
   void updateFullscreenUITheme();
-  void runOnCoreThread(const std::function<void()>& callback);
 
 protected:
   void run() override;

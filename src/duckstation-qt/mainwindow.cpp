@@ -3180,11 +3180,6 @@ QIcon MainWindow::getIconForGame(const QString& path)
   return m_game_list_widget->getModel()->getIconForGame(path);
 }
 
-void MainWindow::runOnUIThread(const std::function<void()>& func)
-{
-  func();
-}
-
 void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
                                  bool check_pause, bool exit_fullscreen_ui, bool quit_afterwards)
 {

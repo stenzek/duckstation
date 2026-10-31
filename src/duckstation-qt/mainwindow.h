@@ -128,7 +128,6 @@ public:
   QIcon getIconForGame(const QString& path);
   void refreshAchievementProgress();
 
-  void runOnUIThread(const std::function<void()>& func);
   void requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
                        bool check_pause, bool exit_fullscreen_ui, bool quit_afterwards);
   void requestExit(bool allow_confirm = true);

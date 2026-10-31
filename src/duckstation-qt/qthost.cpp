@@ -1694,20 +1694,14 @@ void CoreThread::openGamePropertiesForCurrentGame(const QString& category)
   }
 }
 
-void CoreThread::runOnCoreThread(const std::function<void()>& callback)
-{
-  callback();
-}
-
 void Host::RunOnCoreThread(std::function<void()> function)
 {
-  QMetaObject::invokeMethod(g_core_thread, &CoreThread::runOnCoreThread, Qt::QueuedConnection, std::move(function));
+  QMetaObject::invokeMethod(g_core_thread, std::move(function), Qt::QueuedConnection);
 }
 
 void Host::RunOnUIThread(std::function<void()> function)
 {
-  // main window always exists, so it's fine to attach it to that.
-  QMetaObject::invokeMethod(g_main_window, &MainWindow::runOnUIThread, Qt::QueuedConnection, std::move(function));
+  QMetaObject::invokeMethod(qApp, std::move(function), Qt::QueuedConnection);
 }
 
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
