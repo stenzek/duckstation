@@ -2405,11 +2405,24 @@ std::string GameList::GetGameIconPath(const GameList::Entry* entry, IconSource s
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
 
-  ret = ExtractMemoryCardIcon(entry->title, entry->serial, entry->path);
-  if (ret.empty())
-    return achievements_icon_path;
-  else
+  ret = ExtractMemoryCardIcon(entry->has_custom_title ? std::string_view(entry->title) : std::string_view(),
+                              entry->serial, entry->path);
+  if (!ret.empty())
     return ret;
+
+  // Discs in a set share the same memory card, so use the first disc's icon if it has already been extracted.
+  if (entry->dbentry && entry->dbentry->disc_set)
+  {
+    const std::string_view first_serial = entry->dbentry->disc_set->GetFirstSerial();
+    if (first_serial != entry->serial)
+    {
+      ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", first_serial));
+      if (FileSystem::FileExists(ret.c_str()))
+        return ret;
+    }
+  }
+
+  return achievements_icon_path;
 }
 
 std::string GameList::ExtractMemoryCardIcon(std::string_view custom_title, std::string_view serial,
