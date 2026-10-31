@@ -875,7 +875,7 @@ TRANSLATE_NOOP("FullscreenUI", "Theme");
 TRANSLATE_NOOP("FullscreenUI", "This game was not scanned by DuckStation. Some functionality is not available.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Time Played: ");
-TRANSLATE_NOOP("FullscreenUI", "Timing out in {:.0f} seconds...");
+TRANSLATE_NOOP("FullscreenUI", "Timing out in {}...");
 TRANSLATE_NOOP("FullscreenUI", "Title");
 TRANSLATE_NOOP("FullscreenUI", "Title (*)");
 TRANSLATE_NOOP("FullscreenUI", "Title:");

@@ -552,8 +552,11 @@ void FullscreenUI::InputBindingDialog::Draw()
   ImGui::Dummy(LayoutScale(0.0f, 10.0f));
 
   ImGui::PushFont(nullptr, UIStyle.MediumLargeFontSize, -1.0f);
-  ImGui::TextAligned(0.5f, width,
-                     SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), m_time_remaining));
+  ImGui::TextAligned(
+    0.5f, width, "%s",
+    TinyString::from_format(FSUI_FSTR("Timing out in {}..."),
+                            Host::FormatTimespan(std::max(static_cast<int>(std::ceil(m_time_remaining)), 1), true))
+      .c_str());
   ImGui::PopFont();
 
   EndRender();
