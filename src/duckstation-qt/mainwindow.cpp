@@ -2696,7 +2696,8 @@ void MainWindow::connectSignals()
           &MainWindow::onToolsRefreshAchievementDatabaseTriggered);
   connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_main_window,
           &MainWindow::refreshAchievementProgress);
-  connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
+  connect(m_ui.actionMediaCapture, &QAction::triggered, this,
+          [this]() { m_ui.menuMediaCapture->popup(QCursor::pos()); });
   connect(m_ui.actionStartMediaCapture, &QAction::triggered, this,
           [this]() { onToolsStartMediaCaptureTriggered(true, true); });
   connect(m_ui.actionCaptureAudioOnly, &QAction::triggered, this,
@@ -3536,11 +3537,6 @@ void MainWindow::refreshAchievementProgress()
         g_main_window->m_game_list_widget->getModel()->invalidateColumn(GameListModel::Column_Achievements);
       };
     });
-}
-
-void MainWindow::onToolsMediaCaptureTriggered()
-{
-  m_ui.menuMediaCapture->popup(QCursor::pos());
 }
 
 void MainWindow::onToolsStartMediaCaptureTriggered(bool audio, bool video)

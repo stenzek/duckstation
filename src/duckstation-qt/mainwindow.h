@@ -307,7 +307,6 @@ private:
   void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
   void onToolsRefreshAchievementDatabaseTriggered();
-  void onToolsMediaCaptureTriggered();
   void onToolsStartMediaCaptureTriggered(bool audio, bool video);
   void onToolsStopMediaCaptureTriggered();
   void onToolsOpenDataDirectoryTriggered();
