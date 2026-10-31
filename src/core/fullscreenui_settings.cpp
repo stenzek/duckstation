@@ -167,6 +167,11 @@ static void DrawIntListSetting(SettingsInterface* bsi, std::string_view title, s
 static void DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                 const char* section, const char* key, int default_value, int min_value, int max_value,
                                 const char* format = "%d", bool enabled = true);
+static void DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                const char* section, const char* key, int default_value, int min_value, int max_value,
+                                SmallString (*format_function)(const void* param, int value),
+                                const void* format_function_param = nullptr, bool enabled = true,
+                                void (*changed_callback)() = nullptr);
 static void DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                   const char* section, const char* key, int default_value, int min_value, int max_value,
                                   int step_value, const char* format = "%d", bool enabled = true);
@@ -821,11 +826,22 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
                                        const char* section, const char* key, int default_value, int min_value,
                                        int max_value, const char* format /* = "%d" */, bool enabled /* = true */)
 {
+  DrawIntRangeSetting(
+    bsi, title, summary, section, key, default_value, min_value, max_value,
+    [](const void* param, int value) { return SmallString::from_sprintf(static_cast<const char*>(param), value); },
+    format, enabled, nullptr);
+}
+
+void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                       const char* section, const char* key, int default_value, int min_value,
+                                       int max_value, SmallString (*format_function)(const void* param, int value),
+                                       const void* format_function_param, bool enabled, void (*changed_callback)())
+{
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
-  SmallString sstr =
-    value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
+  SmallString sstr = value.has_value() ? format_function(format_function_param, value.value()) :
+                                         SmallString(FSUI_VSTR("Use Global Setting"));
 
   const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
 
@@ -847,16 +863,16 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
   ImGui::PopFont();
   ImGui::SameLine();
-  ImGui::Text(format, min_value);
+  ImGui::TextUnformatted(format_function(format_function_param, min_value).c_str());
   ImGui::SameLine();
   ImGui::TextUnformatted(" - ");
   ImGui::SameLine();
-  ImGui::Text(format, max_value);
+  ImGui::TextUnformatted(format_function(format_function_param, max_value).c_str());
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
   ImGui::PopFont();
   ImGui::SameLine();
-  ImGui::Text(format, default_value);
+  ImGui::TextUnformatted(format_function(format_function_param, default_value).c_str());
   ImGui::PopFont();
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
@@ -870,7 +886,10 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
   s32 dlg_value = static_cast<s32>(value.value_or(default_value));
-  if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
+
+  if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value,
+                       format_function(format_function_param, dlg_value).c_str(),
+                       ImGuiSliderFlags_NoInput | ImGuiSliderFlags_NoFormat))
   {
     if (IsEditingGameSettings(bsi) && dlg_value == default_value)
       bsi->DeleteValue(section, key);
@@ -878,6 +897,9 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
       bsi->SetIntValue(section, key, dlg_value);
 
     SetSettingsChanged(bsi);
+
+    if (changed_callback)
+      changed_callback();
   }
 
   ImGui::PopStyleVar(4);
