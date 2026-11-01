@@ -3042,37 +3042,46 @@ void CPU::CheckAndUpdateICacheTags(u32 line_count)
   g_state.pending_ticks += ticks;
 }
 
-u32 CPU::FillICache(VirtualMemoryAddress address)
+bool CPU::FillICache(VirtualMemoryAddress address, u32* instruction)
 {
   const u32 line = GetICacheLine(address);
   const u32 line_word_offset = GetICacheLineWordOffset(address);
   u32* const line_data = g_state.icache_data.data() + (line * ICACHE_WORDS_PER_LINE);
   u32* const offset_line_data = line_data + line_word_offset;
   u32 line_tag;
+  bool result;
   switch (line_word_offset)
   {
     case 0:
-      DoInstructionRead<true, true, 4, false>(address & ~(ICACHE_LINE_SIZE - 1u), offset_line_data);
+      result = DoInstructionRead<true, true, 4, true>(address & ~(ICACHE_LINE_SIZE - 1u), offset_line_data);
       line_tag = GetICacheTagForAddress(address);
       break;
     case 1:
-      DoInstructionRead<true, true, 3, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), offset_line_data);
+      result = DoInstructionRead<true, true, 3, true>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x1;
       break;
     case 2:
-      DoInstructionRead<true, true, 2, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), offset_line_data);
+      result = DoInstructionRead<true, true, 2, true>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x3;
       break;
     case 3:
-      DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), offset_line_data);
+      result = DoInstructionRead<true, true, 1, true>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x7;
       break;
 
       DefaultCaseIsUnreachable();
   }
 
+  // Unmapped fetches raise a bus error. The line data was overwritten, so it can't stay valid for the old tag either.
+  if (!result) [[unlikely]]
+  {
+    g_state.icache_tags[line] = ICACHE_INVALID_BITS;
+    return false;
+  }
+
   g_state.icache_tags[line] = line_tag;
-  return offset_line_data[0];
+  *instruction = offset_line_data[0];
+  return true;
 }
 
 void CPU::ClearICache()
@@ -3156,8 +3165,8 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
 #else
       if (CompareICacheTag(address))
         g_state.next_instruction.bits = ReadICache(address);
-      else
-        g_state.next_instruction.bits = FillICache(address);
+      else if (!FillICache(address, &g_state.next_instruction.bits)) [[unlikely]]
+        return false;
 #endif
     }
     break;

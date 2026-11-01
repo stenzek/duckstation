@@ -9,6 +9,7 @@
 #include "core/dma.h"
 #include "core/interrupt_controller.h"
 #include "core/pad.h"
+#include "core/pio.h"
 #include "core/sio.h"
 #include "core/spu.h"
 #include "core/system.h"
@@ -83,6 +84,8 @@ void ExecutionModeTest::SetUpTestSuite()
   Bus::Initialize();
   CPU::Initialize();
   TimingEvents::Initialize();
+  // EXP1 code reads go to the PIO device.
+  ASSERT_TRUE(PIO::Initialize(&error)) << error.GetDescription();
   System::UpdateOverclock();
   Bus::Reset();
 
@@ -115,6 +118,7 @@ void ExecutionModeTest::TearDownTestSuite()
   Timers::Shutdown();
   while (TimingEvent* event = *TimingEvents::GetHeadEventPtr())
     event->Deactivate();
+  PIO::Shutdown();
   CPU::CodeCache::Shutdown();
   CPU::Shutdown();
   Bus::Shutdown();

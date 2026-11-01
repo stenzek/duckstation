@@ -463,5 +463,36 @@ TEST_P(CPUMemoryExecution, Expanded16MBCodeUsesCodeCache)
   }
 }
 
+TEST_P(CPUMemoryExecution, CachedFetchFromUnmappedRAMRaisesBusError)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Default, mode);
+    static constexpr u32 block_pc = 0x80650000;
+    static constexpr u32 exit_pc = 0xA0020000;
+    WriteExceptionHandler(exit_pc);
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 43), j(exit_pc), nop()});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.LoadImmediate(Reg::T8, block_pc);
+    prog.Emit(jr(Reg::T8));
+    prog.Emit(nop());
+    prog.Run(1);
+    ASSERT_EQ(prog.Result(0), 43u);
+
+    // The mirror is unmapped once the window shrinks. Fetching through the cached segment must raise a bus error,
+    // even though the code was previously cached.
+    SetWindow(0x888);
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 99u);
+    EXPECT_EQ(static_cast<u8>(CPU::g_state.cop0_regs.cause.Excode.GetValue()), static_cast<u8>(CPU::Exception::IBE));
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUMemoryExecution, ::testing::ValuesIn(EXECUTION_MODES),
                          GetExecutionModeTestName);
