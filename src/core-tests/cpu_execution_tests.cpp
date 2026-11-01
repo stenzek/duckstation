@@ -205,6 +205,34 @@ TEST_P(CPUExecution, PGXPIgnoresWritesToZero)
   CPU::CodeCache::Reset();
 }
 
+TEST_P(CPUExecution, PGXPMemoryModeMovesWithZeroImmediate)
+{
+  // addiu/ori/xori with a zero immediate are moves, which memory mode PGXP keeps the value through.
+  g_settings.gpu_pgxp_enable = true;
+  CPU::PGXP::Initialize();
+  CPU::CodeCache::Reset();
+
+  static constexpr CPU::PGXPValue precise = {100.25f, 200.5f, 300.0f, 0x00C80064u, CPU::PGXP::VALID_ALL};
+  CPU::g_state.pgxp_gpr[static_cast<u32>(Reg::T0)] = precise;
+
+  Program prog;
+  prog.LoadImmediate(Reg::T0, precise.value);
+  prog.Emit(addiu(Reg::T1, Reg::T0, 0));
+  prog.Emit(ori(Reg::T2, Reg::T0, 0));
+  prog.Emit(xori(Reg::T3, Reg::T0, 0));
+  prog.Run();
+
+  for (const Reg reg : {Reg::T1, Reg::T2, Reg::T3})
+  {
+    EXPECT_EQ(std::memcmp(&CPU::g_state.pgxp_gpr[static_cast<u32>(reg)], &precise, sizeof(precise)), 0)
+      << static_cast<u32>(reg);
+  }
+
+  CPU::PGXP::Shutdown();
+  g_settings.gpu_pgxp_enable = false;
+  CPU::CodeCache::Reset();
+}
+
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);
 
 TEST_P(CPUMemoryExecution, FastmemAccessesFollowDRAMWindowsAndInstalledRAM)

@@ -1463,7 +1463,7 @@ restart_instruction:
           PGXP::CPU_ORI(inst, rsVal);
       }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
+        PGXP::TryMoveImm(inst.i.rt, inst.i.rs, imm);
     }
     END_INSTRUCTION()
 
@@ -1480,7 +1480,7 @@ restart_instruction:
           PGXP::CPU_XORI(inst, rsVal);
       }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
+        PGXP::TryMoveImm(inst.i.rt, inst.i.rs, imm);
     }
     END_INSTRUCTION()
 
@@ -1503,7 +1503,7 @@ restart_instruction:
           PGXP::CPU_ADDI(inst, rsVal);
       }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
+        PGXP::TryMoveImm(inst.i.rt, inst.i.rs, imm);
     }
     END_INSTRUCTION()
 
@@ -1520,7 +1520,7 @@ restart_instruction:
           PGXP::CPU_ADDI(inst, rsVal);
       }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
+        PGXP::TryMoveImm(inst.i.rt, inst.i.rs, imm);
     }
     END_INSTRUCTION()
 
