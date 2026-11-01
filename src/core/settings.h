@@ -295,6 +295,7 @@ struct Settings : public GPUSettings
   bool cpu_recompiler_memory_exceptions : 1 = false;
   bool cpu_recompiler_block_linking : 1 = true;
   bool cpu_recompiler_icache : 1 = false;
+  bool cpu_force_full_ram_mapping : 1 = false;
 
   bool gpu_dump_cpu_to_vram_copies : 1 = false;
   bool gpu_dump_vram_to_cpu_copies : 1 = false;

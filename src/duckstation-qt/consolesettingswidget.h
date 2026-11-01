@@ -21,6 +21,7 @@ private:
   void calculateCPUClockValue();
 
   void onFastBootChanged();
+  void onRAMSizeChanged();
   void updateRecompilerICacheEnabled();
   void onEnableCPUClockSpeedControlChecked(int state);
   void onCPUClockSpeedValueChanged(int value);

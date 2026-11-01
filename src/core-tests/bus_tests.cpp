@@ -249,6 +249,74 @@ TEST_F(BusMemory, COP0ExecutionBreakpointRangeFollowsInstalledRAM)
   EXPECT_TRUE(CPU::g_state.using_debug_dispatcher);
 }
 
+TEST_F(BusMemory, ForceFullRAMMapping)
+{
+  static constexpr u32 one_mb = 1048576;
+  for (const CPUFastmemMode mode : CPUTestHarness::FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+
+    // The retail BIOS window only covers 8MB of 16MB.
+    g_settings.cpu_force_full_ram_mapping = false;
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded16MB, mode);
+    ASSERT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
+    CPU::g_state.bus_error = false;
+    ReadWord(0x80900000);
+    EXPECT_TRUE(CPU::g_state.bus_error);
+
+    // Enabling maps the remainder without changing the register.
+    g_settings.cpu_force_full_ram_mapping = true;
+    Bus::UpdateMappedRAMSize();
+    EXPECT_EQ(g_bus.ram_mapped_size, 16 * one_mb);
+    EXPECT_EQ(ReadWord(0xBF801060), 0xB88u);
+    for (const u32 segment : {0u, 0x80000000u, 0xA0000000u})
+    {
+      SCOPED_TRACE(segment);
+      CPU::g_state.bus_error = false;
+      WriteWord(segment | 0x900000, 0x12345678 + segment);
+      EXPECT_EQ(ReadWord(segment | 0x900000), 0x12345678 + segment);
+      EXPECT_EQ(ReadWord(segment | (16 * one_mb - sizeof(u32))), 0u);
+      EXPECT_FALSE(CPU::g_state.bus_error);
+    }
+
+    // Applies on reset, and still honours a larger window than installed.
+    Bus::Reset();
+    EXPECT_EQ(g_bus.ram_mapped_size, 16 * one_mb);
+    CPUTestHarness::ResetMemory(CPURAMSize::Default, mode);
+    EXPECT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
+    SetWindow(0x888);
+    EXPECT_EQ(g_bus.ram_mapped_size, 2 * one_mb);
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded8MB, mode);
+    SetWindow(0x888);
+    EXPECT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
+
+    // Disabling restores the game's window.
+    g_settings.cpu_force_full_ram_mapping = false;
+    Bus::UpdateMappedRAMSize();
+    EXPECT_EQ(g_bus.ram_mapped_size, 2 * one_mb);
+    CPU::g_state.bus_error = false;
+    ReadWord(0x80200000);
+    EXPECT_TRUE(CPU::g_state.bus_error);
+
+    // Loading a state with a different RAM size must recompute the mapping, even if the register is unchanged.
+    g_settings.cpu_force_full_ram_mapping = true;
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded16MB, mode);
+    std::vector<u8> data;
+    ASSERT_TRUE(SaveBus(&data));
+    CPUTestHarness::ResetMemory(CPURAMSize::Default, mode);
+    ASSERT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
+    StateWrapper sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+    ASSERT_TRUE(Bus::DoState(sw));
+    EXPECT_EQ(g_bus.ram_mapped_size, 16 * one_mb);
+    CPU::g_state.bus_error = false;
+    WriteWord(0x80900000, 0xCAFEF00D);
+    EXPECT_EQ(ReadWord(0x80900000), 0xCAFEF00Du);
+    EXPECT_FALSE(CPU::g_state.bus_error);
+
+    g_settings.cpu_force_full_ram_mapping = false;
+  }
+}
+
 TEST_F(BusMemory, ResetRestoresDefaultWindow)
 {
   for (const CPUFastmemMode mode : CPUTestHarness::FASTMEM_MODES)

@@ -3403,6 +3403,13 @@ void FullscreenUI::DrawConsoleSettingsPage()
                   FSUI_VSTR("Changes the amount of RAM installed in the emulated console."), Settings::CPU_SECTION_NAME,
                   "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
                   &Settings::GetCPURAMSizeDisplayName, CPURAMSize::Count);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_MAXIMIZE, "Force Full RAM Mapping"),
+    FSUI_VSTR("Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with "
+              "retail BIOSes."),
+    Settings::CPU_SECTION_NAME, "ForceFullRAMMapping", false,
+    Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
+        .value_or(Settings::DEFAULT_CPU_RAM_SIZE) != Settings::DEFAULT_CPU_RAM_SIZE);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 

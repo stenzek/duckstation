@@ -261,8 +261,8 @@ Cheats::CheatCode::~CheatCode() = default;
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
   return (m_metadata.disable_widescreen_rendering || m_metadata.force_pgxp_preserve_projection_precision ||
-          m_metadata.override_ram_size.has_value() || m_metadata.override_aspect_ratio.has_value() ||
-          m_metadata.override_cpu_overclock.has_value());
+          m_metadata.override_ram_size.has_value() || m_metadata.force_full_ram_mapping ||
+          m_metadata.override_aspect_ratio.has_value() || m_metadata.override_cpu_overclock.has_value());
 }
 
 void Cheats::CheatCode::ApplySettingOverrides()
@@ -283,6 +283,11 @@ void Cheats::CheatCode::ApplySettingOverrides()
     DEV_LOG("Setting RAM size to {} from {} patch.", Settings::GetCPURAMSizeName(m_metadata.override_ram_size.value()),
             GetName());
     g_settings.cpu_ram_size = m_metadata.override_ram_size.value();
+  }
+  if (m_metadata.force_full_ram_mapping && !g_settings.cpu_force_full_ram_mapping)
+  {
+    DEV_LOG("Forcing full RAM mapping from {} patch.", GetName());
+    g_settings.cpu_force_full_ram_mapping = true;
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
@@ -659,6 +664,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "ForcePGXPPreserveProjectionPrecision = true\n");
   if (code.override_ram_size.has_value())
     fmt::format_to(appender, "OverrideRAMSize = {}\n", Settings::GetCPURAMSizeName(code.override_ram_size.value()));
+  if (code.force_full_ram_mapping)
+    fmt::format_to(appender, "ForceFullRAMMapping = true\n");
   if (code.disallow_for_achievements)
     fmt::format_to(appender, "DisallowForAchievements = true\n");
 
@@ -1800,6 +1807,10 @@ bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view
     const CPURAMSize size = (key == "Enable16MBRAM") ? CPURAMSize::Expanded16MB : CPURAMSize::Expanded8MB;
     if (StringUtil::FromChars<bool>(value).value_or(false) && metadata->override_ram_size < size)
       metadata->override_ram_size = size;
+  }
+  else if (key == "ForceFullRAMMapping")
+  {
+    metadata->force_full_ram_mapping = StringUtil::FromChars<bool>(value).value_or(false);
   }
   else if (key == "DisallowForAchievements")
   {

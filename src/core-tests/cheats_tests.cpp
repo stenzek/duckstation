@@ -113,6 +113,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
                                             "DisableWidescreenRendering = true\n"
                                             "ForcePGXPPreserveProjectionPrecision = true\n"
                                             "OverrideRAMSize = 8MB\n"
+                                            "ForceFullRAMMapping = true\n"
                                             "DisallowForAchievements = true\n"
                                             "80010000 0001\n";
 
@@ -129,6 +130,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
   EXPECT_TRUE(code.disable_widescreen_rendering);
   EXPECT_TRUE(code.force_pgxp_preserve_projection_precision);
   EXPECT_EQ(code.override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
+  EXPECT_TRUE(code.force_full_ram_mapping);
   EXPECT_TRUE(code.disallow_for_achievements);
 
   // writing the code back out should preserve the overrides
@@ -293,6 +295,30 @@ TEST(Cheats, PGXPPreserveProjectionPrecisionOverride)
         EXPECT_EQ(g_settings.gpu_pgxp_preserve_proj_fp, force_precision || preserve_precision);
         EXPECT_EQ(g_settings.gpu_pgxp_enable, pgxp_enabled);
       }
+    }
+  }
+}
+
+TEST(Cheats, ForceFullRAMMappingOverride)
+{
+  const Settings old_settings = g_settings;
+  const ScopedGuard restore_settings([&old_settings]() { g_settings = old_settings; });
+
+  for (const bool force_mapping : {false, true})
+  {
+    Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
+    metadata.force_full_ram_mapping = force_mapping;
+    Error error;
+    std::unique_ptr<Cheats::CheatCode> code = Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error);
+    ASSERT_NE(code, nullptr) << error.GetDescription();
+    EXPECT_EQ(code->HasAnySettingOverrides(), force_mapping);
+
+    // Only ever enables the option.
+    for (const bool setting : {false, true})
+    {
+      g_settings.cpu_force_full_ram_mapping = setting;
+      code->ApplySettingOverrides();
+      EXPECT_EQ(g_settings.cpu_force_full_ram_mapping, force_mapping || setting);
     }
   }
 }

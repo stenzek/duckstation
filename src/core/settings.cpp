@@ -323,6 +323,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
                                                                GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)))
                        .value_or(DEFAULT_CPU_FASTMEM_MODE);
   cpu_ram_size = ParseCPURAMSize(si.GetStringViewValue(CPU_SECTION_NAME, "RAMSize")).value_or(DEFAULT_CPU_RAM_SIZE);
+  cpu_force_full_ram_mapping = si.GetBoolValue(CPU_SECTION_NAME, "ForceFullRAMMapping", false);
 
   gpu_renderer =
     ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)))
@@ -756,6 +757,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetIntValue(CPU_SECTION_NAME, "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue(CPU_SECTION_NAME, "OverclockDenominator", cpu_overclock_denominator);
   si.SetStringValue(CPU_SECTION_NAME, "RAMSize", GetCPURAMSizeName(cpu_ram_size));
+  si.SetBoolValue(CPU_SECTION_NAME, "ForceFullRAMMapping", cpu_force_full_ram_mapping);
   if (!for_copy)
   {
     si.SetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
@@ -1228,6 +1230,7 @@ void Settings::ApplySettingRestrictions()
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
     cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
+    cpu_force_full_ram_mapping = false;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
     gpu_automatic_resolution_scale = false;

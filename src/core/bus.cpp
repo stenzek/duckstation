@@ -164,7 +164,6 @@ static bool InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error);
 static bool InjectELF(const ELFFile& elf, bool set_pc, Error* error);
 
 static void SetHandlers();
-static void UpdateMappedRAMSize();
 
 ALIGN_TO_CACHE_LINE static Bus::Locals s_locals;
 
@@ -473,10 +472,9 @@ bool Bus::DoState(StateWrapper& sw)
 
   sw.DoArray(s_locals.MEMCTRL.regs, countof(s_locals.MEMCTRL.regs));
 
-  const RAM_SIZE_REG old_ram_size_reg = s_locals.RAM_SIZE;
+  // Also depends on the installed RAM size when the full mapping is forced, which the state can change.
   sw.Do(&s_locals.RAM_SIZE.bits);
-  if (s_locals.RAM_SIZE.memory_window != old_ram_size_reg.memory_window)
-    UpdateMappedRAMSize();
+  UpdateMappedRAMSize();
 
   sw.Do(&s_locals.tty_line_buffer, MAX_TTY_LINE_LENGTH);
 
@@ -2220,7 +2218,13 @@ void Bus::UpdateMappedRAMSize()
   const RAM_SIZE_REG reg = s_locals.RAM_SIZE;
   const u32 ras0_size = one_mb << ((reg.ras0_size_hi << 1) | reg.size_lo);
   const u32 ras1_size = reg.ras1_enable ? (one_mb << ((reg.ras1_size_hi << 1) | reg.size_lo)) : 0;
-  const u32 mapped_size = ras0_size + ras1_size;
+  u32 mapped_size = ras0_size + ras1_size;
+
+  // Retail BIOSes configure an 8MB window, so 16MB is never mapped without patching the BIOS. The register is left
+  // untouched, so that disabling the option restores whatever mapping the game configured.
+  if (g_settings.cpu_force_full_ram_mapping)
+    mapped_size = std::max(mapped_size, g_bus.ram_size);
+
   if (mapped_size == prev_mapped_size)
     return;
 

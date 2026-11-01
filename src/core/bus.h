@@ -152,6 +152,9 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 
+/// Updates the mapped RAM range from the RAM size register and settings.
+void UpdateMappedRAMSize();
+
 using MemoryReadHandler = u32 (*)(VirtualMemoryAddress address);
 using MemoryWriteHandler = void (*)(VirtualMemoryAddress, u32);
 

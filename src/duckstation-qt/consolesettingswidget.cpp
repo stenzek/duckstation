@@ -54,10 +54,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
       static_assert(std::size(icons) == static_cast<size_t>(CPURAMSize::Count));
       return QIcon(QString::fromLatin1(icons[static_cast<size_t>(size)]));
     });
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceFullRAMMapping, Settings::CPU_SECTION_NAME,
+                                               "ForceFullRAMMapping", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
   onFastBootChanged();
+  connect(m_ui.ramSize, &QComboBox::currentIndexChanged, this, &ConsoleSettingsWidget::onRAMSizeChanged);
+  onRAMSizeChanged();
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, Settings::CPU_SECTION_NAME, "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
@@ -117,6 +121,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                              tr("Changes the amount of RAM installed in the emulated console. Games have to use a "
                                 "larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors "
                                 "may break, so it should only be used with compatible mods."));
+  dialog->registerWidgetHelp(m_ui.forceFullRAMMapping, tr("Force Full RAM Mapping"), tr("Unchecked"),
+                             tr("Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail "
+                                "BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. "
+                                "Only has an effect when expanded RAM is installed."));
 
   dialog->registerWidgetHelp(
     m_ui.cpuExecutionMode, tr("Execution Mode"),
@@ -188,6 +196,15 @@ void ConsoleSettingsWidget::onFastBootChanged()
   const bool fast_boot_enabled =
     m_dialog->getEffectiveBoolValue(Settings::BIOS_SECTION_NAME, "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
   m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
+}
+
+void ConsoleSettingsWidget::onRAMSizeChanged()
+{
+  const CPURAMSize ram_size = Settings::ParseCPURAMSize(m_dialog->getEffectiveStringValue(
+                                                          Settings::CPU_SECTION_NAME, "RAMSize",
+                                                          Settings::GetCPURAMSizeName(Settings::DEFAULT_CPU_RAM_SIZE)))
+                                .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
+  m_ui.forceFullRAMMapping->setEnabled(ram_size != Settings::DEFAULT_CPU_RAM_SIZE);
 }
 
 void ConsoleSettingsWidget::updateRecompilerICacheEnabled()

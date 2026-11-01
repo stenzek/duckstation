@@ -4919,6 +4919,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       InterruptExecution();
     }
 
+    if (g_settings.cpu_force_full_ram_mapping != old_settings.cpu_force_full_ram_mapping)
+      Bus::UpdateMappedRAMSize();
+
     SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 
     // Console region can be changed
