@@ -1923,7 +1923,7 @@ void CPU::PGXP::CPU_MFC0(Instruction instr, u32 rdVal)
   prtVal.value = rdVal;
 }
 
-void CPU::PGXP::CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal)
+void CPU::PGXP::CPU_MTC0(Instruction instr, u32 rtVal)
 {
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
@@ -1931,5 +1931,5 @@ void CPU::PGXP::CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal)
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   PGXPValue& prdVal = g_state.pgxp_cop0[static_cast<u8>(instr.r.rd.GetValue())];
   prdVal = prtVal;
-  prdVal.value = rdVal;
+  prdVal.value = rtVal;
 }

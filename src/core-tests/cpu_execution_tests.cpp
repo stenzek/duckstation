@@ -205,6 +205,30 @@ TEST_P(CPUExecution, PGXPIgnoresWritesToZero)
   CPU::CodeCache::Reset();
 }
 
+TEST_P(CPUExecution, PGXPMTC0KeepsSourceValid)
+{
+  // mtc0 validates its source register, which must not lose its flags.
+  g_settings.gpu_pgxp_enable = true;
+  g_settings.gpu_pgxp_cpu = true;
+  CPU::PGXP::Initialize();
+  CPU::CodeCache::Reset();
+  const CPU::PGXPValue zero = CPU::g_state.pgxp_gpr[0];
+
+  Program prog;
+  prog.LoadImmediate(Reg::T0, 0x12345678u);
+  prog.Emit(mtc0(Reg::T0, 3));
+  prog.Emit(mtc0(Reg::R0, 3));
+  prog.Run();
+
+  EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(Reg::T0)].flags & CPU::PGXP::VALID_XY, CPU::PGXP::VALID_XY);
+  EXPECT_EQ(std::memcmp(&CPU::g_state.pgxp_gpr[0], &zero, sizeof(zero)), 0);
+
+  CPU::PGXP::Shutdown();
+  g_settings.gpu_pgxp_enable = false;
+  g_settings.gpu_pgxp_cpu = false;
+  CPU::CodeCache::Reset();
+}
+
 TEST_P(CPUExecution, PGXPMemoryModeMovesWithZeroImmediate)
 {
   // addiu/ori/xori with a zero immediate are moves, which memory mode PGXP keeps the value through.

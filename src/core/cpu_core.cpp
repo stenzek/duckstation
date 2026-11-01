@@ -1987,7 +1987,7 @@ restart_instruction:
             }
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MTC0(inst, value, orig_value);
+              PGXP::CPU_MTC0(inst, orig_value);
           }
           break;
 
