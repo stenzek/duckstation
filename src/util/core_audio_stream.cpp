@@ -267,7 +267,9 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
   m_callback_frames.store(num_frames, std::memory_order_relaxed);
 
-  const u32 available_frames = GetBufferedFramesRelaxed();
+  // acquire the write position, so we see the frames written before it
+  u32 rpos = m_rpos.load(std::memory_order_relaxed);
+  const u32 available_frames = (m_wpos.load(std::memory_order_acquire) + m_buffer_size - rpos) % m_buffer_size;
   u32 frames_to_read = num_frames;
   u32 silence_frames = 0;
 
@@ -300,8 +302,6 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 
   if (frames_to_read > 0)
   {
-    u32 rpos = m_rpos.load(std::memory_order_acquire);
-
     u32 end = m_buffer_size - rpos;
     if (end > frames_to_read)
       end = frames_to_read;
@@ -365,21 +365,18 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 
 void CoreAudioStream::InternalWriteFrames(s16* data, u32 num_frames)
 {
-  const u32 free = m_buffer_size - GetBufferedFramesRelaxed();
+  // acquire the read position, so the reader is done with the frames we're about to overwrite
+  u32 wpos = m_wpos.load(std::memory_order_relaxed);
+  const u32 free = m_buffer_size - ((wpos + m_buffer_size - m_rpos.load(std::memory_order_acquire)) % m_buffer_size);
   if (free <= num_frames)
   {
+    // Drop the incoming chunk, the read position belongs to the audio thread.
     if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
-    {
       StretchOverrun();
-    }
-    else
-    {
-      DEBUG_LOG("Buffer overrun, chunk dropped");
-      return;
-    }
-  }
 
-  u32 wpos = m_wpos.load(std::memory_order_acquire);
+    DEBUG_LOG("Buffer overrun, chunk dropped");
+    return;
+  }
 
   // wrapping around the end of the buffer?
   if ((m_buffer_size - wpos) <= num_frames)
@@ -651,6 +648,7 @@ void CoreAudioStream::StretchDestroy()
 
   m_stretch_reset = 0;
   m_stretch_reset_time = 0;
+  m_stretch_underruns.store(0, std::memory_order_relaxed);
   m_stretch_inactive = false;
   m_stretch_ok_count = 0;
   m_dynamic_target_usage = 0.0f;
@@ -755,6 +753,13 @@ void CoreAudioStream::UpdateStretchTempo()
   const u32 ibuffer_usage = GetBufferedFramesRelaxed();
   float buffer_usage = static_cast<float>(ibuffer_usage);
   float tempo = buffer_usage / m_dynamic_target_usage;
+
+  if (const u32 underruns = m_stretch_underruns.exchange(0, std::memory_order_relaxed); underruns > 0)
+  {
+    m_stretch_reset += underruns;
+    if (m_stretch_reset < STRETCH_RESET_THRESHOLD)
+      m_stretch_reset_time = Timer::GetCurrentValue();
+  }
 
   // Prevents the system from getting stuck in a bad state due to accumulated errors.
   if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
@@ -869,10 +874,8 @@ void CoreAudioStream::UpdateStretchTempo()
 
 void CoreAudioStream::StretchUnderrun()
 {
-  // Didn't produce enough frames in time.
-  m_stretch_reset++;
-  if (m_stretch_reset < STRETCH_RESET_THRESHOLD)
-    m_stretch_reset_time = Timer::GetCurrentValue();
+  // Didn't produce enough frames in time. Called on the audio thread, picked up in UpdateStretchTempo().
+  m_stretch_underruns.fetch_add(1, std::memory_order_relaxed);
 }
 
 void CoreAudioStream::StretchOverrun()
@@ -881,11 +884,6 @@ void CoreAudioStream::StretchOverrun()
   m_stretch_reset++;
   if (m_stretch_reset < STRETCH_RESET_THRESHOLD)
     m_stretch_reset_time = Timer::GetCurrentValue();
-
-  // Drop two packets to give the time stretcher a bit more time to slow things down.
-  // This prevents a cascading overrun situation where each overrun makes the next one more likely.
-  const u32 discard = CHUNK_SIZE * 2;
-  m_rpos.store((m_rpos.load(std::memory_order_acquire) + discard) % m_buffer_size, std::memory_order_release);
 }
 
 void CoreAudioStream::EmptyStretchBuffers()

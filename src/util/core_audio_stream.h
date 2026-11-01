@@ -156,6 +156,7 @@ private:
 
   std::atomic<u32> m_rpos{0};
   std::atomic<u32> m_wpos{0};
+  std::atomic<u32> m_stretch_underruns{0};
 
   // last callback size, set by the audio thread
   std::atomic<u32> m_callback_frames{0};
