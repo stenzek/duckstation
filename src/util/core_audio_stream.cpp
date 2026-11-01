@@ -263,8 +263,20 @@ u32 CoreAudioStream::GetTargetSize() const
   return std::max(m_target_buffer_size, m_callback_frames.load(std::memory_order_relaxed) * 2);
 }
 
+static void FadeFrames(CoreAudioStream::SampleType* samples, u32 num_frames, bool fade_in)
+{
+  for (u32 i = 0; i < num_frames; i++)
+  {
+    const float gain = static_cast<float>(fade_in ? i : (num_frames - i)) / static_cast<float>(num_frames);
+    for (u32 j = 0; j < CoreAudioStream::NUM_CHANNELS; j++, samples++)
+      *samples = static_cast<CoreAudioStream::SampleType>(static_cast<float>(*samples) * gain);
+  }
+}
+
 void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
+  static constexpr u32 FADE_FRAMES = 128;
+
   m_callback_frames.store(num_frames, std::memory_order_relaxed);
 
   // acquire the write position, so we see the frames written before it
@@ -272,6 +284,7 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
   const u32 available_frames = (m_wpos.load(std::memory_order_acquire) + m_buffer_size - rpos) % m_buffer_size;
   u32 frames_to_read = num_frames;
   u32 silence_frames = 0;
+  bool fade_in = false;
 
   if (m_filling)
   {
@@ -286,6 +299,7 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     else
     {
       m_filling = false;
+      fade_in = true;
       VERBOSE_LOG("Underrun compensation done ({} frames buffered)", toFill);
     }
   }
@@ -295,6 +309,7 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     silence_frames = frames_to_read - available_frames;
     frames_to_read = available_frames;
     m_filling = true;
+    VERBOSE_LOG("Audio buffer underflow, {} of {} frames available", available_frames, num_frames);
 
     if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
       StretchUnderrun();
@@ -325,38 +340,15 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     m_rpos.store(rpos, std::memory_order_release);
   }
 
+  // Fade in/out around underruns, otherwise there'll be a pop.
+  if (fade_in)
+    FadeFrames(samples, std::min(frames_to_read, FADE_FRAMES), true);
+
   if (silence_frames > 0)
   {
-    if (frames_to_read > 0)
-    {
-      // super basic resampler - spread the input samples evenly across the output samples. will sound like ass and have
-      // aliasing, but better than popping by inserting silence.
-      const u32 increment =
-        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read) / static_cast<float>(num_frames)));
-
-      SampleType* resample_ptr = static_cast<SampleType*>(alloca(frames_to_read * NUM_CHANNELS * sizeof(SampleType)));
-      std::memcpy(resample_ptr, samples, frames_to_read * NUM_CHANNELS * sizeof(SampleType));
-
-      SampleType* out_ptr = samples;
-      const u32 copy_stride = sizeof(SampleType) * NUM_CHANNELS;
-      u32 resample_subpos = 0;
-      for (u32 i = 0; i < num_frames; i++)
-      {
-        std::memcpy(out_ptr, resample_ptr, copy_stride);
-        out_ptr += NUM_CHANNELS;
-
-        resample_subpos += increment;
-        resample_ptr += (resample_subpos >> 16) * NUM_CHANNELS;
-        resample_subpos %= 65536u;
-      }
-
-      VERBOSE_LOG("Audio buffer underflow, resampled {} frames to {}", frames_to_read, num_frames);
-    }
-    else
-    {
-      // no data, fall back to silence
-      std::memset(samples + (frames_to_read * NUM_CHANNELS), 0, silence_frames * NUM_CHANNELS * sizeof(s16));
-    }
+    const u32 fade_frames = std::min(frames_to_read, FADE_FRAMES);
+    FadeFrames(samples + (frames_to_read - fade_frames) * NUM_CHANNELS, fade_frames, false);
+    std::memset(samples + (frames_to_read * NUM_CHANNELS), 0, silence_frames * NUM_CHANNELS * sizeof(SampleType));
   }
 
   if (m_volume != 100)
