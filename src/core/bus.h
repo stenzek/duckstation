@@ -20,12 +20,10 @@ namespace Bus {
 enum : u32
 {
   RAM_BASE = 0x00000000,
-  RAM_2MB_SIZE = 0x200000,
-  RAM_2MB_MASK = RAM_2MB_SIZE - 1,
-  RAM_8MB_SIZE = 0x800000,
-  RAM_8MB_MASK = RAM_8MB_SIZE - 1,
-  RAM_MIRROR_END = 0x800000,
-  RAM_MIRROR_SIZE = 0x800000,
+  RAM_DEFAULT_SIZE = 0x200000,
+  RAM_DEFAULT_MASK = RAM_DEFAULT_SIZE - 1,
+  RAM_MAX_SIZE = 0x1000000,
+  RAM_MAX_MASK = RAM_MAX_SIZE - 1,
   EXP1_BASE = 0x1F000000,
   EXP1_SIZE = 0x800000,
   EXP1_MASK = EXP1_SIZE - 1,
@@ -91,8 +89,7 @@ enum : TickCount
 
 enum : u32
 {
-  RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (MIN_HOST_PAGE_SIZE - 1)) / MIN_HOST_PAGE_SIZE,
-  RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (MIN_HOST_PAGE_SIZE - 1)) / MIN_HOST_PAGE_SIZE,
+  RAM_MAX_CODE_PAGE_COUNT = RAM_MAX_SIZE / MIN_HOST_PAGE_SIZE,
 
   MEMORY_LUT_PAGE_SIZE = 4096,
   MEMORY_LUT_PAGE_SHIFT = 12,
@@ -114,14 +111,14 @@ inline constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
 
 struct Globals
 {
-  u8* ram;             // 2MB-8MB RAM
+  u8* ram;             // 2MB-16MB RAM
   u8* unprotected_ram; // RAM without page protection, use for debugger access.
   u8* bios;            // 512K BIOS ROM
   u32 ram_size;        // Active size of RAM.
   u32 ram_mapped_size; // Maximum mapped address for RAM, determined by RAM size register.
   u32 ram_mask;        // Active address bits for RAM.
 
-  std::bitset<RAM_8MB_CODE_PAGE_COUNT> ram_code_bits;
+  std::bitset<RAM_MAX_CODE_PAGE_COUNT> ram_code_bits;
 
   std::array<TickCount, 3> exp1_access_time;
   std::array<TickCount, 3> exp2_access_time;
@@ -174,7 +171,7 @@ bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 /// Returns true if the address specified is writable (RAM).
 ALWAYS_INLINE bool IsRAMAddress(PhysicalMemoryAddress address)
 {
-  return address < RAM_MIRROR_END;
+  return (address < RAM_MAX_SIZE);
 }
 
 /// Returns the code page index for a RAM address.
@@ -187,6 +184,18 @@ ALWAYS_INLINE u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 ALWAYS_INLINE bool IsRAMCodePage(u32 index)
 {
   return g_bus.ram_code_bits[index];
+}
+
+/// Returns the number of RAM code pages for the current memory size.
+ALWAYS_INLINE u32 GetRAMCodePageCount()
+{
+  return (g_bus.ram_size >> HOST_PAGE_SHIFT);
+}
+
+/// Returns the available RAM size.
+ALWAYS_INLINE u32 GetUnmirroredRAMSize()
+{
+  return (g_bus.ram_mapped_size < g_bus.ram_size) ? g_bus.ram_mapped_size : g_bus.ram_size;
 }
 
 /// Flags a RAM region as code, so we know when to invalidate blocks.
@@ -220,9 +229,6 @@ const TickCount* GetMemoryAccessTimePtr(PhysicalMemoryAddress address, MemoryAcc
 enum class MemoryRegion
 {
   RAM,
-  RAMMirror1,
-  RAMMirror2,
-  RAMMirror3,
   EXP1,
   Scratchpad,
   BIOS,

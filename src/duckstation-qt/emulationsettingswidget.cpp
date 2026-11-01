@@ -280,7 +280,9 @@ void EmulationSettingsWidget::updateRewind()
     const u32 multisamples = m_dialog->getEffectiveIntValue(Settings::GPU_SECTION_NAME, "Multisamples", 1);
     const bool use_software_renderer =
       m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", false);
-    const bool enable_8mb_ram = m_dialog->getEffectiveBoolValue(Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
+    const CPURAMSize ram_size =
+      Settings::ParseCPURAMSize(m_dialog->getEffectiveStringValue(Settings::CPU_SECTION_NAME, "RAMSize"))
+        .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
     const bool enable_texture_cache =
       m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
@@ -289,7 +291,7 @@ void EmulationSettingsWidget::updateRewind()
       ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(frames, resolution_scale, multisamples, use_software_renderer, enable_8mb_ram,
+    System::CalculateRewindMemoryUsage(frames, resolution_scale, multisamples, use_software_renderer, ram_size,
                                        enable_texture_cache, &ram_usage, &vram_usage);
 
     m_ui.rewindSummary->setText(

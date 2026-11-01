@@ -289,12 +289,12 @@ struct Settings : public GPUSettings
 
   CPUExecutionMode cpu_execution_mode = DEFAULT_CPU_EXECUTION_MODE;
   CPUFastmemMode cpu_fastmem_mode = DEFAULT_CPU_FASTMEM_MODE;
+  CPURAMSize cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
   bool cpu_overclock_enable : 1 = false;
   bool cpu_overclock_active : 1 = false;
   bool cpu_recompiler_memory_exceptions : 1 = false;
   bool cpu_recompiler_block_linking : 1 = true;
   bool cpu_recompiler_icache : 1 = false;
-  bool cpu_enable_8mb_ram : 1 = false;
 
   bool gpu_dump_cpu_to_vram_copies : 1 = false;
   bool gpu_dump_vram_to_cpu_copies : 1 = false;
@@ -489,6 +489,12 @@ struct Settings : public GPUSettings
   static const char* GetCPUFastmemModeName(CPUFastmemMode mode);
   static const char* GetCPUFastmemModeDisplayName(CPUFastmemMode mode);
 
+  static std::optional<CPURAMSize> ParseCPURAMSize(std::string_view str);
+  static const char* GetCPURAMSizeName(CPURAMSize size);
+  static const char* GetCPURAMSizeDisplayName(CPURAMSize size);
+  static u32 GetCPURAMSizeBytes(CPURAMSize size);
+  static std::optional<CPURAMSize> GetCPURAMSizeForBytes(u32 bytes);
+
   static std::optional<GPURenderer> ParseRendererName(std::string_view str);
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
@@ -626,6 +632,7 @@ struct Settings : public GPUSettings
 #else
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;
 #endif
+  static constexpr CPURAMSize DEFAULT_CPU_RAM_SIZE = CPURAMSize::Default;
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;
   static constexpr u32 DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES = 30000;

@@ -988,7 +988,9 @@ void CheatCodeEditorDialog::saveClicked()
                                       std::nullopt;
     m_code.disable_widescreen_rendering = m_ui.disableWidescreenRendering->isChecked();
     m_code.force_pgxp_preserve_projection_precision = m_ui.forcePGXPPreserveProjectionPrecision->isChecked();
-    m_code.enable_8mb_ram = m_ui.enable8MBRAM->isChecked();
+    const QVariant ram_size = m_ui.overrideRAMSize->currentData();
+    m_code.override_ram_size =
+      ram_size.isNull() ? std::nullopt : std::make_optional(static_cast<CPURAMSize>(ram_size.toUInt()));
     m_code.disallow_for_achievements = m_ui.disallowForAchievements->isChecked();
   }
 
@@ -1065,6 +1067,15 @@ void CheatCodeEditorDialog::setupAdditionalUi()
                                         QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ar)));
     }
   }
+
+  m_ui.overrideRAMSize->addItem(tr("None"));
+  for (u8 i = 0; i < static_cast<u8>(CPURAMSize::Count); i++)
+  {
+    // default would be a no-op
+    const CPURAMSize size = static_cast<CPURAMSize>(i);
+    if (size != Settings::DEFAULT_CPU_RAM_SIZE)
+      m_ui.overrideRAMSize->addItem(Settings::GetCPURAMSizeDisplayName(size), static_cast<uint>(size));
+  }
 }
 
 void CheatCodeEditorDialog::fillUi()
@@ -1119,7 +1130,9 @@ void CheatCodeEditorDialog::fillUi()
   m_ui.overrideCPUOverclock->setValue(static_cast<int>(m_code.override_cpu_overclock.value_or(0)));
   m_ui.disableWidescreenRendering->setChecked(m_code.disable_widescreen_rendering);
   m_ui.forcePGXPPreserveProjectionPrecision->setChecked(m_code.force_pgxp_preserve_projection_precision);
-  m_ui.enable8MBRAM->setChecked(m_code.enable_8mb_ram);
+  if (m_code.override_ram_size.has_value())
+    m_ui.overrideRAMSize->setCurrentIndex(
+      std::max(m_ui.overrideRAMSize->findData(static_cast<uint>(m_code.override_ram_size.value())), 0));
   m_ui.disallowForAchievements->setChecked(m_code.disallow_for_achievements);
   onCodeTypeChanged(m_ui.type->currentIndex());
   onOptionTypeChanged(m_ui.optionsType->currentIndex());

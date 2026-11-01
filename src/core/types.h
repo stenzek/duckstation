@@ -323,6 +323,15 @@ enum : u32
   NUM_CONTROLLER_AND_CARD_PORTS_PER_MULTITAP = NUM_CONTROLLER_AND_CARD_PORTS / NUM_MULTITAPS,
 };
 
+enum class CPURAMSize : u8
+{
+  Default,      // 2MB
+  Expanded4MB,  // 4MB
+  Expanded8MB,  // 8MB
+  Expanded16MB, // 16MB
+  Count,
+};
+
 enum class CPUFastmemMode : u8
 {
   Disabled,

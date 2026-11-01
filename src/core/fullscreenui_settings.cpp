@@ -3399,10 +3399,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
                     FSUI_VSTR("Fast forwards through memory card access, both loading and saving. Can reduce waiting "
                               "times in games that frequently access memory cards."),
                     Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_MEMORY, "Enable 8MB RAM"),
-    FSUI_VSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),
-    Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_MEMORY, "Installed RAM"),
+                  FSUI_VSTR("Changes the amount of RAM installed in the emulated console."), Settings::CPU_SECTION_NAME,
+                  "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
+                  &Settings::GetCPURAMSizeDisplayName, CPURAMSize::Count);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 
@@ -3734,7 +3734,9 @@ void FullscreenUI::DrawEmulationSettingsPage()
     const u32 multisamples = GetEffectiveUIntSetting(bsi, Settings::GPU_SECTION_NAME, "Multisamples", 1);
     const bool use_software_renderer =
       GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", false);
-    const bool enable_8mb_ram = GetEffectiveBoolSetting(bsi, Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
+    const CPURAMSize ram_size =
+      Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
+        .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
     const bool enable_texture_cache =
       GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const float rewind_frequency =
@@ -3746,7 +3748,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, multisamples, use_software_renderer,
-                                       enable_8mb_ram, enable_texture_cache, &ram_usage, &vram_usage);
+                                       ram_size, enable_texture_cache, &ram_usage, &vram_usage);
     if (vram_usage > 0)
     {
       rewind_summary.format(

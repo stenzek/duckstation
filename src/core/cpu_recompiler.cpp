@@ -76,7 +76,7 @@ void CPU::Recompiler::Recompiler::BeginBlock()
   if (m_block->protection == CodeCache::PageProtectionMode::ManualCheck)
   {
     DEBUG_LOG("Generate manual protection for PC {:08X}", m_block->pc);
-    const u8* ram_ptr = g_bus.ram + VirtualAddressToPhysical(m_block->pc);
+    const u8* ram_ptr = g_bus.ram + (VirtualAddressToPhysical(m_block->pc) & g_bus.ram_mask);
     const u8* shadow_ptr = reinterpret_cast<const u8*>(m_block->Instructions());
     GenerateBlockProtectCheck(ram_ptr, shadow_ptr, m_block->size * sizeof(Instruction));
   }

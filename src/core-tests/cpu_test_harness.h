@@ -40,6 +40,9 @@ public:
   /// Executes the program the specified number of times, the first run warms up the icache.
   void Run(u32 runs = 1);
 
+  /// Executes the program at a different RAM address, including its mirrors.
+  void RunAt(u32 address, u32 runs = 1);
+
   u32 Result(u32 slot) const { return ReadRAM(RESULTS_BASE + slot * sizeof(u32)); }
 
   static u32 ReadRAM(u32 address)
@@ -72,6 +75,17 @@ protected:
 
 inline constexpr CPUExecutionMode EXECUTION_MODES[] = {
   CPUExecutionMode::Interpreter, CPUExecutionMode::CachedInterpreter, CPUExecutionMode::Recompiler};
+
+inline constexpr CPUFastmemMode FASTMEM_MODES[] = {
+  CPUFastmemMode::Disabled,
+  CPUFastmemMode::LUT,
+#ifdef ENABLE_MMAP_FASTMEM
+  CPUFastmemMode::MMap,
+#endif
+};
+
+/// Reinitializes CPU and Bus memory while preserving the other test peripherals.
+void ResetMemory(CPURAMSize ram_size, CPUFastmemMode fastmem_mode);
 
 inline std::string GetExecutionModeTestName(const ::testing::TestParamInfo<CPUExecutionMode>& info)
 {

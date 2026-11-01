@@ -625,7 +625,10 @@ bool MemoryEditorWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
   else
     m_ui.memoryRegionRAM->setChecked(true);
 
-  const PhysicalMemoryAddress offset = phys_address - Bus::GetMemoryRegionStart(region.value());
+  // Mirrors are displayed at their unmirrored address.
+  const PhysicalMemoryAddress offset = (region.value() == Bus::MemoryRegion::RAM) ?
+                                         (phys_address & g_bus.ram_mask) :
+                                         (phys_address - Bus::GetMemoryRegionStart(region.value()));
   m_ui.memoryView->scrollToOffset(offset);
   return true;
 }

@@ -38,11 +38,17 @@ u32 Program::StoreResult(Reg reg)
 
 void Program::Run(u32 runs)
 {
+  RunAt(PROGRAM_BASE, runs);
+}
+
+void Program::RunAt(u32 address, u32 runs)
+{
   std::vector<u32> code;
   code.push_back(lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)));
   code.insert(code.end(), m_code.begin(), m_code.end());
   code.push_back(sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT));
-  code.push_back(nop());
+  // Manual protection does not split blocks at page boundaries. End the block even though the store exits execution.
+  code.push_back(j(address + static_cast<u32>((code.size() - 1) * sizeof(u32))));
   code.push_back(nop());
 
   // Writes to timers 0/1 start the CRTC event, which can't run without a GPU.
@@ -56,11 +62,11 @@ void Program::Run(u32 runs)
 
   // Get rid of the previous program, this also makes the pages it was in writable again.
   CPU::CodeCache::InvalidateAllRAMBlocks();
-  std::memcpy(&g_bus.ram[PROGRAM_BASE & g_bus.ram_mask], code.data(), code.size() * sizeof(u32));
+  std::memcpy(&g_bus.ram[address & g_bus.ram_mask], code.data(), code.size() * sizeof(u32));
   CPU::ClearICache();
   for (u32 i = 0; i < runs; i++)
   {
-    CPU::SetPC(PROGRAM_BASE);
+    CPU::SetPC(address);
     CPU::Execute();
   }
 }
@@ -117,3 +123,18 @@ void ExecutionModeTest::TearDownTestSuite()
 }
 
 } // namespace CPUTestHarness
+
+void CPUTestHarness::ResetMemory(CPURAMSize ram_size, CPUFastmemMode fastmem_mode)
+{
+  CPU::CodeCache::Shutdown();
+  CPU::Shutdown();
+  Bus::Shutdown();
+  g_settings.cpu_ram_size = ram_size;
+  g_settings.cpu_fastmem_mode = fastmem_mode;
+  Bus::Initialize();
+  CPU::Initialize();
+  Bus::Reset();
+  CPU::Reset();
+  // Dispatcher functions depend on the fastmem mode, so regenerate them after applying the configuration.
+  CPU::CodeCache::Reset();
+}

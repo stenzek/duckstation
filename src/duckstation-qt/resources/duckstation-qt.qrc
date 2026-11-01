@@ -71,6 +71,7 @@
 		<file>icons/monochrome/svg/add-animation.svg</file>
 		<file>icons/monochrome/svg/add-line.svg</file>
 		<file>icons/monochrome/svg/alert-line.svg</file>
+		<file>icons/monochrome/svg/arcade-line.svg</file>
 		<file>icons/monochrome/svg/arrow-down-line.svg</file>
 		<file>icons/monochrome/svg/arrow-go-back-line.svg</file>
 		<file>icons/monochrome/svg/arrow-left-right-line.svg</file>
@@ -208,6 +209,7 @@
 		<file>icons/monochrome/svg/time-line.svg</file>
 		<file>icons/monochrome/svg/timer-line.svg</file>
 		<file>icons/monochrome/svg/toolbar-labels-beside-line.svg</file>
+		<file>icons/monochrome/svg/tools-line.svg</file>
 		<file>icons/monochrome/svg/trash-fill.svg</file>
 		<file>icons/monochrome/svg/trophy-line.svg</file>
 		<file>icons/monochrome/svg/tv-2-line.svg</file>

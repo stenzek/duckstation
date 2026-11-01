@@ -42,8 +42,18 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                Settings::DEFAULT_FAST_BOOT_VALUE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, Settings::BIOS_SECTION_NAME,
                                                "FastForwardBoot", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, Settings::CONSOLE_SECTION_NAME, "Enable8MBRAM",
-                                               false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize", &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
+    &Settings::GetCPURAMSizeDisplayName, Settings::DEFAULT_CPU_RAM_SIZE, CPURAMSize::Count, +[](CPURAMSize size) {
+      static constexpr const char* icons[] = {
+        ":/icons/monochrome/svg/emulation-line.svg", // 2MB - Retail
+        ":/icons/monochrome/svg/arcade-line.svg",    // 4MB - Arcade
+        ":/icons/monochrome/svg/code-box-line.svg",  // 8MB - Dev Console
+        ":/icons/monochrome/svg/tools-line.svg",     // 16MB - Mods
+      };
+      static_assert(std::size(icons) == static_cast<size_t>(CPURAMSize::Count));
+      return QIcon(QString::fromLatin1(icons[static_cast<size_t>(size)]));
+    });
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
@@ -102,12 +112,11 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
                                tr("Fast forwards through memory card access, both loading and saving. Can reduce "
                                   "waiting times in games that frequently access memory cards."));
-  dialog->registerWidgetHelp(
-    m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
-    tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
-       "to use a larger heap size for "
-       "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
-       "with compatible mods."));
+  dialog->registerWidgetHelp(m_ui.ramSize, tr("Installed RAM"),
+                             QString::fromUtf8(Settings::GetCPURAMSizeDisplayName(Settings::DEFAULT_CPU_RAM_SIZE)),
+                             tr("Changes the amount of RAM installed in the emulated console. Games have to use a "
+                                "larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors "
+                                "may break, so it should only be used with compatible mods."));
 
   dialog->registerWidgetHelp(
     m_ui.cpuExecutionMode, tr("Execution Mode"),

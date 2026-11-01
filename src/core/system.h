@@ -145,7 +145,7 @@ enum class Taint : u8
   CDROMReadSpeedup,
   CDROMSeekSpeedup,
   ForceFrameTimings,
-  RAM8MB,
+  ExpandedRAM,
   Cheats,
   Patches,
   MemoryCardMismatch,
@@ -318,10 +318,10 @@ void ResetSystem();
 bool CanPauseSystem(bool display_message);
 
 /// Returns the maximum size of a save state, considering the current configuration.
-size_t GetMaxSaveStateSize(bool enable_8mb_ram, bool enable_texture_cache);
+size_t GetMaxSaveStateSize(CPURAMSize ram_size, bool enable_texture_cache);
 
 /// Returns the maximum size of a save state that is not expected to be serialized to file.
-size_t GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp, bool enable_texture_cache);
+size_t GetMaxMemorySaveStateSize(CPURAMSize ram_size, bool pgxp, bool enable_texture_cache);
 
 /// Loads state from the specified path.
 std::optional<bool> LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
@@ -493,7 +493,7 @@ std::string GetImageForLoadingScreen(const GameList::Entry& entry, bool fallback
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples, bool use_software_renderer,
-                                bool enable_8mb_ram, bool gpu_texture_cache, u64* ram_usage, u64* vram_usage);
+                                CPURAMSize ram_size, bool gpu_texture_cache, u64* ram_usage, u64* vram_usage);
 void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
 void SetRunaheadReplayFlag(bool is_analog_input);
 

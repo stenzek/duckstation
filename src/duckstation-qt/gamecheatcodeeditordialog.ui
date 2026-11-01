@@ -167,19 +167,22 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="2" column="0">
+       <widget class="QLabel" name="overrideRAMSizeLabel">
+        <property name="text">
+         <string>RAM Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="overrideRAMSize"/>
+      </item>
+      <item row="3" column="0" colspan="2">
        <layout class="QHBoxLayout" name="overrideFlagsLayout">
         <item>
          <widget class="QCheckBox" name="disableWidescreenRendering">
           <property name="text">
            <string>Disable Widescreen Rendering</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="enable8MBRAM">
-          <property name="text">
-           <string>Enable 8MB RAM</string>
           </property>
          </widget>
         </item>
@@ -192,7 +195,7 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="forcePGXPPreserveProjectionPrecision">
         <property name="text">
          <string>Force PGXP Preserve Projection Precision</string>

@@ -4,11 +4,14 @@
 #include "cpu_test_harness.h"
 
 #include "core/cpu_code_cache.h"
+#include "core/cpu_code_cache_private.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
 #include "core/system_private.h"
 
+#include <array>
 #include <initializer_list>
+#include <iomanip>
 
 namespace {
 
@@ -17,6 +20,54 @@ using namespace Mips::Encoder;
 
 class CPUExecution : public ExecutionModeTest
 {
+};
+
+struct CPUMemoryExecution : public ExecutionModeTest
+{
+protected:
+  void SetUp() override
+  {
+    m_old_settings = g_settings;
+    ExecutionModeTest::SetUp();
+  }
+
+  void TearDown() override
+  {
+    ResetMemory(m_old_settings.cpu_ram_size, m_old_settings.cpu_fastmem_mode);
+    g_settings = m_old_settings;
+  }
+
+  static void SetWindow(u32 value)
+  {
+    CPU::GetMemoryWriteHandler(0xBF801060, MemoryAccessSize::Word)(0xBF801060, value);
+  }
+
+  static void WriteCode(u32 address, std::initializer_list<u32> instructions)
+  {
+    for (const u32 bits : instructions)
+    {
+      std::memcpy(&g_bus.unprotected_ram[address & g_bus.ram_mask], &bits, sizeof(bits));
+      address += sizeof(bits);
+    }
+  }
+
+  static void WriteExceptionHandler(u32 exit_pc)
+  {
+    // Exceptions set V0 to 99 and exit.
+    CPU::g_state.cop0_regs.sr.BEV = false;
+    WriteCode(0x80000080, {nop(), addiu(Reg::V0, Reg::R0, 99), j(exit_pc), nop()});
+  }
+
+  static void ExpectRecompiledBlock(u32 pc)
+  {
+    if (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler)
+      return;
+
+    const void* code = CPU::CodeCache::g_code_lut[pc >> CPU::CodeCache::LUT_TABLE_SHIFT][(pc & 0xFFFFu) / sizeof(u32)];
+    EXPECT_NE(code, CPU::CodeCache::g_recompiler_functions.interpret_block) << std::hex << pc;
+  }
+
+  Settings m_old_settings;
 };
 
 } // namespace
@@ -104,3 +155,313 @@ TEST_P(CPUExecution, ManualProtectionDetectsChangedCode)
 }
 
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);
+
+TEST_P(CPUMemoryExecution, FastmemAccessesFollowDRAMWindowsAndInstalledRAM)
+{
+  // The normal result buffer starts at 1 MB, outside the smallest DRAM window.
+  static constexpr u32 result_address = 0x80070000;
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    for (const CPURAMSize size :
+         {CPURAMSize::Default, CPURAMSize::Expanded4MB, CPURAMSize::Expanded8MB, CPURAMSize::Expanded16MB})
+    {
+      SCOPED_TRACE(Settings::GetCPURAMSizeName(size));
+      ResetMemory(size, mode);
+      for (u32 window = 0; window < 16; window++)
+      {
+        SCOPED_TRACE(window);
+        SetWindow((window << 8) | 0x88);
+        for (const u32 segment : {0u, 0x80000000u, 0xA0000000u})
+        {
+          for (u32 offset = 0x20000; offset < g_bus.ram_mapped_size; offset += 1048576)
+          {
+            const u32 address = segment | offset;
+            SCOPED_TRACE(address);
+            const u32 value = 0x12340000 | (offset / 1048576);
+            ASSERT_TRUE(CPU::SafeWriteMemoryWord(address, value));
+
+            // Space out recompiles of the same PC so the SMC fallback limit cannot turn this into an interpreter
+            // test after the first few addresses. The dispatch check below verifies that it stays compiled.
+            for (u32 i = 0; i < 15; i++)
+              System::IncrementFrameNumber();
+            Program prog;
+            prog.LoadImmediate(Reg::T0, address);
+            prog.Emit(lw(Reg::T1, 0, Reg::T0));
+            prog.Emit(nop());
+            prog.LoadImmediate(Reg::T9, result_address);
+            prog.Emit(sw(Reg::T1, 0, Reg::T9));
+            prog.LoadImmediate(Reg::T1, value ^ 0x55555555);
+            prog.Emit(sw(Reg::T1, 0, Reg::T0));
+            prog.Run();
+
+            EXPECT_EQ(Program::ReadRAM(result_address), value);
+            u32 written_value;
+            ASSERT_TRUE(CPU::SafeReadMemoryWord(address, &written_value));
+            EXPECT_EQ(written_value, value ^ 0x55555555);
+            ExpectRecompiledBlock(PROGRAM_BASE);
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_P(CPUMemoryExecution, MirrorBranchAcrossPageUsesManualProtectionWithoutInterpreterFallback)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Default, mode);
+    const u32 page_end_pc = (PROGRAM_BASE | Bus::RAM_DEFAULT_SIZE) + HOST_PAGE_SIZE * 2;
+    const u32 block_pc = page_end_pc - 4 * sizeof(u32);
+    const u32 exit_pc = PROGRAM_BASE + HOST_PAGE_SIZE * 4;
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 42), nop(), nop(), j(exit_pc), sw(Reg::V0, 0, Reg::T9)});
+    WriteCode(exit_pc, {sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT), j(exit_pc), nop()});
+
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.Emit(j(block_pc));
+    prog.Emit(nop());
+    prog.Run(2);
+    EXPECT_EQ(prog.Result(0), 42u);
+    ExpectRecompiledBlock(block_pc);
+
+    // Change RAM without invalidating the block. The manual check must inspect the mirrored backing bytes.
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 43)});
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 43u);
+    ExpectRecompiledBlock(block_pc);
+  }
+}
+
+TEST_P(CPUMemoryExecution, BlockWrappingPhysicalRAMSeesChangedDelaySlot)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Default, mode);
+
+    // The delay slot is in the next mirror, backed by the start of physical RAM.
+    const u32 block_pc = 0x80000000u + (Bus::RAM_DEFAULT_SIZE * 2) - sizeof(u32);
+    const u32 exit_pc = PROGRAM_BASE + HOST_PAGE_SIZE * 4;
+    WriteCode(block_pc, {j(exit_pc), nop()});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.Emit(addiu(Reg::V0, Reg::R0, 42));
+    prog.Emit(j(block_pc));
+    prog.Emit(nop());
+    prog.Run(2);
+    ASSERT_EQ(prog.Result(0), 42u);
+
+    // Change the delay slot without invalidating the block.
+    WriteCode(block_pc + sizeof(u32), {addiu(Reg::V0, Reg::R0, 43)});
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 43u);
+  }
+}
+
+TEST_P(CPUMemoryExecution, MirrorPageRemainsCompiledAfterRepeatedInvalidation)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Default, mode);
+    const u32 block_pc = (PROGRAM_BASE | 0x00600000u) + HOST_PAGE_SIZE * 2;
+    const u32 exit_pc = PROGRAM_BASE + HOST_PAGE_SIZE * 4;
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 42), sw(Reg::V0, 0, Reg::T9), j(exit_pc), nop()});
+    WriteCode(exit_pc, {sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT), j(exit_pc), nop()});
+
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.Emit(j(block_pc));
+    prog.Emit(nop());
+    prog.Run();
+    for (u32 i = 0; i < 8; i++)
+    {
+      // Leave the instructions unchanged so ordinary invalidation can revalidate them. Frequent invalidations
+      // eventually switch the page to manual checking, which must use the same backing bytes.
+      CPU::CodeCache::InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(block_pc));
+      CPU::SetPC(PROGRAM_BASE);
+      CPU::Execute();
+      EXPECT_EQ(prog.Result(0), 42u);
+      ExpectRecompiledBlock(block_pc);
+    }
+  }
+}
+
+TEST_P(CPUMemoryExecution, BlockDelaySlotBecomesUnmappedWhenWindowShrinks)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded8MB, mode);
+    static constexpr u32 block_pc = 0xA01FFFFC;
+    static constexpr u32 exit_pc = 0xA0020000;
+    WriteExceptionHandler(exit_pc);
+    WriteCode(block_pc, {j(exit_pc), addiu(Reg::V0, Reg::R0, 43)});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.Emit(addiu(Reg::V0, Reg::R0, 42));
+    prog.LoadImmediate(Reg::T8, block_pc);
+    prog.Emit(jr(Reg::T8));
+    prog.Emit(nop());
+    prog.Run(2);
+    ASSERT_EQ(prog.Result(0), 43u);
+
+    // Shrinking to 2MB leaves the delay slot unmapped, so the cached block must not be reused. Memory state loads
+    // invalidate all blocks again, which must not allow it to be revalidated either.
+    SetWindow(0x488);
+    ASSERT_EQ(g_bus.ram_mapped_size, Bus::RAM_DEFAULT_SIZE);
+    CPU::CodeCache::InvalidateAllRAMBlocks();
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 99u);
+  }
+}
+
+TEST_P(CPUMemoryExecution, UnmappedCodeIsCompiledWhenWindowExpands)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded8MB, mode);
+    static constexpr u32 block_pc = 0xA0610000;
+    static constexpr u32 exit_pc = 0xA0020000;
+    WriteExceptionHandler(exit_pc);
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 43), j(exit_pc), nop()});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+
+    // Dispatch while the code is unmapped.
+    SetWindow(0x488);
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.LoadImmediate(Reg::T8, block_pc);
+    prog.Emit(jr(Reg::T8));
+    prog.Emit(nop());
+    prog.Run(1);
+    ASSERT_EQ(prog.Result(0), 99u);
+
+    // Once mapped, it should be cached rather than left on the interpreter fallback.
+    SetWindow(0xB88);
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 43u);
+    if (GetParam() != CPUExecutionMode::Interpreter)
+      EXPECT_TRUE(Bus::IsRAMCodePage(Bus::GetRAMCodePageIndex(block_pc)));
+    ExpectRecompiledBlock(block_pc);
+  }
+}
+
+TEST_P(CPUMemoryExecution, BranchWithUnmappedDelaySlotIsCompiledWhenWindowExpands)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded8MB, mode);
+    static constexpr u32 block_pc = 0xA01FFFFC;
+    static constexpr u32 exit_pc = 0xA0020000;
+    WriteExceptionHandler(exit_pc);
+    WriteCode(block_pc, {j(exit_pc), addiu(Reg::V0, Reg::R0, 43)});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+
+    // Dispatch while the delay slot is unmapped.
+    SetWindow(0x488);
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.LoadImmediate(Reg::T8, block_pc);
+    prog.Emit(jr(Reg::T8));
+    prog.Emit(nop());
+    prog.Run(1);
+    ASSERT_EQ(prog.Result(0), 99u);
+
+    // The branch is below the old window end, but should still be retried.
+    SetWindow(0xB88);
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 43u);
+    ExpectRecompiledBlock(block_pc);
+  }
+}
+
+TEST_P(CPUMemoryExecution, BIOSLinkToUnmappedCodeIsRetriedWhenWindowExpands)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded8MB, mode);
+    static constexpr u32 block_pc = 0xA0610000;
+    static constexpr u32 bios_pc = 0xBFC10000;
+    static constexpr u32 exit_pc = 0xA0020000;
+    WriteExceptionHandler(exit_pc);
+    WriteCode(block_pc, {addiu(Reg::V0, Reg::R0, 43), j(exit_pc), nop()});
+    WriteCode(exit_pc, {sw(Reg::V0, 0, Reg::T9), sb(Reg::R0, static_cast<s16>(ADDR_EXIT & 0xFFFFu), Reg::AT),
+                        j(exit_pc), nop()});
+
+    // BIOS blocks aren't invalidated with RAM, so their direct link to the RAM code must be updated.
+    static constexpr std::array<u32, 4> bios_code = {lui(Reg::T8, static_cast<u16>(block_pc >> 16)),
+                                                     ori(Reg::T8, Reg::T8, static_cast<u16>(block_pc & 0xFFFFu)),
+                                                     jr(Reg::T8), nop()};
+    std::memcpy(g_bus.bios + (bios_pc & Bus::BIOS_MASK), bios_code.data(), sizeof(bios_code));
+
+    // Dispatch while the code is unmapped.
+    SetWindow(0x488);
+    Program prog;
+    prog.Emit(lui(Reg::T9, static_cast<u16>(RESULTS_BASE >> 16)));
+    prog.LoadImmediate(Reg::T8, bios_pc);
+    prog.Emit(jr(Reg::T8));
+    prog.Emit(nop());
+    prog.Run(1);
+    ASSERT_EQ(prog.Result(0), 99u);
+
+    SetWindow(0xB88);
+    CPU::ClearICache();
+    CPU::SetPC(PROGRAM_BASE);
+    CPU::Execute();
+    EXPECT_EQ(prog.Result(0), 43u);
+    if (GetParam() != CPUExecutionMode::Interpreter)
+      EXPECT_TRUE(Bus::IsRAMCodePage(Bus::GetRAMCodePageIndex(block_pc)));
+    ExpectRecompiledBlock(block_pc);
+  }
+}
+
+TEST_P(CPUMemoryExecution, Expanded16MBCodeUsesCodeCache)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded16MB, mode);
+    SetWindow(0xF88);
+    for (const u32 address : {0x00C10000u, 0x80C10000u, 0xA0C10000u})
+    {
+      SCOPED_TRACE(address);
+      CPU::CodeCache::Reset();
+      Program prog;
+      prog.LoadImmediate(Reg::V0, 42);
+      const u32 slot = prog.StoreResult(Reg::V0);
+      prog.RunAt(address, 2);
+      EXPECT_EQ(prog.Result(slot), 42u);
+      if (GetParam() != CPUExecutionMode::Interpreter)
+        EXPECT_TRUE(Bus::IsRAMCodePage(Bus::GetRAMCodePageIndex(address)));
+      ExpectRecompiledBlock(address);
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUMemoryExecution, ::testing::ValuesIn(EXECUTION_MODES),
+                         GetExecutionModeTestName);

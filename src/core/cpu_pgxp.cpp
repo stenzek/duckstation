@@ -206,14 +206,13 @@ bool CPU::PGXP::ShouldSavePGXPState()
   return (g_settings.gpu_pgxp_enable && g_settings.IsRunaheadEnabled());
 }
 
-size_t CPU::PGXP::GetStateSize(bool enable_8mb_memory)
+size_t CPU::PGXP::GetStateSize(CPURAMSize ram_size)
 {
-  static constexpr u32 value_count_2mb = (PGXP_SCRATCH_VALUE_COUNT + (Bus::RAM_2MB_SIZE / 4u));
-  static constexpr u32 value_count_8mb = (PGXP_SCRATCH_VALUE_COUNT + (Bus::RAM_8MB_SIZE / 4u));
-  const size_t base_size = sizeof(g_state.pgxp_gpr) + sizeof(g_state.pgxp_cop0) + sizeof(g_state.pgxp_gte) +
-                           (sizeof(PGXPValue) * (enable_8mb_memory ? value_count_8mb : value_count_2mb));
+  static constexpr size_t base_size = sizeof(g_state.pgxp_gpr) + sizeof(g_state.pgxp_cop0) + sizeof(g_state.pgxp_gte);
+  const size_t ram_bytes = Settings::GetCPURAMSizeBytes(ram_size);
+  const size_t mem_size = sizeof(PGXPValue) * (PGXP_SCRATCH_VALUE_COUNT + (ram_bytes / 4));
   const size_t vertex_cache_size = sizeof(PGXPValue) * VERTEX_CACHE_SIZE;
-  return base_size + (g_settings.gpu_pgxp_vertex_cache ? vertex_cache_size : 0);
+  return base_size + mem_size + (g_settings.gpu_pgxp_vertex_cache ? vertex_cache_size : 0);
 }
 
 void CPU::PGXP::DoState(StateWrapper& sw)
@@ -306,7 +305,7 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
 
   // Don't worry about >512MB here for performance reasons.
   const u32 paddr = (addr & KSEG_MASK);
-  if (paddr < Bus::RAM_MIRROR_END)
+  if (paddr < g_bus.ram_mapped_size)
     return &s_mem[PGXP_MEM_RAM_OFFSET + ((paddr & g_bus.ram_mask) >> 2)];
   else
     return nullptr;

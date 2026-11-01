@@ -284,7 +284,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region",
                                                  Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)))
       .value_or(DEFAULT_CONSOLE_REGION);
-  cpu_enable_8mb_ram = si.GetBoolValue(CONSOLE_SECTION_NAME, "Enable8MBRAM", false);
 
   emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
@@ -323,6 +322,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cpu_fastmem_mode = ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode",
                                                                GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)))
                        .value_or(DEFAULT_CPU_FASTMEM_MODE);
+  cpu_ram_size = ParseCPURAMSize(si.GetStringViewValue(CPU_SECTION_NAME, "RAMSize")).value_or(DEFAULT_CPU_RAM_SIZE);
 
   gpu_renderer =
     ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)))
@@ -720,7 +720,6 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   TinyString skey;
 
   si.SetStringValue(CONSOLE_SECTION_NAME, "Region", GetConsoleRegionName(region));
-  si.SetBoolValue(CONSOLE_SECTION_NAME, "Enable8MBRAM", cpu_enable_8mb_ram);
 
   si.SetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", emulation_speed);
   si.SetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", fast_forward_speed);
@@ -756,6 +755,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(CPU_SECTION_NAME, "OverclockEnable", cpu_overclock_enable);
   si.SetIntValue(CPU_SECTION_NAME, "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue(CPU_SECTION_NAME, "OverclockDenominator", cpu_overclock_denominator);
+  si.SetStringValue(CPU_SECTION_NAME, "RAMSize", GetCPURAMSizeName(cpu_ram_size));
   if (!for_copy)
   {
     si.SetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
@@ -1227,7 +1227,7 @@ void Settings::ApplySettingRestrictions()
     region = ConsoleRegion::Auto;
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
-    cpu_enable_8mb_ram = false;
+    cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
     gpu_automatic_resolution_scale = false;
@@ -1588,6 +1588,71 @@ const char* Settings::GetDiscRegionName(DiscRegion region)
 const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 {
   return Host::TranslateToCString("Settings", s_disc_region_display_names[static_cast<size_t>(region)], "DiscRegion");
+}
+
+static constexpr const std::array s_cpu_ram_size_names = {
+  "Default",
+  "4MB",
+  "8MB",
+  "16MB",
+};
+static constexpr const std::array s_cpu_ram_size_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "2 MB (Retail Console)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "4 MB (Arcade Boards)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "8 MB (Dev Console)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "16 MB (Mods/Arcade Boards)", "CPURAMSize"),
+};
+
+std::optional<CPURAMSize> Settings::ParseCPURAMSize(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_cpu_ram_size_names)
+  {
+    if (str == name)
+      return static_cast<CPURAMSize>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetCPURAMSizeName(CPURAMSize size)
+{
+  return s_cpu_ram_size_names[static_cast<u8>(size)];
+}
+
+const char* Settings::GetCPURAMSizeDisplayName(CPURAMSize size)
+{
+  return Host::TranslateToCString("Settings", s_cpu_ram_size_display_names[static_cast<size_t>(size)], "CPURAMSize");
+}
+
+u32 Settings::GetCPURAMSizeBytes(CPURAMSize size)
+{
+  static constexpr u32 one_mb = 1048576;
+  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Default)) == (2 * one_mb));
+  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Default)));
+  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded4MB)) == (4 * one_mb));
+  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded4MB)));
+  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded8MB)) == (8 * one_mb));
+  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded8MB)));
+  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded16MB)) == (16 * one_mb));
+  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded16MB)));
+  return (0x200000u << static_cast<u8>(size));
+}
+
+std::optional<CPURAMSize> Settings::GetCPURAMSizeForBytes(u32 bytes)
+{
+  if (bytes == 2 * 1048576)
+    return CPURAMSize::Default;
+  else if (bytes == 4 * 1048576)
+    return CPURAMSize::Expanded4MB;
+  else if (bytes == 8 * 1048576)
+    return CPURAMSize::Expanded8MB;
+  else if (bytes == 16 * 1048576)
+    return CPURAMSize::Expanded16MB;
+  else
+    return std::nullopt;
 }
 
 static constexpr const std::array s_cpu_execution_mode_names = {

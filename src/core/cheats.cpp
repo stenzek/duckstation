@@ -261,7 +261,7 @@ Cheats::CheatCode::~CheatCode() = default;
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
   return (m_metadata.disable_widescreen_rendering || m_metadata.force_pgxp_preserve_projection_precision ||
-          m_metadata.enable_8mb_ram || m_metadata.override_aspect_ratio.has_value() ||
+          m_metadata.override_ram_size.has_value() || m_metadata.override_aspect_ratio.has_value() ||
           m_metadata.override_cpu_overclock.has_value());
 }
 
@@ -277,10 +277,12 @@ void Cheats::CheatCode::ApplySettingOverrides()
     DEV_LOG("Enabling PGXP preserve projection precision from {} patch.", GetName());
     g_settings.gpu_pgxp_preserve_proj_fp = true;
   }
-  if (m_metadata.enable_8mb_ram && !g_settings.cpu_enable_8mb_ram)
+  // Only ever increase the RAM size, so the largest size is used when multiple patches are enabled.
+  if (m_metadata.override_ram_size.has_value() && g_settings.cpu_ram_size < m_metadata.override_ram_size.value())
   {
-    DEV_LOG("Enabling 8MB ram from {} patch.", GetName());
-    g_settings.cpu_enable_8mb_ram = true;
+    DEV_LOG("Setting RAM size to {} from {} patch.", Settings::GetCPURAMSizeName(m_metadata.override_ram_size.value()),
+            GetName());
+    g_settings.cpu_ram_size = m_metadata.override_ram_size.value();
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
@@ -655,8 +657,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "DisableWidescreenRendering = true\n");
   if (code.force_pgxp_preserve_projection_precision)
     fmt::format_to(appender, "ForcePGXPPreserveProjectionPrecision = true\n");
-  if (code.enable_8mb_ram)
-    fmt::format_to(appender, "Enable8MBRAM = true\n");
+  if (code.override_ram_size.has_value())
+    fmt::format_to(appender, "OverrideRAMSize = {}\n", Settings::GetCPURAMSizeName(code.override_ram_size.value()));
   if (code.disallow_for_achievements)
     fmt::format_to(appender, "DisallowForAchievements = true\n");
 
@@ -1784,9 +1786,20 @@ bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view
   {
     metadata->force_pgxp_preserve_projection_precision = StringUtil::FromChars<bool>(value).value_or(false);
   }
-  else if (key == "Enable8MBRAM")
+  else if (key == "OverrideRAMSize")
   {
-    metadata->enable_8mb_ram = StringUtil::FromChars<bool>(value).value_or(false);
+    // Largest size wins if multiple keys are present. nullopt compares less than any size.
+    const std::optional<CPURAMSize> size = Settings::ParseCPURAMSize(value);
+    if (!size.has_value())
+      WARNING_LOG("Invalid RAM size at line {}: {}", line_number, value);
+    else if (metadata->override_ram_size < size)
+      metadata->override_ram_size = size.value();
+  }
+  else if (key == "Enable8MBRAM" || key == "Enable16MBRAM")
+  {
+    const CPURAMSize size = (key == "Enable16MBRAM") ? CPURAMSize::Expanded16MB : CPURAMSize::Expanded8MB;
+    if (StringUtil::FromChars<bool>(value).value_or(false) && metadata->override_ram_size < size)
+      metadata->override_ram_size = size;
   }
   else if (key == "DisallowForAchievements")
   {
@@ -2477,14 +2490,17 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
     has_option[option_index] = true;
 
   // Returns the internal code that a line can merge into, or Nop.
+  // This runs before the bus is initialized, so it can't depend on the RAM size. Merges can't cross a 1MB boundary,
+  // since that's the granularity of the RAM sizes and DRAM_CTRL windows, so a block is always contiguous in RAM.
+  static constexpr u32 MERGE_BOUNDARY = 0x100000;
   const auto get_merge_code = [this, &has_option](u32 index) -> std::tuple<InstructionCode, u32> {
     const Instruction& inst = instructions[index];
     const auto& [merge_code, merge_width] = GetMergeCode(inst.code);
 
-    // Must be in RAM, and not cross a 2MB boundary, so the window is contiguous with mirroring.
+    // Must be in RAM, and not cross a merge boundary.
     const u32 address = inst.address;
-    if (merge_code == InstructionCode::Nop || has_option[index] || (address + merge_width) > Bus::RAM_MIRROR_END ||
-        (address / Bus::RAM_2MB_SIZE) != ((address + merge_width - 1) / Bus::RAM_2MB_SIZE))
+    if (merge_code == InstructionCode::Nop || has_option[index] || (address + merge_width) > Bus::RAM_MAX_SIZE ||
+        (address / MERGE_BOUNDARY) != ((address + merge_width - 1) / MERGE_BOUNDARY))
     {
       return {InstructionCode::Nop, 0};
     }
@@ -2521,7 +2537,7 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
                (next_address < start) :
                (next_address < end || ((next_address - start) % merge_width) != 0)) ||
             next_address > (end + MAX_MERGE_GAP) ||
-            (start / Bus::RAM_2MB_SIZE) != ((next_address + next_width - 1) / Bus::RAM_2MB_SIZE))
+            (start / MERGE_BOUNDARY) != ((next_address + next_width - 1) / MERGE_BOUNDARY))
         {
           break;
         }
@@ -2647,9 +2663,12 @@ NEVER_INLINE static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
 
 static u8* GetBlockRAMPointer(PhysicalMemoryAddress address, u32 size)
 {
-  // Must be entirely within RAM, no mirror wraparound.
-  if (address >= Bus::RAM_MIRROR_END || ((address & g_bus.ram_mask) + size) > g_bus.ram_size) [[unlikely]]
+  // Must be entirely within mapped RAM, no mirror wraparound.
+  if (address >= g_bus.ram_mapped_size || (address + size) > g_bus.ram_mapped_size ||
+      ((address & g_bus.ram_mask) + size) > g_bus.ram_size) [[unlikely]]
+  {
     return nullptr;
+  }
 
   return &g_bus.unprotected_ram[address & g_bus.ram_mask];
 }

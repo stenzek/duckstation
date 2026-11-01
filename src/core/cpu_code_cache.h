@@ -37,4 +37,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index);
 /// Invalidates all blocks in the cache.
 void InvalidateAllRAMBlocks();
 
+/// Allows code in a RAM range without blocks to be compiled again, after it becomes mapped.
+void ResetRAMDispatchRange(PhysicalMemoryAddress start, PhysicalMemoryAddress end);
+
 } // namespace CPU::CodeCache

@@ -112,7 +112,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
                                             "OverrideCPUOverclock = 200\n"
                                             "DisableWidescreenRendering = true\n"
                                             "ForcePGXPPreserveProjectionPrecision = true\n"
-                                            "Enable8MBRAM = true\n"
+                                            "OverrideRAMSize = 8MB\n"
                                             "DisallowForAchievements = true\n"
                                             "80010000 0001\n";
 
@@ -128,7 +128,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
   EXPECT_EQ(code.override_cpu_overclock, 200u);
   EXPECT_TRUE(code.disable_widescreen_rendering);
   EXPECT_TRUE(code.force_pgxp_preserve_projection_precision);
-  EXPECT_TRUE(code.enable_8mb_ram);
+  EXPECT_EQ(code.override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
   EXPECT_TRUE(code.disallow_for_achievements);
 
   // writing the code back out should preserve the overrides
@@ -150,6 +150,122 @@ TEST(Cheats, ParseAndFormatStartFrameCode)
     EXPECT_EQ(codes.front().activation, Cheats::CodeActivation::StartFrame);
     EXPECT_EQ(Cheats::FormatCodeForFile(codes.front()), input);
     EXPECT_NE(Cheats::ParseCode(codes.front(), codes.front().body, &error), nullptr) << error.GetDescription();
+  }
+}
+
+TEST(Cheats, ParseAndFormatRAMSizeOverrides)
+{
+  static constexpr std::string_view input = "[Four]\n"
+                                            "OverrideRAMSize = 4MB\n"
+                                            "80010000 0001\n"
+                                            "[Eight]\n"
+                                            "Enable8MBRAM = true\n"
+                                            "80010000 0001\n"
+                                            "[Sixteen]\n"
+                                            "Enable16MBRAM = true\n"
+                                            "80010000 0001\n"
+                                            "[Largest]\n"
+                                            "OverrideRAMSize = 16MB\n"
+                                            "Enable8MBRAM = true\n"
+                                            "80010000 0001\n"
+                                            "[Disabled]\n"
+                                            "Enable8MBRAM = false\n"
+                                            "80010000 0001\n"
+                                            "[Invalid]\n"
+                                            "OverrideRAMSize = 3MB\n"
+                                            "80010000 0001\n"
+                                            "[NoSuffix]\n"
+                                            "OverrideRAMSize = 4\n"
+                                            "80010000 0001\n";
+
+  Cheats::CodeInfoList codes;
+  Error error;
+  ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+    << error.GetDescription();
+  ASSERT_EQ(codes.size(), 7u);
+  EXPECT_EQ(codes[0].override_ram_size, std::make_optional(CPURAMSize::Expanded4MB));
+  EXPECT_EQ(codes[1].override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
+  EXPECT_EQ(codes[2].override_ram_size, std::make_optional(CPURAMSize::Expanded16MB));
+  EXPECT_EQ(codes[3].override_ram_size, std::make_optional(CPURAMSize::Expanded16MB));
+  EXPECT_FALSE(codes[4].override_ram_size.has_value());
+  EXPECT_FALSE(codes[5].override_ram_size.has_value());
+  EXPECT_FALSE(codes[6].override_ram_size.has_value());
+
+  // The aliases are written back out as OverrideRAMSize.
+  EXPECT_NE(Cheats::FormatCodeForFile(codes[0]).find("OverrideRAMSize = 4MB\n"), std::string::npos);
+  EXPECT_NE(Cheats::FormatCodeForFile(codes[1]).find("OverrideRAMSize = 8MB\n"), std::string::npos);
+  EXPECT_NE(Cheats::FormatCodeForFile(codes[2]).find("OverrideRAMSize = 16MB\n"), std::string::npos);
+  EXPECT_EQ(Cheats::FormatCodeForFile(codes[1]).find("Enable8MBRAM"), std::string::npos);
+  EXPECT_EQ(Cheats::FormatCodeForFile(codes[2]).find("Enable16MBRAM"), std::string::npos);
+}
+
+TEST(Cheats, RAMSizeOverrideUsesLargestSize)
+{
+  const Settings old_settings = g_settings;
+  const ScopedGuard restore_settings([&old_settings]() { g_settings = old_settings; });
+
+  std::vector<std::unique_ptr<Cheats::CheatCode>> codes;
+  for (const CPURAMSize size : {CPURAMSize::Expanded4MB, CPURAMSize::Expanded8MB, CPURAMSize::Expanded16MB})
+  {
+    Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
+    metadata.override_ram_size = size;
+    Error error;
+    codes.push_back(Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error));
+    ASSERT_NE(codes.back(), nullptr) << error.GetDescription();
+    EXPECT_TRUE(codes.back()->HasAnySettingOverrides());
+  }
+
+  g_settings.cpu_ram_size = Settings::DEFAULT_CPU_RAM_SIZE;
+  codes[0]->ApplySettingOverrides();
+  EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded4MB);
+  codes[1]->ApplySettingOverrides();
+  codes[2]->ApplySettingOverrides();
+  EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded16MB);
+
+  // The configured size is not reduced.
+  g_settings.cpu_ram_size = CPURAMSize::Expanded8MB;
+  codes[0]->ApplySettingOverrides();
+  EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded8MB);
+}
+
+TEST(Cheats, RAMSizeOverrideNamesRoundTrip)
+{
+  for (const CPURAMSize size : {CPURAMSize::Expanded4MB, CPURAMSize::Expanded8MB, CPURAMSize::Expanded16MB})
+  {
+    SCOPED_TRACE(Settings::GetCPURAMSizeName(size));
+    const std::string input =
+      fmt::format("[Expanded RAM]\nOverrideRAMSize = {}\n80010000 0001\n", Settings::GetCPURAMSizeName(size));
+    Cheats::CodeInfoList codes;
+    Error error;
+    ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+      << error.GetDescription();
+    ASSERT_EQ(codes.size(), 1u);
+    EXPECT_EQ(codes.front().override_ram_size, size);
+
+    const std::string formatted = Cheats::FormatCodeForFile(codes.front());
+    Cheats::CodeInfoList reparsed;
+    ASSERT_TRUE(Cheats::ImportCodesFromString(&reparsed, formatted, Cheats::FileFormat::DuckStation, true, &error))
+      << error.GetDescription();
+    ASSERT_EQ(reparsed.size(), 1u);
+    EXPECT_EQ(reparsed.front().override_ram_size, size);
+  }
+}
+
+TEST(Cheats, RAMSizeOverrideAliasesKeepLargestSize)
+{
+  // Use valid named sizes so a rejected numeric value cannot hide alias precedence problems.
+  for (const std::string_view overrides :
+       {"OverrideRAMSize = 16MB\nEnable8MBRAM = true\n", "Enable8MBRAM = true\nOverrideRAMSize = 16MB\n",
+        "Enable16MBRAM = true\nEnable8MBRAM = true\n", "Enable16MBRAM = true\nOverrideRAMSize = 4MB\n"})
+  {
+    SCOPED_TRACE(overrides);
+    const std::string input = fmt::format("[Expanded RAM]\n{}80010000 0001\n", overrides);
+    Cheats::CodeInfoList codes;
+    Error error;
+    ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+      << error.GetDescription();
+    ASSERT_EQ(codes.size(), 1u);
+    EXPECT_EQ(codes.front().override_ram_size, CPURAMSize::Expanded16MB);
   }
 }
 
@@ -535,6 +651,86 @@ TEST_F(CheatsApply, BlockWriteOutsideRAM)
   EXPECT_EQ(ReadWord(0), 0u);
 }
 
+TEST_F(CheatsApply, BlockWriteThroughRAMMirrors)
+{
+  for (const u32 mirror : {0u, 0x200000u, 0x400000u, 0x600000u})
+  {
+    SCOPED_TRACE(mirror);
+    WriteWord(0x2000, 0);
+    WriteWord(0x2004, 0);
+    std::unique_ptr<Cheats::GamesharkCheatCode> code =
+      Parse(fmt::format("{:08X} 00000002\n11223344 55667788\n", 0xA9002000u | mirror));
+    ASSERT_NE(code, nullptr);
+    code->Apply();
+    EXPECT_EQ(ReadWord(0x2000), 0x11223344u);
+    EXPECT_EQ(ReadWord(0x2004), 0x55667788u);
+  }
+}
+
+TEST_F(CheatsApply, ConditionalBlockWritesThroughRAMMirrors)
+{
+  for (const u32 opcode : {0xAA000000u, 0xAB000000u})
+  {
+    for (const u32 mirror : {0u, 0x200000u, 0x400000u, 0x600000u})
+    {
+      SCOPED_TRACE(opcode | mirror);
+      WriteWord(0x2000, 0x11111111);
+      WriteWord(0x2004, 0x22222223);
+      std::unique_ptr<Cheats::GamesharkCheatCode> code =
+        Parse(fmt::format("{:08X} 00000002\n11111111 AAAAAAAA\n22222222 BBBBBBBB\n", opcode | mirror | 0x2000));
+      ASSERT_NE(code, nullptr);
+      code->Apply();
+      EXPECT_EQ(ReadWord(0x2000), 0x11111111u);
+      EXPECT_EQ(ReadWord(0x2004), 0x22222223u);
+
+      WriteWord(0x2004, 0x22222222);
+      code->Apply();
+      EXPECT_EQ(ReadWord(0x2000), 0xAAAAAAAAu);
+      EXPECT_EQ(ReadWord(0x2004), 0xBBBBBBBBu);
+      code->ApplyOnDisable(nullptr);
+      const bool restores = (opcode == 0xAA000000u);
+      EXPECT_EQ(ReadWord(0x2000), restores ? 0x11111111u : 0xAAAAAAAAu);
+      EXPECT_EQ(ReadWord(0x2004), restores ? 0x22222222u : 0xBBBBBBBBu);
+    }
+  }
+}
+
+TEST_F(CheatsApply, MergedWritesRespectShrunkRAMWindow)
+{
+  const auto set_window = [](u32 value) {
+    CPU::GetMemoryWriteHandler(0xBF801060, MemoryAccessSize::Word)(0xBF801060, value);
+  };
+  const ScopedGuard restore_window([&set_window]() { set_window(0xB88); });
+  std::unique_ptr<Cheats::GamesharkCheatCode> code =
+    Parse("80180000 1111\n80180002 2222\n80180004 3333\n80180006 4444\n");
+  ASSERT_NE(code, nullptr);
+  ASSERT_EQ(code->GetInstructions().front().code, Cheats::GamesharkCheatCode::InstructionCode::InternalMaskedWrite);
+
+  set_window(0x088);
+  ASSERT_EQ(g_bus.ram_mapped_size, 1048576u);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x180000), 0u);
+  EXPECT_EQ(ReadWord(0x180004), 0u);
+}
+
+TEST_F(CheatsApply, MergedWritesSplitAtOneMBWindowBoundary)
+{
+  const auto set_window = [](u32 value) {
+    CPU::GetMemoryWriteHandler(0xBF801060, MemoryAccessSize::Word)(0xBF801060, value);
+  };
+  const ScopedGuard restore_window([&set_window]() { set_window(0xB88); });
+  std::unique_ptr<Cheats::GamesharkCheatCode> code =
+    Parse("800FFFFC 1111\n800FFFFE 2222\n80100000 3333\n80100002 4444\n");
+  ASSERT_NE(code, nullptr);
+
+  // Writes below the end of a 1MB window must still apply.
+  set_window(0x088);
+  ASSERT_EQ(g_bus.ram_mapped_size, 1048576u);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0xFFFFC), 0x22221111u);
+  EXPECT_EQ(ReadWord(0x100000), 0u);
+}
+
 TEST_F(CheatsApply, BlockWriteIfMatch)
 {
   WriteWord(0x2000, 0x0C02A4B6);
@@ -715,6 +911,8 @@ TEST(Cheats, BlockWritePayloadDoesNotHaveRestorableEffects)
 
 TEST(Cheats, ParseGamesharkMergedWrites)
 {
+  // Normal boot parses codes before Bus::Initialize(), so merging must also work without an active RAM allocation.
+  ASSERT_EQ(g_bus.ram_size, 0u);
   // Constant writes merge with gaps and overlap, in line order.
   Error error;
   std::unique_ptr<Cheats::GamesharkCheatCode> code = ParseGamesharkCode("30001000 00000011\n"

@@ -44,7 +44,7 @@ LOG_CHANNEL(CodeCache);
 namespace CPU::CodeCache {
 
 using LUTRangeList = std::array<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>, 9>;
-using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_8MB_CODE_PAGE_COUNT>;
+using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_MAX_CODE_PAGE_COUNT>;
 using BlockInstructionInfoPair = std::pair<Instruction, InstructionInfo>;
 using BlockInstructionList = std::vector<BlockInstructionInfoPair>;
 
@@ -285,16 +285,18 @@ static constexpr u32 GetLUTTableCount(u32 start, u32 end)
 
 static constexpr LUTRangeList GetLUTRanges()
 {
+  // TODO: The RAM ranges cover the maximum 16MB, which roughly doubles the LUT size even with 2MB RAM.
+  // This allocation should be made dynamic, based on the installed RAM size.
   const LUTRangeList ranges = {{
-    {0x00000000, 0x00800000}, // RAM
+    {0x00000000, 0x01000000}, // RAM
     {0x1F000000, 0x1F060000}, // EXP1
     {0x1FC00000, 0x1FC80000}, // BIOS
 
-    {0x80000000, 0x80800000}, // RAM
+    {0x80000000, 0x81000000}, // RAM
     {0x9F000000, 0x9F060000}, // EXP1
     {0x9FC00000, 0x9FC80000}, // BIOS
 
-    {0xA0000000, 0xA0800000}, // RAM
+    {0xA0000000, 0xA1000000}, // RAM
     {0xBF000000, 0xBF060000}, // EXP1
     {0xBFC00000, 0xBFC80000}  // BIOS
   }};
@@ -495,6 +497,14 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
     block->size = 0;
   }
 
+  // Blocks that wrap around the end of physical RAM should be very rare, if they happen at all, so don't cache them.
+  if (AddressInRAM(pc) &&
+      ((VirtualAddressToPhysical(pc) & g_bus.ram_mask) + (size * sizeof(Instruction))) > g_bus.ram_size) [[unlikely]]
+  {
+    DEV_LOG("Block 0x{:08X} wraps around the end of physical RAM, not caching.", pc);
+    block->size = 0;
+  }
+
   // cached interpreter creates empty blocks when falling back
   if (block->size == 0)
   {
@@ -565,20 +575,23 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
 bool CPU::CodeCache::IsBlockCodeCurrent(const Block* block)
 {
   // blocks shouldn't be wrapping..
-  const PhysicalMemoryAddress phys_addr = VirtualAddressToPhysical(block->pc);
-  DebugAssert((phys_addr + (sizeof(Instruction) * block->size)) <= g_bus.ram_size);
+  const PhysicalMemoryAddress ram_offset = VirtualAddressToPhysical(block->pc) & g_bus.ram_mask;
+  DebugAssert((ram_offset + (sizeof(Instruction) * block->size)) <= g_bus.ram_size);
 
   // can just do a straight memcmp..
-  return (std::memcmp(g_bus.ram + phys_addr, block->Instructions(), sizeof(Instruction) * block->size) == 0);
+  return (std::memcmp(g_bus.ram + ram_offset, block->Instructions(), sizeof(Instruction) * block->size) == 0);
 }
 
 bool CPU::CodeCache::RevalidateBlock(Block* block)
 {
   DebugAssert(block->state != BlockState::Valid);
-  DebugAssert(AddressInRAM(block->pc) || block->state == BlockState::NeedsRecompile);
 
-  if (block->state >= BlockState::NeedsRecompile)
+  // The whole block must still be mapped, since the RAM window could have shrunk.
+  if (block->state >= BlockState::NeedsRecompile ||
+      (VirtualAddressToPhysical(block->pc) + (block->size * sizeof(Instruction))) > g_bus.ram_mapped_size)
+  {
     return false;
+  }
 
   // Protection may have changed if we didn't execute before it got invalidated again. e.g. THPS2.
   if (block->protection != GetProtectionModeForBlock(block))
@@ -653,7 +666,7 @@ void CPU::CodeCache::RemoveBlockFromPageList(Block* block)
 
 void CPU::CodeCache::InvalidateBlocksWithPageIndex(u32 index)
 {
-  DebugAssert(index < Bus::RAM_8MB_CODE_PAGE_COUNT);
+  DebugAssert(index < Bus::RAM_MAX_CODE_PAGE_COUNT);
   Bus::ClearRAMCodePage(index);
 
   BlockState new_block_state = BlockState::Invalidated;
@@ -726,9 +739,10 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
 {
   // TODO: maybe combine the backlink into one big instruction flush cache?
 
+  // Includes blocks outside the mapped window, since it may be changing.
   for (Block* block : s_locals.blocks)
   {
-    if (AddressInRAM(block->pc))
+    if (VirtualAddressToPhysical(block->pc) < Bus::RAM_MAX_SIZE)
     {
       InvalidateBlock(block, BlockState::Invalidated);
       block->next_block_in_page = nullptr;
@@ -746,9 +760,43 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
   Bus::ClearRAMCodePageFlags();
 }
 
+void CPU::CodeCache::ResetRAMDispatchRange(PhysicalMemoryAddress start, PhysicalMemoryAddress end)
+{
+  // Code that failed to read has no block, so the LUT and links can still point to the interpreter. No blocks in the
+  // range can be valid, so everything can go back through the compiler.
+  if (!IsUsingRecompiler())
+    return;
+
+  for (const VirtualMemoryAddress segment : {0x00000000u, 0x80000000u, 0xA0000000u})
+  {
+    const u32 end_table = (segment + end) >> LUT_TABLE_SHIFT;
+    for (u32 table = (segment + start) >> LUT_TABLE_SHIFT; table < end_table; table++)
+    {
+      if (g_code_lut[table] != s_locals.lut_code_pointers.get())
+        MemsetPtrs(g_code_lut[table], g_recompiler_functions.compile_or_revalidate_block, LUT_TABLE_SIZE);
+    }
+  }
+
+  if (g_settings.cpu_recompiler_block_linking)
+  {
+    for (const auto& [pc, link] : s_locals.block_links)
+    {
+      const PhysicalMemoryAddress phys_pc = VirtualAddressToPhysical(pc);
+      if (phys_pc >= start && phys_pc < end)
+      {
+        JITWriteProtect(false);
+        EmitJump(link, g_recompiler_functions.compile_or_revalidate_block, true);
+      }
+    }
+
+    JITWriteProtect(true);
+  }
+}
+
 void CPU::CodeCache::ClearBlocks()
 {
-  for (u32 i = 0; i < Bus::RAM_8MB_CODE_PAGE_COUNT; i++)
+  const u32 page_count = Bus::GetRAMCodePageCount();
+  for (u32 i = 0; i < page_count; i++)
   {
     PageProtectionInfo& ppi = s_page_protection[i];
     if (ppi.mode == PageProtectionMode::WriteProtected && ppi.first_block_in_page)
@@ -785,7 +833,7 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
     return HandlerResult::ExecuteNextHandler;
 
   if (g_bus.ram && static_cast<const u8*>(fault_address) >= g_bus.ram &&
-      static_cast<const u8*>(fault_address) < (g_bus.ram + Bus::RAM_8MB_SIZE))
+      static_cast<const u8*>(fault_address) < (g_bus.ram + Bus::RAM_MAX_SIZE))
   {
     // Writes can come from anywhere here (e.g. DMA).
     DebugAssert(is_write);
@@ -1824,8 +1872,9 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
 
     // if we're writing to ram, let it go through a few times, and use manual block protection to sort it out
     // TODO: path for manual protection to return back to read-only pages
+    // Mirrors are not mapped in the fastmem arena, so faults there need to be backpatched instead.
     if (!g_state.cop0_regs.sr.Isc && GetSegmentForAddress(guest_address) != CPU::Segment::KSEG2 &&
-        AddressInRAM(guest_address))
+        VirtualAddressToPhysical(guest_address) < Bus::GetUnmirroredRAMSize())
     {
       DebugAssert(is_write);
       DEV_LOG("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
