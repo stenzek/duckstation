@@ -105,22 +105,7 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
   m_filling = false;
   m_paused = false;
 
-  AllocateBuffer();
-  StretchAllocate();
-
-  const u32 output_latency_frames =
-    GetBufferSizeForMS(sample_rate, (params.output_latency_ms != 0) ? params.output_latency_ms : params.buffer_ms);
-  if (backend != AudioBackend::Null)
-  {
-    if (!(m_stream =
-            AudioStream::CreateStream(backend, sample_rate, NUM_CHANNELS, output_latency_frames,
-                                      params.output_latency_minimal, driver_name, device_name, this, true, error)))
-    {
-      Destroy();
-      return false;
-    }
-  }
-  else
+  if (backend == AudioBackend::Null)
   {
     // no point stretching with no output
     m_parameters = AudioStreamParameters();
@@ -129,6 +114,19 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
 
     // always paused to avoid output
     m_paused = true;
+  }
+
+  AllocateBuffer();
+  StretchAllocate();
+
+  const u32 output_latency_frames =
+    GetBufferSizeForMS(sample_rate, (params.output_latency_ms != 0) ? params.output_latency_ms : params.buffer_ms);
+  if (backend != AudioBackend::Null && !(m_stream = AudioStream::CreateStream(
+                                           backend, sample_rate, NUM_CHANNELS, output_latency_frames,
+                                           params.output_latency_minimal, driver_name, device_name, this, true, error)))
+  {
+    Destroy();
+    return false;
   }
 
   return true;
