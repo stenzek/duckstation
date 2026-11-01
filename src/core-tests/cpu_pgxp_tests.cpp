@@ -11,15 +11,7 @@
 
 namespace {
 
-// Validity flags, mirroring cpu_pgxp.cpp.
-enum : u32
-{
-  VALID_X = (1u << 0),
-  VALID_Y = (1u << 1),
-  VALID_Z = (1u << 2),
-  VALID_XY = (VALID_X | VALID_Y),
-  VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
-};
+using namespace CPU::PGXP;
 
 enum : u32
 {
