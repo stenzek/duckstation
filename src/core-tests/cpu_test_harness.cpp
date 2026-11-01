@@ -82,6 +82,7 @@ void ExecutionModeTest::SetUpTestSuite()
   ASSERT_TRUE(CPU::CodeCache::ProcessStartup(&error)) << error.GetDescription();
   ASSERT_TRUE(Bus::AllocateMemory(false, &error)) << error.GetDescription();
   Bus::Initialize();
+  CPU::CodeCache::Initialize();
   CPU::Initialize();
   TimingEvents::Initialize();
   // EXP1 code reads go to the PIO device.
@@ -136,6 +137,7 @@ void CPUTestHarness::ResetMemory(CPURAMSize ram_size, CPUFastmemMode fastmem_mod
   g_settings.cpu_ram_size = ram_size;
   g_settings.cpu_fastmem_mode = fastmem_mode;
   Bus::Initialize();
+  CPU::CodeCache::Initialize();
   CPU::Initialize();
   Bus::Reset();
   CPU::Reset();

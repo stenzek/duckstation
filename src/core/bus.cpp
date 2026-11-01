@@ -440,6 +440,9 @@ bool Bus::DoState(StateWrapper& sw)
     SetRAMSize(Settings::GetCPURAMSizeForBytes(state_ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE));
     RemapFastmemViews();
 
+    // LUTs are sized to the installed RAM.
+    CPU::CodeCache::ReallocateLUTs();
+
     // COP0 breakpoint coverage depends on the RAM size, and CPU state is loaded first.
     CPU::UpdateDebugDispatcherFlag();
   }

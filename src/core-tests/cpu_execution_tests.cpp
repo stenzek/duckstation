@@ -7,7 +7,11 @@
 #include "core/cpu_code_cache_private.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
+#include "core/save_state_version.h"
+#include "core/system.h"
 #include "core/system_private.h"
+
+#include "util/state_wrapper.h"
 
 #include <array>
 #include <initializer_list>
@@ -492,6 +496,65 @@ TEST_P(CPUMemoryExecution, CachedFetchFromUnmappedRAMRaisesBusError)
     EXPECT_EQ(prog.Result(0), 99u);
     EXPECT_EQ(static_cast<u8>(CPU::g_state.cop0_regs.cause.Excode.GetValue()), static_cast<u8>(CPU::Exception::IBE));
   }
+}
+
+TEST_P(CPUMemoryExecution, Expanded16MBCodeUsesCodeCacheAfterStateLoad)
+{
+  for (const CPUFastmemMode mode : FASTMEM_MODES)
+  {
+    SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
+    ResetMemory(CPURAMSize::Expanded16MB, mode);
+    SetWindow(0xF88);
+    std::vector<u8> data(System::GetMaxSaveStateSize(CPURAMSize::Expanded16MB, false));
+    StateWrapper save_sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+    ASSERT_TRUE(Bus::DoState(save_sw));
+    data.resize(save_sw.GetPosition());
+
+    // The 2MB LUTs only cover 8MB, so loading the state must grow them.
+    ResetMemory(CPURAMSize::Default, mode);
+    StateWrapper load_sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+    ASSERT_TRUE(Bus::DoState(load_sw));
+    ASSERT_EQ(g_bus.ram_size, Bus::RAM_MAX_SIZE);
+
+    static constexpr u32 address = 0x80C10000;
+    Program prog;
+    prog.LoadImmediate(Reg::V0, 42);
+    const u32 slot = prog.StoreResult(Reg::V0);
+    prog.RunAt(address, 2);
+    EXPECT_EQ(prog.Result(slot), 42u);
+    if (GetParam() != CPUExecutionMode::Interpreter)
+      EXPECT_TRUE(Bus::IsRAMCodePage(Bus::GetRAMCodePageIndex(address)));
+    ExpectRecompiledBlock(address);
+  }
+}
+
+TEST_P(CPUMemoryExecution, EXP1LUTFollowsPIODevice)
+{
+  // 0x1F7F0000 is never covered by a LUT, so it always shares the unreachable table.
+  const auto has_exp1_lut = []() {
+    return (CPU::CodeCache::g_code_lut[0x1F000000u >> CPU::CodeCache::LUT_TABLE_SHIFT] !=
+            CPU::CodeCache::g_code_lut[0x1F7F0000u >> CPU::CodeCache::LUT_TABLE_SHIFT]);
+  };
+
+  g_settings.pio_device_type = PIODeviceType::None;
+  ResetMemory(CPURAMSize::Default, CPUFastmemMode::Disabled);
+  EXPECT_FALSE(has_exp1_lut());
+
+  g_settings.pio_device_type = PIODeviceType::XplorerCart;
+  CPU::CodeCache::ReallocateLUTs();
+  EXPECT_TRUE(has_exp1_lut());
+
+  // RAM code should still be cached after reallocating.
+  Program prog;
+  prog.LoadImmediate(Reg::V0, 42);
+  const u32 slot = prog.StoreResult(Reg::V0);
+  prog.Run(2);
+  EXPECT_EQ(prog.Result(slot), 42u);
+  ExpectRecompiledBlock(PROGRAM_BASE);
+
+  g_settings.pio_device_type = PIODeviceType::None;
+  CPU::CodeCache::ReallocateLUTs();
+  EXPECT_FALSE(has_exp1_lut());
 }
 
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUMemoryExecution, ::testing::ValuesIn(EXECUTION_MODES),

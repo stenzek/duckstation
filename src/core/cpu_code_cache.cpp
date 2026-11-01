@@ -43,7 +43,6 @@ LOG_CHANNEL(CodeCache);
 
 namespace CPU::CodeCache {
 
-using LUTRangeList = std::array<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>, 9>;
 using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_MAX_CODE_PAGE_COUNT>;
 using BlockInstructionInfoPair = std::pair<Instruction, InstructionInfo>;
 using BlockInstructionList = std::vector<BlockInstructionInfoPair>;
@@ -120,8 +119,9 @@ static void RemoveBackpatchInfoForRange(const void* host_code, u32 size);
 namespace {
 struct Locals
 {
-  std::unique_ptr<const void*[]> lut_code_pointers;
-  std::unique_ptr<Block*[]> lut_block_pointers;
+  const void** lut_code_pointers = nullptr; // Start of the LUT allocation, first table is unreachable.
+  Block** lut_block_pointers = nullptr;     // Block tables, follow the code tables in the same allocation.
+  u32 lut_block_slot_count = 0;
   std::vector<Block*> blocks;
 
   BlockLinkMap block_links;
@@ -222,8 +222,6 @@ bool CPU::CodeCache::ProcessStartup(Error* error)
     return false;
   }
 
-  AllocateLUTs();
-
   if (!PageFaultHandler::Install(error))
     return false;
 
@@ -255,6 +253,17 @@ void CPU::CodeCache::Reset()
   }
 }
 
+void CPU::CodeCache::Initialize()
+{
+  AllocateLUTs();
+}
+
+void CPU::CodeCache::ReallocateLUTs()
+{
+  AllocateLUTs();
+  Reset();
+}
+
 void CPU::CodeCache::Shutdown()
 {
   ClearBlocks();
@@ -280,56 +289,59 @@ void CPU::CodeCache::Execute()
 namespace CPU::CodeCache {
 static constexpr u32 GetLUTTableCount(u32 start, u32 end)
 {
-  return ((end >> LUT_TABLE_SHIFT) - (start >> LUT_TABLE_SHIFT)) + 1;
-}
-
-static constexpr LUTRangeList GetLUTRanges()
-{
-  // TODO: The RAM ranges cover the maximum 16MB, which roughly doubles the LUT size even with 2MB RAM.
-  // This allocation should be made dynamic, based on the installed RAM size.
-  const LUTRangeList ranges = {{
-    {0x00000000, 0x01000000}, // RAM
-    {0x1F000000, 0x1F060000}, // EXP1
-    {0x1FC00000, 0x1FC80000}, // BIOS
-
-    {0x80000000, 0x81000000}, // RAM
-    {0x9F000000, 0x9F060000}, // EXP1
-    {0x9FC00000, 0x9FC80000}, // BIOS
-
-    {0xA0000000, 0xA1000000}, // RAM
-    {0xBF000000, 0xBF060000}, // EXP1
-    {0xBFC00000, 0xBFC80000}  // BIOS
-  }};
-  return ranges;
-}
-
-static constexpr u32 GetLUTSlotCount(bool include_unreachable)
-{
-  u32 tables = include_unreachable ? 1 : 0; // unreachable table
-  for (const auto& [start, end] : GetLUTRanges())
-    tables += GetLUTTableCount(start, end);
-
-  return tables * LUT_TABLE_SIZE;
+  return (((end - 1) >> LUT_TABLE_SHIFT) - (start >> LUT_TABLE_SHIFT)) + 1;
 }
 } // namespace CPU::CodeCache
 
 void CPU::CodeCache::AllocateLUTs()
 {
-  constexpr u32 num_code_slots = GetLUTSlotCount(true);
-  constexpr u32 num_block_slots = GetLUTSlotCount(false);
+  // Each segment has RAM, EXP1 and BIOS. RAM covers the 8MB window at minimum, so the mirrors of smaller RAM sizes
+  // are reachable. EXP1 is only needed when there is a device to execute code from.
+  const u32 ram_lut_size = std::max<u32>(g_bus.ram_size, Bus::RAM_DEFAULT_SIZE * 4);
+  const bool exp1_enabled = (g_settings.pio_device_type != PIODeviceType::None);
+  std::array<std::pair<VirtualMemoryAddress, VirtualMemoryAddress>, 9> ranges;
+  u32 num_ranges = 0;
+  for (const VirtualMemoryAddress segment : {0x00000000u, 0x80000000u, 0xA0000000u})
+  {
+    ranges[num_ranges++] = {segment, segment + ram_lut_size};
+    if (exp1_enabled)
+      ranges[num_ranges++] = {segment | 0x1F000000u, segment | 0x1F060000u};
+    ranges[num_ranges++] = {segment | 0x1FC00000u, segment | 0x1FC80000u};
+  }
 
-  Assert(!s_locals.lut_code_pointers && !s_locals.lut_block_pointers);
-  s_locals.lut_code_pointers = std::make_unique<const void*[]>(num_code_slots);
-  s_locals.lut_block_pointers = std::make_unique<Block*[]>(num_block_slots);
-  std::memset(s_locals.lut_block_pointers.get(), 0, sizeof(Block*) * num_block_slots);
+  u32 num_tables = 0;
+  for (u32 i = 0; i < num_ranges; i++)
+    num_tables += GetLUTTableCount(ranges[i].first, ranges[i].second);
 
-  CodeLUT code_table_ptr = s_locals.lut_code_pointers.get();
-  Block** block_table_ptr = s_locals.lut_block_pointers.get();
+  // Code tables, including unreachable, followed by block tables.
+  const u32 num_code_slots = (num_tables + 1) * LUT_TABLE_SIZE;
+  const u32 num_block_slots = num_tables * LUT_TABLE_SIZE;
+
+  // Keep the allocation between systems if the size hasn't changed, the slots are reassigned below regardless.
+  if (s_locals.lut_block_slot_count != num_block_slots)
+  {
+    const size_t alloc_size = (sizeof(const void*) * num_code_slots) + (sizeof(Block*) * num_block_slots);
+    INFO_LOG("Allocating {} code LUT tables for {} MB RAM{}, using {:.2f} MB", num_tables, ram_lut_size / 1048576,
+             exp1_enabled ? " and EXP1" : "", static_cast<double>(alloc_size) / 1048576.0);
+
+    DeallocateLUTs();
+    u8* const lut_storage = static_cast<u8*>(std::malloc(alloc_size));
+    if (!lut_storage) [[unlikely]]
+      Panic("Failed to allocate code LUTs");
+    s_locals.lut_code_pointers = reinterpret_cast<const void**>(lut_storage);
+    s_locals.lut_block_pointers = reinterpret_cast<Block**>(lut_storage + sizeof(const void*) * num_code_slots);
+    s_locals.lut_block_slot_count = num_block_slots;
+  }
+
+  std::memset(s_locals.lut_block_pointers, 0, sizeof(Block*) * num_block_slots);
+
+  CodeLUT code_table_ptr = s_locals.lut_code_pointers;
+  Block** block_table_ptr = s_locals.lut_block_pointers;
   CodeLUT const code_table_ptr_end = code_table_ptr + num_code_slots;
   Block** const block_table_ptr_end = block_table_ptr + num_block_slots;
 
   // Make the unreachable table jump to the invalid code callback.
-  MemsetPtrs(code_table_ptr, static_cast<const void*>(nullptr), LUT_TABLE_COUNT);
+  MemsetPtrs(code_table_ptr, static_cast<const void*>(nullptr), LUT_TABLE_SIZE);
 
   // Mark everything as unreachable to begin with.
   for (u32 i = 0; i < LUT_TABLE_COUNT; i++)
@@ -342,8 +354,9 @@ void CPU::CodeCache::AllocateLUTs()
   code_table_ptr += LUT_TABLE_SIZE;
 
   // Allocate ranges.
-  for (const auto& [start, end] : GetLUTRanges())
+  for (u32 range = 0; range < num_ranges; range++)
   {
+    const auto& [start, end] = ranges[range];
     const u32 start_slot = start >> LUT_TABLE_SHIFT;
     const u32 count = GetLUTTableCount(start, end);
     for (u32 i = 0; i < count; i++)
@@ -364,20 +377,25 @@ void CPU::CodeCache::AllocateLUTs()
 
 void CPU::CodeCache::DeallocateLUTs()
 {
-  s_locals.lut_block_pointers.reset();
-  s_locals.lut_code_pointers.reset();
+  g_code_lut.fill(nullptr);
+  s_block_lut.fill(nullptr);
+
+  std::free(s_locals.lut_code_pointers);
+  s_locals.lut_code_pointers = nullptr;
+  s_locals.lut_block_pointers = nullptr;
+  s_locals.lut_block_slot_count = 0;
 }
 
 void CPU::CodeCache::ResetCodeLUT()
 {
   // Make the unreachable table jump to the invalid code callback.
-  MemsetPtrs(s_locals.lut_code_pointers.get(), g_recompiler_functions.interpret_block, LUT_TABLE_COUNT);
+  MemsetPtrs(s_locals.lut_code_pointers, g_recompiler_functions.interpret_block, LUT_TABLE_SIZE);
 
   for (u32 i = 0; i < LUT_TABLE_COUNT; i++)
   {
     // Don't overwrite anything bound to unreachable.
     CodeLUT ptr = g_code_lut[i];
-    if (ptr == s_locals.lut_code_pointers.get())
+    if (ptr == s_locals.lut_code_pointers)
       continue;
 
     MemsetPtrs(ptr, g_recompiler_functions.compile_or_revalidate_block, LUT_TABLE_SIZE);
@@ -388,7 +406,7 @@ void CPU::CodeCache::SetCodeLUT(u32 pc, const void* function)
 {
   const u32 table = pc >> LUT_TABLE_SHIFT;
   const u32 idx = (pc & 0xFFFF) >> 2;
-  DebugAssert(g_code_lut[table] != s_locals.lut_code_pointers.get());
+  DebugAssert(g_code_lut[table] != s_locals.lut_code_pointers);
   g_code_lut[table][idx] = function;
 }
 
@@ -772,7 +790,7 @@ void CPU::CodeCache::ResetRAMDispatchRange(PhysicalMemoryAddress start, Physical
     const u32 end_table = (segment + end) >> LUT_TABLE_SHIFT;
     for (u32 table = (segment + start) >> LUT_TABLE_SHIFT; table < end_table; table++)
     {
-      if (g_code_lut[table] != s_locals.lut_code_pointers.get())
+      if (g_code_lut[table] != s_locals.lut_code_pointers)
         MemsetPtrs(g_code_lut[table], g_recompiler_functions.compile_or_revalidate_block, LUT_TABLE_SIZE);
     }
   }
@@ -816,7 +834,8 @@ void CPU::CodeCache::ClearBlocks()
   }
   s_locals.blocks.clear();
 
-  std::memset(s_locals.lut_block_pointers.get(), 0, sizeof(Block*) * GetLUTSlotCount(false));
+  if (s_locals.lut_block_pointers)
+    std::memset(s_locals.lut_block_pointers, 0, sizeof(Block*) * s_locals.lut_block_slot_count);
 }
 
 PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exception_pc, void* fault_address,

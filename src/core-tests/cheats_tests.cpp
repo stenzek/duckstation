@@ -591,6 +591,7 @@ protected:
     ASSERT_TRUE(CPU::CodeCache::ProcessStartup(&error)) << error.GetDescription();
     ASSERT_TRUE(Bus::AllocateMemory(false, &error)) << error.GetDescription();
     Bus::Initialize();
+    CPU::CodeCache::Initialize();
     CPU::Initialize();
     Bus::Reset();
     CPU::Reset();

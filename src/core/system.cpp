@@ -2015,6 +2015,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   TimingEvents::Initialize();
 
   Bus::Initialize();
+  CPU::CodeCache::Initialize();
   CPU::Initialize();
   CDROM::Initialize();
 
@@ -5172,6 +5173,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.pio_switch_active != old_settings.pio_switch_active)
     {
       PIO::UpdateSettings(old_settings);
+
+      // EXP1 only has LUTs when a PIO device is present.
+      if (g_settings.pio_device_type != old_settings.pio_device_type)
+        CPU::CodeCache::ReallocateLUTs();
     }
 
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
