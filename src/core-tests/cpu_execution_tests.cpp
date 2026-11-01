@@ -233,6 +233,52 @@ TEST_P(CPUExecution, PGXPMemoryModeMovesWithZeroImmediate)
   CPU::CodeCache::Reset();
 }
 
+TEST_P(CPUExecution, PGXPUnalignedStoreInvalidatesWrittenHalf)
+{
+  // swr into the upper half of a precise word must invalidate that half, and leave the lower one alone.
+  g_settings.gpu_pgxp_enable = true;
+  g_settings.gpu_pgxp_cpu = true;
+  CPU::PGXP::Initialize();
+  CPU::CodeCache::Reset();
+
+  // Not written through the CPU, so untracked.
+  const u32 untracked = 0x0000012Cu;
+  std::memcpy(&g_bus.ram[(RAM_TEST_ADDR + 8) & g_bus.ram_mask], &untracked, sizeof(untracked));
+
+  Program prog;
+  prog.LoadImmediate(Reg::T0, 0x00640064u);
+  prog.LoadImmediate(Reg::T1, RAM_TEST_ADDR);
+  prog.Emit(lw(Reg::T2, 8, Reg::T1));
+  prog.Emit(nop());
+  prog.Emit(sw(Reg::T0, 0, Reg::T1));
+  prog.Emit(swr(Reg::T2, 2, Reg::T1));
+  prog.Emit(lhu(Reg::T3, 0, Reg::T1));
+  prog.Emit(lhu(Reg::T4, 2, Reg::T1));
+  prog.Emit(sw(Reg::T0, 4, Reg::T1));
+  prog.Emit(swr(Reg::T2, 7, Reg::T1));
+  prog.Emit(lhu(Reg::T5, 4, Reg::T1));
+  prog.Emit(lhu(Reg::T6, 6, Reg::T1));
+  prog.Emit(nop());
+  const u32 upper_half = prog.StoreResult(Reg::T4);
+  const u32 upper_byte = prog.StoreResult(Reg::T6);
+  prog.Run();
+
+  EXPECT_EQ(prog.Result(upper_half), 0x012Cu);
+  EXPECT_EQ(prog.Result(upper_byte), 0x2C64u);
+  for (const Reg reg : {Reg::T3, Reg::T5})
+  {
+    EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(reg)].flags & CPU::PGXP::VALID_X, CPU::PGXP::VALID_X)
+      << static_cast<u32>(reg);
+  }
+  for (const Reg reg : {Reg::T4, Reg::T6})
+    EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(reg)].flags & CPU::PGXP::VALID_X, 0u) << static_cast<u32>(reg);
+
+  CPU::PGXP::Shutdown();
+  g_settings.gpu_pgxp_enable = false;
+  g_settings.gpu_pgxp_cpu = false;
+  CPU::CodeCache::Reset();
+}
+
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);
 
 TEST_P(CPUMemoryExecution, FastmemAccessesFollowDRAMWindowsAndInstalledRAM)

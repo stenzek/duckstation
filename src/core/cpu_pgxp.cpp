@@ -1060,7 +1060,7 @@ void CPU::PGXP::CPU_SWx(Instruction instr, u32 addr, u32 rtVal)
         pmemVal->y = prtVal.x;
         pmemVal->z = (prtVal.flags & VALID_Z) ? prtVal.z : pmemVal->z;
         pmemVal->value = mixed_value;
-        pmemVal->flags = (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_HIGHZ)) | ((prtVal.flags & VALID_X) << 1) |
+        pmemVal->flags = (pmemVal->flags & ~(VALID_Y | VALID_Z | VALID_HIGHZ)) | ((prtVal.flags & VALID_X) << 1) |
                          ((prtVal.flags & VALID_Z) ? (VALID_Z | VALID_HIGHZ) : 0) |
                          ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
       }
@@ -1069,10 +1069,10 @@ void CPU::PGXP::CPU_SWx(Instruction instr, u32 addr, u32 rtVal)
       case 3:
       {
         // only writing the upper half of Y, can't do much about that..
-        pmemVal->y = static_cast<float>(static_cast<s16>(mixed_value));
+        pmemVal->y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
         pmemVal->value = mixed_value;
         pmemVal->flags =
-          (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_HIGHZ)) | ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
+          (pmemVal->flags & ~(VALID_Y | VALID_Z | VALID_HIGHZ)) | ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
       }
       break;
 
