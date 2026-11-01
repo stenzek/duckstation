@@ -1424,8 +1424,9 @@ void CPU::Recompiler::Recompiler::CompileTemplate(void (Recompiler::*const_func)
     StallUntilGTEComplete();
 
   // throw away instructions writing to $zero
-  if (!(tflags & TF_NO_NOP) && (!g_settings.cpu_recompiler_memory_exceptions || !(tflags & TF_CAN_OVERFLOW)) &&
-      ((tflags & TF_WRITES_T && rt == Reg::zero) || (tflags & TF_WRITES_D && rd == Reg::zero)))
+  const bool writes_zero = ((tflags & TF_WRITES_T && rt == Reg::zero) || (tflags & TF_WRITES_D && rd == Reg::zero));
+  if (writes_zero && !(tflags & TF_NO_NOP) &&
+      (!g_settings.cpu_recompiler_memory_exceptions || !(tflags & TF_CAN_OVERFLOW)))
   {
     DEBUG_LOG("Skipping instruction because it writes to zero");
     return;
@@ -1451,7 +1452,8 @@ void CPU::Recompiler::Recompiler::CompileTemplate(void (Recompiler::*const_func)
     return;
   }
 
-  if (pgxp_cpu_func && g_settings.gpu_pgxp_enable && ((tflags & TF_PGXP_WITHOUT_CPU) || g_settings.UsingPGXPCPUMode()))
+  if (pgxp_cpu_func && !writes_zero && g_settings.gpu_pgxp_enable &&
+      ((tflags & TF_PGXP_WITHOUT_CPU) || g_settings.UsingPGXPCPUMode()))
   {
     std::array<Reg, 2> reg_args = {{Reg::count, Reg::count}};
     u32 num_reg_args = 0;

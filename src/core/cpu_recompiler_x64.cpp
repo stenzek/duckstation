@@ -1877,7 +1877,7 @@ void CPU::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak
 void CPU::X64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                      const std::optional<VirtualMemoryAddress>& address)
 {
-  const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
+  const std::optional<Reg32> addr_reg = (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                           std::optional<Reg32>();
   FlushForLoadStore(address, false, use_fastmem);
@@ -1891,7 +1891,7 @@ void CPU::X64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, boo
                                  EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, cf.MipsT()));
   });
 
-  if (g_settings.gpu_pgxp_enable)
+  if (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero)
   {
     Flush(FLUSH_FOR_C_CALL);
 

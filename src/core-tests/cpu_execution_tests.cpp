@@ -7,6 +7,7 @@
 #include "core/cpu_code_cache_private.h"
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
+#include "core/cpu_pgxp.h"
 #include "core/save_state_version.h"
 #include "core/system.h"
 #include "core/system_private.h"
@@ -156,6 +157,52 @@ TEST_P(CPUExecution, ManualProtectionDetectsChangedCode)
       ASSERT_EQ(prog.Result(0), size) << size << " instructions, changed " << changed;
     }
   }
+}
+
+TEST_P(CPUExecution, PGXPIgnoresWritesToZero)
+{
+  // The PGXP value for $zero must stay zero, in both PGXP modes, and with memory exceptions where add isn't a nop.
+  g_settings.gpu_pgxp_enable = true;
+  CPU::PGXP::Initialize();
+  for (const bool cpu_mode : {false, true})
+  {
+    for (const bool memory_exceptions : {false, true})
+    {
+      g_settings.gpu_pgxp_cpu = cpu_mode;
+      g_settings.cpu_recompiler_memory_exceptions = memory_exceptions;
+      CPU::PGXP::Reset();
+
+      // Unchanged blocks are revalidated rather than recompiled, so they'd keep the previous settings.
+      CPU::CodeCache::Reset();
+
+      Program prog;
+      prog.LoadImmediate(Reg::T0, 0x12345678u);
+      prog.LoadImmediate(Reg::T1, RAM_TEST_ADDR);
+      prog.Emit(sw(Reg::T0, 0, Reg::T1));
+      prog.Emit(lw(Reg::R0, 0, Reg::T1));
+      prog.Emit(nop());
+      prog.Emit(addu(Reg::R0, Reg::T0, Reg::R0));
+      prog.Emit(add(Reg::R0, Reg::T0, Reg::T0));
+      prog.Emit(orr(Reg::R0, Reg::T0, Reg::T0));
+      prog.Emit(addiu(Reg::R0, Reg::T0, 1));
+      prog.Emit(ori(Reg::R0, Reg::T0, 0));
+      prog.Emit(sll(Reg::R0, Reg::T0, 1));
+      prog.Emit(lui(Reg::R0, 0x1234));
+      prog.Run();
+
+      static constexpr CPU::PGXPValue zero = {};
+      EXPECT_EQ(std::memcmp(&CPU::g_state.pgxp_gpr[0], &zero, sizeof(zero)), 0)
+        << (cpu_mode ? "CPU" : "memory") << (memory_exceptions ? " with memory exceptions" : "");
+      if (cpu_mode)
+        EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(Reg::T0)].value, 0x12345678u);
+    }
+  }
+
+  CPU::PGXP::Shutdown();
+  g_settings.gpu_pgxp_enable = false;
+  g_settings.gpu_pgxp_cpu = false;
+  g_settings.cpu_recompiler_memory_exceptions = false;
+  CPU::CodeCache::Reset();
 }
 
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);

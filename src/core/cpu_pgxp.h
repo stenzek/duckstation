@@ -86,7 +86,9 @@ ALWAYS_INLINE u32 PackMoveArgs(Reg rd, Reg rs)
 ALWAYS_INLINE void TryMove(Reg rd, Reg rs, Reg rt)
 {
   u32 src;
-  if (rs == Reg::zero)
+  if (rd == Reg::zero)
+    return;
+  else if (rs == Reg::zero)
     src = static_cast<u32>(rt);
   else if (rt == Reg::zero)
     src = static_cast<u32>(rs);
@@ -98,7 +100,7 @@ ALWAYS_INLINE void TryMove(Reg rd, Reg rs, Reg rt)
 
 ALWAYS_INLINE void TryMoveImm(Reg rd, Reg rs, u32 imm)
 {
-  if (imm == 0)
+  if (imm == 0 && rd != Reg::zero)
   {
     const u32 src = static_cast<u32>(rs);
     CPU_MOVE(static_cast<u32>(rd), src, g_state.regs.r[src]);

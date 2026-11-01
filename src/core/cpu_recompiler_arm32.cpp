@@ -1897,7 +1897,7 @@ void CPU::ARM32Recompiler::GenerateStore(const vixl::aarch32::Register& addr_reg
 void CPU::ARM32Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                        const std::optional<VirtualMemoryAddress>& address)
 {
-  const std::optional<Register> addr_reg = g_settings.gpu_pgxp_enable ?
+  const std::optional<Register> addr_reg = (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
                                              std::optional<Register>(Register(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                              std::optional<Register>();
   FlushForLoadStore(address, false, use_fastmem);
@@ -1910,7 +1910,7 @@ void CPU::ARM32Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, b
                                     EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, cf.MipsT()));
   });
 
-  if (g_settings.gpu_pgxp_enable)
+  if (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero)
   {
     Flush(FLUSH_FOR_C_CALL);
 

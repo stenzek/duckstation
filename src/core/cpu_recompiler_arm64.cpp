@@ -2087,8 +2087,9 @@ void CPU::ARM64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, b
                                        const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<WRegister> addr_reg =
-    g_settings.gpu_pgxp_enable ? std::optional<WRegister>(WRegister(AllocateTempHostReg(HR_CALLEE_SAVED))) :
-                                 std::optional<WRegister>();
+    (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
+      std::optional<WRegister>(WRegister(AllocateTempHostReg(HR_CALLEE_SAVED))) :
+      std::optional<WRegister>();
   FlushForLoadStore(address, false, use_fastmem);
   const Register addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
   const Register data = GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() -> Register {
@@ -2100,7 +2101,7 @@ void CPU::ARM64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, b
                                      cf.MipsT()));
   });
 
-  if (g_settings.gpu_pgxp_enable)
+  if (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero)
   {
     Flush(FLUSH_FOR_C_CALL);
 

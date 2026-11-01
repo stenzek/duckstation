@@ -976,7 +976,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLL(inst, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SLL(inst, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -987,7 +990,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRL(inst, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SRL(inst, rtVal);
+          }
         }
         break;
 
@@ -998,7 +1004,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRA(inst, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SRA(inst, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1008,7 +1017,10 @@ restart_instruction:
           const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
           const u32 rdVal = rtVal << shamt;
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLLV(inst, shamt, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SLLV(inst, shamt, rtVal);
+          }
 
           WriteReg(inst.r.rd, rdVal);
         }
@@ -1022,7 +1034,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRLV(inst, shamt, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SRLV(inst, shamt, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1034,7 +1049,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRAV(inst, shamt, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SRAV(inst, shamt, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1046,7 +1064,10 @@ restart_instruction:
           WriteReg(inst.r.rd, new_value);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_AND_(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_AND_(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1058,7 +1079,10 @@ restart_instruction:
           WriteReg(inst.r.rd, new_value);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_OR_(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_OR_(inst, rsVal, rtVal);
+          }
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
@@ -1072,7 +1096,10 @@ restart_instruction:
           WriteReg(inst.r.rd, new_value);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_XOR_(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_XOR_(inst, rsVal, rtVal);
+          }
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
@@ -1086,7 +1113,10 @@ restart_instruction:
           WriteReg(inst.r.rd, new_value);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_NOR(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_NOR(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1104,7 +1134,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode == PGXPMode::CPU)
-            PGXP::CPU_ADD(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_ADD(inst, rsVal, rtVal);
+          }
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
@@ -1118,7 +1151,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_ADD(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_ADD(inst, rsVal, rtVal);
+          }
           else if constexpr (pgxp_mode >= PGXPMode::Memory)
             PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
@@ -1138,7 +1174,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SUB(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SUB(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1150,7 +1189,10 @@ restart_instruction:
           WriteReg(inst.r.rd, rdVal);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SUB(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SUB(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1162,7 +1204,10 @@ restart_instruction:
           WriteReg(inst.r.rd, result);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLT(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SLT(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1174,7 +1219,10 @@ restart_instruction:
           WriteReg(inst.r.rd, result);
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLTU(inst, rsVal, rtVal);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_SLTU(inst, rsVal, rtVal);
+          }
         }
         END_INSTRUCTION()
 
@@ -1186,7 +1234,10 @@ restart_instruction:
           StallUntilMulDivComplete();
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::hi), value);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::hi), value);
+          }
         }
         END_INSTRUCTION()
 
@@ -1210,7 +1261,10 @@ restart_instruction:
           StallUntilMulDivComplete();
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::lo), value);
+          {
+            if (inst.r.rd != Reg::zero) [[likely]]
+              PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::lo), value);
+          }
         }
         END_INSTRUCTION()
 
@@ -1375,7 +1429,10 @@ restart_instruction:
       WriteReg(inst.i.rt, value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_LUI(inst);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LUI(inst);
+      }
     }
     END_INSTRUCTION()
 
@@ -1386,7 +1443,10 @@ restart_instruction:
       WriteReg(inst.i.rt, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ANDI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_ANDI(inst, rsVal);
+      }
     }
     END_INSTRUCTION()
 
@@ -1398,7 +1458,10 @@ restart_instruction:
       WriteReg(inst.i.rt, rtVal);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ORI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_ORI(inst, rsVal);
+      }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
@@ -1412,7 +1475,10 @@ restart_instruction:
       WriteReg(inst.i.rt, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_XORI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_XORI(inst, rsVal);
+      }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
@@ -1432,7 +1498,10 @@ restart_instruction:
       WriteReg(inst.i.rt, rtVal);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ADDI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_ADDI(inst, rsVal);
+      }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
@@ -1446,7 +1515,10 @@ restart_instruction:
       WriteReg(inst.i.rt, rtVal);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ADDI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_ADDI(inst, rsVal);
+      }
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
         PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
@@ -1459,7 +1531,10 @@ restart_instruction:
       WriteReg(inst.i.rt, result);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_SLTI(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_SLTI(inst, rsVal);
+      }
     }
     END_INSTRUCTION()
 
@@ -1470,7 +1545,10 @@ restart_instruction:
       WriteReg(inst.i.rt, result);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_SLTIU(inst, rsVal);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_SLTIU(inst, rsVal);
+      }
     }
     END_INSTRUCTION()
 
@@ -1492,7 +1570,10 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, sxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LBx(inst, addr, sxvalue);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LBx(inst, addr, sxvalue);
+      }
     }
     END_INSTRUCTION()
 
@@ -1513,7 +1594,10 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, sxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LH(inst, addr, sxvalue);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LH(inst, addr, sxvalue);
+      }
     }
     END_INSTRUCTION()
 
@@ -1533,7 +1617,10 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LW(inst, addr, value);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LW(inst, addr, value);
+      }
     }
     END_INSTRUCTION()
 
@@ -1554,7 +1641,10 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, zxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LBx(inst, addr, zxvalue);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LBx(inst, addr, zxvalue);
+      }
     }
     END_INSTRUCTION()
 
@@ -1575,7 +1665,10 @@ restart_instruction:
       WriteRegDelayed(inst.i.rt, zxvalue);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LHU(inst, addr, zxvalue);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LHU(inst, addr, zxvalue);
+      }
     }
     END_INSTRUCTION()
 
@@ -1597,7 +1690,10 @@ restart_instruction:
       // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
       const u32 existing_value = (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
       if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LWx(inst, addr, existing_value);
+      {
+        if (inst.i.rt != Reg::zero) [[likely]]
+          PGXP::CPU_LWx(inst, addr, existing_value);
+      }
 
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 new_value;
@@ -1794,7 +1890,10 @@ restart_instruction:
               WriteRegDelayed(inst.r.rt, *value);
 
               if constexpr (pgxp_mode == PGXPMode::CPU)
-                PGXP::CPU_MFC0(inst, *value);
+              {
+                if (inst.r.rt != Reg::zero) [[likely]]
+                  PGXP::CPU_MFC0(inst, *value);
+              }
             }
             else
             {
@@ -1951,7 +2050,10 @@ restart_instruction:
             WriteRegDelayed(inst.r.rt, value);
 
             if constexpr (pgxp_mode >= PGXPMode::Memory)
-              PGXP::CPU_MFC2(inst, value);
+            {
+              if (inst.r.rt != Reg::zero) [[likely]]
+                PGXP::CPU_MFC2(inst, value);
+            }
           }
           break;
 
@@ -1973,7 +2075,10 @@ restart_instruction:
             WriteRegDelayed(inst.r.rt, value);
 
             if constexpr (pgxp_mode >= PGXPMode::Memory)
-              PGXP::CPU_MFC2(inst, value);
+            {
+              if (inst.r.rt != Reg::zero) [[likely]]
+                PGXP::CPU_MFC2(inst, value);
+            }
           }
           break;
 
