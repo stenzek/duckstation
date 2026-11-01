@@ -1742,8 +1742,13 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
   }
   else
   {
+    // When significant bits are shifted out of the top (e.g. extracting a bitfield), the upper half's precise offset
+    // can belong to them, and would land in the integer bits of the field below. Use the native upper half instead.
     const double x = f16Unsign(prtVal.GetValidX(rtVal)) * static_cast<double>(1 << sh);
-    const double y = (f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << sh)) + f16Overflow(x);
+    const double y_in = ((static_cast<s32>(rdVal) >> sh) != static_cast<s32>(rtVal)) ?
+                          static_cast<double>(HIWORD_U16(rtVal)) :
+                          f16Unsign(prtVal.GetValidY(rtVal));
+    const double y = (y_in * static_cast<double>(1 << sh)) + f16Overflow(x);
     prdVal.x = static_cast<float>(f16Sign(x));
     prdVal.y = static_cast<float>(f16Sign(y));
     prdVal.flags = (prtVal.flags | VALID_TAINTED_Z);

@@ -172,6 +172,25 @@ TEST_F(PGXPTest, ShiftKeepsWrappedLowHalfSign)
   EXPECT_NEAR(Get(R_V1).x, 32905.1 / 32.0, TOLERANCE);
 }
 
+TEST_F(PGXPTest, ShiftDropsFractionOfBitsShiftedOut)
+{
+  // 007 Racing packs vertices as y:10 x:10 z:12, here 173.25, 142.125 and 20. The fraction of y sits in the bits of x,
+  // so it must not stay behind when y is shifted out.
+  Set(R_V0, 0x2B48E014, -7660.0f, 11096.0f);
+  CPU::PGXP::CPU_SLL(R(0, R_V0, R_V1, 10), 0x2B48E014);
+  EXPECT_EQ(Get(R_V1).value, 0x23805000u);
+  EXPECT_NEAR(Get(R_V1).y, 9096.0, TOLERANCE);
+  CPU::PGXP::CPU_SRA(R(0, R_V1, R_A0, 22), 0x23805000);
+  EXPECT_NEAR(Get(R_A0).x, 142.125, TOLERANCE);
+  CPU::PGXP::CPU_SRA(R(0, R_V0, R_A1, 22), 0x2B48E014);
+  EXPECT_NEAR(Get(R_A1).x, 11096.0 / 64.0, TOLERANCE); // the top bits of x become a fraction
+
+  // Without bits shifted out, the fraction of y is kept.
+  Set(R_V0, 0x015A011C, 284.25f, 346.5f);
+  CPU::PGXP::CPU_SLL(R(0, R_V0, R_V1, 5), 0x015A011C);
+  EXPECT_NEAR(Get(R_V1).y, 346.5 * 32.0, TOLERANCE);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Right shifts: sign of an upper half that is only sign bits
 //////////////////////////////////////////////////////////////////////////
