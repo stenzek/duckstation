@@ -113,7 +113,6 @@ public:
   void EmptyStretchBuffers();
 
 private:
-  static constexpr u32 AVERAGING_BUFFER_SIZE = 256;
   static constexpr u32 STRETCH_RESET_THRESHOLD = 5;
 
   ALWAYS_INLINE bool IsStretchEnabled() const { return m_parameters.stretch_mode != AudioStretchMode::Off; }
@@ -132,7 +131,6 @@ private:
   void StretchUnderrun();
   void StretchOverrun();
 
-  float AddAndGetAverageTempo(float val);
   void UpdateStretchTempo();
 
   void ReadFrames(SampleType* samples, u32 num_frames) override;
@@ -170,10 +168,7 @@ private:
   u32 m_stretch_ok_count = 0;
   float m_nominal_rate = 1.0f;
   float m_dynamic_target_usage = 0.0f;
+  float m_average_tempo = 1.0f;
 
-  u32 m_average_position = 0;
-  u32 m_average_available = 0;
   u32 m_staging_buffer_pos = 0;
-
-  std::array<float, AVERAGING_BUFFER_SIZE> m_average_fullness = {};
 };

@@ -652,8 +652,7 @@ void CoreAudioStream::StretchDestroy()
   m_stretch_inactive = false;
   m_stretch_ok_count = 0;
   m_dynamic_target_usage = 0.0f;
-  m_average_position = 0;
-  m_average_available = 0;
+  m_average_tempo = 1.0f;
 }
 
 void CoreAudioStream::StretchWriteBlock(const float* block)
@@ -669,63 +668,13 @@ void CoreAudioStream::StretchWriteBlock(const float* block)
       InternalWriteFrames(m_staging_buffer.get(), tempProgress);
     }
 
-    if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
-      UpdateStretchTempo();
+    UpdateStretchTempo();
   }
   else
   {
     FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * NUM_CHANNELS);
     InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
   }
-}
-
-float CoreAudioStream::AddAndGetAverageTempo(float val)
-{
-  static constexpr u32 AVERAGING_WINDOW = 50;
-
-  // Build up a circular buffer for tempo averaging to prevent rapid tempo oscillations.
-  if (m_average_available < AVERAGING_BUFFER_SIZE)
-    m_average_available++;
-
-  m_average_fullness[m_average_position] = val;
-  m_average_position = (m_average_position + 1U) % AVERAGING_BUFFER_SIZE;
-
-  // The + AVERAGING_BUFFER_SIZE ensures we don't go negative when using modulo arithmetic.
-  const u32 actual_window = std::min<u32>(m_average_available, AVERAGING_WINDOW);
-  u32 index = (m_average_position - actual_window + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
-  float sum = 0.0f;
-  u32 count = 0;
-
-#ifdef CPU_ARCH_SIMD
-  GSVector4 vsum = GSVector4::zero();
-  const u32 vcount = Common::AlignDownPow2(actual_window, 4);
-  for (; count < vcount; count += 4)
-  {
-    if ((index + 4) > AVERAGING_BUFFER_SIZE)
-    {
-      // wraparound
-      for (u32 i = 0; i < 4; i++)
-      {
-        sum += m_average_fullness[index];
-        index = (index + 1) % AVERAGING_BUFFER_SIZE;
-      }
-    }
-    else
-    {
-      vsum += GSVector4::load<false>(&m_average_fullness[index]);
-      index = (index + 4) % AVERAGING_BUFFER_SIZE;
-    }
-  }
-  sum += vsum.addv();
-#endif
-  for (; count < actual_window; count++)
-  {
-    sum += m_average_fullness[index];
-    index = (index + 1) % AVERAGING_BUFFER_SIZE;
-  }
-  sum /= static_cast<float>(actual_window);
-
-  return (sum != 0.0f) ? sum : 1.0f;
 }
 
 void CoreAudioStream::UpdateStretchTempo()
@@ -742,6 +691,21 @@ void CoreAudioStream::UpdateStretchTempo()
   static constexpr u32 INACTIVE_MIN_OK_COUNT = 50;
   static constexpr u32 COMPENSATION_DIVIDER = 100;
 
+  // Same lag and noise reduction as a 50-chunk moving average.
+  static constexpr float AVERAGING_FACTOR = 1.0f / 26.0f;
+
+  // Resampling only nudges the tempo to compensate for clock drift, small enough to not be audible.
+  // Not the rate, as SoundTouch reorders its pipeline each time the rate crosses 1.0, causing clicks.
+  static constexpr float MAX_RESAMPLE_ADJUSTMENT = 0.005f;
+
+  if (m_parameters.stretch_mode == AudioStretchMode::Resample)
+  {
+    const float usage = static_cast<float>(GetBufferedFramesRelaxed()) / static_cast<float>(GetTargetSize());
+    m_average_tempo += (usage - m_average_tempo) * AVERAGING_FACTOR;
+    soundtouch_setTempo(m_soundtouch, 1.0f + std::clamp(m_average_tempo - 1.0f, -1.0f, 1.0f) * MAX_RESAMPLE_ADJUSTMENT);
+    return;
+  }
+
   // Controls how aggressively we adjust the dynamic target. We want to keep the same target size regardless
   // of the target speed, but need additional buffering when intentionally running below 100%.
   // The callback minimum doesn't scale with speed, and the target has to stay within the buffer.
@@ -749,7 +713,7 @@ void CoreAudioStream::UpdateStretchTempo()
                                               static_cast<float>(GetTargetSize())),
                                      static_cast<float>(m_buffer_size / 2));
 
-  // tempo = current_buffer / target_buffer.
+  // tempo = current_buffer / target_buffer, as a multiplier of the nominal rate.
   const u32 ibuffer_usage = GetBufferedFramesRelaxed();
   float buffer_usage = static_cast<float>(ibuffer_usage);
   float tempo = buffer_usage / m_dynamic_target_usage;
@@ -768,10 +732,9 @@ void CoreAudioStream::UpdateStretchTempo()
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
     m_dynamic_target_usage = base_target_usage;
-    m_average_available = 0;
-    m_average_position = 0;
+    m_average_tempo = 1.0f;
     m_stretch_reset = 0;
-    tempo = m_nominal_rate;
+    tempo = 1.0f;
   }
   else if (m_stretch_reset > 0)
   {
@@ -786,7 +749,8 @@ void CoreAudioStream::UpdateStretchTempo()
   }
 
   // Apply temporal smoothing to prevent rapid tempo changes that cause artifacts.
-  tempo = AddAndGetAverageTempo(tempo);
+  m_average_tempo += (tempo - m_average_tempo) * AVERAGING_FACTOR;
+  tempo = m_average_tempo;
 
   // Apply non-linear dampening when close to target to reduce oscillation.
   if (tempo < 2.0f)
@@ -831,7 +795,7 @@ void CoreAudioStream::UpdateStretchTempo()
 
   // If we're inactive, we don't want to change the tempo.
   if (m_stretch_inactive)
-    tempo = m_nominal_rate;
+    tempo = 1.0f;
 
   if constexpr (LOG_TIMESTRETCH_STATS)
   {
@@ -869,7 +833,7 @@ void CoreAudioStream::UpdateStretchTempo()
     iterations++;
   }
 
-  soundtouch_setTempo(m_soundtouch, tempo);
+  soundtouch_setTempo(m_soundtouch, m_nominal_rate * tempo);
 }
 
 void CoreAudioStream::StretchUnderrun()
