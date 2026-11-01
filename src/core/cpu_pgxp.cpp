@@ -82,6 +82,7 @@ static void WriteMem(u32 addr, const PGXPValue& value);
 static void WriteMem16(u32 addr, const PGXPValue& value);
 
 static void CopyZIfMissing(PGXPValue& dst, const PGXPValue& src);
+static bool IsExactZero(const PGXPValue& val, u32 psxval);
 static void SelectZ(float& dst_z, u32& dst_flags, const PGXPValue& src1, const PGXPValue& src2);
 
 #ifdef LOG_VALUES
@@ -133,6 +134,9 @@ void CPU::PGXP::Initialize()
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
+  // $zero is exactly zero, writes to it don't call PGXP. It has no depth.
+  g_state.pgxp_gpr[0].flags = VALID_XY;
+
   if (!s_mem)
   {
     s_mem = static_cast<PGXPValue*>(std::calloc(GetMemoryValueCount(), sizeof(PGXPValue)));
@@ -159,6 +163,9 @@ void CPU::PGXP::Reset()
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
+
+  // $zero is exactly zero, writes to it don't call PGXP. It has no depth.
+  g_state.pgxp_gpr[0].flags = VALID_XY;
 
   if (s_mem)
     std::memset(s_mem, 0, sizeof(PGXPValue) * GetMemoryValueCount());
@@ -400,6 +407,12 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXPValue& dst, const PGXPV
 {
   dst.z = (dst.flags & VALID_Z) ? dst.z : src.z;
   dst.flags |= (src.flags & VALID_Z);
+}
+
+ALWAYS_INLINE_RELEASE bool CPU::PGXP::IsExactZero(const PGXPValue& val, u32 psxval)
+{
+  // Known to be zero without fractions or depth, e.g. $zero or a copy of it, so it has no precision to give.
+  return (psxval == 0 && (val.flags & (VALID_XY | VALID_Z)) == VALID_XY && val.x == 0.0f && val.y == 0.0f);
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(float& dst_z, u32& dst_flags, const PGXPValue& src1,
@@ -1282,7 +1295,8 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
   // Rd may be the same as Rs or Rt, so build the result separately to avoid clobbering the source.
   PGXPValue prdVal;
 
-  if (rtVal == 0)
+  // When both are natively zero, prefer the one that may have fractions.
+  if (rtVal == 0 && !IsExactZero(prsVal, rsVal))
   {
     prdVal = prsVal;
     CopyZIfMissing(prdVal, prtVal);
@@ -1330,6 +1344,10 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
   {
     prdVal = prsVal;
     CopyZIfMissing(prdVal, prtVal);
+
+    // Negating a natively zero value. Its fractions aren't negated, so it's only precise when it's an exact zero.
+    if (IsExactZero(prsVal, rsVal) && !IsExactZero(prtVal, rtVal))
+      prdVal.flags &= ~VALID_XY;
   }
   else
   {
@@ -1345,8 +1363,8 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
 
     prdVal.value = rsVal - rtVal;
 
-    // valid x/y only if one side had a valid x/y
-    prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
+    // valid x/y only if one side had a valid x/y, an exact zero has none to give a negation
+    prdVal.flags = (IsExactZero(prsVal, rsVal) ? 0 : prsVal.flags) | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
     SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
   }
@@ -1380,8 +1398,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, 
   else
     y = static_cast<float>(HIWORD_S16(rdVal));
 
+  // An exact zero has no precision to give, e.g. to a not, but a zero result from one is exact. Except with NOR, where
+  // the result is only zero because of the other value.
+  const bool rs_zero = IsExactZero(prsVal, rsVal);
+  const bool rt_zero = IsExactZero(prtVal, rtVal);
+  const u32 src_flags = (rs_zero ? 0 : prsVal.flags) | (rt_zero ? 0 : prtVal.flags);
+
   // Why not write directly to prdVal? Because it might be the same as the source.
-  u32 flags = ((prsVal.flags | prtVal.flags) & VALID_XY) ? (VALID_XY | VALID_TAINTED_Z) : 0;
+  u32 flags =
+    ((src_flags & VALID_XY) || (rdVal == 0 && (rs_zero || rt_zero) && instr.r.funct != InstructionFunct::nor)) ?
+      (VALID_XY | VALID_TAINTED_Z) :
+      0;
   PGXPValue& prdVal = GetRdValue(instr);
   SelectZ(prdVal.z, flags, prsVal, prtVal);
   prdVal.x = x;
@@ -1405,7 +1432,8 @@ void CPU::PGXP::CPU_OR_(Instruction instr, u32 rsVal, u32 rtVal)
 
   // Rd = Rs | Rt
   // With zero, this is a move, and keeps fractions in halves that are natively zero. Same as the recompiler.
-  if (rtVal == 0)
+  // When both are natively zero, prefer the one that may have fractions.
+  if (rtVal == 0 && !IsExactZero(g_state.pgxp_gpr[static_cast<u8>(instr.r.rs.GetValue())], rsVal))
     CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rs.GetValue()), rsVal);
   else if (rsVal == 0)
     CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rt.GetValue()), rtVal);
@@ -1421,7 +1449,7 @@ void CPU::PGXP::CPU_XOR_(Instruction instr, u32 rsVal, u32 rtVal)
   // See CPU_OR_(). XOR with itself is exactly zero, even when the source is natively zero.
   if (instr.r.rs == instr.r.rt)
     CPU_BITWISE(instr, 0, rsVal, rtVal);
-  else if (rtVal == 0)
+  else if (rtVal == 0 && !IsExactZero(g_state.pgxp_gpr[static_cast<u8>(instr.r.rs.GetValue())], rsVal))
     CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rs.GetValue()), rsVal);
   else if (rsVal == 0)
     CPU_MOVE(static_cast<u32>(instr.r.rd.GetValue()), static_cast<u32>(instr.r.rt.GetValue()), rtVal);
@@ -1584,15 +1612,16 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
 
   // There's no precise result for a zero divisor, the native values are used instead.
   const bool zero_divisor = (rtVal == 0 || vt == 0.0);
+  const u32 divisor_flags = zero_divisor ? 0 : (prtVal.flags & VALID_XY);
   const double lo = zero_divisor ? 0.0 : (vs / vt);
   ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
   ploVal.x = static_cast<float>(f16Sign(lo));
-  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
+  ploVal.flags |= VALID_TAINTED_Z | divisor_flags;
 
   const double hi = zero_divisor ? 0.0 : std::fmod(vs, vt);
   phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
   phiVal.x = static_cast<float>(f16Sign(hi));
-  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
+  phiVal.flags |= VALID_TAINTED_Z | divisor_flags;
 
   // compute PSX value
   if (static_cast<s32>(rtVal) == 0)
@@ -1646,15 +1675,16 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
 
   // There's no precise result for a zero divisor, the native values are used instead.
   const bool zero_divisor = (rtVal == 0 || vt == 0.0);
+  const u32 divisor_flags = zero_divisor ? 0 : (prtVal.flags & VALID_XY);
   const double lo = zero_divisor ? 0.0 : (vs / vt);
   ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
   ploVal.x = static_cast<float>(f16Sign(lo));
-  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
+  ploVal.flags |= VALID_TAINTED_Z | divisor_flags;
 
   const double hi = zero_divisor ? 0.0 : std::fmod(vs, vt);
   phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
   phiVal.x = static_cast<float>(f16Sign(hi));
-  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
+  phiVal.flags |= VALID_TAINTED_Z | divisor_flags;
 
   if (rtVal == 0)
   {

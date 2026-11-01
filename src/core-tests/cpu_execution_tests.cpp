@@ -171,6 +171,7 @@ TEST_P(CPUExecution, PGXPIgnoresWritesToZero)
       g_settings.gpu_pgxp_cpu = cpu_mode;
       g_settings.cpu_recompiler_memory_exceptions = memory_exceptions;
       CPU::PGXP::Reset();
+      const CPU::PGXPValue zero = CPU::g_state.pgxp_gpr[0];
 
       // Unchanged blocks are revalidated rather than recompiled, so they'd keep the previous settings.
       CPU::CodeCache::Reset();
@@ -190,7 +191,6 @@ TEST_P(CPUExecution, PGXPIgnoresWritesToZero)
       prog.Emit(lui(Reg::R0, 0x1234));
       prog.Run();
 
-      static constexpr CPU::PGXPValue zero = {};
       EXPECT_EQ(std::memcmp(&CPU::g_state.pgxp_gpr[0], &zero, sizeof(zero)), 0)
         << (cpu_mode ? "CPU" : "memory") << (memory_exceptions ? " with memory exceptions" : "");
       if (cpu_mode)

@@ -28,11 +28,7 @@ static constexpr double TOLERANCE = 0.001;
 class PGXPTest : public ::testing::Test
 {
 protected:
-  void SetUp() override
-  {
-    std::memset(CPU::g_state.pgxp_gpr, 0, sizeof(CPU::g_state.pgxp_gpr));
-    std::memset(CPU::g_state.pgxp_gte, 0, sizeof(CPU::g_state.pgxp_gte));
-  }
+  void SetUp() override { CPU::PGXP::Reset(); }
 
   static CPU::Instruction R(u32 rs, u32 rt, u32 rd, u32 sh = 0)
   {
@@ -358,6 +354,169 @@ TEST_F(PGXPTest, WholeHalfShiftSplitsQuantizedValue)
       EXPECT_NEAR(Scalar(Get(dest)), 0.0, TOLERANCE);
     }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// $zero
+//////////////////////////////////////////////////////////////////////////
+
+TEST_F(PGXPTest, ZeroIsPrecise)
+{
+  // Constants built from $zero are precise, but have no depth.
+  CPU::PGXP::CPU_ORI(I(R_ZERO, R_V0, 0x1234), 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_ALL, VALID_XY);
+  CPU::PGXP::CPU_XORI(I(R_ZERO, R_V0, 0x1234), 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_ALL, VALID_XY);
+  CPU::PGXP::CPU_ADDI(I(R_ZERO, R_V0, 0), 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_ALL, VALID_XY);
+  CPU::PGXP::CPU_OR_(R(R_ZERO, R_ZERO, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_ALL, VALID_XY);
+}
+
+TEST_F(PGXPTest, ZeroDoesNotMakeNegationPrecise)
+{
+  // negu/not of an untracked value isn't precise, so bitwise ops still prefer the precise source.
+  Set(R_A0, 0xFFFFFF9Cu, -99.75f, -0.75f);
+
+  Set(R_V1, 100, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_SUB(R(R_ZERO, R_V1, R_V0), 0, 100);
+  CPU::PGXP::CPU_AND_(R(R_V0, R_A0, R_A1), 0xFFFFFF9Cu, 0xFFFFFF9Cu);
+  EXPECT_NEAR(Get(R_A1).x, -99.75, TOLERANCE);
+  EXPECT_NEAR(Get(R_A1).y, -0.75, TOLERANCE);
+
+  Set(R_V1, 0x63, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_NOR(R(R_V1, R_ZERO, R_V0), 0x63, 0);
+  CPU::PGXP::CPU_AND_(R(R_V0, R_A0, R_A1), 0xFFFFFF9Cu, 0xFFFFFF9Cu);
+  EXPECT_NEAR(Get(R_A1).x, -99.75, TOLERANCE);
+  EXPECT_NEAR(Get(R_A1).y, -0.75, TOLERANCE);
+}
+
+TEST_F(PGXPTest, CopiedZeroDoesNotMakeNegationPrecise)
+{
+  Set(R_A0, 0xFFFFFF9Cu, -99.75f, -0.75f);
+  CPU::PGXP::CPU_ORI(I(R_ZERO, R_T2, 0), 0);
+
+  Set(R_V1, 100, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_SUB(R(R_T2, R_V1, R_V0), 0, 100);
+  CPU::PGXP::CPU_AND_(R(R_V0, R_A0, R_A1), 0xFFFFFF9Cu, 0xFFFFFF9Cu);
+  EXPECT_NEAR(Get(R_A1).x, -99.75, TOLERANCE);
+  EXPECT_NEAR(Get(R_A1).y, -0.75, TOLERANCE);
+
+  Set(R_V1, 0x63, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_NOR(R(R_V1, R_T2, R_V0), 0x63, 0);
+  CPU::PGXP::CPU_AND_(R(R_V0, R_A0, R_A1), 0xFFFFFF9Cu, 0xFFFFFF9Cu);
+  EXPECT_NEAR(Get(R_A1).x, -99.75, TOLERANCE);
+  EXPECT_NEAR(Get(R_A1).y, -0.75, TOLERANCE);
+}
+
+TEST_F(PGXPTest, BitwiseZeroResultIsValid)
+{
+  // Exactly zero, so stores of it keep the other half precise.
+  CPU::PGXP::CPU_XOR_(R(R_ZERO, R_ZERO, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, VALID_XY);
+
+  Set(R_V1, 100, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_AND_(R(R_ZERO, R_V1, R_V0), 0, 100);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, VALID_XY);
+
+  // A zero from untracked values isn't known to be exact, so the vertex cache can still look it up.
+  Set(R_V1, 0, 0.0f, 0.0f, 0);
+  Set(R_A0, 0xFFFFFFFFu, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_AND_(R(R_V1, R_A0, R_V0), 0, 0xFFFFFFFFu);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, 0u);
+
+  // NOR with zero is a not, so it's only zero because of the untracked value.
+  CPU::Instruction nor = R(R_A0, R_ZERO, R_V0);
+  nor.r.funct = CPU::InstructionFunct::nor;
+  CPU::PGXP::CPU_NOR(nor, 0xFFFFFFFFu, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, 0u);
+}
+
+TEST_F(PGXPTest, ZeroOperandKeepsNativelyZeroPreciseValue)
+{
+  // The other operand is natively zero too, but has fractions.
+  Set(R_V1, 0, 0.25f, 0.5f);
+  CPU::PGXP::CPU_ADD(R(R_ZERO, R_V1, R_V0), 0, 0);
+  EXPECT_NEAR(Get(R_V0).x, 0.25, TOLERANCE);
+  EXPECT_NEAR(Get(R_V0).y, 0.5, TOLERANCE);
+
+  Set(R_V0, 0, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_OR_(R(R_ZERO, R_V1, R_V0), 0, 0);
+  EXPECT_NEAR(Get(R_V0).x, 0.25, TOLERANCE);
+  EXPECT_NEAR(Get(R_V0).y, 0.5, TOLERANCE);
+
+  Set(R_V0, 0, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_XOR_(R(R_ZERO, R_V1, R_V0), 0, 0);
+  EXPECT_NEAR(Get(R_V0).x, 0.25, TOLERANCE);
+  EXPECT_NEAR(Get(R_V0).y, 0.5, TOLERANCE);
+}
+
+TEST_F(PGXPTest, ZeroOperandKeepsTrackedVertexAtZero)
+{
+  // Exactly zero, but it has depth, so it isn't a constant.
+  Set(R_V1, 0, 0.0f, 0.0f, VALID_ALL, 200.0f);
+  CPU::PGXP::CPU_OR_(R(R_V1, R_ZERO, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_Z, VALID_Z);
+  EXPECT_EQ(Get(R_V0).z, 200.0f);
+
+  Set(R_V0, 0, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_XOR_(R(R_V1, R_ZERO, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_Z, VALID_Z);
+  EXPECT_EQ(Get(R_V0).z, 200.0f);
+
+  Set(R_A1, 100, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_SUB(R(R_V1, R_A1, R_V0), 0, 100);
+  EXPECT_EQ(Get(R_V0).flags & VALID_ALL, VALID_ALL);
+}
+
+TEST_F(PGXPTest, ZeroDivisorDoesNotMakeResultPrecise)
+{
+  Set(R_V1, 100, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_DIV(R(R_V1, R_ZERO, 0), 100, 0);
+  EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(CPU::Reg::lo)].flags & VALID_XY, 0u);
+  EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(CPU::Reg::hi)].flags & VALID_XY, 0u);
+
+  CPU::PGXP::CPU_DIVU(R(R_V1, R_ZERO, 0), 100, 0);
+  EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(CPU::Reg::lo)].flags & VALID_XY, 0u);
+  EXPECT_EQ(CPU::g_state.pgxp_gpr[static_cast<u32>(CPU::Reg::hi)].flags & VALID_XY, 0u);
+}
+
+TEST_F(PGXPTest, ZeroNegationOfNativeZeroIsOnlyPreciseForExactZero)
+{
+  // Negating a natively zero value, the fractions aren't negated, so only an exact zero gives a precise result.
+  Set(R_V1, 0, 0.0f, 0.0f, 0);
+  CPU::PGXP::CPU_SUB(R(R_ZERO, R_V1, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, 0u);
+
+  Set(R_V1, 0, 0.0f, 0.25f);
+  CPU::PGXP::CPU_SUB(R(R_ZERO, R_V1, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, 0u);
+
+  CPU::PGXP::CPU_SUB(R(R_ZERO, R_ZERO, R_V0), 0, 0);
+  EXPECT_EQ(Get(R_V0).flags & VALID_XY, VALID_XY);
+}
+
+TEST_F(PGXPTest, ZeroStoreKeepsOtherHalfPrecise)
+{
+  // A vertex with a native zero Y, written as halves, or cleared and then written.
+  static constexpr u32 SCRATCHPAD_ADDR = 0x1F800000;
+  CPU::PGXP::Initialize();
+  Set(R_V0, 100, 100.25f, 0.0f);
+
+  float x, y, w;
+  CPU::PGXP::CPU_SH(I(R_A0, R_V0, 0), SCRATCHPAD_ADDR, 100);
+  CPU::PGXP::CPU_SH(I(R_A0, R_ZERO, 0), SCRATCHPAD_ADDR + 2, 0);
+  CPU::PGXP::GetPreciseVertex(SCRATCHPAD_ADDR, 100, 100, 0, 0, 0, &x, &y, &w);
+  EXPECT_EQ(x, 100.25f);
+  EXPECT_EQ(y, 0.0f);
+
+  CPU::PGXP::CPU_SW(I(R_A0, R_ZERO, 0), SCRATCHPAD_ADDR + 4, 0);
+  CPU::PGXP::CPU_SH(I(R_A0, R_V0, 0), SCRATCHPAD_ADDR + 4, 100);
+  CPU::PGXP::GetPreciseVertex(SCRATCHPAD_ADDR + 4, 100, 100, 0, 0, 0, &x, &y, &w);
+  EXPECT_EQ(x, 100.25f);
+  EXPECT_EQ(y, 0.0f);
+
+  CPU::PGXP::Shutdown();
 }
 
 //////////////////////////////////////////////////////////////////////////
