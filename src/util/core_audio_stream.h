@@ -6,6 +6,7 @@
 #include "audio_stream.h"
 
 #include "common/align.h"
+#include "common/threading.h"
 
 #include <array>
 #include <atomic>
@@ -79,7 +80,7 @@ public:
   ALWAYS_INLINE u32 GetBufferSize() const { return m_buffer_size; }
   ALWAYS_INLINE u32 GetTargetBufferSize() const { return m_target_buffer_size; }
   ALWAYS_INLINE u32 GetOutputVolume() const { return m_volume; }
-  ALWAYS_INLINE float GetNominalTempo() const { return m_nominal_rate; }
+  ALWAYS_INLINE float GetNominalTempo() const { return m_nominal_rate.load(std::memory_order_relaxed); }
   ALWAYS_INLINE bool IsPaused() const { return m_paused; }
 
   u32 GetBufferedFramesRelaxed() const;
@@ -109,7 +110,7 @@ public:
 
   void SetStretchMode(AudioStretchMode mode);
 
-  /// Wipes out the time stretching buffer, call when reducing target speed.
+  /// Resets the time stretcher tempo, call when reducing target speed.
   void EmptyStretchBuffers();
 
 private:
@@ -123,15 +124,15 @@ private:
   u32 GetTargetSize() const;
 
   void InternalWriteFrames(SampleType* samples, u32 num_frames);
+  u32 ReadBufferFrames(SampleType* samples, u32 rpos, u32 num_frames) const;
 
   void StretchAllocate();
-  void StretchUpdateParameters(const AudioStreamParameters& params);
   void StretchDestroy();
-  void StretchWriteBlock(const float* block);
+  void StretchReadFrames(SampleType* samples, u32 num_frames);
   void StretchUnderrun();
   void StretchOverrun();
 
-  void UpdateStretchTempo();
+  void UpdateStretchTempo(float nominal_rate);
 
   void ReadFrames(SampleType* samples, u32 num_frames) override;
 
@@ -146,18 +147,28 @@ private:
   u32 m_buffer_size = 0;
   Common::unique_aligned_ptr<s16[]> m_buffer;
 
-  // temporary staging buffer, used for timestretching
+  // staging buffer for partial chunks from the writer
   Common::unique_aligned_ptr<s16[]> m_staging_buffer;
 
-  // float buffer, soundtouch only accepts float samples as input
+  // float buffer, soundtouch only accepts float samples as input, used on the audio thread
   Common::unique_aligned_ptr<float[]> m_float_buffer;
 
   std::atomic<u32> m_rpos{0};
   std::atomic<u32> m_wpos{0};
-  std::atomic<u32> m_stretch_underruns{0};
+
+  // stretching runs on the audio thread, these are set by the writer
+  std::atomic<float> m_nominal_rate{1.0f};
+  std::atomic<bool> m_stretch_reset_request{false};
+
+  // output buffered in the stretcher, set by the audio thread
+  std::atomic<u32> m_stretch_buffered_frames{0};
 
   // last callback size, set by the audio thread
   std::atomic<u32> m_callback_frames{0};
+
+  // Held by the audio thread while reading, and when reallocating buffers. Some backends (WASAPI, XAudio2) don't wait
+  // for a running callback when stopping, so stopping the stream isn't enough.
+  Threading::Mutex m_callback_mutex;
 
   void* m_soundtouch = nullptr;
 
@@ -166,9 +177,9 @@ private:
   u64 m_stretch_reset_time = 0;
 
   u32 m_stretch_ok_count = 0;
-  float m_nominal_rate = 1.0f;
   float m_dynamic_target_usage = 0.0f;
   float m_average_tempo = 1.0f;
+  float m_max_tempo = 1.0f;
 
   u32 m_staging_buffer_pos = 0;
 };
