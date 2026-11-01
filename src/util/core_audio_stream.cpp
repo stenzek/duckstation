@@ -145,7 +145,8 @@ void CoreAudioStream::UpdateParameters(const AudioStreamParameters& params)
     dest.stretch_use_aa_filter = src.stretch_use_aa_filter;
   };
 
-  if (params.buffer_ms != m_parameters.buffer_ms)
+  // buffer size depends on stretch mode
+  if (params.buffer_ms != m_parameters.buffer_ms || params.stretch_mode != m_parameters.stretch_mode)
   {
     Error error;
 
@@ -180,17 +181,8 @@ void CoreAudioStream::UpdateParameters(const AudioStreamParameters& params)
     return;
   }
 
-  if (params.stretch_mode != m_parameters.stretch_mode)
-  {
-    StretchDestroy();
-    copy_stretch_params(m_parameters, params);
-    StretchAllocate();
-  }
-  else
-  {
-    // easier case: just changing stretch settings
-    StretchUpdateParameters(params);
-  }
+  // easier case: just changing stretch settings
+  StretchUpdateParameters(params);
 }
 
 void CoreAudioStream::Destroy()
