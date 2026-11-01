@@ -193,7 +193,6 @@ static void UnhaltTransfer(void*, TickCount ticks);
 template<Channel channel>
 static bool TransferChannel();
 
-static bool IsLinkedListTerminator(PhysicalMemoryAddress address);
 static bool CheckForBusError(Channel channel, ChannelState& cs, PhysicalMemoryAddress address, u32 size);
 static void CompleteTransfer(Channel channel, ChannelState& cs);
 
@@ -513,11 +512,6 @@ void DMA::UpdateIRQ()
   InterruptController::SetLineState(InterruptController::IRQ::DMA, s_state.DICR.master_flag);
 }
 
-ALWAYS_INLINE_RELEASE bool DMA::IsLinkedListTerminator(PhysicalMemoryAddress address)
-{
-  return ((address & LINKED_LIST_TERMINATOR) == LINKED_LIST_TERMINATOR);
-}
-
 ALWAYS_INLINE_RELEASE bool DMA::CheckForBusError(Channel channel, ChannelState& cs, PhysicalMemoryAddress address,
                                                  u32 size)
 {
@@ -656,7 +650,7 @@ bool DMA::TransferChannel()
         }
 
         current_address = next_address;
-        if (IsLinkedListTerminator(current_address))
+        if (current_address == LINKED_LIST_TERMINATOR)
         {
           // Terminator is 24 bits, so is MADR, so it'll always be 0xFFFFFF.
           cs.base_address = LINKED_LIST_TERMINATOR;
