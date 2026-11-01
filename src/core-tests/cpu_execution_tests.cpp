@@ -491,10 +491,13 @@ TEST_P(CPUMemoryExecution, CachedFetchFromUnmappedRAMRaisesBusError)
     // even though the code was previously cached.
     SetWindow(0x888);
     CPU::ClearICache();
+    CPU::g_state.cop0_regs.BadVaddr = 0x12345678;
     CPU::SetPC(PROGRAM_BASE);
     CPU::Execute();
     EXPECT_EQ(prog.Result(0), 99u);
     EXPECT_EQ(static_cast<u8>(CPU::g_state.cop0_regs.cause.Excode.GetValue()), static_cast<u8>(CPU::Exception::IBE));
+    EXPECT_EQ(CPU::g_state.cop0_regs.EPC, block_pc);
+    EXPECT_EQ(CPU::g_state.cop0_regs.BadVaddr, 0x12345678u);
   }
 }
 

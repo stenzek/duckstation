@@ -2941,6 +2941,7 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
   // We can shortcut around VirtualAddressToPhysical() here because we're never going to be
   // calling with an out-of-range address.
   DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
+  const VirtualMemoryAddress fetch_address = address;
   address &= KSEG_MASK;
 
   if (address < g_bus.ram_mapped_size)
@@ -2969,11 +2970,9 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
   }
   else [[unlikely]]
   {
+    // EPC is the virtual address that was fetched, bus errors don't change BadVaddr.
     if (raise_exceptions)
-    {
-      g_state.cop0_regs.BadVaddr = address;
-      RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), address);
-    }
+      RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), fetch_address);
 
     std::memset(data, 0, sizeof(u32) * word_count);
     return false;
