@@ -84,10 +84,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadSpeedup, Settings::CDROM_SECTION_NAME, "ReadSpeedup",
                                               1, std::span<const u8>(CDROM_SPEEDUP_VALUES));
 
-  dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
+  dialog->registerWidgetHelp(m_ui.region, tr("Region"),
+                             QString::fromUtf8(Settings::GetConsoleRegionDisplayName(Settings::DEFAULT_CONSOLE_REGION)),
                              tr("Determines the emulated hardware type."));
   dialog->registerWidgetHelp(
-    m_ui.forceVideoTiming, tr("Frame Rate"), tr("Auto-Detect"),
+    m_ui.forceVideoTiming, tr("Frame Rate"),
+    QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE)),
     tr("Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games "
        "to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this "
        "will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not "
@@ -107,8 +109,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
        "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
 
-  dialog->registerWidgetHelp(m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
-                             tr("Determines how the emulated CPU executes instructions."));
+  dialog->registerWidgetHelp(
+    m_ui.cpuExecutionMode, tr("Execution Mode"),
+    QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(Settings::DEFAULT_CPU_EXECUTION_MODE)),
+    tr("Determines how the emulated CPU executes instructions."));
   dialog->registerWidgetHelp(m_ui.enableCPUClockSpeedControl,
                              tr("Enable Clock Speed Control (Overclocking/Underclocking)"), tr("Unchecked"),
                              tr("When this option is chosen, the clock speed set below will be used."));
