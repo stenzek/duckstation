@@ -121,6 +121,8 @@ private:
   void AllocateBuffer();
   void DestroyBuffer();
 
+  u32 GetTargetSize() const;
+
   void InternalWriteFrames(SampleType* samples, u32 num_frames);
 
   void StretchAllocate();
@@ -154,6 +156,9 @@ private:
 
   std::atomic<u32> m_rpos{0};
   std::atomic<u32> m_wpos{0};
+
+  // last callback size, set by the audio thread
+  std::atomic<u32> m_callback_frames{0};
 
   void* m_soundtouch = nullptr;
 

@@ -265,16 +265,24 @@ u32 CoreAudioStream::GetBufferedFramesRelaxed() const
   return (wpos + m_buffer_size - rpos) % m_buffer_size;
 }
 
+u32 CoreAudioStream::GetTargetSize() const
+{
+  // Needs to cover at least two callbacks, otherwise the stretcher holds it below what the next callback needs.
+  return std::max(m_target_buffer_size, m_callback_frames.load(std::memory_order_relaxed) * 2);
+}
+
 void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
+  m_callback_frames.store(num_frames, std::memory_order_relaxed);
+
   const u32 available_frames = GetBufferedFramesRelaxed();
   u32 frames_to_read = num_frames;
   u32 silence_frames = 0;
 
   if (m_filling)
   {
-    u32 toFill = m_buffer_size / ((m_parameters.stretch_mode != AudioStretchMode::TimeStretch) ? 32 : 400);
-    toFill = GetAlignedBufferSize(toFill);
+    // Need at least a full callback's worth, otherwise we'll immediately underrun again.
+    const u32 toFill = std::min(GetAlignedBufferSize(std::max(num_frames, GetTargetSize() / 2)), m_buffer_size / 2);
 
     if (available_frames < toFill)
     {
@@ -746,7 +754,10 @@ void CoreAudioStream::UpdateStretchTempo()
 
   // Controls how aggressively we adjust the dynamic target. We want to keep the same target size regardless
   // of the target speed, but need additional buffering when intentionally running below 100%.
-  float base_target_usage = static_cast<float>(m_target_buffer_size) / std::min(m_nominal_rate, 1.0f);
+  // The callback minimum doesn't scale with speed, and the target has to stay within the buffer.
+  float base_target_usage = std::min(std::max(static_cast<float>(m_target_buffer_size) / std::min(m_nominal_rate, 1.0f),
+                                              static_cast<float>(GetTargetSize())),
+                                     static_cast<float>(m_buffer_size / 2));
 
   // tempo = current_buffer / target_buffer.
   const u32 ibuffer_usage = GetBufferedFramesRelaxed();
