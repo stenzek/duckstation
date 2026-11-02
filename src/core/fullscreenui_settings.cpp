@@ -1755,7 +1755,7 @@ void FullscreenUI::SwitchToSettings(SettingsPage page /* = SettingsPage::Interfa
 
   const auto lock = Core::GetSettingsLock();
   const SettingsInterface* const sif = GetEditingSettingsInterface();
-  PopulateGameListDirectoryCache(*sif);
+  PopulateGameListDirectoryCache(*Core::GetBaseSettingsLayer());
   PopulatePostProcessingChain(*sif, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME);
 
   SwitchToMainWindow(MainWindowType::Settings);
