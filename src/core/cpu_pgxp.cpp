@@ -1750,14 +1750,13 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
   {
     // When significant bits are shifted out of the top (e.g. extracting a bitfield), the upper half's precise offset
     // can belong to them, and would land in the integer bits of the field below. Use the native upper half instead.
+    const bool shifted_out = ((static_cast<s32>(rdVal) >> sh) != static_cast<s32>(rtVal));
     const double x = f16Unsign(prtVal.GetValidX(rtVal)) * static_cast<double>(1 << sh);
-    const double y_in = ((static_cast<s32>(rdVal) >> sh) != static_cast<s32>(rtVal)) ?
-                          static_cast<double>(HIWORD_U16(rtVal)) :
-                          f16Unsign(prtVal.GetValidY(rtVal));
+    const double y_in = shifted_out ? static_cast<double>(HIWORD_U16(rtVal)) : f16Unsign(prtVal.GetValidY(rtVal));
     const double y = (y_in * static_cast<double>(1 << sh)) + f16Overflow(x);
     prdVal.x = static_cast<float>(f16Sign(x));
     prdVal.y = static_cast<float>(f16Sign(y));
-    prdVal.flags = (prtVal.flags | VALID_TAINTED_Z);
+    prdVal.flags = (prtVal.flags & ~BITFIELD) | VALID_TAINTED_Z | (shifted_out ? BITFIELD : 0u);
   }
 }
 
@@ -1795,7 +1794,12 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   {
     // Only the upper half is left, so extract it, using the representation closest to the native value. The upper half
     // of the result is only sign bits, taken from the precise value so that the halves represent the same value.
-    const double y = static_cast<double>(sign ? HIWORD_S16(rtVal) : HIWORD_U16(rtVal)) +
+    // If a left shift dropped significant bits, this is extracting a bitfield, and the native bits shifted out belong
+    // to the field below, not a fraction of this one (Syphon Filter 3 packs vertices as z:10 y:11 x:11). Only shift the
+    // precise offset from native then.
+    const double y = ((prtVal.flags & BITFIELD) ?
+                        (static_cast<double>(static_cast<s32>(rdVal)) * static_cast<double>(1 << (sh - 16))) :
+                        static_cast<double>(sign ? HIWORD_S16(rtVal) : HIWORD_U16(rtVal))) +
                      f16Sign(prtVal.GetValidY(rtVal) - HIWORD_S16(rtVal));
     // Quantize before splitting, otherwise a tiny negative value has a zero low half and a -1 upper half.
     const double x =
@@ -1804,7 +1808,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
     prdVal.y = static_cast<float>(std::floor(x / static_cast<double>(USHRT_MAX + 1)));
     prdVal.z = prtVal.z;
     prdVal.value = rdVal;
-    prdVal.flags = (prtVal.flags & ~VALID_X) | ((prtVal.flags & VALID_Y) >> 1) | VALID_TAINTED_Z;
+    prdVal.flags = (prtVal.flags & ~(VALID_X | BITFIELD)) | ((prtVal.flags & VALID_Y) >> 1) | VALID_TAINTED_Z;
     return;
   }
 

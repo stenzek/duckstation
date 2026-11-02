@@ -193,6 +193,25 @@ TEST_F(PGXPTest, ShiftDropsFractionOfBitsShiftedOut)
   EXPECT_NEAR(Get(R_V1).y, 346.5 * 32.0, TOLERANCE);
 }
 
+TEST_F(PGXPTest, BitfieldExtractDoesNotTakeFractionFromFieldBelow)
+{
+  // Syphon Filter 3 packs vertices as z:10 y:11 x:11, here x = -50 and y = -19, and extracts y with sll 10; sra 21.
+  // The top bits of x are below y, and gave it a fraction of 31/32.
+  Set(R_V0, 0x13FF6FCE, 28622.0f, 5119.0f);
+  CPU::PGXP::CPU_SLL(R(0, R_V0, R_V1, 10), 0x13FF6FCE);
+  EXPECT_EQ(Get(R_V1).value, 0xFDBF3800u);
+  CPU::PGXP::CPU_SRA(R(0, R_V1, R_A0, 21), 0xFDBF3800);
+  EXPECT_EQ(Get(R_A0).value, 0xFFFFFFEDu);
+  EXPECT_NEAR(Get(R_A0).x, -19.0, TOLERANCE);
+  EXPECT_NEAR(Get(R_A0).y, -1.0, TOLERANCE);
+  EXPECT_FALSE(Get(R_A0).flags & BITFIELD);
+
+  // Without bits shifted out by a left shift, the bits shifted out are a fraction.
+  Set(R_V1, 0xFDBF3800, 14336.0f, -577.0f);
+  CPU::PGXP::CPU_SRA(R(0, R_V1, R_A0, 21), 0xFDBF3800);
+  EXPECT_NEAR(Get(R_A0).x, -577.0 / 32.0, TOLERANCE);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Right shifts: sign of an upper half that is only sign bits
 //////////////////////////////////////////////////////////////////////////

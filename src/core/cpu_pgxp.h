@@ -12,6 +12,7 @@ enum : u32
   VALID_X = (1u << 0),
   VALID_Y = (1u << 1),
   VALID_Z = (1u << 2),
+  BITFIELD = (1u << 3),         // Significant bits were shifted out of the top, lower bits may be another field.
   VALID_LOWZ = (1u << 16),      // Valid Z from the low part of a 32-bit value.
   VALID_HIGHZ = (1u << 17),     // Valid Z from the high part of a 32-bit value.
   VALID_TAINTED_Z = (1u << 31), // X/Y has been changed, Z may not be accurate.
