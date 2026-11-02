@@ -650,6 +650,25 @@ TEST_F(PGXPTest, ADDIUsesDoublePrecision)
   EXPECT_NEAR(Get(R_V1).x, 15.7, 0.0001);
 }
 
+TEST_F(PGXPTest, ADDAveragesDepthOfMidpoint)
+{
+  // Syphon Filter 3 subdivides polygons in screen space with a + ((b - a) >> 1).
+  Set(R_V0, 0xFFFFFFCE, -49.5f, -1.0f, VALID_ALL, 635.0f);
+  Set(R_V1, 0xFFFFFFD9, -38.5f, -1.0f, VALID_ALL, 843.0f);
+  CPU::PGXP::CPU_SUB(R(R_V1, R_V0, R_A0), 0xFFFFFFD9, 0xFFFFFFCE);
+  CPU::PGXP::CPU_SRA(R(0, R_A0, R_A0, 1), 0x0000000B);
+  CPU::PGXP::CPU_ADD(R(R_V0, R_A0, R_A1), 0xFFFFFFCE, 0x00000005);
+  EXPECT_EQ(Get(R_A1).value, 0xFFFFFFD3u);
+  EXPECT_NEAR(Get(R_A1).x, -44.0, TOLERANCE);
+  EXPECT_TRUE(Get(R_A1).flags & VALID_Z);
+  EXPECT_NEAR(Get(R_A1).z, 739.0, TOLERANCE);
+
+  // A side without depth doesn't change it.
+  Set(R_V1, 0x00000004, 4.0f, 0.0f, VALID_XY, 0.0f);
+  CPU::PGXP::CPU_ADD(R(R_V0, R_V1, R_A1), 0xFFFFFFCE, 0x00000004);
+  EXPECT_EQ(Get(R_A1).z, 635.0f);
+}
+
 TEST_F(PGXPTest, ADDIIgnoresInvalidLowHalf)
 {
   Set(R_V0, 0x0064FFF0, 777.25f, 100.25f, VALID_Y | VALID_Z);

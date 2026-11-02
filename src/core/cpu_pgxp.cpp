@@ -1324,6 +1324,12 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
     prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
     SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
+
+    // When both sides have depth, use the average instead of the depth of one side. A screen space midpoint is computed
+    // as a + ((b - a) >> 1), where the difference carries the depth of b, so this gives the depth of the midpoint.
+    // Taking a's depth for all midpoints warps textures in Syphon Filter 3.
+    if (prsVal.flags & prtVal.flags & VALID_Z)
+      prdVal.z = 0.5f * (prsVal.z + prtVal.z);
   }
 
   GetRdValue(instr) = prdVal;
