@@ -696,6 +696,16 @@ TEST(INISettingsInterface, GetStringListEmpty)
   EXPECT_TRUE(list.empty());
 }
 
+TEST(INISettingsInterface, GetStringListSize)
+{
+  INISettingsInterface si;
+  si.LoadFromString("[S]\na = 1\nkey = x\nkey = y\nkey = z\nz = 2\n");
+  EXPECT_EQ(si.GetStringListSize("S", "key"), 3u);
+  EXPECT_EQ(si.GetStringListSize("S", "a"), 1u);
+  EXPECT_EQ(si.GetStringListSize("S", "missing"), 0u);
+  EXPECT_EQ(si.GetStringListSize("Missing", "key"), 0u);
+}
+
 TEST(INISettingsInterface, SetStringList)
 {
   INISettingsInterface si;

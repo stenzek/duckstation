@@ -1191,10 +1191,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   {
     const SettingsInterface* sif = Core::GetGameSettingsLayer();
     const u32 requested_cheat_count = (sif && sif->GetBoolValue(CHEATS_CONFIG_SECTION, "EnableCheats", false)) ?
-                                        static_cast<u32>(sif->GetStringList(CHEATS_CONFIG_SECTION, "Enable").size()) :
+                                        static_cast<u32>(sif->GetStringListSize(CHEATS_CONFIG_SECTION, "Enable")) :
                                         0;
     const u32 requested_patches_count =
-      sif ? static_cast<u32>(sif->GetStringList(PATCHES_CONFIG_SECTION, "Enable").size()) : 0;
+      sif ? static_cast<u32>(sif->GetStringListSize(PATCHES_CONFIG_SECTION, "Enable")) : 0;
     const u32 blocked_cheats =
       (s_locals.active_cheat_count < requested_cheat_count) ? requested_cheat_count - s_locals.active_cheat_count : 0;
     const u32 blocked_patches = (s_locals.active_patch_count < requested_patches_count) ?

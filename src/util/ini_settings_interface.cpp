@@ -591,6 +591,20 @@ INISettingsInterface::StringList INISettingsInterface::GetStringList(const char*
   return result;
 }
 
+size_t INISettingsInterface::GetStringListSize(const char* section, const char* key) const
+{
+  auto sit = FindSection(std::string_view(section));
+  if (sit == m_sections.end())
+    return 0;
+
+  const std::string_view key_sv(key);
+  auto begin_it = FindKey(*sit, key_sv);
+  if (begin_it == sit->entries.end())
+    return 0;
+
+  return static_cast<size_t>(FindKeyEnd(*sit, key_sv) - begin_it);
+}
+
 void INISettingsInterface::SetStringList(const char* section, const char* key, const StringList& items)
 {
   const std::string_view section_sv(section);

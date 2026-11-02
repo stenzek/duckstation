@@ -27,6 +27,7 @@ public:
   virtual void StoreValue(const char* section, const char* key, std::string_view value) = 0;
 
   virtual StringList GetStringList(const char* section, const char* key) const = 0;
+  virtual size_t GetStringListSize(const char* section, const char* key) const = 0;
   virtual void SetStringList(const char* section, const char* key, const StringList& items) = 0;
   virtual bool RemoveFromStringList(const char* section, const char* key, const char* item) = 0;
   virtual bool AddToStringList(const char* section, const char* key, const char* item) = 0;

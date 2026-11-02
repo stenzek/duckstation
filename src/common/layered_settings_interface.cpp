@@ -83,6 +83,20 @@ LayeredSettingsInterface::StringList LayeredSettingsInterface::GetStringList(con
   return ret;
 }
 
+size_t LayeredSettingsInterface::GetStringListSize(const char* section, const char* key) const
+{
+  for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
+  {
+    if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+    {
+      if (const size_t size = sif->GetStringListSize(section, key); size > 0)
+        return size;
+    }
+  }
+
+  return 0;
+}
+
 void LayeredSettingsInterface::SetStringList(const char* section, const char* key, const StringList& items)
 {
   Panic("Attempt to call SetStringList() on layered settings interface");

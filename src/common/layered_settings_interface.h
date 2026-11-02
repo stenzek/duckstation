@@ -33,6 +33,7 @@ public:
   void RemoveEmptySections() override;
 
   StringList GetStringList(const char* section, const char* key) const override;
+  size_t GetStringListSize(const char* section, const char* key) const override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
   bool RemoveFromStringList(const char* section, const char* key, const char* item) override;
   bool AddToStringList(const char* section, const char* key, const char* item) override;
