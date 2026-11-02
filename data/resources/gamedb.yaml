@@ -48964,7 +48964,6 @@ SLUS-90093:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
 SLUS-01161:
   name: "Driver 2 (Disc 1)"
@@ -48979,7 +48978,6 @@ SLUS-01161:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49008,7 +49006,6 @@ SLUS-01318:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49034,7 +49031,6 @@ SLES-02993:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49060,7 +49056,6 @@ SLES-12993:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49089,7 +49084,6 @@ SLES-02994:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49115,7 +49109,6 @@ SLES-12994:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49141,7 +49134,6 @@ SLES-02995:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49167,7 +49159,6 @@ SLES-12995:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49193,7 +49184,6 @@ SLES-02996:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49219,7 +49209,6 @@ SLES-12996:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49249,7 +49238,6 @@ SLES-02997:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49279,7 +49267,6 @@ SLES-12997:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
   metadata:
     publisher: "Infogrames"
@@ -49303,7 +49290,6 @@ SLED-03110:
   traits:
     - ForcePGXPCPUMode # Fixes pedestrian polygon wobble.
   settings:
-    gpuPGXPTolerance: 3 # Fixes car shadows with CPU mode active.
     cdromMaxReadSpeedupCycles: 55000 # Stops crash on load.
 SLPM-86678:
   name: "The Drug Store"
@@ -173687,6 +173673,7 @@ SCES-03697:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -173710,6 +173697,7 @@ SCES-03698:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -173733,6 +173721,7 @@ SCES-03699:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -173756,6 +173745,7 @@ SCES-03700:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -173782,6 +173772,7 @@ SCUS-94640:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "989 Studios"
     developer: "Eidetic, Inc"
@@ -173803,6 +173794,7 @@ SCUS-94661:
     genre: "** DEMO **"
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
 SCES-03701:
   name: "Syphon Filter 3 - Sentencia Final"
   saveName: "Syphon Filter 3 - Sentencia Final (Spain)"
@@ -173815,6 +173807,7 @@ SCES-03701:
     - DigitalController
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -173836,6 +173829,7 @@ SCED-03780:
     genre: "** DEMO **"
   traits:
     - ForcePGXPVertexCache
+    - ForcePGXPCPUMode # Reduces wobble.
 SLPM-87041:
   name: "Söldnerschild Special [Koei Teiban Series]"
   controllers:
@@ -197073,6 +197067,7 @@ SLES-01265:
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - ForcePGXPCPUMode # Fixes missing precise geometry.
   metadata:
     publisher: "Electronic Arts"
     developer: "Electronic Arts"
@@ -197093,12 +197088,12 @@ SLUS-00644:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-4236-gfe7a195e"
-    upscalingIssues: "Must set the CPU clock speed to 120% for upscaling, as the default 100% introducing a problems with the audio, such as restarting music during main menu followed with high-pitched beep and then the music only plays in right channel then stops playing altogether, leaving only the beep"
   controllers:
     - AnalogController
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - ForcePGXPCPUMode # Fixes missing precise geometry.
   metadata:
     publisher: "Electronic Arts"
     developer: "Electronic Arts"

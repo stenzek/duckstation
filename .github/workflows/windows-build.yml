@@ -107,7 +107,7 @@ jobs:
       shell: cmd
       run: |
         call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vcvars }}
-        msbuild duckstation.sln -t:Build -p:Platform=${{ matrix.platform }};Configuration=${{ matrix.config }}
+        msbuild duckstation.slnx -t:Build -p:Platform=${{ matrix.platform }};Configuration=${{ matrix.config }}
 
     - name: Create ${{ matrix.name }} Symbols Archive
       shell: cmd

@@ -189,7 +189,7 @@ Requirements:
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Download the dependencies pack from https://github.com/duckstation/dependencies. You'll need the `deps-windows-x64.7z` file, and `deps-windows-arm64.7z` if you want to cross-compile for ARM64. Extract these archives to `dep\prebuilt`.
-3. Open the Visual Studio solution `duckstation.sln` in the root (recommended), or "Open Folder" for CMake build (not recommended/supported).
+3. Open the Visual Studio solution `duckstation.slnx` in the root (recommended), or "Open Folder" for CMake build (not recommended/supported).
 4. Build solution.
 5. Binaries are located in `bin/x64`.
 6. Run `duckstation-qt-x64-Release.exe` or whichever config you used.

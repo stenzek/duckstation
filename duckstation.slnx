@@ -1,0 +1,408 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Clang" />
+    <BuildType Name="Debug-Clang-SSE2" />
+    <BuildType Name="DebugFast" />
+    <BuildType Name="DebugFast-Clang" />
+    <BuildType Name="Devel-Clang" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Clang" />
+    <BuildType Name="ReleaseLTCG" />
+    <BuildType Name="ReleaseLTCG-Clang" />
+    <BuildType Name="ReleaseLTCG-Clang-SSE2" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Dependencies/">
+    <Project Path="dep/cubeb/cubeb.vcxproj" Id="72f9423c-91ee-4487-aac6-555ed6f61aa1">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/d3d12ma/d3d12ma.vcxproj" Id="f351c4d8-594a-4850-b77b-3c1249812cce">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/fmt/fmt.vcxproj" Id="8be398e6-b882-4248-9065-fecc8728e038">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/glad/glad.vcxproj" Id="43540154-9e1e-409c-834f-b84be5621388">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/googletest/googletest.vcxproj" Id="49953e1b-2ef7-46a4-b88b-1bf9e099093b">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/imgui/imgui.vcxproj" Id="bb08260f-6fbc-46af-8924-090ee71360c6">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/libchdr/libchdr.vcxproj" Id="425d6c99-d1c8-43c2-b8ac-4d7b1d941017">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/lzma/lzma.vcxproj" Id="dd944834-7899-4c1c-a4c1-064b5009d239">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/minizip/minizip.vcxproj" Id="8bda439c-6358-45fb-9994-2ff083babe06">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/rapidyaml/rapidyaml.vcxproj" Id="1ad23a8a-4c20-434c-ae6b-0e07759eeb1e">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/rcheevos/rcheevos.vcxproj" Id="4ba0a6d4-3ae1-42b2-9347-096fd023ff64">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/reshadefx/reshadefx.vcxproj" Id="27b8d4bb-4f01-4432-bc14-9bf6ca458eee">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/vixl/vixl.vcxproj" Id="8906836e-f06e-46e8-b11a-74e5e8c7b8fb">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="*|x64" Project="false" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/xxhash/xxhash.vcxproj" Id="09553c96-9f39-49bf-8ae6-7acbd07c410c">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="DebugFast|ARM64" Project="false" />
+      <Build Solution="Debug|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+      <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+      <Build Solution="Release|ARM64" Project="false" />
+    </Project>
+    <Project Path="dep/zydis/zydis.vcxproj" Id="c51a346a-86b2-46df-9bb3-d0aa7e5d8699">
+      <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+      <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+      <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+      <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+      <Build Solution="*|ARM64" Project="false" />
+      <Build Solution="Release-Clang|x64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang-SSE2|x64" Project="false" />
+      <Build Solution="ReleaseLTCG-Clang|x64" Project="false" />
+      <Build Solution="ReleaseLTCG|x64" Project="false" />
+      <Build Solution="Release|x64" Project="false" />
+    </Project>
+  </Folder>
+  <Project Path="src/common-tests/common-tests.vcxproj">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Project="false" />
+  </Project>
+  <Project Path="src/common/common.vcxproj" Id="ee054e08-3799-4a59-a422-18259c105ffd">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/core-tests/core-tests.vcxproj" Id="93d9300c-b64a-4b21-a4b5-30173de88747">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Project="false" />
+  </Project>
+  <Project Path="src/core/core.vcxproj" Id="868b98c8-65a1-494b-8346-250a73a48c0a">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/duckstation-qt/duckstation-qt.vcxproj" Id="28f14272-0ec4-41bb-849f-182adb81af70">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/duckstation-regtest/duckstation-regtest.vcxproj" Id="3029310e-4211-4c87-801a-72e130a648ef">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="*|x64" Project="false" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="Debug-Clang|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel-Clang|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/installer/installer.vcxproj" Id="cd6d0c84-042e-4c9a-aab5-d3bdc80273da">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|*" Project="false" />
+    <Build Solution="Debug-Clang|*" Project="false" />
+    <Build Solution="DebugFast-Clang|*" Project="false" />
+    <Build Solution="DebugFast|*" Project="false" />
+    <Build Solution="Debug|*" Project="false" />
+    <Build Solution="Devel-Clang|*" Project="false" />
+    <Build Solution="Release-Clang|*" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|*" Project="false" />
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="src/scmversion/scmversion.vcxproj" Id="075ced82-6a20-46df-94c7-9624ac9ddbeb">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/uninstaller/uninstaller.vcxproj" Id="91c19063-a8d7-421c-a0e3-a1a3ecfc5ee5">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|*" Project="false" />
+    <Build Solution="Debug-Clang|*" Project="false" />
+    <Build Solution="DebugFast-Clang|*" Project="false" />
+    <Build Solution="DebugFast|*" Project="false" />
+    <Build Solution="Debug|*" Project="false" />
+    <Build Solution="Devel-Clang|*" Project="false" />
+    <Build Solution="Release-Clang|*" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|*" Project="false" />
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="src/updater/updater.vcxproj" Id="32eeaf44-57f8-4c6c-a6f0-de5667123dd5">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|*" Project="false" />
+    <Build Solution="Debug-Clang|*" Project="false" />
+    <Build Solution="DebugFast-Clang|*" Project="false" />
+    <Build Solution="DebugFast|*" Project="false" />
+    <Build Solution="Debug|*" Project="false" />
+    <Build Solution="Devel-Clang|*" Project="false" />
+    <Build Solution="Release-Clang|*" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|*" Project="false" />
+    <Build Solution="Release|*" Project="false" />
+  </Project>
+  <Project Path="src/util-tests/util-tests.vcxproj">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="*|x64" Project="false" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast-Clang|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="Devel-Clang|ARM64" Project="false" />
+    <Build Solution="Release-Clang|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+  </Project>
+  <Project Path="src/util/util.vcxproj" Id="57f6206d-f264-4b07-baf8-11b9bbe1f455">
+    <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
+    <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
+    <BuildType Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="ReleaseLTCG|ARM64" Project="ReleaseLTCG-Clang" />
+    <BuildType Solution="Release|ARM64" Project="Release-Clang" />
+    <Build Solution="Debug-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="DebugFast|ARM64" Project="false" />
+    <Build Solution="Debug|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG-Clang-SSE2|ARM64" Project="false" />
+    <Build Solution="ReleaseLTCG|ARM64" Project="false" />
+    <Build Solution="Release|ARM64" Project="false" />
+  </Project>
+</Solution>

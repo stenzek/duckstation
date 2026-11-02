@@ -10,7 +10,7 @@
 *.qss text
 *.html text
 
-*.sln text eol=crlf
+*.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
 
