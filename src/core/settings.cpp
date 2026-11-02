@@ -281,9 +281,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   TinyString skey;
 
   region =
-    ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region",
-                                                 Settings::GetConsoleRegionName(Settings::DEFAULT_CONSOLE_REGION)))
-      .value_or(DEFAULT_CONSOLE_REGION);
+    ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region")).value_or(DEFAULT_CONSOLE_REGION);
 
   emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
@@ -309,8 +307,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   runahead_frames = static_cast<u8>(std::min(si.GetUIntValue(INTERFACE_SECTION_NAME, "RunaheadFrameCount", 0u), 255u));
   runahead_for_analog_input = si.GetBoolValue(INTERFACE_SECTION_NAME, "RunaheadForAnalogInput", false);
 
-  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringViewValue(CPU_SECTION_NAME, "ExecutionMode",
-                                                                   GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)))
+  cpu_execution_mode = ParseCPUExecutionMode(si.GetStringViewValue(CPU_SECTION_NAME, "ExecutionMode"))
                          .value_or(DEFAULT_CPU_EXECUTION_MODE);
   cpu_overclock_numerator = std::max(si.GetUIntValue(CPU_SECTION_NAME, "OverclockNumerator", 1u), 1u);
   cpu_overclock_denominator = std::max(si.GetUIntValue(CPU_SECTION_NAME, "OverclockDenominator", 1u), 1u);
@@ -319,15 +316,12 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cpu_recompiler_memory_exceptions = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", false);
   cpu_recompiler_block_linking = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerBlockLinking", true);
   cpu_recompiler_icache = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerICache", false);
-  cpu_fastmem_mode = ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode",
-                                                               GetCPUFastmemModeName(DEFAULT_CPU_FASTMEM_MODE)))
-                       .value_or(DEFAULT_CPU_FASTMEM_MODE);
+  cpu_fastmem_mode =
+    ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode")).value_or(DEFAULT_CPU_FASTMEM_MODE);
   cpu_ram_size = ParseCPURAMSize(si.GetStringViewValue(CPU_SECTION_NAME, "RAMSize")).value_or(DEFAULT_CPU_RAM_SIZE);
   cpu_force_full_ram_mapping = si.GetBoolValue(CPU_SECTION_NAME, "ForceFullRAMMapping", false);
 
-  gpu_renderer =
-    ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)))
-      .value_or(DEFAULT_GPU_RENDERER);
+  gpu_renderer = ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer")).value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringViewValue(GPU_SECTION_NAME, "Adapter", "");
   gpu_resolution_scale = static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "ResolutionScale", 1u));
   gpu_automatic_resolution_scale = (gpu_resolution_scale == 0);
@@ -361,33 +355,21 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_filter_framebuffer_uploads_minimum_height =
     std::clamp<u16>(si.GetSaturatedIntValue<u16>(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1), 1,
                     static_cast<u16>(VRAM_HEIGHT));
-  gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "TextureFilter",
-                                                                    GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
+  gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "TextureFilter"))
                          .value_or(DEFAULT_GPU_TEXTURE_FILTER);
-  gpu_sprite_texture_filter =
-    ParseTextureFilterName(
-      si.GetStringViewValue(GPU_SECTION_NAME, "SpriteTextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)))
-      .value_or(DEFAULT_GPU_TEXTURE_FILTER);
-  gpu_dithering_mode =
-    ParseGPUDitheringModeName(
-      si.GetStringViewValue(GPU_SECTION_NAME, "DitheringMode", GetGPUDitheringModeName(DEFAULT_GPU_DITHERING_MODE)))
-      .value_or(DEFAULT_GPU_DITHERING_MODE);
-  gpu_line_detect_mode =
-    ParseLineDetectModeName(
-      si.GetStringViewValue(GPU_SECTION_NAME, "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)))
-      .value_or(DEFAULT_GPU_LINE_DETECT_MODE);
-  gpu_downsample_mode =
-    ParseDownsampleModeName(
-      si.GetStringViewValue(GPU_SECTION_NAME, "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)))
-      .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
+  gpu_sprite_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "SpriteTextureFilter"))
+                                .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+  gpu_dithering_mode = ParseGPUDitheringModeName(si.GetStringViewValue(GPU_SECTION_NAME, "DitheringMode"))
+                         .value_or(DEFAULT_GPU_DITHERING_MODE);
+  gpu_line_detect_mode = ParseLineDetectModeName(si.GetStringViewValue(GPU_SECTION_NAME, "LineDetectMode"))
+                           .value_or(DEFAULT_GPU_LINE_DETECT_MODE);
+  gpu_downsample_mode = ParseDownsampleModeName(si.GetStringViewValue(GPU_SECTION_NAME, "DownsampleMode"))
+                          .value_or(DEFAULT_GPU_DOWNSAMPLE_MODE);
   gpu_downsample_scale = static_cast<u8>(si.GetUIntValue(GPU_SECTION_NAME, "DownsampleScale", 1));
-  gpu_wireframe_mode = ParseGPUWireframeMode(si.GetStringViewValue(GPU_SECTION_NAME, "WireframeMode",
-                                                                   GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)))
+  gpu_wireframe_mode = ParseGPUWireframeMode(si.GetStringViewValue(GPU_SECTION_NAME, "WireframeMode"))
                          .value_or(DEFAULT_GPU_WIREFRAME_MODE);
-  gpu_force_video_timing =
-    ParseForceVideoTimingName(si.GetStringViewValue(GPU_SECTION_NAME, "ForceVideoTiming",
-                                                    GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)))
-      .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
+  gpu_force_video_timing = ParseForceVideoTimingName(si.GetStringViewValue(GPU_SECTION_NAME, "ForceVideoTiming"))
+                             .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
   gpu_mid_frame_scanout = si.GetBoolValue(GPU_SECTION_NAME, "MidFrameScanout", false);
   gpu_disable_textures = si.GetBoolValue(GPU_SECTION_NAME, "DisableTextures", false);
   gpu_disable_vertex_lighting = si.GetBoolValue(GPU_SECTION_NAME, "DisableVertexLighting", false);
@@ -399,14 +381,11 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   LoadPGXPSettings(si);
   gpu_dump_fast_replay_mode = si.GetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", false);
   display_deinterlacing_mode =
-    ParseDisplayDeinterlacingMode(
-      si.GetStringViewValue(GPU_SECTION_NAME, "DeinterlacingMode",
-                            GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE)))
+    ParseDisplayDeinterlacingMode(si.GetStringViewValue(GPU_SECTION_NAME, "DeinterlacingMode"))
       .value_or(DEFAULT_DISPLAY_DEINTERLACING_MODE);
 
-  display_crop_mode = ParseDisplayCropMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "CropMode",
-                                                                 GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)))
-                        .value_or(DEFAULT_DISPLAY_CROP_MODE);
+  display_crop_mode =
+    ParseDisplayCropMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "CropMode")).value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio = ParseDisplayAspectRatio(si.GetStringViewValue(DISPLAY_SECTION_NAME, "AspectRatio"))
                            .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_fine_crop_mode = ParseDisplayFineCropMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "FineCropMode"))
@@ -415,36 +394,24 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_fine_crop_amount[1] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropTop", 0);
   display_fine_crop_amount[2] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropRight", 0);
   display_fine_crop_amount[3] = si.GetSaturatedIntValue<s16>(DISPLAY_SECTION_NAME, "FineCropBottom", 0);
-  display_alignment = ParseDisplayAlignment(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Alignment",
-                                                                  GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)))
-                        .value_or(DEFAULT_DISPLAY_ALIGNMENT);
-  display_rotation = ParseDisplayRotation(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Rotation",
-                                                                GetDisplayRotationName(DEFAULT_DISPLAY_ROTATION)))
-                       .value_or(DEFAULT_DISPLAY_ROTATION);
-  display_scaling = ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling",
-                                                              GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)))
-                      .value_or(DEFAULT_DISPLAY_SCALING);
-  display_scaling_24bit = ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling24Bit",
-                                                                    GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)))
-                            .value_or(DEFAULT_DISPLAY_SCALING);
+  display_alignment =
+    ParseDisplayAlignment(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Alignment")).value_or(DEFAULT_DISPLAY_ALIGNMENT);
+  display_rotation =
+    ParseDisplayRotation(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Rotation")).value_or(DEFAULT_DISPLAY_ROTATION);
+  display_scaling =
+    ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling")).value_or(DEFAULT_DISPLAY_SCALING);
+  display_scaling_24bit =
+    ParseDisplayScaling(si.GetStringViewValue(DISPLAY_SECTION_NAME, "Scaling24Bit")).value_or(DEFAULT_DISPLAY_SCALING);
   display_exclusive_fullscreen_control =
-    ParseDisplayExclusiveFullscreenControl(
-      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ExclusiveFullscreenControl",
-                            GetDisplayExclusiveFullscreenControlName(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL)))
+    ParseDisplayExclusiveFullscreenControl(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ExclusiveFullscreenControl"))
       .value_or(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
-  display_screenshot_mode =
-    ParseDisplayScreenshotMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotMode",
-                                                     GetDisplayScreenshotModeName(DEFAULT_DISPLAY_SCREENSHOT_MODE)))
-      .value_or(DEFAULT_DISPLAY_SCREENSHOT_MODE);
+  display_screenshot_mode = ParseDisplayScreenshotMode(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotMode"))
+                              .value_or(DEFAULT_DISPLAY_SCREENSHOT_MODE);
   display_screenshot_format =
-    ParseDisplayScreenshotFormat(
-      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFormat",
-                            GetDisplayScreenshotFormatName(DEFAULT_DISPLAY_SCREENSHOT_FORMAT)))
+    ParseDisplayScreenshotFormat(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFormat"))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
   display_screenshot_filename_format =
-    ParseCaptureFileNameFormat(
-      si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFileNameFormat",
-                            GetCaptureFileNameFormatName(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT)))
+    ParseCaptureFileNameFormat(si.GetStringViewValue(DISPLAY_SECTION_NAME, "ScreenshotFileNameFormat"))
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FILENAME_FORMAT);
   display_screenshot_quality = static_cast<u8>(std::clamp<u32>(
     si.GetUIntValue(DISPLAY_SECTION_NAME, "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
@@ -493,17 +460,13 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       .value_or(DEFAULT_OSD_MESSAGE_LOCATION);
 
   save_state_compression =
-    ParseSaveStateCompressionModeName(
-      si.GetStringViewValue(INTERFACE_SECTION_NAME, "SaveStateCompression",
-                            GetSaveStateCompressionModeName(DEFAULT_SAVE_STATE_COMPRESSION_MODE)))
+    ParseSaveStateCompressionModeName(si.GetStringViewValue(INTERFACE_SECTION_NAME, "SaveStateCompression"))
       .value_or(DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
   cdrom_readahead_sectors =
     static_cast<u8>(si.GetIntValue(CDROM_SECTION_NAME, "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
-  cdrom_mechacon_version =
-    ParseCDROMMechVersionName(si.GetStringViewValue(CDROM_SECTION_NAME, "MechaconVersion",
-                                                    GetCDROMMechVersionName(DEFAULT_CDROM_MECHACON_VERSION)))
-      .value_or(DEFAULT_CDROM_MECHACON_VERSION);
+  cdrom_mechacon_version = ParseCDROMMechVersionName(si.GetStringViewValue(CDROM_SECTION_NAME, "MechaconVersion"))
+                             .value_or(DEFAULT_CDROM_MECHACON_VERSION);
   cdrom_region_check = si.GetBoolValue(CDROM_SECTION_NAME, "RegionCheck", false);
   cdrom_subq_skew = si.GetBoolValue(CDROM_SECTION_NAME, "SubQSkew", false);
   cdrom_load_image_to_ram = si.GetBoolValue(CDROM_SECTION_NAME, "LoadImageToRAM", false);
@@ -518,10 +481,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     std::max(si.GetUIntValue(CDROM_SECTION_NAME, "MaxReadSpeedupCycles", DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES), 1u);
   mdec_disable_cdrom_speedup = si.GetBoolValue(CDROM_SECTION_NAME, "DisableSpeedupOnMDEC", false);
 
-  audio_backend =
-    AudioStream::ParseBackendName(
-      si.GetStringViewValue(AUDIO_SECTION_NAME, "Backend", AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)))
-      .value_or(AudioStream::DEFAULT_BACKEND);
+  audio_backend = AudioStream::ParseBackendName(si.GetStringViewValue(AUDIO_SECTION_NAME, "Backend"))
+                    .value_or(AudioStream::DEFAULT_BACKEND);
   audio_driver = si.GetStringViewValue(AUDIO_SECTION_NAME, "Driver");
   audio_output_device = si.GetStringViewValue(AUDIO_SECTION_NAME, "OutputDevice");
   audio_stream_parameters.Load(si, AUDIO_SECTION_NAME);
@@ -535,8 +496,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   bios_fast_forward_boot = si.GetBoolValue(BIOS_SECTION_NAME, "FastForwardBoot", false);
   bios_reset_spu_on_game_start = si.GetBoolValue(BIOS_SECTION_NAME, "ResetSPUOnGameStart", false);
 
-  multitap_mode = ParseMultitapModeName(controller_si.GetStringViewValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode",
-                                                                         GetMultitapModeName(DEFAULT_MULTITAP_MODE)))
+  multitap_mode = ParseMultitapModeName(controller_si.GetStringViewValue(CONTROLLER_PORTS_SECTION_NAME, "MultitapMode"))
                     .value_or(DEFAULT_MULTITAP_MODE);
 
   const std::array<bool, 2> mtap_enabled = Controller::GetMultitapEnabledPorts(multitap_mode);
@@ -682,9 +642,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   texture_replacements.config.vram_write_dump_height_threshold =
     si.GetSaturatedIntValue<u16>(TEXTURE_REPLACEMENTS_SECTION_NAME, "DumpVRAMWriteHeightThreshold", 128);
 
-  pio_device_type = ParsePIODeviceTypeName(si.GetStringViewValue(PIO_SECTION_NAME, "DeviceType",
-                                                                 GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))
-                      .value_or(DEFAULT_PIO_DEVICE_TYPE);
+  pio_device_type =
+    ParsePIODeviceTypeName(si.GetStringViewValue(PIO_SECTION_NAME, "DeviceType")).value_or(DEFAULT_PIO_DEVICE_TYPE);
   pio_flash_image_path = si.GetStringViewValue(PIO_SECTION_NAME, "FlashImagePath");
   pio_flash_write_enable = si.GetBoolValue(PIO_SECTION_NAME, "FlashImageWriteEnable", false);
   pio_switch_active = si.GetBoolValue(PIO_SECTION_NAME, "SwitchActive", true);
@@ -695,14 +654,14 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   gpu_pgxp_culling = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", true);
   gpu_pgxp_color_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", false);
-  gpu_pgxp_vertex_cache_mode = ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPVertexCache"))
+  gpu_pgxp_vertex_cache_mode = ParseSettingOverrideModeName(si.GetStringViewValue(GPU_SECTION_NAME, "PGXPVertexCache"))
                                  .value_or(SettingOverrideMode::Automatic);
   gpu_pgxp_vertex_cache = (gpu_pgxp_vertex_cache_mode == SettingOverrideMode::Enabled);
-  gpu_pgxp_cpu_mode = ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPCPU"))
+  gpu_pgxp_cpu_mode = ParseSettingOverrideModeName(si.GetStringViewValue(GPU_SECTION_NAME, "PGXPCPU"))
                         .value_or(SettingOverrideMode::Automatic);
   gpu_pgxp_cpu = (gpu_pgxp_cpu_mode == SettingOverrideMode::Enabled);
   gpu_pgxp_preserve_proj_fp_mode =
-    ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPPreserveProjFP"))
+    ParseSettingOverrideModeName(si.GetStringViewValue(GPU_SECTION_NAME, "PGXPPreserveProjFP"))
       .value_or(SettingOverrideMode::Automatic);
   gpu_pgxp_preserve_proj_fp = (gpu_pgxp_preserve_proj_fp_mode == SettingOverrideMode::Enabled);
   gpu_pgxp_tolerance = si.GetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", -1.0f);
@@ -1439,8 +1398,7 @@ void Settings::SetDefaultLogConfig(SettingsInterface& si)
 void Settings::UpdateLogConfig(const SettingsInterface& si)
 {
   const Log::Level log_level =
-    ParseLogLevelName(si.GetStringViewValue(LOGGING_SECTION_NAME, "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL)))
-      .value_or(Log::DEFAULT_LOG_LEVEL);
+    ParseLogLevelName(si.GetStringViewValue(LOGGING_SECTION_NAME, "LogLevel")).value_or(Log::DEFAULT_LOG_LEVEL);
   const bool log_timestamps = si.GetBoolValue(LOGGING_SECTION_NAME, "LogTimestamps", true);
   const bool log_to_console = si.GetBoolValue(LOGGING_SECTION_NAME, "LogToConsole", false);
   const bool log_to_debug = si.GetBoolValue(LOGGING_SECTION_NAME, "LogToDebug", false);
