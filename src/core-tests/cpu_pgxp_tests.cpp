@@ -138,7 +138,8 @@ TEST_F(PGXPTest, ShiftKeepsPackedUpperFraction)
 
 TEST_F(PGXPTest, ShiftKeepsPackedUpperFractionWhenBitsReachX)
 {
-  // Native Y is odd, so it isn't only sign bits after the shift, and keeps its offset from native.
+  // Native Y is odd, so it isn't only sign bits after the shift, and keeps its offset from native. Only its native bit
+  // moves into X, otherwise Y's fraction lands in X scaled by 32768 (Driver 2 averages packed vertices this way).
   for (const bool arithmetic : {false, true})
   {
     for (const u32 dest : {R_V0, R_V1})
@@ -149,6 +150,7 @@ TEST_F(PGXPTest, ShiftKeepsPackedUpperFractionWhenBitsReachX)
       else
         CPU::PGXP::CPU_SRL(R(0, R_V0, dest, 1), 0x02010064);
       EXPECT_EQ(Get(dest).value, 0x01008032u);
+      EXPECT_NEAR(Get(dest).x, 50.125 - 32768.0, TOLERANCE);
       EXPECT_NEAR(Get(dest).y, 256.25, TOLERANCE);
 
       CPU::PGXP::CPU_SRA(R(0, dest, R_A0, 16), 0x01008032);

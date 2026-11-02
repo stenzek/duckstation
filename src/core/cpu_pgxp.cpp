@@ -1826,10 +1826,13 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   else
     x = LOWORD_S16(dX); // only sign bits left
 
+  const bool y_is_sign = ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1));
   const bool x_is_scalar = (LOWORD_S16(dY) != HIWORD_S16(iX));
   if (x_is_scalar)
   {
-    x += y * static_cast<double>(1 << (16 - sh));
+    // When the upper half keeps significant bits (e.g. averaging packed coordinates), its fraction stays in y below, so
+    // only its native integer bits move into x. Otherwise the fraction is counted twice, scaled up in x.
+    x += (y_is_sign ? y : static_cast<double>(HIWORD_U16(rtVal))) * static_cast<double>(1 << (16 - sh));
     if (x_negative)
       x += static_cast<double>(1 << (16 - sh));
   }
@@ -1837,7 +1840,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   // When only sign bits are left in the upper half and it was shifted into x, x is the whole precise value, and its
   // sign can differ from the native value (e.g. 45 vs -57.9). Take the sign from it, so the halves don't represent a
   // value 65536 away.
-  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
+  if (y_is_sign)
   {
     if (x_is_scalar)
     {
