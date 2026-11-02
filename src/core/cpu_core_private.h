@@ -124,8 +124,19 @@ ALWAYS_INLINE VirtualMemoryAddress PhysicalAddressToVirtual(PhysicalMemoryAddres
   return bases[static_cast<u32>(segment)] | address;
 }
 
-Bus::MemoryReadHandler GetMemoryReadHandler(VirtualMemoryAddress address, MemoryAccessSize size);
-Bus::MemoryWriteHandler GetMemoryWriteHandler(VirtualMemoryAddress address, MemoryAccessSize size);
+ALWAYS_INLINE_RELEASE Bus::MemoryReadHandler GetMemoryReadHandler(VirtualMemoryAddress address, MemoryAccessSize size)
+{
+  Bus::MemoryReadHandler* base =
+    Bus::OffsetHandlerArray<Bus::MemoryReadHandler>(g_state.memory_handlers, size, MemoryAccessType::Read);
+  return base[address >> Bus::MEMORY_LUT_PAGE_SHIFT];
+}
+
+ALWAYS_INLINE_RELEASE Bus::MemoryWriteHandler GetMemoryWriteHandler(VirtualMemoryAddress address, MemoryAccessSize size)
+{
+  Bus::MemoryWriteHandler* base =
+    Bus::OffsetHandlerArray<Bus::MemoryWriteHandler>(g_state.memory_handlers, size, MemoryAccessType::Write);
+  return base[address >> Bus::MEMORY_LUT_PAGE_SHIFT];
+}
 
 // memory access functions which return false if an exception was thrown.
 bool SafeReadInstruction(VirtualMemoryAddress addr, u32* value);
