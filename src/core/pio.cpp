@@ -112,7 +112,7 @@ u8 PIO::Flash::Read(u32 offset)
 
 void PIO::Flash::CodeRead(u32 offset, u32* words, u32 word_count)
 {
-  DebugAssert((offset + (word_count * sizeof(u32))) < TOTAL_SIZE);
+  DebugAssert((offset + (word_count * sizeof(u32))) <= TOTAL_SIZE);
   std::memcpy(words, m_data.data() + offset, word_count * sizeof(u32));
 }
 
@@ -538,7 +538,7 @@ public:
   void WriteHandler(u32 offset, u8 value) override;
 
 private:
-  ALWAYS_INLINE u32 GetFlashUpperBank() const { return m_memory_map.sram_bank ? (384 * 1024) : (256 * 1024); }
+  ALWAYS_INLINE u32 GetFlashUpperBank() const { return m_memory_map.flash_bank ? (384 * 1024) : (256 * 1024); }
 
   union MemoryMappingRegister
   {
@@ -677,11 +677,12 @@ u8 PIO::XplorerCart::ReadHandler(u32 offset)
 
 void PIO::XplorerCart::CodeReadHandler(u32 offset, u32* words, u32 word_count)
 {
-  if ((offset + word_count) <= 0x40000)
+  const u32 end_offset = offset + (word_count * sizeof(u32));
+  if (end_offset <= 0x40000)
   {
     m_flash.CodeRead(offset, words, word_count);
   }
-  else if (offset >= 0x40000 && (offset + word_count) <= 0x60000)
+  else if (offset >= 0x40000 && end_offset <= 0x60000)
   {
     // second 256KB of flash or SRAM
     const u32 bank_offset = offset - 0x40000;
@@ -692,7 +693,7 @@ void PIO::XplorerCart::CodeReadHandler(u32 offset, u32* words, u32 word_count)
     }
     else
     {
-      m_flash.CodeRead(bank_offset, words, word_count * sizeof(u32));
+      m_flash.CodeRead(bank_offset | GetFlashUpperBank(), words, word_count);
     }
   }
   else if (offset < 0x60000) [[unlikely]]
@@ -707,9 +708,9 @@ void PIO::XplorerCart::CodeReadHandler(u32 offset, u32* words, u32 word_count)
       offset += words_from_first * sizeof(u32);
     }
 
-    const u32 words_from_second = std::min(0x60000 - offset, word_count);
+    const u32 words_from_second = std::min<u32>((0x60000 - offset) / sizeof(u32), word_count);
     const u32 second_bank_offset = offset - 0x40000;
-    if (m_memory_map.sram_bank)
+    if (m_memory_map.sram_select)
     {
       std::memcpy(words, &m_sram[second_bank_offset], words_from_second * sizeof(u32));
     }
@@ -738,14 +739,13 @@ void PIO::XplorerCart::WriteHandler(u32 offset, u8 value)
   else if (offset < 0x60000)
   {
     const u32 bank_offset = offset - 0x40000;
-    if (m_memory_map.sram_bank)
+    if (m_memory_map.sram_select)
     {
       m_sram[bank_offset] = value;
     }
     else
     {
-      const u32 flash_offset = m_memory_map.sram_bank ? (384 * 1024) : (256 * 1024);
-      m_flash.Write(flash_offset + bank_offset, value);
+      m_flash.Write(bank_offset | GetFlashUpperBank(), value);
     }
   }
   else if (offset == 0x60001)
