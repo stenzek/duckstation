@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 39,
+  GAME_DATABASE_CACHE_VERSION = 40,
 };
 
 /// Map of track hashes for image verification
@@ -150,7 +150,6 @@ static constexpr const std::array s_trait_names = {
   "DisablePGXPOn2DPolygons",
   "ForcePGXPVertexCache",
   "ForcePGXPCPUMode",
-  "NormalizePGXPDepth",
   "ForceRecompilerICache",
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
@@ -193,7 +192,6 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP on 2D Polygons", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP Vertex Cache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP CPU Mode", "GameDatabase::Trait"),
-  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Normalize PGXP Depth", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
@@ -960,21 +958,55 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_pgxp_disable_2d = true;
   }
 
-  if (HasTrait(Trait::NormalizePGXPDepth))
-    settings.gpu_pgxp_normalize_depth = true;
-
-  if (gpu_pgxp_preserve_proj_fp.has_value(override_mask))
+  if (gpu_pgxp_preserve_proj_fp.has_value(override_mask) && settings.gpu_pgxp_enable)
   {
-    if (display_osd_messages)
+    if (settings.gpu_pgxp_preserve_proj_fp_mode == SettingOverrideMode::Automatic)
     {
-      INFO_LOG("GameDB: GPU preserve projection precision set to {}.",
-               gpu_pgxp_preserve_proj_fp.value() ? "true" : "false");
+      if (display_osd_messages)
+      {
+        INFO_LOG("GameDB: GPU preserve projection precision set to {}.",
+                 gpu_pgxp_preserve_proj_fp.value() ? "true" : "false");
+      }
 
-      if (settings.gpu_pgxp_enable && settings.gpu_pgxp_preserve_proj_fp && !gpu_pgxp_preserve_proj_fp.value())
-        append_message(TRANSLATE_SV("GameDatabase", "PGXP preserve projection precision disabled."));
+      settings.gpu_pgxp_preserve_proj_fp = gpu_pgxp_preserve_proj_fp.value();
     }
+    else if (settings.gpu_pgxp_preserve_proj_fp != gpu_pgxp_preserve_proj_fp.value())
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "gamedb_pgxp_preserve_proj_fp", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("GameDatabase", "PGXP preserve projection precision differs from the game "
+                                                            "database setting. This may cause rendering errors."));
+    }
+  }
 
-    settings.gpu_pgxp_preserve_proj_fp = gpu_pgxp_preserve_proj_fp.value();
+  if (gpu_pgxp_normalize_depth.has_value(override_mask) && settings.gpu_pgxp_enable)
+  {
+    if (settings.gpu_pgxp_normalize_depth_mode == GPUPGXPDepthNormalizationMode::Automatic)
+    {
+      // Fixed up later in FixIncompatibleSettings().
+      settings.gpu_pgxp_normalize_depth_mode = gpu_pgxp_normalize_depth.value();
+      settings.gpu_pgxp_normalize_depth =
+        (settings.gpu_pgxp_normalize_depth_mode >= GPUPGXPDepthNormalizationMode::DepthBufferOnly);
+      if (display_osd_messages)
+      {
+        INFO_LOG("GameDB: PGXP depth normalization set to {}.",
+                 Settings::GetPGXPDepthNormalizationModeName(settings.gpu_pgxp_normalize_depth_mode));
+      }
+    }
+    else
+    {
+      // Only warn when the effective behaviour differs, e.g. depth buffer only without the depth buffer is disabled.
+      static constexpr auto is_active = [](GPUPGXPDepthNormalizationMode mode, bool depth_buffer) {
+        return (mode == GPUPGXPDepthNormalizationMode::Always ||
+                (mode == GPUPGXPDepthNormalizationMode::DepthBufferOnly && depth_buffer));
+      };
+      if (is_active(settings.gpu_pgxp_normalize_depth_mode, settings.gpu_pgxp_depth_buffer) !=
+          is_active(gpu_pgxp_normalize_depth.value(), settings.gpu_pgxp_depth_buffer))
+      {
+        Host::AddIconOSDMessage(OSDMessageType::Warning, "gamedb_pgxp_normalize_depth", ICON_EMOJI_WARNING,
+                                TRANSLATE_STR("GameDatabase", "PGXP depth normalization differs from the game "
+                                                              "database setting. This may cause rendering errors."));
+      }
+    }
   }
 
   if (HasTrait(Trait::ForceRecompilerICache))
@@ -1203,6 +1235,8 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                      gpu_pgxp_depth_threshold.get(override_mask));
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Bias"),
                      gpu_pgxp_depth_bias.get(override_mask));
+  AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Normalization"),
+                    &Settings::GetPGXPDepthNormalizationModeDisplayName, gpu_pgxp_normalize_depth.get(override_mask));
   AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Preserve Projection Precision"),
                     gpu_pgxp_preserve_proj_fp.get(override_mask));
 
@@ -1329,7 +1363,7 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
         !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
         !reader.ReadT(&entry.gpu_pgxp_tolerance) || !reader.ReadT(&entry.gpu_pgxp_depth_threshold) ||
-        !reader.ReadT(&entry.gpu_pgxp_depth_bias))
+        !reader.ReadT(&entry.gpu_pgxp_depth_bias) || !reader.ReadT(&entry.gpu_pgxp_normalize_depth))
     {
       DEV_LOG("Cache entry is corrupted.");
       return false;
@@ -1463,6 +1497,7 @@ bool GameDatabase::SaveToCache()
     writer.WriteT(entry.gpu_pgxp_tolerance);
     writer.WriteT(entry.gpu_pgxp_depth_threshold);
     writer.WriteT(entry.gpu_pgxp_depth_bias);
+    writer.WriteT(entry.gpu_pgxp_normalize_depth);
   }
 
   for (const auto& it : s_state.code_lookup)
@@ -1774,6 +1809,9 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     entry->gpu_line_detect_mode.set(
       entry->override_mask,
       ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName));
+    entry->gpu_pgxp_normalize_depth.set(
+      entry->override_mask, ParseOptionalTFromObject<GPUPGXPDepthNormalizationMode>(
+                              settings, "gpuPGXPNormalizeDepth", &Settings::ParsePGXPDepthNormalizationModeName));
     entry->cpu_overclock.set(entry->override_mask, GetOptionalTFromObject<u8>(settings, "cpuOverclockPercent"));
 
     // Bit yuck to parse a size here...

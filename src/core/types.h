@@ -149,6 +149,15 @@ enum class GPULineDetectMode : u8
   Count
 };
 
+enum class GPUPGXPDepthNormalizationMode : u8
+{
+  Automatic,
+  Disabled,
+  DepthBufferOnly,
+  Always,
+  Count
+};
+
 enum class GPUDumpCompressionMode : u8
 {
   Disabled,

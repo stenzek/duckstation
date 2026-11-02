@@ -695,22 +695,24 @@ void Settings::LoadPGXPSettings(const SettingsInterface& si)
   gpu_pgxp_culling = si.GetBoolValue(GPU_SECTION_NAME, "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTextureCorrection", true);
   gpu_pgxp_color_correction = si.GetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", false);
-  gpu_pgxp_vertex_cache_mode =
-    ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPVertexCache",
-                                                       GetSettingOverrideModeName(SettingOverrideMode::Automatic)))
-      .value_or(SettingOverrideMode::Automatic);
+  gpu_pgxp_vertex_cache_mode = ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPVertexCache"))
+                                 .value_or(SettingOverrideMode::Automatic);
   gpu_pgxp_vertex_cache = (gpu_pgxp_vertex_cache_mode == SettingOverrideMode::Enabled);
-  gpu_pgxp_cpu_mode =
-    ParseSettingOverrideModeName(
-      si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPCPU", GetSettingOverrideModeName(SettingOverrideMode::Automatic)))
-      .value_or(SettingOverrideMode::Automatic);
+  gpu_pgxp_cpu_mode = ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPCPU"))
+                        .value_or(SettingOverrideMode::Automatic);
   gpu_pgxp_cpu = (gpu_pgxp_cpu_mode == SettingOverrideMode::Enabled);
-  gpu_pgxp_preserve_proj_fp = si.GetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", false);
+  gpu_pgxp_preserve_proj_fp_mode =
+    ParseSettingOverrideModeName(si.GetTinyStringValue(GPU_SECTION_NAME, "PGXPPreserveProjFP"))
+      .value_or(SettingOverrideMode::Automatic);
+  gpu_pgxp_preserve_proj_fp = (gpu_pgxp_preserve_proj_fp_mode == SettingOverrideMode::Enabled);
   gpu_pgxp_tolerance = si.GetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", -1.0f);
   gpu_pgxp_depth_buffer = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", false);
   gpu_pgxp_disable_2d = si.GetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", false);
   gpu_pgxp_transparent_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", false);
-  gpu_pgxp_normalize_depth = si.GetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", false);
+  gpu_pgxp_normalize_depth_mode =
+    ParsePGXPDepthNormalizationModeName(si.GetStringViewValue(GPU_SECTION_NAME, "PGXPNormalizeDepth"))
+      .value_or(GPUPGXPDepthNormalizationMode::Automatic);
+  gpu_pgxp_normalize_depth = (gpu_pgxp_normalize_depth_mode >= GPUPGXPDepthNormalizationMode::DepthBufferOnly);
   SetPGXPDepthClearThreshold(
     si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
   gpu_pgxp_depth_bias = si.GetFloatValue(GPU_SECTION_NAME, "PGXPDepthBias", DEFAULT_GPU_PGXP_DEPTH_BIAS);
@@ -821,12 +823,13 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPColorCorrection", gpu_pgxp_color_correction);
   si.SetStringValue(GPU_SECTION_NAME, "PGXPVertexCache", GetSettingOverrideModeName(gpu_pgxp_vertex_cache_mode));
   si.SetStringValue(GPU_SECTION_NAME, "PGXPCPU", GetSettingOverrideModeName(gpu_pgxp_cpu_mode));
-  si.SetBoolValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
+  si.SetStringValue(GPU_SECTION_NAME, "PGXPPreserveProjFP", GetSettingOverrideModeName(gpu_pgxp_preserve_proj_fp_mode));
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPTolerance", gpu_pgxp_tolerance);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetBoolValue(GPU_SECTION_NAME, "PGXPTransparentDepthTest", gpu_pgxp_transparent_depth);
-  si.SetBoolValue(GPU_SECTION_NAME, "PGXPNormalizeDepth", gpu_pgxp_normalize_depth);
+  si.SetStringValue(GPU_SECTION_NAME, "PGXPNormalizeDepth",
+                    GetPGXPDepthNormalizationModeName(gpu_pgxp_normalize_depth_mode));
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthThreshold", GetPGXPDepthClearThreshold());
   si.SetFloatValue(GPU_SECTION_NAME, "PGXPDepthBias", gpu_pgxp_depth_bias);
   si.SetBoolValue(GPU_SECTION_NAME, "DumpFastReplayMode", gpu_dump_fast_replay_mode);
@@ -1337,6 +1340,11 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     gpu_pgxp_disable_2d = false;
     gpu_pgxp_transparent_depth = false;
     gpu_pgxp_normalize_depth = false;
+  }
+  else
+  {
+    if (gpu_pgxp_normalize_depth_mode == GPUPGXPDepthNormalizationMode::DepthBufferOnly && !gpu_pgxp_depth_buffer)
+      gpu_pgxp_normalize_depth = false;
   }
 
   // texture replacements are not available without the TC or with the software renderer
@@ -1958,6 +1966,44 @@ const char* Settings::GetGPUDitheringModeDisplayName(GPUDitheringMode mode)
 {
   return Host::TranslateToCString("Settings", s_gpu_dithering_mode_display_names[static_cast<size_t>(mode)],
                                   "GPUDitheringMode");
+}
+
+static constexpr const std::array s_pgxp_depth_normalization_names = {
+  "Automatic",
+  "Disabled",
+  "DepthBufferOnly",
+  "Always",
+};
+static constexpr const std::array s_pgxp_depth_normalization_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Automatic", "GPUPGXPDepthNormalization"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "GPUPGXPDepthNormalization"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Depth Buffer Only", "GPUPGXPDepthNormalization"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Depth Buffer and Texture Correction", "GPUPGXPDepthNormalization"),
+};
+
+std::optional<GPUPGXPDepthNormalizationMode> Settings::ParsePGXPDepthNormalizationModeName(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_pgxp_depth_normalization_names)
+  {
+    if (str == name)
+      return static_cast<GPUPGXPDepthNormalizationMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetPGXPDepthNormalizationModeName(GPUPGXPDepthNormalizationMode mode)
+{
+  return s_pgxp_depth_normalization_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetPGXPDepthNormalizationModeDisplayName(GPUPGXPDepthNormalizationMode mode)
+{
+  return Host::TranslateToCString("Settings", s_pgxp_depth_normalization_display_names[static_cast<size_t>(mode)],
+                                  "GPUPGXPDepthNormalization");
 }
 
 static constexpr const std::array s_line_detect_mode_names = {

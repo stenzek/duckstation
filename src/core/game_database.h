@@ -66,7 +66,6 @@ enum class Trait : u32
   DisablePGXPOn2DPolygons,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
-  NormalizePGXPDepth,
   ForceRecompilerICache,
   ForceCDROMSubQSkew,
   IsLibCryptProtected,
@@ -153,6 +152,7 @@ struct Entry
   PackedOptional<float, 17> gpu_pgxp_tolerance;                          ///< GPU PGXP tolerance override.
   PackedOptional<float, 18> gpu_pgxp_depth_threshold;                    ///< GPU PGXP depth threshold override.
   PackedOptional<float, 19> gpu_pgxp_depth_bias;                         ///< GPU PGXP depth bias override.
+  PackedOptional<GPUPGXPDepthNormalizationMode, 20> gpu_pgxp_normalize_depth; ///< GPU PGXP depth normalization override.
 
   /// Checks if a trait is present.
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }

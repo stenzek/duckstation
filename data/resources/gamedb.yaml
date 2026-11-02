@@ -455,6 +455,10 @@ SLES-03355:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Electronic Arts"
     developer: "Eutechnyx"
@@ -476,6 +480,10 @@ SLES-03356:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Electronic Arts"
     developer: "Eutechnyx"
@@ -497,6 +505,10 @@ SLES-03357:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Electronic Arts"
     developer: "Eutechnyx"
@@ -521,6 +533,10 @@ SLUS-01300:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Electronic Arts"
     developer: "Eutechnyx"
@@ -70566,8 +70582,8 @@ SCES-00984:
     - DigitalController
     - NeGcon
     - NeGconRumble
-  traits:
-    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
+  settings:
+    gpuPGXPNormalizeDepth: DepthBufferOnly # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"
@@ -70619,8 +70635,8 @@ SCPS-10045:
     - SCPS-45149
     - SCPS-91128
     - SCPS-91301
-  traits:
-    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
+  settings:
+    gpuPGXPNormalizeDepth: DepthBufferOnly # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"
@@ -70647,8 +70663,8 @@ SCUS-94194:
     - DigitalController
     - NeGcon
     - NeGconRumble
-  traits:
-    - NormalizePGXPDepth # Distant objects use scaled-down transforms, breaking the depth buffer.
+  settings:
+    gpuPGXPNormalizeDepth: DepthBufferOnly # Distant objects use scaled-down transforms, breaking the depth buffer.
   metadata:
     publisher: "Sony"
     developer: "Polyphony Digital"
@@ -95320,6 +95336,10 @@ SLES-01362:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   libcrypt: true
   metadata:
     publisher: "Infogrames"
@@ -103930,6 +103950,10 @@ SLES-01694:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Infogrames"
     developer: "Eutechnyx"
@@ -177695,6 +177719,10 @@ SLUS-01077:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Packs vertices in bitfields.
+  settings:
+    gpuPGXPNormalizeDepth: Always # Track sections use differently scaled transforms, warping textures at the seams.
   metadata:
     publisher: "Infogrames"
     developer: "Eutechnyx"

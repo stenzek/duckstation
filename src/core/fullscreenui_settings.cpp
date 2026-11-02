@@ -4985,10 +4985,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       FSUI_VSTR("Increases the precision of polygon culling, reducing the number of holes in geometry."),
       Settings::GPU_SECTION_NAME, "PGXPCulling", true, pgxp_enabled);
     DrawToggleSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_DRAW_POLYGON, "Preserve Projection Precision"),
-      FSUI_VSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."),
-      Settings::GPU_SECTION_NAME, "PGXPPreserveProjFP", false, pgxp_enabled);
-    DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_SQUARE_MINUS, "Disable on 2D Polygons"),
       FSUI_VSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
                 "fix misaligned UI in some games, but otherwise should be left disabled."),
@@ -4997,10 +4993,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                       FSUI_VSTR("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
                                 "and tend to clip through the ground when depth testing is enabled."),
                       Settings::GPU_SECTION_NAME, "PGXPTransparentDepthTest", false, pgxp_enabled);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER_VERTICAL, "Normalize Depth Scale"),
-                      FSUI_VSTR("Removes the scale of each object's transform from depth values. Fixes missing "
-                                "geometry in some games, but breaks others."),
-                      Settings::GPU_SECTION_NAME, "PGXPNormalizeDepth", false, pgxp_enabled);
 
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "CPU Mode"),
                     FSUI_VSTR("Uses PGXP for all instructions, not just memory operations. Automatic uses the game "
@@ -5015,6 +5007,20 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     Settings::GPU_SECTION_NAME, "PGXPVertexCache", SettingOverrideMode::Automatic,
                     &Settings::ParseSettingOverrideModeName, &Settings::GetSettingOverrideModeName,
                     &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Count, pgxp_enabled);
+    DrawEnumSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_DRAW_POLYGON, "Preserve Projection Precision"),
+      FSUI_VSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic "
+                "uses the game database setting."),
+      Settings::GPU_SECTION_NAME, "PGXPPreserveProjFP", SettingOverrideMode::Automatic,
+      &Settings::ParseSettingOverrideModeName, &Settings::GetSettingOverrideModeName,
+      &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Count, pgxp_enabled);
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER_VERTICAL, "Normalize Depth Scale"),
+                    FSUI_VSTR("Removes the scale of each object's transform from depth values. Fixes missing "
+                              "geometry in some games, but breaks others. Automatic uses the game database setting."),
+                    Settings::GPU_SECTION_NAME, "PGXPNormalizeDepth", GPUPGXPDepthNormalizationMode::Automatic,
+                    &Settings::ParsePGXPDepthNormalizationModeName, &Settings::GetPGXPDepthNormalizationModeName,
+                    &Settings::GetPGXPDepthNormalizationModeDisplayName, GPUPGXPDepthNormalizationMode::Count,
+                    pgxp_enabled);
 
     DrawFloatRangeSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_PENTAGON, "Geometry Tolerance"),

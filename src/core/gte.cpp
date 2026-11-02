@@ -913,7 +913,8 @@ NEVER_INLINE void GTE::RTPS_PGXP(const s16 V[3], u8 shift, bool lm, s64 x, s64 y
   precise_y = std::clamp<float>(precise_y, -1024.0f, 1023.0f);
 
   // Some games scale the whole view transform per object to keep it within 16-bit range, compensating when sorting.
-  // Undo the scale of the rotation matrix's Z row, so that depth is comparable between objects.
+  // Undo the scale of the rotation matrix's Z row, so that depth is comparable between objects. This also applies to
+  // texture correction, where polygons can join vertices transformed with different scales.
   float precise_depth = precise_z;
   if (g_settings.gpu_pgxp_normalize_depth)
   {

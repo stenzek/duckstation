@@ -238,8 +238,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpColorCorrection, Settings::GPU_SECTION_NAME,
                                                "PGXPColorCorrection", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCulling, Settings::GPU_SECTION_NAME, "PGXPCulling", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpPreserveProjPrecision, Settings::GPU_SECTION_NAME,
-                                               "PGXPPreserveProjFP", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.pgxpPreserveProjPrecision, Settings::GPU_SECTION_NAME, "PGXPPreserveProjFP",
+    &Settings::ParseSettingOverrideModeName, &Settings::GetSettingOverrideModeName,
+    &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Automatic, SettingOverrideMode::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.pgxpCPU, Settings::GPU_SECTION_NAME, "PGXPCPU", &Settings::ParseSettingOverrideModeName,
     &Settings::GetSettingOverrideModeName, &Settings::GetSettingOverrideModeDisplayName, SettingOverrideMode::Automatic,
@@ -252,8 +254,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "PGXPDisableOn2DPolygons", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, Settings::GPU_SECTION_NAME,
                                                "PGXPTransparentDepthTest", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpNormalizeDepth, Settings::GPU_SECTION_NAME,
-                                               "PGXPNormalizeDepth", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pgxpNormalizeDepth, Settings::GPU_SECTION_NAME,
+                                               "PGXPNormalizeDepth", &Settings::ParsePGXPDepthNormalizationModeName,
+                                               &Settings::GetPGXPDepthNormalizationModeName,
+                                               &Settings::GetPGXPDepthNormalizationModeDisplayName,
+                                               GPUPGXPDepthNormalizationMode::Automatic, GPUPGXPDepthNormalizationMode::Count);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -273,16 +278,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpDisableOn2DPolygons,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
-  SettingWidgetBinder::SetForceEnabled(m_ui.pgxpNormalizeDepth,
-                                       m_dialog->hasGameTrait(GameDatabase::Trait::NormalizePGXPDepth));
-  if (const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
-      dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value(dbentry->override_mask))
-  {
-    if (dbentry->gpu_pgxp_preserve_proj_fp.value())
-      SettingWidgetBinder::SetForceEnabled(m_ui.pgxpPreserveProjPrecision, true);
-    else
-      SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision, false);
-  }
 
   // Texture Replacements Tab
 
@@ -572,8 +567,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Increases the precision of polygon culling, reducing the number of holes in geometry. "
                                 "Requires geometry correction enabled."));
   dialog->registerWidgetHelp(
-    m_ui.pgxpPreserveProjPrecision, tr("Preserve Projection Precision"), tr("Unchecked"),
-    tr("Adds additional precision to PGXP data post-projection. May improve visuals in some games."));
+    m_ui.pgxpPreserveProjPrecision, tr("Preserve Projection Precision"), tr("Automatic"),
+    tr("Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the "
+       "game database setting, and is otherwise disabled."));
   dialog->registerWidgetHelp(m_ui.pgxpCPU, tr("CPU Mode"), tr("Automatic"),
                              tr("Uses PGXP for all instructions, not just memory operations. Required for PGXP to "
                                 "correct wobble in some games, but has a high performance cost. Automatic enables it "
@@ -592,10 +588,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                 "and tend to clip through the ground when depth testing is enabled. Depth writes for "
                                 "semi-transparent polygons are disabled regardless of this setting."));
   dialog->registerWidgetHelp(
-    m_ui.pgxpNormalizeDepth, tr("Normalize Depth Scale"), tr("Unchecked"),
+    m_ui.pgxpNormalizeDepth, tr("Normalize Depth Scale"), tr("Automatic"),
     tr("Removes the scale of each object's transform from depth values. Fixes missing geometry with the depth buffer "
        "in games which shrink the transforms of distant objects, but breaks games which scale models through the "
-       "transform. The game database will enable this automatically when needed."));
+       "transform. Also applying it to texture correction fixes warped textures where differently scaled objects "
+       "meet. Automatic uses the game database setting, and is otherwise disabled."));
 
   // Texture Replacements Tab
   dialog->registerWidgetHelp(
@@ -1102,9 +1099,8 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpColorCorrection->setEnabled(tc_enabled &&
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
   m_ui.pgxpDepthBuffer->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPDepthBuffer));
-  const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
-  m_ui.pgxpPreserveProjPrecision->setEnabled(
-    enabled && (!dbentry || !dbentry->gpu_pgxp_preserve_proj_fp.has_value(dbentry->override_mask)));
+  m_ui.pgxpPreserveProjPrecision->setEnabled(enabled);
+  m_ui.pgxpPreserveProjPrecisionLabel->setEnabled(enabled);
   m_ui.pgxpCPU->setEnabled(enabled);
   m_ui.pgxpCPULabel->setEnabled(enabled);
   m_ui.pgxpVertexCache->setEnabled(enabled);
@@ -1121,8 +1117,9 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
                                            !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
-  m_ui.pgxpNormalizeDepth->setEnabled(depth_enabled &&
-                                      !m_dialog->hasGameTrait(GameDatabase::Trait::NormalizePGXPDepth));
+  const bool normalize_depth_enabled = (depth_enabled || tc_enabled);
+  m_ui.pgxpNormalizeDepth->setEnabled(normalize_depth_enabled);
+  m_ui.pgxpNormalizeDepthLabel->setEnabled(normalize_depth_enabled);
   updateResolutionDependentOptions();
 }
 
