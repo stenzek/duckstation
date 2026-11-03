@@ -44,6 +44,7 @@ using nfds_t = ULONG;
 
 #ifdef __linux__
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #endif
 
 #define ioctlsocket ioctl
@@ -298,12 +299,24 @@ SocketMultiplexer::SocketMultiplexer() = default;
 
 SocketMultiplexer::~SocketMultiplexer()
 {
+  // Stop the worker first, so no callbacks can be running while we close everything.
+  if (m_worker_thread.Joinable())
+  {
+    m_worker_shutdown.store(true, std::memory_order_release);
+    WakeWorkerThread();
+    m_worker_thread.Join();
+  }
+
   CloseAll();
 
 #ifdef __linux__
+  if (m_wake_fd >= 0)
+    close(m_wake_fd);
   if (m_epoll_fd >= 0)
     close(m_epoll_fd);
 #else
+  if (m_wake_socket != INVALID_SOCKET)
+    closesocket(m_wake_socket);
   if (m_poll_array)
     std::free(m_poll_array);
 #endif
@@ -332,9 +345,73 @@ bool SocketMultiplexer::Initialize(Error* error)
     return false;
   }
 
-  return true;
+  m_wake_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+  if (m_wake_fd < 0)
+  {
+    Error::SetErrno(error, "eventfd() failed: ", errno);
+    return false;
+  }
+
+  struct epoll_event ev = {.events = EPOLLIN, .data = {.fd = m_wake_fd}};
+  if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_wake_fd, &ev) != 0)
+  {
+    Error::SetErrno(error, "epoll_ctl() for wake fd failed: ", errno);
+    return false;
+  }
 #else
+  // Use a loopback UDP socket connected to itself to wake the worker, that way it works with WSAPoll() and poll().
+  m_wake_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  if (m_wake_socket == INVALID_SOCKET)
+  {
+    Error::SetSocket(error, "socket() for wake socket failed: ", WSAGetLastError());
+    return false;
+  }
+
+  sockaddr_in sa = {};
+  sa.sin_family = AF_INET;
+  sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  socklen_t salen = sizeof(sa);
+  if (bind(m_wake_socket, reinterpret_cast<const sockaddr*>(&sa), sizeof(sa)) != 0 ||
+      getsockname(m_wake_socket, reinterpret_cast<sockaddr*>(&sa), &salen) != 0 ||
+      connect(m_wake_socket, reinterpret_cast<const sockaddr*>(&sa), salen) != 0)
+  {
+    Error::SetSocket(error, "Failed to set up wake socket: ", WSAGetLastError());
+    return false;
+  }
+
+  if (!SetNonBlocking(m_wake_socket, error))
+    return false;
+
+  SetNotificationMask(nullptr, m_wake_socket, POLLIN);
+#endif
+
+  if (!m_worker_thread.Start([this]() { WorkerThreadEntryPoint(); }))
+  {
+    Error::SetStringView(error, "Failed to start socket worker thread.");
+    return false;
+  }
+
   return true;
+}
+
+void SocketMultiplexer::WorkerThreadEntryPoint()
+{
+  Threading::SetNameOfCurrentThread("Socket Worker");
+
+  while (!m_worker_shutdown.load(std::memory_order_acquire))
+    PollEventsWithTimeout(-1);
+}
+
+void SocketMultiplexer::WakeWorkerThread()
+{
+#ifdef __linux__
+  const u64 value = 1;
+  if (write(m_wake_fd, &value, sizeof(value)) < 0 && errno != EAGAIN) [[unlikely]]
+    ERROR_LOG("write() to wake fd failed: {}", Error::CreateErrno(errno).GetDescription());
+#else
+  const char value = 0;
+  if (send(m_wake_socket, &value, sizeof(value), 0) < 0 && WSAGetLastError() != WSAEWOULDBLOCK) [[unlikely]]
+    ERROR_LOG("send() to wake socket failed: {}", Error::CreateSocket(WSAGetLastError()).GetDescription());
 #endif
 }
 
@@ -452,6 +529,7 @@ void SocketMultiplexer::RemoveOpenSocket(BaseSocket* socket)
   if (epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, socket->GetDescriptor(), nullptr) != 0) [[unlikely]]
     ERROR_LOG("epoll_ctl() to remove socket failed: {}", Error::CreateErrno(errno).GetDescription());
 #else
+  std::lock_guard poll_lock(m_poll_array_mutex);
 #if defined(_DEBUG) || defined(_DEVEL)
   for (size_t i = 0; i < m_poll_array_active_size; i++)
   {
@@ -528,6 +606,7 @@ void SocketMultiplexer::SetNotificationMask(BaseSocket* socket, SocketDescriptor
     else
       pfd.fd = INVALID_SOCKET;
 
+    WakeWorkerThread();
     return;
   }
 
@@ -551,16 +630,19 @@ void SocketMultiplexer::SetNotificationMask(BaseSocket* socket, SocketDescriptor
 
   m_poll_array[free_slot] = {.fd = descriptor, .events = static_cast<short>(events), .revents = 0};
   m_poll_array_active_size = free_slot + 1;
+
+  // poll() takes a copy of the array, so it needs to be restarted to pick up the change.
+  WakeWorkerThread();
 #endif
 }
 
-bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
+bool SocketMultiplexer::PollEventsWithTimeout(int milliseconds)
 {
 #ifdef __linux__
   constexpr int MAX_EVENTS = 128;
   struct epoll_event events[MAX_EVENTS];
 
-  const int nevents = epoll_wait(m_epoll_fd, events, MAX_EVENTS, static_cast<int>(milliseconds));
+  const int nevents = epoll_wait(m_epoll_fd, events, MAX_EVENTS, milliseconds);
   if (nevents <= 0)
     return false;
 
@@ -574,12 +656,18 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
     for (int i = 0; i < nevents; i++)
     {
       const epoll_event& ev = events[i];
-      const auto iter = m_open_sockets.find(ev.data.fd);
-      if (iter == m_open_sockets.end()) [[unlikely]]
+      if (ev.data.fd == m_wake_fd)
       {
-        ERROR_LOG("Attempting to look up unknown socket {}, this should never happen.", ev.data.fd);
+        u64 value;
+        if (read(m_wake_fd, &value, sizeof(value)) < 0 && errno != EAGAIN) [[unlikely]]
+          ERROR_LOG("read() from wake fd failed: {}", Error::CreateErrno(errno).GetDescription());
         continue;
       }
+
+      // Can happen if the socket was closed by another thread after the wait returned.
+      const auto iter = m_open_sockets.find(ev.data.fd);
+      if (iter == m_open_sockets.end()) [[unlikely]]
+        continue;
 
       // we add a reference here in case the read kills it with a write pending, or something like that
       new (&triggered_sockets[num_triggered_sockets++]) PendingSocketPair(iter->second->shared_from_this(), ev.events);
@@ -609,11 +697,15 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
 
   return true;
 #else
-  std::unique_lock lock(m_poll_array_mutex);
-  if (m_poll_array_active_size == 0)
+  // Take a copy of the array, so other threads can change the notification mask while we're waiting.
+  {
+    std::lock_guard lock(m_poll_array_mutex);
+    m_worker_poll_array.assign(m_poll_array, m_poll_array + m_poll_array_active_size);
+  }
+  if (m_worker_poll_array.empty())
     return false;
 
-  const int res = WSAPoll(m_poll_array, static_cast<nfds_t>(m_poll_array_active_size), milliseconds);
+  const int res = WSAPoll(m_worker_poll_array.data(), static_cast<nfds_t>(m_worker_poll_array.size()), milliseconds);
   if (res <= 0)
     return false;
 
@@ -624,27 +716,29 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
   size_t num_triggered_sockets = 0;
   {
     std::lock_guard open_lock(m_open_sockets_mutex);
-    for (size_t i = 0; i < m_poll_array_active_size; i++)
+    for (const pollfd& pfd : m_worker_poll_array)
     {
-      const pollfd& pfd = m_poll_array[i];
-      if (pfd.revents == 0)
+      if (pfd.revents == 0 || pfd.fd == INVALID_SOCKET)
         continue;
 
-      const auto iter = m_open_sockets.find(pfd.fd);
-      if (iter == m_open_sockets.end()) [[unlikely]]
+      if (pfd.fd == m_wake_socket)
       {
-        ERROR_LOG("Attempting to look up unknown socket {}, this should never happen.", pfd.fd);
+        char buf[16];
+        while (recv(m_wake_socket, buf, sizeof(buf), 0) > 0)
+          ;
         continue;
       }
+
+      // Can happen if the socket was closed by another thread after the wait returned.
+      const auto iter = m_open_sockets.find(pfd.fd);
+      if (iter == m_open_sockets.end()) [[unlikely]]
+        continue;
 
       // we add a reference here in case the read kills it with a write pending, or something like that
       new (&triggered_sockets[num_triggered_sockets++])
         PendingSocketPair(iter->second->shared_from_this(), pfd.revents);
     }
   }
-
-  // release lock so connections etc can acquire it
-  lock.unlock();
 
   // fire events
   for (size_t i = 0; i < num_triggered_sockets; i++)
@@ -1015,7 +1109,7 @@ std::span<u8> BufferedStreamSocket::AcquireWriteBuffer(size_t wanted_bytes, bool
     m_send_buffer_offset = 0;
   }
 
-  DebugAssert((m_send_buffer_offset + m_send_buffer_size + wanted_bytes) <= m_send_buffer.size());
+  DebugAssert(allow_smaller || (m_send_buffer_offset + m_send_buffer_size + wanted_bytes) <= m_send_buffer.size());
   return std::span<u8>(m_send_buffer.data() + m_send_buffer_offset + m_send_buffer_size,
                        m_send_buffer.size() - m_send_buffer_offset - m_send_buffer_size);
 }
@@ -1061,6 +1155,8 @@ void BufferedStreamSocket::ReleaseWriteBuffer(size_t bytes_written, bool commit 
 
 size_t BufferedStreamSocket::Read(void* buffer, size_t buffer_size)
 {
+  std::unique_lock lock(m_lock);
+
   // Read from receive buffer.
   const std::span<const u8> rdbuf = AcquireReadBuffer();
   if (rdbuf.empty())
@@ -1074,6 +1170,7 @@ size_t BufferedStreamSocket::Read(void* buffer, size_t buffer_size)
 
 size_t BufferedStreamSocket::Write(const void* buffer, size_t buffer_size, bool allow_smaller /* = true */)
 {
+  std::unique_lock lock(m_lock);
   if (!m_connected)
     return 0;
 
@@ -1090,6 +1187,7 @@ size_t BufferedStreamSocket::Write(const void* buffer, size_t buffer_size, bool 
 
 size_t BufferedStreamSocket::WriteVector(const void** buffers, const size_t* buffer_lengths, size_t num_buffers)
 {
+  std::unique_lock lock(m_lock);
   if (!m_connected || num_buffers == 0)
     return 0;
 
@@ -1120,6 +1218,7 @@ size_t BufferedStreamSocket::WriteVector(const void** buffers, const size_t* buf
 
 void BufferedStreamSocket::Close()
 {
+  std::unique_lock lock(m_lock);
   StreamSocket::Close();
 
   m_receive_buffer_offset = 0;

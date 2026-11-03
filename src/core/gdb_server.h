@@ -9,17 +9,9 @@ namespace GDBServer {
 
 bool Initialize(u16 port);
 bool HasAnyClients();
-void PollUntil(u64 max_poll_time);
 void Shutdown();
 
 void OnSystemPaused();
 void OnSystemResumed();
 
 } // namespace GDBServer
-
-namespace Host {
-
-// Called when a GDB client connects or disconnects.
-void OnGDBServerActiveClientsChanged(bool has_clients);
-
-} // namespace Host

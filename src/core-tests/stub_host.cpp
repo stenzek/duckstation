@@ -233,10 +233,6 @@ void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
 }
 
-void Host::OnGDBServerActiveClientsChanged(bool has_clients)
-{
-}
-
 void Host::PumpMessagesOnCoreThread()
 {
 }

@@ -8,6 +8,7 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "gte.h"
+#include "host.h"
 #include "system.h"
 
 #include "common/assert.h"
@@ -15,7 +16,6 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
-#include "common/timer.h"
 
 #include "util/sockets.h"
 
@@ -282,6 +282,11 @@ protected:
 
 private:
   void SendPacket(std::string_view sv);
+
+  // Socket callbacks run on the multiplexer's worker thread, these run on the core thread.
+  void OnConnectedOnCoreThread();
+  void OnDisconnectedOnCoreThread(const Error& error);
+  void OnPacketOnCoreThread(std::string_view packet);
 
   bool m_seen_resume = false;
   bool m_use_target_description = false;
@@ -1243,10 +1248,20 @@ void GDBServer::ClientSocket::ClearBreakpoints()
 
 void GDBServer::ClientSocket::OnConnected()
 {
-  INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
-
   if (Error error; !SetNagleBuffering(false, &error)) [[unlikely]]
     ERROR_LOG("Failed to disable nagle buffering for {}: {}", GetRemoteAddress().ToString(), error.GetDescription());
+
+  Host::RunOnCoreThread(
+    [client = std::static_pointer_cast<ClientSocket>(shared_from_this())]() { client->OnConnectedOnCoreThread(); });
+}
+
+void GDBServer::ClientSocket::OnConnectedOnCoreThread()
+{
+  // Could have disconnected before we got here.
+  if (!IsConnected())
+    return;
+
+  INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
 
   const size_t previous_clients = s_locals.clients.size();
   if (previous_clients == 0)
@@ -1256,24 +1271,33 @@ void GDBServer::ClientSocket::OnConnected()
   System::PauseSystem(true);
 
   s_locals.clients.push_back(std::static_pointer_cast<ClientSocket>(shared_from_this()));
-
-  if (previous_clients == 0)
-    Host::OnGDBServerActiveClientsChanged(true);
 }
 
 void GDBServer::ClientSocket::OnDisconnected(const Error& error)
 {
-  INFO_LOG("Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
+  // Explicit Close() calls from the core thread, e.g. shutdown or a failed write, can be handled immediately.
+  if (Host::IsOnCoreThread())
+  {
+    OnDisconnectedOnCoreThread(error);
+    return;
+  }
 
-  ClearBreakpoints();
+  Host::RunOnCoreThread([client = std::static_pointer_cast<ClientSocket>(shared_from_this()), error]() {
+    client->OnDisconnectedOnCoreThread(error);
+  });
+}
 
+void GDBServer::ClientSocket::OnDisconnectedOnCoreThread(const Error& error)
+{
+  // Not in the list if we disconnected before the connection was handled.
   const auto iter = std::find_if(s_locals.clients.begin(), s_locals.clients.end(),
                                  [this](const std::shared_ptr<ClientSocket>& rhs) { return (rhs.get() == this); });
   if (iter == s_locals.clients.end())
-  {
-    ERROR_LOG("Unknown GDB client disconnected? This should never happen.");
     return;
-  }
+
+  INFO_LOG("Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
+
+  ClearBreakpoints();
 
   s_locals.clients.erase(iter);
   if (s_locals.clients.empty())
@@ -1281,8 +1305,6 @@ void GDBServer::ClientSocket::OnDisconnected(const Error& error)
     const bool resume_system = std::exchange(s_locals.resume_on_last_disconnect, false);
     if (resume_system)
       System::PauseSystem(false);
-
-    Host::OnGDBServerActiveClientsChanged(false);
   }
 }
 
@@ -1309,28 +1331,15 @@ void GDBServer::ClientSocket::OnRead()
       const std::string_view current_packet(reinterpret_cast<const char*>(buffer.data() + buffer_offset),
                                             current_packet_size);
 
-      if (GDBServer::IsPacketAck(current_packet))
+      if (GDBServer::IsPacketAck(current_packet) || GDBServer::IsPacketInterrupt(current_packet) ||
+          GDBServer::IsPacketComplete(current_packet))
       {
-        if (current_packet[0] == '-')
-          ResendLastReply();
-
-        packet_complete = true;
-        break;
-      }
-      else if (GDBServer::IsPacketInterrupt(current_packet))
-      {
-        DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
-        s_locals.pending_stop_signal = GDB_SIGNAL_INTERRUPT;
-        System::PauseSystem(true);
-        s_locals.pending_stop_signal = GDB_SIGNAL_TRAP;
-        packet_complete = true;
-        break;
-      }
-      else if (GDBServer::IsPacketComplete(current_packet))
-      {
-        DEBUG_LOG("{} > {}", GetRemoteAddress().ToString(), current_packet);
-        if (!ProcessPacket(this, current_packet))
-          SendPacket("-");
+        // Positive acks don't need any processing.
+        if (current_packet[0] != '+')
+        {
+          Host::RunOnCoreThread([client = std::static_pointer_cast<ClientSocket>(shared_from_this()),
+                                 packet = std::string(current_packet)]() { client->OnPacketOnCoreThread(packet); });
+        }
 
         packet_complete = true;
         break;
@@ -1351,6 +1360,31 @@ void GDBServer::ClientSocket::OnRead()
   }
 
   ReleaseReadBuffer(buffer_offset);
+}
+
+void GDBServer::ClientSocket::OnPacketOnCoreThread(std::string_view packet)
+{
+  // Drop anything that arrives for a client that has since disconnected.
+  if (!IsConnected())
+    return;
+
+  if (GDBServer::IsPacketAck(packet))
+  {
+    ResendLastReply();
+  }
+  else if (GDBServer::IsPacketInterrupt(packet))
+  {
+    DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
+    s_locals.pending_stop_signal = GDB_SIGNAL_INTERRUPT;
+    System::PauseSystem(true);
+    s_locals.pending_stop_signal = GDB_SIGNAL_TRAP;
+  }
+  else
+  {
+    DEBUG_LOG("{} > {}", GetRemoteAddress().ToString(), packet);
+    if (!ProcessPacket(this, packet))
+      SendPacket("-");
+  }
 }
 
 void GDBServer::ClientSocket::SendPacket(std::string_view sv)
@@ -1486,49 +1520,23 @@ bool GDBServer::HasAnyClients()
   return !s_locals.clients.empty();
 }
 
-void GDBServer::PollUntil(u64 max_poll_time)
-{
-  if (!s_locals.multiplexer)
-    return;
-
-  if (max_poll_time == 0)
-  {
-    s_locals.multiplexer->PollEventsWithTimeout(0);
-    return;
-  }
-
-  // Keep polling until we time out, because there could be multiple back<->forth packets.
-  // Break out if our pause state changes, because we'll probably need to run a frame.
-  const bool was_running = System::IsRunning();
-  const bool exact = (was_running && g_settings.display_optimal_frame_pacing);
-  Timer::Value poll_start_time = Timer::GetCurrentValue();
-  for (;;)
-  {
-    const u32 sleep_ms = static_cast<u32>(Timer::ConvertValueToMilliseconds(max_poll_time - poll_start_time));
-    s_locals.multiplexer->PollEventsWithTimeout(sleep_ms);
-    poll_start_time = Timer::GetCurrentValue();
-    if (poll_start_time >= max_poll_time || System::IsRunning() != was_running || (!exact && sleep_ms == 0))
-      break;
-  }
-}
-
 void GDBServer::Shutdown()
 {
   if (!s_locals.listen_socket)
     return;
 
-  INFO_LOG("Disconnecting {} GDB clients...", s_locals.clients.size());
-  while (!s_locals.clients.empty())
-  {
-    // maintain a reference so we don't delete while in scope
-    std::shared_ptr<ClientSocket> client = s_locals.clients.back();
-    client->Close();
-  }
-
-  INFO_LOG("Stopping GDB server.");
-  s_locals.listen_socket->Close();
+  // Destroying the multiplexer stops the worker thread, then closes all sockets. Since we're on the core thread, the
+  // disconnect callbacks run immediately and remove the clients.
+  INFO_LOG("Stopping GDB server, disconnecting {} clients.", s_locals.clients.size());
   s_locals.listen_socket.reset();
   s_locals.multiplexer.reset();
+
+  // Clients disconnected by the worker may still have their core-thread callbacks queued.
+  for (const auto& client : s_locals.clients)
+    client->ClearBreakpoints();
+  s_locals.clients.clear();
+  if (std::exchange(s_locals.resume_on_last_disconnect, false))
+    System::PauseSystem(false);
 }
 
 void GDBServer::OnSystemPaused()

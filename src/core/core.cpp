@@ -770,7 +770,7 @@ float Core::GetProcessUptime()
   return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.process_start_time));
 }
 
-void Core::IdleUpdate(u64 max_poll_time)
+void Core::IdleUpdate()
 {
   InputManager::PollSources();
 
@@ -779,6 +779,4 @@ void Core::IdleUpdate(u64 max_poll_time)
   HTTPDownloader::PollRequests();
 
   Achievements::IdleUpdate();
-
-  GDBServer::PollUntil(max_poll_time);
 }

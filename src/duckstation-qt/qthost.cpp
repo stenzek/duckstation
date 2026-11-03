@@ -119,7 +119,6 @@ static constexpr int IDLE_UPDATE_INTERVAL_WITH_FULLSCREEN_UI = 8;
 static constexpr int IDLE_UPDATE_INTERVAL_WHILE_DOWNLOADING = 10;
 
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
-static constexpr int IDLE_UPDATE_INTERVAL_WITH_GDB_CLIENTS = 10;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
@@ -2097,21 +2096,7 @@ void CoreThread::stopIdleUpdateTimer()
 
 void CoreThread::onIdleUpdateTimer()
 {
-  if (!m_has_gdb_clients)
-  {
-    Core::IdleUpdate(0);
-    return;
-  }
-
-  // When we have gdb clients, use the multiplexer to sleep instead. that way round-trips can
-  // be responded to as quickly as possible.
-  //
-  // NOTE: This is kinda screwy, because it'll block RunOnCoreThread() callbacks from running
-  // while we're polling. Hence why it's still capped at 10ms.
-
-  const int timeout = m_idle_update_timer->interval();
-  const u64 poll_until = Timer::GetCurrentValue() + Timer::ConvertMillisecondsToValue(static_cast<u32>(timeout));
-  Core::IdleUpdate(poll_until);
+  Core::IdleUpdate();
 }
 
 void CoreThread::updateIdleTimerInterval()
@@ -2138,8 +2123,6 @@ int CoreThread::getBackgroundControllerPollInterval() const
 {
   if (m_video_thread_run_idle)
     return IDLE_UPDATE_INTERVAL_WITH_FULLSCREEN_UI;
-  else if (m_has_gdb_clients)
-    return IDLE_UPDATE_INTERVAL_WITH_GDB_CLIENTS;
   else if (m_http_downloader_active)
     return IDLE_UPDATE_INTERVAL_WHILE_DOWNLOADING;
   else if (InputManager::GetPollableDeviceCount() > 0)
@@ -2158,18 +2141,6 @@ void CoreThread::setHTTPDownloaderActive(bool active)
 
   DEV_LOG("HTTP Downloader now {}", active ? "active" : "inactive");
   m_http_downloader_active = active;
-  updateIdleTimerInterval();
-}
-
-void CoreThread::setGDBActiveClients(bool active)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &CoreThread::setGDBActiveClients, Qt::QueuedConnection, active);
-    return;
-  }
-
-  m_has_gdb_clients = active;
   updateIdleTimerInterval();
 }
 
@@ -2210,11 +2181,6 @@ void CoreThread::updateFullscreenUITheme()
 void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
   g_core_thread->setHTTPDownloaderActive(active);
-}
-
-void Host::OnGDBServerActiveClientsChanged(bool has_clients)
-{
-  g_core_thread->setGDBActiveClients(has_clients);
 }
 
 void CoreThread::stop()

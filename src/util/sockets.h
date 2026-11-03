@@ -9,12 +9,14 @@
 #include "common/threading.h"
 #include "common/types.h"
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <unordered_map>
+#include <vector>
 
 #ifdef _WIN32
 using SocketDescriptor = uintptr_t;
@@ -85,10 +87,11 @@ protected:
   SocketDescriptor m_descriptor;
 };
 
+// Socket events are polled on a worker thread owned by the multiplexer, so OnRead()/OnConnected()/OnDisconnected()
+// etc. are called on that thread. Close() and the write functions may be called from any thread. Consumers which need
+// to process data on another thread are responsible for marshalling it there.
 class SocketMultiplexer final
 {
-  // TODO: Re-introduce worker threads.
-
 public:
   typedef std::shared_ptr<StreamSocket> (*CreateStreamSocketCallback)(SocketMultiplexer& multiplexer,
                                                                       SocketDescriptor descriptor);
@@ -124,9 +127,6 @@ public:
   // Close all sockets on this multiplexer.
   void CloseAll();
 
-  // Poll for events. Returns false if there are no sockets registered.
-  bool PollEventsWithTimeout(u32 milliseconds);
-
 protected:
   // Internal interface
   std::shared_ptr<ListenSocket> InternalCreateListenSocket(const SocketAddress& address,
@@ -150,18 +150,31 @@ private:
   // Register for notifications
   void SetNotificationMask(BaseSocket* socket, SocketDescriptor descriptor, u32 events);
 
+  // Worker thread.
+  void WorkerThreadEntryPoint();
+  void WakeWorkerThread();
+
+  // Poll for events. Returns false if there are no sockets registered.
+  bool PollEventsWithTimeout(int milliseconds);
+
 private:
   // We store the fd in the struct to avoid the cache miss reading the object.
   using SocketMap = std::unordered_map<SocketDescriptor, std::shared_ptr<BaseSocket>>;
 
 #ifdef __linux__
   int m_epoll_fd = -1;
+  int m_wake_fd = -1;
 #else
   Threading::Mutex m_poll_array_mutex;
   pollfd* m_poll_array = nullptr;
   size_t m_poll_array_active_size = 0;
   size_t m_poll_array_max_size = 0;
+  std::vector<pollfd> m_worker_poll_array;
+  SocketDescriptor m_wake_socket = static_cast<SocketDescriptor>(-1);
 #endif
+
+  Threading::Thread m_worker_thread;
+  std::atomic_bool m_worker_shutdown{false};
 
   Threading::Mutex m_open_sockets_mutex;
   SocketMap m_open_sockets;
@@ -226,7 +239,7 @@ public:
   // Accessors
   const SocketAddress& GetLocalAddress() const { return m_local_address; }
   const SocketAddress& GetRemoteAddress() const { return m_remote_address; }
-  bool IsConnected() const { return m_connected; }
+  bool IsConnected() const { return m_connected.load(std::memory_order_relaxed); }
 
   // Read/write
   size_t Read(void* buffer, size_t buffer_size);
@@ -253,7 +266,7 @@ private:
   SocketAddress m_local_address = {};
   SocketAddress m_remote_address = {};
   std::recursive_mutex m_lock;
-  bool m_connected = true;
+  std::atomic_bool m_connected{true};
 
   // Ugly, but needed in order to call the events.
   friend SocketMultiplexer;
