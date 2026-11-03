@@ -8,6 +8,7 @@
 class QPropertyAnimation;
 class QPaintEvent;
 class QShowEvent;
+class QStyleOptionGroupBox;
 
 class CollapsibleWidget final : public QGroupBox
 {
@@ -28,6 +29,7 @@ protected:
 
 private:
   void init();
+  void initHeaderStyleOption(QStyleOptionGroupBox* option) const;
   int collapsedHeight() const;
   void updateExpandedHeight();
   void toggleCollapsed(bool expanded);
