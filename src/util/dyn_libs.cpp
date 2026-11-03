@@ -108,7 +108,10 @@ static bool LoadDynLib(const char* libname, int major_version, DynamicLibrary& d
                        std::span<const DynamicLibrary::SymbolTable> symbols, Error* const error,
                        bool (*extra_loader)(Error* const) = nullptr)
 {
-  std::call_once(once_flag, [&libname, &major_version, &dynlib, &symbols, extra_loader, error]() {
+  bool attempted = false;
+  std::call_once(once_flag, [&libname, &major_version, &dynlib, &symbols, extra_loader, error, &attempted]() {
+    attempted = true;
+
     Error lerror;
     DynamicLibrary lib;
     if (!lib.Open(DynamicLibrary::GetVersionedFilename(libname, major_version).c_str(), &lerror) ||
@@ -127,6 +130,13 @@ static bool LoadDynLib(const char* libname, int major_version, DynamicLibrary& d
 
     dynlib = std::move(lib);
   });
+
+  // Error is only set by the call that made the attempt.
+  if (!dynlib.IsOpen() && !attempted) [[unlikely]]
+  {
+    Error::SetStringFmt(error, "Failed to load {}: Previous load attempt failed, check the log for details.", libname);
+    return false;
+  }
 
   return dynlib.IsOpen();
 }
