@@ -3095,7 +3095,12 @@ void MainWindow::changeEvent(QEvent* event)
 
   if (event->type() == QEvent::StyleChange)
   {
-    QtHost::UpdateThemeOnStyleChange();
+#ifdef __APPLE__
+    // objectName() is empty once the stylesheet is applied; don't update while the old style is being cleared.
+    if (QApplication::style()->objectName().isEmpty())
+      QtHost::UpdateNativeApplicationTheme();
+#endif
+
     QtUtils::StyleChildMenus(this);
     emit themeChanged(QtHost::IsDarkApplicationTheme());
   }

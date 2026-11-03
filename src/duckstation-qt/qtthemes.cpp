@@ -26,10 +26,8 @@ LOG_CHANNEL(Host);
 namespace QtHost {
 static bool ShouldDisableStyleSheet();
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
-static bool NativeThemeStylesheetNeedsUpdate();
 static void SetStyleFromSettings();
 static void SetStyleSheet(const QString& stylesheet);
-static QString GetNativeThemeStylesheet();
 static bool LoadStyledFusionTheme(std::string_view name);
 
 namespace {
@@ -100,7 +98,10 @@ void QtHost::UpdateApplicationTheme()
 #endif
 
   SetStyleFromSettings();
-  UpdateThemeOnStyleChange();
+
+#ifdef __APPLE__
+  UpdateNativeApplicationTheme();
+#endif
 }
 
 bool QtHost::ShouldDisableStyleSheet()
@@ -296,14 +297,16 @@ void QtHost::SetStyleFromSettings()
 #endif
   else if (theme.empty() || !LoadStyledFusionTheme(theme))
   {
-    const QString stylesheet = GetNativeThemeStylesheet();
-    SetThemeAttributes(!stylesheet.isEmpty(), true, false);
+#ifndef __APPLE__
+    SetThemeAttributes(false, true, false);
     qApp->setStyle(s_themes_locals.unthemed_style_name);
     qApp->setPalette(s_themes_locals.unthemed_palette);
-
-    // Cleared above.
-    if (!stylesheet.isEmpty())
-      SetStyleSheet(stylesheet);
+#else
+    SetThemeAttributes(true, true, false);
+    qApp->setStyle(s_themes_locals.unthemed_style_name);
+    qApp->setPalette(s_themes_locals.unthemed_palette);
+    UpdateNativeApplicationTheme();
+#endif
   }
 }
 
@@ -323,16 +326,6 @@ bool QtHost::IsDarkApplicationTheme()
 bool QtHost::HasGlobalStylesheet()
 {
   return s_themes_locals.is_stylesheet_theme;
-}
-
-void QtHost::UpdateThemeOnStyleChange()
-{
-  if (NativeThemeStylesheetNeedsUpdate())
-  {
-    const QString stylesheet = GetNativeThemeStylesheet();
-    if (qApp->styleSheet() != stylesheet)
-      qApp->setStyleSheet(stylesheet);
-  }
 }
 
 QStringList QtHost::GetCustomThemeList()
@@ -377,25 +370,23 @@ const char* Host::GetDefaultFullscreenUITheme()
   return IsDarkApplicationTheme() ? "Dark" : "Light";
 }
 
-bool QtHost::NativeThemeStylesheetNeedsUpdate()
-{
 #ifdef __APPLE__
-  // See below, only used on MacOS.
-  // objectName() is empty after applying stylesheet.
-  return (s_themes_locals.is_variable_color_theme && QApplication::style()->objectName().isEmpty());
-#else
-  return false;
-#endif
+
+bool QtHost::IsNativeApplicationTheme()
+{
+  // Only the native theme on MacOS has both a stylesheet and variable colours.
+  return (s_themes_locals.is_variable_color_theme && s_themes_locals.is_stylesheet_theme);
 }
 
-QString QtHost::GetNativeThemeStylesheet()
+void QtHost::UpdateNativeApplicationTheme()
 {
-  QString ret;
-#ifdef __APPLE__
+  if (!IsNativeApplicationTheme())
+    return;
+
   // Qt's native style on MacOS is... not great.
   // We re-theme the tool buttons to look like Cocoa tool buttons, and fix up popup menus.
   // We also need to restore the native focus frame on QLineEdit, since it is disabled by setting a stylesheet.
-  ret = R"(
+  QString stylesheet = R"(
 QLineEdit {
     border-style: native;
 }
@@ -435,7 +426,7 @@ QToolButton {
 })"_L1;
   if (IsDarkApplicationTheme())
   {
-    ret += R"(
+    stylesheet += R"(
 QMenu {
     background-color: #161616;
     border: 1px solid #2c2c2c;
@@ -476,7 +467,7 @@ QToolButton:pressed {
   }
   else
   {
-    ret += R"(
+    stylesheet += R"(
 QMenu {
     background-color: #bdbdbd;
     border: 1px solid #d5d5d4;
@@ -515,6 +506,9 @@ QToolButton:pressed {
   border-bottom: 1px solid #414141;
 })"_L1;
   }
-#endif
-  return ret;
+
+  if (qApp->styleSheet() != stylesheet)
+    qApp->setStyleSheet(stylesheet);
 }
+
+#endif
