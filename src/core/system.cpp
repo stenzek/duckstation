@@ -2451,6 +2451,19 @@ void System::Throttle(Timer::Value current_time, Timer::Value sleep_until)
     return;
   }
 
+  // If we are running the GDB server and have clients, process events while we wait instead of only sleeping.
+  // That way in a query->response->query->response chain, we don't process only one message per frame.
+  // Host event loops generally have millisecond precision, so stop waiting slightly early and sleep the remainder.
+  if (GDBServer::HasAnyClients())
+  {
+    const Timer::Value event_wait_until = sleep_until - Timer::ConvertMillisecondsToValue(1.0);
+    while (System::IsRunning() && Timer::GetCurrentValue() < event_wait_until)
+      Host::PumpMessagesOnCoreThread(event_wait_until);
+
+    if (!System::IsRunning())
+      return;
+  }
+
   // Only need an exact sleep for pre-frame sleep, since the frame is scheduled to finish just in time.
   // Otherwise waking slightly late is harmless, the video thread handles the presentation timing.
   // In the worst case, input would get polled up to 0.5ms later than originally expected which isn't

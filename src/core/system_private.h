@@ -108,8 +108,10 @@ void OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp);
 void OnMediaCaptureStarted(MediaCaptureMode mode);
 void OnMediaCaptureStopped();
 
-/// Provided by the host; called once per frame at guest vsync.
-void PumpMessagesOnCoreThread();
+/// Provided by the host, called once per frame at guest vsync with wait_until = 0.
+/// If wait_until is non-zero, blocks until at least one event is processed or wait_until (in Timer ticks) is reached.
+/// Wakeup precision is that of the host event loop, so the caller should do a final precise sleep if needed.
+void PumpMessagesOnCoreThread(u64 wait_until = 0);
 
 /// Requests a specific display window size.
 void RequestResizeHostDisplay(s32 width, s32 height);

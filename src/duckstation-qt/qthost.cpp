@@ -2030,7 +2030,7 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 
   // eat all pending events, to make sure we're not going to write input events back to a dead pointer
   if (g_core_thread->isCurrentThread())
-    g_core_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+    g_core_thread->pumpMessages();
 }
 
 void CoreThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
@@ -2209,6 +2209,9 @@ void CoreThread::stopInThread()
 void CoreThread::run()
 {
   m_event_loop = new QEventLoop();
+  m_event_wait_timer = new QTimer(m_event_loop);
+  m_event_wait_timer->setSingleShot(true);
+  m_event_wait_timer->setTimerType(Qt::PreciseTimer);
   QtHost::s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   // input source setup must happen on emu thread
@@ -2268,6 +2271,25 @@ void CoreThread::run()
   moveToThread(m_ui_thread);
   delete m_event_loop;
   m_event_loop = nullptr;
+  m_event_wait_timer = nullptr;
+}
+
+void CoreThread::pumpMessages(u64 wait_until)
+{
+  DebugAssert(isCurrentThread());
+
+  const Timer::Value current_time = Timer::GetCurrentValue();
+  if (wait_until <= current_time)
+  {
+    m_event_loop->processEvents(QEventLoop::AllEvents);
+    return;
+  }
+
+  // The deadline overload doesn't wait for new events and ignores WaitForMoreEvents.
+  // Round up to avoid spinning when under 1ms.
+  m_event_wait_timer->start(static_cast<int>(std::ceil(Timer::ConvertValueToMilliseconds(wait_until - current_time))));
+  m_event_loop->processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents);
+  m_event_wait_timer->stop();
 }
 
 void Host::FrameDoneOnVideoThread(GPUBackend* gpu_backend, u32 frame_number)
@@ -3169,9 +3191,9 @@ void Host::SetMouseMode(bool relative, bool hide_cursor)
   emit g_core_thread->mouseModeRequested(relative, hide_cursor, ignore_double_click);
 }
 
-void Host::PumpMessagesOnCoreThread()
+void Host::PumpMessagesOnCoreThread(u64 wait_until)
 {
-  g_core_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+  g_core_thread->pumpMessages(wait_until);
 }
 
 void QtHost::SaveSettings()

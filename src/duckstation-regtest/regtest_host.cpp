@@ -330,9 +330,13 @@ void Host::OnHTTPDownloaderActiveChanged(bool active)
   //
 }
 
-void Host::PumpMessagesOnCoreThread()
+void Host::PumpMessagesOnCoreThread(u64 wait_until)
 {
   RegTestHost::ProcessCoreThreadEvents();
+
+  // Only the per-frame call counts towards the frame limit.
+  if (wait_until != 0)
+    return;
 
   s_frames_remaining--;
   RegTestHost::ApplyScheduledInputs(s_frames_to_run - s_frames_remaining);

@@ -76,8 +76,6 @@ public:
 
   void stop();
 
-  ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
-
   ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
   ALWAYS_INLINE bool isFullscreenUIStarted() const { return m_is_fullscreen_ui_started; }
 
@@ -90,6 +88,7 @@ public:
   void stopIdleUpdateTimer();
   void updateIdleTimerInterval();
   void wakeThread();
+  void pumpMessages(u64 wait_until = 0);
 
   void updatePerformanceCounters(const GPUBackend* gpu_backend);
   void resetPerformanceCounters();
@@ -208,6 +207,7 @@ private:
 
   QThread* m_ui_thread;
   QEventLoop* m_event_loop = nullptr;
+  QTimer* m_event_wait_timer = nullptr;
   QTimer* m_idle_update_timer = nullptr;
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 

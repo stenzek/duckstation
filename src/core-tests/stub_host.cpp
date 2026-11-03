@@ -233,7 +233,7 @@ void Host::OnHTTPDownloaderActiveChanged(bool active)
 {
 }
 
-void Host::PumpMessagesOnCoreThread()
+void Host::PumpMessagesOnCoreThread(u64 wait_until)
 {
 }
 
