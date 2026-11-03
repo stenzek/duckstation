@@ -131,6 +131,10 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstat
 --desktop-file="$ROOTDIR/scripts/appimage/org.duckstation.DuckStation.desktop" \
 --icon-file="$ROOTDIR/scripts/appimage/org.duckstation.DuckStation.png" \
 
+# linuxdeploy sets DT_RUNPATH, which dlopen() ignores when called through an interposing preloaded library.
+echo "Patching RPATH in $BINARY..."
+"$PATCHELF" --force-rpath --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/$BINARY"
+
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
 

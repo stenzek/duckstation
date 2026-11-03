@@ -223,7 +223,7 @@ cp -a "$BUILDDIR/bin/duckstation-qt" "$BUILDDIR/bin/resources" "$BUILDDIR/bin/tr
 
 # Patch RPATH so the binary goes hunting for shared libraries in the AppDir instead of system.
 echo "Patching RPATH in duckstation-qt..."
-patchelf --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/duckstation-qt"
+patchelf --force-rpath --set-rpath '$ORIGIN/../lib' "$OUTDIR/usr/bin/duckstation-qt"
 
 # Libraries we pull in from the system.
 echo "Copying system libraries..."

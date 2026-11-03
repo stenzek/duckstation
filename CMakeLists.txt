@@ -84,6 +84,11 @@ if(LINUX)
   get_origin_relative_path(deps_rpath "${DEPS_PATH}/lib")
   set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
   set(CMAKE_INSTALL_RPATH "${deps_rpath}")
+
+  # Use DT_RPATH instead of DT_RUNPATH. dlopen() only searches the RUNPATH of the calling object, so a preloaded
+  # library that interposes dlopen() (e.g. NoMachine's libnxegl.so) stops us from finding our own libraries.
+  # The executable's RPATH is searched regardless of the caller.
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
 endif()
 
 # Enable large file support on Linux 32-bit platforms.
