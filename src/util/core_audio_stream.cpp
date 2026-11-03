@@ -806,8 +806,6 @@ void CoreAudioStream::StretchReadFrames(SampleType* samples, u32 num_frames)
     VERBOSE_LOG("Audio buffer underflow, {} of {} frames available", frames_read, num_frames);
     m_filling = true;
     m_underrun_gap_frames += num_frames - frames_read;
-    if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
-      StretchUnderrun();
 
     const u32 fade_frames = std::min(frames_read, FADE_FRAMES);
     FadeFrames(samples + (frames_read - fade_frames) * NUM_CHANNELS, fade_frames, false);
@@ -988,14 +986,6 @@ void CoreAudioStream::UpdateStretchTempo(float nominal_rate)
   }
 
   soundtouch_setTempo(m_soundtouch, nominal_rate * tempo);
-}
-
-void CoreAudioStream::StretchUnderrun()
-{
-  // Didn't produce enough frames in time.
-  m_stretch_reset++;
-  if (m_stretch_reset < STRETCH_RESET_THRESHOLD)
-    m_stretch_reset_time = Timer::GetCurrentValue();
 }
 
 void CoreAudioStream::StretchOverrun()

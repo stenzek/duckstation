@@ -131,7 +131,6 @@ private:
   void StretchAllocate();
   void StretchDestroy();
   void StretchReadFrames(SampleType* samples, u32 num_frames);
-  void StretchUnderrun();
   void StretchOverrun();
 
   void UpdateStretchTempo(float nominal_rate);
