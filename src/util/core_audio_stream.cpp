@@ -910,8 +910,10 @@ void CoreAudioStream::UpdateStretchTempo(float nominal_rate)
 
   tempo = std::clamp(tempo, MIN_TEMPO, m_max_tempo);
 
+  // Running slower than nominal means input arrives less often, so buffer more. The target has to grow faster than the
+  // tempo drops, as the buffer settles at around target * tempo. Only below 90%, as it dips slightly in normal use too.
   if (tempo < 1.0f)
-    base_target_usage /= std::sqrt(tempo);
+    base_target_usage /= std::sqrt(tempo) * std::min(tempo / 0.9f, 1.0f);
 
   // Gradually adjust our dynamic target toward what would give us the desired tempo.
   m_dynamic_target_usage +=
