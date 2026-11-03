@@ -115,6 +115,8 @@ public:
 
 private:
   static constexpr u32 STRETCH_RESET_THRESHOLD = 5;
+  static constexpr u32 EXTRA_TARGET_UNDERRUN_SECONDS = 30;
+  static constexpr u32 EXTRA_TARGET_DECAY_SECONDS = 60;
 
   ALWAYS_INLINE bool IsStretchEnabled() const { return m_parameters.stretch_mode != AudioStretchMode::Off; }
 
@@ -175,6 +177,11 @@ private:
   u32 m_target_buffer_size = 0;
   u32 m_stretch_reset = 0;
   u64 m_stretch_reset_time = 0;
+
+  // raised when underrunning repeatedly, i.e. the frame timing is too uneven for the buffer
+  u32 m_extra_target_frames = 0;
+  u32 m_frames_since_underrun = 0;
+  u32 m_underrun_gap_frames = 0;
 
   u32 m_stretch_ok_count = 0;
   float m_dynamic_target_usage = 0.0f;

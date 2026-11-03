@@ -269,7 +269,7 @@ u32 CoreAudioStream::GetBufferedFramesRelaxed() const
 u32 CoreAudioStream::GetTargetSize() const
 {
   // Needs to cover at least two callbacks, otherwise the stretcher holds it below what the next callback needs.
-  return std::max(m_target_buffer_size, m_callback_frames.load(std::memory_order_relaxed) * 2);
+  return std::max(m_target_buffer_size + m_extra_target_frames, m_callback_frames.load(std::memory_order_relaxed) * 2);
 }
 
 // Fade in/out around underruns, otherwise there'll be a pop.
@@ -591,6 +591,8 @@ void CoreAudioStream::StretchAllocate()
 
   m_stretch_reset = STRETCH_RESET_THRESHOLD;
   m_stretch_reset_time = Timer::GetCurrentValue();
+  m_frames_since_underrun = EXTRA_TARGET_DECAY_SECONDS * m_sample_rate;
+  m_underrun_gap_frames = std::numeric_limits<u32>::max() / 2; // initial fill isn't a gap
 }
 
 void CoreAudioStream::StretchDestroy()
@@ -603,6 +605,7 @@ void CoreAudioStream::StretchDestroy()
 
   m_stretch_reset = 0;
   m_stretch_reset_time = 0;
+  m_extra_target_frames = 0;
   m_stretch_reset_request.store(false, std::memory_order_relaxed);
   m_stretch_buffered_frames.store(0, std::memory_order_relaxed);
   m_stretch_inactive = false;
@@ -748,12 +751,33 @@ void CoreAudioStream::StretchReadFrames(SampleType* samples, u32 num_frames)
     if (available_frames < to_fill)
     {
       std::memset(samples, 0, num_frames * NUM_CHANNELS * sizeof(SampleType));
+      m_underrun_gap_frames += num_frames;
       return;
     }
 
     m_filling = false;
     fade_in = true;
     VERBOSE_LOG("Underrun compensation done ({} frames buffered)", available_frames);
+
+    // Buffer more if short gaps keep happening, the frame timing is too uneven for the buffer. Not for single or long
+    // stalls, buffering more wouldn't have helped there. Underruns in quick succession are recovering from the same
+    // event, so only count the first. Capped to twice the configured size.
+    if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch && m_underrun_gap_frames <= GetTargetSize() &&
+        m_frames_since_underrun >= m_sample_rate)
+    {
+      const u32 max_extra_frames = std::min(m_target_buffer_size, m_buffer_size / 4);
+      if (m_frames_since_underrun < EXTRA_TARGET_UNDERRUN_SECONDS * m_sample_rate &&
+          m_extra_target_frames < max_extra_frames)
+      {
+        m_extra_target_frames =
+          std::min(m_extra_target_frames + GetAlignedBufferSize(m_target_buffer_size / 4), max_extra_frames);
+        DEV_LOG("Repeated underruns, increasing stretch target to {} frames", GetTargetSize());
+      }
+
+      m_frames_since_underrun = 0;
+    }
+
+    m_underrun_gap_frames = 0;
   }
 
   // for latency display
@@ -781,6 +805,7 @@ void CoreAudioStream::StretchReadFrames(SampleType* samples, u32 num_frames)
   {
     VERBOSE_LOG("Audio buffer underflow, {} of {} frames available", frames_read, num_frames);
     m_filling = true;
+    m_underrun_gap_frames += num_frames - frames_read;
     if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
       StretchUnderrun();
 
@@ -788,6 +813,18 @@ void CoreAudioStream::StretchReadFrames(SampleType* samples, u32 num_frames)
     FadeFrames(samples + (frames_read - fade_frames) * NUM_CHANNELS, fade_frames, false);
     std::memset(samples + (frames_read * NUM_CHANNELS), 0,
                 (num_frames - frames_read) * NUM_CHANNELS * sizeof(SampleType));
+  }
+  else
+  {
+    // Drop the extra buffering back down slowly once the timing has been even for a while.
+    const u32 decay_frames = EXTRA_TARGET_DECAY_SECONDS * m_sample_rate;
+    m_frames_since_underrun = std::min(m_frames_since_underrun + num_frames, decay_frames);
+    if (m_extra_target_frames > 0 && m_frames_since_underrun == decay_frames)
+    {
+      m_extra_target_frames -= std::min(m_extra_target_frames, GetAlignedBufferSize(m_target_buffer_size / 8));
+      m_frames_since_underrun = EXTRA_TARGET_UNDERRUN_SECONDS * m_sample_rate;
+      DEV_LOG("Reducing stretch target to {} frames", GetTargetSize());
+    }
   }
 }
 
