@@ -157,6 +157,17 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="bindAll">
+        <property name="text">
+         <string>Bind All</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources/duckstation-qt.qrc">
+          <normaloff>:/icons/monochrome/svg/list-check.svg</normaloff>:/icons/monochrome/svg/list-check.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="clearBindings">
         <property name="text">
          <string>Clear Mapping</string>

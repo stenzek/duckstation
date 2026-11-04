@@ -4,6 +4,7 @@
 #include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
+#include "inputbindingdialog.h"
 #include "inputbindingwidgets.h"
 #include "mainwindow.h"
 #include "qthost.h"
@@ -66,6 +67,7 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
   connect(m_ui.settings, &QPushButton::clicked, this, &ControllerBindingWidget::onSettingsClicked);
   connect(m_ui.macros, &QPushButton::clicked, this, &ControllerBindingWidget::onMacrosClicked);
   connect(m_ui.automaticBinding, &QPushButton::clicked, this, &ControllerBindingWidget::onAutomaticBindingClicked);
+  connect(m_ui.bindAll, &QPushButton::clicked, this, &ControllerBindingWidget::onBindAllClicked);
   connect(m_ui.clearBindings, &QPushButton::clicked, this, &ControllerBindingWidget::onClearBindingsClicked);
 }
 
@@ -347,6 +349,7 @@ void ControllerBindingWidget::updateHeaderToolButtons()
   const bool is_bindings = (current_widget == m_bindings_widget && m_controller_info->type != ControllerType::None);
   m_ui.bindings->setChecked(is_bindings);
   m_ui.automaticBinding->setEnabled(is_bindings);
+  m_ui.bindAll->setEnabled(is_bindings);
   m_ui.clearBindings->setEnabled(is_bindings);
   m_ui.macros->setChecked(current_widget == m_macros_widget);
   m_ui.settings->setChecked((current_widget == m_settings_widget));
@@ -403,6 +406,32 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   }
 
   menu->popup(QCursor::pos());
+}
+
+void ControllerBindingWidget::onBindAllClicked()
+{
+  // Motors and other effects have their own UI, like with automatic mapping.
+  std::vector<InputBindingAllDialog::Step> steps;
+  for (const Controller::ControllerBindingInfo& bi : m_controller_info->bindings)
+  {
+    if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
+        bi.type != InputBindingInfo::Type::HalfAxis)
+    {
+      continue;
+    }
+
+    if (InputBindingWidget* const widget =
+          m_bindings_widget->findChild<InputBindingWidget*>(QString::fromUtf8(bi.name)))
+      steps.push_back({widget, QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), bi.type});
+  }
+  if (steps.empty())
+    return;
+
+  // Modal, so the widgets can't be changed or deleted while it's running.
+  InputBindingAllDialog* const dlg =
+    new InputBindingAllDialog(std::move(steps), tr("Bind All - Port %1").arg(m_port_number + 1), m_icon, this);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  dlg->open();
 }
 
 void ControllerBindingWidget::onClearBindingsClicked()
@@ -541,6 +570,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         new QGroupBox(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
       QVBoxLayout* const temp = new QVBoxLayout(gbox);
       QWidget* const widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
+      widget->setObjectName(QString::fromUtf8(bi.name));
 
       temp->addWidget(widget);
       axis_layout->addWidget(gbox, row, column);
@@ -572,6 +602,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         new QGroupBox(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), button_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
       InputBindingWidget* widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
+      widget->setObjectName(QString::fromUtf8(bi.name));
       temp->addWidget(widget);
       button_layout->addWidget(gbox, row, column);
       if ((++column) == num_button_columns)

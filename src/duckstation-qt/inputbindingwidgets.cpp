@@ -59,19 +59,23 @@ bool InputBindingWidget::isMouseMappingEnabled()
          !InputManager::IsUsingRawInput();
 }
 
-void InputBindingWidget::startBindingCapture(BindingCaptureUpdateFunction on_update, bool needs_incomplete_updates)
+void InputBindingWidget::startBindingCapture(BindingCaptureUpdateFunction on_update, bool needs_incomplete_updates,
+                                             bool continue_sequence /* = false */, bool capture_pointer /* = true */)
 {
-  Host::RunOnCoreThread([on_update = std::move(on_update), needs_incomplete_updates]() mutable {
-    InputManager::StartBindingCapture([on_update = std::move(on_update), needs_incomplete_updates](
-                                        std::span<const InputBindingKey> keys, bool completed) mutable {
-      if (!completed && !needs_incomplete_updates)
-        return;
+  Host::RunOnCoreThread([on_update = std::move(on_update), needs_incomplete_updates, continue_sequence,
+                         capture_pointer]() mutable {
+    InputManager::StartBindingCapture(
+      [on_update = std::move(on_update), needs_incomplete_updates](std::span<const InputBindingKey> keys,
+                                                                   bool completed) mutable {
+        if (!completed && !needs_incomplete_updates)
+          return;
 
-      // The capture doesn't call back again once it's completed, so the function can be moved into the last update.
-      Host::RunOnUIThread([on_update = completed ? std::move(on_update) : on_update,
-                           keys = llvm::SmallVector<InputBindingKey, 4>(keys.begin(), keys.end()),
-                           completed]() { on_update(keys, completed); });
-    });
+        // The capture doesn't call back again once it's completed, so the function can be moved into the last update.
+        Host::RunOnUIThread([on_update = completed ? std::move(on_update) : on_update,
+                             keys = llvm::SmallVector<InputBindingKey, 4>(keys.begin(), keys.end()),
+                             completed]() { on_update(keys, completed); });
+      },
+      continue_sequence, capture_pointer);
   });
 }
 

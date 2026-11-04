@@ -48,6 +48,7 @@ private:
 
   void onTypeChanged();
   void onAutomaticBindingClicked();
+  void onBindAllClicked();
   void onClearBindingsClicked();
   void onBindingsClicked();
   void onSettingsClicked();

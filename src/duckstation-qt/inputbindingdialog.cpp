@@ -360,3 +360,150 @@ void InputBindingDialog::onResetSensitivityClicked()
     g_core_thread->applySettings(false);
   }
 }
+
+InputBindingAllDialog::InputBindingAllDialog(std::vector<Step> steps, const QString& title, const QIcon& icon, QWidget* parent)
+  : QDialog(parent), m_steps(std::move(steps))
+{
+  m_ui.setupUi(this);
+  setWindowTitle(title);
+  m_ui.icon->setPixmap(icon.pixmap(40, 40));
+  m_ui.stepLabel->setForegroundRole(QPalette::PlaceholderText);
+  m_ui.progress->setRange(0, InputBindingWidget::TIMEOUT_FOR_ALL_BINDING * 1000);
+
+  // The keyboard is grabbed for binding, so the buttons are only for the mouse, which isn't, and isn't captured.
+  connect(m_ui.skip, &QPushButton::clicked, this, &InputBindingAllDialog::nextStep);
+  connect(m_ui.clear, &QPushButton::clicked, this, [this]() {
+    m_steps[m_step].widget->clearBinding();
+    nextStep();
+  });
+  connect(m_ui.cancel, &QPushButton::clicked, this, &QDialog::reject);
+
+  m_timer = new QTimer(this);
+  m_timer->setInterval(50);
+  connect(m_timer, &QTimer::timeout, this, &InputBindingAllDialog::onTimerTimeout);
+}
+
+InputBindingAllDialog::~InputBindingAllDialog()
+{
+  DebugAssert(!m_listening);
+}
+
+void InputBindingAllDialog::showEvent(QShowEvent* event)
+{
+  QDialog::showEvent(event);
+  if (m_listening || m_steps.empty())
+    return;
+
+  // The widget has to be visible to grab the keyboard.
+  m_listening = true;
+  installEventFilter(this);
+  grabKeyboard();
+  startStep(0, false);
+}
+
+void InputBindingAllDialog::done(int result)
+{
+  if (m_listening)
+  {
+    m_listening = false;
+    m_capture_id++;
+    m_timer->stop();
+    InputBindingWidget::stopBindingCapture();
+    releaseKeyboard();
+    removeEventFilter(this);
+  }
+
+  QDialog::done(result);
+}
+
+bool InputBindingAllDialog::eventFilter(QObject* watched, QEvent* event)
+{
+  // Only a release of a key pressed in this step completes it, not one still held from the previous step. Some
+  // backends send auto-repeat as release/press pairs, which would complete the step and bind the key to the next.
+  const QEvent::Type event_type = event->type();
+  if ((event_type == QEvent::KeyPress || event_type == QEvent::KeyRelease) &&
+      static_cast<const QKeyEvent*>(event)->isAutoRepeat())
+  {
+    return true;
+  }
+  else if (event_type == QEvent::KeyRelease)
+  {
+    const std::optional<u32> key = QtUtils::KeyEventToCode(static_cast<const QKeyEvent*>(event));
+    if (key.has_value() && std::ranges::find(m_step_keys, key.value()) != m_step_keys.end())
+      InputBindingWidget::completeBindingCapture();
+    return true;
+  }
+  else if (event_type == QEvent::KeyPress)
+  {
+    const std::optional<u32> key = QtUtils::KeyEventToCode(static_cast<const QKeyEvent*>(event));
+    if (key.has_value() && std::ranges::find(m_step_keys, key.value()) == m_step_keys.end())
+    {
+      m_step_keys.push_back(key.value());
+      InputBindingWidget::addBindingCaptureKey(InputManager::MakeHostKeyboardKey(key.value()));
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void InputBindingAllDialog::startStep(u32 step, bool continue_sequence)
+{
+  m_step = step;
+  m_capture_binding.clear();
+  m_step_keys.clear();
+  m_step_timer.start();
+  m_timer->start();
+  m_ui.progress->setValue(m_ui.progress->maximum());
+  m_ui.stepLabel->setText(tr("Step %1 of %2").arg(step + 1).arg(m_steps.size()));
+  m_ui.nameLabel->setText(m_steps[step].display_name);
+  updateStatus();
+
+  // Updates from the previous step's capture can still be queued, so they're told apart by id.
+  const u32 capture_id = ++m_capture_id;
+  InputBindingWidget::startBindingCapture(
+    [p_this = QPointer(this), capture_id](std::span<const InputBindingKey> keys, bool completed) {
+      if (!p_this || p_this->m_capture_id != capture_id)
+        return;
+
+      const Step& cur = p_this->m_steps[p_this->m_step];
+      if (!completed)
+      {
+        // show the binding as it's built up
+        SmallString binding = InputManager::ConvertInputBindingKeysToString(cur.type, keys.data(), keys.size());
+        InputManager::PrettifyInputBinding(binding, false);
+        p_this->m_capture_binding = QtUtils::StringViewToQString(binding);
+        p_this->updateStatus();
+        return;
+      }
+
+      cur.widget->setNewBinding(keys);
+      cur.widget->reloadBinding();
+      p_this->nextStep();
+    },
+    true, continue_sequence, false);
+}
+
+void InputBindingAllDialog::nextStep()
+{
+  // The capture isn't stopped between steps, the next one replaces it, so releases in between are still seen.
+  if ((m_step + 1) < m_steps.size())
+    startStep(m_step + 1, true);
+  else
+    accept();
+}
+
+void InputBindingAllDialog::updateStatus()
+{
+  m_ui.status->setText(m_capture_binding.isEmpty() ? tr("Push a button or axis now.") : m_capture_binding);
+}
+
+void InputBindingAllDialog::onTimerTimeout()
+{
+  // a timeout skips the step
+  const qint64 remaining = m_ui.progress->maximum() - m_step_timer.elapsed();
+  if (remaining <= 0)
+    nextStep();
+  else
+    m_ui.progress->setValue(static_cast<int>(remaining));
+}

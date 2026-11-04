@@ -34,7 +34,8 @@ public:
   using BindingCaptureUpdateFunction = std::function<void(std::span<const InputBindingKey> keys, bool completed)>;
 
   /// Starts or stops the binding capture of the widget or dialog which is listening for input. Only one runs at once.
-  static void startBindingCapture(BindingCaptureUpdateFunction on_update, bool needs_incomplete_updates);
+  static void startBindingCapture(BindingCaptureUpdateFunction on_update, bool needs_incomplete_updates,
+                                  bool continue_sequence = false, bool capture_pointer = true);
   static void addBindingCaptureKey(InputBindingKey key);
   static void completeBindingCapture();
   static void stopBindingCapture();
@@ -45,19 +46,20 @@ public:
   const std::vector<std::string>& getBindings() const { return m_bindings; }
   void setHideDeviceName(bool hide);
 
+  void setNewBinding(std::span<const InputBindingKey> keys);
   void clearBinding();
   void reloadBinding();
 
-Q_SIGNALS:
-  void bindingsChanged();
-
-protected:
   enum : u32
   {
     TIMEOUT_FOR_SINGLE_BINDING = 5,
     TIMEOUT_FOR_ALL_BINDING = 10
   };
 
+Q_SIGNALS:
+  void bindingsChanged();
+
+protected:
   virtual bool eventFilter(QObject* watched, QEvent* event) override;
   virtual bool event(QEvent* event) override;
   virtual void mouseReleaseEvent(QMouseEvent* e) override;
@@ -68,7 +70,6 @@ protected:
   virtual void openDialog();
 
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
-  void setNewBinding(std::span<const InputBindingKey> keys);
   void updateElidedText();
   void updateTextAndToolTip();
 

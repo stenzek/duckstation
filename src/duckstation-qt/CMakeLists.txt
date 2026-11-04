@@ -111,6 +111,7 @@ set(SRCS
   graphicssettingswidget.ui
   hotkeysettingswidget.cpp
   hotkeysettingswidget.h
+  inputbindingalldialog.ui
   inputbindingdialog.cpp
   inputbindingdialog.h
   inputbindingdialog.ui

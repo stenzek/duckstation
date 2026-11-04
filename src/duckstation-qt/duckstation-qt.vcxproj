@@ -135,6 +135,9 @@
     <QtUi Include="audiosettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="inputbindingalldialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="biossettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
