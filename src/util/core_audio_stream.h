@@ -101,7 +101,9 @@ public:
 
   void SetOutputVolume(u32 volume);
 
-  void BeginWrite(SampleType** buffer_ptr, u32* num_frames);
+  /// Returns contiguous space in the buffer to write to. If there's no space (the buffer is full, or output is
+  /// muted/paused), return false.
+  bool BeginWrite(SampleType** buffer_ptr, u32* num_frames);
   void EndWrite(u32 num_frames);
 
   void EmptyBuffer();
@@ -127,7 +129,6 @@ private:
 
   u32 GetTargetSize() const;
 
-  void InternalWriteFrames(SampleType* samples, u32 num_frames);
   u32 ReadBufferFrames(SampleType* samples, u32 rpos, u32 num_frames) const;
 
   void StretchAllocate();
@@ -149,9 +150,6 @@ private:
 
   u32 m_buffer_size = 0;
   Common::unique_aligned_ptr<s16[]> m_buffer;
-
-  // staging buffer for partial chunks from the writer
-  Common::unique_aligned_ptr<s16[]> m_staging_buffer;
 
   // float buffer, soundtouch only accepts float samples as input, used on the audio thread
   Common::unique_aligned_ptr<float[]> m_float_buffer;
@@ -188,6 +186,4 @@ private:
   float m_dynamic_target_usage = 0.0f;
   float m_average_tempo = 1.0f;
   float m_max_tempo = 1.0f;
-
-  u32 m_staging_buffer_pos = 0;
 };

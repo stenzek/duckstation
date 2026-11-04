@@ -2562,15 +2562,11 @@ void SPU::Execute(void* param, TickCount ticks)
   while (remaining_frames > 0)
   {
     s16* output_frame_start;
-    u32 output_frame_space = remaining_frames;
-    if (!s_state.audio_output_muted) [[likely]]
+    u32 output_frame_space;
+    if (s_state.audio_output_muted || !s_state.audio_stream.BeginWrite(&output_frame_start, &output_frame_space))
+      [[unlikely]]
     {
-      output_frame_space = remaining_frames;
-      s_state.audio_stream.BeginWrite(&output_frame_start, &output_frame_space);
-    }
-    else
-    {
-      // dummy space for writing samples when using runahead
+      // dummy space for writing samples when using runahead, or the output buffer is full
       output_frame_start = s_muted_output_buffer.data();
       output_frame_space = std::min(static_cast<u32>(s_muted_output_buffer.size() / 2), remaining_frames);
     }
@@ -2733,7 +2729,7 @@ void SPU::Execute(void* param, TickCount ticks)
         System::StopMediaCapture();
     }
 
-    if (!s_state.audio_output_muted) [[likely]]
+    if (output_frame_start != s_muted_output_buffer.data()) [[likely]]
       s_state.audio_stream.EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }

@@ -112,6 +112,7 @@ protected:
 
   void ReadFrames(SampleType* samples, u32 num_frames) { m_stream.ReadFrames(samples, num_frames); }
 
+  const SampleType* GetBufferStart() const { return m_stream.m_buffer.get(); }
   u32 GetReadPos() const { return m_stream.m_rpos.load(std::memory_order_relaxed); }
   u32 GetWritePos() const { return m_stream.m_wpos.load(std::memory_order_relaxed); }
   bool IsFilling() const { return m_stream.m_filling; }
@@ -281,6 +282,177 @@ protected:
 
   CoreAudioStream m_stream;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Ring buffer
+//////////////////////////////////////////////////////////////////////////
+
+TEST_F(CoreAudioStreamTest, WriteSpaceIsContiguous)
+{
+  Create(AudioStretchMode::Off);
+  const u32 size = m_stream.GetBufferSize();
+  std::vector<SampleType> output(size * NUM_CHANNELS);
+
+  SampleType* buffer;
+  u32 space;
+
+  // one frame is always left free
+  m_stream.BeginWrite(&buffer, &space);
+  EXPECT_EQ(space, size - 1);
+  m_stream.EndWrite(space);
+  m_stream.BeginWrite(&buffer, &space);
+  EXPECT_EQ(space, 0u);
+
+  // only up to the end of the buffer
+  ReadFrames(output.data(), 100);
+  m_stream.BeginWrite(&buffer, &space);
+  EXPECT_EQ(space, 1u);
+  m_stream.EndWrite(space);
+  EXPECT_EQ(GetWritePos(), 0u);
+
+  // then from the start, up to just behind the read position
+  m_stream.BeginWrite(&buffer, &space);
+  EXPECT_EQ(buffer, GetBufferStart());
+  EXPECT_EQ(space, 99u);
+}
+
+TEST_F(CoreAudioStreamTest, NoWriteSpaceWhenMutedOrPaused)
+{
+  Create(AudioStretchMode::TimeStretch);
+
+  SampleType* buffer;
+  u32 space;
+
+  m_stream.SetOutputVolume(0);
+  EXPECT_FALSE(m_stream.BeginWrite(&buffer, &space));
+
+  m_stream.SetOutputVolume(100);
+  SetPaused(true);
+  EXPECT_FALSE(m_stream.BeginWrite(&buffer, &space));
+
+  SetPaused(false);
+  EXPECT_TRUE(m_stream.BeginWrite(&buffer, &space));
+  EXPECT_NE(buffer, nullptr);
+  EXPECT_GT(space, 0u);
+}
+
+// Frames written after BeginWrite() aren't visible to the reader until EndWrite().
+TEST_F(CoreAudioStreamTest, UncommittedWritesAreInvisible)
+{
+  for (const AudioStretchMode mode : {AudioStretchMode::Off, AudioStretchMode::TimeStretch})
+  {
+    SCOPED_TRACE(CoreAudioStream::GetStretchModeName(mode));
+    Create(mode);
+
+    SampleType* buffer;
+    u32 space;
+    m_stream.BeginWrite(&buffer, &space);
+    ASSERT_GE(space, 1024u);
+    std::fill_n(buffer, 1024 * NUM_CHANNELS, static_cast<SampleType>(0x1234));
+
+    std::vector<SampleType> output(512 * NUM_CHANNELS);
+    ReadFrames(output.data(), 512);
+    EXPECT_EQ(GetReadPos(), 0u);
+    EXPECT_TRUE(std::all_of(output.begin(), output.end(), [](SampleType v) { return v == 0; }));
+
+    m_stream.EndWrite(1024);
+    EXPECT_EQ(GetWritePos(), 1024u);
+  }
+}
+
+// Pass-through with no underruns should output exactly the input, through any combination of write and read sizes.
+TEST_F(CoreAudioStreamTest, OffModeOutputMatchesInput)
+{
+  Create(AudioStretchMode::Off);
+
+  // frame number, low half in the left channel, high half in the right
+  u32 write_counter = 0;
+  u32 read_counter = 0;
+  const auto generate = [&write_counter](SampleType* frame) {
+    frame[0] = static_cast<SampleType>(write_counter & 0xFFFFu);
+    frame[1] = static_cast<SampleType>(write_counter >> 16);
+    write_counter++;
+  };
+
+  XorShift128PlusPlus rng;
+  std::vector<SampleType> output(m_stream.GetBufferSize() * NUM_CHANNELS);
+  for (u32 iteration = 0; iteration < 20000; iteration++)
+  {
+    // fill to a random level, without dropping
+    const u32 fill_to = rng.NextRange<u32>(1, m_stream.GetBufferSize());
+    while ((write_counter - read_counter) < fill_to)
+    {
+      const u32 batch = std::min(rng.NextRange<u32>(1, 301), fill_to - (write_counter - read_counter));
+      ASSERT_EQ(WriteFrames(batch, generate), batch);
+    }
+
+    // read without underrunning
+    const u32 read_frames = rng.NextRange<u32>(1, write_counter - read_counter + 1);
+    ReadFrames(output.data(), read_frames);
+    ASSERT_FALSE(IsFilling());
+    for (u32 i = 0; i < read_frames; i++, read_counter++)
+    {
+      const u32 value = static_cast<u16>(output[i * NUM_CHANNELS + 0]) |
+                        (static_cast<u32>(static_cast<u16>(output[i * NUM_CHANNELS + 1])) << 16);
+      ASSERT_EQ(value, read_counter) << "iteration " << iteration << " frame " << i;
+    }
+  }
+}
+
+// When the producer is faster than the consumer, input is dropped, but what's output stays in order.
+TEST_F(CoreAudioStreamTest, OffModeOverflowDropsInput)
+{
+  Create(AudioStretchMode::Off);
+
+  u32 write_counter = 1;
+  const auto generate = [&write_counter](SampleType* frame) {
+    frame[0] = static_cast<SampleType>(write_counter & 0xFFFFu);
+    frame[1] = static_cast<SampleType>(write_counter >> 16);
+    write_counter++;
+  };
+
+  XorShift128PlusPlus rng;
+  u32 last_value = 0;
+  u64 total_written = 0;
+  u64 total_read = 0;
+  std::vector<SampleType> output(512 * NUM_CHANNELS);
+  for (u32 iteration = 0; iteration < 5000; iteration++)
+  {
+    // twice as much input as output on average
+    for (u32 remaining = 2 * 256; remaining > 0;)
+    {
+      const u32 batch = std::min(remaining, rng.NextRange<u32>(1, 65));
+      const u32 written = WriteFrames(batch, generate);
+      total_written += written;
+      for (u32 i = written; i < batch; i++)
+        write_counter++;
+      remaining -= batch;
+    }
+
+    const u32 buffered = (GetWritePos() + m_stream.GetBufferSize() - GetReadPos()) % m_stream.GetBufferSize();
+    ASSERT_LT(buffered, m_stream.GetBufferSize());
+
+    const u32 read_frames = rng.NextRange<u32>(1, 513);
+    if (buffered < read_frames)
+      continue;
+
+    ReadFrames(output.data(), read_frames);
+    total_read += read_frames;
+    for (u32 i = 0; i < read_frames; i++)
+    {
+      const u32 value = static_cast<u16>(output[i * NUM_CHANNELS + 0]) |
+                        (static_cast<u32>(static_cast<u16>(output[i * NUM_CHANNELS + 1])) << 16);
+      ASSERT_GT(value, last_value) << "iteration " << iteration << " frame " << i;
+      ASSERT_LT(value, write_counter);
+      last_value = value;
+    }
+  }
+
+  // everything that was written is either read or still buffered
+  const u32 buffered = (GetWritePos() + m_stream.GetBufferSize() - GetReadPos()) % m_stream.GetBufferSize();
+  EXPECT_EQ(total_written, total_read + buffered);
+  EXPECT_LT(total_written, static_cast<u64>(write_counter - 1));
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Simulated playback

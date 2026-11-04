@@ -373,42 +373,6 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, m_volume);
 }
 
-void CoreAudioStream::InternalWriteFrames(s16* data, u32 num_frames)
-{
-  // acquire the read position, so the reader is done with the frames we're about to overwrite
-  u32 wpos = m_wpos.load(std::memory_order_relaxed);
-  const u32 free = m_buffer_size - ((wpos + m_buffer_size - m_rpos.load(std::memory_order_acquire)) % m_buffer_size);
-  if (free <= num_frames)
-  {
-    // Drop the incoming chunk, the read position belongs to the audio thread.
-    DEBUG_LOG("Buffer overrun, chunk dropped");
-    return;
-  }
-
-  // wrapping around the end of the buffer?
-  if ((m_buffer_size - wpos) <= num_frames)
-  {
-    // needs to be written in two parts
-    const u32 end = m_buffer_size - wpos;
-    const u32 start = num_frames - end;
-
-    // start is zero when this chunk reaches exactly the end
-    std::memcpy(&m_buffer[wpos * NUM_CHANNELS], data, end * NUM_CHANNELS * sizeof(SampleType));
-    if (start > 0)
-      std::memcpy(&m_buffer[0], data + end * NUM_CHANNELS, start * NUM_CHANNELS * sizeof(SampleType));
-
-    wpos = start;
-  }
-  else
-  {
-    // no split
-    std::memcpy(&m_buffer[wpos * NUM_CHANNELS], data, num_frames * NUM_CHANNELS * sizeof(SampleType));
-    wpos += num_frames;
-  }
-
-  m_wpos.store(wpos, std::memory_order_release);
-}
-
 void CoreAudioStream::AllocateBuffer()
 {
   // Stretcher can produce a large amount of samples from few samples when running slow, so allocate a larger buffer.
@@ -419,7 +383,6 @@ void CoreAudioStream::AllocateBuffer()
   m_target_buffer_size = GetAlignedBufferSize((m_sample_rate * m_parameters.buffer_ms) / 1000u);
 
   m_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, m_buffer_size * NUM_CHANNELS);
-  m_staging_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * NUM_CHANNELS);
   m_float_buffer = Common::make_unique_aligned_for_overwrite<float[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * NUM_CHANNELS);
 
   DEV_LOG("Allocated buffer of {} frames for buffer of {} ms [stretch {}, target size {}].", m_buffer_size,
@@ -428,11 +391,9 @@ void CoreAudioStream::AllocateBuffer()
 
 void CoreAudioStream::DestroyBuffer()
 {
-  m_staging_buffer.reset();
   m_float_buffer.reset();
   m_buffer.reset();
   m_buffer_size = 0;
-  m_staging_buffer_pos = 0;
   m_wpos.store(0, std::memory_order_release);
   m_rpos.store(0, std::memory_order_release);
 }
@@ -491,11 +452,26 @@ void CoreAudioStream::SetOutputVolume(u32 volume)
   m_volume = volume;
 }
 
-void CoreAudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
+bool CoreAudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
-  // TODO: Write directly to buffer when not using stretching.
-  *buffer_ptr = &m_staging_buffer[m_staging_buffer_pos];
-  *num_frames = CHUNK_SIZE - (m_staging_buffer_pos / NUM_CHANNELS);
+  // don't bother committing anything when muted
+  if (m_volume == 0 || m_paused)
+    return false;
+
+  // acquire the read position, so the reader is done with the frames we're about to overwrite
+  const u32 wpos = m_wpos.load(std::memory_order_relaxed);
+  const u32 free = m_buffer_size - ((wpos + m_buffer_size - m_rpos.load(std::memory_order_acquire)) % m_buffer_size);
+
+  // leave one frame free, otherwise a full buffer looks empty. the read position belongs to the audio thread, so the
+  // caller drops what doesn't fit.
+  *buffer_ptr = &m_buffer[wpos * NUM_CHANNELS];
+  *num_frames = std::min(m_buffer_size - wpos, free - 1);
+
+  // stretcher should take care of this, only triggers with stretch off
+  if (*num_frames == 0) [[unlikely]]
+    DEBUG_LOG("Buffer overrun, dropping frames");
+
+  return (*num_frames > 0);
 }
 
 static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
@@ -547,17 +523,12 @@ static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
 
 void CoreAudioStream::EndWrite(u32 num_frames)
 {
-  // don't bother committing anything when muted
-  if (m_volume == 0 || m_paused)
-    return;
-
-  m_staging_buffer_pos += num_frames * NUM_CHANNELS;
-  DebugAssert(m_staging_buffer_pos <= (CHUNK_SIZE * NUM_CHANNELS));
-  if ((m_staging_buffer_pos / NUM_CHANNELS) < CHUNK_SIZE)
-    return;
-
-  m_staging_buffer_pos = 0;
-  InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
+  // release the write position, so the reader sees the frames written before it
+  u32 wpos = m_wpos.load(std::memory_order_relaxed);
+  DebugAssert((wpos + num_frames) <= m_buffer_size);
+  wpos += num_frames;
+  wpos = (wpos == m_buffer_size) ? 0 : wpos;
+  m_wpos.store(wpos, std::memory_order_release);
 }
 
 // Time stretching algorithm based on PCSX2 implementation.
