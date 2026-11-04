@@ -4,12 +4,17 @@
 #include "core/core.h"
 #include "core/settings.h"
 
+#include "util/imgui_manager.h"
 #include "util/translation.h"
 
 #include "common/time_helpers.h"
 
 // CDImageDevice references this
 const char* const Settings::CDROM_SECTION_NAME = "CDROM";
+
+void Host::AddOSDMessage(OSDMessageType type, std::string message)
+{
+}
 
 bool Core::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /* = false */)
 {

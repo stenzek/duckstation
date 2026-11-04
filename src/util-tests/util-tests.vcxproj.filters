@@ -11,5 +11,6 @@
     <ClCompile Include="object_archive_tests.cpp" />
     <ClCompile Include="cd_image_tests.cpp" />
     <ClCompile Include="shiftjis_tests.cpp" />
+    <ClCompile Include="core_audio_stream_tests.cpp" />
   </ItemGroup>
 </Project>

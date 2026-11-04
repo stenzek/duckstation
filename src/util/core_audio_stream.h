@@ -59,6 +59,8 @@ struct AudioStreamParameters
 
 class CoreAudioStream final : private AudioStreamSource
 {
+  friend class CoreAudioStreamTest;
+
 public:
   using SampleType = AudioStreamSource::SampleType;
 
