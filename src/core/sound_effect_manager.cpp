@@ -471,7 +471,7 @@ void SoundEffectManager::EffectAudioStream::ReadFrames(SampleType* samples, u32 
 
 void SoundEffectManager::StopStreamIfInactive()
 {
-  std::lock_guard lock(s_locals.state_mutex);
+  std::unique_lock lock(s_locals.state_mutex);
   s_locals.stream_stop_pending = false;
 
   if (s_locals.silence_frames < SILENCE_TIMEOUT_FRAMES || !s_locals.active_sounds.empty())
@@ -480,15 +480,31 @@ void SoundEffectManager::StopStreamIfInactive()
     return;
   }
 
-  Error stop_error;
-  if (s_locals.audio_stream->Stop(&stop_error))
+  // Some backends wait for the callback when stopping, and it takes the state lock. Sounds queued in the meantime
+  // don't try to start the stream, since it's still marked as started. Shutdown() can't destroy the stream meanwhile,
+  // because the other callers are on this thread, and FullscreenUI::Shutdown() only runs on the video thread while
+  // this thread is synchronously waiting on it. The exception is a fatal error with only FSUI running.
+  AudioStream* const stream = s_locals.audio_stream.get();
+  lock.unlock();
+  Error error;
+  const bool stopped = stream->Stop(&error);
+  lock.lock();
+  if (!stopped)
+  {
+    ERROR_LOG("Failed to stop effect audio stream: {}", error.GetDescription());
+    return;
+  }
+
+  if (s_locals.active_sounds.empty())
   {
     s_locals.stream_started = false;
     VERBOSE_LOG("Stopped effect audio stream due to inactivity.");
   }
-  else
+  else if (!stream->Start(&error))
   {
-    ERROR_LOG("Failed to stop effect audio stream: {}", stop_error.GetDescription());
+    ERROR_LOG("Failed to restart effect audio stream: {}", error.GetDescription());
+    s_locals.stream_started = false;
+    s_locals.active_sounds.clear();
   }
 }
 
