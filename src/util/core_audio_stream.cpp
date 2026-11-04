@@ -101,7 +101,7 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
   Destroy();
 
   m_sample_rate = sample_rate;
-  m_volume = 100;
+  m_volume.store(100, std::memory_order_relaxed);
   m_parameters = params;
   m_filling = false;
   m_paused = false;
@@ -191,7 +191,7 @@ void CoreAudioStream::Destroy()
   DestroyBuffer();
   m_sample_rate = 0;
   m_parameters = AudioStreamParameters();
-  m_volume = 0;
+  m_volume.store(0, std::memory_order_relaxed);
   m_filling = false;
   m_paused = true;
 }
@@ -315,11 +315,14 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
   std::lock_guard lock(m_callback_mutex);
   m_callback_frames.store(num_frames, std::memory_order_relaxed);
 
+  // set by the writer
+  const u32 volume = m_volume.load(std::memory_order_relaxed);
+
   if (IsStretchEnabled())
   {
     StretchReadFrames(samples, num_frames);
-    if (m_volume != 100)
-      AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, m_volume);
+    if (volume != 100)
+      AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, volume);
     return;
   }
 
@@ -369,8 +372,8 @@ void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     std::memset(samples + (frames_to_read * NUM_CHANNELS), 0, silence_frames * NUM_CHANNELS * sizeof(SampleType));
   }
 
-  if (m_volume != 100)
-    AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, m_volume);
+  if (volume != 100)
+    AudioStream::ApplyVolume(samples, num_frames * NUM_CHANNELS, volume);
 }
 
 void CoreAudioStream::AllocateBuffer()
@@ -449,13 +452,13 @@ void CoreAudioStream::SetPaused(bool paused)
 
 void CoreAudioStream::SetOutputVolume(u32 volume)
 {
-  m_volume = volume;
+  m_volume.store(volume, std::memory_order_relaxed);
 }
 
 bool CoreAudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
   // don't bother committing anything when muted
-  if (m_volume == 0 || m_paused)
+  if (m_volume.load(std::memory_order_relaxed) == 0 || m_paused)
     return false;
 
   // acquire the read position, so the reader is done with the frames we're about to overwrite

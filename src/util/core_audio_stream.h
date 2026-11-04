@@ -81,7 +81,7 @@ public:
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
   ALWAYS_INLINE u32 GetBufferSize() const { return m_buffer_size; }
   ALWAYS_INLINE u32 GetTargetBufferSize() const { return m_target_buffer_size; }
-  ALWAYS_INLINE u32 GetOutputVolume() const { return m_volume; }
+  ALWAYS_INLINE u32 GetOutputVolume() const { return m_volume.load(std::memory_order_relaxed); }
   ALWAYS_INLINE float GetNominalTempo() const { return m_nominal_rate.load(std::memory_order_relaxed); }
   ALWAYS_INLINE bool IsPaused() const { return m_paused; }
 
@@ -142,7 +142,7 @@ private:
 
   std::unique_ptr<AudioStream> m_stream;
   u32 m_sample_rate = 0;
-  u32 m_volume = 0;
+  std::atomic<u32> m_volume{0};
   AudioStreamParameters m_parameters;
   bool m_stretch_inactive = false;
   bool m_filling = false;
