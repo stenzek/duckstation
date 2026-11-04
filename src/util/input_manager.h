@@ -312,9 +312,10 @@ using BindingCaptureCallback = MoveOnlyFunction<void(std::span<const InputBindin
 /// callback is called when an input joins, and when the binding is complete. Once complete, the capture keeps
 /// tracking inputs until it's stopped. With continue_sequence, as for each step of binding several inputs in turn,
 /// inputs still held from the previous capture are then ignored until they're released. Sensors are only polled and
-/// captured when sensor mapping is enabled. Only one capture runs at a time, so this replaces any capture in progress.
-/// Core thread only.
-void StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence = false);
+/// captured when sensor mapping is enabled. Pointer events are only captured when mouse mapping is enabled and
+/// capture_pointer is set, otherwise passing through, e.g. so the UI asking for a sequence can still be clicked. Only
+/// one capture runs at a time, so this replaces any capture in progress. Core thread only.
+void StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence = false, bool capture_pointer = true);
 
 /// Adds an input from a UI event, like a keyboard key, to the capture's binding. Core thread only.
 void AddBindingCaptureKey(InputBindingKey key);

@@ -200,6 +200,7 @@ struct State
   bool binding_capture_running = false;
   bool binding_capture_completed = false;
   bool binding_capture_sensors = false;
+  bool binding_capture_pointer = false;
 
 #ifdef _WIN32
   // Only written on the core thread, but read from any thread. It only bounds loops over fixed-size arrays and doesn't
@@ -2271,7 +2272,8 @@ void InputManager::UpdateMacroButtons()
 // Binding Capture
 // ------------------------------------------------------------------------
 
-void InputManager::StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence /* = false */)
+void InputManager::StartBindingCapture(BindingCaptureCallback callback, bool continue_sequence /* = false */,
+                                       bool capture_pointer /* = true */)
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
@@ -2298,6 +2300,10 @@ void InputManager::StartBindingCapture(BindingCaptureCallback callback, bool con
   // Sensors are only captured when the user has enabled sensor mapping, so moving doesn't bind them by accident.
   s_state.binding_capture_sensors =
     Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableSensorMapping", false);
+
+  // Likewise for the mouse, whose events otherwise pass through, so the UI can still be clicked.
+  s_state.binding_capture_pointer =
+    capture_pointer && Core::GetBaseBoolSettingValue(Settings::UI_SECTION_NAME, "EnableMouseMapping", false);
   UpdateSensorPolling();
 }
 
@@ -2393,8 +2399,11 @@ void InputManager::UpdateSensorPolling()
 bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
 {
   // Threading: Only called on core thread in InvokeEvents().
-  if (!s_state.binding_capture_running)
+  if (!s_state.binding_capture_running ||
+      (key.source_type == InputSourceType::Pointer && !s_state.binding_capture_pointer))
+  {
     return false;
+  }
 
   // Inputs which can't be named, like those of a device the input source doesn't know, can't be bound.
   auto it = std::ranges::find_if(s_state.binding_capture_inputs,
