@@ -8,12 +8,22 @@
             <key>CFBundleTypeExtensions</key>
             <array>
                 <string>bin</string>
-                <string>cue</string>
                 <string>img</string>
+                <string>iso</string>
+                <string>cue</string>
                 <string>chd</string>
+                <string>ecm</string>
+                <string>mds</string>
+                <string>pbp</string>
+                <string>ccd</string>
                 <string>m3u</string>
+                <string>cpe</string>
                 <string>psexe</string>
+                <string>ps-exe</string>
+                <string>psx</string>
                 <string>psf</string>
+                <string>minipsf</string>
+                <string>psxgpu</string>
             </array>
             <key>CFBundleTypeIconFile</key>
             <string>DuckStation.icns</string>
@@ -38,7 +48,7 @@
     <key>CFBundleVersionString</key>
     <string>${SCM_VERSION}</string>
     <key>NSHumanReadableCopyright</key>
-    <string>2019-2024 Connor McLaughlin &lt;stenzek@gmail.com&gt;</string>
+    <string>2019-2026 Connor McLaughlin &lt;stenzek@gmail.com&gt;</string>
     <key>LSMinimumSystemVersion</key>
     <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
     <key>LSApplicationCategoryType</key>
