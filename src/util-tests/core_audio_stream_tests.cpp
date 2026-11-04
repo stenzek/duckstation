@@ -8,10 +8,14 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <array>
+#include <atomic>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include <numbers>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -74,6 +78,74 @@ std::ostream& operator<<(std::ostream& os, const SimResult& r)
             << " dropped_input=" << r.dropped_input;
 }
 
+// Calls back from its own thread as fast as it can, like a backend would at the sample rate.
+class TestAudioStream final : public AudioStream
+{
+public:
+  // When not waiting on stop, a callback can still be running after Stop() returns, like some backends.
+  TestAudioStream(AudioStreamSource* source, u32 callback_frames, bool wait_on_stop, double max_amplitude)
+    : m_source(source), m_callback_frames(callback_frames), m_wait_on_stop(wait_on_stop), m_max_amplitude(max_amplitude)
+  {
+  }
+
+  ~TestAudioStream() override
+  {
+    m_running.store(false, std::memory_order_relaxed);
+    if (m_thread.joinable())
+      m_thread.join();
+  }
+
+  u32 GetCallbackCount() const { return m_callback_count.load(std::memory_order_relaxed); }
+  u32 GetBadFrameCount() const { return m_bad_frame_count.load(std::memory_order_relaxed); }
+
+  bool Start(Error* error) override
+  {
+    if (m_thread.joinable())
+      m_thread.join();
+
+    m_running.store(true, std::memory_order_relaxed);
+    m_thread = std::thread(&TestAudioStream::Run, this);
+    return true;
+  }
+
+  bool Stop(Error* error) override
+  {
+    m_running.store(false, std::memory_order_relaxed);
+    if (m_wait_on_stop)
+      m_thread.join();
+    return true;
+  }
+
+private:
+  void Run()
+  {
+    std::vector<AudioStreamSource::SampleType> output(m_callback_frames * 2);
+    while (m_running.load(std::memory_order_relaxed))
+    {
+      m_source->ReadFrames(output.data(), m_callback_frames);
+      for (u32 i = 0; i < m_callback_frames; i++)
+      {
+        const int left = output[i * 2 + 0];
+        const int right = output[i * 2 + 1];
+        if (std::abs(left + right) > 2 || std::abs(left) > m_max_amplitude)
+          m_bad_frame_count.fetch_add(1, std::memory_order_relaxed);
+      }
+
+      m_callback_count.fetch_add(1, std::memory_order_relaxed);
+      std::this_thread::yield();
+    }
+  }
+
+  AudioStreamSource* m_source;
+  u32 m_callback_frames;
+  bool m_wait_on_stop;
+  double m_max_amplitude;
+  std::thread m_thread;
+  std::atomic_bool m_running{false};
+  std::atomic<u32> m_callback_count{0};
+  std::atomic<u32> m_bad_frame_count{0};
+};
+
 } // namespace
 
 class CoreAudioStreamTest : public testing::Test
@@ -94,6 +166,9 @@ protected:
   // Well above the largest step of the sine, even when resampling at 4x.
   static constexpr int CLICK_THRESHOLD = static_cast<int>(SINE_AMPLITUDE * 0.25);
 
+  // Stretching can overshoot slightly.
+  static constexpr double MAX_AMPLITUDE = SINE_AMPLITUDE * 1.1 + 2.0;
+
   // Sets up the stream as Initialize() would, but without an output, and unpaused so it accepts writes.
   void Create(AudioStretchMode mode, u16 buffer_ms = AudioStreamParameters::DEFAULT_BUFFER_MS)
   {
@@ -110,11 +185,24 @@ protected:
 
   void SetPaused(bool paused) { m_stream.m_paused = paused; }
 
+  // Gives the stream an output that calls back from another thread, so that pausing stops and starts it as it would a
+  // real one.
+  TestAudioStream* StartTestOutput(u32 callback_frames, bool wait_on_stop)
+  {
+    std::unique_ptr<TestAudioStream> output = std::make_unique<TestAudioStream>(
+      static_cast<AudioStreamSource*>(&m_stream), callback_frames, wait_on_stop, MAX_AMPLITUDE);
+    TestAudioStream* const ret = output.get();
+    m_stream.m_stream = std::move(output);
+    ret->Start(nullptr);
+    return ret;
+  }
+
   void ReadFrames(SampleType* samples, u32 num_frames) { m_stream.ReadFrames(samples, num_frames); }
 
   const SampleType* GetBufferStart() const { return m_stream.m_buffer.get(); }
   u32 GetReadPos() const { return m_stream.m_rpos.load(std::memory_order_relaxed); }
   u32 GetWritePos() const { return m_stream.m_wpos.load(std::memory_order_relaxed); }
+  u32 GetWritePosAcquire() const { return m_stream.m_wpos.load(std::memory_order_acquire); }
   bool IsFilling() const { return m_stream.m_filling; }
 
   // Writes frames the same way as the SPU, returns the number that were written.
@@ -155,7 +243,6 @@ protected:
     const double consumer_period =
       (static_cast<double>(config.callback_frames) / SAMPLE_RATE) * (1.0 + config.drift_ppm * 1e-6);
     const double phase_step = 2.0 * std::numbers::pi * SINE_FREQUENCY / SAMPLE_RATE;
-    const double max_amplitude = SINE_AMPLITUDE * 1.1 + 2.0;
     const double latency_start = config.seconds * 0.5;
 
     double phase = 0.0;
@@ -197,9 +284,8 @@ protected:
         }
         if (!mode_changed && config.mode_change_at >= 0.0 && time >= config.mode_change_at)
         {
-          AudioStreamParameters params = m_stream.m_parameters;
-          params.stretch_mode = config.mode_change_to;
-          m_stream.UpdateParameters(params);
+          // the stream is recreated when parameters change
+          Create(config.mode_change_to, m_stream.m_parameters.buffer_ms);
           mode_changed = true;
         }
 
@@ -245,7 +331,7 @@ protected:
         {
           const SampleType left = output[i * NUM_CHANNELS + 0];
           const SampleType right = output[i * NUM_CHANNELS + 1];
-          if (std::abs(static_cast<int>(left) + static_cast<int>(right)) > 2 || std::abs(left) > max_amplitude)
+          if (std::abs(static_cast<int>(left) + static_cast<int>(right)) > 2 || std::abs(left) > MAX_AMPLITUDE)
             result.bad_frames++;
           if (std::abs(static_cast<int>(left) - static_cast<int>(last_sample)) > CLICK_THRESHOLD)
             result.clicks++;
@@ -699,5 +785,150 @@ TEST_F(CoreAudioStreamTest, ModeChange)
     EXPECT_LE(result.clicks, 1u) << result;
     EXPECT_EQ(result.bad_frames, 0u) << result;
     EXPECT_LT(result.avg_latency_ms, 70.0) << result;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Threading, most useful under ThreadSanitizer
+//////////////////////////////////////////////////////////////////////////
+
+// Writer and reader on different threads, the output should still exactly match the input.
+TEST_F(CoreAudioStreamTest, ThreadedOutputMatchesInput)
+{
+  Create(AudioStretchMode::Off);
+
+  static constexpr u32 TOTAL_FRAMES = 1u << 21;
+  const u32 size = m_stream.GetBufferSize();
+
+  std::atomic<u32> mismatches{0};
+  std::atomic<u32> first_mismatch{0};
+  std::atomic<u32> frames_read{0};
+  std::thread reader([this, size, &mismatches, &first_mismatch, &frames_read]() {
+    XorShift128PlusPlus rng;
+    std::vector<SampleType> output(512 * NUM_CHANNELS);
+    u32 read_counter = 0;
+    while (read_counter < TOTAL_FRAMES)
+    {
+      // only what's been written, so that it doesn't underrun
+      const u32 available = (GetWritePosAcquire() + size - GetReadPos()) % size;
+      if (available == 0)
+      {
+        std::this_thread::yield();
+        continue;
+      }
+
+      const u32 read_frames = rng.NextRange<u32>(1, std::min(available, 512u) + 1);
+      ReadFrames(output.data(), read_frames);
+      for (u32 i = 0; i < read_frames; i++, read_counter++)
+      {
+        const u32 value = static_cast<u16>(output[i * NUM_CHANNELS + 0]) |
+                          (static_cast<u32>(static_cast<u16>(output[i * NUM_CHANNELS + 1])) << 16);
+        if (value != read_counter && mismatches.fetch_add(1, std::memory_order_relaxed) == 0)
+          first_mismatch.store(read_counter, std::memory_order_relaxed);
+      }
+    }
+
+    frames_read.store(read_counter, std::memory_order_relaxed);
+  });
+
+  u32 write_counter = 0;
+  const auto generate = [&write_counter](SampleType* frame) {
+    frame[0] = static_cast<SampleType>(write_counter & 0xFFFFu);
+    frame[1] = static_cast<SampleType>(write_counter >> 16);
+    write_counter++;
+  };
+
+  XorShift128PlusPlus rng;
+  while (write_counter < TOTAL_FRAMES)
+  {
+    // don't drop anything, wait for the reader instead
+    if (WriteFrames(std::min(rng.NextRange<u32>(1, 301), TOTAL_FRAMES - write_counter), generate) == 0)
+      std::this_thread::yield();
+  }
+
+  reader.join();
+  EXPECT_EQ(frames_read.load(), TOTAL_FRAMES);
+  EXPECT_EQ(mismatches.load(), 0u) << "first at frame " << first_mismatch.load();
+  EXPECT_FALSE(IsFilling());
+}
+
+// Control calls from the core thread while the output is calling back.
+TEST_F(CoreAudioStreamTest, ThreadedControlCalls)
+{
+  for (const bool wait_on_stop : {true, false})
+  {
+    SCOPED_TRACE(wait_on_stop);
+    Create(AudioStretchMode::TimeStretch);
+    TestAudioStream* output = StartTestOutput(512, wait_on_stop);
+    u32 bad_frames = 0;
+
+    static constexpr std::array<float, 4> speeds = {0.5f, 1.0f, 2.0f, 4.0f};
+    static constexpr std::array<u16, 3> buffer_sizes = {30, 50, 100};
+
+    const double phase_step = 2.0 * std::numbers::pi * SINE_FREQUENCY / SAMPLE_RATE;
+    double phase = 0.0;
+    const auto generate = [&phase, phase_step](SampleType* frame) {
+      const SampleType value = static_cast<SampleType>(std::lround(std::sin(phase) * SINE_AMPLITUDE));
+      frame[0] = value;
+      frame[1] = -value;
+      phase += phase_step;
+    };
+
+    XorShift128PlusPlus rng;
+    float speed = 1.0f;
+    for (u32 iteration = 0; iteration < 2000; iteration++)
+    {
+      WriteFrames(FRAMES_PER_HOST_FRAME, generate);
+
+      switch (rng.NextRange(50))
+      {
+        case 0:
+        case 1:
+          m_stream.SetOutputVolume(rng.NextRange(101));
+          break;
+
+        case 2:
+        case 3:
+        {
+          const float new_speed = speeds[rng.NextRange(speeds.size())];
+          m_stream.SetNominalRate(new_speed);
+          if (new_speed < speed)
+            m_stream.EmptyStretchBuffers();
+          speed = new_speed;
+        }
+        break;
+
+        case 4:
+        {
+          // same as SPU::CreateOutputStream(), destroying the output waits for the callback
+          const bool paused = m_stream.IsPaused();
+          bad_frames += output->GetBadFrameCount();
+          Create(static_cast<AudioStretchMode>(rng.NextRange(3)), buffer_sizes[rng.NextRange(buffer_sizes.size())]);
+          output = StartTestOutput(512, wait_on_stop);
+          m_stream.SetNominalRate(speed);
+          m_stream.SetPaused(paused);
+        }
+        break;
+
+        case 5:
+          m_stream.SetPaused(!m_stream.IsPaused());
+          break;
+
+        default:
+          break;
+      }
+
+      // e.g. the latency display
+      (void)m_stream.GetBufferedFramesRelaxed();
+    }
+
+    // make sure it ran with the final parameters
+    m_stream.SetPaused(false);
+    const u32 callbacks = output->GetCallbackCount();
+    while (output->GetCallbackCount() < (callbacks + 2))
+      std::this_thread::yield();
+
+    EXPECT_GT(output->GetCallbackCount(), 0u);
+    EXPECT_EQ(bad_frames + output->GetBadFrameCount(), 0u);
   }
 }

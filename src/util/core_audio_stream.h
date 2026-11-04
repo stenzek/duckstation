@@ -6,7 +6,6 @@
 #include "audio_stream.h"
 
 #include "common/align.h"
-#include "common/threading.h"
 
 #include <array>
 #include <atomic>
@@ -92,10 +91,6 @@ public:
                   std::string_view driver_name, std::string_view device_name, Error* error);
   void Destroy();
 
-  /// Updates stream parameters without recreating the stream.
-  /// NOTE: Cannot handle changes in output latency.
-  void UpdateParameters(const AudioStreamParameters& params);
-
   /// Temporarily pauses the stream, preventing it from requesting data.
   void SetPaused(bool paused);
 
@@ -106,13 +101,9 @@ public:
   bool BeginWrite(SampleType** buffer_ptr, u32* num_frames);
   void EndWrite(u32 num_frames);
 
-  void EmptyBuffer();
-
   /// Nominal rate is used for both resampling and timestretching, input samples are assumed to be this amount faster
   /// than the sample rate.
   void SetNominalRate(float tempo);
-
-  void SetStretchMode(AudioStretchMode mode);
 
   /// Resets the time stretcher tempo, call when reducing target speed.
   void EmptyStretchBuffers();
@@ -166,10 +157,6 @@ private:
 
   // last callback size, set by the audio thread
   std::atomic<u32> m_callback_frames{0};
-
-  // Held by the audio thread while reading, and when reallocating buffers. Some backends (WASAPI, XAudio2) don't wait
-  // for a running callback when stopping, so stopping the stream isn't enough.
-  Threading::Mutex m_callback_mutex;
 
   void* m_soundtouch = nullptr;
 

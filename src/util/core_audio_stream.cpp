@@ -19,7 +19,6 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
-#include <mutex>
 
 LOG_CHANNEL(AudioStream);
 
@@ -131,57 +130,6 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
   }
 
   return true;
-}
-
-void CoreAudioStream::UpdateParameters(const AudioStreamParameters& params)
-{
-  constexpr auto copy_stretch_params = [](AudioStreamParameters& dest, const AudioStreamParameters& src) {
-    dest.stretch_mode = src.stretch_mode;
-    dest.stretch_sequence_length_ms = src.stretch_sequence_length_ms;
-    dest.stretch_seekwindow_ms = src.stretch_seekwindow_ms;
-    dest.stretch_overlap_ms = src.stretch_overlap_ms;
-    dest.stretch_use_quickseek = src.stretch_use_quickseek;
-    dest.stretch_use_aa_filter = src.stretch_use_aa_filter;
-  };
-
-  AudioStreamParameters new_params = m_parameters;
-  new_params.buffer_ms = params.buffer_ms;
-  copy_stretch_params(new_params, params);
-  if (new_params == m_parameters)
-    return;
-
-  Error error;
-
-  // have to pause the stream to change buffer size, and the stretcher runs on the audio thread
-  if (m_stream && !m_paused)
-  {
-    if (!m_stream->Stop(&error))
-    {
-      ERROR_LOG("Failed to stop audio stream for buffer size change: {}", error.GetDescription());
-      return;
-    }
-  }
-
-  {
-    // can't hold the lock while stopping, some backends wait for the callback
-    std::lock_guard lock(m_callback_mutex);
-    StretchDestroy();
-    DestroyBuffer();
-
-    m_parameters = new_params;
-
-    AllocateBuffer();
-    StretchAllocate();
-  }
-
-  if (m_stream && !m_paused)
-  {
-    if (!m_stream->Start(&error))
-    {
-      ERROR_LOG("Failed to start audio stream after buffer size change: {}", error.GetDescription());
-      m_paused = true;
-    }
-  }
 }
 
 void CoreAudioStream::Destroy()
@@ -312,7 +260,6 @@ u32 CoreAudioStream::ReadBufferFrames(SampleType* samples, u32 rpos, u32 num_fra
 
 void CoreAudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
-  std::lock_guard lock(m_callback_mutex);
   m_callback_frames.store(num_frames, std::memory_order_relaxed);
 
   // set by the writer
@@ -401,40 +348,10 @@ void CoreAudioStream::DestroyBuffer()
   m_rpos.store(0, std::memory_order_release);
 }
 
-void CoreAudioStream::EmptyBuffer()
-{
-  if (IsStretchEnabled())
-    m_stretch_reset_request.store(true, std::memory_order_relaxed);
-
-  m_wpos.store(m_rpos.load(std::memory_order_acquire), std::memory_order_release);
-}
-
 void CoreAudioStream::SetNominalRate(float tempo)
 {
   // applied by the audio thread on the next chunk
   m_nominal_rate.store(tempo, std::memory_order_relaxed);
-}
-
-void CoreAudioStream::SetStretchMode(AudioStretchMode mode)
-{
-  if (m_parameters.stretch_mode == mode)
-    return;
-
-  // can't resize the buffers while paused
-  bool paused = m_paused;
-  if (!paused)
-    SetPaused(true);
-
-  DestroyBuffer();
-  StretchDestroy();
-  m_parameters.stretch_mode = mode;
-
-  AllocateBuffer();
-  if (m_parameters.stretch_mode != AudioStretchMode::Off)
-    StretchAllocate();
-
-  if (!paused)
-    SetPaused(false);
 }
 
 void CoreAudioStream::SetPaused(bool paused)

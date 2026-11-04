@@ -4876,7 +4876,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
     else if (g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
     {
-      SPU::GetOutputStream().UpdateParameters(g_settings.audio_stream_parameters);
+      SPU::CreateOutputStream();
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)
