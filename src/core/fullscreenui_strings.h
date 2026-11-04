@@ -104,6 +104,7 @@ TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for 
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default controller configuration?\n\nAll bindings and configuration will be lost. You cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default settings? Any preferences will be lost.\n\nYou cannot undo this action.");
+TRANSLATE_NOOP("FullscreenUI", "Asks for each button and axis of this controller in turn.");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
@@ -138,6 +139,7 @@ TRANSLATE_NOOP("FullscreenUI", "Back");
 TRANSLATE_NOOP("FullscreenUI", "Back To Pause Menu");
 TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
 TRANSLATE_NOOP("FullscreenUI", "Behavior");
+TRANSLATE_NOOP("FullscreenUI", "Bind All Buttons");
 TRANSLATE_NOOP("FullscreenUI", "Bindings");
 TRANSLATE_NOOP("FullscreenUI", "Blur Backgrounds");
 TRANSLATE_NOOP("FullscreenUI", "Blur Message Backgrounds");
@@ -168,6 +170,7 @@ TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the con
 TRANSLATE_NOOP("FullscreenUI", "Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
+TRANSLATE_NOOP("FullscreenUI", "Clear");
 TRANSLATE_NOOP("FullscreenUI", "Clear Binding");
 TRANSLATE_NOOP("FullscreenUI", "Clear Mappings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
@@ -827,6 +830,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows trophy icons in game grid when games have 
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Size: ");
+TRANSLATE_NOOP("FullscreenUI", "Skip");
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
 TRANSLATE_NOOP("FullscreenUI", "Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
@@ -857,6 +861,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start a game from a disc in your PC's DVD drive.
 TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
 TRANSLATE_NOOP("FullscreenUI", "Start: {}");
 TRANSLATE_NOOP("FullscreenUI", "Starts the application in Big Picture Mode instead of the desktop interface.");
+TRANSLATE_NOOP("FullscreenUI", "Step {} of {}");
 TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller preset.");
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
 TRANSLATE_NOOP("FullscreenUI", "Subframes");
@@ -882,7 +887,6 @@ TRANSLATE_NOOP("FullscreenUI", "Theme");
 TRANSLATE_NOOP("FullscreenUI", "This game was not scanned by DuckStation. Some functionality is not available.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Time Played: ");
-TRANSLATE_NOOP("FullscreenUI", "Timing out in {}...");
 TRANSLATE_NOOP("FullscreenUI", "Title");
 TRANSLATE_NOOP("FullscreenUI", "Title (*)");
 TRANSLATE_NOOP("FullscreenUI", "Title:");

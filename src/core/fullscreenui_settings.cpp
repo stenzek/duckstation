@@ -64,15 +64,30 @@ public:
   void Start(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section, std::string_view key,
              std::string_view display_name);
 
+  /// Asks for each button and axis of a controller in turn.
+  void StartBindAll(SettingsInterface* bsi, std::string_view section, const Controller::ControllerInfo* ci);
+
 private:
   static constexpr float INPUT_BINDING_TIMEOUT_SECONDS = 5.0f;
+  static constexpr float BIND_ALL_TIMEOUT_SECONDS = 10.0f;
+
+  void StartCapture(bool continue_sequence);
+  void OnCaptureUpdate(u32 capture_id, SmallString binding, bool completed);
+  void SetStep(u32 step);
+  void NextStep();
+  void Finish();
 
   std::string m_binding_section;
   std::string m_binding_key;
   std::string m_display_name;
   std::string m_capture_binding;
+  const Controller::ControllerInfo* m_bind_all_info = nullptr;
+  std::vector<const Controller::ControllerBindingInfo*> m_steps;
+  u32 m_step = 0;
+  u32 m_capture_id = 0;
   float m_time_remaining = 0.0f;
   InputBindingInfo::Type m_binding_type = InputBindingInfo::Type::Unknown;
+  bool m_game_settings = false;
 };
 
 struct PostProcessingStageInfo
@@ -455,51 +470,114 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
   m_binding_key = key;
   m_display_name = display_name;
   m_capture_binding = {};
+  m_bind_all_info = nullptr;
+  m_steps = {};
+  m_step = 0;
+  m_game_settings = IsEditingGameSettings(bsi);
   m_time_remaining = INPUT_BINDING_TIMEOUT_SECONDS;
   SetTitleAndOpen("##input_binding_dialog");
 
   // A capture started for another binding is replaced.
-  const bool game_settings = IsEditingGameSettings(bsi);
-  Host::RunOnCoreThread([this, game_settings]() {
-    InputManager::StartBindingCapture([this, game_settings](std::span<const InputBindingKey> keys, bool completed) {
-      if (!completed)
-      {
-        // show the binding as it's built up
-        const auto lock = Core::GetSettingsLock();
-        if (m_binding_type != InputBindingInfo::Type::Unknown)
-        {
-          VideoThread::RunOnThread([this, binding = InputManager::ConvertInputBindingKeysToString(
-                                            m_binding_type, keys.data(), keys.size())]() mutable {
-            InputManager::PrettifyInputBinding(binding, true, &GetControllerIconMapping);
-            m_capture_binding = binding.view();
+  StartCapture(false);
+}
+
+void FullscreenUI::InputBindingDialog::StartBindAll(SettingsInterface* bsi, std::string_view section,
+                                                    const Controller::ControllerInfo* ci)
+{
+  // Motors and other effects have their own UI, like with automatic mapping.
+  m_steps = {};
+  for (const Controller::ControllerBindingInfo& bi : ci->bindings)
+  {
+    if (bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Axis ||
+        bi.type == InputBindingInfo::Type::HalfAxis)
+    {
+      m_steps.push_back(&bi);
+    }
+  }
+  if (m_steps.empty())
+    return;
+
+  m_binding_section = section;
+  m_bind_all_info = ci;
+  m_game_settings = IsEditingGameSettings(bsi);
+  SetStep(0);
+  SetTitleAndOpen("##input_binding_dialog");
+  StartCapture(false);
+}
+
+void FullscreenUI::InputBindingDialog::SetStep(u32 step)
+{
+  const Controller::ControllerBindingInfo* bi = m_steps[step];
+  m_step = step;
+  m_binding_type = bi->type;
+  m_binding_key = bi->name;
+  m_display_name = m_bind_all_info->GetBindingDisplayName(*bi);
+  m_capture_binding = {};
+  m_time_remaining = BIND_ALL_TIMEOUT_SECONDS;
+}
+
+void FullscreenUI::InputBindingDialog::StartCapture(bool continue_sequence)
+{
+  // Updates from an earlier capture can still be queued, so each is tagged with the capture it came from. Only the
+  // video thread touches the dialog's state.
+  // A sequence keeps the mouse for its buttons, even with mouse mapping.
+  const u32 capture_id = ++m_capture_id;
+  const bool capture_pointer = m_steps.empty();
+  Host::RunOnCoreThread([this, capture_id, type = m_binding_type, continue_sequence, capture_pointer]() {
+    InputManager::StartBindingCapture(
+      [this, capture_id, type](std::span<const InputBindingKey> keys, bool completed) {
+        VideoThread::RunOnThread(
+          [this, capture_id, completed,
+           binding = InputManager::ConvertInputBindingKeysToString(type, keys.data(), keys.size())]() mutable {
+            OnCaptureUpdate(capture_id, std::move(binding), completed);
           });
-        }
-
-        return;
-      }
-
-      {
-        // holding the settings lock here will protect the input binding list
-        const auto lock = Core::GetSettingsLock();
-
-        // shouldn't happen, just in case
-        if (m_binding_type != InputBindingInfo::Type::Unknown)
-        {
-          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-          const SmallString new_binding =
-            InputManager::ConvertInputBindingKeysToString(m_binding_type, keys.data(), keys.size());
-          bsi->SetStringValue(m_binding_section.c_str(), m_binding_key.c_str(), new_binding.c_str());
-          SetSettingsChanged(bsi);
-
-          // don't try to process any more
-          m_binding_type = InputBindingInfo::Type::Unknown;
-          VideoThread::RunOnThread([this]() { StartClose(); });
-        }
-      }
-
-      InputManager::StopBindingCapture();
-    });
+      },
+      continue_sequence, capture_pointer);
   });
+}
+
+void FullscreenUI::InputBindingDialog::OnCaptureUpdate(u32 capture_id, SmallString binding, bool completed)
+{
+  if (capture_id != m_capture_id || m_binding_type == InputBindingInfo::Type::Unknown)
+    return;
+
+  if (!completed)
+  {
+    // show the binding as it's built up
+    InputManager::PrettifyInputBinding(binding, true, &GetControllerIconMapping);
+    m_capture_binding = binding.view();
+    return;
+  }
+
+  {
+    const auto lock = Core::GetSettingsLock();
+    SettingsInterface* bsi = GetEditingSettingsInterface(m_game_settings);
+    bsi->SetStringValue(m_binding_section.c_str(), m_binding_key.c_str(), binding.c_str());
+    SetSettingsChanged(bsi);
+  }
+
+  NextStep();
+}
+
+void FullscreenUI::InputBindingDialog::NextStep()
+{
+  // The capture isn't stopped between steps, the next one replaces it, so releases in between are still seen.
+  if ((m_step + 1) < m_steps.size())
+  {
+    SetStep(m_step + 1);
+    StartCapture(true);
+    return;
+  }
+
+  Finish();
+}
+
+void FullscreenUI::InputBindingDialog::Finish()
+{
+  // allow the dialog to fade out, but stop receiving any more events
+  m_binding_type = InputBindingInfo::Type::Unknown;
+  Host::RunOnCoreThread(&InputManager::StopBindingCapture);
+  StartClose();
 }
 
 void FullscreenUI::InputBindingDialog::ClearState()
@@ -514,6 +592,9 @@ void FullscreenUI::InputBindingDialog::ClearState()
   m_binding_key = {};
   m_display_name = {};
   m_capture_binding = {};
+  m_bind_all_info = nullptr;
+  m_steps = {};
+  m_step = 0;
 }
 
 void FullscreenUI::InputBindingDialog::Draw()
@@ -526,11 +607,9 @@ void FullscreenUI::InputBindingDialog::Draw()
     m_time_remaining -= ImGui::GetIO().DeltaTime;
     if (m_time_remaining <= 0.0f)
     {
-      // allow the dialog to fade out, but stop receiving any more events
+      // skips to the next step, if any
       m_time_remaining = 0.0f;
-      m_binding_type = InputBindingInfo::Type::Unknown;
-      Host::RunOnCoreThread(&InputManager::StopBindingCapture);
-      StartClose();
+      NextStep();
     }
   }
 
@@ -547,6 +626,14 @@ void FullscreenUI::InputBindingDialog::Draw()
     0.5f, width, "%s",
     SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), m_binding_section, m_display_name).c_str());
   ImGui::PopFont();
+
+  if (!m_steps.empty())
+  {
+    ImGui::TextAligned(
+      0.5f, width, "%s",
+      TinyString::from_format(FSUI_FSTR("Step {} of {}"), m_step + 1, static_cast<u32>(m_steps.size())).c_str());
+  }
+
   ImGui::Dummy(LayoutScale(0.0f, 10.0f));
 
   if (!m_capture_binding.empty())
@@ -556,13 +643,38 @@ void FullscreenUI::InputBindingDialog::Draw()
 
   ImGui::Dummy(LayoutScale(0.0f, 10.0f));
 
-  ImGui::PushFont(nullptr, UIStyle.MediumLargeFontSize, -1.0f);
-  ImGui::TextAligned(
-    0.5f, width, "%s",
-    TinyString::from_format(FSUI_FSTR("Timing out in {}..."),
-                            Host::FormatTimespan(std::max(static_cast<int>(std::ceil(m_time_remaining)), 1), true))
-      .c_str());
-  ImGui::PopFont();
+  // time left to push the binding
+  const float timeout = m_steps.empty() ? INPUT_BINDING_TIMEOUT_SECONDS : BIND_ALL_TIMEOUT_SECONDS;
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(3.0f));
+  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
+  ImGui::ProgressBar(m_time_remaining / timeout, ImVec2(width, LayoutScale(6.0f)), "");
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+
+  // The capture takes the pad and keyboard, so these are for the mouse, which it leaves alone.
+  if (!m_steps.empty() && m_binding_type != InputBindingInfo::Type::Unknown)
+  {
+    ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+    BeginHorizontalMenuButtons(3, 150.0f);
+    const bool skip = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_FORWARD, "Skip"));
+    const bool clear = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_ERASER, "Clear"));
+    const bool cancel = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"));
+    EndHorizontalMenuButtons();
+
+    if (clear)
+    {
+      const auto lock = Core::GetSettingsLock();
+      SettingsInterface* bsi = GetEditingSettingsInterface(m_game_settings);
+      bsi->DeleteValue(m_binding_section.c_str(), m_binding_key.c_str());
+      SetSettingsChanged(bsi);
+    }
+
+    if (skip || clear)
+      NextStep();
+    else if (cancel)
+      Finish();
+  }
 
   EndRender();
 }
@@ -4164,6 +4276,12 @@ void FullscreenUI::DrawControllerSettingsPage()
                    FSUI_VSTR("Attempts to map the selected port to a chosen controller.")))
     {
       StartAutomaticBindingForPort(global_slot);
+    }
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Bind All Buttons"),
+                   FSUI_VSTR("Asks for each button and axis of this controller in turn.")))
+    {
+      s_settings_locals.input_binding_dialog.StartBindAll(bsi, section, ci);
     }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_TRASH, "Clear Mappings"),
