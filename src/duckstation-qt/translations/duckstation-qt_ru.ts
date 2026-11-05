@@ -3819,6 +3819,16 @@ Current Binding: %s</source>
         <translation>Управляет громкостью звука, воспроизводимого на основном устройстве при ускорении.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Громкость меню</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Регулирует громкость звуковых эффектов интерфейса Big Picture и уведомлений о достижениях.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Отключить весь звук</translation>
@@ -9106,10 +9116,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Регион:</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Включить 8 МБ оперативной памяти (консоль разработчика)</translation>
-    </message>
-    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>Включить управление тактовой частотой (разгон/замедление)</translation>
     </message>
@@ -9161,6 +9167,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Seek Speedup:</source>
         <translation>Ускорение поиска:</translation>
+    </message>
+    <message>
+        <source>Installed RAM:</source>
+        <translation>Установленный объём ОЗУ:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Принудительное отображение всего ОЗУ</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
@@ -9228,10 +9242,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Не выбран</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Позволяет использовать дополнительные 6 МБ оперативной памяти, всего 2+6 = 8 МБ, что обычно встречается на консолях разработчиков. Для использования этой дополнительной памяти игры должны использовать больший размер кучи. Игры, полагающиеся на зеркала памяти, могут работать некорректно, поэтому используйте этот параметр только с совместимыми модификациями.</translation>
-    </message>
-    <message>
         <source>Preload Image to RAM</source>
         <translation>Предварительная загрузка образа в ОЗУ</translation>
     </message>
@@ -9242,10 +9252,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Region</source>
         <translation>Регион</translation>
-    </message>
-    <message>
-        <source>Auto-Detect</source>
-        <translation>Авто-определение</translation>
     </message>
     <message>
         <source>Determines the emulated hardware type.</source>
@@ -9268,13 +9274,21 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Перемотка при доступе к карте памяти, как при загрузке, так и при сохранении. Может сократить время ожидания в играх, которые часто обращаются к картам памяти.</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Установленный объём ОЗУ</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Изменяет объём оперативной памяти эмулируемой консоли. Чтобы использовать расширенную оперативную память, игры должны выделять больший объём памяти под кучу. Игры, использующие зеркалирование памяти, могут работать некорректно, поэтому эту настройку следует использовать только с совместимыми модификациями.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Отображает всю установленную оперативную память в адресное пространство независимо от объёма, заданного BIOS или игрой. BIOS серийных консолей отображают только 8 МБ, поэтому эта настройка необходима для использования 16 МБ без модификации BIOS. Действует только при установленной расширенной оперативной памяти.</translation>
+    </message>
+    <message>
         <source>Execution Mode</source>
         <translatorcomment>*выполнения *исполнения</translatorcomment>
         <translation>Режим выполнения</translation>
-    </message>
-    <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Перекомпилятор (самый быстрый)</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9414,6 +9428,10 @@ This warning will only be shown once.</source>
         <translation>Автоматическое сопоставление</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Назначить всё</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Очистить сопоставление</translation>
     </message>
@@ -9424,6 +9442,10 @@ This warning will only be shown once.</source>
     <message>
         <source>No devices available</source>
         <translation>Нет доступных устройств</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Назначить всё — порт %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -12042,11 +12064,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Добавляет новый шейдер в цепочку.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translatorcomment>(BigP/Настройки графики/Сохранение точности проекции/Подсказка)</translatorcomment>
-        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх.</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f мс</translation>
     </message>
@@ -12344,6 +12361,10 @@ You cannot undo this action.</source>
         <translation>Изменить название</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Изменяет объём оперативной памяти эмулируемой консоли.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translatorcomment>Настройки экрана/(Отображение экрана)/Соотношение сторон/Подсказка</translatorcomment>
         <translation>Изменяет соотношение сторон, используемое для отображения вывода консоли на экране.</translation>
@@ -12356,6 +12377,10 @@ You cannot undo this action.</source>
         <source>Clean Boot</source>
         <translatorcomment>Список игр/Запуск игры с сохранением состояния</translatorcomment>
         <translation>Чистая загрузка</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистить</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -12794,11 +12819,6 @@ You cannot undo this action.</source>
     <message>
         <source>Emulation Speed</source>
         <translation>Скорость эмуляции</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM</source>
-        <translatorcomment>Настройки консоли</translatorcomment>
-        <translation>Включить 8 МБ ОЗУ</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -13323,10 +13343,6 @@ Please check your username and password, and try again.</source>
         <translation>Предпочитать контекст OpenGL ES</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Выводит дополнительные кадры для таких эффектов, как вставка чёрных кадров. Требуется вертикальная синхронизация.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Нажмите для переключения</translation>
     </message>
@@ -13350,6 +13366,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Удаляет все привязки для этого порта контроллера.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Убирает влияние масштаба преобразования каждого объекта на значения глубины. Исправляет исчезновение геометрии в некоторых играх, но нарушает работу других. В режиме «Автоматически» используется настройка из базы данных игр.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13883,6 +13903,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Достижения: </translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх. В режиме «Автоматически» используется настройка из базы данных игр.</translation>
+    </message>
+    <message>
         <source>Advanced Display Options</source>
         <translation>Расширенные настройки отображения</translation>
     </message>
@@ -13933,6 +13957,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Применяет изменения к отображаемому буферу кадра в процессе вывода кадра. Необходимо для эффектов разделения экрана в некоторых играх, но вызывает разрывы изображения в других.</translation>
     </message>
     <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Поочерёдно запрашивает назначение каждой кнопки и оси этого контроллера.</translation>
+    </message>
+    <message>
         <source>Automatic Mapping Failed</source>
         <translation>Ошибка автоматического сопоставления</translation>
     </message>
@@ -13943,6 +13971,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>BIOS Images</source>
         <translation>Образы BIOS</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Назначить все кнопки</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -14120,10 +14152,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Включает исключения при нарушении выравнивания и ошибках шины. Не требуется ни для одной известной игры.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Включает дополнительные 6 МБ ОЗУ, чтобы получить в общей сложности 2+6 = 8 МБ, как обычно на консолях разработчиков.</translation>
-    </message>
-    <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>Включает дополнительные три ячейки контроллера на каждом порту. Поддерживается не во всех играх.</translation>
     </message>
@@ -14193,6 +14221,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Font</source>
         <translation>Шрифт</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Принудительное отображение всего ОЗУ</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -14384,6 +14416,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Установить BIOS</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Установленный объём ОЗУ</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Настройки интерфейса</translation>
     </message>
@@ -14490,6 +14526,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Позволяет играм работать с частотой кадров, близкой к консольной, с небольшим ущербом для производительности.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Отображает всю установленную оперативную память в адресное пространство независимо от объёма, заданного BIOS или игрой. Необходимо для использования 16 МБ с BIOS серийных консолей.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14817,6 +14857,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Предварительная загрузка замены текстур</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Выводит дополнительные кадры для таких эффектов, как вставка чёрных кадров.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Сохранение точности проецирования</translation>
     </message>
@@ -15120,10 +15164,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Полностью отключает звук игры.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Убирает влияние масштаба преобразования каждого объекта на значения глубины. Устраняет пропадание геометрии в некоторых играх, но нарушает работу других.</translation>
     </message>
     <message>
         <source>Reset Settings</source>
@@ -15491,6 +15531,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Имитирует работу системы на опережение и выполняет откат/повтор для уменьшения задержки ввода. Очень высокие системные требования.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Пропустить</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Пропустить отображение дубликатов кадров</translation>
     </message>
@@ -15562,6 +15606,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Запустить консоль без вставленного диска.</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>Шаг {} из {}</translation>
+    </message>
+    <message>
         <source>Stretch Mode</source>
         <translation>Режим растяжения</translation>
     </message>
@@ -15626,10 +15674,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <source>Threaded Rendering</source>
         <translatorcomment> *визуализация *отображение</translatorcomment>
         <translation>Потоковая отрисовка</translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>До истечения времени ожидания: {}...</translation>
     </message>
     <message>
         <source>Title</source>
@@ -16180,12 +16224,16 @@ Do you want to {0} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>Объём ОЗУ:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Отключить широкоэкранную отрисовку</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Включить 8 МБ ОЗУ</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Принудительное отображение всего ОЗУ</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16398,10 +16446,6 @@ Are you sure you want to continue?</source>
         <source>PGXP perspective correct colors disabled.</source>
         <translatorcomment>*Коррекцией</translatorcomment>
         <translation>Корректировка перспективы цветов PGXP отключена.</translation>
-    </message>
-    <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Сохранение точности проецирования PGXP отключено.</translation>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
@@ -16622,11 +16666,6 @@ Are you sure you want to continue?</source>
         <translation>Принудительно: Режим процессора PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Нормализовать глубину PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Принудительно: Кэш инструкций перекомпилятора</translation>
@@ -16750,6 +16789,14 @@ Are you sure you want to continue?</source>
         <translation>Серийный номер</translation>
     </message>
     <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Настройка сохранения точности проецирования PGXP отличается от настройки в базе данных игр. Это может вызвать ошибки отрисовки.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Настройка нормализации глубины PGXP отличается от настройки в базе данных игр. Это может вызвать ошибки отрисовки.</translation>
+    </message>
+    <message>
         <source>Please configure a supported controller from the following list:</source>
         <translation>Пожалуйста, настройте один из поддерживаемых контроллеров из приведенного ниже списка:</translation>
     </message>
@@ -16866,6 +16913,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>Порог очистки глубины PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>Нормализация глубины PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17608,6 +17659,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Отключить повышение разрешения текстур с прямым цветом</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Сохранение точности проецирования:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Нормализовать масштаб глубины:</translation>
+    </message>
+    <message>
         <source>Texture Replacement</source>
         <translation>Замена текстур</translation>
     </message>
@@ -18075,16 +18134,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Приближает каждый полигон к камере относительно полигонов, отрисованных до него, на величину, заданную в миллионных долях глубины. Более высокие значения уменьшают мерцание декалей и теней, но могут привести к тому, что полигоны будут видны сквозь находящиеся перед ними поверхности.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх. В режиме «Автоматически» используется настройка из базы данных игр, а при её отсутствии функция отключена.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Использует PGXP для всех инструкций, а не только для операций с памятью. Требуется для устранения дрожания с помощью PGXP в некоторых играх, но значительно снижает производительность. В автоматическом режиме включается только для игр, которым это требуется согласно базе данных игр.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Использует положения вершин в экранном пространстве для получения точных координат вместо отслеживания обращений к памяти. Может обеспечить совместимость PGXP с некоторыми играми, но &lt;strong&gt;обычно не даёт преимуществ.&lt;/strong&gt; В автоматическом режиме включается только для игр, которым это требуется согласно базе данных игр.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Убирает влияние масштаба преобразования каждого объекта на значения глубины. Устраняет пропадание геометрии при использовании буфера глубины в играх, которые уменьшают масштаб преобразований удалённых объектов, но нарушает работу игр, которые масштабируют модели через преобразование. База данных игр автоматически включает эту настройку при необходимости.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -18287,10 +18346,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии. Требует включения &quot;Корректировка геометрии&quot;.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Повышает точность данных PGXP после проецирования. Может улучшить изображение в некоторых играх.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>Использует координаты нативного разрешения для 2D-полигонов вместо точных координат. Может исправить некорректный пользовательский интерфейс в некоторых играх, но в противном случае его следует оставить отключенным. База данных игры автоматически включит это при необходимости.</translation>
     </message>
@@ -18350,6 +18405,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
         <translation>Масштабирует пропуск строк при чересстрочном рендеринге до внутреннего разрешения. Это делает эффект гребёнки менее заметным при высоких разрешениях. Обычно безопасно включать.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Убирает влияние масштаба преобразования каждого объекта на значения глубины. Исправляет исчезновение геометрии при использовании буфера глубины в играх, уменьшающих масштаб преобразований удалённых объектов, но нарушает работу игр, в которых преобразования используются для масштабирования моделей. Применение этой настройки также к коррекции текстур устраняет искажения текстур на стыках объектов с разным масштабом. В режиме «Автоматически» используется настройка из базы данных игр, а при её отсутствии функция отключена.</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -19190,6 +19249,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Родительский каталог&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Назначить всё</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Шаг 1 из 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Назначение</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистить</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Пропустить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Шаг %1 из %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Нажмите кнопку или задействуйте ось.</translation>
     </message>
 </context>
 <context>
@@ -24110,6 +24204,26 @@ Do you want to create this directory?</source>
         <translation>Не-PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 МБ (серийная консоль)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 МБ (аркадные платы)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 МБ (консоль для разработчиков)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 МБ (модификации/аркадные платы)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Интерпретатор (самый медленный)</translation>
@@ -24298,6 +24412,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>True Color (полноцветный)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Автоматически</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Отключено</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Только буфер глубины</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Буфер глубины и коррекция текстур</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25577,11 +25711,6 @@ Do you wish to continue?</source>
         <translation>Принудительно: Синхронизация кадров</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8 МБ ОЗУ</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Читы</translation>
@@ -25631,10 +25760,6 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>Округление координат масштабированных текстур включено. Это может привести к ошибкам отрисовки.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Включено 8 МБ ОЗУ, это может быть несовместимо с некоторыми играми.</translation>
     </message>
     <message>
         <source>Failed to save resume state: {}</source>
@@ -25689,10 +25814,6 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <source>Overclock disabled.</source>
         <translation>Разгон отключен.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8 МБ ОЗУ отключено.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25862,6 +25983,10 @@ Using current CD image, this may result in instability.</source>
         <translation>Карта сменилась на {}.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>Установлен объём ОЗУ по умолчанию.</translation>
+    </message>
+    <message>
         <source>Texture filtering disabled.</source>
         <translation>Фильтрация текстур отключена.</translation>
     </message>
@@ -25950,6 +26075,10 @@ Using current CD image, this may result in instability.</source>
         <translation>Сброс SPU при запуске игры отключён.</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Включена расширенная оперативная память, что может быть несовместимо с некоторыми играми.</translation>
+    </message>
+    <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM SubQ Skew включён. Это нарушит работу игр.</translation>
     </message>
@@ -25994,6 +26123,11 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>capturing audio and video</source>
         <translation>запись звука и видео</translation>
+    </message>
+    <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Расширенная оперативная память</translation>
     </message>
     <message>
         <source>capturing video</source>

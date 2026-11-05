@@ -3759,6 +3759,16 @@ Current Binding: %s</source>
         <translation>빨리 감기 시, 호스트에서 재생되는 음향의 음량을 제어합니다.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>메뉴 음량</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>빅피처 UI와 도전 과제 알림에서 재생되는 효과음의 음량을 조절합니다.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>모두 음소거</translation>
@@ -9045,10 +9055,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>실행 모드 :</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB 램 활성화(개발자 콘솔)</translation>
-    </message>
-    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>클럭 속도 제어 활성화(오버클럭/언더클럭)</translation>
     </message>
@@ -9099,6 +9105,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Seek Speedup:</source>
         <translation>탐색 속도 향상 :</translation>
+    </message>
+    <message>
+        <source>Installed RAM:</source>
+        <translation>설치된 RAM:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>전체 RAM 매핑 강제 적용</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
@@ -9157,10 +9171,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>지역 코드</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>자동 감지</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>에뮬레이트된 하드웨어 유형을 결정합니다.</translation>
     </message>
@@ -9181,12 +9191,20 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>메모리 카드 액세스 시 불러오기와 저장을 빠르게 진행합니다. 메모리 카드를 자주 사용하는 게임에서 대기 시간을 줄일 수 있습니다.</translation>
     </message>
     <message>
-        <source>Execution Mode</source>
-        <translation>실행 모드</translation>
+        <source>Installed RAM</source>
+        <translation>설치된 RAM</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>리컴파일러(가장 빠름)</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>에뮬레이션하는 콘솔에 설치된 RAM 용량을 변경합니다. 확장 RAM을 활용하려면 게임이 더 큰 힙 크기를 사용해야 합니다. 메모리 미러링에 의존하는 게임은 제대로 작동하지 않을 수 있으므로 호환되는 모드에만 사용해야 합니다.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>BIOS나 게임에서 설정한 용량에 관계없이 설치된 RAM 전체를 매핑합니다. 일반 판매용 BIOS는 8MB만 매핑하므로 BIOS를 패치하지 않고 16MB를 사용하려면 이 설정이 필요합니다. 확장 RAM이 설치된 경우에만 적용됩니다.</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <translation>실행 모드</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9211,10 +9229,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
         <translation>에뮬레이트된 CPU가 캐시로 명령을 가져와야 할 때 리컴파일러에서 멈추는 현상을 시뮬레이션합니다. 성능 저하를 최소화하면서 게임을 콘솔 프레임 속도에 가깝게 실행할 수 있습니다. 인터프리터 모드는 항상 명령어 캐시를 시뮬레이션합니다.</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>일반적으로 개발 콘솔에 있는 총 2+6=8MB를 얻기 위해 6MB의 램을 추가로 사용할 수 있습니다. 이 추가 램을 사용하려면 게임에서 더 큰 힙 크기를 사용해야 합니다. 메모리 미러를 사용하는 타이틀은 깨질 수 있으므로 호환되는 모드에서만 사용해야 합니다.</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup</source>
@@ -9323,6 +9337,10 @@ This warning will only be shown once.</source>
         <translation>자동 매핑</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>모두 할당</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>매핑 지우기</translation>
     </message>
@@ -9333,6 +9351,10 @@ This warning will only be shown once.</source>
     <message>
         <source>No devices available</source>
         <translation>사용 가능한 장치 없음</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>모두 할당 - 포트 %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11873,10 +11895,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>체인에 새 셰이더를 추가합니다.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP 데이터 포스트 프로젝션에 정밀도를 더합니다. 일부 게임에서 비주얼을 개선할 수 있습니다.</translation>
-    </message>
-    <message>
         <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
         <translation>빅피처 UI에서 창을 열거나 닫고 뷰 간 변경하는 동작을 애니메이션으로 표현합니다.</translation>
     </message>
@@ -11891,6 +11909,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>About</source>
         <translation>정보</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>투영 후 PGXP 데이터의 정밀도를 높입니다. 일부 게임에서 화면이 개선될 수 있습니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용합니다.</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
@@ -11947,6 +11969,10 @@ You cannot undo this action.</source>
         <translation>기본 설정을 복원하시겠습니까? 모든 사용자 설정이 삭제됩니다.
 
 이 작업을 취소할 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>이 컨트롤러의 각 버튼과 축에 할당할 입력을 차례로 요청합니다.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -12057,6 +12083,10 @@ You cannot undo this action.</source>
         <translation>동작</translation>
     </message>
     <message>
+        <source>Bind All Buttons</source>
+        <translation>모든 버튼 할당</translation>
+    </message>
+    <message>
         <source>Border Overlay</source>
         <translation>외곽선 오버레이</translation>
     </message>
@@ -12106,6 +12136,10 @@ You cannot undo this action.</source>
         <translation>디스크 교체</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>에뮬레이션하는 콘솔에 설치된 RAM 용량을 변경합니다.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>콘솔의 출력을 화면에 표시하는 데 사용되는 종횡비를 변경합니다.</translation>
     </message>
@@ -12116,6 +12150,10 @@ You cannot undo this action.</source>
     <message>
         <source>Clean Boot</source>
         <translation>클린 부팅</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>지우기</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -12473,10 +12511,6 @@ You cannot undo this action.</source>
     <message>
         <source>Emulation Speed</source>
         <translation>에뮬레이션 속도</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB 램 활성화</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -12908,10 +12942,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
         <translation>아래에 retroachievements.org의 아이디와 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 액세스 토큰이 생성되어 사용됩니다.</translation>
-    </message>
-    <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>검은 프레임 삽입 등의 효과를 위해 추가 프레임을 표시합니다. VSync가 필요합니다.</translation>
     </message>
     <message>
         <source>Press To Toggle</source>
@@ -13450,10 +13480,6 @@ Please check your username and password, and try again.</source>
         <translation>정렬 및 버스 예외를 활성화합니다. 알려진 게임에는 필요하지 않습니다.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>6MB의 램을 추가로 확보하여 총 2+6=8MB를 확보할 수 있으며, 이는 일반적으로 개발 콘솔에 존재합니다.</translation>
-    </message>
-    <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>각 포트에 3개의 컨트롤러 슬롯을 추가로 사용할 수 있습니다. 모든 게임에서 지원되지는 않습니다.</translation>
     </message>
@@ -13500,6 +13526,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Fast Forward Volume</source>
         <translation>빨리 감기 음량</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>전체 RAM 매핑 강제 적용</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -13650,6 +13680,10 @@ Please check your username and password, and try again.</source>
         <translation>입력 소스</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>설치된 RAM</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>인터페이스 설정</translation>
     </message>
@@ -13740,6 +13774,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>약간의 성능 저하를 감수하고 게임을 콘솔 프레임 속도에 더 가깝게 실행합니다.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>BIOS나 게임에서 설정한 용량에 관계없이 설치된 RAM 전체를 매핑합니다. 일반 판매용 BIOS에서 16MB를 사용하려면 필요합니다.</translation>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
@@ -14006,6 +14044,10 @@ Please check your username and password, and try again.</source>
         <translation>대체 텍스처 미리 불러오기</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>검은 프레임 삽입 등의 효과를 위해 추가 프레임을 표시합니다.</translation>
+    </message>
+    <message>
         <source>Progress Indicators</source>
         <oldsource>Progression</oldsource>
         <translation>진행률 표시기</translation>
@@ -14017,6 +14059,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Release Date: </source>
         <translation>공개일 : </translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>각 객체의 변환 배율이 심도 값에 미치는 영향을 제거합니다. 일부 게임에서 지오메트리가 누락되는 문제를 해결하지만, 다른 게임에서는 문제를 일으킵니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용합니다.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -14132,10 +14178,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>플레이 시간 : </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>{} 후 시간 초과...</translation>
     </message>
     <message>
         <source>To use achievements, please log in with your retroachievements.org account.</source>
@@ -14864,10 +14906,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>게임에서 소리가 나지 않도록 합니다.</translation>
     </message>
     <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>심도 값에서 각 오브젝트의 변환에 포함된 배율을 제거합니다. 일부 게임에서 지오메트리가 누락되는 문제를 해결하지만, 다른 게임에서는 문제를 일으킵니다.</translation>
-    </message>
-    <message>
         <source>Reset Settings</source>
         <translation>설정 초기화</translation>
     </message>
@@ -15232,6 +15270,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>시스템을 미리 시뮬레이션하고 롤백/재생하여 입력 지연을 줄입니다. 시스템 요구 사항이 매우 높습니다.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>건너뛰기</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>중복 프레임 표시 건너뛰기</translation>
     </message>
@@ -15310,6 +15352,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>데스크톱 인터페이스 대신 빅 픽처 모드로 응용 프로그램을 시작합니다.</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>{1}단계 중 {0}단계</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15900,12 +15946,16 @@ Do you want to {1} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM 용량:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>와이드스크린 렌더링 비활성화</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB 램 활성화</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>전체 RAM 매핑 강제 적용</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16285,11 +16335,6 @@ Are you sure you want to continue?</source>
         <translation>PGXP CPU 모드 강제 적용</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>PGXP 심도 정규화</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>리컴파일러 ICache 강제 적용</translation>
@@ -16359,10 +16404,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
         <translation>이 게임에는 PGXP CPU 모드가 필요하지만 비활성화되어 있습니다. 렌더링 오류가 발생할 수 있습니다.</translation>
-    </message>
-    <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP 투사 정밀도 보존 기능이 비활성화되었습니다.</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads Minimum Width</source>
@@ -16466,6 +16507,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>Serial</source>
         <translation>일련번호</translation>
+    </message>
+    <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP 투영 정밀도 유지 설정이 게임 데이터베이스의 설정과 다릅니다. 이로 인해 렌더링 오류가 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP 심도 정규화 설정이 게임 데이터베이스의 설정과 다릅니다. 이로 인해 렌더링 오류가 발생할 수 있습니다.</translation>
     </message>
     <message>
         <source>Please configure a supported controller from the following list:</source>
@@ -16586,6 +16635,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP 깊이 클리어 임계값</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP 심도 정규화</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17567,6 +17620,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>직접 색상 텍스처 업스케일링 비활성화</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>투영 정밀도 유지:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>심도 배율 정규화:</translation>
+    </message>
+    <message>
         <source>Debugging</source>
         <translation>디버깅</translation>
     </message>
@@ -17940,10 +18001,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>폴리곤 컬링의 정밀도를 높여 기하학의 구멍 수를 줄입니다. 기하학 보정을 활성화해야 합니다.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP 데이터 포스트 프로젝션에 정밀도를 더합니다. 일부 게임에서 비주얼을 개선할 수 있습니다.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>정확한 좌표 대신 2D 폴리곤에 기본 해상도 좌표를 사용합니다. 일부 게임에서 정렬되지 않은 UI를 수정할 수 있지만, 그렇지 않으면 비활성화 상태로 두어야 합니다. 게임 데이터베이스는 필요할 때 자동으로 이를 활성화합니다.</translation>
     </message>
@@ -17954,6 +18011,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
         <translation>텍스처 교체에 필요한 게스트 텍스처 캐싱을 활성화합니다. &lt;strong&gt;텍스처 캐시는 현재 실험 단계이므로 일부 게임에서 렌더링 오류가 발생할 수 있습니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>각 객체의 변환 배율이 심도 값에 미치는 영향을 제거합니다. 멀리 있는 객체의 변환 배율을 줄이는 게임에서는 심도 버퍼 사용 시 지오메트리가 누락되는 문제를 해결하지만, 변환을 통해 모델 크기를 조절하는 게임에서는 문제를 일으킵니다. 텍스처 수정에도 적용하면 배율이 다른 객체가 만나는 부분에서 텍스처가 뒤틀리는 문제를 해결합니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용하며, 해당 설정이 없으면 비활성화됩니다.</translation>
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
@@ -18028,16 +18089,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>각 폴리곤을 그보다 먼저 그려진 폴리곤보다 카메라에 더 가깝게 배치합니다. 단위는 심도의 백만분의 일입니다. 값을 높이면 데칼과 그림자의 깜박임이 줄어들지만, 폴리곤이 앞에 있는 표면을 뚫고 보일 수 있습니다.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>투영 후 PGXP 데이터의 정밀도를 높입니다. 일부 게임에서 화면이 개선될 수 있습니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용하며, 해당 설정이 없으면 비활성화됩니다.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>메모리 연산뿐 아니라 모든 명령어에 PGXP를 사용합니다. 일부 게임에서 PGXP로 흔들림을 보정하려면 필요하지만 성능 부담이 큽니다. 자동으로 설정하면 게임 데이터베이스에 따라 필요한 게임에서만 활성화합니다.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>메모리 접근을 추적하는 대신 화면 공간의 정점 위치를 사용하여 정밀한 위치를 구합니다. 일부 게임에서 PGXP 호환성을 제공할 수 있지만 &lt;strong&gt;일반적으로는 이점이 없습니다.&lt;/strong&gt; 자동으로 설정하면 게임 데이터베이스에 따라 필요한 게임에서만 활성화합니다.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>심도 값에서 각 오브젝트의 변환에 포함된 배율을 제거합니다. 멀리 있는 오브젝트의 변환 배율을 줄이는 게임에서는 심도 버퍼 사용 시 지오메트리가 누락되는 문제를 해결하지만, 변환을 통해 모델 크기를 조절하는 게임에서는 문제를 일으킵니다. 필요한 경우 게임 데이터베이스에 따라 자동으로 활성화됩니다.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -18869,6 +18930,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;상위 디렉터리&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>모두 할당</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>1단계 중 1단계</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>입력 할당</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>지우기</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>건너뛰기</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>%2단계 중 %1단계</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>지금 버튼을 누르거나 축을 움직이세요.</translation>
     </message>
 </context>
 <context>
@@ -23780,6 +23876,26 @@ Do you want to create this directory?</source>
         <translation>PS1 아님</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (일반 판매용 콘솔)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (아케이드 기판)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (개발용 콘솔)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (모드/아케이드 기판)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>인터프리터(가장 느림)</translation>
@@ -23968,6 +24084,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>트루 컬러(전체)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>자동</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>비활성화</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>심도 버퍼만</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>심도 버퍼 및 텍스처 수정</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25272,6 +25408,11 @@ SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</t
         <translation>전환할 이전 디스크가 없습니다.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>확장 RAM</translation>
+    </message>
+    <message>
         <source>There is no next disc to switch to.</source>
         <translation>전환할 다음 디스크가 없습니다.</translation>
     </message>
@@ -25292,10 +25433,6 @@ SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</t
         <translation>업스케일된 텍스처 좌표 반올림이 활성화되었습니다. 이로 인해 렌더링 오류가 발생할 수 있습니다.</translation>
     </message>
     <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB 램이 활성화되어 있으며 일부 게임에서는 호환되지 않을 수 있습니다.</translation>
-    </message>
-    <message>
         <source>Startup was cancelled.</source>
         <translation>시작이 취소되었습니다.</translation>
     </message>
@@ -25314,10 +25451,6 @@ SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</t
     <message>
         <source>Overclock disabled.</source>
         <translation>오버클럭이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB 램이 비활성화되었습니다.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25469,6 +25602,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
 영향을 모두 없애려면 메모리 카드에 저장한 뒤 게임을 다시 시작해야 합니다.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM 용량이 기본값으로 설정되었습니다.</translation>
+    </message>
+    <message>
         <source>Texture filtering disabled.</source>
         <translation>텍스처 필터링이 비활성화되었습니다.</translation>
     </message>
@@ -25559,6 +25696,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP 지오메트리 허용 오차가 기본값으로 설정되어 있지 않습니다. 렌더링 오류가 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>확장 RAM이 활성화되어 있습니다. 일부 게임과 호환되지 않을 수 있습니다.</translation>
     </message>
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
@@ -25668,11 +25809,6 @@ Using shared card instead.</source>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
         <translation>프레임 타이밍 강제 적용</translation>
-    </message>
-    <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB 램</translation>
     </message>
     <message>
         <source>Cheats</source>

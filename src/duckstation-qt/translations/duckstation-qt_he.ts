@@ -3778,6 +3778,16 @@ Current Binding: %s</source>
         <translation>שולט בעוצמת השמע המושמע במארח בעת הרצה מהירה.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>עוצמת שמע בתפריטים</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>שולט בעוצמת האפקטים הקוליים של ממשק התמונה הגדולה ושל התראות ההישגים.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>השתקת כל הצלילים</translation>
@@ -9062,10 +9072,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>אתחול בהרצה מהירה</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>הפעלת 8MB RAM (קונסולת פיתוח)</translation>
-    </message>
-    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>הפעלת בקרת מהירות השעון (המהרה/האטה)</translation>
     </message>
@@ -9126,6 +9132,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>:האצת חיפוש</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>זיכרון RAM מותקן:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>אילוץ מיפוי מלא של ה־RAM</translation>
+    </message>
+    <message>
         <source>None (Normal Speed)</source>
         <translation>ללא (מהירות רגילה)</translation>
     </message>
@@ -9166,10 +9180,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>אזור</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>זיהוי אוטומטי</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>קובע את סוג החומרה המדומה.</translation>
     </message>
@@ -9196,10 +9206,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Execution Mode</source>
         <translation>מצב ביצוע</translation>
-    </message>
-    <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>מהדר מחדש (המהיר ביותר)</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9230,16 +9236,24 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>מדמה עצירות במהדרים מחדש כאשר המעבד המדומה נדרש להביא הוראות למטמון שלו. גורם למשחקים לפעול קרוב יותר לקצב הפריימים של הקונסולה, במחיר קטן של ביצועים. מצב המפרשן מדמה תמיד את מטמון ההוראות.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>מפעיל 6MB נוספים של זיכרון RAM, לסך כולל של 2+6 = 8MB, שבדרך כלל קיים בקונסולות פיתוח. משחקים צריכים להשתמש בגודל ערימה גדול יותר כדי שיוכלו להשתמש ב-RAM הנוסף. כותרים המסתמכים על מראות זיכרון עלולים להפסיק לפעול, ולכן יש להשתמש באפשרות זו רק עם מודים תואמים.</translation>
-    </message>
-    <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>טוען את תמונת המשחק ל-RAM. שימושי עבור נתיבי רשת שעלולים להפוך ללא יציבים במהלך המשחק. במקרים מסוימים הוא גם מבטל קרטועים בעת שמשחקים מתחילים להפעיל רצועת שמע.</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup</source>
         <translation>האצת קריאת CD-ROM</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>זיכרון RAM מותקן</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>משנה את כמות זיכרון ה־RAM המותקן בקונסולה המדומה. כדי לנצל את הרחבת ה־RAM, המשחקים צריכים להשתמש בערימת זיכרון גדולה יותר. משחקים המסתמכים על שיקופי זיכרון עלולים שלא לפעול כראוי, ולכן יש להשתמש באפשרות זו רק עם מודים תואמים.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>ממפה את כל זיכרון ה־RAM המותקן, ללא תלות בגודל שהוגדר ב־BIOS או במשחק. גרסאות BIOS של קונסולות מסחריות ממפות רק 8MB, ולכן אפשרות זו נחוצה כדי לנצל 16MB ללא BIOS עם טלאי. משפיעה רק כאשר מותקנת הרחבת RAM.</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
@@ -9348,6 +9362,10 @@ This warning will only be shown once.</source>
         <translation>מיפוי אוטומטי</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>מיפוי הכול</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>נקה מיפוי</translation>
     </message>
@@ -9366,6 +9384,10 @@ This warning will only be shown once.</source>
     <message>
         <source>No devices available</source>
         <translation>אין מכשירים זמינים</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>מיפוי הכול - יציאה %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11863,10 +11885,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מוסיף שיידר חדש לשרשרת.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>מוסיף דיוק נוסף לנתוני PGXP לאחר ההיטל. עשוי לשפר את המראה בחלק מהמשחקים.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>הגדרות מתקדמות</translation>
     </message>
@@ -11893,6 +11911,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
         <translation>האם אתה בטוח שברצונך לנקות את שרשרת עיבוד התמונה הנוכחית? כל ההגדרות יאבדו.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>מבקש להפעיל כל כפתור וציר של בקר זה בתורו.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -11981,6 +12003,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Behavior</source>
         <translation>התנהגות</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>מיפוי כל הכפתורים</translation>
     </message>
     <message>
         <source>Borderless Fullscreen</source>
@@ -12291,10 +12317,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מהירות אמולציה</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>הפעלת 8MB RAM</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>הפעלת הישגים</translation>
     </message>
@@ -12359,10 +12381,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מפעיל חריגות יישור ואפיק. אין בכך צורך באף משחק מוכר.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>מפעיל 6MB RAM נוספים לקבלת סך של 2+6 = 8MB, כפי שנמצא בדרך כלל בקונסולות פיתוח.</translation>
-    </message>
-    <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>מפעיל שלושה חריצי בקר נוספים בכל יציאה. אינו נתמך בכל המשחקים.</translation>
     </message>
@@ -12419,6 +12437,10 @@ Error was:</source>
     <message>
         <source>Fast Forward Volume</source>
         <translation>עוצמת השמע בהרצה מהירה</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>אילוץ מיפוי מלא של ה־RAM</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -12561,6 +12583,10 @@ Error was:</source>
         <translation>מקורות קלט</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>זיכרון RAM מותקן</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>הגדרות הממשק</translation>
     </message>
@@ -12651,6 +12677,10 @@ Error was:</source>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>גורם למשחקים לרוץ קרוב יותר לקצב הפריימים של הקונסולה שלהם, במחיר קטן של ביצועים.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>ממפה את כל זיכרון ה־RAM המותקן, ללא תלות בגודל שהוגדר ב־BIOS או במשחק. נחוץ לניצול 16MB עם גרסאות BIOS של קונסולות מסחריות.</translation>
     </message>
     <message>
         <source>Memory Card Directory</source>
@@ -12807,6 +12837,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>מפעיל הרצה מקדימה כאשר הקלט האנלוגי משתנה, פעולה שמגדילה משמעותית את דרישות המערכת.</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>מוסיף דיוק לנתוני PGXP לאחר ההיטל. עשוי לשפר את הגרפיקה בחלק מהמשחקים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
     </message>
     <message>
         <source>Advanced Display Options</source>
@@ -13009,8 +13043,16 @@ You cannot undo this action.</source>
         <translation>משנה את הגדרות היישום.</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>משנה את כמות זיכרון ה־RAM המותקן בקונסולה המדומה.</translation>
+    </message>
+    <message>
         <source>Cheats</source>
         <translation>צ&apos;יטים</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>ניקוי</translation>
     </message>
     <message>
         <source>Clear Mappings</source>
@@ -14033,20 +14075,12 @@ Please check your username and password, and try again.</source>
         <translation>סיסמה</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>מציג פריימים נוספים לאפקטים כגון הוספת פריימים שחורים. דורש VSync.</translation>
-    </message>
-    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>מונע מהמשחק להפיק צליל כלשהו.</translation>
     </message>
     <message>
         <source>Release Date: </source>
         <translation>תאריך פרסום: </translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>מסיר מערכי העומק את רכיב קנה המידה של ההתמרה של כל עצם. מתקן גאומטריה חסרה בחלק מהמשחקים, אך משבש משחקים אחרים.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -14301,6 +14335,10 @@ Please check your username and password, and try again.</source>
         <translation>מפעיל את היישום במצב Big Picture במקום בממשק שולחן העבודה.</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>שלב {} מתוך {}</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>שומר את ההגדרות הנוכחיות בקביעת בקר.</translation>
     </message>
@@ -14323,10 +14361,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>זמן משחק: </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>הזמן הקצוב יסתיים בעוד {}...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -14597,6 +14631,10 @@ Please check your username and password, and try again.</source>
         <translation>טעינת טקסטורות חלופיות מראש</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>מציג פריימים נוספים לאפקטים כגון הוספת פריימים שחורים.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>שימור דיוק ההיטל</translation>
     </message>
@@ -14731,6 +14769,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>מסיר את כל המיפויים עבור יציאת בקר זו.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>מסיר מערכי העומק את קנה המידה של טרנספורמציית כל עצם. מתקן גאומטריה חסרה בחלק מהמשחקים, אך גורם לתקלות באחרים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -15187,6 +15229,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Size: </source>
         <translation>גודל: </translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>דילוג</translation>
     </message>
     <message>
         <source>Skip Duplicate Frame Display</source>
@@ -15913,12 +15959,16 @@ Do you want to {1} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>גודל RAM:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>השבתת רינדור במסך רחב</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>הפעלת 8MB RAM</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>אילוץ מיפוי מלא של ה־RAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16266,11 +16316,6 @@ Are you sure you want to continue?</source>
         <translation>כפיית מצב CPU של PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>נרמול עומק PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>כפיית ICache של המהדר מחדש</translation>
@@ -16430,8 +16475,12 @@ Are you sure you want to continue?</source>
         <translation>PGXP מושבת במצולעים דו־ממדיים.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>שמירת דיוק ההיטל של PGXP מושבתת.</translation>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>ההגדרה לשימור דיוק ההיטל של PGXP שונה מההגדרה שבמסד נתוני המשחקים. הדבר עלול לגרום לשגיאות רינדור.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>ההגדרה לנרמול העומק של PGXP שונה מההגדרה שבמסד נתוני המשחקים. הדבר עלול לגרום לשגיאות רינדור.</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -16576,6 +16625,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>היסט עומק PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>נרמול עומק של PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17413,6 +17466,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מטמון קודקודים:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>שימור דיוק ההיטל:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>נרמול קנה המידה של העומק:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>טקסטורות מתוקנות לפי פרספקטיבה</translation>
     </message>
@@ -17833,8 +17894,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>משתמש ב-thread שני לציור גרפיקה. מספק שיפור ביצועים משמעותי, במיוחד עם המרנדר התוכנתי, ובטוח לשימוש.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>מוסיף דיוק לנתוני PGXP לאחר ההיטל. עשוי לשפר את הגרפיקה בחלק מהמשחקים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים, ובהיעדרה האפשרות מושבתת.</translation>
+    </message>
+    <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>משתמש במיקומי קודקודים במרחב המסך לקבלת מיקומים מדויקים, במקום לעקוב אחר גישות לזיכרון. עשוי לאפשר תאימות ל־PGXP בחלק מהמשחקים, אך &lt;strong&gt;בדרך כלל אינו מספק תועלת.&lt;/strong&gt; האפשרות האוטומטית מפעילה זאת רק במשחקים הדורשים זאת לפי מסד נתוני המשחקים.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>מסיר מערכי העומק את קנה המידה של טרנספורמציית כל עצם. מתקן גאומטריה חסרה בעת שימוש במאגר העומק במשחקים שמקטינים את הטרנספורמציות של עצמים מרוחקים, אך גורם לתקלות במשחקים שמשנים את קנה המידה של מודלים באמצעות הטרנספורמציה. החלת הנרמול גם על תיקון טקסטורות מתקנת טקסטורות מעוותות בנקודות מפגש בין עצמים בעלי קני מידה שונים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים, ובהיעדרה האפשרות מושבתת.</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -17925,20 +17994,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>מגדיל את הדיוק של סינון מצולעים, ובכך מפחית את מספר החורים בגאומטריה. דורש שתיקון הגאומטריה יהיה מופעל.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>מוסיף דיוק נוסף לנתוני PGXP לאחר ההיטל. עשוי לשפר את המראה בחלק מהמשחקים.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>משתמש בקואורדינטות של הרזולוציה הטבעית עבור מצולעים דו-ממדיים, במקום בקואורדינטות מדויקות. יכול לתקן ממשק משתמש שאינו מיושר בחלק מהמשחקים, אך אחרת יש להשאירו מושבת. מסד נתוני המשחקים יפעיל זאת אוטומטית בעת הצורך.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>מפעיל בדיקת עומק עבור מצולעים שקופים למחצה. לרוב מדובר בצללים, והם נוטים להיחתך דרך הקרקע כאשר בדיקת העומק מופעלת. כתיבות עומק עבור מצולעים שקופים למחצה מושבתות ללא קשר להגדרה זו.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>מסיר מערכי העומק את רכיב קנה המידה של ההתמרה של כל עצם. מתקן גאומטריה חסרה בעת שימוש במאגר העומק במשחקים שמקטינים את ההתמרות של עצמים מרוחקים, אך משבש משחקים שמשנים את קנה המידה של מודלים באמצעות ההתמרה. מסד נתוני המשחקים יפעיל אפשרות זו אוטומטית בעת הצורך.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18880,6 +18941,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;תיקיית האב&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>מיפוי הכול</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>שלב 1 מתוך 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>מיפוי</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>ניקוי</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>דילוג</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>ביטול</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>שלב %1 מתוך %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>יש ללחוץ על כפתור או להזיז ציר כעת.</translation>
     </message>
 </context>
 <context>
@@ -23771,6 +23867,26 @@ Do you want to create this directory?</source>
         <translation>לא־PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (קונסולה מסחרית)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (לוחות ארקייד)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (קונסולת פיתוח)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (מודים/לוחות ארקייד)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>מפרש (האיטי ביותר)</translation>
@@ -23959,6 +24075,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>צבע אמיתי (מלא)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>אוטומטי</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>מושבת</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>מאגר עומק בלבד</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>מאגר עומק ותיקון טקסטורות</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25214,11 +25350,6 @@ Token generated %2</source>
         <translation>כפיית תזמוני פריימים</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB RAM</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>צ&apos;יטים</translation>
@@ -25399,6 +25530,11 @@ The name of the SBI file must match the name of the disc image.</source>
         <translation>בוצע מעבר לתת־תמונה {} ({}) בתוך &apos;{}&apos;.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>הרחבת RAM</translation>
+    </message>
+    <message>
         <source>Current game does not have multiple discs.</source>
         <translation>המשחק הנוכחי אינו כולל כמה תקליטורים.</translation>
     </message>
@@ -25443,10 +25579,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Overclock disabled.</source>
         <translation>המהרת השעון מושבתת.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>זיכרון RAM בנפח 8MB מושבת.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25565,6 +25697,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>קצב הפריימים אינו מוגדר לאוטומטי. משחקים עלולים לפעול במהירויות שגויות.</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>הרחבת RAM מופעלת; ייתכן שאינה תואמת למשחקים מסוימים.</translation>
+    </message>
+    <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>נעשה שימוש במפרש במטמון; ייתכן שאינו תואם למשחקים מסוימים.</translation>
     </message>
@@ -25665,16 +25801,16 @@ Using shared card instead.</source>
         <translation>החלקת קצוות בריבוי דגימות מופעלת; ייתכן שמשחקים מסוימים לא ירונדרו כראוי.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>גודל ה־RAM הוגדר לברירת המחדל.</translation>
+    </message>
+    <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>עיגול קואורדינטות מרקמים מוגדלים מופעל. הדבר עלול לגרום לשגיאות רינדור.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>סבילות הגאומטריה של PGXP אינה מוגדרת כברירת המחדל. הדבר עלול לגרום לשגיאות רינדור.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>זיכרון RAM בנפח 8MB מופעל; ייתכן שאינו תואם למשחקים מסוימים.</translation>
     </message>
     <message>
         <source>No BIOS image found for {} region.

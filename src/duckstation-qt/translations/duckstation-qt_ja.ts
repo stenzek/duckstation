@@ -3753,6 +3753,16 @@ Current Binding: %s</source>
         <translation>早送り時に再生される音声の音量を調整します。</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>メニュー音量</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>ビッグピクチャー UI と実績通知で再生される効果音の音量を調整します。</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>全サウンドをミュート</translation>
@@ -9034,10 +9044,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>実行モード:</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RAM を有効にする (開発コンソール)</translation>
-    </message>
-    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>クロック速度制御を有効にする (オーバークロック/アンダークロック)</translation>
     </message>
@@ -9094,6 +9100,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>ディスクイメージパッチの適用</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>搭載 RAM:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>全 RAM のマッピングを強制</translation>
+    </message>
+    <message>
         <source>Seek Speedup:</source>
         <translation>シーク高速化:</translation>
     </message>
@@ -9130,10 +9144,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>チェックなし</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>通常は開発コンソールに存在する、追加の 6MB の RAM を有効にして、合計 2 + 6 = 8MB の RAM にします。この追加の RAM を使用するには、&lt;br&gt;ゲームでより大きなヒープサイズを使用する必要があります。メモリミラーに依存するゲームを壊す可能性があるため、互換性のある mod でのみ使用する必要があります。</translation>
-    </message>
-    <message>
         <source>Preload Image to RAM</source>
         <translation>イメージを RAM に先読みする</translation>
     </message>
@@ -9148,10 +9158,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Region</source>
         <translation>地域</translation>
-    </message>
-    <message>
-        <source>Auto-Detect</source>
-        <translation>自動検出</translation>
     </message>
     <message>
         <source>Determines the emulated hardware type.</source>
@@ -9178,12 +9184,20 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>読み込みと保存の両方でメモリーカードアクセスを早送りします。メモリーカードへ頻繁にアクセスするゲームの待ち時間を短縮できます。</translation>
     </message>
     <message>
-        <source>Execution Mode</source>
-        <translation>実行モード</translation>
+        <source>Installed RAM</source>
+        <translation>搭載 RAM</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>リコンパイラ (最速)</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>エミュレートする本体に搭載されている RAM の容量を変更します。拡張 RAM を利用するには、ゲーム側でヒープサイズを大きくする必要があります。メモリのミラー領域に依存するゲームでは不具合が生じる可能性があるため、対応する MOD でのみ使用してください。</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>BIOS やゲームで設定された容量にかかわらず、搭載されているすべての RAM をマッピングします。市販機の BIOS は 8MB までしかマッピングしないため、BIOS にパッチを適用せずに 16MB を利用するには、この設定が必要です。拡張 RAM が搭載されている場合にのみ効果があります。</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <translation>実行モード</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9312,6 +9326,10 @@ This warning will only be shown once.</source>
         <translation>自動マッピング</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>すべて割り当て</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>マッピングをクリア</translation>
     </message>
@@ -9330,6 +9348,10 @@ This warning will only be shown once.</source>
     <message>
         <source>No devices available</source>
         <translation>利用可能なデバイスがありません</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>すべて割り当て - ポート %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11822,10 +11844,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>チェーンに新しいシェーダーを追加します。</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>投影後の PGXP データに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>高度な設定</translation>
     </message>
@@ -12426,10 +12444,6 @@ You cannot undo this action.</source>
         <translation>エミュレーション速度</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB RAM を有効化</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>実績を有効にする</translation>
     </message>
@@ -12500,10 +12514,6 @@ You cannot undo this action.</source>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>アライメント例外とバス例外を有効にします。現在知られているゲームでは必要ありません。</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>6 MB の RAM を追加し、合計 2+6 = 8 MB にします。通常は開発用コンソールに搭載されています。</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13368,20 +13378,12 @@ You cannot undo this action.</source>
         <translation>PGXP深度バッファ</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>黒フレーム挿入などの効果のために追加フレームを表示します。VSyncが必要です。</translation>
-    </message>
-    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>ゲームの音声を一切出力しないようにします。</translation>
     </message>
     <message>
         <source>Release Date: </source>
         <translation>発売日: </translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>深度値から、各オブジェクトの変換に含まれる拡大縮小の影響を取り除きます。一部のゲームで形状が欠ける問題を修正しますが、他のゲームでは不具合が発生します。</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13606,10 +13608,6 @@ You cannot undo this action.</source>
     <message>
         <source>Time Played: </source>
         <translation>プレイ時間: </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>あと {} でタイムアウト...</translation>
     </message>
     <message>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
@@ -14736,8 +14734,48 @@ Do you want to {1} anyway?</source>
         <translation>ゲームを続ける</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>投影後の PGXP データの精度をさらに高めます。一部のゲームで映像が改善される場合があります。「自動」ではゲームデータベースの設定を使用します。</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>このコントローラーの各ボタンと軸の入力を順番に求めます。</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>すべてのボタンを割り当て</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>エミュレートする本体に搭載されている RAM の容量を変更します。</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>クリア</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>全 RAM のマッピングを強制</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>搭載 RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>BIOS やゲームで設定された容量にかかわらず、搭載されているすべての RAM をマッピングします。市販機の BIOS で 16MB を利用するには、この設定が必要です。</translation>
+    </message>
+    <message>
         <source>Move Cursor</source>
         <translation>カーソルを移動</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>黒フレーム挿入などの効果のために追加フレームを表示します。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>各オブジェクトの変換に含まれる拡大縮小の影響を深度値から取り除きます。一部のゲームでジオメトリの欠落を修正しますが、ほかのゲームでは不具合が生じます。「自動」ではゲームデータベースの設定を使用します。</translation>
     </message>
     <message>
         <source>Resume Last Session</source>
@@ -15161,6 +15199,10 @@ Do you want to {1} anyway?</source>
         <translation>サイズ: </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>スキップ</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>重複フレーム表示をスキップする</translation>
     </message>
@@ -15255,6 +15297,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Start the console without any disc inserted.</source>
         <translation>ディスクを挿入せずに本体を起動します。</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>ステップ {} / {}</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15869,12 +15915,16 @@ Do you want to {0} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM 容量:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>ワイドスクリーンレンダリングを無効化</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB RAM を有効化</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>全 RAM のマッピングを強制</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16238,11 +16288,6 @@ Are you sure you want to continue?</source>
         <translation>PGXP CPUモードを強制</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>PGXP 深度を正規化</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>リコンパイラーの命令キャッシュを強制</translation>
@@ -16398,10 +16443,6 @@ Are you sure you want to continue?</source>
         <translation>2DポリゴンでPGXPが無効になりました。</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP投影精度の保持が無効になりました。</translation>
-    </message>
-    <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>このゲームの互換性設定を適用しました。</translation>
     </message>
@@ -16522,6 +16563,10 @@ Are you sure you want to continue?</source>
         <translation>PGXP 深度バイアス</translation>
     </message>
     <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP 深度の正規化</translation>
+    </message>
+    <message>
         <source>Verifying Image</source>
         <translation>イメージを検証中</translation>
     </message>
@@ -16540,6 +16585,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>GPU Line Detect Mode</source>
         <translation>GPUライン検出モード</translation>
+    </message>
+    <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP の投影精度の維持設定がゲームデータベースの設定と異なります。描画エラーが発生する可能性があります。</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP の深度の正規化設定がゲームデータベースの設定と異なります。描画エラーが発生する可能性があります。</translation>
     </message>
     <message>
         <source>PGXP Tolerance</source>
@@ -17359,6 +17412,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>深度クリアしきい値をリセット</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>投影精度を維持する:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>深度スケールを正規化:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>テクスチャ遠近補正</translation>
     </message>
@@ -17923,14 +17984,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>ポリゴンカリングの精度を高め、ジオメトリの穴の数を減らします。ジオメトリ補正を有効にする必要があります。</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>投影後の PGXP データに精度を追加します。一部のゲームでビジュアルが向上する場合があります。</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>深度値から、各オブジェクトの変換に含まれる拡大縮小の影響を取り除きます。遠くのオブジェクトの変換を縮小するゲームで、深度バッファによって形状が欠ける問題を修正しますが、変換によってモデルを拡大縮小するゲームでは不具合が発生します。必要な場合はゲームデータベースによって自動的に有効になります。</translation>
-    </message>
-    <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>すべての置換テクスチャをRAMにロードし、実行時のスタッタリングを軽減します。</translation>
     </message>
@@ -17967,12 +18020,20 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>置換可能な背景をダンプ・ディレクトリに書き込みます。</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>投影後の PGXP データの精度をさらに高めます。一部のゲームで映像が改善される場合があります。「自動」ではゲームデータベースの設定を使用し、設定がない場合は無効になります。</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>メモリ操作だけでなく、すべての命令で PGXP を使用します。一部のゲームで PGXP による揺れの補正に必要ですが、パフォーマンスへの負荷が大きくなります。「自動」では、ゲームデータベースで必要とされているゲームでのみ有効にします。</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>メモリアクセスを追跡する代わりに、スクリーン空間の頂点位置を使用して精密な位置を取得します。一部のゲームで PGXP に対応できるようになりますが、&lt;strong&gt;通常は効果がありません。&lt;/strong&gt;「自動」では、ゲームデータベースで必要とされているゲームでのみ有効にします。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>各オブジェクトの変換に含まれる拡大縮小の影響を深度値から取り除きます。遠くのオブジェクトの変換を縮小するゲームでは、深度バッファーによるジオメトリの欠落を修正しますが、変換によってモデルを拡大縮小するゲームでは不具合が生じます。テクスチャ補正にも適用すると、異なる倍率のオブジェクトが接する部分でのテクスチャの歪みを修正します。「自動」ではゲームデータベースの設定を使用し、設定がない場合は無効になります。</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -18824,6 +18885,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;親ディレクトリ&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>すべて割り当て</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>ステップ 1 / 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>割り当て</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>クリア</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>スキップ</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>ステップ %1 / %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>ボタンを押すか、軸を動かしてください。</translation>
     </message>
 </context>
 <context>
@@ -23713,6 +23809,26 @@ Do you want to create this directory?</source>
         <translation>PS1 以外</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (市販機)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (アーケード基板)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (開発機)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (MOD/アーケード基板)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>インタープリタ (最も遅い)</translation>
@@ -23901,6 +24017,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>トゥルーカラー (完全)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>自動</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>無効</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>深度バッファーのみ</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>深度バッファーとテクスチャ補正</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25139,6 +25275,11 @@ Token generated %2</source>
         <translation>メモリーカード保存中、ステートセーブを保存できません。</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>拡張 RAM</translation>
+    </message>
+    <message>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
         <translation>このセーブステートは別のBIOSで作成されたものです。これにより安定性の問題が起きる可能性があります。</translation>
     </message>
@@ -25155,6 +25296,10 @@ Token generated %2</source>
 </source>
         <translation>ステートセーブで使用されているCDイメージ「{}」を開けませんでした:
 </translation>
+    </message>
+    <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM 容量をデフォルトに設定しました。</translation>
     </message>
     <message>
         <source>Loaded undo save state created {}.</source>
@@ -25183,11 +25328,6 @@ Token generated %2</source>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
         <translation>フレームタイミングを強制</translation>
-    </message>
-    <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB RAM</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -25393,10 +25533,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>オーバークロックが無効になりました。</translation>
     </message>
     <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB RAMが無効になりました。</translation>
-    </message>
-    <message>
         <source>Resolution scale set to 1x.</source>
         <translation>解像度スケールを1xに設定しました。</translation>
     </message>
@@ -25513,6 +25649,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>フレームレートが自動に設定されていません。ゲームが正しくない速度で動作する可能性があります。</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>拡張 RAM が有効になっています。一部のゲームと互換性がない可能性があります。</translation>
+    </message>
+    <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>キャッシュインタープリターが使用されています。一部のゲームと互換性がない可能性があります。</translation>
     </message>
@@ -25607,10 +25747,6 @@ Using shared card instead.</source>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXPジオメトリ許容誤差がデフォルトに設定されていません。レンダリングエラーが発生する可能性があります。</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB RAMが有効ですが、ゲームによっては互換性がない場合があります。</translation>
     </message>
     <message>
         <source>Failed to save resume state: {}</source>

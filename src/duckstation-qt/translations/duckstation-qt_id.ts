@@ -3753,6 +3753,16 @@ Pemetaan Saat Ini: %s</translation>
         <translation>Mengontrol volume audio yang diputar pada host ketika melakukan maju cepat.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Volume Menu</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Mengatur volume efek suara yang diputar oleh antarmuka Big Picture dan notifikasi pencapaian.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Bisukan Semua Suara</translation>
@@ -9026,10 +9036,6 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
         <translation>Percepat Akses Memory Card</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Aktifkan RAM 8MB (Konsol Developer)</translation>
-    </message>
-    <message>
         <source>CPU Emulation</source>
         <translation>Emulasi CPU</translation>
     </message>
@@ -9040,6 +9046,14 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>Aktifkan Kontrol Kecepatan Clock (Overclocking/Underclocking)</translation>
+    </message>
+    <message>
+        <source>Installed RAM:</source>
+        <translation>RAM Terpasang:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Paksa Pemetaan Seluruh RAM</translation>
     </message>
     <message>
         <source>Execution Mode:</source>
@@ -9130,10 +9144,6 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
         <translation>Wilayah</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Deteksi Otomatis</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Menentukan jenis perangkat keras yang diemulasikan.</translation>
     </message>
@@ -9154,10 +9164,6 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
         <translation>Mempercepat proses pemuatan awal saat boot cepat, sehingga menghemat waktu. Hasilnya dapat berbeda-beda antar-game.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Mengaktifkan RAM tambahan sebesar 6 MB sehingga totalnya menjadi 2+6 = 8 MB, yang biasanya ada pada konsol pengembangan. Game harus menggunakan ukuran heap yang lebih besar agar RAM tambahan ini dapat digunakan. Judul yang bergantung pada pencerminan memori dapat rusak, jadi opsi ini hanya boleh digunakan dengan mod yang kompatibel.</translation>
-    </message>
-    <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Mempercepat akses kartu memori, baik saat memuat maupun menyimpan. Dapat mengurangi waktu tunggu pada game yang sering mengakses kartu memori.</translation>
     </message>
@@ -9166,12 +9172,20 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
         <translation>Kecepatan Bingkai</translation>
     </message>
     <message>
-        <source>Execution Mode</source>
-        <translation>Mode Eksekusi</translation>
+        <source>Installed RAM</source>
+        <translation>RAM Terpasang</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Recompiler (Paling Cepat)</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Mengubah jumlah RAM yang terpasang pada konsol yang diemulasi. Game harus menggunakan ukuran heap yang lebih besar agar RAM tambahan dapat digunakan. Game yang bergantung pada pencerminan memori mungkin tidak berfungsi, jadi gunakan hanya dengan mod yang kompatibel.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Memetakan seluruh RAM yang terpasang, berapa pun ukuran yang dikonfigurasi oleh BIOS atau game. BIOS konsol ritel hanya memetakan 8MB, sehingga opsi ini diperlukan agar 16MB dapat digunakan tanpa BIOS yang dimodifikasi. Hanya berpengaruh jika RAM tambahan terpasang.</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <translation>Mode Eksekusi</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9312,6 +9326,10 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
         <translation>Atur Tombol Otomatis</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Petakan Semua</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Bersihkan Penetapan Tombol</translation>
     </message>
@@ -9322,6 +9340,10 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     <message>
         <source>No devices available</source>
         <translation>Tidak ada perangkat tersedia</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Petakan Semua - Port %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11860,10 +11882,6 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
         <translation>Menambahkan shader baru ke rantai.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Menambahkan presisi pada data PGXP pascaproyeksi. Dapat meningkatkan tampilan pada beberapa permainan.</translation>
-    </message>
-    <message>
         <source>Advanced Display Options</source>
         <translation>Opsi Tampilan Lanjutan</translation>
     </message>
@@ -11946,6 +11964,10 @@ You cannot undo this action.</source>
         <translation>Apakah Anda yakin ingin memulihkan pengaturan bawaan? Preferensi apa pun akan hilang.
 
 Tindakan ini tidak dapat dibatalkan.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Meminta input untuk setiap tombol dan sumbu pengontrol ini secara bergiliran.</translation>
     </message>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
@@ -12032,6 +12054,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Perilaku</translation>
     </message>
     <message>
+        <source>Bind All Buttons</source>
+        <translation>Petakan Semua Tombol</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <translation>Penetapan Tombol</translation>
     </message>
@@ -12104,6 +12130,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Ubah Judul</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Mengubah jumlah RAM yang terpasang pada konsol yang diemulasi.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>Mengubah rasio aspek yang digunakan untuk menampilkan keluaran konsol ke layar.</translation>
     </message>
@@ -12114,6 +12144,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Clean Boot</source>
         <translation>Boot Bersih</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Bersihkan</translation>
     </message>
     <message>
         <source>Clear Binding</source>
@@ -12416,10 +12450,6 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Kecepatan Emulasi</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Aktifkan RAM 8MB</translation>
-    </message>
-    <message>
         <source>Enable Achievements to see your user summary.</source>
         <translation>Aktifkan Pencapaian untuk melihat ringkasan pengguna Anda.</translation>
     </message>
@@ -12502,10 +12532,6 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>Mengaktifkan pengecualian penyelarasan dan bus. Tidak diperlukan untuk permainan yang diketahui.</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Mengaktifkan tambahan RAM 6MB sehingga totalnya menjadi 2+6 = 8MB, yang biasanya tersedia pada konsol pengembang.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -12650,6 +12676,10 @@ Kesalahannya:</translation>
         <translation>Paksa 4:3 untuk FMV</translation>
     </message>
     <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Paksa Pemetaan Seluruh RAM</translation>
+    </message>
+    <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
         <translation>Memaksa pelacakan pengunggahan tekstur diaktifkan, terlepas dari apakah diperlukan.</translation>
     </message>
@@ -12744,6 +12774,10 @@ Kesalahannya:</translation>
     <message>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <translation>Meningkatkan presisi culling poligon, sehingga mengurangi jumlah lubang pada geometri.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>RAM Terpasang</translation>
     </message>
     <message>
         <source>Language</source>
@@ -12848,6 +12882,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Membuat game berjalan lebih mendekati kecepatan bingkai konsolnya, dengan sedikit pengorbanan performa.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Memetakan seluruh RAM yang terpasang, berapa pun ukuran yang dikonfigurasi oleh BIOS atau game. Diperlukan untuk menggunakan 16MB dengan BIOS konsol ritel.</translation>
     </message>
     <message>
         <source>Maximum Read Speedup Cycles</source>
@@ -13050,6 +13088,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Pramuat Tekstur Pengganti</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Menampilkan bingkai tambahan untuk efek seperti penyisipan bingkai hitam.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Pertahankan Presisi Proyeksi</translation>
     </message>
@@ -13120,6 +13162,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Menghapus semua pemetaan untuk port pengontrol ini.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang pada beberapa game, tetapi menimbulkan masalah pada game lain. Otomatis menggunakan pengaturan basis data game.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -13466,6 +13512,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Mensimulasikan sistem lebih awal dan melakukan rollback/pemutaran ulang untuk mengurangi jeda input. Kebutuhan sistem sangat tinggi.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Lewati</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Lewati Tampilan Bingkai Duplikat</translation>
     </message>
@@ -13524,6 +13574,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Start: {}</source>
         <translation>Awal: {}</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Langkah {} dari {}</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -14070,10 +14124,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Latensi Output Minimal</translation>
     </message>
     <message>
-        <source>Timing out in {}...</source>
-        <translation>Waktu habis dalam {}...</translation>
-    </message>
-    <message>
         <source>Undo Load State</source>
         <translation>Batalkan Pemuatan Save State</translation>
     </message>
@@ -14586,6 +14636,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Pembukaan Pencapaian Belum Dikonfirmasi</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Menambahkan presisi pada data PGXP setelah proyeksi. Dapat meningkatkan tampilan pada beberapa game. Otomatis menggunakan pengaturan basis data game.</translation>
+    </message>
+    <message>
         <source>Clears all cached images in the web cache.</source>
         <translation>Menghapus semua citra yang disimpan dalam cache web.</translation>
     </message>
@@ -14938,10 +14992,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Pramuat Lencana</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Menampilkan bingkai tambahan untuk efek seperti penyisipan bingkai hitam. Memerlukan VSync.</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Mencegah input diproses saat aplikasi lain aktif.</translation>
     </message>
@@ -14980,10 +15030,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Menyegarkan daftar pencapaian yang terbuka.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang pada beberapa game, tetapi menyebabkan masalah pada game lain.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -15866,12 +15912,16 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>Ukuran RAM:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Nonaktifkan Perenderan Layar Lebar</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Aktifkan RAM 8MB</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Paksa Pemetaan Seluruh RAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16219,11 +16269,6 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>Paksa Mode CPU PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Normalkan Kedalaman PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Paksa ICache Recompiler</translation>
@@ -16383,10 +16428,6 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <translation>PGXP dinonaktifkan pada poligon 2D.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Preservasi presisi proyeksi PGXP dinonaktifkan.</translation>
-    </message>
-    <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Pengaturan kompatibilitas untuk game ini telah diterapkan.</translation>
     </message>
@@ -16429,6 +16470,14 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>Serial</source>
         <translation>Serial</translation>
+    </message>
+    <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Pengaturan pertahankan presisi proyeksi PGXP berbeda dari pengaturan basis data game. Ini dapat menyebabkan kesalahan perenderan.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Pengaturan normalisasi kedalaman PGXP berbeda dari pengaturan basis data game. Ini dapat menyebabkan kesalahan perenderan.</translation>
     </message>
     <message>
         <source>Please configure a supported controller from the following list:</source>
@@ -16545,6 +16594,10 @@ Apakah Anda yakin ingin melanjutkan?</translation>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>Ambang Pembersihan Kedalaman PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>Normalisasi Kedalaman PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17364,16 +17417,16 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Mendekatkan setiap poligon ke kamera dibandingkan poligon yang digambar sebelumnya, dalam satuan sepersejuta kedalaman. Nilai yang lebih tinggi mengurangi kedipan pada dekal dan bayangan, tetapi dapat membuat poligon terlihat menembus permukaan di depannya.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Menambahkan presisi pada data PGXP setelah proyeksi. Dapat meningkatkan tampilan pada beberapa game. Otomatis menggunakan pengaturan basis data game; jika tidak ada, fitur ini dinonaktifkan.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Menggunakan PGXP untuk semua instruksi, bukan hanya operasi memori. Diperlukan agar PGXP dapat memperbaiki goyangan pada beberapa game, tetapi berdampak besar pada performa. Otomatis mengaktifkannya hanya untuk game yang memerlukannya menurut basis data game.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Menggunakan posisi vertex dalam ruang layar untuk memperoleh posisi presisi, bukan melacak akses memori. Dapat memberikan kompatibilitas PGXP untuk beberapa game, tetapi &lt;strong&gt;umumnya tidak memberikan manfaat.&lt;/strong&gt; Otomatis mengaktifkannya hanya untuk game yang memerlukannya menurut basis data game.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang saat menggunakan buffer kedalaman pada game yang memperkecil transformasi objek jauh, tetapi menyebabkan masalah pada game yang mengubah skala model melalui transformasi. Basis data game akan mengaktifkan opsi ini secara otomatis saat diperlukan.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -17452,16 +17505,16 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Meningkatkan presisi culling poligon, sehingga mengurangi jumlah lubang pada geometri. Memerlukan koreksi geometri diaktifkan.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Menambahkan presisi pada data PGXP pascaproyeksi. Dapat meningkatkan tampilan pada beberapa permainan.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>Menggunakan koordinat resolusi asli untuk poligon 2D, bukan koordinat presisi. Dapat memperbaiki UI yang tidak selaras pada beberapa game, tetapi selain itu sebaiknya dibiarkan nonaktif. Basis data game akan mengaktifkannya secara otomatis saat diperlukan.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Mengaktifkan pengujian kedalaman untuk poligon semitransparan. Biasanya poligon ini mencakup bayangan dan cenderung menembus tanah saat pengujian kedalaman diaktifkan. Penulisan kedalaman untuk poligon semitransparan dinonaktifkan terlepas dari pengaturan ini.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Menghilangkan faktor skala transformasi setiap objek dari nilai kedalaman. Memperbaiki geometri yang hilang akibat buffer kedalaman pada game yang memperkecil transformasi objek jauh, tetapi menimbulkan masalah pada game yang mengubah skala model melalui transformasi. Menerapkannya juga pada koreksi tekstur memperbaiki tekstur yang terdistorsi di pertemuan objek dengan skala berbeda. Otomatis menggunakan pengaturan basis data game; jika tidak ada, fitur ini dinonaktifkan.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -17902,6 +17955,14 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>Disable Upscaled Direct Textures</source>
         <translation>Nonaktifkan Peningkatan Resolusi Tekstur Langsung</translation>
+    </message>
+    <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Pertahankan Presisi Proyeksi:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Normalkan Skala Kedalaman:</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -18821,6 +18882,41 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Direktori Induk&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Petakan Semua</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Langkah 1 dari 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Pemetaan</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Bersihkan</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Lewati</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Batalkan</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Langkah %1 dari %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Tekan tombol atau gerakkan sumbu sekarang.</translation>
     </message>
 </context>
 <context>
@@ -23709,6 +23805,26 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <translation>Bukan PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (Konsol Ritel)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (Papan Arkade)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Konsol Pengembangan)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Mod/Papan Arkade)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Interpreter (Paling Lambat)</translation>
@@ -23897,6 +24013,26 @@ Apakah Anda ingin membuat direktori ini?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Warna Asli (Penuh)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Otomatis</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Nonaktif</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Hanya Buffer Kedalaman</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Buffer Kedalaman dan Koreksi Tekstur</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25167,11 +25303,6 @@ Hal ini mungkin disebabkan GPU Anda tidak mendukung perender yang dipilih ({1}),
         <translation>Paksa Pengaturan Waktu Bingkai</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>RAM 8 MB</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Cheat</translation>
@@ -25206,6 +25337,10 @@ Hal ini mungkin disebabkan GPU Anda tidak mendukung perender yang dipilih ({1}),
     <message>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>Tidak dapat menyimpan status saat kartu memori sedang disimpan.</translation>
+    </message>
+    <message>
+        <source>RAM size set to default.</source>
+        <translation>Ukuran RAM diatur ke bawaan.</translation>
     </message>
     <message>
         <source>Loaded undo save state created {}.</source>
@@ -25268,6 +25403,11 @@ Nama file SBI harus sama dengan nama citra disc.</translation>
         <translation>Tidak ada disc sebelumnya untuk dialihkan.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>RAM Tambahan</translation>
+    </message>
+    <message>
         <source>There is no next disc to switch to.</source>
         <translation>Tidak ada disc berikutnya untuk dialihkan.</translation>
     </message>
@@ -25294,10 +25434,6 @@ Nama file SBI harus sama dengan nama citra disc.</translation>
     <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>Pembulatan koordinat tekstur yang ditingkatkan diaktifkan. Ini dapat menyebabkan kesalahan perenderan.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>RAM 8 MB diaktifkan; ini mungkin tidak kompatibel dengan beberapa game.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
@@ -25445,10 +25581,6 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
         <translation>Overclock dinonaktifkan.</translation>
     </message>
     <message>
-        <source>8MB RAM disabled.</source>
-        <translation>RAM 8 MB dinonaktifkan.</translation>
-    </message>
-    <message>
         <source>Resolution scale set to 1x.</source>
         <translation>Skala resolusi diatur ke 1x.</translation>
     </message>
@@ -25551,6 +25683,10 @@ Anda harus menyimpan ke kartu memori dan mengatur ulang game untuk menghapus sem
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>Toleransi Geometri PGXP tidak diatur ke bawaan. Hal ini dapat menyebabkan kesalahan rendering.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>RAM tambahan diaktifkan; ini mungkin tidak kompatibel dengan beberapa game.</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>

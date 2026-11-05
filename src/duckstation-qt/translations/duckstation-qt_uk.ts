@@ -3803,6 +3803,16 @@ Current Binding: %s</source>
         <translation>Керує гучністю звуку, що відтворюється на хості під час прискорення гри.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Гучність меню</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Керує гучністю звукових ефектів інтерфейсу Big Picture та сповіщень про досягнення.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Вимкнути весь звук</translation>
@@ -9082,10 +9092,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Регіон:</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Увімкнути 8 МБ оперативної пам’яті (консоль розробника)</translation>
-    </message>
-    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>Увімкнути керування тактовою частотою (розгін/зниження частоти)</translation>
     </message>
@@ -9132,6 +9138,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Seek Speedup:</source>
         <translation>Прискорення пошуку:</translation>
+    </message>
+    <message>
+        <source>Installed RAM:</source>
+        <translation>Встановлена ОЗП:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Примусове відображення всієї ОЗП</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
@@ -9202,10 +9216,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Не позначено</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Активує додаткові 6 МБ оперативної пам’яті (загалом 2+6 = 8 МБ), які зазвичай доступні на консолях розробників. Для використання цієї пам’яті ігри мають виділяти більший розмір купи (heap). Ігри, що покладаються на дзеркалювання пам’яті, можуть зазнавати збоїв, тому цю опцію варто використовувати лише з сумісними модами.</translation>
-    </message>
-    <message>
         <source>Preload Image to RAM</source>
         <translation>Попереднє завантаження образу в ОЗП</translation>
     </message>
@@ -9216,10 +9226,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Region</source>
         <translation>Регіон</translation>
-    </message>
-    <message>
-        <source>Auto-Detect</source>
-        <translation>Автовизначення</translation>
     </message>
     <message>
         <source>Determines the emulated hardware type.</source>
@@ -9242,12 +9248,20 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Прискорює доступ до картки пам’яті як під час завантаження, так і під час збереження. Це може скоротити час очікування в іграх, які часто звертаються до карт пам’яті.</translation>
     </message>
     <message>
-        <source>Execution Mode</source>
-        <translation>Режим виконання</translation>
+        <source>Installed RAM</source>
+        <translation>Встановлена ОЗП</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Перекомпілятор (найшвидший)</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Змінює обсяг ОЗП, встановленої в емульованій консолі. Щоб використовувати розширену ОЗП, ігри мають використовувати більший розмір купи. Ігри, які покладаються на дзеркальні області пам’яті, можуть працювати неправильно, тому цю можливість слід використовувати лише із сумісними модифікаціями.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Відображає всю встановлену ОЗП в адресний простір незалежно від обсягу, налаштованого BIOS або грою. BIOS серійних консолей відображають лише 8 МБ, тому ця опція потрібна для використання 16 МБ без модифікованого BIOS. Діє лише за наявності розширеної ОЗП.</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <translation>Режим виконання</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9384,6 +9398,10 @@ This warning will only be shown once.</source>
         <translation>Автоматичне зіставлення</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Прив’язати все</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Очистити зіставлення</translation>
     </message>
@@ -9394,6 +9412,10 @@ This warning will only be shown once.</source>
     <message>
         <source>No devices available</source>
         <translation>Немає доступних пристроїв</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Прив’язати все — порт %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11998,10 +12020,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Додає новий шейдер у ланцюжок.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Підвищує точність даних PGXP після проєкції. Може покращити графіку в деяких іграх.</translation>
-    </message>
-    <message>
         <source>%.1f ms</source>
         <translation>%.1f мс</translation>
     </message>
@@ -12270,6 +12288,10 @@ You cannot undo this action.</source>
         <translation>Змінити назву</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Змінює обсяг ОЗП, встановленої в емульованій консолі.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>Змінює співвідношення сторін, яке використовується для відображення виводу консолі на екрані.</translation>
     </message>
@@ -12280,6 +12302,10 @@ You cannot undo this action.</source>
     <message>
         <source>Clean Boot</source>
         <translation>Чисте завантаження</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистити</translation>
     </message>
     <message>
         <source>Clear Settings</source>
@@ -12708,10 +12734,6 @@ You cannot undo this action.</source>
     <message>
         <source>Emulation Speed</source>
         <translation>Швидкість емуляції</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Увімкнути 8 МБ ОЗП</translation>
     </message>
     <message>
         <source>Enable Achievements</source>
@@ -13212,10 +13234,6 @@ Please check your username and password, and try again.</source>
         <translation>Віддавати перевагу контексту OpenGL ES</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Виводить додаткові кадри для таких ефектів, як вставлення чорних кадрів. Потрібна вертикальна синхронізація.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Натисніть для перемикання</translation>
     </message>
@@ -13238,6 +13256,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Видаляє всі прив&apos;язки для цього порту контролера.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Усуває вплив масштабу перетворення кожного об’єкта на значення глибини. Виправляє зникнення геометрії в деяких іграх, але порушує роботу інших. Варіант «Автоматично» використовує налаштування з бази даних ігор.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13740,6 +13762,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Досягнення:</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Підвищує точність даних PGXP після проєктування. Може покращити зображення в деяких іграх. Варіант «Автоматично» використовує налаштування з бази даних ігор.</translation>
+    </message>
+    <message>
         <source>Advanced Display Options</source>
         <translation>Розширені налаштування відображення</translation>
     </message>
@@ -13788,6 +13814,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Застосовує зміни до відображуваного кадрового буфера посеред кадру. Потрібно для ефектів розділеного екрана в деяких іграх, але спричиняє розриви зображення в інших.</translation>
     </message>
     <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>По черзі запитує введення з кожної кнопки та осі цього контролера.</translation>
+    </message>
+    <message>
         <source>Automatic Mapping Failed</source>
         <translation>Помилка автоматичного зіставлення</translation>
     </message>
@@ -13798,6 +13828,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>BIOS Images</source>
         <translation>Образи BIOS</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Прив’язати всі кнопки</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -13964,10 +13998,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Вмикає винятки через порушення вирівнювання та помилки шини. Не потрібно для жодної відомої гри.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Вмикає додаткові 6 МБ ОЗП, щоб отримати загалом 2+6 = 8 МБ, як зазвичай на консолях для розробників.</translation>
-    </message>
-    <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>Включає додаткові три слоти контролера на кожному порту. Підтримується не у всіх іграх.</translation>
     </message>
@@ -14034,6 +14064,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Font</source>
         <translation>Шрифт</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Примусове відображення всієї ОЗП</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -14220,6 +14254,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Встановити BIOS</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Встановлена ОЗП</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Налаштування інтерфейсу</translation>
     </message>
@@ -14322,6 +14360,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Дозволяє іграм працювати з частотою кадрів, близькою до консольної, з невеликою шкодою для продуктивності.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Відображає всю встановлену ОЗП в адресний простір незалежно від обсягу, налаштованого BIOS або грою. Потрібно для використання 16 МБ із BIOS серійних консолей.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14636,6 +14678,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Попереднє завантаження текстур заміни</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Виводить додаткові кадри для таких ефектів, як вставлення чорних кадрів.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Збереження точності проєкції</translation>
     </message>
@@ -14942,10 +14988,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Повністю вимикає звук гри.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Вилучає вплив масштабу перетворення кожного об&apos;єкта зі значень глибини. Усуває зникнення геометрії в деяких іграх, але спричиняє помилки в інших.</translation>
     </message>
     <message>
         <source>Reset Settings</source>
@@ -15292,6 +15334,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Симулює роботу системи з випередженням часу та виконує відкат/відтворення для зменшення затримки введення. Дуже високі системні вимоги.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Пропустити</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Пропустити відображення дублікатів кадрів</translation>
     </message>
@@ -15360,6 +15406,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Запустити консоль без вставленого диска.</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>Крок {} з {}</translation>
+    </message>
+    <message>
         <source>Stretch Mode</source>
         <translation>Режим розтягування</translation>
     </message>
@@ -15422,10 +15472,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Threaded Rendering</source>
         <translation>Потокове відображення</translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>Час очікування спливе за {}...</translation>
     </message>
     <message>
         <source>Title</source>
@@ -15960,12 +16006,16 @@ Do you want to {0} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>Обсяг ОЗП:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Вимкнути широкоекранну візуалізацію</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Увімкнути 8 МБ ОЗП</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Примусове відображення всієї ОЗП</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16174,10 +16224,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP perspective correct colors disabled.</source>
         <translation>Кольори з коригуванням перспективи PGXP вимкнено.</translation>
-    </message>
-    <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Збереження точності проєкції PGXP вимкнено.</translation>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
@@ -16397,11 +16443,6 @@ Are you sure you want to continue?</source>
         <translation>Примусово: Режим процесора PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Нормалізувати глибину PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Примусово: ICache перекомпілятора</translation>
@@ -16525,6 +16566,14 @@ Are you sure you want to continue?</source>
         <translation>Серійний номер</translation>
     </message>
     <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Налаштування збереження точності проєкції PGXP відрізняється від налаштування в базі даних ігор. Це може спричинити помилки візуалізації.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Налаштування нормалізації глибини PGXP відрізняється від налаштування в базі даних ігор. Це може спричинити помилки візуалізації.</translation>
+    </message>
+    <message>
         <source>Please configure a supported controller from the following list:</source>
         <translation>Будь ласка, налаштуйте один із підтримуваних контролерів із наведеного нижче списку:</translation>
     </message>
@@ -16639,6 +16688,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>Поріг очищення глибини PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>Нормалізація глибини PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17370,6 +17423,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Вимкнути масштабування текстур із прямим кодуванням кольору</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Збереження точності проєкції:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Нормалізувати масштаб глибини:</translation>
+    </message>
+    <message>
         <source>Texture Replacement</source>
         <translation>Заміна текстур</translation>
     </message>
@@ -17834,16 +17895,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Наближає кожен полігон до камери відносно полігонів, намальованих перед ним, у мільйонних частках глибини. Вищі значення зменшують мерехтіння декалей і тіней, але можуть призвести до того, що полігони стануть видимими крізь поверхні перед ними.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Підвищує точність даних PGXP після проєктування. Може покращити зображення в деяких іграх. Варіант «Автоматично» використовує налаштування з бази даних ігор; якщо його немає, функцію вимкнено.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Використовує PGXP для всіх інструкцій, а не лише операцій із пам&apos;яттю. Потрібне для виправлення тремтіння за допомогою PGXP у деяких іграх, але значно знижує продуктивність. У режимі «Автоматично» вмикається лише для ігор, яким це потрібно за даними бази ігор.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Використовує положення вершин у просторі екрана для отримання точних положень замість відстеження звернень до пам&apos;яті. Може забезпечити сумісність із PGXP у деяких іграх, але &lt;strong&gt;зазвичай не дає жодних переваг.&lt;/strong&gt; У режимі «Автоматично» вмикається лише для ігор, яким це потрібно за даними бази ігор.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Вилучає вплив масштабу перетворення кожного об&apos;єкта зі значень глибини. Усуває зникнення геометрії при використанні буфера глибини в іграх, які зменшують масштаб перетворень віддалених об&apos;єктів, але спричиняє помилки в іграх, які масштабують моделі через перетворення. База даних ігор автоматично вмикає цей параметр за потреби.</translation>
     </message>
     <message>
         <source>Disables texture emulation in the GPU, forcing all primitives to only show vertex colours.</source>
@@ -18042,10 +18103,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Підвищує точність відсікання полігонів (polygon culling), зменшуючи кількість «дірок» у геометрії. Вимагає увімкненого виправлення геометрії.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Додає додаткову точність до даних PGXP після проекції. Може покращити графіку в деяких іграх.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>Використовує координати нативної роздільної здатності для 2D-полігонів замість точних координат. Може виправити зміщення елементів інтерфейсу в деяких іграх, але в інших випадках цей параметр слід залишити вимкненим. База даних ігор автоматично увімкне його за потреби.</translation>
     </message>
@@ -18104,6 +18161,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
         <translation>Масштабує пропуск рядків при черезрядковому рендерингу до внутрішньої роздільної здатності. Це робить ефект гребінця менш помітним при високій роздільній здатності. Зазвичай безпечно вмикати.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Усуває вплив масштабу перетворення кожного об’єкта на значення глибини. Виправляє зникнення геометрії під час використання буфера глибини в іграх, які зменшують масштаб перетворень віддалених об’єктів, але порушує роботу ігор, які масштабують моделі через перетворення. Застосування також до корекції текстур усуває викривлення текстур на стиках об’єктів із різним масштабом. Варіант «Автоматично» використовує налаштування з бази даних ігор; якщо його немає, функцію вимкнено.</translation>
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -18939,6 +19000,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Батьківський каталог&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Прив’язати все</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Крок 1 з 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Прив’язка</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистити</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Пропустити</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Крок %1 з %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Натисніть кнопку або перемістіть вісь.</translation>
     </message>
 </context>
 <context>
@@ -23830,6 +23926,26 @@ Do you want to create this directory?</source>
         <translation>Не-PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 МБ (серійна консоль)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 МБ (плати аркадних автоматів)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 МБ (консоль для розробників)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 МБ (модифікації/плати аркадних автоматів)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Інтерпретатор (найповільніший)</translation>
@@ -24018,6 +24134,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>True Color (повний)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Автоматично</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Вимкнено</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Лише буфер глибини</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Буфер глибини та корекція текстур</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25294,11 +25430,6 @@ Do you wish to continue?</source>
         <translation>Примусова синхронізація кадрів</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8 МБ ОЗП</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Чити</translation>
@@ -25347,10 +25478,6 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>Увімкнено округлення масштабованих текстурних координат. Це може викликати помилки рендерингу.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Увімкнено 8 МБ ОЗП, це може бути несумісним з деякими іграми.</translation>
     </message>
     <message>
         <source>Failed to save resume state: {}</source>
@@ -25405,10 +25532,6 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <source>Overclock disabled.</source>
         <translation>Розгін вимкнено.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8 МБ ОЗП вимкнено.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25578,6 +25701,10 @@ Using current CD image, this may result in instability.</source>
         <translation>Картку змінено на {}.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>Встановлено типовий обсяг ОЗП.</translation>
+    </message>
+    <message>
         <source>Texture filtering disabled.</source>
         <translation>Фільтрування текстур вимкнено.</translation>
     </message>
@@ -25666,6 +25793,10 @@ Using current CD image, this may result in instability.</source>
         <translation>Скидання SPU під час запуску гри вимкнено.</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Розширену ОЗП увімкнено; це може бути несумісним із деякими іграми.</translation>
+    </message>
+    <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM SubQ Skew увімкнено. Це призведе до збоїв в іграх.</translation>
     </message>
@@ -25710,6 +25841,11 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>capturing audio and video</source>
         <translation>запис звуку та відео</translation>
+    </message>
+    <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Розширена ОЗП</translation>
     </message>
     <message>
         <source>capturing video</source>

@@ -3779,6 +3779,16 @@ Huidige toewijzing: %s</translation>
         <translation>Regelt het volume van audio die op de host wordt afgespeeld tijdens versneld afspelen.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Menuvolume</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Regelt het volume van de geluidseffecten van de Big Picture-interface en van prestatiemeldingen.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Al het geluid dempen</translation>
@@ -9084,10 +9094,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Opstarten versnellen</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8 MB RAM inschakelen (ontwikkelconsole)</translation>
-    </message>
-    <message>
         <source>100% (33.87MHz)</source>
         <translation>100% (33.87MHz)</translation>
     </message>
@@ -9136,6 +9142,14 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Zoeksnelheid:</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>Geïnstalleerd RAM:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Volledige RAM-adressering afdwingen</translation>
+    </message>
+    <message>
         <source>None (Normal Speed)</source>
         <translation>Geen (normale snelheid)</translation>
     </message>
@@ -9176,10 +9190,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Regio</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Automatisch detecteren</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Bepaalt het type geëmuleerde hardware.</translation>
     </message>
@@ -9208,10 +9218,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Uitvoeringsmodus</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Recompiler (snelst)</translation>
-    </message>
-    <message>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>Bepaalt hoe de geëmuleerde CPU instructies uitvoert.</translation>
     </message>
@@ -9236,16 +9242,24 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Simuleert vertragingen in de recompilers wanneer de geëmuleerde CPU instructies in zijn cache moet laden. Hierdoor draaien games dichter bij de framesnelheid van de console, met een kleine invloed op de prestaties. De interpretermodus simuleert de instructiecache altijd.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Schakelt 6 MB extra RAM in voor in totaal 2+6 = 8 MB, wat doorgaans aanwezig is in ontwikkelconsoles. Games moeten een grotere heapgrootte gebruiken om dit extra RAM te kunnen benutten. Titels die afhankelijk zijn van geheugenmirrors kunnen defect raken; gebruik dit daarom alleen met compatibele mods.</translation>
-    </message>
-    <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>Laadt de game-image in RAM. Nuttig voor netwerkpaden die tijdens het spelen onbetrouwbaar kunnen worden. Verhelpt in sommige gevallen ook haperingen wanneer games een audiotrack beginnen af te spelen.</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
         <translation>Versnelt CD-ROM lees operaties met de opgegeven factor. Alleen van toepassing op lees operaties met dubbele snelheid, en genegeerd wanneer er geluid afspeelt. Kan laadsnelheden verbeteren in sommige spellen, maar kan andere spellen laten crashen.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>Geïnstalleerd RAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Wijzigt de hoeveelheid RAM die in de geëmuleerde console is geïnstalleerd. Games moeten een grotere heap gebruiken om het extra RAM te kunnen benutten. Games die afhankelijk zijn van geheugenspiegels werken mogelijk niet meer correct. Gebruik dit daarom alleen met compatibele mods.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de grootte die door het BIOS of de game is ingesteld. BIOS-versies van consumentenconsoles maken slechts 8MB adresseerbaar. Dit is dus nodig om 16MB te kunnen gebruiken zonder een aangepast BIOS. Heeft alleen effect als er extra RAM is geïnstalleerd.</translation>
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
@@ -9350,6 +9364,10 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
         <translation>Automatische toewijzing</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Alles toewijzen</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Toewijzing wissen</translation>
     </message>
@@ -9368,6 +9386,10 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     <message>
         <source>No devices available</source>
         <translation>Geen apparaten beschikbaar</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Alles toewijzen - Poort %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11865,10 +11887,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Voegt een nieuwe shader toe aan de keten.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Voegt extra precisie toe aan PGXP-gegevens na projectie. Kan beelden in sommige games verbeteren.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>Geavanceerde instellingen</translation>
     </message>
@@ -11895,6 +11913,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
         <translation>Weet u zeker dat u de huidige nabewerkingsketen wilt wissen? Alle configuratie gaat verloren.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Vraagt achtereenvolgens om elke knop en as van deze controller.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -11983,6 +12005,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Behavior</source>
         <translation>Gedrag</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Alle knoppen toewijzen</translation>
     </message>
     <message>
         <source>Borderless Fullscreen</source>
@@ -12293,10 +12319,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Emulatiesnelheid</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8 MB RAM inschakelen</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Prestaties inschakelen</translation>
     </message>
@@ -12361,10 +12383,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Schakelt uitlijnings- en busuitzonderingen in. Niet nodig voor bekende games.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Schakelt 6 MB extra RAM in voor in totaal 2+6 = 8 MB, die doorgaans aanwezig is in ontwikkelconsoles.</translation>
-    </message>
-    <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>Schakelt drie extra controllerslots per poort in. Niet door alle games ondersteund.</translation>
     </message>
@@ -12421,6 +12439,10 @@ De fout was:</translation>
     <message>
         <source>Fast Forward Volume</source>
         <translation>Volume voor versneld afspelen</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Volledige RAM-adressering afdwingen</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -12563,6 +12585,10 @@ De fout was:</translation>
         <translation>Invoerbronnen</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Geïnstalleerd RAM</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Interface-instellingen</translation>
     </message>
@@ -12653,6 +12679,10 @@ De fout was:</translation>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Laat games dichter bij de framesnelheid van hun console draaien, met een kleine invloed op de prestaties.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de grootte die door het BIOS of de game is ingesteld. Nodig voor 16MB bij BIOS-versies van consumentenconsoles.</translation>
     </message>
     <message>
         <source>Memory Card Directory</source>
@@ -12809,6 +12839,10 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>Activeert runahead wanneer de analoge invoer verandert, wat de systeemeisen aanzienlijk verhoogt.</translation>
+    </message>
+    <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Verhoogt de precisie van PGXP-gegevens na de projectie. Kan het beeld in sommige games verbeteren. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
     </message>
     <message>
         <source>Advanced Display Options</source>
@@ -13011,8 +13045,16 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Wijzigt de instellingen voor de toepassing.</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Wijzigt de hoeveelheid RAM die in de geëmuleerde console is geïnstalleerd.</translation>
+    </message>
+    <message>
         <source>Cheats</source>
         <translation>Cheats</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Wissen</translation>
     </message>
     <message>
         <source>Clear Mappings</source>
@@ -14035,20 +14077,12 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Wachtwoord</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Toont extra frames voor effecten zoals het invoegen van zwarte frames. Vereist VSync.</translation>
-    </message>
-    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Zorgt ervoor dat de game geen hoorbaar geluid produceert.</translation>
     </message>
     <message>
         <source>Release Date: </source>
         <translation>Releasedatum: </translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie in sommige games, maar veroorzaakt problemen in andere games.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -14303,6 +14337,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Start de toepassing in de Big Picture-modus in plaats van de desktopinterface.</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>Stap {} van {}</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Slaat de huidige instellingen op in een controller­voorinstelling.</translation>
     </message>
@@ -14325,10 +14363,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Time Played: </source>
         <translation>Gespeelde tijd: </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>Time-out over {}...</translation>
     </message>
     <message>
         <source>Toggle Case</source>
@@ -14599,6 +14633,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Vervangingstexturen vooraf laden</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Toont extra frames voor effecten zoals het invoegen van zwarte frames.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Projectieprecisie behouden</translation>
     </message>
@@ -14733,6 +14771,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Verwijdert alle bindingen voor deze controllerpoort.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie in sommige games, maar veroorzaakt problemen in andere. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -15189,6 +15231,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Size: </source>
         <translation>Grootte: </translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Overslaan</translation>
     </message>
     <message>
         <source>Skip Duplicate Frame Display</source>
@@ -15915,12 +15961,16 @@ Wil je toch doorgaan met {1}?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM-grootte:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Breedbeeldweergave uitschakelen</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8 MB RAM inschakelen</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Volledige RAM-adressering afdwingen</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16268,11 +16318,6 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>PGXP CPU-modus forceren</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>PGXP-diepte normaliseren</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Recompiler-ICache forceren</translation>
@@ -16432,8 +16477,12 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>PGXP op 2D-polygonen uitgeschakeld.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP-behoud van projectieprecisie uitgeschakeld.</translation>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>De instelling voor het behoud van projectieprecisie met PGXP wijkt af van de instelling in de gamedatabase. Dit kan renderfouten veroorzaken.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>De instelling voor PGXP-dieptenormalisatie wijkt af van de instelling in de gamedatabase. Dit kan renderfouten veroorzaken.</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -16578,6 +16627,10 @@ Weet u zeker dat u wilt doorgaan?</translation>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>PGXP-diepteverschuiving</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP-dieptenormalisatie</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17415,6 +17468,14 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Vertexcache:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Projectieprecisie behouden:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Diepteschaal normaliseren:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Perspectiefcorrecte texturen</translation>
     </message>
@@ -17835,8 +17896,16 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Gebruikt een tweede thread voor het tekenen van graphics. Levert vooral met de software-renderer een aanzienlijke snelheidsverbetering en is veilig in gebruik.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Verhoogt de precisie van PGXP-gegevens na de projectie. Kan het beeld in sommige games verbeteren. Automatisch gebruikt de instelling uit de gamedatabase en schakelt deze functie anders uit.</translation>
+    </message>
+    <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Gebruikt vertexposities in schermruimte om precieze posities te verkrijgen, in plaats van geheugentoegang bij te houden. Kan PGXP-compatibiliteit bieden voor sommige games, maar &lt;strong&gt;biedt doorgaans geen voordeel.&lt;/strong&gt; Automatisch schakelt dit alleen in voor games die het volgens de gamedatabase vereisen.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie bij gebruik van de dieptebuffer in games die de transformaties van verre objecten verkleinen, maar veroorzaakt problemen in games die modellen via de transformatie schalen. Als dit ook op textuurcorrectie wordt toegepast, worden vervormde texturen verholpen op plekken waar objecten met verschillende schaalfactoren elkaar raken. Automatisch gebruikt de instelling uit de gamedatabase en schakelt deze functie anders uit.</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -17927,20 +17996,12 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Verhoogt de precisie van polygon-culling, waardoor het aantal gaten in de geometrie afneemt. Vereist dat geometriecorrectie is ingeschakeld.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Voegt extra precisie toe aan PGXP-gegevens na projectie. Kan de weergave in sommige games verbeteren.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>Gebruikt coördinaten met de native resolutie voor 2D-polygonen in plaats van precieze coördinaten. Kan verkeerd uitgelijnde interface-elementen in sommige games herstellen, maar moet verder uitgeschakeld blijven. De gamedatabase schakelt dit indien nodig automatisch in.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Schakelt dieptetesten voor semi-transparante polygonen in. Dit zijn doorgaans schaduwen, die bij ingeschakelde dieptetesten vaak door de grond heen worden geknipt. Diepteschrijfbewerkingen voor semi-transparante polygonen zijn ongeacht deze instelling uitgeschakeld.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Verwijdert de schaalfactor van de transformatie van elk object uit de dieptewaarden. Verhelpt ontbrekende geometrie bij gebruik van de dieptebuffer in games die de transformaties van verre objecten verkleinen, maar veroorzaakt problemen in games die modellen via de transformatie schalen. De gamedatabase schakelt dit automatisch in wanneer dat nodig is.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18882,6 +18943,41 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Bovenliggende map&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Alles toewijzen</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Stap 1 van 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Toewijzing</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Wissen</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Overslaan</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuleren</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Stap %1 van %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Druk nu op een knop of beweeg een as.</translation>
     </message>
 </context>
 <context>
@@ -23773,6 +23869,26 @@ Wilt u deze map maken?</translation>
         <translation>Niet-PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (consumentenconsole)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (arcadeprintplaten)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (ontwikkelconsole)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (mods/arcadeprintplaten)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Interpreter (Traagst)</translation>
@@ -23961,6 +24077,26 @@ Wilt u deze map maken?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Ware kleuren (Volledig)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Uitgeschakeld</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Alleen dieptebuffer</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Dieptebuffer en textuurcorrectie</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25216,11 +25352,6 @@ Token gegenereerd %2</translation>
         <translation>Frametimings forceren</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB RAM</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Cheats</translation>
@@ -25401,6 +25532,11 @@ De naam van het SBI-bestand moet overeenkomen met de naam van de schijfimage.</t
         <translation>Overgeschakeld naar subimage {} ({}) in &apos;{}&apos;.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Extra RAM</translation>
+    </message>
+    <message>
         <source>Current game does not have multiple discs.</source>
         <translation>De huidige game heeft geen meerdere schijven.</translation>
     </message>
@@ -25445,10 +25581,6 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
     <message>
         <source>Overclock disabled.</source>
         <translation>Overklokken uitgeschakeld.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8 MB RAM uitgeschakeld.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25567,6 +25699,10 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
         <translation>De beeldsnelheid staat niet op automatisch. Games kunnen op de verkeerde snelheid draaien.</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Extra RAM is ingeschakeld; dit is mogelijk incompatibel met sommige games.</translation>
+    </message>
+    <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>Er wordt een gecachte interpreter gebruikt; deze is mogelijk incompatibel met sommige games.</translation>
     </message>
@@ -25667,16 +25803,16 @@ In plaats daarvan wordt een gedeelde kaart gebruikt.</translation>
         <translation>Multisample-antialiasing is ingeschakeld; sommige games worden mogelijk niet correct weergegeven.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM-grootte teruggezet naar de standaardwaarde.</translation>
+    </message>
+    <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>Afronden van opgeschaalde textuurcoördinaten is ingeschakeld. Dit kan renderfouten veroorzaken.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP-geometrietolerantie staat niet op de standaardwaarde. Dit kan renderfouten veroorzaken.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8 MB RAM is ingeschakeld; dit is mogelijk incompatibel met sommige games.</translation>
     </message>
     <message>
         <source>No BIOS image found for {} region.

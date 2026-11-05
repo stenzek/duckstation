@@ -3515,6 +3515,16 @@ Nút gán hiện tại: %s</translation>
         <translation>CẢNH BÁO: Trò chơi vẫn đang lưu vào thẻ nhớ. Tiếp tục lúc này có thể làm hỏng dữ liệu. Bạn nên quay lại trò chơi, chờ 5 giây rồi thử lại.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Âm lượng menu</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Điều chỉnh âm lượng hiệu ứng âm thanh của giao diện Big Picture và thông báo thành tích.</translation>
+    </message>
+    <message>
         <source>Do you want to close the game anyway?</source>
         <comment>emulation_menu_safety_check_close_game</comment>
         <translation>Bạn vẫn muốn đóng trò chơi?</translation>
@@ -9014,6 +9024,10 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Tốc độ khung hình:</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>RAM được cài đặt:</translation>
+    </message>
+    <message>
         <source>Fast Boot</source>
         <translation>Khởi động nhanh</translation>
     </message>
@@ -9026,8 +9040,8 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Tua nhanh khi khởi động</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Bật RAM 8MB (Máy phát triển)</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Buộc ánh xạ toàn bộ RAM</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -9134,10 +9148,6 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Khu vực</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Tự động phát hiện</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Xác định loại phần cứng được giả lập.</translation>
     </message>
@@ -9166,16 +9176,20 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Tua nhanh khi truy cập thẻ nhớ, cả nạp và lưu. Có thể giảm thời gian chờ ở những trò chơi thường xuyên truy cập thẻ nhớ.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Bật thêm 6MB RAM để đạt tổng cộng 2+6 = 8MB, thường có trên máy phát triển. Trò chơi phải dùng vùng heap lớn hơn để có thể sử dụng RAM bổ sung này. Những trò chơi dựa vào vùng nhớ phản chiếu có thể bị lỗi, vì vậy chỉ nên dùng với các bản mod tương thích.</translation>
-    </message>
-    <message>
         <source>Execution Mode</source>
         <translation>Chế độ thực thi</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Biên dịch lại (Nhanh nhất)</translation>
+        <source>Installed RAM</source>
+        <translation>RAM được cài đặt</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Thay đổi dung lượng RAM được cài đặt trong máy chơi game giả lập. Trò chơi phải dùng vùng nhớ heap lớn hơn mới có thể sử dụng RAM mở rộng. Những trò chơi phụ thuộc vào các vùng địa chỉ ánh xạ đến cùng một bộ nhớ có thể bị lỗi, vì vậy chỉ nên dùng tùy chọn này với các bản mod tương thích.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Ánh xạ toàn bộ RAM được cài đặt, bất kể dung lượng do BIOS hoặc trò chơi cấu hình. BIOS của máy bán lẻ chỉ ánh xạ 8MB, nên cần bật tùy chọn này để sử dụng được 16MB mà không cần bản vá BIOS. Chỉ có tác dụng khi cài đặt RAM mở rộng.</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9312,6 +9326,10 @@ Cảnh báo này chỉ xuất hiện một lần.</translation>
         <translation>Ánh xạ tự động</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Gán tất cả đầu vào</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Xóa ánh xạ</translation>
     </message>
@@ -9330,6 +9348,10 @@ Cảnh báo này chỉ xuất hiện một lần.</translation>
     <message>
         <source>No devices available</source>
         <translation>Không có thiết bị</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Gán tất cả đầu vào - Cổng %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11956,10 +11978,6 @@ Bạn có muốn xóa trạng thái lưu và vẫn khởi động trò chơi kh�
         <translation>Thêm bộ đổ bóng mới vào chuỗi.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Tăng độ chính xác của dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi.</translation>
-    </message>
-    <message>
         <source>Advanced Display Options</source>
         <translation>Tùy chọn hiển thị nâng cao</translation>
     </message>
@@ -12912,10 +12930,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Tốc độ giả lập</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Bật RAM 8MB</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Bật thành tích</translation>
     </message>
@@ -13028,8 +13042,24 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Bật ngoại lệ căn chỉnh và bus. Không cần thiết cho bất kỳ trò chơi nào đã biết.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Bật thêm 6MB RAM để đạt tổng cộng 2+6 = 8MB, thường có trên máy phát triển.</translation>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Tăng độ chính xác của dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Lần lượt yêu cầu gán từng nút và trục của tay cầm này.</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Gán tất cả nút</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Thay đổi dung lượng RAM được cài đặt trong máy chơi game giả lập.</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Xóa</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13232,6 +13262,10 @@ Lỗi:</translation>
     <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Buộc 4:3 cho FMV</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Buộc ánh xạ toàn bộ RAM</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -13514,6 +13548,10 @@ Lỗi:</translation>
         <translation>Cài đặt BIOS</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>RAM được cài đặt</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Cài đặt giao diện</translation>
     </message>
@@ -13708,6 +13746,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Giúp trò chơi chạy gần tốc độ khung hình trên máy chơi game hơn, với một chút tổn thất hiệu suất.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Ánh xạ toàn bộ RAM được cài đặt, bất kể dung lượng do BIOS hoặc trò chơi cấu hình. Cần bật để sử dụng 16MB với BIOS của máy bán lẻ.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14130,8 +14172,12 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Tải trước họa tiết thay thế</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Hiển thị thêm khung hình cho các hiệu ứng như chèn khung hình đen. Yêu cầu VSync.</translation>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Hiển thị thêm khung hình cho các hiệu ứng như chèn khung hình đen.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Loại bỏ ảnh hưởng của hệ số co giãn trong phép biến đổi của từng đối tượng khỏi các giá trị độ sâu. Khắc phục hình học bị thiếu trong một số trò chơi, nhưng gây lỗi ở những trò chơi khác. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi.</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -14276,10 +14322,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Xóa mọi nút gán cho cổng tay cầm này.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Loại bỏ hệ số co giãn trong phép biến đổi của mỗi vật thể khỏi các giá trị độ sâu. Sửa hình học bị thiếu trong một số trò chơi nhưng gây lỗi trong các trò chơi khác.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -14722,10 +14764,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Đặt ảnh bìa</translation>
     </message>
     <message>
-        <source>Timing out in {}...</source>
-        <translation>Sẽ hết thời gian chờ sau {}...</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Đặt ngưỡng mà khi vượt quá sẽ loại bỏ các giá trị chính xác. Có thể giúp khắc phục lỗi trong một số trò chơi.</translation>
     </message>
@@ -14962,6 +15000,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Kích thước: </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Bỏ qua</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Bỏ hiển thị khung hình trùng lặp</translation>
     </message>
@@ -15080,6 +15122,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>Khởi động ứng dụng ở chế độ Big Picture thay cho giao diện máy tính.</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Bước {} trên {}</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -15866,12 +15912,16 @@ Bạn vẫn muốn {1} chứ?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>Dung lượng RAM:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Tắt kết xuất màn hình rộng</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Bật RAM 8MB</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Buộc ánh xạ toàn bộ RAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16219,11 +16269,6 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Buộc dùng chế độ CPU PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Chuẩn hóa độ sâu PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Buộc dùng bộ nhớ đệm lệnh của bộ biên dịch lại</translation>
@@ -16383,8 +16428,12 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Đã tắt PGXP trên đa giác 2D.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Đã tắt giữ độ chính xác phép chiếu PGXP.</translation>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Tùy chọn giữ độ chính xác phép chiếu PGXP khác với cài đặt trong cơ sở dữ liệu trò chơi. Điều này có thể gây lỗi kết xuất.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Tùy chọn chuẩn hóa độ sâu PGXP khác với cài đặt trong cơ sở dữ liệu trò chơi. Điều này có thể gây lỗi kết xuất.</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -16529,6 +16578,10 @@ Bạn có chắc muốn tiếp tục không?</translation>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>Độ lệch độ sâu PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>Chuẩn hóa độ sâu PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17364,6 +17417,14 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <translation>Bộ nhớ đệm đỉnh:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Giữ độ chính xác phép chiếu:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Chuẩn hóa thang độ sâu:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Họa tiết đúng phối cảnh</translation>
     </message>
@@ -17860,8 +17921,12 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <translation>Tăng độ chính xác của việc loại bỏ đa giác, giảm số lỗ hổng trong hình học. Cần bật hiệu chỉnh hình học.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Tăng thêm độ chính xác cho dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi.</translation>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Tăng độ chính xác của dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi và tắt nếu không có cài đặt đó.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Loại bỏ ảnh hưởng của hệ số co giãn trong phép biến đổi của từng đối tượng khỏi các giá trị độ sâu. Khắc phục hình học bị thiếu khi dùng bộ đệm độ sâu trong các trò chơi thu nhỏ phép biến đổi của đối tượng ở xa, nhưng gây lỗi ở những trò chơi co giãn mô hình thông qua phép biến đổi. Áp dụng tùy chọn này cho cả hiệu chỉnh kết cấu sẽ khắc phục kết cấu bị méo tại nơi các đối tượng có tỷ lệ co giãn khác nhau tiếp giáp. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi và tắt nếu không có cài đặt đó.</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -17886,10 +17951,6 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Bật kiểm tra độ sâu cho đa giác bán trong suốt. Chúng thường bao gồm bóng và có xu hướng xuyên xuống mặt đất khi bật kiểm tra độ sâu. Việc ghi độ sâu cho đa giác bán trong suốt luôn bị tắt bất kể cài đặt này.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Loại bỏ hệ số co giãn trong phép biến đổi của mỗi vật thể khỏi các giá trị độ sâu. Sửa hình học bị thiếu khi dùng bộ đệm độ sâu trong trò chơi thu nhỏ phép biến đổi của vật thể ở xa nhưng gây lỗi trong trò chơi co giãn mô hình bằng phép biến đổi. Cơ sở dữ liệu trò chơi sẽ tự bật khi cần.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18821,6 +18882,41 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Thư mục cha&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Gán tất cả đầu vào</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Bước 1 trên 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Gán đầu vào</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Xóa</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Bỏ qua</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Hủy</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Bước %1 trên %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Hãy nhấn một nút hoặc di chuyển một trục ngay bây giờ.</translation>
     </message>
 </context>
 <context>
@@ -23724,6 +23820,26 @@ Bạn có muốn tạo thư mục này không?</translation>
         <translation>Không phải PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (Máy bán lẻ)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (Bo mạch máy arcade)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Máy dành cho nhà phát triển)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Bản mod/Bo mạch máy arcade)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Thông dịch (Chậm nhất)</translation>
@@ -23912,6 +24028,26 @@ Bạn có muốn tạo thư mục này không?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Màu thực (Đầy đủ)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Tự động</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Đã tắt</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Chỉ bộ đệm độ sâu</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Bộ đệm độ sâu và hiệu chỉnh kết cấu</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25199,11 +25335,6 @@ Vì lý do pháp lý, bạn phải lấy BIOS từ máy PS1/PS2 thực sự do b
         <translation>Buộc nhịp khung hình</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>RAM 8MB</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Mã gian lận</translation>
@@ -25379,6 +25510,14 @@ Bản trích xuất của bạn chưa đầy đủ, bạn phải thêm tệp SBI
 Tên tệp SBI phải khớp tên ảnh đĩa.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>Đã đặt dung lượng RAM về mặc định.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>RAM mở rộng đang bật, điều này có thể không tương thích với một số trò chơi.</translation>
+    </message>
+    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Đã chuyển sang ảnh con {} ({}) trong &apos;{}&apos;.</translation>
     </message>
@@ -25393,6 +25532,11 @@ Tên tệp SBI phải khớp tên ảnh đĩa.</translation>
     <message>
         <source>There is no previous disc to switch to.</source>
         <translation>Không có đĩa trước để chuyển tới.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>RAM mở rộng</translation>
     </message>
     <message>
         <source>There is no next disc to switch to.</source>
@@ -25411,10 +25555,6 @@ Bạn phải lưu vào thẻ nhớ và đặt lại trò chơi để xóa mọi 
     <message>
         <source>Overclock disabled.</source>
         <translation>Đã tắt ép xung.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>Đã tắt RAM 8MB.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25543,10 +25683,6 @@ Bạn phải lưu vào thẻ nhớ và đặt lại trò chơi để xóa mọi 
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>Dung sai hình học PGXP không ở giá trị mặc định. Điều này có thể gây lỗi kết xuất.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Đang bật RAM 8MB, có thể không tương thích với một số trò chơi.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>

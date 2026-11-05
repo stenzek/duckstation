@@ -3753,6 +3753,16 @@ Current Binding: %s</source>
         <translation>控制快进时本机播放的音频音量。</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>菜单音量</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>控制大视画界面和成就通知的音效音量。</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>静音全部声音</translation>
@@ -9042,20 +9052,8 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>启用主频控制 (超频/降频)</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>重新编译器 (最快)</translation>
-    </message>
-    <message>
-        <source>Auto-Detect</source>
-        <translation>自动检测</translation>
-    </message>
-    <message>
         <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
         <translation>无论活动区域如何，均使用所选的帧计时。此功能可用于强制PAL游戏以60Hz运行，NTSC游戏以50Hz运行。对于大多数速度与帧率相关的游戏，这将导致游戏运行速度大约快或慢17%。对于可变帧率的游戏，它可能不会影响速度。</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。游戏必须使用更大的堆大小才能使用这些额外的内存。依赖于内存镜像的游戏可能无法正常运行，因此应仅与兼容的mod配合使用。</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
@@ -9072,6 +9070,18 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>以快进方式通过记忆卡访问，包括加载和保存。可以减少频繁访问记忆卡的游戏的等待时间。</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>已安装 RAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>更改模拟主机安装的 RAM 容量。游戏必须使用更大的堆，才能利用扩展 RAM。依赖内存镜像的游戏可能会出错，因此仅应在使用兼容的模组时启用。</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>映射所有已安装的 RAM，忽略 BIOS 或游戏配置的容量。零售版 BIOS 仅映射 8MB，因此在不修改 BIOS 的情况下，要使用 16MB RAM 就需要启用此选项。仅在安装了扩展 RAM 时生效。</translation>
     </message>
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
@@ -9092,10 +9102,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>CPU Emulation</source>
         <translation>CPU模拟</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>启用8MB内存 (开发型游戏机)</translation>
     </message>
     <message>
         <source>Region</source>
@@ -9226,6 +9232,14 @@ This warning will only be shown once.</source>
         <translation>帧率:</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>已安装 RAM：</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>强制映射全部 RAM</translation>
+    </message>
+    <message>
         <source>Ignore Drive Subcode</source>
         <translation>忽略驱动器子码</translation>
     </message>
@@ -9304,6 +9318,10 @@ This warning will only be shown once.</source>
         <translation>宏</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>绑定全部输入</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>清除映射</translation>
     </message>
@@ -9334,6 +9352,10 @@ This warning will only be shown once.</source>
     <message>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>绑定全部输入 - 端口 %1</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -12024,6 +12046,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>黑曜</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>提高投影后 PGXP 数据的精度。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置。</translation>
+    </message>
+    <message>
         <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
         <translation>将删除当前游戏的所有非官方成就进度。此操作无法撤销。</translation>
     </message>
@@ -12080,6 +12106,10 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>依次提示您绑定此控制器的每个按钮和轴。</translation>
+    </message>
+    <message>
         <source>Automatic</source>
         <translation>自动</translation>
     </message>
@@ -12106,6 +12136,10 @@ You cannot undo this action.</source>
     <message>
         <source>BIOS Images</source>
         <translation>BIOS镜像</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>绑定所有按钮</translation>
     </message>
     <message>
         <source>Bindings</source>
@@ -12160,8 +12194,16 @@ You cannot undo this action.</source>
         <translation>更改标题</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>更改模拟主机安装的 RAM 容量。</translation>
+    </message>
+    <message>
         <source>Cheats</source>
         <translation>金手指</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>清除</translation>
     </message>
     <message>
         <source>Clear Binding</source>
@@ -12432,6 +12474,10 @@ You cannot undo this action.</source>
         <translation>退出</translation>
     </message>
     <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>强制映射全部 RAM</translation>
+    </message>
+    <message>
         <source>Frame Rate</source>
         <translation>帧率</translation>
     </message>
@@ -12440,8 +12486,16 @@ You cannot undo this action.</source>
         <translation>为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>已安装 RAM</translation>
+    </message>
+    <message>
         <source>List Icons</source>
         <translation>列表图标</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>映射所有已安装的 RAM，忽略 BIOS 或游戏配置的容量。使用零售版 BIOS 时，要使用 16MB RAM 就需要启用此选项。</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -12468,16 +12522,8 @@ You cannot undo this action.</source>
         <translation>路径</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>呈现额外帧，用于插入黑帧等效果。需要垂直同步。</translation>
-    </message>
-    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>使游戏不发出任何声音。</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>从深度值中去除各对象变换的缩放影响。可修复某些游戏中的几何体缺失问题，但会导致其他游戏出错。</translation>
     </message>
     <message>
         <source>Reset SPU On Game Start</source>
@@ -13742,10 +13788,6 @@ Error was:</source>
         <translation>5x (适合1080p)</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>启用8MB内存</translation>
-    </message>
-    <message>
         <source>Close Game</source>
         <translation>关闭游戏</translation>
     </message>
@@ -13764,10 +13806,6 @@ Error was:</source>
     <message>
         <source>No save present in this slot.</source>
         <translation>此档位中没有存档。</translation>
-    </message>
-    <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>提高投影后的PGXP数据精度。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -14012,10 +14050,6 @@ Error was:</source>
     <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>提前模拟系统并回滚/回放以减少输入滞后。非常高的系统需求。</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。</translation>
     </message>
     <message>
         <source>Game region copied to clipboard.</source>
@@ -14642,6 +14676,10 @@ Please check your username and password, and try again.</source>
         <translation>请在下面输入您在retroachievements.org的用户名和密码。您的密码不会保存在DuckStation中，取而代之的是会生成并使用一个访问令牌。</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>呈现额外帧，用于插入黑帧等效果。</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>按下以切换</translation>
     </message>
@@ -14708,6 +14746,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>移除该控制器接口的所有绑定。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>从深度值中消除各对象变换的缩放影响。可修复某些游戏的几何体缺失问题，但会导致其他游戏出错。选择“自动”时使用游戏数据库中的设置。</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -15054,6 +15096,10 @@ Please check your username and password, and try again.</source>
         <translation>大小: </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>跳过</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>跳过重复帧显示</translation>
     </message>
@@ -15118,6 +15164,10 @@ Please check your username and password, and try again.</source>
         <translation>启动应用程序时进入大视画模式，而非桌面界面。</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>第 {} 步，共 {} 步</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>将当前设置存储到控制器预置。</translation>
     </message>
@@ -15168,10 +15218,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Time Played: </source>
         <translation>游玩时长: </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>将在{}后超时…</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -15866,12 +15912,16 @@ Do you want to {1} anyway?</source>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM 容量：</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>禁用宽屏渲染</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>启用8MB内存</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>强制映射全部 RAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16215,11 +16265,6 @@ Are you sure you want to continue?</source>
         <translation>强制PGXP处于CPU模式</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>归一化 PGXP 深度</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制重编译器ICache</translation>
@@ -16305,10 +16350,6 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP perspective correct colors disabled.</source>
         <translation>PGXP透视校正颜色已禁用。</translation>
-    </message>
-    <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP保留投影精度已禁用。</translation>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
@@ -16401,6 +16442,14 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
         <translation>此游戏需要PGXP的CPU模式，但该模式已禁用。这可能会导致渲染错误。</translation>
+    </message>
+    <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP 保留投影精度的设置与游戏数据库中的设置不同。这可能导致渲染错误。</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP 深度归一化的设置与游戏数据库中的设置不同。这可能导致渲染错误。</translation>
     </message>
     <message>
         <source>Please configure a supported controller from the following list:</source>
@@ -16517,6 +16566,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>PGXP 深度偏移</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP 深度归一化</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -17304,6 +17357,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>深度清除阈值:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>保留投影精度：</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>归一化深度缩放：</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>透视校正纹理</translation>
     </message>
@@ -17792,10 +17853,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>提高多边形剔除的精度，减少几何图形中孔的数量。需要启用几何校正。</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>提高投影后的PGXP数据精度。可以改善某些游戏的视觉效果。</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>使用2D多边形的原设分辨率坐标，而不是精确坐标。可以修复某些游戏中未对齐的UI，但除此之外应保持禁用状态。游戏数据库会在需要时自动启用。</translation>
     </message>
@@ -17818,6 +17875,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
         <translation>将隔行渲染中的跳行缩放到内部分辨率。这会使梳齿状瑕疵在较高分辨率下不那么明显。通常可以安全启用。</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>从深度值中消除各对象变换的缩放影响。对于通过变换缩小远处对象的游戏，可修复使用深度缓冲区时出现的几何体缺失问题，但会导致通过变换缩放模型的游戏出错。同时将其应用于纹理校正，还可修复缩放比例不同的对象交界处的纹理扭曲。选择“自动”时使用游戏数据库中的设置，若数据库中无相应设置则禁用。</translation>
     </message>
     <message>
         <source>Default</source>
@@ -17896,16 +17957,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>让每个多边形比之前绘制的多边形更靠近摄像机，偏移量以深度的百万分之一为单位。较高的数值可减少贴花和阴影的闪烁，但可能使多边形透过其前方的表面显现出来。</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>提高投影后 PGXP 数据的精度。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置，若数据库中无相应设置则禁用。</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>对所有指令使用PGXP，而不仅是内存操作。某些游戏需要此功能才能通过PGXP校正抖动，但性能开销很高。“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>使用屏幕空间中的顶点位置获取精确位置，而不是跟踪内存访问。可使某些游戏兼容PGXP，但&lt;strong&gt;通常没有益处。&lt;/strong&gt;“自动”仅会为游戏数据库中标记为需要此功能的游戏启用。</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>从深度值中去除各对象变换的缩放影响。对于会缩小远处对象变换矩阵的游戏，可修复使用深度缓冲区时出现的几何体缺失问题；但会导致通过变换缩放模型的游戏出错。游戏数据库会在需要时自动启用此选项。</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18821,6 +18882,41 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;上级目录&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>绑定全部输入</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>第 1 步，共 1 步</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>绑定</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>清除</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>跳过</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>第 %1 步，共 %2 步</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>请按下按钮或移动控制轴。</translation>
     </message>
 </context>
 <context>
@@ -23709,6 +23805,26 @@ Do you want to create this directory?</source>
         <translation>非PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB（零售版主机）</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB（街机主板）</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB（开发版主机）</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB（模组/街机主板）</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>解释器 (最慢)</translation>
@@ -23897,6 +24013,26 @@ Do you want to create this directory?</source>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>真彩色 (全)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>禁用</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>仅深度缓冲区</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>深度缓冲区和纹理校正</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25173,11 +25309,6 @@ Are you sure you want to continue?</source>
         <translation>强制帧计时</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB内存</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>金手指</translation>
@@ -25220,6 +25351,10 @@ Using current CD image, this may result in instability.</source>
         <translation>路径: {0}
 错误: {1}
 使用当前的光盘映像，这可能会导致不稳定。</translation>
+    </message>
+    <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM 容量已设为默认值。</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
@@ -25284,6 +25419,11 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     <message>
         <source>There is no previous disc to switch to.</source>
         <translation>没有上一张光盘可切换。</translation>
+    </message>
+    <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>扩展 RAM</translation>
     </message>
     <message>
         <source>There is no next disc to switch to.</source>
@@ -25425,10 +25565,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>超频已禁用。</translation>
     </message>
     <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB内存已禁用。</translation>
-    </message>
-    <message>
         <source>Resolution scale set to 1x.</source>
         <translation>分辨率比例设置为1x。</translation>
     </message>
@@ -25525,6 +25661,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
         <translation>已禁用游戏启动时重置SPU。</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>已启用扩展 RAM，这可能与某些游戏不兼容。</translation>
+    </message>
+    <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM子通道Q偏斜已启用。这会破坏游戏。</translation>
     </message>
@@ -25571,10 +25711,6 @@ Using shared card instead.</source>
     <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>纹理坐标放大取整已启用。这可能会导致渲染错误。</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB内存已启用，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
         <source>Failed to save resume state: {}</source>

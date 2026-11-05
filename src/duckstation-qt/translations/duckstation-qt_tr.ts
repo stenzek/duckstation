@@ -3753,6 +3753,16 @@ Mevcut Atama: %s</translation>
         <translation>İleri sarma işlemi sırasında çalınacak sesin şiddetini ayarlar.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Menü Ses Şiddeti</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Büyük Resim arayüzünün ve başarım bildirimlerinin ses efektlerinin şiddetini kontrol eder.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Tüm Sesleri Sustur</translation>
@@ -9010,10 +9020,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Bölge:</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RAM&apos;i Etkinleştir (Geliştirici Konsolu)</translation>
-    </message>
-    <message>
         <source>CPU Emulation</source>
         <translation>CPU Emülasyonu</translation>
     </message>
@@ -9044,6 +9050,14 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Fast Forward Memory Card Access</source>
         <translation>Hafıza Kartı Yazma/Okuma Hızlandırması</translation>
+    </message>
+    <message>
+        <source>Installed RAM:</source>
+        <translation>Takılı RAM:</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
@@ -9130,10 +9144,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Bölge</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Oto-Algıla</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Konsolun Bölgesini Seçer.</translation>
     </message>
@@ -9156,10 +9166,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Execution Mode</source>
         <translation>Yürütme Modu</translation>
-    </message>
-    <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Yeniden Derleyici (En Hızlı)</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9194,10 +9200,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Emüle edilen CPU&apos;nun komutları önbelleğine getirmesi gerektiğinde yeniden derleyicilerde oluşacak beklemeleri simüle eder. Küçük bir performans kaybı karşılığında oyunların gerçek konsoldaki kare hızlarına daha yakın çalışmasını sağlar. Yorumlayıcı modu komut önbelleğini her zaman simüle eder.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Genellikle geliştirme konsollarında bulunan toplam 2+6 = 8 MB RAM&apos;e ulaşmak için ek 6 MB RAM&apos;i etkinleştirir. Bu ek RAM&apos;in kullanılabilmesi için oyunların daha büyük bir yığın (heap) boyutu kullanması gerekir. Bellek aynalamaya dayanan oyunlar bozulabilir; bu nedenle yalnızca uyumlu modlarla kullanılmalıdır.</translation>
-    </message>
-    <message>
         <source>Preload Image to RAM</source>
         <translation>CD&apos;yi RAM&apos;a Kopyala</translation>
     </message>
@@ -9208,6 +9210,18 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>CD-ROM Read Speedup</source>
         <translation>CD-ROM Okuma Hızlandırma</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>Takılı RAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Öykünülen konsolda takılı RAM miktarını değiştirir. Genişletilmiş RAM’in kullanılabilmesi için oyunların daha büyük bir öbek alanı kullanması gerekir. Bellek yansıtmalarına bağımlı oyunlar düzgün çalışmayabilir; bu nedenle yalnızca uyumlu modlarla kullanılmalıdır.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>BIOS veya oyun tarafından yapılandırılan boyuttan bağımsız olarak takılı RAM’in tamamını adres alanına eşler. Perakende BIOS’ları yalnızca 8 MB eşlediğinden, yamalı bir BIOS olmadan 16 MB’ın kullanılabilmesi için bu seçenek gereklidir. Yalnızca genişletilmiş RAM takılıyken etkili olur.</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
@@ -9312,6 +9326,10 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
         <translation>Otomatik Tuş Atama</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Tümünü Ata</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Tuş Atamalarını Sil</translation>
     </message>
@@ -9322,6 +9340,10 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     <message>
         <source>No devices available</source>
         <translation>Cihaz Yok</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Tümünü Ata - Bağlantı Noktası %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11824,10 +11846,6 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>Sıralamaya Yeni Efekt/Shader ekler.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Yansıtma işleminden sonra PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görselleri iyileştirebilir.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>Gelişmiş Ayarlar</translation>
     </message>
@@ -12444,10 +12462,6 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Emülasyon Hızı</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8 Megabayt RAM Aç</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Başarımları Etkinleştir</translation>
     </message>
@@ -12510,10 +12524,6 @@ Bu işlemi geri alamazsınız.</translation>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>Veri hizalama ve veri yolu istisnalarını açar. Bilinen hiçbir oyunda gerekli değildir.</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Genellikle geliştirme konsollarında bulunan toplam 2+6 = 8 MB RAM&apos;e ulaşmak için ek 6 MB RAM&apos;i etkinleştirir.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -12882,10 +12892,6 @@ Hata şuydu:</translation>
         <translation>Tuş atamaları yapılmış bir kol çıkarılınca emülasyonu duraklatır.</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Siyah kare ekleme gibi efektler için ek kareler sunar. VSync gerektirir.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Aç/Kapa İçin Bas</translation>
     </message>
@@ -12944,10 +12950,6 @@ Hata şuydu:</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Bu kol portundaki atamaları siler.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Her nesnenin dönüşümündeki ölçek çarpanını derinlik değerlerinden kaldırır. Bazı oyunlarda eksik geometri sorununu düzeltir, ancak diğer oyunlarda sorunlara neden olur.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13620,10 +13622,6 @@ Hata şuydu:</translation>
     <message>
         <source>Time Played: </source>
         <translation>Oynanan Süre: </translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>{} sonra zaman aşımı...</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -14791,12 +14789,48 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>%d Kare</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Bu oyun kolunun her düğmesi ve ekseni için sırayla atama ister.</translation>
+    </message>
+    <message>
         <source>Automatic Mapping Failed</source>
         <translation>Otomatik Eşleme Başarısız</translation>
     </message>
     <message>
+        <source>Bind All Buttons</source>
+        <translation>Tüm Düğmeleri Ata</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Öykünülen konsolda takılı RAM miktarını değiştirir.</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Temizle</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
+    </message>
+    <message>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>Geri sarma için kaç kayıt tutulacağını belirler. Daha yüksek değerler daha fazla bellek gerektirir.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>Takılı RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>BIOS veya oyun tarafından yapılandırılan boyuttan bağımsız olarak takılı RAM’in tamamını adres alanına eşler. Perakende BIOS’larıyla 16 MB kullanmak için gereklidir.</translation>
+    </message>
+    <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Siyah kare ekleme gibi efektler için ek kareler sunar.</translation>
     </message>
     <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
@@ -14877,6 +14911,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Removed stage {} ({}).</source>
         <translation>Şu aşama kaldırıldı {} ({}).</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Her nesnenin dönüşümündeki ölçeğin derinlik değerleri üzerindeki etkisini kaldırır. Bazı oyunlarda görünmeyen geometriyi düzeltir, ancak diğerlerinde sorunlara yol açar. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -15239,6 +15277,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Girdi gecikmesini azaltmak için sistemi önceden simüle eder ve geri alıp yeniden oynatır. Sistem gereksinimleri çok yüksektir.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Atla</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Aynı Kareleri Göstermeyi Geç</translation>
     </message>
@@ -15321,6 +15363,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Start the console without any disc inserted.</source>
         <translation>Konsolu CD takmadan başlat.</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Adım {} / {}</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15867,12 +15913,16 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM Boyutu:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Geniş Ekran Çizimini Devre Dışı Bırak</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8 Megabayt RAM Aç</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16087,10 +16137,6 @@ Devam etmekten emin misiniz?</translation>
         <translation>PGXP perspektif düzeltmeli renkler kapatıldı.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP yansıtma hassasiyetini koruma kapatıldı.</translation>
-    </message>
-    <message>
         <source>PGXP vertex cache enabled.</source>
         <translation>PGXP köşe önbelleği açıldı.</translation>
     </message>
@@ -16280,11 +16326,6 @@ Devam etmekten emin misiniz?</translation>
         <translation>PGXP CPU Modunu Zorla</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>PGXP Derinliğini Normalleştir</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Recompiler Komut Önbelleğini Zorla</translation>
@@ -16388,6 +16429,14 @@ Devam etmekten emin misiniz?</translation>
         <translation>PGXP 2D poligonlarda kapatıldı.</translation>
     </message>
     <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP yansıtma hassasiyetini koruma ayarı, oyun veritabanındaki ayardan farklı. Bu, çizim hatalarına neden olabilir.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP derinlik normalleştirme ayarı, oyun veritabanındaki ayardan farklı. Bu, çizim hatalarına neden olabilir.</translation>
+    </message>
+    <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Bu oyun için uyumluluk ayarları uygulandı.</translation>
     </message>
@@ -16402,6 +16451,10 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>PGXP Derinlik Kaydırması</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP Derinlik Normalleştirme</translation>
     </message>
     <message>
         <source>Verifying Image</source>
@@ -17381,6 +17434,14 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>Büyütülmüş Doğrudan Renkli Dokuları Devre Dışı Bırak</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Yansıtma Hassasiyetini Koru:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Derinlik Ölçeğini Normalleştir:</translation>
+    </message>
+    <message>
         <source>Texture Replacement</source>
         <translation>Doku Değiştirme</translation>
     </message>
@@ -17789,10 +17850,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>Poligon elemenin hassasiyetini artırarak geometrideki deliklerin sayısını azaltır. Geometri düzeltmesinin etkin olması gerekir.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>2D poligonların 1x olan yani çözünürlük iyileştirmesi olmadan olan koordinatlarını kullanır. Hizası kayık arayüzleri düzeltebilir yoksa kapalı kalmalıdır. Oyun veritabanı bu ayar gerekince otomatik açar.</translation>
     </message>
@@ -17877,6 +17934,10 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>Her çokgeni, derinliğin milyonda biri cinsinden, kendisinden önce çizilen çokgenlerden daha fazla kameraya yaklaştırır. Yüksek değerler yüzey çıkartmalarının ve gölgelerin titremesini azaltır, ancak çokgenlerin önlerindeki yüzeylerin içinden görünmesine neden olabilir.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır; veritabanında bir ayar yoksa kapalıdır.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>PGXP&apos;yi yalnızca bellek işlemleri için değil, tüm komutlar için kullanır. PGXP&apos;nin bazı oyunlardaki titremeyi düzeltmesi için gereklidir, ancak performans maliyeti yüksektir. Otomatik seçeneği, oyun veritabanına göre bunu yalnızca gerekli olan oyunlarda etkinleştirir.</translation>
     </message>
@@ -17887,10 +17948,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Yarı saydam poligonlar için derinlik testini etkinleştirir. Bunlar genellikle gölgeleri içerir ve derinlik testi etkin olduğunda zeminin içine girme eğilimindedir. Bu ayardan bağımsız olarak yarı saydam poligonların derinlik yazımları devre dışıdır.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Her nesnenin dönüşümündeki ölçek çarpanını derinlik değerlerinden kaldırır. Uzaktaki nesnelerin dönüşümlerini küçülten oyunlarda derinlik arabelleği kullanılırken oluşan eksik geometri sorununu düzeltir, ancak modelleri dönüşüm yoluyla ölçekleyen oyunlarda sorunlara neden olur. Oyun veritabanı gerektiğinde bunu otomatik olarak etkinleştirir.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18047,6 +18104,10 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
         <translation>Geçmeli karelerin sisteminizde gösterilmek üzere aşamalı karelere dönüştürülmesinde kullanılacak algoritmayı belirler. Aşamalı çizim en iyi görüntü kalitesini sağlar, ancak bazı oyunlar geçmeli çizim gerektirir.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Her nesnenin dönüşümündeki ölçeğin derinlik değerleri üzerindeki etkisini kaldırır. Uzaktaki nesnelerin dönüşümlerini küçülten oyunlarda derinlik arabelleği kullanılırken oluşan görünmeyen geometri sorununu düzeltir, ancak modelleri dönüşüm yoluyla ölçekleyen oyunlarda sorunlara yol açar. Bu işlemin doku düzeltmesine de uygulanması, farklı ölçeklerdeki nesnelerin birleştiği yerlerdeki doku bozulmalarını giderir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır; veritabanında bir ayar yoksa kapalıdır.</translation>
     </message>
     <message>
         <source>%1x MSAA</source>
@@ -18822,6 +18883,41 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Üst Dizin&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Tümünü Ata</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Adım 1 / 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Atama</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Temizle</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Atla</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>İptal</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Adım %1 / %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Şimdi bir düğmeye basın veya bir ekseni hareket ettirin.</translation>
     </message>
 </context>
 <context>
@@ -23710,6 +23806,26 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>PS1-Dışı</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (Perakende Konsol)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (Arcade Kartları)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Geliştirme Konsolu)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Modlar/Arcade Kartları)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Yorumlayıcı (En Yavaş)</translation>
@@ -23898,6 +24014,26 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Kaliteli Renk (Tam)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Otomatik</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Kapalı</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Yalnızca Derinlik Arabelleği</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Derinlik Arabelleği ve Doku Düzeltmesi</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25210,10 +25346,6 @@ SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
         <translation>Büyütülmüş Kaplama Koordinatlarını Yuvarlama açıldı. Bu çizim hatalarına sebep olabilir.</translation>
     </message>
     <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB RAM açıldı. Bu bazı oyunlarla uyumsuz olabilir.</translation>
-    </message>
-    <message>
         <source>CPU Overclock</source>
         <comment>Taint</comment>
         <translation>İşlemci Hız Aşırtma</translation>
@@ -25232,11 +25364,6 @@ SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
         <translation>Kare Zamanlamalarını Zorla</translation>
-    </message>
-    <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB RAM</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -25265,12 +25392,21 @@ SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
         <translation>Bir önceki CD yok değiştirmeye.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Genişletilmiş RAM</translation>
+    </message>
+    <message>
         <source>There is no next disc to switch to.</source>
         <translation>Bir sonraki CD yok değiştirmeye.</translation>
     </message>
     <message>
         <source>No disc found for serial {}.</source>
         <translation>Şu seri no için CD bulunamadı {}.</translation>
+    </message>
+    <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM boyutu varsayılana ayarlandı.</translation>
     </message>
     <message>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
@@ -25426,10 +25562,6 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
         <translation>Hız aşırtma kapatıldı.</translation>
     </message>
     <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB RAM Kapatıldı.</translation>
-    </message>
-    <message>
         <source>Resolution scale set to 1x.</source>
         <translation>Çözünürlük ayarı 1x&apos;e ayarlandı.</translation>
     </message>
@@ -25532,6 +25664,10 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP Geometri Toleransı varsayılana ayarlanmamış. Bu, çizim hatalarına neden olabilir.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Genişletilmiş RAM etkin. Bu, bazı oyunlarla uyumsuz olabilir.</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>

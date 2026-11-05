@@ -3778,6 +3778,16 @@ Cari Bağlama: %s</translation>
         <translation>Sürətli irəliləyiş zamanı yiyədə çıxan səsin ucalığını yönəldir.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Menyu Səsinin Ucalığı</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Böyük Ekran Rejiminin interfeysində və uğur bildirişlərində səsləndirilən səs effektlərinin ucalığını tənzimləyir.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Bütün Səsləri Susdur</translation>
@@ -9050,6 +9060,10 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
         <translation>Kadr Tezliyi:</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>Quraşdırılmış RAM:</translation>
+    </message>
+    <message>
         <source>Fast Boot</source>
         <translation>Sürətli Başlayış</translation>
     </message>
@@ -9062,8 +9076,8 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
         <translation>Sürətli İrəliləyiş Başlayışı</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>8MB RGY&apos;ni Qoş (Gəl Konsolu)</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Bütün RAM-ın ünvanlanmasını məcbur et</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -9162,10 +9176,6 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
         <translation>Bölgə</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Özü-Bəlirləmə</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Yamsılanmış qurğu biçimini bəlirləyir.</translation>
     </message>
@@ -9190,20 +9200,24 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
         <translation>Sürətli başlanış zamanı erkən yükləniş işləmindən sürətlə keçir, vaxt qazandırır. Nəticə oyunlara görə dəyişə bilər.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Toplam 2+6 = 8MB əldə etmək üçün artıq 6MB RGY (RAM) qoşur, adətən gəliştirmə konsollarında olur. Oyunlar bu artıq RGY&apos;nin yararlı olması üçün böyük yığın ölçüsü işlətməlidir. Yaddaş güzgülənişinə yastlanan başlıqlar sına bilər, odur ki o ancaq uyumlu modlarla işlədilməlidir.</translation>
-    </message>
-    <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Yaddaş kartı girişindən sürətlə keçir, yüklənişdən də, qorunuşdan da. Tez-tez yaddaş kartına yönələn oyunlarda gözləmə vaxtlarını azalda bilər.</translation>
     </message>
     <message>
-        <source>Execution Mode</source>
-        <translation>Yerinə Yetirmə Durumu</translation>
+        <source>Installed RAM</source>
+        <translation>Quraşdırılmış RAM</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Təkrar Dərləyici (Ən Sürətli)</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Emulyasiya olunan konsolda quraşdırılmış RAM miqdarını dəyişir. Genişləndirilmiş RAM-dan istifadə etmək üçün oyunlar daha böyük dinamik yaddaş sahəsi (heap) işlətməlidir. Yaddaş güzgülərindən asılı olan oyunların işi pozula bilər, buna görə bu seçim yalnız uyğun modlarla işlədilməlidir.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>BIOS və ya oyunun təyin etdiyi ölçüdən asılı olmayaraq bütün quraşdırılmış RAM-ı ünvanlayır. Pərakəndə konsolların BIOS-ları yalnız 8MB ünvanladığı üçün BIOS-a yamaq tətbiq etmədən 16MB-dan istifadə etmək üçün bu seçim lazımdır. Yalnız genişləndirilmiş RAM quraşdırıldıqda təsir göstərir.</translation>
+    </message>
+    <message>
+        <source>Execution Mode</source>
+        <translation>Yerinə Yetirmə Durumu</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9348,6 +9362,10 @@ Bu uyarım ancaq bir dəfə göstəriləcək.</translation>
         <translation>Özbaşına Xəritələniş</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Hamısını təyin et</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Xəritələnişi Təmizlə</translation>
     </message>
@@ -9366,6 +9384,10 @@ Bu uyarım ancaq bir dəfə göstəriləcək.</translation>
     <message>
         <source>No devices available</source>
         <translation>Əlçatan qurğu yoxdur</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Hamısını təyin et - Port %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11915,10 +11937,6 @@ Sıfırla&apos;nın tıqlanışı disk görünüşündən daranmış seriyanı �
         <translation>Zəncirə yeni kölgələndirici artırır.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP verilən sonrakı-proyeksiyasına artıq kəsinlik artırır. Bir sıra oyunda görüntünü gəliştirə bilər.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>Gəlişmiş Quruluşlar</translation>
     </message>
@@ -11997,6 +12015,10 @@ You cannot undo this action.</source>
         <translation>Varsayılan quruluşları qaytarmaq istədiyinizdən əminsiniz? Bütün üstünlüklər yox ediləcək.
 
 Bu eyləm qayıdışsızdır.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Bu idarəedicinin hər düyməsi və oxu üçün növbə ilə giriş istəyir.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -12131,6 +12153,10 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Davranış</translation>
     </message>
     <message>
+        <source>Bind All Buttons</source>
+        <translation>Bütün düymələri təyin et</translation>
+    </message>
+    <message>
         <source>Border Overlay</source>
         <translation>Çərçivə Qaplaması</translation>
     </message>
@@ -12223,6 +12249,10 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Uyğulama üçün quruluşları dəyişir.</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Emulyasiya olunan konsolda quraşdırılmış RAM miqdarını dəyişir.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>Konsolun ekrana çıxarışını göstərmək üçün işlədilən en-uzunluq oranını dəyişir.</translation>
     </message>
@@ -12237,6 +12267,10 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Clean Boot</source>
         <translation>Təmiz Başlanış</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Təmizlə</translation>
     </message>
     <message>
         <source>Clear Binding</source>
@@ -12695,10 +12729,6 @@ Bu eyləm qayıdışsızdır.</translation>
         <translation>Yamsılanış Sürəti</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB RAM&apos;ı Qoş</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Uğurları Qoş</translation>
     </message>
@@ -12805,10 +12835,6 @@ Bu eyləm qayıdışsızdır.</translation>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>Düzləniş və ötürüşçü istisnalarını qoşur. Bilinən heç bir oyun üçün gərəkli deyil.</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Toplamda 2+6 = 8MB üçün RGY&apos;yə (RAM) artıq 6MB qoşur, adətən gəliştiriliş konsollarında olur.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -12975,6 +13001,10 @@ Yanlış:</translation>
     <message>
         <source>Force 4:3 For FMVs</source>
         <translation>FMV üçün 4:3&apos;ü gücəndir</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Bütün RAM-ın ünvanlanmasını məcbur et</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -13197,6 +13227,10 @@ Yanlış:</translation>
         <translation>BIOS Quraşdır</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Quraşdırılmış RAM</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Arayüz Quruluşları</translation>
     </message>
@@ -13379,6 +13413,10 @@ Yanlış: {}
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Kiçik görülüş bahasına oyunları konsol kadr tezliyinə daha yaxın çalışdırır.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>BIOS və ya oyunun təyin etdiyi ölçüdən asılı olmayaraq bütün quraşdırılmış RAM-ı ünvanlayır. Pərakəndə konsolların BIOS-ları ilə 16MB-dan istifadə etmək üçün lazımdır.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -13721,6 +13759,10 @@ Yanlış: {}
         <translation>Dəyişdiriliş Toxumalarını Öncədən Yüklə</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Qara kadr əlavə etmə kimi effektlər üçün əlavə kadrlar göstərir.</translation>
+    </message>
+    <message>
         <source>Preserve Projection Precision</source>
         <translation>Proyeksiya Kəsinliyini Qoru</translation>
     </message>
@@ -13835,6 +13877,10 @@ Yanlış: {}
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Bu yönəldən girişi üçün bütün bağlanışlarını silir.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Hər obyektin çevrilməsindəki miqyasın təsirini dərinlik dəyərlərindən çıxarır. Bəzi oyunlarda görünməyən həndəsi elementləri düzəldir, lakin digərlərinin işini pozur. Özbaşına seçimi oyun verilənlər bazasının quruluşunu işlədir.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -14345,6 +14391,10 @@ Yanlış: {}
         <translation>Ölçü: </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Ötür</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>İkiləniş Kadr Görünüşünü Burax</translation>
     </message>
@@ -14841,6 +14891,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Uğur Açılışları Onaylanmayıb</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Proyeksiyadan sonra PGXP verilənlərinin dəqiqliyini artırır. Bəzi oyunlarda görüntünü yaxşılaşdıra bilər. Özbaşına seçimi oyun verilənlər bazasının quruluşunu işlədir.</translation>
+    </message>
+    <message>
         <source>Advanced Display Options</source>
         <translation>Gəlişmiş Ekran Seçimləri</translation>
     </message>
@@ -15169,10 +15223,6 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Simgəcikləri Önal</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Qara kadr əlavə etmə kimi effektlər üçün əlavə kadrlar göstərir. VSync tələb edir.</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Başqa uyğulama işlək ikən girilişlərin işləmini dayandırır.</translation>
     </message>
@@ -15199,10 +15249,6 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>Refresh Achievement Progress</source>
         <translation>Uğur İrəliləyişini Yenilə</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Hər obyektin çevrilməsindəki miqyası dərinlik dəyərlərindən çıxarır. Bəzi oyunlarda həndəsi elementlərin görünməməsi problemini həll edir, lakin digər oyunlarda problemlər yaradır.</translation>
     </message>
     <message>
         <source>Reset SPU On Game Start</source>
@@ -15361,6 +15407,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Tətbiqi masaüstü interfeysi əvəzinə Böyük Ekran Rejimində başladır.</translation>
     </message>
     <message>
+        <source>Step {} of {}</source>
+        <translation>Addım {} / {}</translation>
+    </message>
+    <message>
         <source>Subframes</source>
         <translation>Alt Kadrlar</translation>
     </message>
@@ -15375,10 +15425,6 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>DuckStation bu oyunu daramayıb. Bir sıra işləyişlik əlçatmazdır.</translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>Vaxt limiti {} sonra bitir...</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -15913,12 +15959,16 @@ Yenə də {1} istəyirsiniz?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM ölçüsü:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Geniş Ekran İşlənişini Söndür</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB RAM&apos;ı Qoş</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Bütün RAM-ın ünvanlanmasını məcbur et</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16261,11 +16311,6 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
         <translation>PGXP OİB Durumunu Gücəndir</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>PGXP Dərinliyini Normallaşdır</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Təkrar Dərləyicinin Təlimat Önyaddaşını Məcburi Qoş</translation>
@@ -16425,10 +16470,6 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
         <translation>PGXP 2D poliqonlarda qoşulmayıb.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>PGXP proyeksiya kəsinliyinin qorunuşu qoşulmayıb.</translation>
-    </message>
-    <message>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>Uyumluluq quruluşları bu oyun üçün uyğunlandı.</translation>
     </message>
@@ -16455,6 +16496,14 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
     <message>
         <source>Settings</source>
         <translation>Quruluşlar</translation>
+    </message>
+    <message>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP proyeksiya dəqiqliyinin qorunması oyun verilənlər bazasının quruluşundan fərqlənir. Bu, görüntünün yaradılmasında xətalara səbəb ola bilər.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP dərinlik normallaşdırması oyun verilənlər bazasının quruluşundan fərqlənir. Bu, görüntünün yaradılmasında xətalara səbəb ola bilər.</translation>
     </message>
     <message>
         <source>Serial</source>
@@ -16571,6 +16620,10 @@ Hiylələri indi qoşmaq istəyirsiniz?</translation>
     <message>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP Dərinliyin Təmizlənmə Eşiyi</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP dərinlik normallaşdırması</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17389,6 +17442,14 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Uc Önyaddaşı:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Proyeksiya dəqiqliyini qoru:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Dərinlik miqyasını normallaşdır:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Perspektivi Düzgün Toxumalar</translation>
     </message>
@@ -17789,16 +17850,16 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Hər çoxbucaqlını ondan əvvəl çəkilmiş çoxbucaqlılara nisbətən kameraya daha yaxın gətirir; yaxınlaşma dərinliyin milyonda biri vahidləri ilə ölçülür. Daha yüksək dəyərlər səth təsvirlərinin və kölgələrin titrəməsini azaldır, lakin ön səthlərin arxasında qalmalı olan çoxbucaqlıların görünməsinə səbəb ola bilər.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Proyeksiyadan sonra PGXP verilənlərinin dəqiqliyini artırır. Bəzi oyunlarda görüntünü yaxşılaşdıra bilər. Özbaşına seçimi oyun verilənlər bazasının quruluşunu işlədir; bazada bu quruluş yoxdursa, söndürülür.</translation>
+    </message>
+    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost. Automatic enables it only for games that require it according to the game database.</source>
         <translation>Yalnız yaddaş əməliyyatları üçün deyil, bütün təlimatlar üçün PGXP işlədir. Bəzi oyunlarda PGXP-nin titrəməni düzəltməsi üçün gərəklidir, lakin performansa böyük mənfi təsiri var. Özbaşına seçim bunu oyun verilənlər bazasına görə yalnız ehtiyacı olan oyunlarda qoşur.</translation>
     </message>
     <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Yaddaşa girişləri izləmək əvəzinə dəqiq mövqelər əldə etmək üçün ekran fəzasındakı uc mövqelərindən istifadə edir. Bəzi oyunlarda PGXP uyğunluğunu təmin edə bilər, lakin &lt;strong&gt;ümumiyyətlə heç bir fayda vermir.&lt;/strong&gt; Özbaşına seçim bunu oyun verilənlər bazasına görə yalnız ehtiyacı olan oyunlarda qoşur.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Hər obyektin çevrilməsindəki miqyası dərinlik dəyərlərindən çıxarır. Uzaq obyektlərin çevrilmələrinin miqyasını kiçildən oyunlarda dərinlik buferi ilə bağlı həndəsi elementlərin görünməməsi problemini həll edir, lakin modelləri çevrilmə vasitəsilə miqyaslandıran oyunlarda problemlər yaradır. Oyun verilənlər bazası lazım olduqda bunu avtomatik olaraq aktivləşdirəcək.</translation>
     </message>
     <message>
         <source>Wireframe Mode</source>
@@ -17889,10 +17950,6 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Poliqon ayrımının kəsinliyini artırır, həndəsədəki dəliklərin sayını azaldır. Həndəsə düzəlişinin qoşuluşu gərəklidir.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP verilən sonrakı-proyeksiyasına artıq kəsinlik artırır. Bir sıra oyunda görüntünü gəliştirə bilər.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>2D poliqonlar üçün kəsin koordinatlar yerinə, doğma çözünürlük koordinatlarını işlədir. Bir sıra oyunda dağılmış AY&apos;ni düzəldə bilər, ancaq əks halda qoşulmamalıdır. Oyun verilən bazası gərəkdiyində onu özü qoşacaq.</translation>
     </message>
@@ -17907,6 +17964,10 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
         <translation>Toxuma dəyişdirilişi üçün gərəkli olan qonaq toxumaların önyaddaşlanışını qoşur. &lt;strong&gt;Toxuma önyaddaşı hazırda təcrübə mərhələsindədir, və bir sıra oyunda işləniş yanlışları yaşada bilər.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Hər obyektin çevrilməsindəki miqyasın təsirini dərinlik dəyərlərindən çıxarır. Uzaqdakı obyektlərin çevrilmələrini kiçildən oyunlarda dərinlik buferi ilə bağlı görünməyən həndəsi elementləri düzəldir, lakin modellərin ölçüsünü çevrilmə vasitəsilə dəyişən oyunların işini pozur. Bunu tekstura düzəlişinə də tətbiq etmək, müxtəlif miqyaslı obyektlərin birləşdiyi yerlərdə əyilmiş teksturaları düzəldir. Özbaşına seçimi oyun verilənlər bazasının quruluşunu işlədir; bazada bu quruluş yoxdursa, söndürülür.</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -18880,6 +18941,41 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
     <message>
         <source>Extracting {}...</source>
         <translation>{} Çıxarılır...</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Hamısını təyin et</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Addım 1 / 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Təyin etmə</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Təmizlə</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Ötür</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Ləğv et</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Addım %1 / %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>İndi bir düyməyə basın və ya oxu hərəkət etdirin.</translation>
     </message>
 </context>
 <context>
@@ -23771,6 +23867,26 @@ Bu qovluğu yaratmaq istəyirsiniz?</translation>
         <translation>PS1-olmayan</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (Pərakəndə konsol)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (Arkada lövhələri)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Tərtibatçı konsolu)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Modlar/Arkada lövhələri)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Çevirici (Ən Yavaş)</translation>
@@ -23959,6 +24075,26 @@ Bu qovluğu yaratmaq istəyirsiniz?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Gerçək Rəng (Tam)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Özbaşına</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Qoşulmayıb</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Yalnız dərinlik buferi</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Dərinlik buferi və tekstura düzəlişi</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25226,11 +25362,6 @@ Bu, GİB&apos;inizin seçilmiş işlənişçini ({1}) dəstəkləmədiyindən ol
         <translation>Kadr Zamanlanışlarını Gücəndir</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8MB RGY</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Hiylələr</translation>
@@ -25358,10 +25489,6 @@ SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</trans
         <translation>PGXP Həndəsə Dözümü varsayılana qurulmayıb. Bu, işləniş yanlışları yarada bilər.</translation>
     </message>
     <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB RGY (RAM) qoşulub, bu bir sıra oyunla uyumsuz ola bilər.</translation>
-    </message>
-    <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>Önyaddaşlı çevirici işlədiləcək, bu bir sıra oyunla uyumsuz ola bilər.</translation>
     </message>
@@ -25400,10 +25527,6 @@ SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</trans
     <message>
         <source>Overclock disabled.</source>
         <translation>Saataşımı qoşulmayıb.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB RGY qoşulmayıb.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25558,6 +25681,11 @@ SBI faylının adı disk görünüşünün adı ilə uyğun gəlməlidir.</trans
         <translation>Oyun-başı kart yerinə diskə özəl yaddaş kartı &apos;{}&apos; işlədilir.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Genişləndirilmiş RAM</translation>
+    </message>
+    <message>
         <source>Memory Card Mismatch</source>
         <comment>Taint</comment>
         <translation>Yaddaş Kartı Uyğunsuzluğu</translation>
@@ -25657,6 +25785,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
 Bütün etkiləri silmək üçün yaddaş kartına qorumalı və oyunu sıfırlamalısınız.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM ölçüsü standart dəyərə qaytarıldı.</translation>
+    </message>
+    <message>
         <source>Wireframe rendering disabled.</source>
         <translation>Tel-çərçivə işlənişi qoşulmayıb.</translation>
     </message>
@@ -25667,6 +25799,10 @@ Bütün etkiləri silmək üçün yaddaş kartına qorumalı və oyunu sıfırla
     <message>
         <source>Texture modulation cropping disabled.</source>
         <translation>Toxuma modulyasiyası qırpımı qoşulmayıb.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Genişləndirilmiş RAM qoşulub, bu, bəzi oyunlarla uyğunsuz ola bilər.</translation>
     </message>
     <message>
         <source>One or more unsafe settings is enabled.</source>

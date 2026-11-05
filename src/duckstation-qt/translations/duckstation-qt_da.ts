@@ -3537,6 +3537,16 @@ Aktuel tildeling: %s</translation>
         <translation>ADVARSEL: Dit spil er stadig ved at gemme på et hukommelseskort. Hvis du fortsætter nu, kan data blive beskadiget. Vi anbefaler, at du genoptager spillet og venter 5 sekunder, før du prøver igen.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Menulydstyrke</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Styrer lydstyrken for lydeffekter fra Big Picture-grænsefladen og præstationsmeddelelser.</translation>
+    </message>
+    <message>
         <source>Do you want to close the game anyway?</source>
         <comment>emulation_menu_safety_check_close_game</comment>
         <translation>Vil du lukke spillet alligevel?</translation>
@@ -9050,6 +9060,10 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
         <translation>Billedhastighed:</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>Installeret RAM:</translation>
+    </message>
+    <message>
         <source>Fast Boot</source>
         <translation>Hurtig opstart</translation>
     </message>
@@ -9062,8 +9076,8 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
         <translation>Hurtig fremspoling ved opstart</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Aktivér 8 MB RAM (udviklingskonsol)</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Gennemtving fuld RAM-adressekortlægning</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -9170,10 +9184,6 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
         <translation>Region</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Registrér automatisk</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Bestemmer den emulerede hardwaretype.</translation>
     </message>
@@ -9202,16 +9212,20 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
         <translation>Spoler hurtigt gennem adgang til hukommelseskort, både ved indlæsning og lagring. Kan reducere ventetiden i spil, der ofte tilgår hukommelseskort.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Aktiverer yderligere 6 MB RAM, så der i alt er 2+6 = 8 MB, hvilket normalt findes på udviklingskonsoller. Spil skal bruge en større heapstørrelse, for at denne ekstra RAM kan bruges. Titler, der afhænger af hukommelsesspejlinger, kan fejle, så dette bør kun bruges med kompatible modifikationer.</translation>
-    </message>
-    <message>
         <source>Execution Mode</source>
         <translation>Udførelsestilstand</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Rekompiler (hurtigst)</translation>
+        <source>Installed RAM</source>
+        <translation>Installeret RAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Ændrer mængden af RAM installeret i den emulerede konsol. Spil skal bruge en større heap, for at den udvidede RAM kan udnyttes. Spil, der er afhængige af hukommelsesspejling, kan holde op med at fungere, så indstillingen bør kun bruges med kompatible modifikationer.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Kortlægger al installeret RAM i adresseområdet, uanset den størrelse, som BIOS eller spillet har konfigureret. BIOS-versioner til almindelige konsoller kortlægger kun 8 MB, så dette er nødvendigt for at kunne bruge 16 MB uden en modificeret BIOS. Har kun effekt, når udvidet RAM er installeret.</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9348,6 +9362,10 @@ Denne advarsel vises kun én gang.</translation>
         <translation>Automatisk tildeling</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Tilknyt alle</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Ryd tildelinger</translation>
     </message>
@@ -9366,6 +9384,10 @@ Denne advarsel vises kun én gang.</translation>
     <message>
         <source>No devices available</source>
         <translation>Ingen enheder tilgængelige</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Tilknyt alle - Port %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11999,10 +12021,6 @@ Vil du slette den gemte tilstand og starte spillet alligevel?</translation>
         <translation>Tilføjer en ny shader til kæden.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Giver PGXP-data større præcision efter projektion. Kan forbedre grafikken i visse spil.</translation>
-    </message>
-    <message>
         <source>Advanced Display Options</source>
         <translation>Avancerede visningsindstillinger</translation>
     </message>
@@ -12955,10 +12973,6 @@ Denne handling kan ikke fortrydes.</translation>
         <translation>Emuleringshastighed</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Aktivér 8 MB RAM</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Aktivér præstationer</translation>
     </message>
@@ -13071,8 +13085,24 @@ Denne handling kan ikke fortrydes.</translation>
         <translation>Aktiverer adressejusterings- og busundtagelser. Ikke nødvendigt for nogen kendte spil.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Aktiverer yderligere 6 MB RAM, så der opnås i alt 2+6 = 8 MB, som normalt findes i udviklerkonsoller.</translation>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Giver PGXP-data større præcision efter projektion. Kan forbedre grafikken i nogle spil. Automatisk bruger indstillingen fra spildatabasen.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Beder om input fra hver knap og akse på denne controller efter tur.</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Tilknyt alle knapper</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Ændrer mængden af RAM installeret i den emulerede konsol.</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Ryd</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13275,6 +13305,10 @@ Fejlen var:</translation>
     <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Gennemtving 4:3 for FMV-videoer</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Gennemtving fuld RAM-adressekortlægning</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -13557,6 +13591,10 @@ Fejlen var:</translation>
         <translation>Installér BIOS</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>Installeret RAM</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Grænsefladeindstillinger</translation>
     </message>
@@ -13751,6 +13789,10 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Får spil til at køre tættere på konsollens billedfrekvens med en mindre omkostning i ydelse.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Kortlægger al installeret RAM i adresseområdet, uanset den størrelse, som BIOS eller spillet har konfigureret. Nødvendigt for at bruge 16 MB med BIOS-versioner til almindelige konsoller.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14173,8 +14215,12 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
         <translation>Forudindlæs erstatningsteksturer</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Viser ekstra billeder til effekter såsom indsættelse af sorte billeder. Kræver VSync.</translation>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Viser ekstra billeder til effekter såsom indsættelse af sorte billeder.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Fjerner skaleringen i hvert objekts transformation fra dybdeværdierne. Retter manglende geometri i nogle spil, men får andre til at fungere forkert. Automatisk bruger indstillingen fra spildatabasen.</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -14319,10 +14365,6 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Fjerner alle tilknytninger for denne controllerport.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Fjerner skaleringen af hvert objekts transformation fra dybdeværdierne. Retter manglende geometri i nogle spil, men giver fejl i andre.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -14765,10 +14807,6 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
         <translation>Angiv omslagsbillede</translation>
     </message>
     <message>
-        <source>Timing out in {}...</source>
-        <translation>Tidsgrænsen udløber om {}...</translation>
-    </message>
-    <message>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>Angiver en tærskel, hvor præcise værdier kasseres, når den overskrides. Kan hjælpe med grafikfejl i nogle spil.</translation>
     </message>
@@ -15005,6 +15043,10 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
         <translation>Størrelse: </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Spring over</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Spring visning af identiske billeder over</translation>
     </message>
@@ -15123,6 +15165,10 @@ Kontrollér dit brugernavn og din adgangskode, og prøv igen.</translation>
     <message>
         <source>Starts the application in Big Picture Mode instead of the desktop interface.</source>
         <translation>Starter programmet i Big Picture-tilstand i stedet for skrivebordsgrænsefladen.</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Trin {} af {}</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -15913,12 +15959,16 @@ Vil du {1} alligevel?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>RAM-størrelse:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Deaktivér bredskærmsrendering</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Aktivér 8 MB RAM</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Gennemtving fuld RAM-adressekortlægning</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16266,11 +16316,6 @@ Er du sikker på, at du vil fortsætte?</translation>
         <translation>Gennemtving PGXP-CPU-tilstand</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Normaliser PGXP-dybde</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Gennemtving instruktionscache i rekompileren</translation>
@@ -16430,8 +16475,12 @@ Er du sikker på, at du vil fortsætte?</translation>
         <translation>PGXP deaktiveret på 2D-polygoner.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Bevaring af projektionspræcision i PGXP deaktiveret.</translation>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP-indstillingen for bevarelse af projektionspræcision afviger fra indstillingen i spildatabasen. Dette kan medføre renderingsfejl.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>PGXP-dybdenormaliseringen afviger fra indstillingen i spildatabasen. Dette kan medføre renderingsfejl.</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -16576,6 +16625,10 @@ Er du sikker på, at du vil fortsætte?</translation>
     <message>
         <source>PGXP Depth Bias</source>
         <translation>PGXP-dybdeforskydning</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>PGXP-dybdenormalisering</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17413,6 +17466,14 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
         <translation>Hjørnecache:</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Bevar projektionspræcision:</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Normaliser dybdeskala:</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Perspektivkorrekte teksturer</translation>
     </message>
@@ -17909,8 +17970,12 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
         <translation>Øger præcisionen ved frasortering af polygoner og reducerer antallet af huller i geometrien. Kræver aktiveret geometrikorrektion.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Giver PGXP-data større præcision efter projektion. Kan forbedre grafikken i visse spil.</translation>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Giver PGXP-data større præcision efter projektion. Kan forbedre grafikken i nogle spil. Automatisk bruger indstillingen fra spildatabasen og er ellers deaktiveret.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Fjerner skaleringen i hvert objekts transformation fra dybdeværdierne. Retter manglende geometri ved brug af dybdebufferen i spil, der formindsker transformationerne for fjerne objekter, men får spil, der skalerer modeller via transformationen, til at fungere forkert. Hvis dette også anvendes på teksturkorrektion, rettes forvrængede teksturer, hvor objekter med forskellig skalering mødes. Automatisk bruger indstillingen fra spildatabasen og er ellers deaktiveret.</translation>
     </message>
     <message>
         <source>CPU Mode</source>
@@ -17935,10 +18000,6 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Aktiverer dybdetest af halvgennemsigtige polygoner. Disse omfatter normalt skygger, som ofte skærer igennem jorden, når dybdetest er aktiveret. Skrivning af dybde for halvgennemsigtige polygoner er deaktiveret uanset denne indstilling.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Fjerner skaleringen af hvert objekts transformation fra dybdeværdierne. Retter manglende geometri med dybdebufferen i spil, som nedskalerer transformationer for fjerne objekter, men giver fejl i spil, som skalerer modeller gennem transformationen. Spildatabasen aktiverer dette automatisk, når det er nødvendigt.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18880,6 +18941,41 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Overordnet mappe&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Tilknyt alle</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Trin 1 af 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Tilknytning</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Ryd</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Spring over</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuller</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Trin %1 af %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Tryk på en knap, eller bevæg en akse nu.</translation>
     </message>
 </context>
 <context>
@@ -23786,6 +23882,26 @@ Vil du oprette denne mappe?</translation>
         <translation>Ikke-PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 MB (almindelig konsol)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 MB (arkadekort)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (udviklingskonsol)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (modifikationer/arkadekort)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Fortolker (langsomst)</translation>
@@ -23974,6 +24090,26 @@ Vil du oprette denne mappe?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Ægte farver (fuld)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Automatisk</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Deaktiveret</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Kun dybdebuffer</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Dybdebuffer og teksturkorrektion</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25262,11 +25398,6 @@ Af juridiske årsager skal du skaffe en BIOS fra en fysisk PS1-/PS2-konsol, som 
         <translation>Gennemtving billedtiming</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8 MB RAM</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Snydekoder</translation>
@@ -25443,6 +25574,14 @@ Din afbildning er ufuldstændig. Du skal tilføje SBI-filen for at køre dette s
 SBI-filens navn skal svare til diskafbildningens navn.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>RAM-størrelsen er indstillet til standardværdien.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>Udvidet RAM er aktiveret. Dette kan være inkompatibelt med visse spil.</translation>
+    </message>
+    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Skiftede til delafbildning {} ({}) i &apos;{}&apos;.</translation>
     </message>
@@ -25457,6 +25596,11 @@ SBI-filens navn skal svare til diskafbildningens navn.</translation>
     <message>
         <source>There is no previous disc to switch to.</source>
         <translation>Der er ingen forrige disk at skifte til.</translation>
+    </message>
+    <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>Udvidet RAM</translation>
     </message>
     <message>
         <source>There is no next disc to switch to.</source>
@@ -25475,10 +25619,6 @@ Du skal gemme på et hukommelseskort og genstarte spillet for at fjerne eventuel
     <message>
         <source>Overclock disabled.</source>
         <translation>Overclocking deaktiveret.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>8 MB RAM deaktiveret.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25607,10 +25747,6 @@ Du skal gemme på et hukommelseskort og genstarte spillet for at fjerne eventuel
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP-geometritolerancen er ikke sat til standard. Dette kan give renderingsfejl.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8 MB RAM er aktiveret. Dette kan være inkompatibelt med visse spil.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>

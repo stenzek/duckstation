@@ -3778,6 +3778,16 @@ Affectation actuelle : %s</translation>
         <translation>Contrôle le volume du son lu sur l&apos;hôte lors de l&apos;avance rapide.</translation>
     </message>
     <message>
+        <source>Menu Volume</source>
+        <comment>settings_menu_volume</comment>
+        <translation>Volume des menus</translation>
+    </message>
+    <message>
+        <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
+        <comment>settings_summary_menu_volume</comment>
+        <translation>Règle le volume des effets sonores de l&apos;interface Big Picture et des notifications de succès.</translation>
+    </message>
+    <message>
         <source>Mute All Sound</source>
         <comment>settings_output_muted</comment>
         <translation>Couper tout le son</translation>
@@ -9082,10 +9092,6 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Démarrage en avance rapide</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation>Activer la RAM 8MB (console de dév)</translation>
-    </message>
-    <message>
         <source>100% (33.87MHz)</source>
         <translation>100% (33.87MHz)</translation>
     </message>
@@ -9134,6 +9140,14 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Accélération de recherche :</translation>
     </message>
     <message>
+        <source>Installed RAM:</source>
+        <translation>RAM installée :</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Forcer le mappage de toute la RAM</translation>
+    </message>
+    <message>
         <source>None (Normal Speed)</source>
         <translation>Aucune (vitesse normale)</translation>
     </message>
@@ -9174,10 +9188,6 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Région</translation>
     </message>
     <message>
-        <source>Auto-Detect</source>
-        <translation>Détection automatique</translation>
-    </message>
-    <message>
         <source>Determines the emulated hardware type.</source>
         <translation>Détermine le type de matériel émulé.</translation>
     </message>
@@ -9206,10 +9216,6 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Mode d&apos;exécution</translation>
     </message>
     <message>
-        <source>Recompiler (Fastest)</source>
-        <translation>Recompilateur (le + rapide)</translation>
-    </message>
-    <message>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>Détermine comment le processeur émulé exécute les instructions.</translation>
     </message>
@@ -9236,16 +9242,24 @@ L&apos;utilisation de ce code de triche ne fonctionnera pas comme prévu. Voulez
         <translation>Simule des temps d&apos;attente dans les recompilateurs lorsque le processeur émulé doit charger des instructions dans son cache. Rapproche la fréquence d&apos;images des jeux de celle de la console, au prix d&apos;une légère baisse des performances. Le mode interpréteur simule toujours le cache d&apos;instructions.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Active 6 Mo de RAM supplémentaires pour obtenir un total de 2+6 = 8 Mo, habituellement présents sur les consoles de développement. Les jeux doivent utiliser un tas plus grand pour que cette RAM supplémentaire soit utilisable. Les titres qui s&apos;appuient sur les miroirs mémoire peuvent ne plus fonctionner ; cette option ne doit donc être utilisée qu&apos;avec des mods compatibles.</translation>
-    </message>
-    <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>Chargement de l&apos;image du jeu dans la RAM. Utile pour les chemins réseau qui peuvent devenir peu fiables pendant le jeu. Dans certains cas, élimine également les saccades lorsque les jeux lancent la lecture de la piste audio.</translation>
     </message>
     <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
         <translation>Accélère la lecture des CD-ROM selon le facteur spécifié. S&apos;applique uniquement aux lectures à double vitesse, et est ignoré lorsque le son est en cours de lecture. Peut améliorer la vitesse de chargement dans certains jeux, au prix de blocages dans d&apos;autres jeux.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <translation>RAM installée</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>Modifie la quantité de RAM installée dans la console émulée. Les jeux doivent utiliser un tas de plus grande taille pour pouvoir exploiter la RAM supplémentaire. Les titres qui dépendent des miroirs de mémoire risquent de ne plus fonctionner ; cette option ne doit donc être utilisée qu&apos;avec des mods compatibles.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
+        <translation>Mappe toute la RAM installée, quelle que soit la taille configurée par le BIOS ou le jeu. Les BIOS des consoles du commerce ne mappent que 8 Mo ; cette option est donc nécessaire pour utiliser 16 Mo sans BIOS modifié. N&apos;a d&apos;effet que si de la RAM supplémentaire est installée.</translation>
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
@@ -9350,6 +9364,10 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
         <translation>Mappage automatique</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Tout affecter</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Effacer les mappages</translation>
     </message>
@@ -9368,6 +9386,10 @@ Cet avertissement ne sera affiché qu&apos;une seule fois.</translation>
     <message>
         <source>No devices available</source>
         <translation>Pas de périphérique disponible</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Tout affecter - Port %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -11890,6 +11912,10 @@ Voulez-vous supprimer l&apos;état de sauvegarde et lancer le jeu malgré tout ?
         <translation>Active le runahead lorsque l&apos;entrée analogique change, ce qui augmente considérablement la configuration système requise.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
+        <translation>Augmente la précision des données PGXP après projection. Peut améliorer les graphismes dans certains jeux. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
+    </message>
+    <message>
         <source>Advanced Display Options</source>
         <translation>Options d&apos;affichage avancées</translation>
     </message>
@@ -12618,6 +12644,10 @@ Vous ne pourrez pas annuler cette action.</translation>
         <translation>Mot de passe</translation>
     </message>
     <message>
+        <source>Presents extra frames for effects such as black frame insertion.</source>
+        <translation>Affiche des images supplémentaires pour des effets tels que l&apos;insertion d&apos;images noires.</translation>
+    </message>
+    <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>Empêche le jeu de produire le moindre son audible.</translation>
     </message>
@@ -12632,10 +12662,6 @@ Vous ne pourrez pas annuler cette action.</translation>
     <message>
         <source>Release Date: </source>
         <translation>Date de sortie : </translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others.</source>
-        <translation>Retire des valeurs de profondeur le facteur d&apos;échelle de la transformation de chaque objet. Corrige les éléments géométriques manquants dans certains jeux, mais provoque des problèmes dans d&apos;autres.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -12906,10 +12932,6 @@ Vous ne pourrez pas annuler cette action.</translation>
         <translation>Temps de jeu : </translation>
     </message>
     <message>
-        <source>Timing out in {}...</source>
-        <translation>Expiration du délai dans {}...</translation>
-    </message>
-    <message>
         <source>Title (*)</source>
         <translation>Titre (*)</translation>
     </message>
@@ -13118,10 +13140,6 @@ Vous ne pourrez pas annuler cette action.</translation>
         <translation>Ajoute un nouveau shader à la chaîne.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Ajoute une précision supplémentaire aux données PGXP après la projection. Peut améliorer le visuel dans certains jeux.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <translation>Paramètres avancés</translation>
     </message>
@@ -13164,6 +13182,10 @@ You cannot undo this action.</source>
         <translation>Êtes-vous sûr de vouloir restaurer les paramètres par défaut ? Toutes les préférences seront perdues.
 
 Vous ne pouvez pas annuler cette action.</translation>
+    </message>
+    <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Demande d&apos;actionner chaque bouton et chaque axe de cette manette à tour de rôle.</translation>
     </message>
     <message>
         <source>Aspect Ratio</source>
@@ -13270,6 +13292,10 @@ Vous ne pouvez pas annuler cette action.</translation>
         <translation>Comportement</translation>
     </message>
     <message>
+        <source>Bind All Buttons</source>
+        <translation>Affecter tous les boutons</translation>
+    </message>
+    <message>
         <source>Bindings</source>
         <translation>Assignations</translation>
     </message>
@@ -13334,6 +13360,10 @@ Vous ne pouvez pas annuler cette action.</translation>
         <translation>Changer de disque</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console.</source>
+        <translation>Modifie la quantité de RAM installée dans la console émulée.</translation>
+    </message>
+    <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>Modifie le rapport d&apos;aspect utilisé pour afficher la sortie de la console à l&apos;écran.</translation>
     </message>
@@ -13344,6 +13374,10 @@ Vous ne pouvez pas annuler cette action.</translation>
     <message>
         <source>Clean Boot</source>
         <translation>Démarrage propre</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Effacer</translation>
     </message>
     <message>
         <source>Clear Binding</source>
@@ -13762,10 +13796,6 @@ Vous ne pouvez pas annuler cette action.</translation>
         <translation>Vitesse d&apos;émulation</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Activer 8 Mo de RAM</translation>
-    </message>
-    <message>
         <source>Enable Achievements</source>
         <translation>Activer les succès</translation>
     </message>
@@ -13844,10 +13874,6 @@ Vous ne pouvez pas annuler cette action.</translation>
     <message>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>Active les exceptions d&apos;alignement et de bus. Inutile pour les jeux connus.</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>Active 6 Mo de RAM supplémentaires pour obtenir un total de 2+6 = 8 Mo, généralement présents sur les consoles de développement.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13930,6 +13956,10 @@ Erreur :</translation>
     <message>
         <source>Filter Framebuffer Uploads</source>
         <translation>Filtrer les transferts vers le tampon d&apos;image</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <translation>Forcer le mappage de toute la RAM</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -14136,6 +14166,10 @@ Erreur :</translation>
         <translation>Sources d&apos;entrée</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <translation>RAM installée</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Paramètres de l&apos;interface</translation>
     </message>
@@ -14262,6 +14296,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Permet aux jeux de tourner au plus proche de leur fréquence d&apos;images sur console, au prix d&apos;une légère baisse de performance.</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
+        <translation>Mappe toute la RAM installée, quelle que soit la taille configurée par le BIOS ou le jeu. Nécessaire pour utiliser 16 Mo avec les BIOS des consoles du commerce.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14608,10 +14646,6 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Précharger les textures de remplacement</translation>
     </message>
     <message>
-        <source>Presents extra frames for effects such as black frame insertion. Requires VSync.</source>
-        <translation>Présente des images supplémentaires pour des effets tels que l&apos;insertion d&apos;images noires. Nécessite VSync.</translation>
-    </message>
-    <message>
         <source>Preserve Projection Precision</source>
         <translation>Préserver la précision de la projection</translation>
     </message>
@@ -14738,6 +14772,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Supprime toutes les liaisons pour ce port de manette.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
+        <translation>Retire des valeurs de profondeur le facteur d&apos;échelle de la transformation de chaque objet. Corrige la géométrie manquante dans certains jeux, mais provoque des problèmes dans d&apos;autres. Le mode Automatique utilise le paramètre de la base de données des jeux.</translation>
     </message>
     <message>
         <source>Removes this shader from the chain.</source>
@@ -15212,6 +15250,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
         <translation>Taille : </translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Ignorer</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Ignorer l&apos;affichage des images en double</translation>
     </message>
@@ -15310,6 +15352,10 @@ Veuillez vérifier votre nom d&apos;utilisateur et votre mot de passe, puis rée
     <message>
         <source>Start: {}</source>
         <translation>Début : {}</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Étape {} sur {}</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15916,12 +15962,16 @@ Voulez-vous {1} quand même ?</translation>
         <translation>%</translation>
     </message>
     <message>
+        <source>RAM Size:</source>
+        <translation>Taille de la RAM :</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Désactiver le rendu écran large</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <translation>Activer 8 Mo de RAM</translation>
+        <source>Force Full RAM Mapping</source>
+        <translation>Forcer le mappage de toute la RAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16269,11 +16319,6 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
         <translation>Forcer le mode CPU de PGXP</translation>
     </message>
     <message>
-        <source>Normalize PGXP Depth</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>Normaliser la profondeur PGXP</translation>
-    </message>
-    <message>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Forcer l&apos;I-Cache du recompilateur</translation>
@@ -16433,8 +16478,12 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
         <translation>PGXP désactivé sur les polygones 2D.</translation>
     </message>
     <message>
-        <source>PGXP preserve projection precision disabled.</source>
-        <translation>Préservation de la précision de projection PGXP désactivée.</translation>
+        <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Le paramètre de préservation de la précision de projection PGXP diffère de celui de la base de données des jeux. Cela peut provoquer des erreurs de rendu.</translation>
+    </message>
+    <message>
+        <source>PGXP depth normalization differs from the game database setting. This may cause rendering errors.</source>
+        <translation>Le paramètre de normalisation de la profondeur PGXP diffère de celui de la base de données des jeux. Cela peut provoquer des erreurs de rendu.</translation>
     </message>
     <message>
         <source>Compatibility settings for this game have been applied.</source>
@@ -16579,6 +16628,10 @@ Les codes de la base de données seront toujours chargés et présents, sauf si 
     <message>
         <source>PGXP Depth Bias</source>
         <translation>Biais de profondeur PGXP</translation>
+    </message>
+    <message>
+        <source>PGXP Depth Normalization</source>
+        <translation>Normalisation de la profondeur PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
@@ -17417,6 +17470,14 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Cache de sommets :</translation>
     </message>
     <message>
+        <source>Preserve Projection Precision:</source>
+        <translation>Préserver la précision de la projection :</translation>
+    </message>
+    <message>
+        <source>Normalize Depth Scale:</source>
+        <translation>Normaliser l&apos;échelle de profondeur :</translation>
+    </message>
+    <message>
         <source>Perspective Correct Textures</source>
         <translation>Correction de perspective des textures</translation>
     </message>
@@ -17837,8 +17898,16 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Utilise un second thread pour le dessin des graphismes. Offre une amélioration de vitesse significative, en particulier avec le moteur de rendu logiciel, et son utilisation est sans danger.</translation>
     </message>
     <message>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Augmente la précision des données PGXP après projection. Peut améliorer les graphismes dans certains jeux. Le mode Automatique utilise le paramètre de la base de données des jeux ; en l&apos;absence de paramètre, cette option est désactivée.</translation>
+    </message>
+    <message>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt; Automatic enables it only for games that require it according to the game database.</source>
         <translation>Utilise les positions des sommets dans l&apos;espace écran pour obtenir des positions précises, au lieu de suivre les accès mémoire. Peut rendre certains jeux compatibles avec PGXP, mais &lt;strong&gt;n&apos;apporte généralement aucun avantage.&lt;/strong&gt; Le mode Automatique ne l&apos;active que pour les jeux qui le nécessitent selon la base de données des jeux.</translation>
+    </message>
+    <message>
+        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. Also applying it to texture correction fixes warped textures where differently scaled objects meet. Automatic uses the game database setting, and is otherwise disabled.</source>
+        <translation>Retire des valeurs de profondeur le facteur d&apos;échelle de la transformation de chaque objet. Corrige la géométrie manquante avec le tampon de profondeur dans les jeux qui réduisent l&apos;échelle des transformations des objets éloignés, mais provoque des problèmes dans les jeux qui utilisent la transformation pour mettre les modèles à l&apos;échelle. Appliquer également cette normalisation à la correction des textures corrige les textures déformées aux jonctions entre des objets d&apos;échelles différentes. Le mode Automatique utilise le paramètre de la base de données des jeux ; en l&apos;absence de paramètre, cette option est désactivée.</translation>
     </message>
     <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
@@ -17929,20 +17998,12 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
         <translation>Augmente la précision de l&apos;élimination des polygones (culling), réduisant le nombre de trous dans la géométrie. Nécessite l&apos;activation de la correction de géométrie.</translation>
     </message>
     <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>Ajoute une précision supplémentaire aux données PGXP après la projection. Peut améliorer le visuel dans certains jeux.</translation>
-    </message>
-    <message>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>Utilise les coordonnées de résolution native pour les polygones 2D, au lieu de coordonnées précises. Peut corriger l&apos;interface utilisateur mal alignée dans certains jeux, mais doit sinon rester désactivé. La base de données des jeux l&apos;activera automatiquement si nécessaire.</translation>
     </message>
     <message>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
         <translation>Active le test de profondeur pour les polygones semi-transparents. Ceux-ci incluent généralement des ombres, qui ont tendance à passer à travers le sol lorsque le test de profondeur est activé. L&apos;écriture de profondeur pour les polygones semi-transparents est désactivée indépendamment de ce paramètre.</translation>
-    </message>
-    <message>
-        <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry with the depth buffer in games which shrink the transforms of distant objects, but breaks games which scale models through the transform. The game database will enable this automatically when needed.</source>
-        <translation>Retire des valeurs de profondeur le facteur d&apos;échelle de la transformation de chaque objet. Corrige les éléments géométriques manquants avec le tampon de profondeur dans les jeux qui réduisent l&apos;échelle des transformations des objets éloignés, mais provoque des problèmes dans les jeux qui redimensionnent les modèles au moyen de leur transformation. La base de données des jeux activera automatiquement cette option si nécessaire.</translation>
     </message>
     <message>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
@@ -18884,6 +18945,41 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Dossier parent&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Tout affecter</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Étape 1 sur 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Affectation</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Effacer</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Ignorer</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Étape %1 sur %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Appuyez sur un bouton ou actionnez un axe maintenant.</translation>
     </message>
 </context>
 <context>
@@ -23775,6 +23871,26 @@ Voulez-vous créer ce répertoire ?</translation>
         <translation>Non-PS1</translation>
     </message>
     <message>
+        <source>2 MB (Retail Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>2 Mo (console du commerce)</translation>
+    </message>
+    <message>
+        <source>4 MB (Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>4 Mo (cartes d&apos;arcade)</translation>
+    </message>
+    <message>
+        <source>8 MB (Dev Console)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 Mo (console de développement)</translation>
+    </message>
+    <message>
+        <source>16 MB (Mods/Arcade Boards)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 Mo (mods/cartes d&apos;arcade)</translation>
+    </message>
+    <message>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>Interpréteur (le plus lent)</translation>
@@ -23963,6 +24079,26 @@ Voulez-vous créer ce répertoire ?</translation>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>Couleurs réelles (complètes)</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Automatique</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Désactivé</translation>
+    </message>
+    <message>
+        <source>Depth Buffer Only</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Tampon de profondeur uniquement</translation>
+    </message>
+    <message>
+        <source>Depth Buffer and Texture Correction</source>
+        <comment>GPUPGXPDepthNormalization</comment>
+        <translation>Tampon de profondeur et correction des textures</translation>
     </message>
     <message>
         <source>Disabled</source>
@@ -25238,11 +25374,6 @@ Souhaitez-vous continuer ?</translation>
         <translation>Forcer la cadence des images</translation>
     </message>
     <message>
-        <source>8MB RAM</source>
-        <comment>Taint</comment>
-        <translation>8 Mo de RAM</translation>
-    </message>
-    <message>
         <source>Cheats</source>
         <comment>Taint</comment>
         <translation>Triches</translation>
@@ -25403,6 +25534,11 @@ Le nom du fichier SBI doit correspondre au nom de l&apos;image disque.</translat
         <translation>Passage à la sous-image {} ({}) dans &apos;{}&apos;.</translation>
     </message>
     <message>
+        <source>Expanded RAM</source>
+        <comment>Taint</comment>
+        <translation>RAM étendue</translation>
+    </message>
+    <message>
         <source>Current game does not have multiple discs.</source>
         <translation>Le jeu actuel ne comporte pas plusieurs disques.</translation>
     </message>
@@ -25447,10 +25583,6 @@ Vous devez sauvegarder sur une carte mémoire et réinitialiser le jeu pour annu
     <message>
         <source>Overclock disabled.</source>
         <translation>Overclock désactivé.</translation>
-    </message>
-    <message>
-        <source>8MB RAM disabled.</source>
-        <translation>RAM 8 Mo désactivée.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25569,6 +25701,10 @@ Vous devez sauvegarder sur une carte mémoire et réinitialiser le jeu pour annu
         <translation>La fréquence d&apos;images n&apos;est pas réglée sur automatique. Les jeux peuvent tourner à une vitesse incorrecte.</translation>
     </message>
     <message>
+        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
+        <translation>La RAM étendue est activée ; cela peut être incompatible avec certains jeux.</translation>
+    </message>
+    <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>L&apos;interpréteur mis en cache est utilisé, cela peut être incompatible avec certains jeux.</translation>
     </message>
@@ -25669,16 +25805,16 @@ Utilisation de la carte partagée à la place.</translation>
         <translation>L&apos;anticrénelage multisample est activé, certains jeux pourraient ne pas s&apos;afficher correctement.</translation>
     </message>
     <message>
+        <source>RAM size set to default.</source>
+        <translation>La taille de la RAM a été rétablie à sa valeur par défaut.</translation>
+    </message>
+    <message>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>L&apos;arrondi des coordonnées de texture redimensionnées est activé. Cela peut causer des erreurs d&apos;affichage.</translation>
     </message>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>La tolérance de géométrie PGXP n&apos;est pas réglée par défaut. Cela peut causer des erreurs d&apos;affichage.</translation>
-    </message>
-    <message>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8 Mo de RAM sont activés, cela peut être incompatible avec certains jeux.</translation>
     </message>
     <message>
         <source>Startup was cancelled.</source>
