@@ -373,7 +373,7 @@
     <Build Solution="ReleaseLTCG|*" Project="false" />
     <Build Solution="Release|*" Project="false" />
   </Project>
-  <Project Path="src/util-tests/util-tests.vcxproj">
+  <Project Path="src/util-tests/util-tests.vcxproj" Id="15538ad7-2201-45c2-b088-bbb7f37bd7f5">
     <BuildType Solution="Debug-Clang-SSE2|ARM64" Project="Debug-Clang" />
     <BuildType Solution="DebugFast|ARM64" Project="DebugFast-Clang" />
     <BuildType Solution="Debug|ARM64" Project="Debug-Clang" />
