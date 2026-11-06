@@ -964,15 +964,14 @@ void DebuggerWindow::resetLayout()
     dock->show();
   }
 
-  // +----------------+----------------+----------------+
-  // |                | Breakpoints    | Call Stack     |
-  // | Memory         +----------------+----------------+
-  // |                | Threads        | Stack          |
-  // +----------------+----------------+----------------+
-  splitDockWidget(m_ui.dockWidgetMemory, m_ui.dockWidgetBreakpoints, Qt::Horizontal);
-  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetStack, Qt::Horizontal);
-  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetThreads, Qt::Vertical);
-  splitDockWidget(m_ui.dockWidgetCallStack, m_ui.dockWidgetStack, Qt::Vertical);
+  // +----------------+--------------------------------+----------------+
+  // | Memory         | Call Stack/Breakpoints/Threads | Stack          |
+  // +----------------+--------------------------------+----------------+
+  splitDockWidget(m_ui.dockWidgetMemory, m_ui.dockWidgetCallStack, Qt::Horizontal);
+  splitDockWidget(m_ui.dockWidgetCallStack, m_ui.dockWidgetStack, Qt::Horizontal);
+  tabifyDockWidget(m_ui.dockWidgetCallStack, m_ui.dockWidgetBreakpoints);
+  tabifyDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetThreads);
+  m_ui.dockWidgetCallStack->raise();
 }
 
 void DebuggerWindow::setupAdditionalUi()
