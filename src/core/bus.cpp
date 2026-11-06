@@ -253,11 +253,16 @@ bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
 
   VERBOSE_LOG("LUTs are mapped at {}.", static_cast<void*>(g_bus.memory_handlers));
   g_bus.memory_handlers_isc = g_bus.memory_handlers + MEMORY_LUT_SLOTS;
+
+  g_bus.ram_size = RAM_DEFAULT_SIZE;
+  g_bus.ram_mask = RAM_DEFAULT_MASK;
   g_bus.ram_mapped_size = RAM_DEFAULT_SIZE;
-  SetHandlers();
 
   Exports::RAM = reinterpret_cast<uintptr_t>(g_bus.unprotected_ram);
+  Exports::RAM_MASK = RAM_DEFAULT_MASK;
+  Exports::RAM_SIZE = RAM_DEFAULT_SIZE;
 
+  SetHandlers();
   return true;
 }
 
@@ -404,9 +409,6 @@ void Bus::Shutdown()
 {
   UnmapFastmemViews();
   CPU::g_state.fastmem_base = nullptr;
-
-  g_bus.ram_mask = 0;
-  g_bus.ram_size = 0;
 }
 
 void Bus::Reset()
