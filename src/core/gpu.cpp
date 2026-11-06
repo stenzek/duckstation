@@ -358,6 +358,7 @@ struct Locals
 
   u32 command_total_words = 0;
   TickCount pending_command_ticks = 0;
+  TickCount dreq_hold_ticks = 0; ///< Ticks until a polygon releases the DMA request, i.e. setup/first triangle.
   u32 active_ticks_since_last_update = 0;
 
   /// True if currently executing/syncing.
@@ -574,6 +575,7 @@ void GPU::SoftReset()
   s_locals.crtc_state.regs.vertical_display_range = 0x40010;
   s_locals.blitter_state = BlitterState::Idle;
   s_locals.pending_command_ticks = 0;
+  s_locals.dreq_hold_ticks = 0;
   s_locals.command_total_words = 0;
   s_locals.vram_transfer = {};
   s_locals.fifo.Clear();
@@ -695,6 +697,7 @@ bool GPU::DoState(StateWrapper& sw)
 
   sw.Do(&s_locals.blitter_state, BlitterState::DrawingPolyLine);
   sw.Do(&s_locals.pending_command_ticks);
+  sw.DoEx(&s_locals.dreq_hold_ticks, 96, 0);
   sw.Do(&s_locals.command_total_words);
   sw.Do(&s_locals.GPUREAD_latch);
 
@@ -797,6 +800,7 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 
   sw.Do(&s_locals.blitter_state);
   sw.Do(&s_locals.pending_command_ticks);
+  sw.Do(&s_locals.dreq_hold_ticks);
   sw.Do(&s_locals.command_total_words);
   sw.Do(&s_locals.GPUREAD_latch);
 
@@ -858,6 +862,11 @@ void GPU::UpdateDMARequest()
       break;
   }
 
+  // Polygons hold bit 28 through setup, and quads through their first triangle. Holds within the run-ahead window are
+  // ignored, since commands execute that far ahead anyway. FIFO mode only depends on FIFO space, not the hold.
+  const bool fifo_ready = s_locals.GPUSTAT.ready_to_receive_dma;
+  s_locals.GPUSTAT.ready_to_receive_dma &= (s_locals.dreq_hold_ticks <= s_locals.max_run_ahead);
+
   bool dma_request;
   switch (s_locals.GPUSTAT.dma_direction)
   {
@@ -866,7 +875,7 @@ void GPU::UpdateDMARequest()
       break;
 
     case GPUDMADirection::FIFO:
-      dma_request = s_locals.GPUSTAT.ready_to_receive_dma;
+      dma_request = fifo_ready;
       break;
 
     case GPUDMADirection::CPUtoGP0:
@@ -1680,7 +1689,14 @@ bool GPU::SetCRTCVBlank(bool new_vblank)
 
 ALWAYS_INLINE_RELEASE bool GPU::IsCommandCompletionPending()
 {
-  return (s_locals.pending_command_ticks > 0 && GetPendingCommandTicks() >= s_locals.pending_command_ticks);
+  if (s_locals.pending_command_ticks <= 0)
+    return false;
+
+  // also sync if the DMA request hold has expired, so that bit 28 polling sees the release
+  const TickCount elapsed = GetPendingCommandTicks();
+  return (elapsed >= s_locals.pending_command_ticks ||
+          (s_locals.dreq_hold_ticks > s_locals.max_run_ahead &&
+           elapsed >= (s_locals.dreq_hold_ticks - s_locals.max_run_ahead)));
 }
 
 void GPU::CRTCTickEvent(void*, TickCount ticks)
@@ -1817,7 +1833,9 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
 
 void GPU::CommandTickEvent(void*, TickCount ticks)
 {
-  s_locals.pending_command_ticks -= SystemTicksToGPUTicks(ticks);
+  const TickCount gpu_ticks = SystemTicksToGPUTicks(ticks);
+  s_locals.pending_command_ticks -= gpu_ticks;
+  s_locals.dreq_hold_ticks = std::max(s_locals.dreq_hold_ticks - gpu_ticks, 0);
 
   s_locals.executing_commands = true;
   ExecuteCommands();
@@ -1837,11 +1855,18 @@ void GPU::UpdateCommandTickEvent()
   if (s_locals.pending_command_ticks <= 0)
   {
     s_locals.pending_command_ticks = 0;
+    s_locals.dreq_hold_ticks = 0;
     s_locals.command_tick_event.Deactivate();
   }
   else
   {
-    s_locals.command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(s_locals.pending_command_ticks));
+    // Wake up early to release the DMA request if a polygon is holding it beyond the run-ahead window.
+    // The hold is relative to the last execution, so take off the time that has passed since then.
+    const TickCount ticks =
+      (s_locals.dreq_hold_ticks > s_locals.max_run_ahead) ?
+        std::max(s_locals.dreq_hold_ticks - s_locals.max_run_ahead - GetPendingCommandTicks(), 1) :
+        s_locals.pending_command_ticks;
+    s_locals.command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(ticks));
   }
 }
 
@@ -2040,6 +2065,7 @@ void GPU::WriteGP1(u32 value)
       s_locals.polyline_buffer.clear();
       s_locals.blit_remaining_words = 0;
       s_locals.pending_command_ticks = 0;
+      s_locals.dreq_hold_ticks = 0;
       s_locals.command_tick_event.Deactivate();
       InvalidateCLUT();
       UpdateDMARequest();
@@ -3251,7 +3277,13 @@ bool GPU::HandleRenderPolygonCommand()
   static constexpr u16 s_setup_time[2][2][2] = {{{46, 226}, {334, 496}}, {{82, 262}, {370, 532}}};
   const TickCount setup_ticks = static_cast<TickCount>(ZeroExtend32(
     s_setup_time[BoolToUInt8(rc.quad_polygon)][BoolToUInt8(rc.shading_enable)][BoolToUInt8(rc.texture_enable)]));
+
+  // Polygons hold the DMA request through setup, and quads through their first triangle. Holds that fit in the
+  // run-ahead window are ignored, otherwise the request is held until the release point is within the window.
+  const TickCount hold_start_ticks = s_locals.pending_command_ticks;
   AddCommandTicks(setup_ticks);
+  if ((s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
+    s_locals.dreq_hold_ticks = s_locals.pending_command_ticks;
 
   TRACE_LOG("Render {} {} {} {} polygon ({} verts, {} words per vert), {} setup ticks",
             rc.quad_polygon ? "four-point" : "three-point", rc.transparency_enable ? "semi-transparent" : "opaque",
@@ -3352,6 +3384,10 @@ bool GPU::HandleRenderPolygonCommand()
     // quads
     if (rc.quad_polygon)
     {
+      // The request is held until the first triangle is drawn, even if the second triangle is culled.
+      if ((s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
+        s_locals.dreq_hold_ticks = s_locals.pending_command_ticks;
+
       const GSVector2i v3 = GSVector2i::load<false>(&cmd->vertices[3].native_x);
       const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_s32(v3))
                                          .upl64(GSVector4i(max_pos_12.max_s32(v3)))
@@ -3447,6 +3483,10 @@ bool GPU::HandleRenderPolygonCommand()
     // quads
     if (rc.quad_polygon)
     {
+      // The request is held until the first triangle is drawn, even if the second triangle is culled.
+      if ((s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
+        s_locals.dreq_hold_ticks = s_locals.pending_command_ticks;
+
       const GSVector2i v3 = GSVector2i::load<false>(&cmd->vertices[3].x);
       const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_s32(v3))
                                          .upl64(GSVector4i(max_pos_12.max_s32(v3)))
@@ -4257,6 +4297,7 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
     do
     {
       s_locals.pending_command_ticks = 0;
+      s_locals.dreq_hold_ticks = 0;
       s_locals.command_tick_event.Deactivate();
       ExecuteCommands();
     } while (s_locals.pending_command_ticks > 0);

@@ -451,7 +451,7 @@ struct Settings : public GPUSettings
     DEFAULT_DMA_MAX_SLICE_TICKS = 1000,
     DEFAULT_DMA_HALT_TICKS = 100,
     DEFAULT_GPU_FIFO_SIZE = 16,
-    DEFAULT_GPU_MAX_RUN_AHEAD = 128,
+    DEFAULT_GPU_MAX_RUN_AHEAD = 512,
   };
 
   void Load(const SettingsInterface& si, const SettingsInterface& controller_si);
