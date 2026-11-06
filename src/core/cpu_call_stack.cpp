@@ -37,9 +37,11 @@ struct CallStackFrameLayout
 static bool IsStackPointerAdjustment(const Instruction instruction, s16* adjustment);
 static bool IsReturnAddressStackAccess(const Instruction instruction, InstructionOp op, s16* offset);
 static bool AddSignedOffset(VirtualMemoryAddress base, s32 offset, VirtualMemoryAddress* result);
-static bool ScanCallStackInstructions(VirtualMemoryAddress pc, std::vector<CallStackInstruction>* instructions,
+static bool ScanCallStackInstructions(VirtualMemoryAddress pc, VirtualMemoryAddress function_start,
+                                      std::vector<CallStackInstruction>* instructions,
                                       size_t* current_instruction_index, bool* found_start, bool* found_end);
-static bool AnalyzeCallStackFrame(VirtualMemoryAddress pc, CallStackFrameLayout* layout);
+static bool AnalyzeCallStackFrame(VirtualMemoryAddress pc, VirtualMemoryAddress function_start,
+                                  CallStackFrameLayout* layout);
 static bool UnwindCallStackFrame(VirtualMemoryAddress pc, VirtualMemoryAddress sp,
                                  std::optional<VirtualMemoryAddress> live_ra, VirtualMemoryAddress* caller_address,
                                  VirtualMemoryAddress* caller_sp);
@@ -76,8 +78,9 @@ bool CPU::AddSignedOffset(VirtualMemoryAddress base, s32 offset, VirtualMemoryAd
   return true;
 }
 
-bool CPU::ScanCallStackInstructions(VirtualMemoryAddress pc, std::vector<CallStackInstruction>* instructions,
-                                    size_t* current_instruction_index, bool* found_start, bool* found_end)
+bool CPU::ScanCallStackInstructions(VirtualMemoryAddress pc, VirtualMemoryAddress function_start,
+                                    std::vector<CallStackInstruction>* instructions, size_t* current_instruction_index,
+                                    bool* found_start, bool* found_end)
 {
   instructions->clear();
   *found_start = false;
@@ -93,6 +96,12 @@ bool CPU::ScanCallStackInstructions(VirtualMemoryAddress pc, std::vector<CallSta
       break;
 
     const VirtualMemoryAddress address = pc - distance;
+    if (address < function_start)
+    {
+      *found_start = true;
+      break;
+    }
+
     Instruction instruction;
     if (!SafeReadInstruction(address, &instruction.bits))
       break;
@@ -163,13 +172,15 @@ bool CPU::ScanCallStackInstructions(VirtualMemoryAddress pc, std::vector<CallSta
   return !instructions->empty();
 }
 
-bool CPU::AnalyzeCallStackFrame(VirtualMemoryAddress pc, CallStackFrameLayout* layout)
+bool CPU::AnalyzeCallStackFrame(VirtualMemoryAddress pc, VirtualMemoryAddress function_start,
+                                CallStackFrameLayout* layout)
 {
   std::vector<CallStackInstruction> instructions;
   size_t current_instruction_index;
   bool found_start;
   bool found_end;
-  if (!ScanCallStackInstructions(pc, &instructions, &current_instruction_index, &found_start, &found_end))
+  if (!ScanCallStackInstructions(pc, function_start, &instructions, &current_instruction_index, &found_start,
+                                 &found_end))
     return false;
 
   std::optional<s16> allocation_adjustment;
@@ -264,8 +275,21 @@ bool CPU::UnwindCallStackFrame(VirtualMemoryAddress pc, VirtualMemoryAddress sp,
                                std::optional<VirtualMemoryAddress> live_ra, VirtualMemoryAddress* caller_address,
                                VirtualMemoryAddress* caller_sp)
 {
+  // If the live return address came from a direct call, its target is the start of the current function. Without
+  // this, the backward scan can run into blocks the compiler placed after the previous function's return.
+  VirtualMemoryAddress function_start = 0;
+  Instruction live_call_instruction;
+  if (live_ra.has_value() && live_ra.value() >= (2 * INSTRUCTION_SIZE) &&
+      SafeReadInstruction(live_ra.value() - (2 * INSTRUCTION_SIZE), &live_call_instruction.bits) &&
+      live_call_instruction.op == InstructionOp::jal)
+  {
+    function_start = GetDirectBranchTarget(live_call_instruction, live_ra.value() - (2 * INSTRUCTION_SIZE));
+    if (function_start > pc)
+      function_start = 0;
+  }
+
   CallStackFrameLayout layout;
-  if (!AnalyzeCallStackFrame(pc, &layout))
+  if (!AnalyzeCallStackFrame(pc, function_start, &layout))
     return false;
 
   VirtualMemoryAddress return_address;

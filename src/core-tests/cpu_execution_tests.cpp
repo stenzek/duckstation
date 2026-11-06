@@ -3,6 +3,7 @@
 
 #include "cpu_test_harness.h"
 
+#include "core/cpu_call_stack.h"
 #include "core/cpu_code_cache.h"
 #include "core/cpu_code_cache_private.h"
 #include "core/cpu_core.h"
@@ -301,6 +302,45 @@ TEST_P(CPUExecution, PGXPUnalignedStoreInvalidatesWrittenHalf)
   g_settings.gpu_pgxp_enable = false;
   g_settings.gpu_pgxp_cpu = false;
   CPU::CodeCache::Reset();
+}
+
+TEST_P(CPUExecution, CallStackLeafAfterOutOfLineBlocks)
+{
+  // Compilers can place blocks of a function after its return, so the instructions preceding a leaf function are
+  // not necessarily the previous function's return. The leaf must not inherit the out-of-line block's call.
+  static constexpr u32 BASE = 0x80030000u;
+  static constexpr u32 LEAF = BASE + 0x30;
+  static constexpr u32 CALLER = BASE + 0x100;
+  static constexpr u32 SP = 0x801FF000u;
+  std::memset(&g_bus.unprotected_ram[BASE & g_bus.ram_mask], 0, 0x200);
+  std::memset(&g_bus.unprotected_ram[SP & g_bus.ram_mask], 0, 0x40);
+
+  u32 address = BASE;
+  for (const u32 bits :
+       {// Previous function, with an out-of-line block containing a call after the return.
+        addiu(Reg::SP, Reg::SP, -0x18), sw(Reg::RA, 0x14, Reg::SP), jal(CALLER), nop(), lw(Reg::RA, 0x14, Reg::SP),
+        nop(), jr(Reg::RA), addiu(Reg::SP, Reg::SP, 0x18), jal(CALLER), nop(), j(BASE + 0x10), nop(),
+        // Leaf function.
+        beq(Reg::A2, Reg::R0, 2), nop(), lbu(Reg::V1, 0, Reg::A1), jr(Reg::RA), nop()})
+  {
+    std::memcpy(&g_bus.unprotected_ram[address & g_bus.ram_mask], &bits, sizeof(bits));
+    address += sizeof(bits);
+  }
+
+  address = CALLER;
+  for (const u32 bits : {addiu(Reg::SP, Reg::SP, -0x20), sw(Reg::RA, 0x1C, Reg::SP), jal(LEAF), nop(),
+                         lw(Reg::RA, 0x1C, Reg::SP), nop(), jr(Reg::RA), addiu(Reg::SP, Reg::SP, 0x20)})
+  {
+    std::memcpy(&g_bus.unprotected_ram[address & g_bus.ram_mask], &bits, sizeof(bits));
+    address += sizeof(bits);
+  }
+
+  CPU::CallStack call_stack(LEAF + 8, SP, CALLER + 0x10);
+  call_stack.Walk();
+  const CPU::CallStack::FrameList& frames = call_stack.GetFrames();
+  ASSERT_EQ(frames.size(), 2u);
+  EXPECT_EQ(frames[1].address, CALLER + 8);
+  EXPECT_EQ(frames[1].stack_pointer, SP);
 }
 
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);
