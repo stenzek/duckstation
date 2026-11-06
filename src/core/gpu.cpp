@@ -3759,6 +3759,9 @@ void GPU::FinishPolyline()
   const u32 num_vertices = GetPolyLineVertexCount();
   DebugAssert(num_vertices >= 2);
 
+  // Poly-lines hold the DMA request until the last segment starts, see HandleRenderPolygonCommand().
+  const TickCount hold_start_ticks = s_locals.pending_command_ticks;
+
   // Keep expanded line vertices within the backend's index/depth limits and command queue capacity.
   static constexpr u32 MAX_SEGMENTS_PER_COMMAND = 1024;
   for (u32 first_vertex = 0; first_vertex < num_vertices - 1; first_vertex += MAX_SEGMENTS_PER_COMMAND)
@@ -3801,6 +3804,9 @@ void GPU::FinishPolyline()
 
         const GSVector2i start_pos = GSVector2i::load<false>(&start.native_x);
         const GSVector2i end_pos = GSVector2i::load<false>(&end.native_x);
+        if ((first_vertex + i) == (num_vertices - 1) &&
+            (s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
+          s_locals.dreq_hold_ticks = s_locals.pending_command_ticks;
         const GSVector4i rect =
           GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
         if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
@@ -3853,6 +3859,9 @@ void GPU::FinishPolyline()
         const GPUVertexPosition vp{Truncate32(s_locals.polyline_buffer[buffer_pos++])};
         const GSVector2i end_pos = GSVector2i(vp.x, vp.y).add32(draw_offset);
 
+        if ((first_vertex + i) == (num_vertices - 1) &&
+            (s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
+          s_locals.dreq_hold_ticks = s_locals.pending_command_ticks;
         const GSVector4i rect =
           GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
         if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
