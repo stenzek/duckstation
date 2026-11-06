@@ -73,6 +73,7 @@ enum class BlitterState : u8
 enum : u32
 {
   MAX_FIFO_SIZE = 256,
+  FIFO_MODE_FULL_WORDS = 11, ///< GPUSTAT bit 25 reads full with this many words queued, in GP1(04h)=1 mode.
   DOT_TIMER_INDEX = 0,
   HBLANK_TIMER_INDEX = 1,
   DRAWING_AREA_COORD_MASK = 1023,
@@ -865,9 +866,9 @@ void GPU::UpdateDMARequest()
   }
 
   // Polygons hold bit 28 through setup, and quads through their first triangle. Holds within the run-ahead window are
-  // ignored, since commands execute that far ahead anyway. FIFO mode only depends on FIFO space, not the hold.
-  const bool fifo_ready = s_locals.GPUSTAT.ready_to_receive_dma;
-  s_locals.GPUSTAT.ready_to_receive_dma &= (s_locals.dreq_hold_ticks <= s_locals.max_run_ahead);
+  // ignored, since commands execute that far ahead anyway.
+  const bool dreq_held = (s_locals.dreq_hold_ticks > s_locals.max_run_ahead);
+  s_locals.GPUSTAT.ready_to_receive_dma &= !dreq_held;
 
   bool dma_request;
   switch (s_locals.GPUSTAT.dma_direction)
@@ -877,8 +878,24 @@ void GPU::UpdateDMARequest()
       break;
 
     case GPUDMADirection::FIFO:
-      dma_request = fifo_ready;
-      break;
+    {
+      if (s_locals.blitter_state != BlitterState::Idle)
+      {
+        dma_request = s_locals.GPUSTAT.ready_to_receive_dma;
+        break;
+      }
+
+      // Not full until enough words are queued. A held polygon's packet keeps its slots until the release.
+      const GPURenderCommand rc = s_locals.render_command;
+      const u32 held_words =
+        (dreq_held && rc.primitive == GPUPrimitive::Polygon) ?
+          ((1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable)) * (rc.quad_polygon ? 4 : 3) +
+           BoolToUInt32(!rc.shading_enable)) :
+          0;
+      dma_request = ((s_locals.fifo.GetSize() + held_words) < FIFO_MODE_FULL_WORDS ||
+                     s_locals.fifo.GetSize() < s_locals.command_total_words);
+    }
+    break;
 
     case GPUDMADirection::CPUtoGP0:
       dma_request = s_locals.GPUSTAT.ready_to_receive_dma;
