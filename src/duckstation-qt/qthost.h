@@ -107,12 +107,14 @@ Q_SIGNALS:
   void settingsResetToDefault(bool host, bool system, bool controller);
   void settingsReloaded();
   void systemStarting();
-  void systemStarted(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash);
+  void systemStarted(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash,
+                     const QString& exe_override);
   void systemStopping();
   void systemDestroyed();
   void systemPaused();
   void systemResumed();
-  void systemGameChanged(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash);
+  void systemGameChanged(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash,
+                         const QString& exe_override);
   void systemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
@@ -380,6 +382,7 @@ bool IsSystemLocked();
 const QString& GetCurrentGameTitle();
 const QString& GetCurrentGameSerial();
 const QString& GetCurrentGamePath();
+const QString& GetCurrentExeOverride();
 GameHash GetCurrentGameHash();
 
 #ifdef _WIN32

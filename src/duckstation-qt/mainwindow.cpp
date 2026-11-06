@@ -131,6 +131,7 @@ struct MainWindowLocals
   QString current_game_title;
   QString current_game_serial;
   QString current_game_path;
+  QString current_exe_override;
   QIcon current_game_icon;
   GameHash current_game_hash;
   std::optional<std::time_t> undo_state_timestamp;
@@ -182,6 +183,11 @@ const QString& QtHost::GetCurrentGameSerial()
 const QString& QtHost::GetCurrentGamePath()
 {
   return s_locals.current_game_path;
+}
+
+const QString& QtHost::GetCurrentExeOverride()
+{
+  return s_locals.current_exe_override;
 }
 
 GameHash QtHost::GetCurrentGameHash()
@@ -604,7 +610,7 @@ void MainWindow::onSystemStarting()
 }
 
 void MainWindow::onSystemStarted(const QString& path, const QString& game_serial, const QString& game_title,
-                                 GameHash hash)
+                                 GameHash hash, const QString& exe_override)
 {
   m_was_disc_change_request = false;
   s_locals.system_starting = false;
@@ -615,6 +621,7 @@ void MainWindow::onSystemStarted(const QString& path, const QString& game_serial
   s_locals.current_game_serial = game_serial;
   s_locals.current_game_icon = getIconForGame(path);
   s_locals.current_game_hash = hash;
+  s_locals.current_exe_override = exe_override;
 
   updateEmulationActions();
   updateDisplayRelatedActions();
@@ -662,6 +669,7 @@ void MainWindow::onSystemDestroyed()
   Assert(!QtHost::IsSystemValidOrStarting());
 
   s_locals.current_game_path = {};
+  s_locals.current_exe_override = {};
   s_locals.current_game_title = {};
   s_locals.current_game_serial = {};
   s_locals.current_game_icon = {};
@@ -686,8 +694,9 @@ void MainWindow::onSystemDestroyed()
 }
 
 void MainWindow::onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title,
-                                     GameHash hash)
+                                     GameHash hash, const QString& exe_override)
 {
+  s_locals.current_exe_override = exe_override;
   s_locals.current_game_path = path;
   s_locals.current_game_title = game_title;
   s_locals.current_game_serial = game_serial;

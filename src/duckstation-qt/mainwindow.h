@@ -241,12 +241,14 @@ private:
 
   void onSettingsReloaded();
   void onSystemStarting();
-  void onSystemStarted(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash);
+  void onSystemStarted(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash,
+                       const QString& exe_override);
   void onSystemStopping();
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
-  void onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash);
+  void onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title, GameHash hash,
+                           const QString& exe_override);
   void onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void onMediaCaptureStarted(MediaCaptureMode mode);
   void onMediaCaptureStopped();

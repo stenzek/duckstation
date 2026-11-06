@@ -80,7 +80,7 @@ void OnSystemStarting();
 
 /// Called when the VM is created.
 void OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                     GameHash game_hash);
+                     GameHash game_hash, const std::string& exe_override);
 
 /// Called when the VM is shutting down.
 void OnSystemStopping();
@@ -97,9 +97,9 @@ void OnSystemResumed();
 /// Called when the VM abnormally exits because an error has occurred, and it cannot continue.
 void OnSystemAbnormalShutdown(const std::string_view reason);
 
-/// Provided by the host; called when the running executable changes.
+/// Provided by the host; called when the running game or executable override changes.
 void OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                         GameHash game_hash);
+                         GameHash game_hash, const std::string& exe_override);
 
 /// Provided by the host; called when the undo save state availability changes.
 void OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp);

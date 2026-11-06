@@ -1374,13 +1374,13 @@ void Host::OnSystemStarting()
 }
 
 void Host::OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                           GameHash hash)
+                           GameHash hash, const std::string& exe_override)
 {
   g_core_thread->stopIdleUpdateTimer();
   g_core_thread->wakeThread();
 
   emit g_core_thread->systemStarted(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
-                                    QString::fromStdString(game_name), hash);
+                                    QString::fromStdString(game_name), hash, QString::fromStdString(exe_override));
 }
 
 void Host::OnSystemPaused()
@@ -3149,10 +3149,10 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 }
 
 void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
-                               const std::string& game_name, GameHash hash)
+                               const std::string& game_name, GameHash hash, const std::string& exe_override)
 {
   emit g_core_thread->systemGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
-                                        QString::fromStdString(game_name), hash);
+                                        QString::fromStdString(game_name), hash, QString::fromStdString(exe_override));
 }
 
 void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)

@@ -245,7 +245,7 @@ void Host::OnSystemStarting()
 }
 
 void Host::OnSystemStarted(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                           GameHash game_hash)
+                           GameHash game_hash, const std::string& exe_override)
 {
   INFO_LOG("Disc Path: {}", disc_path);
   INFO_LOG("Game Serial: {}", game_serial);
@@ -294,7 +294,7 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 }
 
 void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
-                               const std::string& game_name, GameHash hash)
+                               const std::string& game_name, GameHash hash, const std::string& exe_override)
 {
   //
 }
