@@ -214,8 +214,7 @@ protected:
     {
       SampleType* buffer;
       u32 space;
-      m_stream.BeginWrite(&buffer, &space);
-      if (space == 0)
+      if (!m_stream.BeginWrite(&buffer, &space))
         break;
 
       const u32 count = std::min(num_frames, space);
