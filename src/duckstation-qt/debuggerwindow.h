@@ -114,6 +114,7 @@ private:
   void onCodeViewCommentActivated(VirtualMemoryAddress address);
   void onCodeViewContextMenuRequested(const QPoint& pt);
   void onCallStackItemDoubleClicked(const QModelIndex& index);
+  void onCallStackContextMenuRequested(const QPoint& pt);
   void onStackItemDoubleClicked(const QModelIndex& index);
   void onRegisterItemDoubleClicked(const QModelIndex& index);
   void onThreadItemDoubleClicked(const QModelIndex& index);

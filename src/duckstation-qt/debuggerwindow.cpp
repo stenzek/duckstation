@@ -32,8 +32,10 @@
 
 #include <QtCore/QPointer>
 #include <QtCore/QSignalBlocker>
+#include <QtGui/QClipboard>
 #include <QtGui/QCursor>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QGuiApplication>
 #include <QtWidgets/QAbstractScrollArea>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -544,6 +546,36 @@ void DebuggerWindow::onCallStackItemDoubleClicked(const QModelIndex& index)
     scrollToStackAddress(frame->stack_pointer);
 }
 
+void DebuggerWindow::onCallStackContextMenuRequested(const QPoint& pt)
+{
+  const CPU::CallStack::Frame* frame_ptr = m_call_stack_model->getFrame(m_ui.callStackView->indexAt(pt));
+  if (!frame_ptr)
+    return;
+
+  const CPU::CallStack::Frame frame = *frame_ptr;
+  const SymbolFile::Symbol* symbol = m_call_stack_model->getFrameSymbol(frame);
+  const QString symbol_name = symbol ? QString::fromStdString(symbol->name) : QString();
+
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  menu->addAction(QIcon(u":/icons/monochrome/svg/code-line.svg"_s), tr("Go To &Code"),
+                  [this, frame]() { scrollToCodeAddress(frame.address, true); });
+  menu->addAction(QIcon(u":/icons/monochrome/svg/stack-line.svg"_s), tr("Go To &Stack"),
+                  [this, frame]() { scrollToStackAddress(frame.stack_pointer); });
+  menu->addSeparator();
+
+  QAction* const copy_name_action =
+    menu->addAction(QIcon(u":/icons/monochrome/svg/file-copy-line.svg"_s), tr("Copy Symbol &Name"),
+                    [symbol_name]() { QGuiApplication::clipboard()->setText(symbol_name); });
+  copy_name_action->setEnabled(!symbol_name.isEmpty());
+  menu->addAction(tr("Copy &Address"),
+                  [frame]() { QGuiApplication::clipboard()->setText(QString::asprintf("0x%08X", frame.address)); });
+  menu->addAction(tr("Copy &Frame Address"), [frame]() {
+    QGuiApplication::clipboard()->setText(QString::asprintf("0x%08X", frame.stack_pointer));
+  });
+
+  menu->popup(m_ui.callStackView->viewport()->mapToGlobal(pt));
+}
+
 void DebuggerWindow::onStackItemDoubleClicked(const QModelIndex& index)
 {
   const std::optional<VirtualMemoryAddress> address = m_stack_model->getAddressForIndex(index);
@@ -931,6 +963,7 @@ void DebuggerWindow::setupAdditionalUi()
 
   m_ui.codeView->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+  m_ui.callStackView->setContextMenuPolicy(Qt::CustomContextMenu);
 
   // +----------------+----------------+----------------+
   // |                | Breakpoints    | Call Stack     |
@@ -979,6 +1012,8 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.codeView, &DebuggerCodeView::copyActivated, this, &DebuggerWindow::copySelectedCodeToClipboard);
   connect(m_ui.codeView, &QWidget::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
   connect(m_ui.callStackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onCallStackItemDoubleClicked);
+  connect(m_ui.callStackView, &QWidget::customContextMenuRequested, this,
+          &DebuggerWindow::onCallStackContextMenuRequested);
   connect(m_ui.stackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onStackItemDoubleClicked);
   connect(m_ui.threadsView, &QTreeView::doubleClicked, this, &DebuggerWindow::onThreadItemDoubleClicked);
   connect(m_ui.registerView, &QTreeView::doubleClicked, this, &DebuggerWindow::onRegisterItemDoubleClicked);
