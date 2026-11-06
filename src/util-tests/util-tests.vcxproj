@@ -13,6 +13,7 @@
     <ClCompile Include="object_archive_tests.cpp" />
     <ClCompile Include="shiftjis_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
+    <ClCompile Include="symbol_file_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">

@@ -254,6 +254,44 @@ bool ELFFile::IsValidElfHeader(const std::span<const u8> data, Error* error /*= 
   return IsValidElfHeader(reinterpret_cast<const Elf32_Ehdr&>(*data.data()), error);
 }
 
+void ELFFile::EnumerateSymbols(SymbolCallback callback) const
+{
+  const u32 section_count = GetSectionCount();
+  for (u32 i = 0; i < section_count; i++)
+  {
+    const Elf32_Shdr* table = GetSectionHeader(i);
+    if (!table || (table->sh_type != SHT_SYMTAB && table->sh_type != SHT_DYNSYM) ||
+        table->sh_entsize < sizeof(Elf32_Sym) || table->sh_offset > m_data.size() ||
+        table->sh_size > (m_data.size() - table->sh_offset))
+    {
+      continue;
+    }
+
+    const Elf32_Shdr* strings = GetSectionHeader(table->sh_link);
+    if (!strings || strings->sh_type != SHT_STRTAB || strings->sh_offset > m_data.size() ||
+        strings->sh_size > (m_data.size() - strings->sh_offset))
+    {
+      continue;
+    }
+
+    const std::string_view string_data(reinterpret_cast<const char*>(&m_data[strings->sh_offset]), strings->sh_size);
+    for (size_t offset = 0; (offset + sizeof(Elf32_Sym)) <= table->sh_size; offset += table->sh_entsize)
+    {
+      const Elf32_Sym& sym = *reinterpret_cast<const Elf32_Sym*>(&m_data[table->sh_offset + offset]);
+      const u8 type = sym.st_info & 0xFu;
+      const Elf32_Shdr* section = GetSectionHeader(sym.st_shndx);
+      if (type > STT_FUNC || !section || !(section->sh_flags & SHF_ALLOC) || sym.st_name >= string_data.size())
+        continue;
+
+      const std::string_view::size_type end = string_data.find('\0', sym.st_name);
+      const std::string_view name =
+        string_data.substr(sym.st_name, ((end != std::string_view::npos) ? end : string_data.size()) - sym.st_name);
+      if (!name.empty())
+        callback(sym.st_value, sym.st_size, type, name);
+    }
+  }
+}
+
 bool ELFFile::IsValidElfHeader(const Elf32_Ehdr& header, Error* error /* = nullptr */)
 {
   if (std::memcmp(header.e_ident, EXPECTED_ELF_HEADER, sizeof(EXPECTED_ELF_HEADER)) != 0)

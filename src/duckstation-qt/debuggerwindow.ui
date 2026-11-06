@@ -51,8 +51,19 @@
     <addaction name="actionToggleBreakpoint"/>
     <addaction name="actionClearBreakpoints"/>
    </widget>
+   <widget class="QMenu" name="menuSymbols">
+    <property name="title">
+     <string>&amp;Symbols</string>
+    </property>
+    <addaction name="actionAutomaticSymbols"/>
+    <addaction name="actionLoadSymbols"/>
+    <addaction name="actionReloadSymbols"/>
+    <addaction name="separator"/>
+    <addaction name="actionDisableSymbols"/>
+   </widget>
    <addaction name="menu_Debugger"/>
    <addaction name="menuBreakpoints"/>
+   <addaction name="menuSymbols"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -408,6 +419,48 @@
    </property>
    <property name="shortcut">
     <string>F9</string>
+   </property>
+  </action>
+  <action name="actionAutomaticSymbols">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/magic-line.svg</normaloff>:/icons/monochrome/svg/magic-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Use &amp;Automatic Symbols</string>
+   </property>
+  </action>
+  <action name="actionLoadSymbols">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Load Symbols...</string>
+   </property>
+  </action>
+  <action name="actionReloadSymbols">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/refresh-line.svg</normaloff>:/icons/monochrome/svg/refresh-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Reload Symbols</string>
+   </property>
+  </action>
+  <action name="actionDisableSymbols">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/file-forbid-line.svg</normaloff>:/icons/monochrome/svg/file-forbid-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Disable Symbols</string>
    </property>
   </action>
   <action name="actionClose">

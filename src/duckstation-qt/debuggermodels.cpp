@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggermodels.h"
+#include "debuggerwindow.h"
 #include "qtutils.h"
 
 #include "core/bios_types.h"
@@ -205,7 +206,14 @@ void DebuggerStackModel::invalidateView()
   endResetModel();
 }
 
-DebuggerCallStackModel::DebuggerCallStackModel(QObject* parent /*= nullptr*/) : QAbstractTableModel(parent)
+static VirtualMemoryAddress GetSymbolAddress(VirtualMemoryAddress address)
+{
+  // Symbols are stored as physical addresses, except for KSEG2.
+  return (CPU::GetSegmentForAddress(address) == CPU::Segment::KSEG2) ? address : CPU::VirtualAddressToPhysical(address);
+}
+
+DebuggerCallStackModel::DebuggerCallStackModel(const SymbolFile::SymbolList* symbols, QObject* parent /*= nullptr*/)
+  : QAbstractTableModel(parent), m_symbols(symbols)
 {
 }
 
@@ -223,7 +231,7 @@ int DebuggerCallStackModel::columnCount(const QModelIndex& parent /*= QModelInde
 
 QVariant DebuggerCallStackModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
 {
-  if (!index.isValid() || role != Qt::DisplayRole || index.row() < 0 ||
+  if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::ToolTipRole) || index.row() < 0 ||
       static_cast<size_t>(index.row()) >= m_frames.size())
   {
     return {};
@@ -233,9 +241,20 @@ QVariant DebuggerCallStackModel::data(const QModelIndex& index, int role /*= Qt:
   switch (index.column())
   {
     case 0:
-      return QString::asprintf("0x%08X", frame.address);
+    {
+      const SymbolFile::Symbol* symbol = getFrameSymbol(frame);
+      if (!symbol)
+        return (role == Qt::DisplayRole) ? QVariant(QString::asprintf("0x%08X", frame.address)) : QVariant();
+
+      const u32 offset = GetSymbolAddress(frame.address) - symbol->address;
+      QString text = (offset == 0) ? QString::fromStdString(symbol->name) :
+                                     QString::asprintf("%s+0x%X", symbol->name.c_str(), offset);
+      if (role == Qt::ToolTipRole)
+        text += QString::asprintf(": 0x%08X", frame.address);
+      return text;
+    }
     case 1:
-      return QString::asprintf("0x%08X", frame.stack_pointer);
+      return (role == Qt::DisplayRole) ? QVariant(QString::asprintf("0x%08X", frame.stack_pointer)) : QVariant();
     default:
       return {};
   }
@@ -277,12 +296,23 @@ void DebuggerCallStackModel::clear()
   endResetModel();
 }
 
+void DebuggerCallStackModel::invalidateView()
+{
+  beginResetModel();
+  endResetModel();
+}
+
 const CPU::CallStack::Frame* DebuggerCallStackModel::getFrame(const QModelIndex& index) const
 {
   if (!index.isValid() || index.row() < 0 || static_cast<size_t>(index.row()) >= m_frames.size())
     return nullptr;
 
   return &m_frames[static_cast<size_t>(index.row())];
+}
+
+const SymbolFile::Symbol* DebuggerCallStackModel::getFrameSymbol(const CPU::CallStack::Frame& frame) const
+{
+  return SymbolFile::FindSymbol(*m_symbols, GetSymbolAddress(frame.address));
 }
 
 DebuggerThreadsModel::DebuggerThreadsModel(QObject* parent /*= nullptr*/) : QAbstractItemModel(parent)
@@ -502,7 +532,7 @@ std::optional<VirtualMemoryAddress> DebuggerThreadsModel::getThreadPC(const QMod
   return m_threads[static_cast<size_t>(index.row())].pc;
 }
 
-DebuggerAddBreakpointDialog::DebuggerAddBreakpointDialog(QWidget* parent /*= nullptr*/) : QDialog(parent)
+DebuggerAddBreakpointDialog::DebuggerAddBreakpointDialog(DebuggerWindow* parent) : QDialog(parent), m_window(parent)
 {
   m_ui.setupUi(this);
   connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &DebuggerAddBreakpointDialog::okClicked);
@@ -514,22 +544,20 @@ void DebuggerAddBreakpointDialog::okClicked()
 {
   const QString address_str = m_ui.address->text();
   m_address = 0;
-  bool ok = false;
 
-  if (!address_str.isEmpty())
+  if (!address_str.trimmed().isEmpty())
   {
-    if (address_str.startsWith("0x"))
-      m_address = address_str.mid(2).toUInt(&ok, 16);
-    else
-      m_address = address_str.toUInt(&ok, 16);
-
-    if (!ok)
+    const std::optional<VirtualMemoryAddress> address = m_window->parseAddress(address_str);
+    if (!address.has_value())
     {
       QtUtils::AsyncMessageBox(
         this, QMessageBox::Critical, windowTitle(),
-        QCoreApplication::translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+        QCoreApplication::translate("DebuggerWindow",
+                                    "Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678)."));
       return;
     }
+
+    m_address = address.value();
 
     if (m_ui.read->isChecked())
       m_type = CPU::BreakpointType::Read;

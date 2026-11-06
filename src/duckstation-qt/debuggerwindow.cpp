@@ -61,11 +61,12 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   {
     m_game_serial = QtHost::GetCurrentGameSerial();
     loadGameSettings(false);
+    loadSymbols(QtHost::GetCurrentGamePath(), QtHost::GetCurrentExeOverride());
 
     if (QtHost::IsSystemPaused())
       onSystemPaused();
     else
-      onSystemStarted();
+      setUIEnabled(false, true);
   }
   else
   {
@@ -75,14 +76,21 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
-void DebuggerWindow::onSystemStarted()
+void DebuggerWindow::onSystemStarted(const QString& path, const QString& serial, const QString& title, GameHash hash,
+                                     const QString& exe_override)
 {
-  if (const QString& serial = QtHost::GetCurrentGameSerial(); m_game_serial != serial)
+  Q_UNUSED(serial);
+  Q_UNUSED(title);
+  Q_UNUSED(hash);
+
+  if (m_game_serial != serial)
   {
     m_game_serial = serial;
     loadGameSettings(true);
   }
 
+  // Boot doesn't send systemGameChanged.
+  loadSymbols(path, exe_override);
   setUIEnabled(false, true);
 
   // RAM size and region pointers aren't valid until the system has started.
@@ -92,22 +100,27 @@ void DebuggerWindow::onSystemStarted()
 void DebuggerWindow::onSystemDestroyed()
 {
   m_game_serial.clear();
+  loadGameSettings(false);
+  m_symbols.clear();
+  updateSymbolUI();
   refreshBreakpointList({});
   m_call_stack_model->clear();
   m_threads_model->clear();
   setUIEnabled(false, false);
 }
 
-void DebuggerWindow::onSystemGameChanged(const QString& path, const QString& serial, const QString& title)
+void DebuggerWindow::onSystemGameChanged(const QString& path, const QString& serial, const QString& title,
+                                         GameHash hash, const QString& exe_override)
 {
-  Q_UNUSED(path);
   Q_UNUSED(title);
+  Q_UNUSED(hash);
 
-  if (m_game_serial == serial)
-    return;
-
-  m_game_serial = serial;
-  loadGameSettings(true);
+  if (m_game_serial != serial)
+  {
+    m_game_serial = serial;
+    loadGameSettings(true);
+  }
+  loadSymbols(path, exe_override);
 }
 
 void DebuggerWindow::onSystemPaused()
@@ -128,6 +141,121 @@ void DebuggerWindow::onSystemResumed()
 void DebuggerWindow::reportMessage(const QString& message)
 {
   m_ui.statusbar->showMessage(message, 0);
+}
+
+bool DebuggerWindow::loadSymbolsFile(std::string path, Error* error)
+{
+  SymbolFile::SymbolList symbols;
+  if (!SymbolFile::Load(path.c_str(), &symbols, error))
+    return false;
+  if (symbols.empty())
+  {
+    Error::SetStringView(error, "File does not contain usable symbols.");
+    return false;
+  }
+
+  // Cache physical addresses so cached and uncached code use the same labels.
+  for (SymbolFile::Symbol& symbol : symbols)
+  {
+    if (CPU::GetSegmentForAddress(symbol.address) != CPU::Segment::KSEG2)
+      symbol.address = CPU::VirtualAddressToPhysical(symbol.address);
+  }
+
+  SymbolFile::SortSymbols(&symbols);
+  m_symbols = std::move(symbols);
+  m_symbol_path = std::move(path);
+  updateSymbolUI();
+  reportMessage(tr("Loaded %n symbol(s) from %1.", nullptr, static_cast<int>(m_symbols.size()))
+                  .arg(QtUtils::StringViewToQStringView(m_symbol_path)));
+  return true;
+}
+
+void DebuggerWindow::loadSymbols(const QString& path, const QString& exe_override)
+{
+  m_symbols.clear();
+  updateSymbolUI();
+  if (m_symbol_source == SymbolSource::Disabled)
+    return;
+
+  if (m_symbol_source == SymbolSource::Manual)
+  {
+    if (Error error; !loadSymbolsFile(m_symbol_path, &error))
+    {
+      WARNING_LOG("Failed to load symbols from '{}': {}", m_symbol_path, error.GetDescription());
+      reportMessage(tr("Failed to load symbols from %1: %2")
+                      .arg(QtUtils::StringViewToQStringView(m_symbol_path))
+                      .arg(QtUtils::StringViewToQStringView(error.GetDescription())));
+    }
+    return;
+  }
+
+  // Prefer symbols next to a sideloaded executable over the disc's.
+  m_symbol_path.clear();
+  const std::string base_path = (exe_override.isEmpty() ? path : exe_override).toStdString();
+  if (!base_path.empty())
+  {
+    std::vector<std::string> candidates;
+    if (StringUtil::EqualNoCase(Path::GetExtension(base_path), "elf"))
+      candidates.push_back(base_path);
+    const std::string elf_path = Path::ReplaceExtension(base_path, "elf");
+    if (candidates.empty() || candidates.back() != elf_path)
+      candidates.push_back(elf_path);
+    candidates.push_back(Path::ReplaceExtension(base_path, "map"));
+
+    for (const std::string& candidate : candidates)
+    {
+      if (!FileSystem::FileExists(candidate.c_str()))
+        continue;
+      Error error;
+      if (loadSymbolsFile(candidate, &error))
+        return;
+      WARNING_LOG("Ignoring symbol file '{}': {}", candidate, error.GetDescription());
+    }
+  }
+}
+
+void DebuggerWindow::updateSymbolUI()
+{
+  m_ui.codeView->setSymbols(&m_symbols);
+  m_call_stack_model->invalidateView();
+  m_ui.actionAutomaticSymbols->setChecked(m_symbol_source == SymbolSource::Automatic);
+  m_ui.actionDisableSymbols->setChecked(m_symbol_source == SymbolSource::Disabled);
+  m_ui.actionReloadSymbols->setEnabled(m_symbol_source != SymbolSource::Disabled);
+}
+
+std::optional<VirtualMemoryAddress> DebuggerWindow::parseAddress(const QString& str) const
+{
+  const QString trimmed = str.trimmed();
+  const QByteArray name = trimmed.toUtf8();
+  if (const auto it =
+        std::ranges::find(m_symbols, std::string_view(name.constData(), name.size()), &SymbolFile::Symbol::name);
+      it != m_symbols.end())
+  {
+    // Symbols are stored as physical addresses, go to the cached mirror.
+    return (CPU::GetSegmentForAddress(it->address) == CPU::Segment::KSEG2) ?
+             it->address :
+             CPU::PhysicalAddressToVirtual(it->address, CPU::Segment::KSEG0);
+  }
+
+  bool ok;
+  const uint value = (trimmed.startsWith("0x"_L1) ? trimmed.mid(2) : trimmed).toUInt(&ok, 16);
+  return ok ? std::optional<VirtualMemoryAddress>(value) : std::nullopt;
+}
+
+std::optional<VirtualMemoryAddress> DebuggerWindow::promptForAddress(const QString& label)
+{
+  const QString text = QInputDialog::getText(this, windowTitle(), label);
+  if (text.trimmed().isEmpty())
+    return std::nullopt;
+
+  const std::optional<VirtualMemoryAddress> address = parseAddress(text);
+  if (!address.has_value())
+  {
+    QtUtils::MessageBoxCritical(this, windowTitle(),
+                                tr("Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678)."));
+  }
+
+  return address;
 }
 
 void DebuggerWindow::timerRefresh()
@@ -189,8 +317,7 @@ void DebuggerWindow::onGoToPCTriggered()
 
 void DebuggerWindow::onGoToAddressTriggered()
 {
-  std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter code address:"));
+  const std::optional<VirtualMemoryAddress> address = promptForAddress(tr("Enter code address or symbol:"));
   if (!address.has_value())
     return;
 
@@ -200,8 +327,7 @@ void DebuggerWindow::onGoToAddressTriggered()
 
 void DebuggerWindow::onDumpAddressTriggered()
 {
-  std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForHexValue(this, windowTitle(), tr("Enter memory address:"));
+  const std::optional<VirtualMemoryAddress> address = promptForAddress(tr("Enter memory address or symbol:"));
   if (!address.has_value())
     return;
 
@@ -725,6 +851,46 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
   m_next_memory_search_address = 0;
 }
 
+void DebuggerWindow::onAutomaticSymbolsTriggered()
+{
+  m_symbol_source = SymbolSource::Automatic;
+  saveGameSettings();
+  loadSymbols(QtHost::GetCurrentGamePath(), QtHost::GetCurrentExeOverride());
+}
+
+void DebuggerWindow::onLoadSymbolsTriggered()
+{
+  const QString path = QFileDialog::getOpenFileName(this, tr("Load Symbols"), QString::fromStdString(m_symbol_path),
+                                                    tr("Symbol Files (*.elf *.map);;All Files (*)"));
+  if (path.isEmpty())
+    return;
+
+  if (Error error; !loadSymbolsFile(path.toStdString(), &error))
+  {
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, windowTitle(),
+      tr("Failed to load symbols: %1").arg(QtUtils::StringViewToQString(error.GetDescription())));
+    return;
+  }
+
+  m_symbol_source = SymbolSource::Manual;
+  saveGameSettings();
+  updateSymbolUI();
+}
+
+void DebuggerWindow::onReloadSymbolsTriggered()
+{
+  loadSymbols(QtHost::GetCurrentGamePath(), QtHost::GetCurrentExeOverride());
+}
+
+void DebuggerWindow::onDisableSymbolsTriggered()
+{
+  m_symbol_source = SymbolSource::Disabled;
+  m_symbol_path.clear();
+  saveGameSettings();
+  loadSymbols({}, {});
+}
+
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
   g_core_thread->disconnect(this);
@@ -802,6 +968,10 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionToggleBreakpoint, &QAction::triggered, this, &DebuggerWindow::onToggleBreakpointTriggered);
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
+  connect(m_ui.actionAutomaticSymbols, &QAction::triggered, this, &DebuggerWindow::onAutomaticSymbolsTriggered);
+  connect(m_ui.actionLoadSymbols, &QAction::triggered, this, &DebuggerWindow::onLoadSymbolsTriggered);
+  connect(m_ui.actionReloadSymbols, &QAction::triggered, this, &DebuggerWindow::onReloadSymbolsTriggered);
+  connect(m_ui.actionDisableSymbols, &QAction::triggered, this, &DebuggerWindow::onDisableSymbolsTriggered);
   connect(m_ui.codeView, &DebuggerCodeView::addressActivated, this, &DebuggerWindow::onCodeViewAddressActivated);
   connect(m_ui.codeView, &DebuggerCodeView::toggleBreakpointActivated, this,
           &DebuggerWindow::onCodeViewToggleBreakpointActivated);
@@ -841,7 +1011,7 @@ void DebuggerWindow::createModels()
   m_stack_model = new DebuggerStackModel(this);
   m_ui.stackView->setModel(m_stack_model);
 
-  m_call_stack_model = new DebuggerCallStackModel(this);
+  m_call_stack_model = new DebuggerCallStackModel(&m_symbols, this);
   m_ui.callStackView->setModel(m_call_stack_model);
   QtUtils::SetColumnWidthsForTreeView(m_ui.callStackView, {-1, 100});
 
@@ -861,6 +1031,7 @@ void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
   const bool read_only_views = (enabled || allow_pause);
 
   m_ui.actionPause->setEnabled(allow_pause);
+  m_ui.menuSymbols->setEnabled(allow_pause);
 
   // Disable all UI elements that depend on execution state
   m_ui.codeView->setEnabled(read_only_views);
@@ -1148,6 +1319,8 @@ void DebuggerWindow::loadGameSettings(bool clear_existing)
   {
     saveGameSettings();
     m_settings.reset();
+    m_symbol_source = SymbolSource::Automatic;
+    m_symbol_path.clear();
 
     if (!clear_existing)
       return;
@@ -1158,6 +1331,8 @@ void DebuggerWindow::loadGameSettings(bool clear_existing)
     return;
   }
 
+  m_symbol_source = SymbolSource::Automatic;
+  m_symbol_path.clear();
   m_settings = std::make_unique<INISettingsInterface>(
     Path::Combine(EmuFolders::GameSettings, fmt::format("{}.debugger.ini", m_game_serial.toStdString())));
   if (Error error; FileSystem::FileExists(m_settings->GetPath().c_str()))
@@ -1171,6 +1346,17 @@ void DebuggerWindow::loadGameSettings(bool clear_existing)
         this, QMessageBox::Critical, windowTitle(),
         u"Failed to load debugger settings: %1"_s.arg(QtUtils::StringViewToQStringView(error.GetDescription())));
     }
+  }
+
+  const std::string symbol_source = m_settings->GetStringValue("Symbols", "Mode");
+  if (symbol_source == "Manual")
+  {
+    m_symbol_source = SymbolSource::Manual;
+    m_symbol_path = m_settings->GetStringValue("Symbols", "Path");
+  }
+  else if (symbol_source == "Disabled")
+  {
+    m_symbol_source = SymbolSource::Disabled;
   }
 
   using QueuedBreakpoint = std::tuple<CPU::BreakpointType, VirtualMemoryAddress, bool>;
@@ -1224,6 +1410,19 @@ void DebuggerWindow::saveGameSettings()
 {
   if (!m_settings)
     return;
+
+  if (m_symbol_source == SymbolSource::Automatic)
+  {
+    m_settings->ClearSection("Symbols");
+  }
+  else
+  {
+    m_settings->SetStringValue("Symbols", "Mode", (m_symbol_source == SymbolSource::Manual) ? "Manual" : "Disabled");
+    if (m_symbol_source == SymbolSource::Manual)
+      m_settings->SetStringValue("Symbols", "Path", m_symbol_path);
+    else
+      m_settings->DeleteValue("Symbols", "Path");
+  }
 
   // update the breakpoint list, we can yoink it back from the UI to avoid storing it again
   if (const int count = m_ui.breakpointsWidget->topLevelItemCount(); count > 0)

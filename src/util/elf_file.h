@@ -35,6 +35,10 @@ public:
   static constexpr u32 SHT_SHLIB = 10;
   static constexpr u32 SHT_DYNSYM = 11;
   static constexpr u32 SHT_NUM = 12;
+  static constexpr u32 SHF_ALLOC = 2;
+  static constexpr u8 STT_NOTYPE = 0;
+  static constexpr u8 STT_OBJECT = 1;
+  static constexpr u8 STT_FUNC = 2;
   static constexpr u32 PT_NULL = 0;
   static constexpr u32 PT_LOAD = 1;
   static constexpr u32 PT_DYNAMIC = 2;
@@ -91,6 +95,16 @@ public:
     u32 p_align;
   };
 
+  struct Elf32_Sym
+  {
+    u32 st_name;
+    u32 st_value;
+    u32 st_size;
+    u8 st_info;
+    u8 st_other;
+    u16 st_shndx;
+  };
+
 public:
   ELFFile();
   ~ELFFile();
@@ -114,6 +128,10 @@ public:
   using LoadExecutableSectionCallback =
     MoveOnlyFunction<bool(std::span<const u8> data, u32 dest_vaddr, u32 dest_size, Error* error)>;
   bool LoadExecutableSections(LoadExecutableSectionCallback callback, Error* error) const;
+
+  // Names refer to the file buffer and must be copied if retained by the caller.
+  using SymbolCallback = MoveOnlyFunction<void(u32 address, u32 size, u8 type, std::string_view name)>;
+  void EnumerateSymbols(SymbolCallback callback) const;
 
 private:
   DataArray m_data;

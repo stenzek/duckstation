@@ -7,6 +7,8 @@
 #include "core/cpu_core.h"
 #include "core/types.h"
 
+#include "util/symbol_file.h"
+
 #include <QtCore/QPoint>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QAbstractScrollArea>
@@ -44,6 +46,7 @@ public:
   void ensureAddressVisible(VirtualMemoryAddress address);
   void updateBreakpointList(const CPU::BreakpointList& bps);
   void clearBreakpoints();
+  void setSymbols(const SymbolFile::SymbolList* symbols);
   VirtualMemoryAddress getPC() const { return m_last_pc; }
   bool hasBreakpointAtAddress(VirtualMemoryAddress address) const;
 
@@ -55,6 +58,7 @@ Q_SIGNALS:
   void contextMenuRequested(const QPoint& point, VirtualMemoryAddress address);
 
 protected:
+  bool viewportEvent(QEvent* event) override;
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
@@ -86,16 +90,23 @@ private:
     bool is_forward;
   };
 
+  struct CodeRow
+  {
+    VirtualMemoryAddress address;
+    bool is_label;
+  };
+
   // Address/row conversion methods
   int getRowForAddress(VirtualMemoryAddress address) const;
   VirtualMemoryAddress getAddressForRow(int row) const;
 
   // Memory region management
   bool updateRegion(VirtualMemoryAddress address);
+  void rebuildLayout();
+  QString getSymbolLabel(VirtualMemoryAddress address) const;
 
   // Drawing methods
   void updateScrollBars();
-  void updateVisibleRange();
   void calculateBranchArrows();
   void drawBranchArrows(QPainter& painter, const QRect& visible_rect);
   void drawInstruction(QPainter& painter, VirtualMemoryAddress address, int y, bool is_selected, bool is_pc);
@@ -118,8 +129,9 @@ private:
   QPixmap m_breakpoint_pixmap;
 
   // Scroll state
-  VirtualMemoryAddress m_top_address = 0;
-  int m_visible_rows = 0;
+  int m_top_row = 0;
+  std::vector<CodeRow> m_rows;
+  const SymbolFile::SymbolList* m_symbols = nullptr; // Owned by DebuggerWindow.
 
   // Code region state (from DebuggerCodeModel)
   Bus::MemoryRegion m_current_code_region = Bus::MemoryRegion::Count;

@@ -13,8 +13,10 @@
 #include "common/log.h"
 #include "common/small_string.h"
 
+#include <QtCore/QSignalBlocker>
 #include <QtCore/QTimer>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QHelpEvent>
 #include <QtGui/QKeySequence>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
@@ -23,6 +25,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyleOption>
+#include <QtWidgets/QToolTip>
 
 #include <algorithm>
 
@@ -45,16 +48,9 @@ DebuggerCodeView::DebuggerCodeView(QWidget* parent) : QAbstractScrollArea(parent
 
   // Connect scroll bar
   connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
-    const VirtualMemoryAddress new_top = getAddressForRow(value);
-    // Clamp to valid range to prevent wrapping
-    if (new_top >= m_code_region_start && new_top < m_code_region_end)
-    {
-      m_top_address = new_top;
-      updateVisibleRange();
-      // Recalculate arrows when scroll position changes
-      calculateBranchArrows();
-      viewport()->update();
-    }
+    m_top_row = value;
+    calculateBranchArrows();
+    viewport()->update();
   });
 
   setFocusPolicy(Qt::StrongFocus);
@@ -147,20 +143,78 @@ bool DebuggerCodeView::hasBreakpointAtAddress(VirtualMemoryAddress address) cons
   return std::find(m_breakpoints.begin(), m_breakpoints.end(), address) != m_breakpoints.end();
 }
 
+void DebuggerCodeView::setSymbols(const SymbolFile::SymbolList* symbols)
+{
+  m_symbols = symbols;
+  rebuildLayout();
+  calculateBranchArrows();
+  viewport()->update();
+}
+
+void DebuggerCodeView::rebuildLayout()
+{
+  const VirtualMemoryAddress top_address = getAddressForRow(m_top_row);
+  m_rows.clear();
+  for (VirtualMemoryAddress address = m_code_region_start; address < m_code_region_end;
+       address += CPU::INSTRUCTION_SIZE)
+  {
+    const VirtualMemoryAddress symbol_address =
+      m_current_segment == CPU::Segment::KSEG2 ? address : CPU::VirtualAddressToPhysical(address);
+    if (m_symbols && !SymbolFile::GetSymbolsAtAddress(*m_symbols, symbol_address).empty())
+      m_rows.push_back({address, true});
+    m_rows.push_back({address, false});
+  }
+  m_top_row = getRowForAddress(top_address);
+  if (m_top_row > 0 && m_rows[m_top_row - 1].is_label)
+    m_top_row--;
+  updateScrollBars();
+}
+
+QString DebuggerCodeView::getSymbolLabel(VirtualMemoryAddress address) const
+{
+  QStringList names;
+  if (m_symbols)
+  {
+    const VirtualMemoryAddress symbol_address =
+      CPU::GetSegmentForAddress(address) == CPU::Segment::KSEG2 ? address : CPU::VirtualAddressToPhysical(address);
+    for (const SymbolFile::Symbol& symbol : SymbolFile::GetSymbolsAtAddress(*m_symbols, symbol_address))
+    {
+      const QString name = QString::fromStdString(symbol.name);
+      names.push_back(name);
+    }
+  }
+  return names.join(u", "_s) + QLatin1Char(':');
+}
+
+bool DebuggerCodeView::viewportEvent(QEvent* event)
+{
+  if (event->type() == QEvent::ToolTip)
+  {
+    const auto* help = static_cast<QHelpEvent*>(event);
+    const int row = m_top_row + help->pos().y() / m_row_height;
+    if (row >= 0 && row < static_cast<int>(m_rows.size()) && m_rows[row].is_label)
+      QToolTip::showText(help->globalPos(), getSymbolLabel(m_rows[row].address), viewport());
+    else
+      QToolTip::hideText();
+    return true;
+  }
+  return QAbstractScrollArea::viewportEvent(event);
+}
+
 int DebuggerCodeView::getRowForAddress(VirtualMemoryAddress address) const
 {
-  if (address < m_code_region_start)
+  if (m_rows.empty())
     return 0;
-  if (address >= m_code_region_end)
-    return static_cast<int>((m_code_region_end - m_code_region_start) / CPU::INSTRUCTION_SIZE) - 1;
-
-  return static_cast<int>((address - m_code_region_start) / CPU::INSTRUCTION_SIZE);
+  address = std::clamp(address, m_code_region_start, m_code_region_end - CPU::INSTRUCTION_SIZE);
+  const auto it = std::ranges::upper_bound(m_rows, address, {}, &CodeRow::address);
+  return static_cast<int>(it - m_rows.begin()) - 1;
 }
 
 VirtualMemoryAddress DebuggerCodeView::getAddressForRow(int row) const
 {
-  const VirtualMemoryAddress address = m_code_region_start + (static_cast<u32>(row) * CPU::INSTRUCTION_SIZE);
-  return std::clamp(address, m_code_region_start, m_code_region_end - CPU::INSTRUCTION_SIZE);
+  if (m_rows.empty())
+    return m_code_region_start;
+  return m_rows[std::clamp(row, 0, static_cast<int>(m_rows.size()) - 1)].address;
 }
 
 bool DebuggerCodeView::updateRegion(VirtualMemoryAddress address)
@@ -186,7 +240,7 @@ bool DebuggerCodeView::updateRegion(VirtualMemoryAddress address)
   m_current_segment = segment;
   m_current_code_region = region.value();
 
-  updateScrollBars();
+  rebuildLayout();
   viewport()->update();
   return true;
 }
@@ -196,34 +250,19 @@ void DebuggerCodeView::scrollToAddress(VirtualMemoryAddress address, bool center
   address &= ~3u;
   ensureAddressVisible(address);
 
-  VirtualMemoryAddress old_top = m_top_address;
-
+  const int target_row = getRowForAddress(address);
+  const int visible_rows = getVisibleRowCount();
   if (center)
+    m_top_row = std::max(0, target_row - visible_rows / 2);
+  else if (target_row < m_top_row || target_row >= m_top_row + visible_rows)
   {
-    const int visible_rows = getVisibleRowCount();
-    const int target_row = getRowForAddress(address);
-    const int top_row = std::max(0, target_row - visible_rows / 2);
-    m_top_address = getAddressForRow(top_row);
-  }
-  else
-  {
-    const VirtualMemoryAddress first_visible = getFirstVisibleAddress();
-    const VirtualMemoryAddress last_visible = getLastVisibleAddress();
-
-    if (address < first_visible || address > last_visible)
-    {
-      m_top_address = address;
-    }
-  }
-
-  // Only recalculate arrows if scroll position actually changed
-  if (m_top_address != old_top)
-  {
-    calculateBranchArrows();
+    m_top_row = target_row;
+    if (visible_rows > 1 && m_top_row > 0 && m_rows[m_top_row - 1].is_label)
+      m_top_row--;
   }
 
   updateScrollBars();
-  updateVisibleRange();
+  calculateBranchArrows();
   viewport()->update();
 }
 
@@ -267,7 +306,7 @@ void DebuggerCodeView::setSelectionEndAddress(VirtualMemoryAddress address)
 
 VirtualMemoryAddress DebuggerCodeView::getAddressAtPoint(const QPoint& point) const
 {
-  const int top_row = getRowForAddress(m_top_address);
+  const int top_row = m_top_row;
   const int clicked_row = top_row + (point.y() / m_row_height);
   return getAddressForRow(clicked_row);
 }
@@ -280,9 +319,10 @@ void DebuggerCodeView::paintEvent(QPaintEvent* event)
   const QRect visible_rect = event->rect();
 
   // Calculate which rows are visible based on scroll position
-  const int top_row = getRowForAddress(m_top_address);
+  const int top_row = m_top_row;
   const int first_visible_row = top_row + (visible_rect.top() / m_row_height);
-  const int last_visible_row = top_row + ((visible_rect.bottom() + m_row_height - 1) / m_row_height);
+  const int last_visible_row =
+    std::min(static_cast<int>(m_rows.size()) - 1, top_row + visible_rect.bottom() / m_row_height);
 
   painter.fillRect(visible_rect, palette().base());
 
@@ -296,10 +336,26 @@ void DebuggerCodeView::paintEvent(QPaintEvent* event)
     if (y + m_row_height < visible_rect.top() || y > visible_rect.bottom())
       continue;
 
-    const bool is_selected = isAddressSelected(address);
-    const bool is_pc = (address == m_last_pc);
-
-    drawInstruction(painter, address, y, is_selected, is_pc);
+    if (m_rows[row].is_label)
+    {
+      painter.save();
+      painter.fillRect(QRect(ADDRESS_COLUMN_START, y, viewport()->width() - ADDRESS_COLUMN_START, m_row_height),
+                       palette().alternateBase());
+      painter.setPen(palette().mid().color());
+      painter.drawLine(ADDRESS_COLUMN_START, y, viewport()->width(), y);
+      QFont label_font = font();
+      label_font.setBold(true);
+      painter.setFont(label_font);
+      painter.setPen(palette().link().color());
+      const QString label = painter.fontMetrics().elidedText(
+        getSymbolLabel(address), Qt::ElideRight, std::max(0, viewport()->width() - ADDRESS_COLUMN_START - 4));
+      painter.drawText(ADDRESS_COLUMN_START + 2, y + painter.fontMetrics().ascent() + 1, label);
+      painter.restore();
+    }
+    else
+    {
+      drawInstruction(painter, address, y, isAddressSelected(address), address == m_last_pc);
+    }
   }
 
   drawBranchArrows(painter, visible_rect);
@@ -416,15 +472,27 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
       start_pos = end_pos;
     }
 
+    str.clear();
     if (is_pc)
-    {
-      str.clear();
       CPU::DisassembleInstructionComment(&str, address, instruction_bits);
-      if (!str.empty())
+    const CPU::Instruction instruction{instruction_bits};
+    if (m_symbols && CPU::IsDirectBranchInstruction(instruction))
+    {
+      VirtualMemoryAddress target = CPU::GetDirectBranchTarget(instruction, address);
+      if (CPU::GetSegmentForAddress(target) != CPU::Segment::KSEG2)
+        target = CPU::VirtualAddressToPhysical(target);
+      if (const SymbolFile::Symbol* symbol = SymbolFile::FindSymbol(*m_symbols, target))
       {
-        painter.setPen(address_color);
-        painter.drawText(COMMENT_COLUMN_START, y, QtUtils::StringViewToQString(str));
+        str.append_format("{}<{}", str.empty() ? "" : "; ", symbol->name);
+        if (target != symbol->address)
+          str.append_format("+0x{:X}", target - symbol->address);
+        str.append('>');
       }
+    }
+    if (!str.empty())
+    {
+      painter.setPen(address_color);
+      painter.drawText(COMMENT_COLUMN_START, y, QtUtils::StringViewToQString(str));
     }
   }
   else
@@ -443,8 +511,9 @@ void DebuggerCodeView::calculateBranchArrows()
 
   // Expand search range to include arrows that might be partially visible
   const VirtualMemoryAddress search_start =
-    (first_visible > 64 * CPU::INSTRUCTION_SIZE) ? first_visible - (64 * CPU::INSTRUCTION_SIZE) : m_code_region_start;
-  const VirtualMemoryAddress search_end = std::min(last_visible + (64 * CPU::INSTRUCTION_SIZE), m_code_region_end);
+    std::max(m_code_region_start, first_visible - std::min(first_visible, 64 * CPU::INSTRUCTION_SIZE));
+  const VirtualMemoryAddress search_end =
+    last_visible + std::min(m_code_region_end - last_visible, 64 * CPU::INSTRUCTION_SIZE);
 
   for (VirtualMemoryAddress addr = search_start; addr < search_end; addr += CPU::INSTRUCTION_SIZE)
   {
@@ -477,7 +546,7 @@ void DebuggerCodeView::drawBranchArrows(QPainter& painter, const QRect& visible_
   if (m_branch_arrows.empty())
     return;
 
-  const int top_row = getRowForAddress(m_top_address);
+  const int top_row = m_top_row;
   const int arrow_left = 2;
   const int arrow_right = ARROW_COLUMN_WIDTH - 2;
   const int viewport_height = viewport()->height();
@@ -631,6 +700,12 @@ void DebuggerCodeView::mouseDoubleClickEvent(QMouseEvent* event)
 {
   if (event->button() == Qt::LeftButton)
   {
+    const int row = m_top_row + event->pos().y() / m_row_height;
+    if (row < 0 || row >= static_cast<int>(m_rows.size()) || m_rows[row].is_label)
+    {
+      event->accept();
+      return;
+    }
     const VirtualMemoryAddress address = getAddressAtPoint(event->pos());
 
     const int x = event->pos().x();
@@ -695,8 +770,11 @@ void DebuggerCodeView::keyPressEvent(QKeyEvent* event)
       return;
   }
 
-  const int total_rows = static_cast<int>((m_code_region_end - m_code_region_start) / CPU::INSTRUCTION_SIZE);
-  const int new_row = std::clamp(getRowForAddress(m_selected_address) + row_delta, 0, total_rows - 1);
+  if (m_rows.empty())
+    return;
+  int new_row = std::clamp(getRowForAddress(m_selected_address) + row_delta, 0, static_cast<int>(m_rows.size()) - 1);
+  if (row_delta < 0 && new_row > 0 && m_rows[new_row].is_label)
+    new_row--;
   const VirtualMemoryAddress new_address = getAddressForRow(new_row);
   scrollToAddress(new_address, false);
   if (event->modifiers() & Qt::ShiftModifier)
@@ -711,25 +789,7 @@ void DebuggerCodeView::wheelEvent(QWheelEvent* event)
   const int delta = event->angleDelta().y();
   const int steps = delta / 120; // Standard wheel step
 
-  const u32 instruction_steps = static_cast<u32>(std::abs(steps) * CPU::INSTRUCTION_SIZE * 3);
-  VirtualMemoryAddress old_top = m_top_address;
-  VirtualMemoryAddress new_top = (steps >= 0) ?
-                                   (instruction_steps >= m_top_address) ? 0 : (m_top_address - instruction_steps) :
-                                   (m_top_address + instruction_steps);
-
-  // Clamp to valid range
-  new_top = std::clamp(new_top, m_code_region_start, m_code_region_end - CPU::INSTRUCTION_SIZE);
-  m_top_address = new_top;
-
-  // Only recalculate arrows if scroll position actually changed
-  if (m_top_address != old_top)
-  {
-    calculateBranchArrows();
-  }
-
-  updateScrollBars();
-  updateVisibleRange();
-  viewport()->update();
+  verticalScrollBar()->setValue(verticalScrollBar()->value() - steps * 3);
 
   event->accept();
 }
@@ -738,41 +798,32 @@ void DebuggerCodeView::resizeEvent(QResizeEvent* event)
 {
   QAbstractScrollArea::resizeEvent(event);
   updateScrollBars();
-  updateVisibleRange();
   // Recalculate arrows on resize since visible range changes
   calculateBranchArrows();
 }
 
 void DebuggerCodeView::updateScrollBars()
 {
-  const int total_rows = static_cast<int>((m_code_region_end - m_code_region_start) / CPU::INSTRUCTION_SIZE);
   const int visible_rows = getVisibleRowCount();
-  const int max_value = std::max(0, total_rows - visible_rows);
-
+  const int max_value = std::max(0, static_cast<int>(m_rows.size()) - visible_rows);
+  m_top_row = std::clamp(m_top_row, 0, max_value);
+  const QSignalBlocker blocker(verticalScrollBar());
   verticalScrollBar()->setRange(0, max_value);
   verticalScrollBar()->setPageStep(visible_rows);
-
-  const int current_row = getRowForAddress(m_top_address);
-  verticalScrollBar()->setValue(current_row);
-}
-
-void DebuggerCodeView::updateVisibleRange()
-{
-  m_visible_rows = getVisibleRowCount();
+  verticalScrollBar()->setValue(m_top_row);
 }
 
 int DebuggerCodeView::getVisibleRowCount() const
 {
-  return viewport()->height() / m_row_height;
+  return std::max(1, viewport()->height() / m_row_height);
 }
 
 VirtualMemoryAddress DebuggerCodeView::getFirstVisibleAddress() const
 {
-  return m_top_address;
+  return getAddressForRow(m_top_row);
 }
 
 VirtualMemoryAddress DebuggerCodeView::getLastVisibleAddress() const
 {
-  const int visible_rows = getVisibleRowCount();
-  return m_top_address + (visible_rows * CPU::INSTRUCTION_SIZE);
+  return getAddressForRow(m_top_row + (viewport()->height() + m_row_height - 1) / m_row_height - 1);
 }

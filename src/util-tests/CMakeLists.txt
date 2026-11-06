@@ -9,6 +9,7 @@ add_executable(util-tests
   cd_image_tests.cpp
   core_audio_stream_tests.cpp
   elf_parser_tests.cpp
+  symbol_file_tests.cpp
   cue_parser_tests.cpp
   image_tests.cpp
   ini_settings_interface_tests.cpp

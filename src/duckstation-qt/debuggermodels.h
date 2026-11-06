@@ -10,6 +10,8 @@
 #include "core/cpu_types.h"
 #include "core/cpu_call_stack.h"
 
+#include "util/symbol_file.h"
+
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QAbstractTableModel>
@@ -19,6 +21,8 @@
 #include <map>
 #include <optional>
 #include <vector>
+
+class DebuggerWindow;
 
 class DebuggerRegistersModel final : public QAbstractListModel
 {
@@ -64,7 +68,7 @@ class DebuggerCallStackModel final : public QAbstractTableModel
   Q_OBJECT
 
 public:
-  explicit DebuggerCallStackModel(QObject* parent = nullptr);
+  explicit DebuggerCallStackModel(const SymbolFile::SymbolList* symbols, QObject* parent = nullptr);
   ~DebuggerCallStackModel() override;
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -73,12 +77,15 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
   const CPU::CallStack::Frame* getFrame(const QModelIndex& index) const;
+  const SymbolFile::Symbol* getFrameSymbol(const CPU::CallStack::Frame& frame) const;
 
   void updateValues();
   void clear();
+  void invalidateView();
 
 private:
   CPU::CallStack::FrameList m_frames;
+  const SymbolFile::SymbolList* m_symbols; // Owned by DebuggerWindow.
 };
 
 class DebuggerThreadsModel final : public QAbstractItemModel
@@ -120,7 +127,7 @@ class DebuggerAddBreakpointDialog final : public QDialog
   Q_OBJECT
 
 public:
-  explicit DebuggerAddBreakpointDialog(QWidget* parent = nullptr);
+  explicit DebuggerAddBreakpointDialog(DebuggerWindow* parent);
   ~DebuggerAddBreakpointDialog() override;
 
   u32 getAddress() const { return m_address; }
@@ -130,6 +137,7 @@ private:
   void okClicked();
 
   Ui::DebuggerAddBreakpointDialog m_ui;
+  DebuggerWindow* m_window;
   u32 m_address = 0;
   CPU::BreakpointType m_type = CPU::BreakpointType::Execute;
 };

@@ -90,6 +90,7 @@
     <ClInclude Include="dyn_libwebp.h" />
     <ClInclude Include="dyn_libzip.h" />
     <ClInclude Include="input_manager_private.h" />
+    <ClInclude Include="symbol_file.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="sqlite_helpers.cpp" />
     <ClCompile Include="zip_helpers.cpp" />
     <ClCompile Include="dyn_libs.cpp" />
+    <ClCompile Include="symbol_file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

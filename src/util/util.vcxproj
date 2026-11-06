@@ -103,6 +103,7 @@
     <ClInclude Include="spirv_module.h" />
     <ClInclude Include="sqlite_helpers.h" />
     <ClInclude Include="state_wrapper.h" />
+    <ClInclude Include="symbol_file.h" />
     <ClInclude Include="texture_decompress.h" />
     <ClInclude Include="translation.h" />
     <ClInclude Include="vulkan_builders.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="sqlite_helpers.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
+    <ClCompile Include="symbol_file.cpp" />
     <ClCompile Include="texture_decompress.cpp" />
     <ClCompile Include="translation.cpp" />
     <ClCompile Include="vulkan_builders.cpp" />

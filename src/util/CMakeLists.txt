@@ -40,6 +40,8 @@ add_library(util
   dyn_sqlite.h
   elf_file.cpp
   elf_file.h
+  symbol_file.cpp
+  symbol_file.h
   gpu_device.cpp
   gpu_device.h
   gpu_framebuffer_manager.h
