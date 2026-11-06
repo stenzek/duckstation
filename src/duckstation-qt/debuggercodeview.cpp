@@ -165,6 +165,7 @@ VirtualMemoryAddress DebuggerCodeView::getAddressForRow(int row) const
 
 bool DebuggerCodeView::updateRegion(VirtualMemoryAddress address)
 {
+  address &= ~3u;
   CPU::Segment segment = CPU::GetSegmentForAddress(address);
   std::optional<Bus::MemoryRegion> region = Bus::GetMemoryRegionForAddress(CPU::VirtualAddressToPhysical(address));
   if (!region.has_value() || (address >= m_code_region_start && address < m_code_region_end))
@@ -192,6 +193,7 @@ bool DebuggerCodeView::updateRegion(VirtualMemoryAddress address)
 
 void DebuggerCodeView::scrollToAddress(VirtualMemoryAddress address, bool center)
 {
+  address &= ~3u;
   ensureAddressVisible(address);
 
   VirtualMemoryAddress old_top = m_top_address;
@@ -249,6 +251,7 @@ bool DebuggerCodeView::isAddressSelected(VirtualMemoryAddress address) const
 
 void DebuggerCodeView::setSelectedAddress(VirtualMemoryAddress address)
 {
+  address &= ~3u;
   m_selected_address = address;
   m_selection_anchor_address = address;
   m_has_selection = true;
@@ -257,6 +260,7 @@ void DebuggerCodeView::setSelectedAddress(VirtualMemoryAddress address)
 
 void DebuggerCodeView::setSelectionEndAddress(VirtualMemoryAddress address)
 {
+  address &= ~3u;
   m_selected_address = address;
   viewport()->update();
 }
