@@ -415,6 +415,12 @@ QTabBar::tab {
   border-right: 1px solid transparent;
   color: $text-color;
 }
+QTabBar::tab:bottom {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
 QTabBar::tab:selected {
   background: $bg-active;
   color: $text-active;
