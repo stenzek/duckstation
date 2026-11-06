@@ -214,8 +214,6 @@ void DebuggingSettingsWidget::addTweakOptions()
                          "DMAMaxSliceTicks", 1, 10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS, tr(" cycles"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), Settings::HACKS_SECTION_NAME,
                          "DMAHaltTicks", 1, 10000, Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), Settings::HACKS_SECTION_NAME,
-                         "GPUFIFOSize", 16, 4096, Settings::DEFAULT_GPU_FIFO_SIZE, tr(" words"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead"), Settings::HACKS_SECTION_NAME,
                          "GPUMaxRunAhead", 0, 1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
 
@@ -284,8 +282,6 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
-    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max runahead
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Recompiler memory exceptions
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Recompiler block linking
@@ -327,7 +323,6 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "LineEndOffset");
   sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAMaxSliceTicks");
   sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAHaltTicks");
-  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUFIFOSize");
   sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUMaxRunAhead");
   sif->DeleteValue(Settings::HACKS_SECTION_NAME, "ExportSharedMemory");
   sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerMemoryExceptions");

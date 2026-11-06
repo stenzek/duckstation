@@ -145,14 +145,14 @@ struct Entry
   PackedOptional<u32, 10> dma_halt_ticks;                ///< DMA halt ticks override.
   PackedOptional<u32, 11> cdrom_max_seek_speedup_cycles; ///< CD-ROM max seek speedup cycles override.
   PackedOptional<u32, 12> cdrom_max_read_speedup_cycles; ///< CD-ROM max read speedup cycles override.
-  PackedOptional<u32, 13> gpu_fifo_size;                 ///< GPU FIFO size override.
-  PackedOptional<u32, 14> gpu_max_run_ahead;             ///< GPU max runahead override.
-  PackedOptional<u16, 15> gpu_filter_framebuffer_uploads_minimum_width;  ///< Filtered upload width override.
-  PackedOptional<u16, 16> gpu_filter_framebuffer_uploads_minimum_height; ///< Filtered upload height override.
-  PackedOptional<float, 17> gpu_pgxp_tolerance;                          ///< GPU PGXP tolerance override.
-  PackedOptional<float, 18> gpu_pgxp_depth_threshold;                    ///< GPU PGXP depth threshold override.
-  PackedOptional<float, 19> gpu_pgxp_depth_bias;                         ///< GPU PGXP depth bias override.
-  PackedOptional<GPUPGXPDepthNormalizationMode, 20> gpu_pgxp_normalize_depth; ///< GPU PGXP depth normalization override.
+  PackedOptional<u32, 13> gpu_max_run_ahead;             ///< GPU max runahead override.
+  PackedOptional<u16, 14> gpu_filter_framebuffer_uploads_minimum_width;  ///< Filtered upload width override.
+  PackedOptional<u16, 15> gpu_filter_framebuffer_uploads_minimum_height; ///< Filtered upload height override.
+  PackedOptional<float, 16> gpu_pgxp_tolerance;                          ///< GPU PGXP tolerance override.
+  PackedOptional<float, 17> gpu_pgxp_depth_threshold;                    ///< GPU PGXP depth threshold override.
+  PackedOptional<float, 18> gpu_pgxp_depth_bias;                         ///< GPU PGXP depth bias override.
+  PackedOptional<GPUPGXPDepthNormalizationMode, 19>
+    gpu_pgxp_normalize_depth; ///< GPU PGXP depth normalization override.
 
   /// Checks if a trait is present.
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }

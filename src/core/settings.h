@@ -279,7 +279,6 @@ struct Settings : public GPUSettings
 
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
   TickCount dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
-  u32 gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;
   TickCount gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
 
   ConsoleRegion region = DEFAULT_CONSOLE_REGION;
@@ -450,7 +449,6 @@ struct Settings : public GPUSettings
   {
     DEFAULT_DMA_MAX_SLICE_TICKS = 1000,
     DEFAULT_DMA_HALT_TICKS = 100,
-    DEFAULT_GPU_FIFO_SIZE = 16,
     DEFAULT_GPU_MAX_RUN_AHEAD = 512,
   };
 

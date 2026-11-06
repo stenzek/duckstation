@@ -73,6 +73,7 @@ enum class BlitterState : u8
 enum : u32
 {
   MAX_FIFO_SIZE = 256,
+  FIFO_SIZE = 16,            ///< Hardware GP0 FIFO size, in words.
   FIFO_MODE_FULL_WORDS = 11, ///< GPUSTAT bit 25 reads full with this many words queued, in GP1(04h)=1 mode.
   DOT_TIMER_INDEX = 0,
   HBLANK_TIMER_INDEX = 1,
@@ -390,7 +391,6 @@ struct Locals
   std::unique_ptr<GPUDump::Recorder> gpu_dump;
 
   TickCount max_run_ahead = 128;
-  u32 fifo_size = 128;
   u32 blit_remaining_words;
   GPURenderCommand render_command{};
   std::vector<u32> blit_buffer;
@@ -422,7 +422,6 @@ void GPU::Initialize()
   s_locals.crtc_tick_event.Activate();
 
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
-  s_locals.fifo_size = g_settings.gpu_fifo_size;
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
   s_locals.console_is_pal = System::IsPALRegion();
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
@@ -443,7 +442,6 @@ void GPU::Shutdown()
 void GPU::UpdateSettings(const Settings& old_settings)
 {
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
-  s_locals.fifo_size = g_settings.gpu_fifo_size;
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
@@ -847,7 +845,7 @@ void GPU::UpdateDMARequest()
 
     case BlitterState::WritingVRAM:
       s_locals.GPUSTAT.ready_to_send_vram = false;
-      s_locals.GPUSTAT.ready_to_receive_dma = (s_locals.fifo.GetSize() < s_locals.fifo_size);
+      s_locals.GPUSTAT.ready_to_receive_dma = (s_locals.fifo.GetSize() < FIFO_SIZE);
       break;
 
     case BlitterState::ReadingVRAM:
@@ -857,7 +855,7 @@ void GPU::UpdateDMARequest()
 
     case BlitterState::DrawingPolyLine:
       s_locals.GPUSTAT.ready_to_send_vram = false;
-      s_locals.GPUSTAT.ready_to_receive_dma = (s_locals.fifo.GetSize() < s_locals.fifo_size);
+      s_locals.GPUSTAT.ready_to_receive_dma = (s_locals.fifo.GetSize() < FIFO_SIZE);
       break;
 
     default:
@@ -955,7 +953,7 @@ void GPU::WriteRegister(u32 offset, u32 value)
 
       // FIFO can be overflowed through direct GP0 writes if the command tick event hasn't run, because
       // there's no backpressure applied to the CPU. Instead force the GPU to run and catch up.
-      if (s_locals.fifo.GetSize() >= s_locals.fifo_size) [[unlikely]]
+      if (s_locals.fifo.GetSize() >= FIFO_SIZE) [[unlikely]]
       {
         s_locals.command_tick_event.InvokeEarlyNoReschedule();
 

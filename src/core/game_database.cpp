@@ -46,7 +46,7 @@ namespace {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 40,
+  GAME_DATABASE_CACHE_VERSION = 41,
 };
 
 /// Map of track hashes for image verification
@@ -542,12 +542,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.cdrom_max_read_speedup_cycles = cdrom_max_read_speedup_cycles.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: CDROM maximum read speedup cycles set to {}.", settings.cdrom_max_read_speedup_cycles);
-  }
-  if (gpu_fifo_size.has_value(override_mask))
-  {
-    settings.gpu_fifo_size = gpu_fifo_size.value();
-    if (display_osd_messages)
-      INFO_LOG("GameDB: GPU FIFO size set to {}.", settings.gpu_fifo_size);
   }
   if (gpu_max_run_ahead.has_value(override_mask))
   {
@@ -1219,8 +1213,6 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                        cdrom_max_seek_speedup_cycles.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Read Speedup Cycles"),
                        cdrom_max_read_speedup_cycles.get(override_mask));
-  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"),
-                       gpu_fifo_size.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"),
                        gpu_max_run_ahead.get(override_mask));
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Filter Framebuffer Uploads Minimum Width"),
@@ -1359,8 +1351,7 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadT(&entry.cpu_overclock) || !reader.ReadT(&entry.gpu_pgxp_preserve_proj_fp) ||
         !reader.ReadT(&entry.dma_max_slice_ticks) || !reader.ReadT(&entry.dma_halt_ticks) ||
         !reader.ReadT(&entry.cdrom_max_seek_speedup_cycles) || !reader.ReadT(&entry.cdrom_max_read_speedup_cycles) ||
-        !reader.ReadT(&entry.gpu_fifo_size) || !reader.ReadT(&entry.gpu_max_run_ahead) ||
-        !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
+        !reader.ReadT(&entry.gpu_max_run_ahead) || !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_width) ||
         !reader.ReadT(&entry.gpu_filter_framebuffer_uploads_minimum_height) ||
         !reader.ReadT(&entry.gpu_pgxp_tolerance) || !reader.ReadT(&entry.gpu_pgxp_depth_threshold) ||
         !reader.ReadT(&entry.gpu_pgxp_depth_bias) || !reader.ReadT(&entry.gpu_pgxp_normalize_depth))
@@ -1490,7 +1481,6 @@ bool GameDatabase::SaveToCache()
     writer.WriteT(entry.dma_halt_ticks);
     writer.WriteT(entry.cdrom_max_seek_speedup_cycles);
     writer.WriteT(entry.cdrom_max_read_speedup_cycles);
-    writer.WriteT(entry.gpu_fifo_size);
     writer.WriteT(entry.gpu_max_run_ahead);
     writer.WriteT(entry.gpu_filter_framebuffer_uploads_minimum_width);
     writer.WriteT(entry.gpu_filter_framebuffer_uploads_minimum_height);
@@ -1798,7 +1788,6 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
                                              GetOptionalTFromObject<u32>(settings, "cdromMaxSeekSpeedupCycles"));
     entry->cdrom_max_read_speedup_cycles.set(entry->override_mask,
                                              GetOptionalTFromObject<u32>(settings, "cdromMaxReadSpeedupCycles"));
-    entry->gpu_fifo_size.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "gpuFIFOSize"));
     entry->gpu_max_run_ahead.set(entry->override_mask, GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead"));
     entry->gpu_pgxp_tolerance.set(entry->override_mask, GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance"));
     entry->gpu_pgxp_depth_threshold.set(entry->override_mask,

@@ -566,7 +566,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   dma_max_slice_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
   dma_halt_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
-  gpu_fifo_size = si.GetUIntValue(HACKS_SECTION_NAME, "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
   gpu_max_run_ahead = si.GetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
   mdec_use_old_routines = si.GetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", false);
   export_shared_memory = si.GetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", false);
@@ -944,7 +943,6 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   {
     si.SetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", dma_max_slice_ticks);
     si.SetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", dma_halt_ticks);
-    si.SetIntValue(HACKS_SECTION_NAME, "GPUFIFOSize", gpu_fifo_size);
     si.SetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", gpu_max_run_ahead);
     si.SetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", mdec_use_old_routines);
     si.SetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", export_shared_memory);
@@ -1236,7 +1234,6 @@ void Settings::ApplySettingRestrictions()
     pcsx_expansion_region_enable = false;
     dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
     dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
-    gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;
     gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
   }
 
