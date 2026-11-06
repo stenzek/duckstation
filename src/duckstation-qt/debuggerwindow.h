@@ -116,8 +116,11 @@ private:
   void onCodeViewContextMenuRequested(const QPoint& pt);
   void onCallStackItemDoubleClicked(const QModelIndex& index);
   void onCallStackContextMenuRequested(const QPoint& pt);
+  void showValueContextMenu(QAbstractItemView* view, const QModelIndex& index, const QPoint& pt);
   void onStackItemDoubleClicked(const QModelIndex& index);
+  void onStackContextMenuRequested(const QPoint& pt);
   void onRegisterItemDoubleClicked(const QModelIndex& index);
+  void onRegisterContextMenuRequested(const QPoint& pt);
   void onThreadItemDoubleClicked(const QModelIndex& index);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);

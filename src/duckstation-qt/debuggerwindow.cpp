@@ -576,6 +576,24 @@ void DebuggerWindow::onCallStackContextMenuRequested(const QPoint& pt)
   menu->popup(m_ui.callStackView->viewport()->mapToGlobal(pt));
 }
 
+void DebuggerWindow::showValueContextMenu(QAbstractItemView* view, const QModelIndex& index, const QPoint& pt)
+{
+  if (!index.isValid())
+    return;
+
+  const QString text = index.data().toString();
+  const std::optional<VirtualMemoryAddress> address = parseAddress(text);
+
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  menu->addAction(QIcon(u":/icons/monochrome/svg/file-copy-line.svg"_s), tr("&Copy"),
+                  [text]() { QGuiApplication::clipboard()->setText(text); });
+  QAction* const dump_action =
+    menu->addAction(QIcon(u":/icons/monochrome/svg/debugger-go-to-address.svg"_s), tr("View in &Dump"),
+                    [this, address]() { scrollToMemoryAddress(address.value()); });
+  dump_action->setEnabled(address.has_value());
+  menu->popup(view->viewport()->mapToGlobal(pt));
+}
+
 void DebuggerWindow::onStackItemDoubleClicked(const QModelIndex& index)
 {
   const std::optional<VirtualMemoryAddress> address = m_stack_model->getAddressForIndex(index);
@@ -583,6 +601,11 @@ void DebuggerWindow::onStackItemDoubleClicked(const QModelIndex& index)
     return;
 
   scrollToMemoryAddress(address.value());
+}
+
+void DebuggerWindow::onStackContextMenuRequested(const QPoint& pt)
+{
+  showValueContextMenu(m_ui.stackView, m_ui.stackView->indexAt(pt), pt);
 }
 
 void DebuggerWindow::onRegisterItemDoubleClicked(const QModelIndex& index)
@@ -629,6 +652,12 @@ void DebuggerWindow::onRegisterItemDoubleClicked(const QModelIndex& index)
       win->reportMessage(tr("Set %1 to 0x%2.").arg(reg_name).arg(static_cast<uint>(value), 8, 16, QChar('0')));
     });
   });
+}
+
+void DebuggerWindow::onRegisterContextMenuRequested(const QPoint& pt)
+{
+  // Always use the value, not the register name.
+  showValueContextMenu(m_ui.registerView, m_ui.registerView->indexAt(pt).siblingAtColumn(1), pt);
 }
 
 void DebuggerWindow::startPatchInstruction(VirtualMemoryAddress address)
@@ -988,6 +1017,8 @@ void DebuggerWindow::setupAdditionalUi()
   m_ui.codeView->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.callStackView->setContextMenuPolicy(Qt::CustomContextMenu);
+  m_ui.registerView->setContextMenuPolicy(Qt::CustomContextMenu);
+  m_ui.stackView->setContextMenuPolicy(Qt::CustomContextMenu);
 
   resetLayout();
 
@@ -1044,13 +1075,17 @@ void DebuggerWindow::connectSignals()
           &DebuggerWindow::onCodeViewToggleBreakpointActivated);
   connect(m_ui.codeView, &DebuggerCodeView::commentActivated, this, &DebuggerWindow::onCodeViewCommentActivated);
   connect(m_ui.codeView, &DebuggerCodeView::copyActivated, this, &DebuggerWindow::copySelectedCodeToClipboard);
-  connect(m_ui.codeView, &QWidget::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
+  connect(m_ui.codeView, &DebuggerCodeView::customContextMenuRequested, this,
+          &DebuggerWindow::onCodeViewContextMenuRequested);
   connect(m_ui.callStackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onCallStackItemDoubleClicked);
   connect(m_ui.callStackView, &QWidget::customContextMenuRequested, this,
           &DebuggerWindow::onCallStackContextMenuRequested);
   connect(m_ui.stackView, &QTreeView::doubleClicked, this, &DebuggerWindow::onStackItemDoubleClicked);
+  connect(m_ui.stackView, &QTreeView::customContextMenuRequested, this, &DebuggerWindow::onStackContextMenuRequested);
   connect(m_ui.threadsView, &QTreeView::doubleClicked, this, &DebuggerWindow::onThreadItemDoubleClicked);
   connect(m_ui.registerView, &QTreeView::doubleClicked, this, &DebuggerWindow::onRegisterItemDoubleClicked);
+  connect(m_ui.registerView, &QTreeView::customContextMenuRequested, this,
+          &DebuggerWindow::onRegisterContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointListItemChanged);
