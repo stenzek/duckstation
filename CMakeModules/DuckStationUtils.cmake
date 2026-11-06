@@ -332,10 +332,10 @@ if(APPLE)
       set_source_files_properties(${metallib_path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     else()
       set(RESOURCES_DIRECTORY "$<TARGET_FILE_DIR:${target}>/resources")
-      add_custom_command(TARGET duckstation-qt POST_BUILD
+      add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${RESOURCES_DIRECTORY}"
       )
-      add_custom_command(TARGET duckstation-qt POST_BUILD
+      add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${metallib_path}" "${RESOURCES_DIRECTORY}/${metallib_filename}"
       )
     endif()
