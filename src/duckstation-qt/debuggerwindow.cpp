@@ -84,6 +84,9 @@ void DebuggerWindow::onSystemStarted()
   }
 
   setUIEnabled(false, true);
+
+  // RAM size and region pointers aren't valid until the system has started.
+  setMemoryViewRegion(std::exchange(m_active_memory_region, Bus::MemoryRegion::Count));
 }
 
 void DebuggerWindow::onSystemDestroyed()
