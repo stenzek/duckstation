@@ -950,6 +950,31 @@ void DebuggerWindow::restoreWindowState()
     QMainWindow::restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state)));
 }
 
+void DebuggerWindow::resetLayout()
+{
+  // Matches the placement in the .ui file.
+  for (QDockWidget* dock :
+       {m_ui.dockWidgetDisassembly, m_ui.dockWidgetRegisters, m_ui.dockWidgetMemory, m_ui.dockWidgetBreakpoints,
+        m_ui.dockWidgetStack, m_ui.dockWidgetThreads, m_ui.dockWidgetCallStack})
+  {
+    dock->setFloating(false);
+    addDockWidget((dock == m_ui.dockWidgetDisassembly || dock == m_ui.dockWidgetRegisters) ? Qt::TopDockWidgetArea :
+                                                                                             Qt::BottomDockWidgetArea,
+                  dock);
+    dock->show();
+  }
+
+  // +----------------+----------------+----------------+
+  // |                | Breakpoints    | Call Stack     |
+  // | Memory         +----------------+----------------+
+  // |                | Threads        | Stack          |
+  // +----------------+----------------+----------------+
+  splitDockWidget(m_ui.dockWidgetMemory, m_ui.dockWidgetBreakpoints, Qt::Horizontal);
+  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetStack, Qt::Horizontal);
+  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetThreads, Qt::Vertical);
+  splitDockWidget(m_ui.dockWidgetCallStack, m_ui.dockWidgetStack, Qt::Vertical);
+}
+
 void DebuggerWindow::setupAdditionalUi()
 {
   const QFont& fixed_font = QtHost::GetFixedFont();
@@ -965,15 +990,25 @@ void DebuggerWindow::setupAdditionalUi()
   m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.callStackView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  // +----------------+----------------+----------------+
-  // |                | Breakpoints    | Call Stack     |
-  // | Memory         +----------------+----------------+
-  // |                | Threads        | Stack          |
-  // +----------------+----------------+----------------+
-  splitDockWidget(m_ui.dockWidgetMemory, m_ui.dockWidgetBreakpoints, Qt::Horizontal);
-  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetStack, Qt::Horizontal);
-  splitDockWidget(m_ui.dockWidgetBreakpoints, m_ui.dockWidgetThreads, Qt::Vertical);
-  splitDockWidget(m_ui.dockWidgetCallStack, m_ui.dockWidgetStack, Qt::Vertical);
+  resetLayout();
+
+  for (const auto& [dock, icon] : {
+         std::pair<QDockWidget*, const char*>{m_ui.dockWidgetDisassembly, "code-line"},
+         {m_ui.dockWidgetRegisters, "cpu-line"},
+         {m_ui.dockWidgetMemory, "ram-2-line"},
+         {m_ui.dockWidgetBreakpoints, "debug-toggle-breakpoint"},
+         {m_ui.dockWidgetThreads, "git-branch-line"},
+         {m_ui.dockWidgetCallStack, "function-line"},
+         {m_ui.dockWidgetStack, "stack-line"},
+       })
+  {
+    QAction* const action = dock->toggleViewAction();
+    action->setIcon(QIcon(u":/icons/monochrome/svg/%1.svg"_s.arg(QLatin1StringView(icon))));
+    m_ui.menuWindow->addAction(action);
+  }
+  m_ui.menuWindow->addSeparator();
+  m_ui.menuWindow->addAction(QIcon(u":/icons/monochrome/svg/restart-line.svg"_s), tr("&Reset Layout"), this,
+                             &DebuggerWindow::resetLayout);
 
 #ifdef __APPLE__
   QtUtils::SetIsMaskForMonochromeMenuBarActionIcons(menuBar());

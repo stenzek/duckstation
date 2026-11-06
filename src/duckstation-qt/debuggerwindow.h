@@ -57,6 +57,7 @@ private:
 
   void saveWindowState();
   void restoreWindowState();
+  void resetLayout();
   void setupAdditionalUi();
   void connectSignals();
   void createModels();
