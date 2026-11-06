@@ -178,10 +178,8 @@ void SoundEffectManager::EnsureInitialized()
   {
     const auto settings_lock = Core::GetSettingsLock();
     const SettingsInterface* si = Core::GetSettingsInterface();
-    audio_backend =
-      AudioStream::ParseBackendName(si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "Backend",
-                                                           AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)))
-        .value_or(AudioStream::DEFAULT_BACKEND);
+    audio_backend = AudioStream::ParseBackendName(si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "Backend"))
+                      .value_or(AudioStream::DEFAULT_BACKEND);
     audio_driver = si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "Driver");
     audio_output_device = si->GetStringViewValue(Settings::AUDIO_SECTION_NAME, "OutputDevice");
   }

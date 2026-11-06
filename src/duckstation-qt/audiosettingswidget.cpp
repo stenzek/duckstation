@@ -161,11 +161,7 @@ AudioSettingsWidget::~AudioSettingsWidget() = default;
 void AudioSettingsWidget::onStretchModeChanged()
 {
   const AudioStretchMode stretch_mode =
-    CoreAudioStream::ParseStretchMode(
-      m_dialog
-        ->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "StretchMode",
-                                  CoreAudioStream::GetStretchModeName(AudioStreamParameters::DEFAULT_STRETCH_MODE))
-        .c_str())
+    CoreAudioStream::ParseStretchMode(m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "StretchMode"))
       .value_or(AudioStreamParameters::DEFAULT_STRETCH_MODE);
   m_ui.timeStretchGroup->setEnabled(stretch_mode == AudioStretchMode::TimeStretch);
   updateMinimumLatencyLabel();
@@ -173,11 +169,7 @@ void AudioSettingsWidget::onStretchModeChanged()
 
 AudioBackend AudioSettingsWidget::getEffectiveBackend() const
 {
-  return AudioStream::ParseBackendName(
-           m_dialog
-             ->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "Backend",
-                                       AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND))
-             .c_str())
+  return AudioStream::ParseBackendName(m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "Backend"))
     .value_or(AudioStream::DEFAULT_BACKEND);
 }
 
@@ -281,8 +273,7 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
 void AudioSettingsWidget::updateMinimumLatencyLabel()
 {
   const AudioStretchMode stretch_mode =
-    CoreAudioStream::ParseStretchMode(
-      m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "StretchMode").c_str())
+    CoreAudioStream::ParseStretchMode(m_dialog->getEffectiveStringValue(Settings::AUDIO_SECTION_NAME, "StretchMode"))
       .value_or(AudioStreamParameters::DEFAULT_STRETCH_MODE);
   const bool minimal_output_latency = m_dialog->getEffectiveBoolValue(
     Settings::AUDIO_SECTION_NAME, "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);

@@ -239,11 +239,7 @@ void CaptureSettingsWidget::onMediaCaptureVideoContainerChanged()
 {
   SettingsInterface* const sif = m_dialog->getSettingsInterface();
   const MediaCaptureBackend backend =
-    MediaCapture::ParseBackendName(
-      m_dialog
-        ->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "Backend",
-                                  MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND))
-        .c_str())
+    MediaCapture::ParseBackendName(m_dialog->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "Backend"))
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
   const std::string container = m_dialog->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "VideoContainer",
                                                                   Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_CONTAINER);
@@ -288,11 +284,7 @@ void CaptureSettingsWidget::onMediaCaptureAudioContainerChanged()
 {
   SettingsInterface* const sif = m_dialog->getSettingsInterface();
   const MediaCaptureBackend backend =
-    MediaCapture::ParseBackendName(
-      m_dialog
-        ->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "Backend",
-                                  MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND))
-        .c_str())
+    MediaCapture::ParseBackendName(m_dialog->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "Backend"))
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
   const std::string container = m_dialog->getEffectiveStringValue(MediaCapture::CONFIG_SECTION_NAME, "AudioContainer",
                                                                   Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_CONTAINER);
