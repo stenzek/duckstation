@@ -154,7 +154,7 @@ enum class DriveState : u8
   Reading,
   Playing,
   UNUSED_Pausing,
-  UNUSED_Stopping,
+  Stopping,
   ChangingSession,
   SpinningUp,
   SeekingImplicit,
@@ -365,6 +365,7 @@ static void DoShellOpenComplete();
 static void DoSeekComplete();
 static void DoStatSecondResponse();
 static void DoChangeSessionComplete();
+static void DoStopComplete();
 static void DoSpinUpComplete();
 static void DoSpeedChangeOrImplicitTOCReadComplete();
 static void DoIDRead();
@@ -876,6 +877,10 @@ bool CDROM::DoState(StateWrapper& sw)
       else if (s_state.drive_state == DriveState::ChangingSession)
       {
         s_state.command_second_response = Command::ReadT;
+      }
+      else if (s_state.drive_state == DriveState::Stopping)
+      {
+        s_state.command_second_response = Command::Stop;
       }
     }
 
@@ -1691,15 +1696,20 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   else
     UpdateSubQPosition(false);
 
-  const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_state.seek_end_lba : s_state.current_subq_lba) : 0;
+  // A motor that is still braking after a Stop has to finish stopping, and the head returns to the start of the disc.
+  const bool stopping = (s_state.drive_state == DriveState::Stopping);
+  const CDImage::LBA current_lba =
+    (IsMotorOn() && !stopping) ? (IsSeeking() ? s_state.seek_end_lba : s_state.current_subq_lba) : 0;
   const CDImage::LBA lba_diff = ((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Motor spin-up time.
-  if (!IsMotorOn())
+  if (!IsMotorOn() || stopping)
   {
     ticks += (s_state.drive_state == DriveState::SpinningUp) ? s_state.drive_event.GetTicksUntilNextExecution() :
                                                                GetTicksForSpinUp();
-    if (s_state.drive_state == DriveState::ShellOpening || s_state.drive_state == DriveState::SpinningUp)
+    if (stopping)
+      ticks += s_state.drive_event.GetTicksUntilNextExecution();
+    if (s_state.drive_state == DriveState::ShellOpening || s_state.drive_state == DriveState::SpinningUp || stopping)
       ClearDriveState();
   }
 
@@ -2048,7 +2058,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
             ClearDriveState();
           }
         }
-        else if (s_state.drive_state != DriveState::SeekingImplicit && s_state.drive_state != DriveState::ShellOpening)
+        else if (s_state.drive_state != DriveState::SeekingImplicit &&
+                 s_state.drive_state != DriveState::ShellOpening && s_state.drive_state != DriveState::Stopping)
         {
           // if we're seeking or reading, we need to add time to the current seek/read
           const TickCount change_ticks = GetTicksForSpeedChange();
@@ -2307,9 +2318,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       // Small window of time when another INT1 could sneak in, don't let it.
       ClearAsyncInterrupt();
 
-      // Stop reading.
-      s_state.drive_state = DriveState::Idle;
-      s_state.drive_event.Deactivate();
+      // Stop reading. Doesn't interrupt the motor braking after a Stop.
+      if (s_state.drive_state != DriveState::Stopping)
+        ClearDriveState();
       s_state.secondary_status.ClearActiveBits();
 
       // Reset audio buffer here - control room cutscene audio repeats in Dino Crisis otherwise.
@@ -2333,8 +2344,25 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       s_state.secondary_status.ClearActiveBits();
       SendACKAndStat();
 
-      StopMotor();
-      QueueCommandSecondResponse(Command::Stop, stop_time);
+      if (s_state.drive_state == DriveState::Stopping)
+      {
+        // Already braking, the completion is eligible again.
+        s_state.command_second_response = Command::Stop;
+      }
+      else if (IsMotorOn())
+      {
+        // The motor keeps braking in the background, and still reports as on until it stops. Its completion can be
+        // replaced by another command, but the motor still stops. Verified with hardware tests.
+        ClearDriveState();
+        s_state.drive_state = DriveState::Stopping;
+        s_state.drive_event.Schedule(stop_time);
+        s_state.command_second_response = Command::Stop;
+      }
+      else
+      {
+        StopMotor();
+        QueueCommandSecondResponse(Command::Stop, stop_time);
+      }
 
       EndCommand();
       return;
@@ -2774,7 +2802,7 @@ void CDROM::ClearCommandSecondResponse()
 
 bool CDROM::SecondResponseNeedsEvent()
 {
-  // Seek and session change completions come from the drive event instead.
+  // Seek, session change and braking completions come from the drive event instead.
   switch (s_state.command_second_response)
   {
     case Command::None:
@@ -2782,6 +2810,9 @@ bool CDROM::SecondResponseNeedsEvent()
     case Command::SeekP:
     case Command::ReadT:
       return false;
+
+    case Command::Stop:
+      return (s_state.drive_state != DriveState::Stopping);
 
     default:
       return true;
@@ -2873,13 +2904,9 @@ void CDROM::ExecuteDrive(void*, TickCount ticks)
     }
     break;
 
-    case DriveState::UNUSED_Stopping:
-    {
-      ClearDriveState();
-      StopMotor();
-      DoStatSecondResponse();
-    }
-    break;
+    case DriveState::Stopping:
+      DoStopComplete();
+      break;
 
     case DriveState::Idle:
     default:
@@ -3350,6 +3377,18 @@ void CDROM::DoChangeSessionComplete()
     // we don't emulate multisession discs.. for now
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x40);
   }
+}
+
+void CDROM::DoStopComplete()
+{
+  DEBUG_LOG("Stop complete");
+  StopMotor();
+
+  if (TakeSecondResponse(Command::Stop))
+    DoStatSecondResponse();
+
+  if (g_settings.cdrom_auto_disc_change)
+    Host::RunOnCoreThread([]() { System::SwitchToNextDisc(false); });
 }
 
 void CDROM::DoSpinUpComplete()

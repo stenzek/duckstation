@@ -496,3 +496,76 @@ TEST_F(CDROMControllerTest, QueuedCompleteSurvivesCommand)
   ASSERT_TRUE(stat.has_value());
   EXPECT_EQ(stat->cause, INT_ACK);
 }
+
+// Hardware: the motor still reports as on while braking, GetTN returns the cached TOC, and the motor still stops.
+TEST_F(CDROMControllerTest, StopReportsMotorOnWhileBraking)
+{
+  ReadSectors({0x30, 0x22, 0x57}, 16);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(125));
+
+  const Response tn = Command(0x13);
+  EXPECT_EQ(tn.cause, INT_ACK);
+  EXPECT_EQ(tn.bytes, (std::vector<u8>{STAT_MOTOR_ON, 0x01, 0x01}));
+
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+  EXPECT_EQ(Command(0x01).bytes.at(0), 0x00);
+}
+
+TEST_F(CDROMControllerTest, StopWhenStoppedCompletesQuickly)
+{
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Milliseconds(5));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), 0x00);
+}
+
+// A second Stop while braking makes the completion eligible again, without restarting the braking.
+TEST_F(CDROMControllerTest, StopWhileBrakingCompletes)
+{
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(100));
+  ASSERT_EQ(Command(0x01).cause, INT_ACK);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), 0x00);
+  EXPECT_LT(ToMilliseconds(complete->time), 400.0);
+}
+
+// Pause doesn't interrupt the braking.
+TEST_F(CDROMControllerTest, PauseWhileBrakingStillStops)
+{
+  ReadSectors({0x10, 0x00, 0x00}, 4);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(50));
+  ASSERT_EQ(Command(0x09).cause, INT_ACK);
+  const std::optional<Response> pause = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(pause.has_value());
+  EXPECT_EQ(pause->cause, INT_COMPLETE);
+
+  Run(Seconds(1.0));
+  EXPECT_EQ(Command(0x01).bytes.at(0), 0x00);
+}
+
+// A seek while braking waits for the motor to stop, then spins it up again.
+TEST_F(CDROMControllerTest, SeekWhileBrakingSpinsUp)
+{
+  ReadSectors({0x10, 0x00, 0x00}, 4);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(50));
+  ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+  ASSERT_EQ(Command(0x15).cause, INT_ACK);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(5.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_GT(ToMilliseconds(complete->time), 1000.0);
+}
