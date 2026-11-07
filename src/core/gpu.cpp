@@ -223,7 +223,8 @@ using GP0CommandHandler = bool (*)();
 struct GP0Command
 {
   GP0CommandHandler handler;
-  u8 num_words; ///< Words needed before the handler runs.
+  u8 num_words;  ///< Words needed before the handler runs.
+  u8 held_words; ///< FIFO slots the command keeps while it holds the DMA request, for GP1(04h)=1 mode.
 };
 using GP0CommandTable = std::array<GP0Command, 256>;
 
@@ -415,14 +416,14 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 static constexpr GPU::GP0CommandTable s_GP0_command_table = []() constexpr {
   GPU::GP0CommandTable table = {};
   for (u32 i = 0; i < static_cast<u32>(table.size()); i++)
-    table[i] = {&GPU::HandleUnknownGP0Command, 1};
-  table[0x00] = {&GPU::HandleNOPCommand, 1};
-  table[0x01] = {&GPU::HandleClearCacheCommand, 1};
-  table[0x02] = {&GPU::HandleFillRectangleCommand, 3};
-  table[0x03] = {&GPU::HandleNOPCommand, 1};
+    table[i] = {&GPU::HandleUnknownGP0Command, 1, 0};
+  table[0x00] = {&GPU::HandleNOPCommand, 1, 0};
+  table[0x01] = {&GPU::HandleClearCacheCommand, 1, 0};
+  table[0x02] = {&GPU::HandleFillRectangleCommand, 3, 0};
+  table[0x03] = {&GPU::HandleNOPCommand, 1, 0};
   for (u32 i = 0x04; i <= 0x1E; i++)
-    table[i] = {&GPU::HandleNOPCommand, 1};
-  table[0x1F] = {&GPU::HandleInterruptRequestCommand, 1};
+    table[i] = {&GPU::HandleNOPCommand, 1, 0};
+  table[0x1F] = {&GPU::HandleInterruptRequestCommand, 1, 0};
   for (u32 i = 0x20; i <= 0x7F; i++)
   {
     // same bits as GPURenderCommand, which can't be used in a constant expression
@@ -432,48 +433,64 @@ static constexpr GPU::GP0CommandTable s_GP0_command_table = []() constexpr {
     switch (static_cast<GPUPrimitive>((i >> 5) & 0x03))
     {
       case GPUPrimitive::Polygon:
+      {
         // shaded vertices use the colour from the first word for the first vertex
-        table[i] = {&GPU::HandleRenderPolygonCommand,
-                    static_cast<u8>((1 + textured + shaded) * (quad_or_polyline ? 4 : 3) + (shaded ^ 1))};
-        break;
+        const u8 num_words = static_cast<u8>((1 + textured + shaded) * (quad_or_polyline ? 4 : 3) + (shaded ^ 1));
+
+        // Measured on hardware: during a quad's first triangle, 11 minus these words fit behind it. Why only the flat
+        // quad keeps its whole packet is unknown. Triangles keep their packet through setup.
+        constexpr std::array<u8, 4> quad_held_words = {5, 8, 7, 10}; // flat, textured, gouraud, textured gouraud
+        table[i] = {&GPU::HandleRenderPolygonCommand, num_words,
+                    quad_or_polyline ? quad_held_words[textured | (shaded << 1)] : num_words};
+      }
+      break;
+
       case GPUPrimitive::Line:
+      {
         // poly-lines need at least the first two vertices, the terminator is tested after that
         table[i] = {quad_or_polyline ? &GPU::HandleRenderPolyLineCommand : &GPU::HandleRenderLineCommand,
-                    static_cast<u8>(3 + shaded)};
-        break;
+                    static_cast<u8>(3 + shaded), 0};
+      }
+      break;
+
       case GPUPrimitive::Rectangle:
+      {
         table[i] = {&GPU::HandleRenderRectangleCommand,
                     static_cast<u8>(2 + textured +
                                     BoolToUInt32(static_cast<GPUDrawRectangleSize>((i >> 3) & 0x03) ==
-                                                 GPUDrawRectangleSize::Variable))};
-        break;
+                                                 GPUDrawRectangleSize::Variable)),
+                    0};
+      }
+      break;
+
       default:
         break;
     }
   }
-  table[0xE0] = {&GPU::HandleNOPCommand, 1};
-  table[0xE1] = {&GPU::HandleSetDrawModeCommand, 1};
-  table[0xE2] = {&GPU::HandleSetTextureWindowCommand, 1};
-  table[0xE3] = {&GPU::HandleSetDrawingAreaTopLeftCommand, 1};
-  table[0xE4] = {&GPU::HandleSetDrawingAreaBottomRightCommand, 1};
-  table[0xE5] = {&GPU::HandleSetDrawingOffsetCommand, 1};
-  table[0xE6] = {&GPU::HandleSetMaskBitCommand, 1};
+  table[0xE0] = {&GPU::HandleNOPCommand, 1, 0};
+  table[0xE1] = {&GPU::HandleSetDrawModeCommand, 1, 0};
+  table[0xE2] = {&GPU::HandleSetTextureWindowCommand, 1, 0};
+  table[0xE3] = {&GPU::HandleSetDrawingAreaTopLeftCommand, 1, 0};
+  table[0xE4] = {&GPU::HandleSetDrawingAreaBottomRightCommand, 1, 0};
+  table[0xE5] = {&GPU::HandleSetDrawingOffsetCommand, 1, 0};
+  table[0xE6] = {&GPU::HandleSetMaskBitCommand, 1, 0};
   for (u32 i = 0xE7; i <= 0xEF; i++)
-    table[i] = {&GPU::HandleNOPCommand, 1};
+    table[i] = {&GPU::HandleNOPCommand, 1, 0};
   for (u32 i = 0x80; i <= 0x9F; i++)
-    table[i] = {&GPU::HandleCopyRectangleVRAMToVRAMCommand, 4};
+    table[i] = {&GPU::HandleCopyRectangleVRAMToVRAMCommand, 4, 0};
   for (u32 i = 0xA0; i <= 0xBF; i++)
-    table[i] = {&GPU::HandleCopyRectangleCPUToVRAMCommand, 3};
+    table[i] = {&GPU::HandleCopyRectangleCPUToVRAMCommand, 3, 0};
   for (u32 i = 0xC0; i <= 0xDF; i++)
-    table[i] = {&GPU::HandleCopyRectangleVRAMToCPUCommand, 3};
+    table[i] = {&GPU::HandleCopyRectangleVRAMToCPUCommand, 3, 0};
 
-  table[0xFF] = {&GPU::HandleNOPCommand, 1};
+  table[0xFF] = {&GPU::HandleNOPCommand, 1, 0};
 
   return table;
 }();
 static_assert(s_GP0_command_table[0x02].num_words == 3 && s_GP0_command_table[0x2C].num_words == 9 &&
               s_GP0_command_table[0x3E].num_words == 12 && s_GP0_command_table[0x48].num_words == 3 &&
-              s_GP0_command_table[0x65].num_words == 4 && s_GP0_command_table[0x80].num_words == 4);
+              s_GP0_command_table[0x65].num_words == 4 && s_GP0_command_table[0x80].num_words == 4 &&
+              s_GP0_command_table[0x2C].held_words == 8 && s_GP0_command_table[0x38].held_words == 7);
 
 // aligning VRAM to 4K is fine, since the ARM64 instructions compute 4K page aligned addresses
 // or it would be, except we want to import the memory for readbacks on metal..
@@ -951,13 +968,8 @@ void GPU::UpdateDMARequest()
         break;
       }
 
-      // Not full until enough words are queued. A held polygon's packet keeps its slots until the release.
-      const GPURenderCommand rc = s_locals.render_command;
-      const u32 held_words =
-        (dreq_held && rc.primitive == GPUPrimitive::Polygon) ?
-          ((1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable)) * (rc.quad_polygon ? 4 : 3) +
-           BoolToUInt32(!rc.shading_enable)) :
-          0;
+      // Not full until enough words are queued. A held polygon keeps some of its slots until the release.
+      const u32 held_words = dreq_held ? s_GP0_command_table[s_locals.render_command.bits >> 24].held_words : 0;
       dma_request = ((s_locals.fifo.GetSize() + held_words) < FIFO_MODE_FULL_WORDS ||
                      s_locals.fifo.GetSize() < s_locals.command_total_words);
     }
