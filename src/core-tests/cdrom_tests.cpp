@@ -684,3 +684,17 @@ TEST_F(CDROMControllerTest, StopTimeDependsOnPosition)
   ASSERT_TRUE(complete.has_value());
   EXPECT_NEAR(ToMilliseconds(complete->time), 409.0, 5.0);
 }
+
+TEST_F(CDROMControllerTest, ReadTOCOnlyOnVC1AndLater)
+{
+  ASSERT_EQ(Command(0x1E).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(2.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+
+  // Hardware: vC0 rejects it as an invalid command.
+  g_settings.cdrom_mechacon_version = CDROMMechaconVersion::VC0B;
+  const Response error = Command(0x1E);
+  EXPECT_EQ(error.cause, INT_ERROR);
+  EXPECT_EQ(error.bytes, (std::vector<u8>{0x03, 0x40}));
+}

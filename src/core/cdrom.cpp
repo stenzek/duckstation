@@ -2048,6 +2048,15 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
     case Command::ReadTOC:
     {
       DEV_COLOR_LOG(StrongOrange, "ReadTOC");
+
+      // Only exists in vC1 and later, verified on a vC0 drive.
+      if (g_settings.cdrom_mechacon_version <= CDROMMechaconVersion::VC0B)
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+        EndCommand();
+        return;
+      }
+
       ClearCommandSecondResponse();
 
       if (!CanReadMedia())
