@@ -2007,7 +2007,7 @@ u32 GPU::ReadGPUREAD()
 
 void GPU::WriteGP1(u32 value)
 {
-  const u32 command = (value >> 24) & 0x3Fu;
+  const u32 command = value >> 24;
   const u32 param = value & UINT32_C(0x00FFFFFF);
   switch (command)
   {
@@ -2163,30 +2163,16 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x10:
-    case 0x11:
-    case 0x12:
-    case 0x13:
-    case 0x14:
-    case 0x15:
-    case 0x16:
-    case 0x17:
-    case 0x18:
-    case 0x19:
-    case 0x1A:
-    case 0x1B:
-    case 0x1C:
-    case 0x1D:
-    case 0x1E:
-    case 0x1F:
+    default:
     {
-      HandleGetGPUInfoCommand(value);
+      // GP1(10h) ignores command bits 24-27 and 30-31, every other command decodes the full byte,
+      // so 40h..FFh are not mirrors of 00h..3Fh (measured on v0 and v2 GPUs).
+      if ((command & 0x30u) == 0x10u) [[likely]]
+        HandleGetGPUInfoCommand(value);
+      else
+        DEV_LOG("Unimplemented GP1 command 0x{:02X}", command);
     }
     break;
-
-    [[unlikely]] default:
-      ERROR_LOG("Unimplemented GP1 command 0x{:02X}", command);
-      break;
   }
 }
 

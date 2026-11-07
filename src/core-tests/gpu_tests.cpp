@@ -264,6 +264,46 @@ TEST_F(GPUFrontend, V2InternalRegisterQueries)
   EXPECT_EQ(GPU::ReadRegister(0), 0u);
 }
 
+TEST_F(GPUFrontend, GP1HighCommandBitsAreDecoded)
+{
+  constexpr u32 DISPLAY_DISABLE = 1u << 23;
+
+  GPU::WriteRegister(4, 0x03000000); // display on
+  for (const u32 v : {0x23000001u, 0x43000001u, 0x83000001u, 0xC3000001u})
+  {
+    GPU::WriteRegister(4, v);
+    EXPECT_EQ(GPU::ReadRegister(4) & DISPLAY_DISABLE, 0u) << std::hex << v;
+  }
+
+  // GameShark Sampler Disc writes this before every glyph, it must not reset.
+  GPU::WriteRegister(0, 0xE10006A5);
+  for (const u32 v : {0x40000000u, 0x80000000u, 0xC0000000u})
+  {
+    GPU::WriteRegister(4, v);
+    EXPECT_EQ(GPU::ReadRegister(4) & DISPLAY_DISABLE, 0u) << std::hex << v;
+    EXPECT_EQ(GPU::ReadRegister(4) & 0x7FFu, 0x6A5u) << std::hex << v;
+  }
+
+  GPU::WriteRegister(4, 0x03000001);
+  EXPECT_NE(GPU::ReadRegister(4) & DISPLAY_DISABLE, 0u);
+}
+
+TEST_F(GPUFrontend, GP1InfoIgnoresBits30And31)
+{
+  GPU::WriteRegister(0, 0xE3001234);
+  GPU::WriteRegister(0, 0xE4005678);
+  for (const u32 v : {0x50000004u, 0x90000004u, 0xD0000004u})
+  {
+    GPU::WriteRegister(4, 0x10000003);
+    ASSERT_EQ(GPU::ReadRegister(0), 0x1234u);
+    GPU::WriteRegister(4, v);
+    EXPECT_EQ(GPU::ReadRegister(0), 0x5678u) << std::hex << v;
+  }
+  GPU::WriteRegister(4, 0x10000003);
+  GPU::WriteRegister(4, 0x30000004); // bit 29 is decoded: no read
+  EXPECT_EQ(GPU::ReadRegister(0), 0x1234u);
+}
+
 TEST_F(GPUFrontend, V2StatusReportsFieldAndUpperTextureAddress)
 {
   EXPECT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
