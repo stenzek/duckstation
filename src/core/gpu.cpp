@@ -944,8 +944,8 @@ void GPU::UpdateDMARequest()
   }
 
   // Polygons hold bit 28 through setup, and quads through their first triangle. Holds within the run-ahead window are
-  // ignored, since commands execute that far ahead anyway.
-  const bool dreq_held = (s_locals.dreq_hold_ticks > s_locals.max_run_ahead);
+  // never recorded, since commands execute that far ahead anyway.
+  const bool dreq_held = (s_locals.dreq_hold_ticks > 0);
   s_locals.GPUSTAT.ready_to_receive_dma &= !dreq_held;
 
   bool dma_request;
@@ -1787,8 +1787,7 @@ ALWAYS_INLINE_RELEASE bool GPU::IsCommandCompletionPending()
   // also sync if the DMA request hold has expired, so that bit 28 polling sees the release
   const TickCount elapsed = GetPendingCommandTicks();
   return (elapsed >= s_locals.pending_command_ticks ||
-          (s_locals.dreq_hold_ticks > s_locals.max_run_ahead &&
-           elapsed >= (s_locals.dreq_hold_ticks - s_locals.max_run_ahead)));
+          (s_locals.dreq_hold_ticks > 0 && elapsed >= s_locals.dreq_hold_ticks));
 }
 
 void GPU::CRTCTickEvent(void*, TickCount ticks)
@@ -1951,11 +1950,10 @@ void GPU::UpdateCommandTickEvent()
   }
   else
   {
-    // Wake up early to release the DMA request if a polygon is holding it beyond the run-ahead window.
+    // Wake up early to release the DMA request if a polygon is holding it.
     // Both are relative to the last execution, so take off the time that has passed since then.
-    const TickCount ticks = (s_locals.dreq_hold_ticks > s_locals.max_run_ahead) ?
-                              (s_locals.dreq_hold_ticks - s_locals.max_run_ahead) :
-                              s_locals.pending_command_ticks;
+    const TickCount ticks =
+      (s_locals.dreq_hold_ticks > 0) ? s_locals.dreq_hold_ticks : s_locals.pending_command_ticks;
     s_locals.command_tick_event.SetIntervalAndSchedule(std::max(ticks - GetPendingCommandTicks(), 1));
   }
 }
@@ -3317,7 +3315,7 @@ bool GPU::HandleRenderPolygonCommand()
     s_setup_time[BoolToUInt8(rc.quad_polygon)][BoolToUInt8(rc.shading_enable)][BoolToUInt8(rc.texture_enable)]));
 
   // Polygons hold the DMA request through setup, and quads through their first triangle. Holds that fit in the
-  // run-ahead window are ignored, otherwise the request is held until the release point is within the window.
+  // run-ahead window are ignored, otherwise the request is held until the release point.
   const TickCount hold_start_ticks = s_locals.pending_command_ticks;
   AddCommandTicks(setup_ticks);
   if ((s_locals.pending_command_ticks - hold_start_ticks) > s_locals.max_run_ahead)
