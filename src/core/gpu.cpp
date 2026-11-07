@@ -1958,12 +1958,12 @@ void GPU::UpdateCommandTickEvent()
   else
   {
     // Wake up early to release the DMA request if a polygon is holding it beyond the run-ahead window.
-    // The hold is relative to the last execution, so take off the time that has passed since then.
-    const TickCount ticks =
-      (s_locals.dreq_hold_ticks > s_locals.max_run_ahead) ?
-        std::max(s_locals.dreq_hold_ticks - s_locals.max_run_ahead - GetPendingCommandTicks(), 1) :
-        s_locals.pending_command_ticks;
-    s_locals.command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(ticks));
+    // Both are relative to the last execution, so take off the time that has passed since then.
+    const TickCount ticks = (s_locals.dreq_hold_ticks > s_locals.max_run_ahead) ?
+                              (s_locals.dreq_hold_ticks - s_locals.max_run_ahead) :
+                              s_locals.pending_command_ticks;
+    s_locals.command_tick_event.SetIntervalAndSchedule(
+      GPUTicksToSystemTicks(std::max(ticks - GetPendingCommandTicks(), 1)));
   }
 }
 
