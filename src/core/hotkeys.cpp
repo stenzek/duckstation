@@ -82,6 +82,8 @@ static void HotkeyToggleOSD()
   g_settings.display_show_gpu_usage ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowGPU", false);
   g_settings.display_show_frame_times ^=
     Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowFrameTimes", false);
+  g_settings.display_show_frame_number ^=
+    Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowFrameNumber", false);
   g_settings.display_show_status_indicators ^=
     Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowStatusIndicators", true);
   g_settings.display_show_inputs ^= Core::GetBoolSettingValue(Settings::DISPLAY_SECTION_NAME, "ShowInputs", false);
