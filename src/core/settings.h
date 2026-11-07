@@ -447,7 +447,7 @@ struct Settings : public GPUSettings
 
   enum : u32
   {
-    DEFAULT_DMA_MAX_SLICE_TICKS = 1000,
+    DEFAULT_DMA_MAX_SLICE_TICKS = 200,
     DEFAULT_DMA_HALT_TICKS = 100,
     DEFAULT_GPU_MAX_RUN_AHEAD = 512,
   };
