@@ -3216,15 +3216,20 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawTriangleTicks(GSVector2i v1, GSVector2i v
   v3 = v3.sat_s32(clamp_min, clamp_max);
 
   TickCount pixels = std::abs((v1.x * v2.y + v2.x * v3.y + v3.x * v1.y - v1.x * v3.y - v2.x * v1.y - v3.x * v2.y) / 2);
-  if (textured)
-    pixels += pixels;
-  if (semitransparent || s_locals.GPUSTAT.check_mask_before_draw)
-    pixels += (pixels + 1) / 2;
+  TickCount rows = std::max({v1.y, v2.y, v3.y}) - std::min({v1.y, v2.y, v3.y});
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
+  {
     pixels /= 2;
+    rows /= 2;
+  }
 
-  // Two pixels are drawn per clock.
-  AddCommandTicks((pixels + 1) / 2);
+  // Measured v2 GPU costs, assuming textures are cached. Pixel costs are in quarter cycles: flat pixels are drawn two
+  // per clock, or 0.75 cycles when semi-transparent, and shaded or textured pixels take a cycle.
+  const bool semi = (semitransparent || s_locals.GPUSTAT.check_mask_before_draw);
+  const bool flat = !shaded && !textured;
+  const TickCount pixel_quarters = flat ? (semi ? 3 : 2) : 4;
+  const TickCount row_ticks = 2 + (semi ? (flat ? 3 : 1) : 0);
+  AddCommandTicks((pixels * pixel_quarters + 3) / 4 + rows * row_ticks);
 }
 
 ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent)
@@ -3309,8 +3314,8 @@ bool GPU::HandleRenderPolygonCommand()
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
 
-  // setup time
-  static constexpr u16 s_setup_time[2][2][2] = {{{46, 226}, {334, 496}}, {{82, 262}, {370, 532}}};
+  // setup time, measured on the v2 GPU with cached textures
+  static constexpr u16 s_setup_time[2][2][2] = {{{50, 130}, {200, 295}}, {{50, 215}, {335, 495}}};
   const TickCount setup_ticks = static_cast<TickCount>(ZeroExtend32(
     s_setup_time[BoolToUInt8(rc.quad_polygon)][BoolToUInt8(rc.shading_enable)][BoolToUInt8(rc.texture_enable)]));
 

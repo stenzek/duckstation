@@ -449,7 +449,7 @@ struct Settings : public GPUSettings
   {
     DEFAULT_DMA_MAX_SLICE_TICKS = 200,
     DEFAULT_DMA_HALT_TICKS = 100,
-    DEFAULT_GPU_MAX_RUN_AHEAD = 512,
+    DEFAULT_GPU_MAX_RUN_AHEAD = 512, // Next power of 2 above the longest polygon setup, so setups need no event.
   };
 
   void Load(const SettingsInterface& si, const SettingsInterface& controller_si);
