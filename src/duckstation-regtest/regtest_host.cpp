@@ -81,6 +81,7 @@ struct RegTestHostState
 {
   ALIGN_TO_CACHE_LINE Threading::Mutex core_thread_events_mutex;
   std::deque<MoveOnlyFunction<void()>> cpu_thread_events;
+  Threading::ThreadHandle core_thread_handle;
 };
 
 static RegTestHostState s_state;
@@ -132,6 +133,16 @@ bool RegTestHost::InitializeFoldersAndConfig(Error* error)
                     InputManager::InputSourceToString(static_cast<InputSourceType>(i)), false);
 
   return true;
+}
+
+const Threading::ThreadHandle& Host::GetCoreThreadHandle()
+{
+  return RegTestHost::s_state.core_thread_handle;
+}
+
+bool Host::IsOnCoreThread()
+{
+  return RegTestHost::s_state.core_thread_handle.IsCallingThread();
 }
 
 void Host::ReportFatalError(std::string_view title, std::string_view message)
@@ -1046,6 +1057,7 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
+  RegTestHost::s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
   if (!Core::CoreThreadInitialize(true, &error))
   {
     ERROR_LOG("CoreThreadInitialize() failed: {}", error.GetDescription());
@@ -1116,6 +1128,7 @@ int main(int argc, char* argv[])
 cleanup:
   RegTestHost::ProcessCoreThreadEvents();
   Core::CoreThreadShutdown();
+  RegTestHost::s_state.core_thread_handle = {};
   Core::ProcessShutdown();
   return result;
 }

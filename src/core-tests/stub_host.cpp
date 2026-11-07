@@ -23,9 +23,22 @@
 #include "util/window_info.h"
 
 #include "common/log.h"
+#include "common/threading.h"
 #include "common/time_helpers.h"
 
 LOG_CHANNEL(Host);
+
+const Threading::ThreadHandle& Host::GetCoreThreadHandle()
+{
+  static const Threading::ThreadHandle handle;
+  return handle;
+}
+
+bool Host::IsOnCoreThread()
+{
+  // Tests drive the core components directly from the test thread.
+  return true;
+}
 
 void Host::OnSettingsReloaded()
 {

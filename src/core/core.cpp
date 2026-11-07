@@ -75,8 +75,6 @@ struct CoreLocals
   LayeredSettingsInterface layered_settings_interface;
   INISettingsInterface base_settings_interface;
 
-  Threading::ThreadHandle core_thread_handle;
-
   Timer::Value process_start_time = 0;
 
   TaskQueue async_task_queue;
@@ -728,8 +726,6 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
   }
 #endif
 
-  s_locals.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
-
   if (!disable_worker_threads)
     s_locals.async_task_queue.SetWorkerCount(0, MAX_ASYNC_WORKER_THREADS);
 
@@ -742,7 +738,6 @@ bool Core::CoreThreadInitialize(bool disable_worker_threads, Error* error)
   {
     VideoThread::ProcessShutdown();
     s_locals.async_task_queue.SetWorkerCount(0, 0);
-    s_locals.core_thread_handle = {};
 #ifdef _WIN32
     CoUninitialize();
 #endif
@@ -777,21 +772,9 @@ void Core::CoreThreadShutdown()
   CDROMAsyncReader::ProcessShutdown();
   VideoThread::ProcessShutdown();
 
-  s_locals.core_thread_handle = {};
-
 #ifdef _WIN32
   CoUninitialize();
 #endif
-}
-
-const Threading::ThreadHandle& Host::GetCoreThreadHandle()
-{
-  return Core::s_locals.core_thread_handle;
-}
-
-bool Host::IsOnCoreThread()
-{
-  return Core::s_locals.core_thread_handle.IsCallingThread();
 }
 
 void Host::QueueAsyncTask(MoveOnlyFunction<void()> function)

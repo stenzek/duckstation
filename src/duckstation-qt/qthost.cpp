@@ -204,6 +204,8 @@ struct State
 #endif
 
   std::atomic_bool clipboard_read_done;
+
+  Threading::ThreadHandle core_thread_handle;
 };
 } // namespace
 
@@ -943,6 +945,16 @@ bool QtHost::LoadResources(Error* error)
 
   s_state.app_icon = QIcon(GetAppIconPath());
   return true;
+}
+
+const Threading::ThreadHandle& Host::GetCoreThreadHandle()
+{
+  return QtHost::s_state.core_thread_handle;
+}
+
+bool Host::IsOnCoreThread()
+{
+  return QtHost::s_state.core_thread_handle.IsCallingThread();
 }
 
 void Host::OnSettingsReloaded()
@@ -2221,12 +2233,14 @@ void CoreThread::stopInThread()
 void CoreThread::run()
 {
   m_event_loop = new QEventLoop();
+  QtHost::s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   // input source setup must happen on emu thread
   {
     Error startup_error;
     if (!Core::CoreThreadInitialize(false, &startup_error))
     {
+      QtHost::s_state.core_thread_handle = {};
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
       return;
@@ -2271,6 +2285,7 @@ void CoreThread::run()
 
   // and tidy up everything left
   Core::CoreThreadShutdown();
+  QtHost::s_state.core_thread_handle = {};
 
   // move back to UI thread
   moveToThread(m_ui_thread);
