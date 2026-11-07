@@ -272,6 +272,10 @@ void Bus::ReleaseMemoryMap()
   Exports::RAM_SIZE = 0;
   Exports::RAM_MASK = 0;
 
+  g_bus.ram_size = 0;
+  g_bus.ram_mask = 0;
+  g_bus.ram_mapped_size = 0;
+
   g_bus.memory_handlers_isc = nullptr;
   if (g_bus.memory_handlers)
   {
