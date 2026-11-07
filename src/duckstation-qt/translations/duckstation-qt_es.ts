@@ -4429,7 +4429,7 @@ Asignación actual: %s</translation>
     <message>
         <source>Bind All Inputs</source>
         <comment>controller_settings_bind_all</comment>
-        <translation>Vincular todas las entradas</translation>
+        <translation>Asignar todas las entradas</translation>
     </message>
     <message>
         <source>Asks for each button and axis in turn, so you can bind them by pressing them on your controller.</source>
@@ -8811,7 +8811,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     </message>
     <message>
         <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
-        <translation>Selecciona el códec de video que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;b&gt;</translation>
+        <translation>Selecciona el códec de video que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>%1 kbps</source>
@@ -8859,7 +8859,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
     </message>
     <message>
         <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;/b&gt;</source>
-        <translation>Selecciona el códec de audio que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;b&gt;</translation>
+        <translation>Selecciona el códec de audio que se utilizará durante la captura de medios. &lt;b&gt;Si tienes dudas, deja el valor predeterminado.&lt;/b&gt;</translation>
     </message>
     <message>
         <source>%1 (Unknown)</source>
@@ -9361,6 +9361,10 @@ Esta advertencia se mostrará solo una vez.</translation>
         <translation>Asignación automática</translation>
     </message>
     <message>
+        <source>Bind All</source>
+        <translation>Asignar todo</translation>
+    </message>
+    <message>
         <source>Clear Mapping</source>
         <translation>Borrar asignaciones</translation>
     </message>
@@ -9371,6 +9375,10 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <source>No devices available</source>
         <translation>No hay dispositivos disponibles</translation>
+    </message>
+    <message>
+        <source>Bind All - Port %1</source>
+        <translation>Asignar todo - Puerto %1</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
@@ -9990,7 +9998,7 @@ Esta advertencia se mostrará solo una vez.</translation>
     </message>
     <message>
         <source>Mouse/Pointer Source</source>
-        <translation>Fuente del ratón o puntero</translation>
+        <translation>Origen para ratón/cursor</translation>
     </message>
     <message>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
@@ -10753,6 +10761,14 @@ Do you want to %1 anyway?</source>
         <translation>Puntos de interrupción</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Símbolos</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Ventana</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Desensamblado</translation>
     </message>
@@ -10933,6 +10949,22 @@ Do you want to %1 anyway?</source>
         <translation>Barra de herramientas</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Usar símbolos &amp;automáticos</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Cargar símbolos...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>&amp;Recargar símbolos</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Desactivar símbolos</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Añadir punto de interrupción</translation>
     </message>
@@ -10965,14 +10997,6 @@ Do you want to %1 anyway?</source>
         <translation>No se seleccionó ninguna dirección.</translation>
     </message>
     <message>
-        <source>Enter code address:</source>
-        <translation>Ingresa la dirección de código:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Ingresa la dirección de memoria:</translation>
-    </message>
-    <message>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Registro de rastreo iniciado en &quot;cpu_log.txt&quot;.
@@ -11003,6 +11027,30 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Seguir carga/almacenamiento</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Ir al &amp;código</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Ir a la &amp;pila</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Copiar &amp;nombre del símbolo</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Copiar &amp;dirección</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Copiar dirección del &amp;fotograma</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Copiar</translation>
     </message>
     <message>
         <source>Modify Register</source>
@@ -11041,6 +11089,22 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
         </translation>
     </message>
     <message>
+        <source>Load Symbols</source>
+        <translation>Cargar símbolos</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Archivos de símbolos (*.elf *.map);;Todos los archivos (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Error al cargar los símbolos: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Restablecer diseño</translation>
+    </message>
+    <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>Fallo al añadir punto de interrupción. Es posible que ya exista uno en esta dirección.</translation>
     </message>
@@ -11051,13 +11115,32 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
-            <numerusform>Se han cargado %n punto(s) de interrupción guardado(s).</numerusform>
-            <numerusform></numerusform>
+            <numerusform>Se ha cargado %n punto de interrupción guardado.</numerusform>
+            <numerusform>Se han cargado %n puntos de interrupción guardados.</numerusform>
         </translation>
     </message>
     <message>
         <source>Debugger</source>
         <translation>Depurador</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Se ha cargado %n símbolo desde %1.</numerusform>
+            <numerusform>Se han cargado %n símbolos desde %1.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>No se pudieron cargar los símbolos de %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Introduce el código, la dirección o el símbolo:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Introduce la dirección de memoria o el símbolo:</translation>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
@@ -11082,10 +11165,6 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message>
         <source>Pattern found at 0x%1.</source>
         <translation>Patrón encontrado en 0x%1.</translation>
-    </message>
-    <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Dirección no válida. Debe estar en formato hexadecimal (0x12345678 o 12345678)</translation>
     </message>
     <message>
         <source>VRAM</source>
@@ -11122,6 +11201,10 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Valor no válido. Debe estar en formato hexadecimal (0x12345678 o 12345678).</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Dirección no válida. Debe ser un nombre de símbolo o un valor en formato hexadecimal (0x12345678 o 12345678).</translation>
     </message>
 </context>
 <context>
@@ -13334,6 +13417,18 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Aplica el filtro de textura de sprites seleccionado a las cargas en el búfer de fotogramas. Esto puede suavizar los fondos en algunos juegos, al tiempo que conserva los datos de textura y el vídeo de 24 bits.</translation>
     </message>
     <message>
+        <source>Asks for each button and axis of this controller in turn.</source>
+        <translation>Pregunta uno por uno, cada botón y eje de este mando.</translation>
+    </message>
+    <message>
+        <source>Bind All Buttons</source>
+        <translation>Asignar todos los botones</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Borrar</translation>
+    </message>
+    <message>
         <source>Default: {}</source>
         <translation>Predeterminado: {}</translation>
     </message>
@@ -14090,6 +14185,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>Simula el sistema de forma anticipada y regresa/repite el estado para reducir la latencia de entrada. Tiene requisitos de sistema muy altos.</translation>
     </message>
     <message>
+        <source>Skip</source>
+        <translation>Omitir</translation>
+    </message>
+    <message>
         <source>Skip Duplicate Frame Display</source>
         <translation>Omitir fotogramas duplicados</translation>
     </message>
@@ -14172,6 +14271,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Start: {}</source>
         <translation>Comenzar: {}</translation>
+    </message>
+    <message>
+        <source>Step {} of {}</source>
+        <translation>Paso {} de {}</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15064,10 +15167,6 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <source>Theme</source>
         <translation>Tema</translation>
-    </message>
-    <message>
-        <source>Timing out in {}...</source>
-        <translation>Tiempo agotado en {}...</translation>
     </message>
     <message>
         <source>Title (*)</source>
@@ -16711,7 +16810,7 @@ Do you want to enable game settings now?</source>
     <message>
         <source>Serial</source>
         <comment>Column</comment>
-        <translation>Número de serie</translation>
+        <translation>N.º de serie</translation>
     </message>
     <message>
         <source>Title</source>
@@ -17879,7 +17978,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Habilita el modo de depuración cuando sea compatible con la API de renderizado del sistema. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Habilita el modo de depuración cuando sea compatible con la API de renderizado del sistema. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17887,7 +17986,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Previene el uso de combinación de doble origen. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Previene el uso de combinación de doble origen. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17895,7 +17994,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Fuerza actualizaciones de VRAM cuando se actualicen las texturas, y no con búferes de textura y dibujados. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Fuerza actualizaciones de VRAM cuando se actualicen las texturas, y no con búferes de textura y dibujados. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disable Texture Copies To Self</source>
@@ -17903,11 +18002,11 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Desactiva el uso de actualizaciones de texturas de VRAM copiadas a sí mismas. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Desactiva el uso de actualizaciones de texturas de VRAM copiadas a sí mismas. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Desactiva el importado de memoria del equipo. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Desactiva el importado de memoria del equipo. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
@@ -17915,11 +18014,11 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Desactiva el uso de sombreadores de computado. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Desactiva el uso de sombreadores de computado. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation>Desactiva el uso de texturas comprimidas. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;strong&gt;</translation>
+        <translation>Desactiva el uso de texturas comprimidas. Útil para probar controladores gráficos defectuosos. &lt;strong&gt;Solo para desarrolladores.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Automatic (Based on Window Size)</source>
@@ -18917,6 +19016,41 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Extracting {}...</source>
         <translation>Extrayendo {}...</translation>
+    </message>
+</context>
+<context>
+    <name>InputBindingAllDialog</name>
+    <message>
+        <source>Bind All</source>
+        <translation>Asignar todo</translation>
+    </message>
+    <message>
+        <source>Step 1 of 1</source>
+        <translation>Paso 1 de 1</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Asignando</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Borrar</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Omitir</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <source>Step %1 of %2</source>
+        <translation>Paso %1 de %2</translation>
+    </message>
+    <message>
+        <source>Push a button or axis now.</source>
+        <translation>Pulsa un botón o mueve un eje ahora.</translation>
     </message>
 </context>
 <context>
@@ -20156,7 +20290,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Boot and Debug</source>
-        <translation>Arrancar con depurador</translation>
+        <translation>Arranque con depurador</translation>
     </message>
     <message>
         <source>Exclude From List</source>
@@ -24715,7 +24849,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options control how the graphics of the emulated console are rendered. Not all options are available for the software renderer. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Configuración de gráficos&lt;/strong&gt;&lt;hr&gt;Estas opciones determinan como se renderizan los gráficos de la consola emulada. No todas las opciones están disponibles para el renderizador de software.&lt;br&gt;Pasa el cursor del ratón sobre una opción para ver más información, y Mayús+Rueda para desplazar este panel.</translation>
+        <translation>&lt;strong&gt;Configuración de gráficos&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan cómo se representan los gráficos de la consola emulada. No todas las opciones están disponibles para el renderizador de software. Pasa el cursor del ratón sobre una opción para ver más información, y Mayús+Rueda para desplazar este panel.</translation>
     </message>
     <message>
         <source>Post-Processing</source>
@@ -24727,7 +24861,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation>&lt;strong&gt;Configuración de audio&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan la salida de audio de la consola.&lt;br&gt;&lt;br&gt;Pasa el cursor del ratón sobre una opción para ver más información.</translation>
+        <translation>&lt;strong&gt;Configuración de audio&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan la salida de audio de la consola. Pasa el cursor del ratón sobre una opción para ver más información.</translation>
     </message>
     <message>
         <source>Achievements</source>
@@ -24739,7 +24873,7 @@ Se perderá cualquier ajuste actual.
     </message>
     <message>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Configuración de BIOS&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan que BIOS y puerto de expansión utilizar.&lt;br&gt;&lt;br&gt;Pasa el cursor del ratón sobre una opción para ver más información, y Mayús+Rueda para desplazar este panel.</translation>
+        <translation>&lt;strong&gt;Configuración de la BIOS&lt;/strong&gt;&lt;hr&gt;Estas opciones controlan qué BIOS y qué puerto de expansión se utilizan.&lt;br&gt;&lt;br&gt;Pasa el cursor del ratón sobre una opción para ver más información, y Mayús+Rueda para desplazar este panel.</translation>
     </message>
     <message>
         <source>Patches</source>
@@ -25066,7 +25200,7 @@ Token generado %2</translation>
     </message>
     <message>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>Suaviza el efecto cuadriculado de las texturas ampliadas en objetos 2D con un filtrado.&lt;br&gt;Este filtro se aplicará únicamente a sprites y otros elementos 2D, como la interfaz.</translation>
+        <translation>Suaviza el efecto pixelado de las texturas ampliadas en los objetos 2D mediante un filtro. Este filtro solo se aplica a los sprites y a otros elementos 2D, como el HUD.</translation>
     </message>
     <message>
         <source>Aspect Ratio:</source>
