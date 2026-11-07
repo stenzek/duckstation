@@ -941,9 +941,6 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
 
   if (!for_copy)
   {
-    si.SetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", dma_max_slice_ticks);
-    si.SetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", dma_halt_ticks);
-    si.SetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", gpu_max_run_ahead);
     si.SetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", mdec_use_old_routines);
     si.SetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", export_shared_memory);
 
