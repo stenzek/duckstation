@@ -1,7 +1,15 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "core/cdrom.h"
 #include "core/cdrom.inl"
+#include "core/cpu_core.h"
+#include "core/interrupt_controller.h"
+#include "core/settings.h"
+#include "core/system.h"
+#include "core/timing_event.h"
+
+#include "util/cd_image.h"
 
 #include "common/types.h"
 
@@ -9,8 +17,11 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <limits>
+#include <optional>
 #include <random>
+#include <vector>
 
 namespace {
 
@@ -148,4 +159,240 @@ TEST(CDROM, XAResampleMatchesReferenceImpulse)
       ExpectMatchesReference(ringbuf);
     }
   }
+}
+
+namespace {
+
+/// Single data track disc, with the 2 second pregap and the sectors themselves synthesized.
+class TestDiscImage final : public CDImage
+{
+public:
+  explicit TestDiscImage(u32 data_sectors)
+  {
+    static constexpr u32 PREGAP_FRAMES = 2 * FRAMES_PER_SECOND;
+
+    SubChannelQ::Control control = {};
+    control.data = true;
+
+    Index pregap = {};
+    pregap.track_number = 1;
+    pregap.index_number = 0;
+    pregap.start_lba_in_track = static_cast<LBA>(-static_cast<s32>(PREGAP_FRAMES));
+    pregap.length = PREGAP_FRAMES;
+    pregap.mode = TrackMode::Mode2Form1;
+    pregap.control = control;
+    pregap.is_pregap = true;
+    m_indices.push_back(pregap);
+
+    Index data = {};
+    data.file_sector_size = DATA_SECTOR_SIZE;
+    data.start_lba_on_disc = PREGAP_FRAMES;
+    data.track_number = 1;
+    data.index_number = 1;
+    data.length = data_sectors;
+    data.mode = TrackMode::Mode2Form1;
+    data.control = control;
+    m_indices.push_back(data);
+
+    m_tracks.push_back(
+      Track{1, PREGAP_FRAMES, 0, PREGAP_FRAMES + data_sectors, TrackMode::Mode2Form1, SubchannelMode::None, control});
+    m_lba_count = PREGAP_FRAMES + data_sectors;
+    AddLeadOutIndex();
+  }
+
+protected:
+  bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override
+  {
+    std::memset(buffer, 0, index.file_sector_size);
+    return true;
+  }
+};
+
+/// Drives the CDROM through its registers only, the way a game does with interrupts masked.
+class CDROMControllerTest : public ::testing::Test
+{
+protected:
+  enum : u8
+  {
+    INT_DATA_READY = 1,
+    INT_COMPLETE = 2,
+    INT_ACK = 3,
+    INT_ERROR = 5,
+
+    STAT_MOTOR_ON = 0x02,
+    STAT_READING = 0x20,
+    STAT_SEEKING = 0x40,
+  };
+
+  /// One interrupt, as seen by the host after acknowledging it.
+  struct Response
+  {
+    u8 cause;
+    std::vector<u8> bytes;
+    GlobalTicks time; // relative to the last command write
+  };
+
+  static void SetUpTestSuite()
+  {
+    TimingEvents::Initialize();
+    System::UpdateOverclock();
+    DeactivateAllEvents();
+  }
+
+  void SetUp() override
+  {
+    m_old_settings = g_settings;
+    g_settings.cdrom_readahead_sectors = 0;
+    g_settings.cdrom_read_speedup = 1;
+    g_settings.cdrom_seek_speedup = 1;
+    g_settings.cdrom_auto_disc_change = false;
+    g_settings.cdrom_mechacon_version = CDROMMechaconVersion::VC1A;
+    CPU::g_state.cop0_regs.sr.bits = 0;
+    CPU::g_state.pending_ticks = 0;
+    DeactivateAllEvents();
+    TimingEvents::Reset();
+    InterruptController::Reset();
+
+    // Time can't advance without something to count down to.
+    m_idle_event.Activate();
+    CDROM::Initialize();
+
+    std::unique_ptr<CDImage> image = std::make_unique<TestDiscImage>(70 * CDImage::FRAMES_PER_MINUTE);
+    ASSERT_TRUE(CDROM::InsertMedia(image, DiscRegion::NTSC_U, {}, {}, {}, nullptr));
+
+    // Let the motor spin up, and clear the shell open bit.
+    Run(Seconds(2.0));
+    ASSERT_EQ(Command(0x01).cause, INT_ACK);
+  }
+
+  void TearDown() override
+  {
+    CDROM::Shutdown();
+    DeactivateAllEvents();
+    g_settings = m_old_settings;
+  }
+
+  static void DeactivateAllEvents()
+  {
+    while (TimingEvent* event = *TimingEvents::GetHeadEventPtr())
+      event->Deactivate();
+  }
+
+  static GlobalTicks Seconds(double seconds)
+  {
+    return static_cast<GlobalTicks>(seconds * static_cast<double>(System::MASTER_CLOCK));
+  }
+
+  static GlobalTicks Milliseconds(double ms) { return Seconds(ms / 1000.0); }
+
+  static double ToMilliseconds(GlobalTicks ticks)
+  {
+    return static_cast<double>(ticks) * 1000.0 / static_cast<double>(System::MASTER_CLOCK);
+  }
+
+  static GlobalTicks Now() { return TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks(); }
+
+  /// Advances emulated time without any register accesses.
+  static void Run(GlobalTicks ticks)
+  {
+    const GlobalTicks end = Now() + ticks;
+    while (Now() < end)
+    {
+      const GlobalTicks remaining = end - Now();
+      const TickCount until_event = std::max<TickCount>(CPU::g_state.downcount - CPU::GetPendingTicks(), 1);
+      CPU::AddPendingTicks(static_cast<TickCount>(std::min<GlobalTicks>(remaining, until_event)));
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+    }
+  }
+
+  static u8 ReadCause()
+  {
+    CDROM::WriteRegister(0, 1);
+    return CDROM::ReadRegister(3) & 0x1F;
+  }
+
+  void WriteCommand(u8 command, std::initializer_list<u8> params = {})
+  {
+    CDROM::WriteRegister(0, 0);
+    for (const u8 param : params)
+      CDROM::WriteRegister(2, param);
+    CDROM::WriteRegister(1, command);
+    m_command_time = Now();
+  }
+
+  /// Polls for an interrupt for up to the specified time, then acknowledges it before reading the response.
+  std::optional<Response> WaitForInterrupt(GlobalTicks timeout)
+  {
+    static constexpr GlobalTicks POLL_TICKS = 300; // ~9 us
+
+    const GlobalTicks end = Now() + timeout;
+    while (Now() < end)
+    {
+      const u8 cause = ReadCause() & 0x07;
+      if (cause != 0)
+      {
+        Response response{cause, {}, Now() - m_command_time};
+        CDROM::WriteRegister(0, 1);
+        CDROM::WriteRegister(3, 0x07);
+        CDROM::WriteRegister(0, 0);
+        while (CDROM::ReadRegister(0) & 0x20)
+          response.bytes.push_back(CDROM::ReadRegister(1));
+        return response;
+      }
+
+      Run(POLL_TICKS);
+    }
+
+    return std::nullopt;
+  }
+
+  /// Writes a command and returns its first response.
+  Response Command(u8 command, std::initializer_list<u8> params = {})
+  {
+    WriteCommand(command, params);
+    std::optional<Response> response = WaitForInterrupt(Milliseconds(50));
+    EXPECT_TRUE(response.has_value()) << "no response to command " << static_cast<u32>(command);
+    return response.value_or(Response{0, {0}, 0});
+  }
+
+  /// Seeks to the specified position (BCD) and reads the given number of sectors at single speed.
+  void ReadSectors(std::initializer_list<u8> msf, u32 count)
+  {
+    ASSERT_EQ(Command(0x0E, {0x00}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x02, msf).cause, INT_ACK);
+    ASSERT_EQ(Command(0x06).cause, INT_ACK);
+    for (u32 i = 0; i < count; i++)
+    {
+      const std::optional<Response> sector = WaitForInterrupt(Seconds(2.0));
+      ASSERT_TRUE(sector.has_value());
+      ASSERT_EQ(sector->cause, INT_DATA_READY);
+    }
+  }
+
+  Settings m_old_settings;
+  TimingEvent m_idle_event{"Test Idle", 1000000, 1000000, [](void*, TickCount) {}, nullptr};
+  GlobalTicks m_command_time = 0;
+};
+
+} // namespace
+
+TEST_F(CDROMControllerTest, StopCompletes)
+{
+  const Response ack = Command(0x08);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), 0x00);
+  EXPECT_EQ(Command(0x01).bytes.at(0), 0x00);
+}
+
+// Hardware: Stop's acknowledge no longer has the read bit, but the motor is still on.
+TEST_F(CDROMControllerTest, StopWhileReadingAcknowledgesWithoutReadBit)
+{
+  ReadSectors({0x30, 0x22, 0x57}, 16);
+  const Response ack = Command(0x08);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), STAT_MOTOR_ON);
 }

@@ -2295,6 +2295,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       const TickCount stop_time = GetTicksForStop(IsMotorOn());
       ClearAsyncInterrupt();
       ClearCommandSecondResponse();
+
+      // Reading/seeking/playing is already clear in the acknowledge, verified with hardware tests.
+      s_state.secondary_status.ClearActiveBits();
       SendACKAndStat();
 
       StopMotor();
