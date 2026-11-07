@@ -68,6 +68,7 @@ enum : u32
   AUDIO_FIFO_LOW_WATERMARK = 10,
 
   INIT_TICKS = 4000000,
+  INIT_FROM_STOPPED_TICKS = 62000000, // ~1.83 seconds, spin-up and initial seek
   ID_READ_TICKS = 33868,
   MOTOR_ON_RESPONSE_TICKS = 400000,
 
@@ -647,10 +648,20 @@ TickCount CDROM::SoftReset()
 {
   const bool was_double_speed = s_state.mode.double_speed;
 
+  // A stopped motor has to spin up again, after it finishes braking if a Stop is still in progress. A spin-up that is
+  // already in progress carries on.
+  const bool spinning_up = (s_state.drive_state == DriveState::SpinningUp);
+  const TickCount remaining_ticks =
+    (s_state.drive_state == DriveState::Stopping || spinning_up) ? s_state.drive_event.GetTicksUntilNextExecution() : 0;
+  const bool motor_stopped =
+    (s_state.drive_state == DriveState::Stopping) || spinning_up ||
+    ((s_state.drive_state == DriveState::Idle || s_state.drive_state == DriveState::ChangingSpeedOrTOCRead) &&
+     !IsMotorOn());
+
   ClearCommandSecondResponse();
   ClearDriveState();
   s_state.secondary_status.bits = 0;
-  s_state.secondary_status.motor_on = CanReadMedia();
+  s_state.secondary_status.motor_on = CanReadMedia() && !motor_stopped;
   s_state.secondary_status.shell_open = (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED) ?
                                           (s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN) :
                                           !CanReadMedia();
@@ -677,7 +688,19 @@ TickCount CDROM::SoftReset()
   UpdateStatusRegister();
 
   TickCount total_ticks;
-  if (HasMedia())
+  if (motor_stopped && CanReadMedia())
+  {
+    // Init takes ~1.82 to 1.85 seconds when the motor is stopped, and finishes braking first when it's still
+    // stopping. Delay the response slightly so it reports the motor as on.
+    total_ticks =
+      spinning_up ? remaining_ticks : (remaining_ticks + System::ScaleTicksToOverclock(INIT_FROM_STOPPED_TICKS));
+    DEV_LOG("CDROM init from stopped motor ticks = {} (remaining = {})", total_ticks, remaining_ticks);
+    SetHoldPosition(0, 0);
+    s_state.drive_state = DriveState::SpinningUp;
+    s_state.drive_event.Schedule(total_ticks);
+    total_ticks += MINIMUM_INTERRUPT_DELAY;
+  }
+  else if (HasMedia())
   {
     if (IsSeeking())
       UpdateSubQPositionWhileSeeking();

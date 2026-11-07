@@ -569,3 +569,101 @@ TEST_F(CDROMControllerTest, SeekWhileBrakingSpinsUp)
   EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
   EXPECT_GT(ToMilliseconds(complete->time), 1000.0);
 }
+
+// Hardware: Init with the motor stopped acknowledges as stopped, and completes ~1.82-1.85 s later with the motor on.
+TEST_F(CDROMControllerTest, InitFromStopped)
+{
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+
+  const Response ack = Command(0x0A);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), 0x00);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_GT(ToMilliseconds(complete->time), 1800.0);
+  EXPECT_LT(ToMilliseconds(complete->time), 1900.0);
+}
+
+// Init again during the spin-up from stopped completes when the spin-up does, not straight away.
+TEST_F(CDROMControllerTest, InitWhileSpinningUp)
+{
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+  ASSERT_EQ(Command(0x0A).cause, INT_ACK);
+  const GlobalTicks init_time = m_command_time;
+  Run(Milliseconds(50));
+  ASSERT_EQ(Command(0x01).cause, INT_ACK);
+
+  const Response ack = Command(0x0A);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), 0x00);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_GT(ToMilliseconds(Now() - init_time), 1800.0);
+  EXPECT_LT(ToMilliseconds(Now() - init_time), 1900.0);
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+}
+
+// A speed change set while stopped leaves the motor stopped, so Init still has to spin it up.
+TEST_F(CDROMControllerTest, InitFromStoppedDuringSpeedChange)
+{
+  ASSERT_EQ(Command(0x0E, {0x80}).cause, INT_ACK);
+  Run(Seconds(1.0));
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+  ASSERT_EQ(Command(0x0E, {0x00}).cause, INT_ACK);
+
+  const Response ack = Command(0x0A);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), 0x00);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_GT(ToMilliseconds(complete->time), 1800.0);
+  EXPECT_LT(ToMilliseconds(complete->time), 1900.0);
+}
+
+// Hardware: the game's sequence, GetTN and Init 8 frames after Stop. Init acknowledges with the motor on, waits for
+// braking to finish, and there is only one INT2, Init's.
+TEST_F(CDROMControllerTest, InitWhileBraking)
+{
+  ReadSectors({0x30, 0x22, 0x57}, 16);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  const GlobalTicks stop_time = m_command_time;
+  Run(Milliseconds(125));
+
+  EXPECT_EQ(Command(0x13).bytes.at(0), STAT_MOTOR_ON);
+  const Response ack = Command(0x0A);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), STAT_MOTOR_ON);
+
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_GT(ToMilliseconds(complete->time), 1900.0);
+  EXPECT_GT(ToMilliseconds(Now() - stop_time), 2000.0);
+
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+  EXPECT_EQ(Command(0x01).bytes.at(0), STAT_MOTOR_ON);
+}
+
+// Init with the motor running is unchanged and fast.
+TEST_F(CDROMControllerTest, InitWithMotorOn)
+{
+  ASSERT_EQ(Command(0x0A).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+  EXPECT_LT(ToMilliseconds(complete->time), 200.0);
+}
