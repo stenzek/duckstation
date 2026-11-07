@@ -406,3 +406,93 @@ TEST_F(CDROMControllerTest, GetIDCompletesAfterAcknowledge)
   EXPECT_EQ(complete->cause, INT_COMPLETE);
   EXPECT_EQ(complete->bytes, (std::vector<u8>{STAT_MOTOR_ON, 0x00, 0x20, 0x00, 'S', 'C', 'E', 'A'}));
 }
+
+TEST_F(CDROMControllerTest, SeekCompletes)
+{
+  ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+  ASSERT_EQ(Command(0x15).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+}
+
+// Hardware: a GetStat during a long seek means the seek's INT2 is never sent, but the seek still finishes.
+TEST_F(CDROMControllerTest, CommandDuringSeekSuppressesComplete)
+{
+  ASSERT_EQ(Command(0x02, {0x60, 0x00, 0x00}).cause, INT_ACK);
+  ASSERT_EQ(Command(0x15).cause, INT_ACK);
+  Run(Milliseconds(20));
+
+  const Response stat = Command(0x01);
+  EXPECT_EQ(stat.cause, INT_ACK);
+  EXPECT_EQ(stat.bytes.at(0), STAT_SEEKING | STAT_MOTOR_ON);
+
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+  EXPECT_EQ(Command(0x01).bytes.at(0), STAT_MOTOR_ON);
+}
+
+TEST_F(CDROMControllerTest, PauseCompletes)
+{
+  ReadSectors({0x10, 0x00, 0x00}, 4);
+  ASSERT_EQ(Command(0x09).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
+}
+
+// Hardware: Pause still acknowledges with the read bit, and a GetStat straight after it drops Pause's INT2.
+TEST_F(CDROMControllerTest, CommandAfterPauseSuppressesComplete)
+{
+  ReadSectors({0x10, 0x00, 0x00}, 4);
+  const Response ack = Command(0x09);
+  EXPECT_EQ(ack.cause, INT_ACK);
+  EXPECT_EQ(ack.bytes.at(0), STAT_READING | STAT_MOTOR_ON);
+
+  EXPECT_EQ(Command(0x01).cause, INT_ACK);
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+  EXPECT_EQ(Command(0x01).bytes.at(0), STAT_MOTOR_ON);
+}
+
+// Hardware: a GetStat 8 frames after Stop drops Stop's INT2, the motor still stops.
+TEST_F(CDROMControllerTest, CommandDuringStopSuppressesComplete)
+{
+  ReadSectors({0x30, 0x22, 0x57}, 16);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(130));
+  EXPECT_EQ(Command(0x01).cause, INT_ACK);
+  EXPECT_FALSE(WaitForInterrupt(Seconds(3.0)).has_value());
+  EXPECT_EQ(Command(0x01).bytes.at(0), 0x00);
+}
+
+// Hardware: a command with the wrong number of parameters still gets an error, verified on vC0 only.
+TEST_F(CDROMControllerTest, RejectedCommandDuringStop)
+{
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  Run(Milliseconds(130));
+  const Response error = Command(0x02);
+  EXPECT_EQ(error.cause, INT_ERROR);
+  EXPECT_EQ(error.bytes.at(1), 0x20);
+}
+
+// Hardware: a completion that is already waiting for the host survives a new command, and comes out first.
+TEST_F(CDROMControllerTest, QueuedCompleteSurvivesCommand)
+{
+  WriteCommand(0x08);
+  Run(Seconds(1.5));
+
+  const std::optional<Response> ack = WaitForInterrupt(Milliseconds(1));
+  ASSERT_TRUE(ack.has_value());
+  EXPECT_EQ(ack->cause, INT_ACK);
+
+  WriteCommand(0x01);
+  const std::optional<Response> complete = WaitForInterrupt(Milliseconds(50));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes.at(0), 0x00);
+
+  const std::optional<Response> stat = WaitForInterrupt(Milliseconds(50));
+  ASSERT_TRUE(stat.has_value());
+  EXPECT_EQ(stat->cause, INT_ACK);
+}

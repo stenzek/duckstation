@@ -354,6 +354,8 @@ static void ExecuteTestCommand(u8 subcommand);
 static void ExecuteCommandSecondResponse(void*, TickCount ticks);
 static void QueueCommandSecondResponse(Command command, TickCount ticks);
 static void ClearCommandSecondResponse();
+static bool SecondResponseNeedsEvent();
+static bool TakeSecondResponse(Command command);
 static void UpdateCommandEvent();
 static void ExecuteDrive(void*, TickCount ticks);
 static void ClearDriveState();
@@ -862,8 +864,23 @@ bool CDROM::DoState(StateWrapper& sw)
       UpdateCommandEvent();
     s_state.drive_event.SetState(!IsDriveIdle());
 
+    // Older states didn't track drive event completions as second responses. Keep any response that is already pending.
+    if (sw.GetVersion() < 95 && s_state.command_second_response == Command::None)
+    {
+      if ((s_state.drive_state == DriveState::SeekingLogical || s_state.drive_state == DriveState::SeekingPhysical) &&
+          !s_state.read_after_seek && !s_state.play_after_seek)
+      {
+        s_state.command_second_response =
+          (s_state.drive_state == DriveState::SeekingLogical) ? Command::SeekL : Command::SeekP;
+      }
+      else if (s_state.drive_state == DriveState::ChangingSession)
+      {
+        s_state.command_second_response = Command::ReadT;
+      }
+    }
+
     // Time will get fixed up later.
-    s_state.command_second_response_event.SetState(s_state.command_second_response != Command::None);
+    s_state.command_second_response_event.SetState(SecondResponseNeedsEvent());
   }
 
   return !sw.HasError();
@@ -1912,6 +1929,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
     s_state.response_fifo.Clear();
   }
 
+  // A new command replaces a second response that hasn't been sent yet, but the operation still completes.
+  if (s_state.command_second_response != s_state.command)
+    ClearCommandSecondResponse();
+
   // Stop command event first, reduces our chances of ending up with out-of-order events.
   s_state.command_event.Deactivate();
 
@@ -2123,6 +2144,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
         ClearCommandSecondResponse();
         SendACKAndStat();
 
+        // Completion comes from the drive event.
+        s_state.command_second_response = Command::ReadT;
         s_state.async_command_parameter = session;
         s_state.drive_state = DriveState::ChangingSession;
         s_state.drive_event.Schedule(GetTicksForTOCRead());
@@ -2749,6 +2772,34 @@ void CDROM::ClearCommandSecondResponse()
   s_state.command_second_response = Command::None;
 }
 
+bool CDROM::SecondResponseNeedsEvent()
+{
+  // Seek and session change completions come from the drive event instead.
+  switch (s_state.command_second_response)
+  {
+    case Command::None:
+    case Command::SeekL:
+    case Command::SeekP:
+    case Command::ReadT:
+      return false;
+
+    default:
+      return true;
+  }
+}
+
+bool CDROM::TakeSecondResponse(Command command)
+{
+  if (s_state.command_second_response != command)
+  {
+    DEV_LOG("Not sending {} complete, second response was replaced", GetCommandName(command));
+    return false;
+  }
+
+  s_state.command_second_response = Command::None;
+  return true;
+}
+
 void CDROM::UpdateCommandEvent()
 {
   // if there's a pending interrupt, we can't execute the command yet
@@ -2980,6 +3031,10 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   ClearAsyncInterrupt();
   ClearSectorBuffers();
   ResetAudioDecoder();
+
+  // Plain seeks complete with INT2 from the drive event, unless another command replaces it.
+  if (!read_after_seek && !play_after_seek)
+    s_state.command_second_response = logical ? Command::SeekL : Command::SeekP;
 
   s_state.secondary_status.SetSeeking();
   s_state.last_sector_header_valid = false;
@@ -3236,14 +3291,19 @@ void CDROM::DoSeekComplete()
     else
     {
       s_state.secondary_status.ClearActiveBits();
-      s_state.async_response_fifo.Push(s_state.secondary_status.bits);
-      SetAsyncInterrupt(Interrupt::Complete);
+      if (TakeSecondResponse(logical ? Command::SeekL : Command::SeekP))
+      {
+        s_state.async_response_fifo.Push(s_state.secondary_status.bits);
+        SetAsyncInterrupt(Interrupt::Complete);
+      }
     }
   }
   else
   {
     WARNING_LOG("{} seek to [{}] failed", logical ? "Logical" : "Physical",
                 LBAToMSFString(CDROMAsyncReader::GetLastReadSector()));
+    if (s_state.command_second_response == (logical ? Command::SeekL : Command::SeekP))
+      s_state.command_second_response = Command::None;
     s_state.secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     s_state.last_sector_header_valid = false;
@@ -3275,6 +3335,9 @@ void CDROM::DoChangeSessionComplete()
   ClearDriveState();
   s_state.secondary_status.ClearActiveBits();
   s_state.secondary_status.motor_on = true;
+
+  if (!TakeSecondResponse(Command::ReadT))
+    return;
 
   s_state.async_response_fifo.Clear();
   if (s_state.async_command_parameter == 0x01)
