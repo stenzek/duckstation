@@ -54,7 +54,6 @@
     <ClInclude Include="log_channels.h" />
     <ClInclude Include="sha256_digest.h" />
     <ClInclude Include="thirdparty\aes.h" />
-    <ClInclude Include="task_queue.h" />
     <ClInclude Include="xorshift_prng.h" />
     <ClInclude Include="thirdparty\usb_key_code_data.h">
       <Filter>thirdparty</Filter>
@@ -96,7 +95,6 @@
     <ClCompile Include="gsvector.cpp" />
     <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="thirdparty\aes.cpp" />
-    <ClCompile Include="task_queue.cpp" />
     <ClCompile Include="string_pool.cpp" />
     <ClCompile Include="settings_interface.cpp" />
   </ItemGroup>
