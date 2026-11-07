@@ -3974,7 +3974,8 @@ bool GPU::HandleFillRectangleCommand()
     GPUBackend::PushCommand(cmd);
   }
 
-  AddCommandTicks(46 + (((width / 8) + 9) * height + 1) / 2);
+  // Measured v2 GPU cost.
+  AddCommandTicks(10 + 5 * height + (width * height) / 12);
   EndCommand();
   return true;
 }
@@ -4149,7 +4150,8 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
     GPUBackend::PushCommand(cmd);
   }
 
-  AddCommandTicks(width * height);
+  // Measured v2 GPU cost: 1.25 cycles per pixel, plus 21 cycles for each VRAM page opened, one per 128 pixels of a row.
+  AddCommandTicks(50 + 21 * height * ((width + 127) / 128) + (width * height * 5) / 4);
   EndCommand();
   return true;
 }
