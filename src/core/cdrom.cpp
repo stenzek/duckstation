@@ -341,7 +341,7 @@ static TickCount GetTicksForIDRead();
 static TickCount GetTicksForRead();
 static TickCount GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change = false);
 static TickCount GetTicksForPause();
-static TickCount GetTicksForStop(bool motor_was_on);
+static TickCount GetTicksForStop(bool motor_was_on, CDImage::LBA lba);
 static TickCount GetTicksForSpeedChange();
 static TickCount GetTicksForTOCRead();
 static CDImage::LBA GetNextSectorToBeRead();
@@ -1041,7 +1041,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
     return {};
 
   // Add an additional two seconds to the disc swap, some games don't like it happening too quickly.
-  TickCount stop_ticks = GetTicksForStop(true);
+  TickCount stop_ticks = GetTicksForStop(true, 0);
   if (for_disc_swap)
     stop_ticks += System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
 
@@ -1840,9 +1840,28 @@ TickCount CDROM::GetTicksForPause()
   return std::max(ticks_to_reach_target, min_ticks);
 }
 
-TickCount CDROM::GetTicksForStop(bool motor_was_on)
+TickCount CDROM::GetTicksForStop(bool motor_was_on, CDImage::LBA lba)
 {
-  return System::ScaleTicksToOverclock(motor_was_on ? (s_state.mode.double_speed ? 25000000 : 13000000) : 7000);
+  if (!motor_was_on)
+    return System::ScaleTicksToOverclock(7000);
+
+  // Braking takes longer the faster the disc is spinning, and CLV discs spin slower towards the outside. The time is
+  // fitted to the published single speed average at the start of the disc, and 279ms measured at 30:24 on hardware.
+  // hardware. Double speed is scaled by the published averages.
+  static constexpr double START_RADIUS = 0.025;                  // metres
+  static constexpr double RADIUS_SQUARED_PER_SECOND = 6.6208e-7; // 1.3m/s * 1.6um track pitch / pi
+  static constexpr double STOP_TICKS_CONSTANT = 3255297.0;
+  static constexpr double STOP_TICKS_PER_ANGULAR_VELOCITY = 10608329.0;
+  static constexpr double AVERAGE_STOP_TICKS_SINGLE_SPEED = 13863626.0; // psx-spx: 0x0D38ACA, 409ms
+  static constexpr double AVERAGE_STOP_TICKS_DOUBLE_SPEED = 25845878.0; // psx-spx: 0x18A6076, 763ms
+  static constexpr double DOUBLE_SPEED_FACTOR = AVERAGE_STOP_TICKS_DOUBLE_SPEED / AVERAGE_STOP_TICKS_SINGLE_SPEED;
+
+  const double seconds = static_cast<double>(lba) / static_cast<double>(CDImage::FRAMES_PER_SECOND);
+  const double relative_angular_velocity =
+    START_RADIUS / std::sqrt(START_RADIUS * START_RADIUS + RADIUS_SQUARED_PER_SECOND * seconds);
+  const double ticks = (STOP_TICKS_CONSTANT + STOP_TICKS_PER_ANGULAR_VELOCITY * relative_angular_velocity) *
+                       (s_state.mode.double_speed ? DOUBLE_SPEED_FACTOR : 1.0);
+  return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
 }
 
 TickCount CDROM::GetTicksForSpeedChange()
@@ -2359,7 +2378,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
     {
       DEV_COLOR_LOG(StrongOrange, "Stop");
 
-      const TickCount stop_time = GetTicksForStop(IsMotorOn());
+      const TickCount stop_time = GetTicksForStop(IsMotorOn(), s_state.current_lba);
       ClearAsyncInterrupt();
       ClearCommandSecondResponse();
 

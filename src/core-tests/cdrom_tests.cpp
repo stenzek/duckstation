@@ -667,3 +667,20 @@ TEST_F(CDROMControllerTest, InitWithMotorOn)
   EXPECT_EQ(complete->bytes.at(0), STAT_MOTOR_ON);
   EXPECT_LT(ToMilliseconds(complete->time), 200.0);
 }
+
+// Hardware: Stop after reading at 30:24 at single speed completes in 258-298ms, median 279ms. Published averages from
+// an unknown position are 409ms (single) and 763ms (double).
+TEST_F(CDROMControllerTest, StopTimeDependsOnPosition)
+{
+  ReadSectors({0x30, 0x24, 0x50}, 16);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  std::optional<Response> complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_NEAR(ToMilliseconds(complete->time), 279.0, 5.0);
+
+  ReadSectors({0x00, 0x02, 0x00}, 16);
+  ASSERT_EQ(Command(0x08).cause, INT_ACK);
+  complete = WaitForInterrupt(Seconds(1.0));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_NEAR(ToMilliseconds(complete->time), 409.0, 5.0);
+}
