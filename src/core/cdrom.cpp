@@ -1866,8 +1866,9 @@ TickCount CDROM::GetTicksForStop(bool motor_was_on, CDImage::LBA lba)
 
 TickCount CDROM::GetTicksForSpeedChange()
 {
-  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.6 * static_cast<double>(System::MASTER_CLOCK));
-  static constexpr u32 ticks_double_to_single = static_cast<u32>(0.7 * static_cast<double>(System::MASTER_CLOCK));
+  // Measured on hardware: 548-557ms for single to double, typically 820-850ms (654-1164ms) for double to single.
+  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.55 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_double_to_single = static_cast<u32>(0.83 * static_cast<double>(System::MASTER_CLOCK));
   return System::ScaleTicksToOverclock(s_state.mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
 }
 
