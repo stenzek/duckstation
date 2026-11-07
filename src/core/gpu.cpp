@@ -135,17 +135,6 @@ static void CRTCTickEvent(void*, TickCount ticks);
 static void CommandTickEvent(void*, TickCount ticks);
 static void FrameDoneEvent(void*, TickCount ticks);
 
-// The GPU internally appears to run at 2x the system clock.
-// TODO: No, it just draws two pixels per clock.
-ALWAYS_INLINE constexpr TickCount GPUTicksToSystemTicks(TickCount gpu_ticks)
-{
-  return std::max<TickCount>((gpu_ticks + 1) >> 1, 1);
-}
-ALWAYS_INLINE constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks)
-{
-  return sysclk_ticks << 1;
-}
-
 static TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks);
 static TickCount SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractional_ticks);
 
@@ -782,6 +771,12 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.blitter_state, BlitterState::DrawingPolyLine);
   sw.Do(&s_locals.pending_command_ticks);
   sw.DoEx(&s_locals.dreq_hold_ticks, 96, 0);
+  if (sw.IsReading() && sw.GetVersion() < 97) [[unlikely]]
+  {
+    // Command ticks used to be counted at twice the system clock.
+    s_locals.pending_command_ticks = (s_locals.pending_command_ticks + 1) / 2;
+    s_locals.dreq_hold_ticks = (s_locals.dreq_hold_ticks + 1) / 2;
+  }
   sw.Do(&s_locals.command_total_words);
   sw.Do(&s_locals.GPUREAD_latch);
 
@@ -1665,7 +1660,7 @@ ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
   if (!s_locals.command_tick_event.IsActive())
     return 0;
 
-  return SystemTicksToGPUTicks(s_locals.command_tick_event.GetTicksSinceLastExecution());
+  return s_locals.command_tick_event.GetTicksSinceLastExecution();
 }
 
 ALWAYS_INLINE_RELEASE TickCount GPU::GetTicksUntilLine(u32 line)
@@ -1930,9 +1925,8 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
 
 void GPU::CommandTickEvent(void*, TickCount ticks)
 {
-  const TickCount gpu_ticks = SystemTicksToGPUTicks(ticks);
-  s_locals.pending_command_ticks -= gpu_ticks;
-  s_locals.dreq_hold_ticks = std::max(s_locals.dreq_hold_ticks - gpu_ticks, 0);
+  s_locals.pending_command_ticks -= ticks;
+  s_locals.dreq_hold_ticks = std::max(s_locals.dreq_hold_ticks - ticks, 0);
 
   s_locals.executing_commands = true;
   ExecuteCommands();
@@ -1962,8 +1956,7 @@ void GPU::UpdateCommandTickEvent()
     const TickCount ticks = (s_locals.dreq_hold_ticks > s_locals.max_run_ahead) ?
                               (s_locals.dreq_hold_ticks - s_locals.max_run_ahead) :
                               s_locals.pending_command_ticks;
-    s_locals.command_tick_event.SetIntervalAndSchedule(
-      GPUTicksToSystemTicks(std::max(ticks - GetPendingCommandTicks(), 1)));
+    s_locals.command_tick_event.SetIntervalAndSchedule(std::max(ticks - GetPendingCommandTicks(), 1));
   }
 }
 
@@ -1975,8 +1968,8 @@ u8 GPU::UpdateOrGetGPUBusyPct()
 
   const double busy_frac =
     static_cast<double>(s_locals.active_ticks_since_last_update) /
-    static_cast<double>(SystemTicksToGPUTicks(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
-                        (ComputeVerticalFrequency() / (s_locals.GPUSTAT.pal_mode ? 50.0f : 60.0f)));
+    (static_cast<double>(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
+     (ComputeVerticalFrequency() / (s_locals.GPUSTAT.pal_mode ? 50.0f : 60.0f)));
   const double usage_pct = busy_frac * 100.0;
 
   DEBUG_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", usage_pct,
@@ -3232,7 +3225,8 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawTriangleTicks(GSVector2i v1, GSVector2i v
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
     pixels /= 2;
 
-  AddCommandTicks(pixels);
+  // Two pixels are drawn per clock.
+  AddCommandTicks((pixels + 1) / 2);
 }
 
 ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent)
@@ -3286,7 +3280,7 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
     drawn_height = std::max<u32>(drawn_height / 2, 1u);
 
-  AddCommandTicks(ticks_per_row * drawn_height);
+  AddCommandTicks((ticks_per_row * drawn_height + 1) / 2);
 }
 
 ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool shaded)
@@ -3303,7 +3297,7 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool sha
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
     drawn_height = std::max<u32>(drawn_height / 2, 1u);
 
-  AddCommandTicks(std::max(drawn_width, drawn_height));
+  AddCommandTicks((std::max(drawn_width, drawn_height) + 1) / 2);
 }
 
 bool GPU::HandleRenderPolygonCommand()
@@ -3960,7 +3954,7 @@ bool GPU::HandleFillRectangleCommand()
     GPUBackend::PushCommand(cmd);
   }
 
-  AddCommandTicks(46 + ((width / 8) + 9) * height);
+  AddCommandTicks(46 + (((width / 8) + 9) * height + 1) / 2);
   EndCommand();
   return true;
 }
@@ -4135,7 +4129,7 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
     GPUBackend::PushCommand(cmd);
   }
 
-  AddCommandTicks(width * height * 2);
+  AddCommandTicks(width * height);
   EndCommand();
   return true;
 }
