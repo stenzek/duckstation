@@ -141580,7 +141580,6 @@ SLUS-00282:
     - DigitalController
     - NeGcon
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Interplay"
@@ -145543,7 +145542,6 @@ SLES-00056:
     - DigitalController
     - NeGcon
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Interplay"
@@ -165470,7 +165468,6 @@ SLES-00654:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165493,7 +165490,6 @@ SLES-10654:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165516,7 +165512,6 @@ SLES-00656:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165539,7 +165534,6 @@ SLES-10656:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165562,7 +165556,6 @@ SLES-00584:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165585,7 +165578,6 @@ SLES-10584:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
@@ -165608,7 +165600,6 @@ SLES-00643:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Erbe Software / Lucasarts"
@@ -165631,7 +165622,6 @@ SLES-10643:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Erbe Software / Lucasarts"
@@ -165655,7 +165645,6 @@ SLPS-00638:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Bullet Proof Software / Lucasarts"
@@ -165679,7 +165668,6 @@ SLPS-00639:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Bullet Proof Software / Lucasarts"
@@ -165705,7 +165693,6 @@ SLES-00644:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Erbe Software / Lucasarts"
@@ -165731,7 +165718,6 @@ SLES-10644:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Erbe Software / Lucasarts"
@@ -165754,7 +165740,6 @@ SLUS-00381:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   codes:
     - SLUS-00381
@@ -165780,7 +165765,6 @@ SLUS-00386:
     - DigitalController
     - Justifier
   settings:
-    dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
   metadata:
     publisher: "Lucasarts"
