@@ -220,9 +220,14 @@ static void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool sem
 static void AddDrawLineTicks(const GSVector4i rect, bool shaded);
 
 using GP0CommandHandler = bool (*)();
-using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;
+struct GP0Command
+{
+  GP0CommandHandler handler;
+  u8 num_words; ///< Words needed before the handler runs.
+};
+using GP0CommandTable = std::array<GP0Command, 256>;
 
-// Rendering commands, returns false if not enough data is provided
+// Rendering commands, called once num_words are queued
 static bool HandleUnknownGP0Command();
 static bool HandleNOPCommand();
 static bool HandleClearCacheCommand();
@@ -406,6 +411,69 @@ struct Locals
 ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 } // namespace GPU
+
+static constexpr GPU::GP0CommandTable s_GP0_command_table = []() constexpr {
+  GPU::GP0CommandTable table = {};
+  for (u32 i = 0; i < static_cast<u32>(table.size()); i++)
+    table[i] = {&GPU::HandleUnknownGP0Command, 1};
+  table[0x00] = {&GPU::HandleNOPCommand, 1};
+  table[0x01] = {&GPU::HandleClearCacheCommand, 1};
+  table[0x02] = {&GPU::HandleFillRectangleCommand, 3};
+  table[0x03] = {&GPU::HandleNOPCommand, 1};
+  for (u32 i = 0x04; i <= 0x1E; i++)
+    table[i] = {&GPU::HandleNOPCommand, 1};
+  table[0x1F] = {&GPU::HandleInterruptRequestCommand, 1};
+  for (u32 i = 0x20; i <= 0x7F; i++)
+  {
+    // same bits as GPURenderCommand, which can't be used in a constant expression
+    const u32 textured = BoolToUInt32((i & 0x04) != 0);
+    const bool quad_or_polyline = ((i & 0x08) != 0);
+    const u32 shaded = BoolToUInt32((i & 0x10) != 0);
+    switch (static_cast<GPUPrimitive>((i >> 5) & 0x03))
+    {
+      case GPUPrimitive::Polygon:
+        // shaded vertices use the colour from the first word for the first vertex
+        table[i] = {&GPU::HandleRenderPolygonCommand,
+                    static_cast<u8>((1 + textured + shaded) * (quad_or_polyline ? 4 : 3) + (shaded ^ 1))};
+        break;
+      case GPUPrimitive::Line:
+        // poly-lines need at least the first two vertices, the terminator is tested after that
+        table[i] = {quad_or_polyline ? &GPU::HandleRenderPolyLineCommand : &GPU::HandleRenderLineCommand,
+                    static_cast<u8>(3 + shaded)};
+        break;
+      case GPUPrimitive::Rectangle:
+        table[i] = {&GPU::HandleRenderRectangleCommand,
+                    static_cast<u8>(2 + textured +
+                                    BoolToUInt32(static_cast<GPUDrawRectangleSize>((i >> 3) & 0x03) ==
+                                                 GPUDrawRectangleSize::Variable))};
+        break;
+      default:
+        break;
+    }
+  }
+  table[0xE0] = {&GPU::HandleNOPCommand, 1};
+  table[0xE1] = {&GPU::HandleSetDrawModeCommand, 1};
+  table[0xE2] = {&GPU::HandleSetTextureWindowCommand, 1};
+  table[0xE3] = {&GPU::HandleSetDrawingAreaTopLeftCommand, 1};
+  table[0xE4] = {&GPU::HandleSetDrawingAreaBottomRightCommand, 1};
+  table[0xE5] = {&GPU::HandleSetDrawingOffsetCommand, 1};
+  table[0xE6] = {&GPU::HandleSetMaskBitCommand, 1};
+  for (u32 i = 0xE7; i <= 0xEF; i++)
+    table[i] = {&GPU::HandleNOPCommand, 1};
+  for (u32 i = 0x80; i <= 0x9F; i++)
+    table[i] = {&GPU::HandleCopyRectangleVRAMToVRAMCommand, 4};
+  for (u32 i = 0xA0; i <= 0xBF; i++)
+    table[i] = {&GPU::HandleCopyRectangleCPUToVRAMCommand, 3};
+  for (u32 i = 0xC0; i <= 0xDF; i++)
+    table[i] = {&GPU::HandleCopyRectangleVRAMToCPUCommand, 3};
+
+  table[0xFF] = {&GPU::HandleNOPCommand, 1};
+
+  return table;
+}();
+static_assert(s_GP0_command_table[0x02].num_words == 3 && s_GP0_command_table[0x2C].num_words == 9 &&
+              s_GP0_command_table[0x3E].num_words == 12 && s_GP0_command_table[0x48].num_words == 3 &&
+              s_GP0_command_table[0x65].num_words == 4 && s_GP0_command_table[0x80].num_words == 4);
 
 // aligning VRAM to 4K is fine, since the ARM64 instructions compute 4K page aligned addresses
 // or it would be, except we want to import the memory for readbacks on metal..
@@ -2795,63 +2863,6 @@ bool GPU::DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, co
   return image.SaveToFile(path.c_str(), Image::DEFAULT_SAVE_QUALITY, error);
 }
 
-static constexpr GPU::GP0CommandHandlerTable s_GP0_command_handler_table = []() constexpr {
-  GPU::GP0CommandHandlerTable table = {};
-  for (u32 i = 0; i < static_cast<u32>(table.size()); i++)
-    table[i] = &GPU::HandleUnknownGP0Command;
-  table[0x00] = &GPU::HandleNOPCommand;
-  table[0x01] = &GPU::HandleClearCacheCommand;
-  table[0x02] = &GPU::HandleFillRectangleCommand;
-  table[0x03] = &GPU::HandleNOPCommand;
-  for (u32 i = 0x04; i <= 0x1E; i++)
-    table[i] = &GPU::HandleNOPCommand;
-  table[0x1F] = &GPU::HandleInterruptRequestCommand;
-  for (u32 i = 0x20; i <= 0x7F; i++)
-  {
-    switch (static_cast<GPUPrimitive>((i >> 5) & 0x03))
-    {
-      case GPUPrimitive::Polygon:
-        table[i] = &GPU::HandleRenderPolygonCommand;
-        break;
-      case GPUPrimitive::Line:
-        table[i] = (i & 0x08) ? &GPU::HandleRenderPolyLineCommand : &GPU::HandleRenderLineCommand;
-        break;
-      case GPUPrimitive::Rectangle:
-        table[i] = &GPU::HandleRenderRectangleCommand;
-        break;
-      default:
-        table[i] = &GPU::HandleUnknownGP0Command;
-        break;
-    }
-  }
-  table[0xE0] = &GPU::HandleNOPCommand;
-  table[0xE1] = &GPU::HandleSetDrawModeCommand;
-  table[0xE2] = &GPU::HandleSetTextureWindowCommand;
-  table[0xE3] = &GPU::HandleSetDrawingAreaTopLeftCommand;
-  table[0xE4] = &GPU::HandleSetDrawingAreaBottomRightCommand;
-  table[0xE5] = &GPU::HandleSetDrawingOffsetCommand;
-  table[0xE6] = &GPU::HandleSetMaskBitCommand;
-  for (u32 i = 0xE7; i <= 0xEF; i++)
-    table[i] = &GPU::HandleNOPCommand;
-  for (u32 i = 0x80; i <= 0x9F; i++)
-    table[i] = &GPU::HandleCopyRectangleVRAMToVRAMCommand;
-  for (u32 i = 0xA0; i <= 0xBF; i++)
-    table[i] = &GPU::HandleCopyRectangleCPUToVRAMCommand;
-  for (u32 i = 0xC0; i <= 0xDF; i++)
-    table[i] = &GPU::HandleCopyRectangleVRAMToCPUCommand;
-
-  table[0xFF] = &GPU::HandleNOPCommand;
-
-  return table;
-}();
-
-#define CHECK_COMMAND_SIZE(num_words)                                                                                  \
-  if (s_locals.fifo.GetSize() < num_words)                                                                             \
-  {                                                                                                                    \
-    s_locals.command_total_words = num_words;                                                                          \
-    return false;                                                                                                      \
-  }
-
 static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
 {
   return value == 0 ? value_for_zero : value;
@@ -2913,8 +2924,14 @@ void GPU::TryExecuteCommands()
     {
       case BlitterState::Idle:
       {
-        const u32 command = FifoPeek(0) >> 24;
-        if (s_GP0_command_handler_table[command]())
+        const GP0Command& command = s_GP0_command_table[FifoPeek(0) >> 24];
+        if (s_locals.fifo.GetSize() < command.num_words)
+        {
+          s_locals.command_total_words = command.num_words;
+          return;
+        }
+
+        if (command.handler())
           continue;
         else
           return;
@@ -3284,8 +3301,6 @@ bool GPU::HandleRenderPolygonCommand()
   // shaded vertices use the colour from the first word for the first vertex
   const u32 words_per_vertex = 1 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.shading_enable);
   const u32 num_vertices = rc.quad_polygon ? 4 : 3;
-  const u32 total_words = words_per_vertex * num_vertices + BoolToUInt32(!rc.shading_enable);
-  CHECK_COMMAND_SIZE(total_words);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
@@ -3557,8 +3572,6 @@ bool GPU::HandleRenderRectangleCommand()
   const u32 total_words =
     2 + BoolToUInt32(rc.texture_enable) + BoolToUInt32(rc.rectangle_size == GPUDrawRectangleSize::Variable);
 
-  CHECK_COMMAND_SIZE(total_words);
-
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
 
@@ -3634,7 +3647,6 @@ bool GPU::HandleRenderLineCommand()
 {
   const GPURenderCommand rc{FifoPeek(0)};
   const u32 total_words = rc.shading_enable ? 4 : 3;
-  CHECK_COMMAND_SIZE(total_words);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
@@ -3742,7 +3754,6 @@ bool GPU::HandleRenderPolyLineCommand()
   // always read the first two vertices, we test for the terminator after that
   const GPURenderCommand rc{FifoPeek(0)};
   const u32 min_words = rc.shading_enable ? 4 : 3;
-  CHECK_COMMAND_SIZE(min_words);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
@@ -3912,7 +3923,6 @@ void GPU::FinishPolyline()
 
 bool GPU::HandleFillRectangleCommand()
 {
-  CHECK_COMMAND_SIZE(3);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
@@ -3945,7 +3955,6 @@ bool GPU::HandleFillRectangleCommand()
 
 bool GPU::HandleCopyRectangleCPUToVRAMCommand()
 {
-  CHECK_COMMAND_SIZE(3);
   s_locals.fifo.RemoveOne();
 
   const u32 coords = FifoPop();
@@ -4036,7 +4045,6 @@ void GPU::FinishVRAMWrite()
 
 bool GPU::HandleCopyRectangleVRAMToCPUCommand()
 {
-  CHECK_COMMAND_SIZE(3);
   s_locals.fifo.RemoveOne();
 
   s_locals.vram_transfer.x = Truncate16(FifoPeek() & VRAM_WIDTH_MASK);
@@ -4086,7 +4094,6 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
 
 bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
 {
-  CHECK_COMMAND_SIZE(4);
   s_locals.fifo.RemoveOne();
 
   const u32 src_x = FifoPeek() & VRAM_WIDTH_MASK;
