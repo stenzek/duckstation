@@ -2118,7 +2118,21 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
         {
           // if we're seeking or reading, we need to add time to the current seek/read
           const TickCount change_ticks = GetTicksForSpeedChange();
-          if (s_state.drive_state != DriveState::Idle)
+          if (s_state.drive_state == DriveState::SeekingLogical || s_state.drive_state == DriveState::SeekingPhysical)
+          {
+            // The change overlaps with the seek. If the seek is longer, it takes about one more revolution to find the
+            // target at the new speed. Verified on hardware, 0.16-0.29s extra for a 60 minute seek.
+            static constexpr TickCount EXTRA_REVOLUTION_TICKS =
+              static_cast<TickCount>(static_cast<double>(System::MASTER_CLOCK) * 0.16);
+            const TickCount remaining_ticks = s_state.drive_event.GetTicksUntilNextExecution();
+            const TickCount seek_ticks = (remaining_ticks < change_ticks) ?
+                                           change_ticks :
+                                           (remaining_ticks + System::ScaleTicksToOverclock(EXTRA_REVOLUTION_TICKS));
+            DEV_LOG("Drive is seeking, speed change to {}-speed extends seek from {} to {} ticks",
+                    s_state.mode.double_speed ? "double" : "single", remaining_ticks, seek_ticks);
+            s_state.drive_event.Schedule(seek_ticks);
+          }
+          else if (s_state.drive_state != DriveState::Idle)
           {
             DEV_LOG("Drive is {}, delaying event by {} ticks for speed change to {}-speed",
                     s_drive_state_names[static_cast<u8>(s_state.drive_state)], change_ticks,

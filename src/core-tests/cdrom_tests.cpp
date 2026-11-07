@@ -779,3 +779,29 @@ TEST_F(CDROMControllerTest, SeekOverlapsSpeedChange)
   seek_after_speed_change(0x00, 0x20);
   EXPECT_NEAR(ToMilliseconds(m_last_duration), 830.0, 15.0);
 }
+
+// Hardware: a speed change during a long seek overlaps with it instead of adding the full change time, and the
+// Setmode replaces the seek's INT2. The seek's end is found by polling GetStat, as the hardware test did.
+TEST_F(CDROMControllerTest, SpeedChangeOverlapsSeek)
+{
+  const auto seek_with_setmode = [this](u8 mode, u8 frame) {
+    ASSERT_EQ(Command(0x02, {0x00, 0x02, 0x00}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x15).cause, INT_ACK);
+    ASSERT_TRUE(WaitForInterrupt(Seconds(3.0)).has_value());
+
+    ASSERT_EQ(Command(0x02, {0x60, 0x00, frame}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x15).cause, INT_ACK);
+    const GlobalTicks seek_time = m_command_time;
+    Run(Milliseconds(20));
+    EXPECT_EQ(Command(0x0E, {mode}).bytes.at(0), STAT_SEEKING | STAT_MOTOR_ON);
+
+    while (Command(0x01).bytes.at(0) & STAT_SEEKING)
+      Run(Milliseconds(10));
+    m_last_duration = Now() - seek_time;
+  };
+
+  seek_with_setmode(0x00, 0x00);
+  const double plain_ms = ToMilliseconds(m_last_duration);
+  seek_with_setmode(0x80, 0x10);
+  EXPECT_NEAR(ToMilliseconds(m_last_duration), plain_ms + 160.0, 30.0);
+}
