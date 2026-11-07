@@ -424,6 +424,12 @@ void Host::RunOnUIThread(MoveOnlyFunction<void()> function)
   RunOnCoreThread(std::move(function));
 }
 
+void Host::QueueAsyncTask(MoveOnlyFunction<void()> function)
+{
+  // Run synchronously for determinism.
+  function();
+}
+
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   //
@@ -1058,7 +1064,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   RegTestHost::s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
-  if (!Core::CoreThreadInitialize(true, &error))
+  if (!Core::CoreThreadInitialize(&error))
   {
     ERROR_LOG("CoreThreadInitialize() failed: {}", error.GetDescription());
     return EXIT_FAILURE;

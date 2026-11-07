@@ -251,6 +251,11 @@ void Host::RunOnUIThread(MoveOnlyFunction<void()> function)
   function();
 }
 
+void Host::QueueAsyncTask(MoveOnlyFunction<void()> function)
+{
+  function();
+}
+
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
 }

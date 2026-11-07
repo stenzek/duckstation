@@ -69,7 +69,6 @@ void RunOnUIThread(MoveOnlyFunction<void()> function);
 
 /// Asynchronous work tasks, complete on worker thread.
 void QueueAsyncTask(MoveOnlyFunction<void()> function);
-void WaitForAllAsyncTasks();
 
 /// Commits any changes made to the base settings layer to the host.
 void CommitBaseSettingChanges();

@@ -3499,6 +3499,7 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
     VERBOSE_LOG("Saving state took {:.2f} msec", lsave_timer.GetTimeMilliseconds());
 
     s_state.outstanding_save_state_tasks.fetch_sub(1, std::memory_order_acq_rel);
+    s_state.outstanding_save_state_tasks.notify_all();
     if (completion_callback)
       completion_callback(result, lerror);
   });
@@ -3615,8 +3616,9 @@ void System::SaveStateToSlot(bool global, s32 slot)
 
 void System::FlushSaveStates()
 {
-  while (s_state.outstanding_save_state_tasks.load(std::memory_order_acquire) > 0)
-    Host::WaitForAllAsyncTasks();
+  u32 outstanding;
+  while ((outstanding = s_state.outstanding_save_state_tasks.load(std::memory_order_acquire)) > 0)
+    s_state.outstanding_save_state_tasks.wait(outstanding, std::memory_order_acquire);
 }
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
