@@ -805,3 +805,46 @@ TEST_F(CDROMControllerTest, SpeedChangeOverlapsSeek)
   seek_with_setmode(0x80, 0x10);
   EXPECT_NEAR(ToMilliseconds(m_last_duration), plain_ms + 160.0, 30.0);
 }
+
+// Hardware: switching the speed back during a change doesn't cancel it. A seek straight after completes 0.93-1.26s
+// after the first Setmode.
+TEST_F(CDROMControllerTest, SpeedChangeBackDoesNotCancel)
+{
+  const auto toggle_then_seek = [this](u8 first_mode, u8 second_mode, double delay_ms, u8 frame) {
+    ASSERT_EQ(Command(0x0E, {first_mode}).cause, INT_ACK);
+    const GlobalTicks setmode_time = m_command_time;
+    Run(Milliseconds(delay_ms));
+    ASSERT_EQ(Command(0x0E, {second_mode}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x02, {0x10, 0x00, frame}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x15).cause, INT_ACK);
+    const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+    ASSERT_TRUE(complete.has_value());
+    EXPECT_EQ(complete->cause, INT_COMPLETE);
+    m_last_duration = Now() - setmode_time;
+    Run(Seconds(1.0));
+  };
+
+  ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+  ASSERT_EQ(Command(0x15).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(3.0)).has_value());
+
+  u8 frame = 0x10;
+  for (const double delay_ms : {50.0, 150.0, 300.0})
+  {
+    SCOPED_TRACE(testing::Message() << "delay=" << delay_ms);
+    toggle_then_seek(0x80, 0x00, delay_ms, frame);
+    EXPECT_GE(ToMilliseconds(m_last_duration), 930.0);
+    EXPECT_LE(ToMilliseconds(m_last_duration), 1260.0);
+    frame += 0x10;
+
+    // Start at double speed for the other direction.
+    ASSERT_EQ(Command(0x0E, {0x80}).cause, INT_ACK);
+    Run(Seconds(1.5));
+    toggle_then_seek(0x00, 0x80, delay_ms, frame);
+    EXPECT_GE(ToMilliseconds(m_last_duration), 930.0);
+    EXPECT_LE(ToMilliseconds(m_last_duration), 1260.0);
+    frame += 0x10;
+    ASSERT_EQ(Command(0x0E, {0x00}).cause, INT_ACK);
+    Run(Seconds(1.5));
+  }
+}

@@ -2106,12 +2106,16 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       {
         if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead)
         {
-          // cancel the speed change if it's less than a quarter complete
-          if (s_state.drive_event.GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
-          {
-            DEV_LOG("Cancelling speed change event");
-            ClearDriveState();
-          }
+          // Switching back doesn't cancel the change. On hardware, the drive is back at the original speed ~0.95s
+          // after the first change at the earliest, and never sooner than a full change in the new direction.
+          // The event was scheduled from idle, so the time since its last execution is the time since the first change.
+          static constexpr TickCount MIN_TOGGLE_TICKS =
+            static_cast<TickCount>(static_cast<double>(System::MASTER_CLOCK) * 0.95);
+          const TickCount elapsed_ticks = s_state.drive_event.GetTicksSinceLastExecution();
+          const TickCount change_ticks = std::max<TickCount>(
+            System::ScaleTicksToOverclock(MIN_TOGGLE_TICKS) - elapsed_ticks, GetTicksForSpeedChange());
+          DEV_LOG("Speed changed back after {} ticks, change completes in {} ticks", elapsed_ticks, change_ticks);
+          s_state.drive_event.Schedule(change_ticks);
         }
         else if (s_state.drive_state != DriveState::SeekingImplicit &&
                  s_state.drive_state != DriveState::ShellOpening && s_state.drive_state != DriveState::Stopping)
