@@ -1796,9 +1796,11 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
-    // we're still reading the TOC, so add that time in
+    // The seek overlaps with the speed change or TOC read, verified on hardware for speed changes. With the motor
+    // stopped, a speed change still adds to the spin-up.
     const TickCount remaining_change_ticks = s_state.drive_event.GetTicksUntilNextExecution();
-    ticks += remaining_change_ticks;
+    ticks = IsMotorOn() ? std::max<u32>(ticks, static_cast<u32>(remaining_change_ticks)) :
+                          (ticks + static_cast<u32>(remaining_change_ticks));
 
     DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({} for speed change/init) ({})",
             LBAToMSFString(current_lba), LBAToMSFString(new_lba), lba_diff, ticks,

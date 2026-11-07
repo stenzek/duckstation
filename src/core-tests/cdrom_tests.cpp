@@ -373,6 +373,7 @@ protected:
   Settings m_old_settings;
   TimingEvent m_idle_event{"Test Idle", 1000000, 1000000, [](void*, TickCount) {}, nullptr};
   GlobalTicks m_command_time = 0;
+  GlobalTicks m_last_duration = 0;
 };
 
 } // namespace
@@ -725,4 +726,56 @@ TEST_F(CDROMControllerTest, DoubleSpeedWhileStoppedIsFree)
   const std::optional<Response> changed = WaitForInterrupt(Seconds(5.0));
   ASSERT_TRUE(changed.has_value());
   EXPECT_NEAR(ToMilliseconds(changed->time), ToMilliseconds(reference->time), 50.0);
+}
+
+// Hardware: setting single speed while stopped at double speed adds ~1.1 s over the spin-up and seek. The speed change
+// is added on top, not overlapped.
+TEST_F(CDROMControllerTest, SingleSpeedWhileStoppedAddsChange)
+{
+  const auto seek_from_stopped = [this]() {
+    ASSERT_EQ(Command(0x08).cause, INT_ACK);
+    ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+    ASSERT_EQ(Command(0x0E, {0x00}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+    WriteCommand(0x15);
+  };
+
+  // Reference, already at single speed.
+  seek_from_stopped();
+  ASSERT_EQ(WaitForInterrupt(Milliseconds(50))->cause, INT_ACK);
+  const std::optional<Response> reference = WaitForInterrupt(Seconds(5.0));
+  ASSERT_TRUE(reference.has_value());
+
+  ASSERT_EQ(Command(0x0E, {0x80}).cause, INT_ACK);
+  Run(Seconds(1.0));
+  seek_from_stopped();
+  ASSERT_EQ(WaitForInterrupt(Milliseconds(50))->cause, INT_ACK);
+  const std::optional<Response> changed = WaitForInterrupt(Seconds(5.0));
+  ASSERT_TRUE(changed.has_value());
+  EXPECT_GT(ToMilliseconds(changed->time) - ToMilliseconds(reference->time), 700.0);
+}
+
+// Hardware: a short seek written straight after an idle speed change finishes with the change, at ~550ms for single to
+// double, ~650-1160ms (typically 820-850ms) for double to single.
+TEST_F(CDROMControllerTest, SeekOverlapsSpeedChange)
+{
+  const auto seek_after_speed_change = [this](u8 mode, u8 frame) {
+    ASSERT_EQ(Command(0x0E, {mode}).cause, INT_ACK);
+    const GlobalTicks setmode_time = m_command_time;
+    ASSERT_EQ(Command(0x02, {0x10, 0x00, frame}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x15).cause, INT_ACK);
+    const std::optional<Response> complete = WaitForInterrupt(Seconds(3.0));
+    ASSERT_TRUE(complete.has_value());
+    EXPECT_EQ(complete->cause, INT_COMPLETE);
+    m_last_duration = Now() - setmode_time;
+  };
+
+  ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+  ASSERT_EQ(Command(0x15).cause, INT_ACK);
+  ASSERT_TRUE(WaitForInterrupt(Seconds(3.0)).has_value());
+
+  seek_after_speed_change(0x80, 0x10);
+  EXPECT_NEAR(ToMilliseconds(m_last_duration), 550.0, 15.0);
+  seek_after_speed_change(0x00, 0x20);
+  EXPECT_NEAR(ToMilliseconds(m_last_duration), 830.0, 15.0);
 }
