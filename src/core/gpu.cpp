@@ -638,6 +638,7 @@ void GPU::SoftReset()
   s_locals.GPUSTAT.pal_mode = System::IsPALRegion();
   s_locals.GPUSTAT.display_area_color_depth_24 = false;
   s_locals.GPUSTAT.vertical_interlace = false;
+  s_locals.GPUSTAT.interlaced_field = 1u;
   s_locals.GPUSTAT.display_disable = true;
   s_locals.GPUSTAT.dma_direction = GPUDMADirection::Off;
   s_locals.drawing_area = {};
@@ -1324,9 +1325,6 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
   static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = s_locals.crtc_state;
 
-  if (!s_locals.GPUSTAT.vertical_interlace)
-    s_locals.GPUSTAT.interlaced_field = 1u;
-
   const u16 old_vertical_total = cs.vertical_total;
   cs.vertical_total = s_locals.GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
   cs.horizontal_total = s_locals.GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
@@ -1870,23 +1868,23 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     if (reached_start && reached_end && end_line < start_line)
       SetCRTCVBlank(false);
 
+    // the 480i display field was latched at vblank start, which may have been before the switch to 480i
+    const u8 next_field =
+      s_locals.GPUSTAT.InInterleaved480iMode() ? cs.interlaced_display_field : (cs.interlaced_field ^ 1u);
+
+    // v2 GPUs change bit 13 at the start of the last line, and hold it while interlace is off
+    if (s_locals.GPUSTAT.vertical_interlace && prev_scanline < (cs.vertical_total - 1u) &&
+        cs.current_scanline >= (cs.vertical_total - 1u))
+    {
+      s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(next_field));
+    }
+
     // past the end of vblank?
     if (cs.current_scanline == cs.vertical_total)
     {
       // start the new frame
       cs.current_scanline = 0;
-      if (s_locals.GPUSTAT.vertical_interlace)
-      {
-        // the 480i display field was latched at vblank start, which may have been before the switch to 480i
-        cs.interlaced_field =
-          s_locals.GPUSTAT.InInterleaved480iMode() ? cs.interlaced_display_field : (cs.interlaced_field ^ 1u);
-        s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(cs.interlaced_field));
-      }
-      else
-      {
-        cs.interlaced_field = 0;
-        s_locals.GPUSTAT.interlaced_field = 1u;
-      }
+      cs.interlaced_field = s_locals.GPUSTAT.vertical_interlace ? next_field : 0;
     }
   }
 
