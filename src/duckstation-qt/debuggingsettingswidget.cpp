@@ -210,12 +210,12 @@ void DebuggingSettingsWidget::addTweakOptions()
                            Settings::DISPLAY_SECTION_NAME, "LineEndOffset", -128, 127, 0);
   }
 
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), Settings::HACKS_SECTION_NAME,
-                         "DMAMaxSliceTicks", 1, 10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS, tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), Settings::HACKS_SECTION_NAME,
-                         "DMAHaltTicks", 1, 10000, Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead"), Settings::HACKS_SECTION_NAME,
-                         "GPUMaxRunAhead", 0, 1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Cycles"), Settings::HACKS_SECTION_NAME,
+                         "DMAMaxSliceCycles", 1, 10000, Settings::DEFAULT_DMA_MAX_SLICE_CYCLES, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Cycles"), Settings::HACKS_SECTION_NAME,
+                         "DMAHaltCycles", 1, 10000, Settings::DEFAULT_DMA_HALT_CYCLES, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead Cycles"), Settings::HACKS_SECTION_NAME,
+                         "GPUMaxRunAheadCycles", 0, 1000, Settings::DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES, tr(" cycles"));
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"),
                         Settings::CPU_SECTION_NAME, "RecompilerMemoryExceptions", false);
@@ -278,13 +278,13 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
+                           static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_CYCLES)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           static_cast<int>(Settings::DEFAULT_DMA_HALT_TICKS)); // DMA halt ticks
+                           static_cast<int>(Settings::DEFAULT_DMA_HALT_CYCLES)); // DMA halt ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max runahead
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Recompiler memory exceptions
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Recompiler block linking
+                           static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES)); // GPU max runahead
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Recompiler memory exceptions
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Recompiler block linking
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
@@ -321,9 +321,9 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "ActiveEndOffset");
   sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "LineStartOffset");
   sif->DeleteValue(Settings::DISPLAY_SECTION_NAME, "LineEndOffset");
-  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAMaxSliceTicks");
-  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAHaltTicks");
-  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUMaxRunAhead");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAMaxSliceCycles");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "DMAHaltCycles");
+  sif->DeleteValue(Settings::HACKS_SECTION_NAME, "GPUMaxRunAheadCycles");
   sif->DeleteValue(Settings::HACKS_SECTION_NAME, "ExportSharedMemory");
   sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerMemoryExceptions");
   sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerBlockLinking");

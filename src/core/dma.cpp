@@ -249,7 +249,7 @@ struct fmt::formatter<DMA::Channel> : fmt::formatter<fmt::string_view>
 
 void DMA::Initialize()
 {
-  s_state.unhalt_event.SetInterval(g_settings.dma_halt_ticks);
+  s_state.unhalt_event.SetInterval(g_settings.dma_halt_cycles);
   Reset();
 }
 
@@ -612,7 +612,7 @@ bool DMA::TransferChannel()
       const u8* const ram_ptr = g_bus.ram;
       const u32 mask = g_bus.ram_mask;
 
-      const TickCount slice_ticks = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_ticks);
+      const TickCount slice_ticks = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_cycles);
       TickCount remaining_ticks = slice_ticks;
       while (cs.request && remaining_ticks > 0)
       {
@@ -663,7 +663,7 @@ bool DMA::TransferChannel()
       if (cs.request)
       {
         // stall the transfer for a bit if we ran for too long
-        HaltTransfer(g_settings.dma_halt_ticks);
+        HaltTransfer(g_settings.dma_halt_cycles);
         return false;
       }
       else
@@ -682,7 +682,7 @@ bool DMA::TransferChannel()
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount ticks_remaining = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_ticks);
+      TickCount ticks_remaining = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_cycles);
 
       if (copy_to_device)
       {
@@ -737,7 +737,7 @@ bool DMA::TransferChannel()
         {
           // we got halted
           if (!s_state.unhalt_event.IsActive())
-            HaltTransfer(g_settings.dma_halt_ticks);
+            HaltTransfer(g_settings.dma_halt_cycles);
 
           return false;
         }

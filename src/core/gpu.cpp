@@ -496,7 +496,7 @@ void GPU::Initialize()
   s_locals.crtc_tick_event.Activate();
 
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
-  s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
+  s_locals.max_run_ahead = g_settings.gpu_max_run_ahead_cycles;
   s_locals.console_is_pal = System::IsPALRegion();
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
@@ -516,7 +516,7 @@ void GPU::Shutdown()
 void GPU::UpdateSettings(const Settings& old_settings)
 {
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
-  s_locals.max_run_ahead = g_settings.gpu_max_run_ahead;
+  s_locals.max_run_ahead = g_settings.gpu_max_run_ahead_cycles;
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
 

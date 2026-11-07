@@ -20,8 +20,8 @@ class DMAExecution : public ExecutionModeTest
 TEST_P(DMAExecution, ChoppedManualDMARunsWhileGPUTransferIsSliced)
 {
   const Settings old_settings = g_settings;
-  g_settings.dma_max_slice_ticks = 32;
-  g_settings.dma_halt_ticks = 16;
+  g_settings.dma_max_slice_cycles = 32;
+  g_settings.dma_halt_cycles = 16;
   DMA::Reset();
 
   // An empty GPU linked list that loops back to itself keeps exhausting its DMA slice without sending GPU commands.

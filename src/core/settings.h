@@ -277,9 +277,9 @@ struct Settings : public GPUSettings
   u32 cpu_overclock_numerator = 1;
   u32 cpu_overclock_denominator = 1;
 
-  TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
-  TickCount dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
-  TickCount gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
+  TickCount dma_max_slice_cycles = DEFAULT_DMA_MAX_SLICE_CYCLES;
+  TickCount dma_halt_cycles = DEFAULT_DMA_HALT_CYCLES;
+  TickCount gpu_max_run_ahead_cycles = DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES;
 
   ConsoleRegion region = DEFAULT_CONSOLE_REGION;
   ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
@@ -447,9 +447,9 @@ struct Settings : public GPUSettings
 
   enum : u32
   {
-    DEFAULT_DMA_MAX_SLICE_TICKS = 200,
-    DEFAULT_DMA_HALT_TICKS = 100,
-    DEFAULT_GPU_MAX_RUN_AHEAD = 512, // Next power of 2 above the longest polygon setup, so setups need no event.
+    DEFAULT_DMA_MAX_SLICE_CYCLES = 200,
+    DEFAULT_DMA_HALT_CYCLES = 100,
+    DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES = 512, // Next power of 2 above the longest polygon setup, so setups need no event.
   };
 
   void Load(const SettingsInterface& si, const SettingsInterface& controller_si);

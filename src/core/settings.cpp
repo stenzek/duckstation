@@ -564,9 +564,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_indicator_scale =
     si.GetSaturatedIntValue<s16>(ACHIEVEMENTS_SECTION_NAME, "IndicatorScale", ACHIEVEMENT_NOTIFICATION_SCALE_AUTO);
 
-  dma_max_slice_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
-  dma_halt_ticks = si.GetIntValue(HACKS_SECTION_NAME, "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
-  gpu_max_run_ahead = si.GetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
+  dma_max_slice_cycles = si.GetIntValue(HACKS_SECTION_NAME, "DMAMaxSliceCycles", DEFAULT_DMA_MAX_SLICE_CYCLES);
+  dma_halt_cycles = si.GetIntValue(HACKS_SECTION_NAME, "DMAHaltCycles", DEFAULT_DMA_HALT_CYCLES);
+  gpu_max_run_ahead_cycles =
+    si.GetIntValue(HACKS_SECTION_NAME, "GPUMaxRunAheadCycles", DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES);
   mdec_use_old_routines = si.GetBoolValue(HACKS_SECTION_NAME, "UseOldMDECRoutines", false);
   export_shared_memory = si.GetBoolValue(HACKS_SECTION_NAME, "ExportSharedMemory", false);
 
@@ -1229,9 +1230,9 @@ void Settings::ApplySettingRestrictions()
     pio_device_type = PIODeviceType::None;
     pcdrv_enable = false;
     pcsx_expansion_region_enable = false;
-    dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
-    dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
-    gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
+    dma_max_slice_cycles = DEFAULT_DMA_MAX_SLICE_CYCLES;
+    dma_halt_cycles = DEFAULT_DMA_HALT_CYCLES;
+    gpu_max_run_ahead_cycles = DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES;
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states

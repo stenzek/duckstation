@@ -4954,7 +4954,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     // CPU side GPU settings
     if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
-        g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
+        g_settings.gpu_max_run_ahead_cycles != old_settings.gpu_max_run_ahead_cycles ||
         g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
         g_settings.gpu_disable_textures != old_settings.gpu_disable_textures ||
         g_settings.gpu_disable_vertex_lighting != old_settings.gpu_disable_vertex_lighting ||

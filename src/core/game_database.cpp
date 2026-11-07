@@ -521,15 +521,15 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
   if (dma_max_slice_ticks.has_value(override_mask))
   {
-    settings.dma_max_slice_ticks = dma_max_slice_ticks.value();
+    settings.dma_max_slice_cycles = dma_max_slice_ticks.value();
     if (display_osd_messages)
-      INFO_LOG("GameDB: DMA max slice ticks set to {}.", settings.dma_max_slice_ticks);
+      INFO_LOG("GameDB: DMA max slice ticks set to {}.", settings.dma_max_slice_cycles);
   }
   if (dma_halt_ticks.has_value(override_mask))
   {
-    settings.dma_halt_ticks = dma_halt_ticks.value();
+    settings.dma_halt_cycles = dma_halt_ticks.value();
     if (display_osd_messages)
-      INFO_LOG("GameDB: DMA halt ticks set to {}.", settings.dma_halt_ticks);
+      INFO_LOG("GameDB: DMA halt ticks set to {}.", settings.dma_halt_cycles);
   }
   if (cdrom_max_seek_speedup_cycles.has_value(override_mask) && g_settings.cdrom_seek_speedup == 0)
   {
@@ -545,9 +545,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
   if (gpu_max_run_ahead.has_value(override_mask))
   {
-    settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
+    settings.gpu_max_run_ahead_cycles = gpu_max_run_ahead.value();
     if (display_osd_messages)
-      INFO_LOG("GameDB: GPU max runahead set to {}.", settings.gpu_max_run_ahead);
+      INFO_LOG("GameDB: GPU max runahead set to {}.", settings.gpu_max_run_ahead_cycles);
   }
   if (gpu_pgxp_tolerance.has_value(override_mask))
   {
