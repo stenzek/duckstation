@@ -2092,7 +2092,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
     case Command::Setmode:
     {
       const u8 mode = s_state.param_fifo.Peek(0);
-      const bool speed_change = (mode & 0x80) != (s_state.mode.bits & 0x80);
+      // Changing to double speed while the motor is stopped is free, the spin-up covers it.
+      const bool speed_change = (mode & 0x80) != (s_state.mode.bits & 0x80) && (!(mode & 0x80) || IsMotorOn());
       DEV_COLOR_LOG(StrongOrange, "Setmode    0x{:02X}", ZeroExtend32(mode));
 
       s_state.mode.bits = mode;

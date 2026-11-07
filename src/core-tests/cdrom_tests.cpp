@@ -698,3 +698,31 @@ TEST_F(CDROMControllerTest, ReadTOCOnlyOnVC1AndLater)
   EXPECT_EQ(error.cause, INT_ERROR);
   EXPECT_EQ(error.bytes, (std::vector<u8>{0x03, 0x40}));
 }
+
+// Hardware: setting double speed while stopped costs nothing over the spin-up and seek.
+TEST_F(CDROMControllerTest, DoubleSpeedWhileStoppedIsFree)
+{
+  const auto seek_from_stopped = [this](u8 mode) {
+    ASSERT_EQ(Command(0x08).cause, INT_ACK);
+    ASSERT_TRUE(WaitForInterrupt(Seconds(1.0)).has_value());
+    ASSERT_EQ(Command(0x0E, {mode}).cause, INT_ACK);
+    ASSERT_EQ(Command(0x02, {0x10, 0x00, 0x00}).cause, INT_ACK);
+    WriteCommand(0x15);
+  };
+
+  // Reference, already at double speed.
+  ASSERT_EQ(Command(0x0E, {0x80}).cause, INT_ACK);
+  Run(Seconds(1.0));
+  seek_from_stopped(0x80);
+  ASSERT_EQ(WaitForInterrupt(Milliseconds(50))->cause, INT_ACK);
+  const std::optional<Response> reference = WaitForInterrupt(Seconds(5.0));
+  ASSERT_TRUE(reference.has_value());
+
+  ASSERT_EQ(Command(0x0E, {0x00}).cause, INT_ACK);
+  Run(Seconds(1.0));
+  seek_from_stopped(0x80);
+  ASSERT_EQ(WaitForInterrupt(Milliseconds(50))->cause, INT_ACK);
+  const std::optional<Response> changed = WaitForInterrupt(Seconds(5.0));
+  ASSERT_TRUE(changed.has_value());
+  EXPECT_NEAR(ToMilliseconds(changed->time), ToMilliseconds(reference->time), 50.0);
+}
