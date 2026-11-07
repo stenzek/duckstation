@@ -206,7 +206,7 @@ static void FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderComman
 static void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded, bool textured,
                                  bool semitransparent);
 static void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent);
-static void AddDrawLineTicks(const GSVector4i rect, bool shaded);
+static void AddDrawLineTicks(const GSVector4i rect, bool shaded, bool semitransparent);
 
 using GP0CommandHandler = bool (*)();
 struct GP0Command
@@ -3239,13 +3239,18 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
   u32 drawn_width = clamped_rect.width();
   u32 drawn_height = clamped_rect.height();
 
-  u32 ticks_per_row = drawn_width;
+  // Measured v2 GPU costs, in eighths of a cycle. Opaque rectangles are drawn in pixel pairs at two pixels per clock,
+  // so an odd width costs the same as the even width below it. Semi-transparency adds a quarter cycle per pixel.
+  const bool semi = (semitransparent || s_locals.GPUSTAT.check_mask_before_draw);
+  const u32 pixels_per_row = semi ? drawn_width : (drawn_width & ~1u);
+  u32 eighths_per_row = (semi ? 64 : 16) + pixels_per_row * (semi ? 6 : 4);
   if (textured)
   {
+    // Texels missing the cache cost 1.25, 1.875 and 3 cycles per pixel in total at 4, 8 and 15 bits.
     switch (s_locals.draw_mode_reg.texture_mode)
     {
       case GPUTextureMode::Palette4Bit:
-        ticks_per_row += drawn_width;
+        eighths_per_row += drawn_width * 6;
         break;
 
       case GPUTextureMode::Palette8Bit:
@@ -3253,11 +3258,11 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
         // Texture cache reload every 2 pixels, reads in 8 bytes (assuming 4x2). Cache only reloads if the
         // draw width is greater than 128, otherwise the cache hits between rows.
         if (drawn_width > 128)
-          ticks_per_row += (drawn_width / 4) * 8;
+          eighths_per_row += drawn_width * 11;
         else if ((drawn_width * drawn_height) > 2048)
-          ticks_per_row += ((drawn_width / 4) * (4 * (128 / drawn_width)));
+          eighths_per_row += ((drawn_width / 4) * (4 * (128 / drawn_width))) * 11 / 2;
         else
-          ticks_per_row += drawn_width;
+          eighths_per_row += drawn_width * 11 / 2;
       }
       break;
 
@@ -3266,11 +3271,11 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
       {
         // Same as above, except with 2x2 blocks instead of 4x2.
         if (drawn_width > 128)
-          ticks_per_row += (drawn_width / 2) * 8;
+          eighths_per_row += drawn_width * 20;
         else if ((drawn_width * drawn_height) > 1024)
-          ticks_per_row += ((drawn_width / 4) * (8 * (128 / drawn_width)));
+          eighths_per_row += ((drawn_width / 4) * (8 * (128 / drawn_width))) * 5;
         else
-          ticks_per_row += drawn_width;
+          eighths_per_row += drawn_width * 5;
       }
       break;
 
@@ -3278,16 +3283,21 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, boo
     }
   }
 
-  if (semitransparent || s_locals.GPUSTAT.check_mask_before_draw)
-    ticks_per_row += (drawn_width + 1u) / 2u;
+  // Rectangles narrower than 8 pixels cost about 4.5 cycles per row.
+  if (drawn_width < 8 && drawn_width > 0)
+    eighths_per_row = std::max(eighths_per_row, 36u);
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
     drawn_height = std::max<u32>(drawn_height / 2, 1u);
 
-  AddCommandTicks((ticks_per_row * drawn_height + 1) / 2);
+  AddCommandTicks((eighths_per_row * drawn_height + 7) / 8);
 }
 
-ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool shaded)
+ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool shaded, bool semitransparent)
 {
+  // Measured v2 GPU costs: a cycle per pixel along the major axis, plus 4 cycles (6.5 when semi-transparent) for each
+  // row the line crosses. Gouraud shading adds about 40-90 cycles of setup.
+  AddCommandTicks(shaded ? 124 : 60);
+
   const GSVector4i clamped_rect = rect.rintersect(s_locals.clamped_drawing_area);
 
   // Needed because we're not multiplying either dimension.
@@ -3296,11 +3306,18 @@ ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool sha
 
   const u32 drawn_width = clamped_rect.width();
   u32 drawn_height = clamped_rect.height();
+  u32 major = std::max(drawn_width, drawn_height);
 
+  // Pixels on the skipped field's rows are not drawn either.
   if (s_locals.GPUSTAT.SkipDrawingToActiveField())
-    drawn_height = std::max<u32>(drawn_height / 2, 1u);
+  {
+    const u32 field_height = std::max<u32>(drawn_height / 2, 1u);
+    major = major * field_height / drawn_height;
+    drawn_height = field_height;
+  }
 
-  AddCommandTicks((std::max(drawn_width, drawn_height) + 1) / 2);
+  const bool semi = (semitransparent || s_locals.GPUSTAT.check_mask_before_draw);
+  AddCommandTicks((major * 4 + drawn_height * (semi ? 26 : 16) + 3) / 4);
 }
 
 bool GPU::HandleRenderPolygonCommand()
@@ -3590,7 +3607,7 @@ bool GPU::HandleRenderRectangleCommand()
     UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, s_locals.texture_palette_reg);
   }
 
-  const TickCount setup_ticks = 16;
+  const TickCount setup_ticks = 50;
   AddCommandTicks(setup_ticks);
 
   TRACE_LOG("Render {} {} {} rectangle ({} words), {} setup ticks",
@@ -3705,7 +3722,7 @@ bool GPU::HandleRenderLineCommand()
       return true;
     }
 
-    AddDrawLineTicks(rect, rc.shading_enable);
+    AddDrawLineTicks(rect, rc.shading_enable, rc.transparency_enable);
     GPUBackend::PushCommand(cmd);
   }
   else
@@ -3750,7 +3767,7 @@ bool GPU::HandleRenderLineCommand()
       return true;
     }
 
-    AddDrawLineTicks(rect, rc.shading_enable);
+    AddDrawLineTicks(rect, rc.shading_enable, rc.transparency_enable);
     GPUBackend::PushCommand(cmd);
   }
 
@@ -3850,7 +3867,7 @@ void GPU::FinishPolyline()
         }
         else
         {
-          AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
+          AddDrawLineTicks(rect, s_locals.render_command.shading_enable, s_locals.render_command.transparency_enable);
 
           cmd->vertices[out_vertex_count++] = start;
           cmd->vertices[out_vertex_count++] = end;
@@ -3905,7 +3922,7 @@ void GPU::FinishPolyline()
         }
         else
         {
-          AddDrawLineTicks(rect, s_locals.render_command.shading_enable);
+          AddDrawLineTicks(rect, s_locals.render_command.shading_enable, s_locals.render_command.transparency_enable);
 
           GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
           out_vertex_count += 2;
