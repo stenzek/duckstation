@@ -396,3 +396,13 @@ TEST_F(CDROMControllerTest, StopWhileReadingAcknowledgesWithoutReadBit)
   EXPECT_EQ(ack.cause, INT_ACK);
   EXPECT_EQ(ack.bytes.at(0), STAT_MOTOR_ON);
 }
+
+// Hardware: GetID's INT2 arrives right after its acknowledge is cleared.
+TEST_F(CDROMControllerTest, GetIDCompletesAfterAcknowledge)
+{
+  ASSERT_EQ(Command(0x1A).cause, INT_ACK);
+  const std::optional<Response> complete = WaitForInterrupt(Milliseconds(0.2));
+  ASSERT_TRUE(complete.has_value());
+  EXPECT_EQ(complete->cause, INT_COMPLETE);
+  EXPECT_EQ(complete->bytes, (std::vector<u8>{STAT_MOTOR_ON, 0x00, 0x20, 0x00, 'S', 'C', 'E', 'A'}));
+}

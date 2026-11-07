@@ -1955,7 +1955,17 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       else
       {
         SendACKAndStat();
-        QueueCommandSecondResponse(Command::GetID, GetTicksForIDRead());
+
+        // The response is queued straight away, and only waits for the acknowledge.
+        if (s_state.drive_state == DriveState::SpinningUp)
+        {
+          QueueCommandSecondResponse(Command::GetID, GetTicksForIDRead());
+        }
+        else
+        {
+          ClearAsyncInterrupt();
+          DoIDRead();
+        }
       }
 
       EndCommand();
