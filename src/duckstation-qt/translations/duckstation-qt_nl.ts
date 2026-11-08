@@ -638,6 +638,10 @@ Unread messages: {}</source>
 Ongelezen berichten: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Prestaties niet beschikbaar</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>Score: {} ({} casual)</translation>
     </message>
@@ -2172,11 +2176,6 @@ Huidige toewijzing: %s</translation>
         <translation>Laat je meerdere actieknoppen van de controller indrukken door je vinger over het scherm te slepen.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Ander bestand…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Huidig</translation>
@@ -2205,11 +2204,6 @@ Huidige toewijzing: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Veiligheidscontrole mislukt</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Tijdstip van tokengeneratie</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3324,16 +3318,6 @@ Huidige toewijzing: %s</translation>
         <translation>Verbergt aanraakbediening na de opgegeven tijd. Bij een vertraging van nul wordt de bediening niet verborgen.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Aan rechterstick toewijzen</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Wijst veegbewegingen op het aanraakscherm toe aan de rechterstick, indien aanwezig.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Geavanceerde instellingen</translation>
@@ -3687,6 +3671,16 @@ Huidige toewijzing: %s</translation>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Slaat automatisch de huidige toestand op bij het sluiten van een game of verlaten van de app.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Pagina van pauzemenu onthouden</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Opent het pauzemenu opnieuw op de pagina waarop het werd gesloten, tenzij een actie zoals het laden van een save state het menu heeft gesloten.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4144,6 +4138,11 @@ Huidige toewijzing: %s</translation>
         <translation>Overlays op het scherm</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Pauzemenu</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Gameweergave</translation>
@@ -4189,9 +4188,29 @@ Huidige toewijzing: %s</translation>
         <translation>Geavanceerde rendering</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Uit spellenlijst</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>Er zijn geen schijven gevonden in uw spelmappen.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Uit bestand</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Schijf verwijderen</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Schijven</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4453,6 +4472,11 @@ Huidige toewijzing: %s</translation>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Geeft de huidige rich-presence-tekenreeks van RetroAchievements altijd weer in het indicatiegebied.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Aangemeld sinds %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4513,6 +4537,26 @@ Huidige toewijzing: %s</translation>
         <translation>Toont de huidige controllerstatus van het systeem linksonder in het scherm.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Naar links verplaatsen</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Naar rechts verplaatsen</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Omhoog verplaatsen</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Omlaag verplaatsen</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Hiermee worden de positie, grootte en zichtbaarheid van elke knop in deze weergave en schermoriëntatie hersteld. Wilt u doorgaan?</translation>
@@ -4526,6 +4570,41 @@ Huidige toewijzing: %s</translation>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Multitapmodus wijzigen</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Touchscreencontroller tonen</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Bepaalt wanneer de touchscreencontroller wordt getoond.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Nooit</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Zonder controller</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Buiten Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Altijd</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5070,6 +5149,26 @@ U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Bepaalt waar het beeld in staande modus wordt weergegeven.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Vegen voor rechterstick</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Vegen buiten de bedieningselementen beweegt de rechterstick. Als Zwevende linkerstick is ingeschakeld, werkt dit alleen op de rechterhelft van het scherm.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Zwevende linkerstick</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Als u de linkerhelft van het scherm aanraakt, wordt de linkerstick onder uw vinger geplaatst in plaats van op een vaste positie.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -6001,45 +6100,9 @@ Games met meerdere tracks in bin-formaat hebben een cuesheet (.cue) nodig om te 
         <translation>Er is al een coverafbeelding voor dit spel, wil je deze vervangen?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation kan automatisch covers downloaden voor games waarvoor momenteel geen cover is ingesteld. Wij hosten geen coverafbeeldingen; de gebruiker moet een eigen bron voor afbeeldingen opgeven.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Afhankelijk van uw rechtsgebied kunnen gamecovers auteursrechtelijk beschermd zijn. U mag deze tool alleen gebruiken met uw eigen servers en afbeeldingen.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>Geef in het onderstaande vak de URL&apos;s op waarvan covers moeten worden gedownload, met één sjabloon-URL per regel. De volgende variabelen zijn beschikbaar:
-
-${title}: Titel van de game.
-${savetitle}: Opslagtitel van de game, inclusief het regioachtervoegsel.
-${localizedtitle}: Gelokaliseerde titel van de game in de oorspronkelijke taal.
-${filetitle}: Naamgedeelte van de bestandsnaam van de game.
-${serial}: Serienummer van de game.
-
-Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL bevat geen ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} of ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Standaard worden de gedownloade covers opgeslagen met de titel van de game. Als dit niet gewenst is, kunt u hieronder &quot;Serienummers voor bestandsnamen gebruiken&quot; inschakelen. Het gebruik van serienummers in plaats van gametitels voorkomt conflicten wanneer meerdere regio&apos;s van dezelfde game worden gebruikt.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6445,6 +6508,44 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <translation>Prestaties</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation kan automatisch hoezen downloaden voor spellen waarvoor nog geen hoes is ingesteld. Afhankelijk van uw rechtsgebied kunnen spelhoezen auteursrechtelijk beschermd zijn. U mag dit hulpmiddel alleen gebruiken met uw eigen servers en afbeeldingen. Wij leveren deze niet.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>Hoes-URL&apos;s</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Geef de URL&apos;s op waarvandaan hoezen moeten worden gedownload, met één URL-sjabloon per regel. Tik hieronder op een variabele om deze op de cursorpositie in te voegen.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Titel van het spel.
+${savetitle}: Opslagtitel van het spel, inclusief het regioachtervoegsel.
+${localizedtitle}: Gelokaliseerde titel van het spel in de oorspronkelijke taal.
+${filetitle}: Naamgedeelte van de bestandsnaam van het spel.
+${serial}: Serienummer van het spel.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Hoezen opslaan met het serienummer van het spel in plaats van de titel, om conflicten te voorkomen bij het gebruik van meerdere regioversies van hetzelfde spel.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Bepaalt het type geëmuleerde hardware.</translation>
@@ -6508,6 +6609,26 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Schakelt 6 MB extra RAM in voor in totaal 2+6 = 8 MB, die doorgaans aanwezig is in ontwikkelconsoles.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Geïnstalleerd RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Uitgebreid RAM kan ervoor zorgen dat spellen niet meer werken. Gebruik het daarom alleen met compatibele mods.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Volledige RAM-adressering afdwingen</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de BIOS- of spelconfiguratie.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6597,6 +6718,116 @@ Voorbeeld: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Mappen</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Taal, thema, spellenlijst en gedrag</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Schermweergave</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Thema, lettertypen, berichten en statistiekoverlays</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Regio, CPU en CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Snelheid, vertraging, terugspoelen en save states</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Renderer, resolutie, weergave en schermafbeeldingen</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Volume en geluidsuitvoerconfiguratie</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Shaderketens en randoverlays</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements-account en meldingen</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Geheugenkaarttypen en locaties</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>BIOS-image kiezen en installeren</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Locaties voor gegevensopslag</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Logboeken, foutopsporing en opties op laag niveau</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Speldetails en verificatie</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Oplossingen en verbeteringen voor dit spel</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Cheatcodes voor dit spel</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Indeling en uiterlijk van de schermcontroller</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Controllertype en toetsbindingen</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Sneltoetsen voor emulatoracties</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Mappen waarin naar spellen wordt gezocht</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Paden die uit de spellenlijst worden weggelaten</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Spellen in de eigen opslagruimte van de app</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10764,6 +10995,14 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
         <translation>Breekpunten</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Symbolen</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Venster</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Disassembly</translation>
     </message>
@@ -10952,6 +11191,22 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
         <translation>Werkbalk</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>&amp;Automatische symbolen gebruiken</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>Symbolen &amp;laden...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>Symbolen &amp;herladen</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>Symbolen &amp;uitschakelen</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Breekpunt toevoegen</translation>
     </message>
@@ -10982,14 +11237,6 @@ Dit bestand is ongeveer 206 KB groot. Wilt u het nu downloaden?</translation>
     <message>
         <source>No address selected.</source>
         <translation>Geen adres geselecteerd.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Voer codeadres in:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Voer geheugenadres in:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11055,6 +11302,22 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <source>Invalid Instruction</source>
         <translation>Ongeldige instructie</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>Symbolen laden</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Symboolbestanden (*.elf *.map);;Alle bestanden (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Kan symbolen niet laden: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>Indeling &amp;herstellen</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11078,6 +11341,25 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <source>Debugger</source>
         <translation>Debugger</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>%n symbool geladen uit %1.</numerusform>
+            <numerusform>%n symbolen geladen uit %1.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Kan symbolen niet laden uit %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Voer een codeadres of symbool in:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Voer een geheugenadres of symbool in:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Kan geen stap-uit-breekpunt toevoegen. Bevindt u zich in een geldige functie?</translation>
@@ -11089,6 +11371,30 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
     <message>
         <source>View in &amp;Dump</source>
         <translation>In &amp;dump bekijken</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Naar &amp;code gaan</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Naar &amp;stack gaan</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Symbool&amp;naam kopiëren</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>&amp;Adres kopiëren</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>&amp;Frameadres kopiëren</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopiëren</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11127,12 +11433,12 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <translation>Patroon gevonden op 0x%1.</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Ongeldig adres. Het moet hexadecimaal zijn (0x12345678 of 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Ongeldige waarde. Deze moet hexadecimaal zijn (0x12345678 of 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Ongeldig adres. Voer een symboolnaam of een hexadecimale waarde in (0x12345678 of 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11194,28 +11500,20 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <translation>Eindoffset van beeldlijn</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Maximaal aantal DMA-sliceticks</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> cycli</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA-stop-ticks</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Maximaal aantal cycli per DMA-tijdvak</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO-grootte</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA-stopcycli</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> woorden</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>Maximale GPU-runahead</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Maximaal aantal GPU-vooruitloopcycli</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11498,14 +11796,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Terugspoelen</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> frames</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Softwarerenderer gebruiken (modus voor laag VRAM-gebruik)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>Runahead:</translation>
     </message>
@@ -11634,46 +11924,31 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Terugspoelen</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Terugspoelen inschakelen:&lt;/b&gt; Slaat periodiek een toestand op zodat u fouten tijdens het spelen kunt terugspoelen.&lt;br&gt; &lt;b&gt;Frequentie van opslaan voor terugspoelen:&lt;/b&gt; Hoe vaak een terugspoeltoestand wordt gemaakt. Hogere frequenties stellen hogere eisen aan het systeem.&lt;br&gt; &lt;b&gt;Buffergrootte voor terugspoelen:&lt;/b&gt; Hoeveel toestanden voor terugspoelen worden bewaard. Hogere waarden vereisen meer geheugen.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Gebruikt de softwarerenderer bij het maken van terugspoeltoestanden om extra VRAM-gebruik te voorkomen. Vooral nuttig bij opschalen, omdat dit de systeemeisen voor terugspoelen aanzienlijk verlaagt.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Terugspoelen over %n frame, met een duur van %1 seconde(n), vereist %2MB RAM en %3MB VRAM.</numerusform>
-            <numerusform>Terugspoelen over %n frames, met een duur van %1 seconde(n), vereist %2MB RAM en %3MB VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Terugspoelen over %n frame, met een duur van %1 seconde(n), vereist %2MB RAM.</numerusform>
-            <numerusform>Terugspoelen over %n frames, met een duur van %1 seconde(n), vereist %2MB RAM.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Terugspoelen is uitgeschakeld omdat runahead is ingeschakeld. Runahead stelt aanzienlijk hogere eisen aan het systeem.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Slaat periodiek de status op, zodat je tijdens het spelen gemaakte fouten kunt terugspoelen.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Opslagfrequentie voor terugspoelen</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Hoe vaak een terugspoelstatus wordt aangemaakt. Hogere frequenties stellen hogere eisen aan het systeem.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Buffergrootte voor terugspoelen</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Hoeveel geheugen wordt gereserveerd voor terugspoelstatussen. Bepaalt hoever je kunt terugspoelen.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>Een terugspoelbuffer van %1MB biedt ruimte voor %n toestand(en), waarmee u tot %2 seconde(n) kunt terugspoelen.</translation>
+        <translation>
+            <numerusform>Een terugspoelbuffer van %1MB bevat %n save state, waarmee u tot %2 seconde(n) kunt terugspoelen.</numerusform>
+            <numerusform>Een terugspoelbuffer van %1MB bevat %n save states, waarmee u tot %2 seconde(n) kunt terugspoelen.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11857,6 +12132,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>9x (for 4K)</source>
         <translation>9x (voor 4K)</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Een terugspoelbuffer van {0} MB: aantal save states — {1}, maximaal {2:.2f} seconden terugspoelen.</translation>
     </message>
     <message>
         <source>Achievement Notifications</source>
@@ -12549,10 +12828,6 @@ De fout was:</translation>
         <translation>Verbergt de muisaanwijzer/-cursor wanneer de emulator in de volledigeschermmodus staat.</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Hoeveel toestanden voor terugspoelen worden bewaard. Hogere waarden vereisen meer geheugen.</translation>
-    </message>
-    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Hoe vaak een terugspoelstatus wordt aangemaakt. Hogere frequenties stellen hogere eisen aan het systeem.</translation>
     </message>
@@ -12775,10 +13050,6 @@ De fout was:</translation>
     <message>
         <source>%.2f Seconds</source>
         <translation>%.2f seconden</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d frames</translation>
     </message>
     <message>
         <source>%d cycles</source>
@@ -14425,10 +14696,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Aparte schijfinstellingen gebruiken</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Softwarerenderer gebruiken (modus voor laag VRAM-gebruik)</translation>
-    </message>
-    <message>
         <source>Use This Directory</source>
         <translation>Deze map gebruiken</translation>
     </message>
@@ -14459,10 +14726,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Gebruikt schermposities om PGXP-gegevens te bepalen. Kan de beelden in sommige games verbeteren. Automatisch gebruikt de instelling uit de gamedatabase.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Gebruikt de softwarerenderer bij het maken van terugspoeltoestanden om extra VRAM-gebruik te voorkomen. Vooral nuttig bij opschalen.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -14847,22 +15110,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Rewind Save Frequency</source>
         <translation>Frequentie van terugspoelopslag</translation>
-    </message>
-    <message>
-        <source>Rewind Save Slots</source>
-        <translation>Opslagplaatsen voor terugspoelen</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Terugspoelen over {0} frames, met een duur van {1:.2f} seconden, vereist {2} MB RAM en {3} MB VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Terugspoelen over {0} frames, met een duur van {1:.2f} seconden, vereist {2} MB RAM.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Terugspoelen is uitgeschakeld omdat vooruit simuleren is ingeschakeld. Vooruit simuleren stelt aanzienlijk hogere eisen aan het systeem.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -16597,10 +16844,6 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Maximaal aantal cycli voor cd-rom-leesversnelling</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO-grootte</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>GPU-maximale vooruitloop</translation>
     </message>
@@ -16773,6 +17016,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Geen</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Automatisch</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22334,12 +22582,12 @@ Fout: {1}</translation>
         <translation>Volume: Gedempt</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Terugspoelen is uitgeschakeld zolang runahead is ingeschakeld.</translation>
-    </message>
-    <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Terugspoelen is uitgeschakeld zolang de veilige modus is ingeschakeld.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Kan geen geheugen toewijzen voor save states voor terugspoelen.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25841,14 +26089,6 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 {0}
 
 Dit kan komen doordat uw GPU de gekozen renderer ({1}) niet ondersteunt of doordat uw grafische stuurprogramma&apos;s moeten worden bijgewerkt.</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Terugspoelen is uitgeschakeld.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Terugspoelen en runahead kunnen niet tegelijkertijd worden gebruikt.</translation>
     </message>
 </context>
 <context>

@@ -917,6 +917,10 @@ Unread messages: {}</source>
 Okunmamış mesajlar: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Başarımlar Kullanılamıyor</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>Puan: {} ({} rahat mod)</translation>
     </message>
@@ -2158,11 +2162,6 @@ Mevcut Atama: %s</translation>
         <translation>Parmağınızı ekran boyunca sürükleyerek oyun kolunun birden fazla ön yüz düğmesine basmanızı sağlar.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Diğer Dosya…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Mevcut</translation>
@@ -2191,11 +2190,6 @@ Mevcut Atama: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Güvenlik Denetimi Başarısız</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Erişim Belirteci Oluşturma Zamanı</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3298,16 +3292,6 @@ Mevcut Atama: %s</translation>
         <translation>Dokunmatik kontrolleri belirtilen süreden sonra gizler. Sıfır gecikme kontrolleri gizlemez.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Sağ Çubuğa Ata</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Varsa dokunmatik ekran kaydırma hareketlerini sağ çubuğa atar.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Gelişmiş Ayarlar</translation>
@@ -3661,6 +3645,16 @@ Mevcut Atama: %s</translation>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Bir oyunu kapatırken veya uygulamadan çıkarken mevcut durumu otomatik olarak kaydeder.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Duraklatma Menüsü Sayfasını Hatırla</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Durum yükleme gibi bir işlemle kapatılmadığı sürece, duraklatma menüsünü kapatıldığı sayfada yeniden açar.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4118,6 +4112,11 @@ Mevcut Atama: %s</translation>
         <translation>Ekran Kaplamaları</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Duraklatma Menüsü</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Oyun Görünümü</translation>
@@ -4163,9 +4162,29 @@ Mevcut Atama: %s</translation>
         <translation>Gelişmiş Çizim</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Oyun Listesinden</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>Oyun klasörlerinizde disk bulunamadı.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Dosyadan</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>CD&apos;yi Çıkar</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Diskler</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4427,6 +4446,11 @@ Mevcut Atama: %s</translation>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Gösterge alanında geçerli RetroAchievements rich presence dizesini her zaman gösterir.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Giriş zamanı: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4486,6 +4510,26 @@ Mevcut Atama: %s</translation>
         <translation>Sistemin mevcut kol durumunu ekranın sol alt köşesinde gösterir.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Sola Taşı</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Sağa Taşı</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Yukarı Taşı</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Aşağı Taşı</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Bu işlem, bu görünüm ve ekran yönündeki tüm düğmelerin konumunu, boyutunu ve görünürlüğünü sıfırlayacak. Devam etmek istiyor musunuz?</translation>
@@ -4499,6 +4543,41 @@ Mevcut Atama: %s</translation>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Multitap Modunu Değiştir</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Dokunmatik Ekran Kontrolcüsünü Göster</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Dokunmatik ekran kontrolcüsünün ne zaman gösterileceğini seçer.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Asla</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Kontrolcü Bağlı Değilken</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Büyük Ekran Dışında</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Her Zaman</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5043,6 +5122,26 @@ Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Ekranın dikey modda nerede çizileceğini seçer.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Sağ Çubuk İçin Kaydır</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Kontrollerin dışında kaydırmak sağ çubuğu hareket ettirir. Yüzer Sol Çubuk açıkken bu işlem yalnızca ekranın sağ yarısında çalışır.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Yüzer Sol Çubuk</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Ekranın sol yarısına dokunmak, sol çubuğu sabit bir konum yerine parmağınızın altına yerleştirir.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -5972,45 +6071,9 @@ bin biçimindeki çok parçalı oyunları başlatmak için bir cue dosyası (.cu
         <translation>Bu oyunun zaten kapağı var. Üstüne yazılsın mı?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation, henüz kapak atanmamış oyunların kapaklarını otomatik olarak indirebilir. Hiçbir kapak görselini biz barındırmıyoruz; görseller için kendi kaynağınızı sağlamalısınız.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Yargı alanınıza bağlı olarak oyun kapakları telif hakkına tabi olabilir. Bu aracı yalnızca kendi sunucularınız ve görsellerinizle kullanmaya yetkilisiniz.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>Aşağıdaki kutuda kapakların indirileceği URL&apos;leri, her satırda bir şablon URL olacak şekilde belirtin. Şu değişkenler kullanılabilir:
-
-${title}: Oyunun adı.
-${savetitle}: Bölge son eki dahil oyunun kayıt adı.
-${localizedtitle}: Oyunun kendi dilindeki yerelleştirilmiş adı.
-${filetitle}: Oyunun dosya adının isim kısmı.
-${serial}: Oyunun seri numarası.
-
-Örnek: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} veya ${serial} içermiyor.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Varsayılan olarak indirilen kapaklar oyunun adıyla kaydedilir. Bunu istemiyorsanız aşağıdaki &quot;Seri Numaralı Dosya Adlarını Kullan&quot; seçeneğini etkinleştirebilirsiniz. Oyun adları yerine seri numaralarını kullanmak, aynı oyunun birden fazla bölge sürümü kullanıldığında çakışmaları önler.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6414,6 +6477,44 @@ ${serial}: Oyunun seri numarası.
         <translation>Başarımlar</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation, henüz kapak atanmamış oyunlar için otomatik olarak kapak indirebilir. Bulunduğunuz yerdeki yasalara bağlı olarak oyun kapakları telif hakkıyla korunuyor olabilir. Bu aracı yalnızca kendi sunucularınız ve görsellerinizle kullanmanıza izin verilir; biz bunları sağlamıyoruz.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>Kapak URL&apos;leri</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Kapakların indirileceği URL&apos;leri, her satırda bir URL şablonu olacak şekilde belirtin. İmlecin bulunduğu yere eklemek için aşağıdaki bir değişkene dokunun.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Örnek: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Oyunun adı.
+${savetitle}: Bölge son eki dahil oyunun kayıt adı.
+${localizedtitle}: Oyunun kendi dilindeki yerelleştirilmiş adı.
+${filetitle}: Oyunun dosya adının ad kısmı.
+${serial}: Oyunun seri numarası.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Aynı oyunun birden fazla bölge sürümü kullanıldığında çakışmaları önlemek için kapakları oyun adı yerine seri numarasıyla kaydet.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Emüle edilen donanım türünü belirler.</translation>
@@ -6477,6 +6578,26 @@ ${serial}: Oyunun seri numarası.
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Genellikle geliştirici konsollarında bulunan toplam 2+6 = 8MB RAM&apos;e ulaşmak için 6MB ek RAM etkinleştirir.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Takılı RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Genişletilmiş RAM oyunların çalışmasını bozabilir; bu nedenle yalnızca uyumlu modlarla kullanın.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Tam RAM Eşlemesini Zorla</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>BIOS veya oyun yapılandırmasından bağımsız olarak takılı RAM&apos;in tamamını eşler.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6566,6 +6687,116 @@ ${serial}: Oyunun seri numarası.
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Klasörler</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Dil, tema, oyun listesi ve davranış</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Ekran Üzeri Gösterim</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Tema, yazı tipleri, mesajlar ve istatistik katmanları</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Bölge, CPU ve CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Hız, gecikme, geri sarma ve durum kayıtları</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>İşleyici, çözünürlük, görüntü ve ekran görüntüleri</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Ses düzeyi ve ses çıkışı yapılandırması</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Gölgelendirici zincirleri ve kenarlık katmanları</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements hesabı ve bildirimler</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Bellek kartı türleri ve konumları</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>BIOS kalıbı seçimi ve kurulumu</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Veri depolama konumları</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Günlük tutma, hata ayıklama ve düşük seviyeli seçenekler</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Oyun ayrıntıları ve doğrulama</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Bu oyun için düzeltmeler ve iyileştirmeler</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Bu oyun için hile kodları</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Ekran kontrolcüsünün düzeni ve görünümü</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Kontrolcü türü ve tuş atamaları</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Emülatör işlemleri için kısayollar</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Oyunların taranacağı klasörler</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Oyun listesinden hariç tutulan yollar</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Uygulamanın kendi depolama alanındaki oyunlar</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10725,6 +10956,14 @@ Bu dosya aşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</trans
         <translation>Kesme Noktaları</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Semboller</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Pencere</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Makine Kodu Çözümlemesi</translation>
     </message>
@@ -10913,6 +11152,22 @@ Bu dosya aşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</trans
         <translation>Araç Çubuğu</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>&amp;Otomatik Sembolleri Kullan</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>Sembol &amp;Yükle...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>Sembolleri Yeniden &amp;Yükle</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>Sembolleri &amp;Devre Dışı Bırak</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Kesme Noktası Ekle</translation>
     </message>
@@ -10943,14 +11198,6 @@ Bu dosya aşağı yukarı 206KB&apos;dır. Şimdi indirmek ister misiniz?</trans
     <message>
         <source>No address selected.</source>
         <translation>Adres seçilmedi.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Kod adresini girin:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Bellek adresini girin:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11022,6 +11269,24 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         <source>Debugger</source>
         <translation>Hata Ayıklayıcı</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>%1 konumundan %n sembol yüklendi.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>%1 konumundan semboller yüklenemedi: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Kod adresi veya sembol girin:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Bellek adresi veya sembol girin:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>İşlevden çıkış kesme noktası eklenemedi. Geçerli bir işlevin içinde misiniz?</translation>
@@ -11041,6 +11306,30 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
     <message>
         <source>View in &amp;Dump</source>
         <translation>Bellek &amp;Dökümünde Göster</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>&amp;Koda Git</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>&amp;Yığına Git</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Sembol &amp;Adını Kopyala</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>&amp;Adresi Kopyala</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>&amp;Çerçeve Adresini Kopyala</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopyala</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11077,6 +11366,22 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         <source>Pattern found at 0x%1.</source>
         <translation>Desen 0x%1 adresinde bulundu.</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>Sembol Yükle</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Sembol Dosyaları (*.elf *.map);;Tüm Dosyalar (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Semboller yüklenemedi: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>Düzeni &amp;Sıfırla</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11084,12 +11389,12 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         </translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Geçersiz adres. Onaltılık biçimde olmalıdır (0x12345678 veya 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Geçersiz değer. Onaltılık olmalıdır (0x12345678 veya 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Geçersiz adres. Bir sembol adı veya onaltılık sayı olmalıdır (0x12345678 ya da 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11151,28 +11456,20 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         <translation>Görüntü Satırı Bitiş Ofseti</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>DMA Maksimum Dilim Tikleri</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> döngü</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA Duraklatma Tikleri</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>DMA Dilimi Azami Döngü Sayısı</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO Boyutu</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA Duraklama Döngü Sayısı</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> sözcük</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>GPU En Fazla İleri Hesaplama</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>GPU Azami Önden Çalışma Döngü Sayısı</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11455,14 +11752,6 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>Geri Sar</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> Kare</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Yazılımsal Çiziciyi Kullan (Düşük VRAM Modu)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>İleriyi Hesaplama:</translation>
     </message>
@@ -11595,44 +11884,30 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>Geri Sarma</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Geri Sarmayı Etkinleştir:&lt;/b&gt; Oynarken yaptığınız hataları geri sarabilmeniz için düzenli aralıklarla durum kaydı oluşturur.&lt;br&gt; &lt;b&gt;Geri Sarma Kayıt Sıklığı:&lt;/b&gt; Ne sıklıkla geri sarma durum kaydı oluşturulacağını belirler. Daha yüksek sıklıklar daha fazla sistem kaynağı gerektirir.&lt;br&gt; &lt;b&gt;Geri Sarma Tampon Belleği Boyutu:&lt;/b&gt; Geri sarma için kaç kayıt tutulacağını belirler. Daha yüksek değerler daha fazla bellek gerektirir.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Ek VRAM kullanımını önlemek için geri sarma durum kayıtlarını oluştururken yazılımsal çiziciyi kullanır. Geri sarma için gereken sistem kaynaklarını önemli ölçüde azalttığından, özellikle çözünürlük yükseltirken kullanışlıdır.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>%1 saniye süren %n karelik geri sarma için %2MB RAM ve %3MB VRAM gerekir.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>%1 saniye süren %n karelik geri sarma için %2MB RAM gerekir.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>İleri hesaplama etkin olduğundan geri sarma devre dışıdır. İleri hesaplama, sistem gereksinimlerini önemli ölçüde artırır.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Periyodik olarak durum kaydı alır böylece hata yaptığınızda geri sarabilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Geri Sarma Kayıt Sıklığı</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Ne sıklıkla geri sarma durum kaydı oluşturulacağını belirler. Daha yüksek sıklıklar daha fazla sistem kaynağı gerektirir.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Geri Sarma Arabelleği Boyutu</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Geri sarma durum kayıtları için ne kadar bellek ayrılacağını belirler. Ne kadar geriye sarabileceğinizi belirler.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>%1MB geri sarma tampon belleği %n durum kaydı tutar ve %2 saniyeye kadar geri sarmanızı sağlar.</translation>
+        <translation>
+            <numerusform>%1MB geri sarma arabelleği %n durum tutar ve %2 saniyeye kadar geri sarmanızı sağlar.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -13046,6 +13321,10 @@ Hata şuydu:</translation>
     <message>
         <source>%d sectors</source>
         <translation>%d sektör</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>{0} MB geri sarma arabelleği {1} durum tutar ve {2:.2f} saniyeye kadar geri sarmanızı sağlar.</translation>
     </message>
     <message>
         <source>About</source>
@@ -14785,10 +15064,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Yansıtma Hassasiyetini Koru</translation>
     </message>
     <message>
-        <source>%d Frames</source>
-        <translation>%d Kare</translation>
-    </message>
-    <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
     </message>
@@ -14815,10 +15090,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Force Full RAM Mapping</source>
         <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
-    </message>
-    <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Geri sarma için kaç kayıt tutulacağını belirler. Daha yüksek değerler daha fazla bellek gerektirir.</translation>
     </message>
     <message>
         <source>Installed RAM</source>
@@ -14955,22 +15226,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Rewind Save Frequency</source>
         <translation>Geri Sarma Kayıt Aralığı</translation>
-    </message>
-    <message>
-        <source>Rewind Save Slots</source>
-        <translation>Geri Sarma Kayıt Yuvaları</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{1:.2f} saniye süren {0} karelik geri sarma için {2} MB RAM ve {3} MB VRAM gerekir.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>{1:.2f} saniye süren {0} karelik geri sarma için {2} MB RAM gerekir.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>İleri hesaplama etkin olduğundan geri sarma devre dışıdır. İleri hesaplama, sistem gereksinimlerini önemli ölçüde artırır.</translation>
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
@@ -15489,10 +15744,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Çoklu CD Kullanan Oyunlarda Tek Kart Kullan</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Yazılımsal Çiziciyi Kullan (Düşük VRAM Modu)</translation>
-    </message>
-    <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Readbackler İçin Yazılımsal Çiziciyi Kullan</translation>
     </message>
@@ -15519,10 +15770,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>Doku koordinatları için perspektif düzeltmeli ara değerleme kullanarak eğrilmiş dokuları düzeltir.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Ek VRAM kullanımını önlemek için geri sarma durum kayıtlarını oluştururken yazılımsal çiziciyi kullanır. Özellikle çözünürlük yükseltirken kullanışlıdır.</translation>
     </message>
     <message>
         <source>Value Range</source>
@@ -16581,10 +16828,6 @@ Devam etmekten emin misiniz?</translation>
         <translation>CD-ROM Maks. Okuma Hızlandırma Döngüleri</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO Boyutu</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>GPU En Fazla İleri Hesaplama</translation>
     </message>
@@ -16725,6 +16968,11 @@ Devam etmekten emin misiniz?</translation>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Hiç</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Otomatik</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22349,10 +22597,6 @@ Hata: {1}</translation>
         <translation>PGXP Derinlik Arabelleği etkinleştirildi.</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>İleri hesaplama etkin olduğunda geri sarma devre dışıdır.</translation>
-    </message>
-    <message>
         <source>PGXP Depth Buffer is now disabled.</source>
         <translation>PGXP Derinlik Arabelleği devre dışı bırakıldı.</translation>
     </message>
@@ -22371,6 +22615,10 @@ Hata: {1}</translation>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Güvenli mod etkin olduğunda geri sarma devre dışıdır.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Geri sarma durumları için bellek ayrılamadı.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25776,14 +26024,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 DuckStation&apos;ın çalışması için bir PS1 veya PS2 BIOS&apos;u gerekir.
 
 Yasal nedenlerle, size ait gerçek bir PS1/PS2 biriminden BIOS edinmelisiniz (ödünç almak sayılmaz).</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Geri sarma devre dışı bırakıldı.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Geri sarma ve ileri hesaplama aynı anda kullanılamaz.</translation>
     </message>
 </context>
 <context>

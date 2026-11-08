@@ -885,6 +885,10 @@ Unread messages: {}</source>
 未読メッセージ: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>実績を利用できません</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>スコア: {}（{} カジュアル）</translation>
     </message>
@@ -2158,11 +2162,6 @@ Current Binding: %s</source>
         <translation>画面上で指を滑らせることで、コントローラの前面ボタンを複数押せるようにします。</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>その他のファイル…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>現在</translation>
@@ -2191,11 +2190,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>安全性の確認に失敗しました</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>トークン生成日時</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3298,16 +3292,6 @@ Current Binding: %s</source>
         <translation>指定した時間が経過するとタッチ操作ボタンを非表示にします。時間をゼロに設定すると非表示になりません。</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>右スティックに割り当て</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>右スティックがある場合、タッチスクリーンのスワイプ操作を右スティックに割り当てます。</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>高度な設定</translation>
@@ -3661,6 +3645,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>ゲームを終了するときやアプリを離れるときに、現在のステートを自動的に保存します。</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>ポーズメニューのページを記憶</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>ステートの読み込みなどの操作で閉じた場合を除き、ポーズメニューを閉じたときのページで再び開きます。</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4118,6 +4112,11 @@ Current Binding: %s</source>
         <translation>オンスクリーンオーバーレイ</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>ポーズメニュー</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>ゲーム表示</translation>
@@ -4163,9 +4162,29 @@ Current Binding: %s</source>
         <translation>高度なレンダリング</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>ゲームリストから</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>ゲームフォルダーにディスクが見つかりませんでした。</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>ファイルから</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>ディスク取り出し</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>ディスク</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4427,6 +4446,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>現在のRetroAchievementsリッチプレゼンス文字列を常にインジケーター領域に表示します。</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>ログイン日時: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4486,6 +4510,26 @@ Current Binding: %s</source>
         <translation>ディスプレイの左下隅にシステムの現在のコントローラーの状態を表示します。</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>左に移動</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>右に移動</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>上に移動</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>下に移動</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>この表示と画面の向きにおけるすべてのボタンの位置、サイズ、表示状態をリセットします。続行しますか？</translation>
@@ -4499,6 +4543,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>マルチタップモードを変更</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>マルチタップ: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>タッチスクリーンコントローラーを表示</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>タッチスクリーンコントローラーを表示するタイミングを選択します。</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>表示しない</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>コントローラー未接続時</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Big Picture 以外</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>常に表示</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5043,6 +5122,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>縦向きモードで画面を表示する位置を選択します。</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>スワイプで右スティックを操作</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>操作ボタンの外側をスワイプすると右スティックが動きます。「左スティックの位置を可変にする」が有効な場合は、画面の右半分でのみ動作します。</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>左スティックの位置を可変にする</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>画面の左半分に触れると、左スティックが固定位置ではなく指の下に配置されます。</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -5972,45 +6071,9 @@ bin 形式のマルチトラックゲームを起動するには、キューシ�
         <translation>このゲームのカバー画像はすでに存在しますが、置き換えますか？</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation は現在カバーが設定されていないゲームのカバーを自動でダウンロードすることができます。我々はカバー画像を提供していません。ユーザーが自分で画像のダウンロード元を指定する必要があります。</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>お住まいの国や地域によっては、ゲームのカバーは著作権で保護されている場合があります。このツールは、自分のサーバーと画像に対してのみ使用できます。</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>下の欄にカバーのダウンロード元 URL を指定してください。テンプレート URL を 1 行に 1 つ入力します。次の変数を使用できます:
-
-${title}: ゲームのタイトル。
-${savetitle}: 地域の接尾辞を含むゲームの保存用タイトル。
-${localizedtitle}: ゲームの原語でのローカライズされたタイトル。
-${filetitle}: ゲームのファイル名から拡張子を除いた部分。
-${serial}: ゲームのシリアル番号。
-
-例: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL に ${title}、${savetitle}、${localizedtitle}、${filetitle}、${serial} のいずれも含まれていません。</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>既定では、ダウンロードしたカバーはゲームのタイトルを使って保存されます。これを希望しない場合は、下の「シリアル番号をファイル名に使う」を有効にできます。ゲームのタイトルの代わりにシリアル番号を使用すると、同じゲームの複数の地域版を使用する際の競合を防ぐことができます。</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6414,6 +6477,44 @@ ${serial}: ゲームのシリアル番号。
         <translation>実績</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation は、カバーが未設定のゲームのカバー画像を自動的にダウンロードできます。お住まいの地域の法律によっては、ゲームのカバー画像が著作権で保護されている場合があります。このツールは、ご自身のサーバーと画像でのみ使用できます。当方ではいずれも提供していません。</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>カバー画像の URL</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>カバー画像のダウンロード元の URL を、1 行に 1 つの URL テンプレートで指定します。下の変数をタップすると、カーソル位置に挿入できます。</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>例: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: ゲームのタイトル。
+${savetitle}: 地域の接尾辞を含む、ゲームの保存用タイトル。
+${localizedtitle}: ゲームの原語でのローカライズされたタイトル。
+${filetitle}: ゲームのファイル名の名前部分。
+${serial}: ゲームのシリアル番号。</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>ゲームのタイトルの代わりにシリアル番号でカバー画像を保存し、同じゲームの複数の地域版を使用する際の競合を防ぎます。</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>エミュレートするハードウェアの種類(地域)を指定します。</translation>
@@ -6477,6 +6578,26 @@ ${serial}: ゲームのシリアル番号。
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>6 MB の RAM を追加し、合計 2+6 = 8 MB にします。通常は開発用コンソールに搭載されています。</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>搭載 RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>RAM を拡張するとゲームが正常に動作しなくなる場合があるため、対応する MOD でのみ使用してください。</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>RAM 全体のマッピングを強制</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>BIOS やゲームの設定にかかわらず、搭載 RAM 全体をマッピングします。</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6566,6 +6687,116 @@ ${serial}: ゲームのシリアル番号。
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>フォルダ</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>言語、テーマ、ゲームリストと動作</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>オンスクリーン表示</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>テーマ、フォント、メッセージと統計情報のオーバーレイ</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>地域、CPU と CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>速度、遅延、巻き戻しとステートセーブ</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>レンダラー、解像度、表示とスクリーンショット</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>音量と音声出力の設定</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>シェーダーチェーンと枠のオーバーレイ</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements アカウントと通知</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>メモリーカードの種類と保存先</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>BIOS イメージの選択とインストール</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>データの保存先</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>ログ、デバッグと低レベルのオプション</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>ゲームの詳細と検証</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>このゲームの修正と機能拡張</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>このゲームのチートコード</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>画面上のコントローラーの配置と外観</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>コントローラーの種類と割り当て</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>エミュレーター操作のショートカット</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>ゲームを検索するフォルダー</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>ゲームリストから除外するパス</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>アプリ専用ストレージ内のゲーム</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10726,6 +10957,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>ブレークポイント</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>シンボル(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>ウィンドウ(&amp;W)</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>逆アセンブル</translation>
     </message>
@@ -10914,6 +11153,22 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>ツールバー</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>自動シンボルを使用(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>シンボルを読み込む(&amp;L)...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>シンボルを再読み込み(&amp;R)</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>シンボルを無効化(&amp;D)</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>ブレークポイントを追加(&amp;A)</translation>
     </message>
@@ -10944,14 +11199,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>No address selected.</source>
         <translation>アドレスが選択されていません。</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>コードアドレスを入力:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>メモリアドレスを入力:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11023,6 +11270,24 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Debugger</source>
         <translation>デバッガ</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>%1 から %n 個のシンボルを読み込みました。</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>%1 からのシンボルの読み込みに失敗しました: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>コードアドレスまたはシンボルを入力:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>メモリーアドレスまたはシンボルを入力:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>ステップアウトブレークポイントの追加に失敗しました。有効な関数内にいますか？</translation>
@@ -11042,6 +11307,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>View in &amp;Dump</source>
         <translation>ダンプに表示(&amp;D)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>コードへ移動(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>スタックへ移動(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>シンボル名をコピー(&amp;N)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>アドレスをコピー(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>フレームアドレスをコピー(&amp;F)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>コピー(&amp;C)</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11078,6 +11367,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Pattern found at 0x%1.</source>
         <translation>0x%1 でパターンが見つかりました。</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>シンボルを読み込む</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>シンボルファイル (*.elf *.map);;すべてのファイル (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>シンボルの読み込みに失敗しました: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>レイアウトをリセット(&amp;R)</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11085,12 +11390,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         </translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>無効なアドレスです。16進数で指定してください (0x12345678 または 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>無効な値です。16進数で指定してください (0x12345678 または 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>無効なアドレスです。シンボル名または16進数 (0x12345678 または 12345678) を指定してください。</translation>
     </message>
 </context>
 <context>
@@ -11152,28 +11457,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>表示終了オフセット (下端/オーバースキャン用)</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>DMA スライスの最長 Tick 数</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> サイクル</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA 休止 Tick 数</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>DMA スライスの最大サイクル数</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO サイズ</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA 停止サイクル数</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> ワード</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>GPU 最大先読み</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>GPU の最大先行サイクル数</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11456,14 +11753,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>巻き戻し</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> フレーム</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>ソフトウェアレンダラーを使用（VRAM節約モード）</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>先行実行(Runahead):</translation>
     </message>
@@ -11608,44 +11897,30 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>巻き戻し</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;巻き戻しを有効化:&lt;/b&gt; ステートを定期的に保存し、プレイ中のミスなどを巻き戻せるようにします。&lt;br&gt; &lt;b&gt;巻き戻し保存頻度:&lt;/b&gt; 巻き戻しステートを作成する頻度です。頻度が高いほど、必要なシステム性能が高くなります。&lt;br&gt; &lt;b&gt;巻き戻しバッファサイズ:&lt;/b&gt; 巻き戻し用に保持するステートの数です。値が大きいほど、必要なメモリ量が増えます。</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>巻き戻しステートの作成時にソフトウェアレンダラーを使用して、VRAM使用量の増加を防ぎます。特にアップスケーリング時に有効で、巻き戻しに必要なシステム性能を大幅に抑えられます。</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>%n フレーム（%1 秒）の巻き戻しには、%2MB のRAMと %3MB のVRAMが必要です。</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>%n フレーム（%1 秒）の巻き戻しには、%2MB のRAMが必要です。</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>先行実行が有効なため、巻き戻しは無効になっています。先行実行により、必要なシステム性能が大幅に高くなります。</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>定期的にステートセーブすることで、プレー中のミスを巻き戻すことができます。</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>巻き戻しの保存頻度</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>巻き戻しステートを作成する頻度を設定します。頻度が高いほどシステム要件が高くなります。</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>巻き戻しバッファーのサイズ</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>巻き戻しステート用に予約するメモリ量です。どこまで巻き戻せるかを決定します。</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>%1MB の巻き戻しバッファには %n 個のステートを保持でき、最大 %2 秒巻き戻せます。</translation>
+        <translation>
+            <numerusform>%1MB の巻き戻しバッファーには %n 個のステートを保持でき、最大 %2 秒間巻き戻せます。</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11814,6 +12089,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>9x (for 4K)</source>
         <translation>9x (4K 用)</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>{0} MB の巻き戻しバッファーには {1} 個のステートを保持でき、最大 {2:.2f} 秒間巻き戻せます。</translation>
     </message>
     <message>
         <source>Achievement Notifications</source>
@@ -12706,10 +12985,6 @@ Error was:</source>
         <translation>エミュレータがフルスクリーンモードの場合、マウスポインタ/カーソルを非表示にします。</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>巻き戻し用に保持するステートの数です。値が大きいほど、必要なメモリ量が増えます。</translation>
-    </message>
-    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>巻き戻しステートを作成する頻度を設定します。頻度が高いほどシステム要件が高くなります。</translation>
     </message>
@@ -13040,10 +13315,6 @@ You cannot undo this action.</source>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
         <translation>アップスケールされていないラスタライズ動作に依存し高さ1ピクセル/幅1ピクセルのラインを検出することを試みることで、アップスケールによって生じるギャップを埋めます。</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d フレーム</translation>
     </message>
     <message>
         <source>Automatic Mapping Failed</source>
@@ -13426,22 +13697,6 @@ You cannot undo this action.</source>
         <translation>デフォルトに戻す</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>巻き戻し保存スロット数</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{0} フレーム（{1:.2f} 秒）の巻き戻しには、{2} MB のRAMと {3} MB のVRAMが必要です。</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>{0} フレーム（{1:.2f} 秒）の巻き戻しには、{2} MB のRAMが必要です。</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>先行実行が有効なため、巻き戻しは無効になっています。先行実行により、必要なシステム性能が大幅に高くなります。</translation>
-    </message>
-    <message>
         <source>Right: </source>
         <translation>右: </translation>
     </message>
@@ -13666,10 +13921,6 @@ You cannot undo this action.</source>
         <translation>ディスクごとに個別の設定を使用</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>ソフトウェアレンダラーを使用（VRAM節約モード）</translation>
-    </message>
-    <message>
         <source>Use This Directory</source>
         <translation>このディレクトリを使用</translation>
     </message>
@@ -13700,10 +13951,6 @@ You cannot undo this action.</source>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>画面上の座標を使用して PGXP データを特定します。一部のゲームで映像が改善される場合があります。「自動」ではゲームデータベースの設定を使用します。</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>巻き戻しステートの作成時にソフトウェアレンダラーを使用して、VRAM使用量の増加を防ぎます。特にアップスケーリング時に有効です。</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -16543,10 +16790,6 @@ Are you sure you want to continue?</source>
         <translation>CD-ROM最大読み取り高速化サイクル</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO サイズ</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>GPU最大先行実行数</translation>
     </message>
@@ -16727,6 +16970,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>なし</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>自動</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22310,10 +22558,6 @@ Error: {1}</source>
         <translation>巻き戻しが有効化されていません。</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>先行実行が有効な間は巻き戻しを使用できません。</translation>
-    </message>
-    <message>
         <source>PGXP CPU mode is now enabled.</source>
         <translation>PGXP CPU モードが有効になりました。</translation>
     </message>
@@ -22328,6 +22572,10 @@ Error: {1}</source>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>セーフモードが有効な間は巻き戻しを使用できません。</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>巻き戻し用ステートを割り当てられませんでした。</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25779,14 +26027,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 DuckStationを実行するには、PS1またはPS2のBIOSが必要です。
 
 法的な理由により、所有している実機のPS1/PS2からBIOSを取得する必要があります（借りたものは使用できません）。</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>巻き戻しを無効にしました。</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>巻き戻しと先行実行は同時に使用できません。</translation>
     </message>
 </context>
 <context>

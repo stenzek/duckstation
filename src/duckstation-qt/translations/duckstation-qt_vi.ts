@@ -708,6 +708,10 @@ Tin nhắn chưa đọc: {}</translation>
         <translation>Làm mới toàn bộ tiến độ thất bại</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Không thể sử dụng thành tích</translation>
+    </message>
+    <message>
         <source>Rewinding</source>
         <translation>Đang tua lại</translation>
     </message>
@@ -2638,11 +2642,6 @@ Nút gán hiện tại: %s</translation>
         <translation>Cho phép nhấn nhiều nút mặt trước của tay cầm bằng cách kéo ngón tay trên màn hình.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Tệp khác…</translation>
-    </message>
-    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Tháo đĩa</translation>
@@ -2906,11 +2905,6 @@ Nút gán hiện tại: %s</translation>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Luôn hiển thị chuỗi Rich Presence hiện tại của RetroAchievements trong vùng chỉ báo.</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Thời điểm tạo mã truy cập</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3515,6 +3509,16 @@ Nút gán hiện tại: %s</translation>
         <translation>CẢNH BÁO: Trò chơi vẫn đang lưu vào thẻ nhớ. Tiếp tục lúc này có thể làm hỏng dữ liệu. Bạn nên quay lại trò chơi, chờ 5 giây rồi thử lại.</translation>
     </message>
     <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Ghi nhớ trang menu tạm dừng</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Mở lại menu tạm dừng tại trang đã đóng, trừ khi menu bị đóng bởi một thao tác như tải trạng thái.</translation>
+    </message>
+    <message>
         <source>Menu Volume</source>
         <comment>settings_menu_volume</comment>
         <translation>Âm lượng menu</translation>
@@ -3523,6 +3527,31 @@ Nút gán hiện tại: %s</translation>
         <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
         <comment>settings_summary_menu_volume</comment>
         <translation>Điều chỉnh âm lượng hiệu ứng âm thanh của giao diện Big Picture và thông báo thành tích.</translation>
+    </message>
+    <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Menu tạm dừng</translation>
+    </message>
+    <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Từ danh sách trò chơi</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>Không tìm thấy đĩa nào trong các thư mục trò chơi của bạn.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Từ tệp</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Đĩa</translation>
     </message>
     <message>
         <source>Do you want to close the game anyway?</source>
@@ -3550,6 +3579,11 @@ Nút gán hiện tại: %s</translation>
         <translation>Bạn vẫn muốn đổi đĩa?</translation>
     </message>
     <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Đăng nhập từ %s</translation>
+    </message>
+    <message>
         <source>Skip</source>
         <comment>controller_binding_skip</comment>
         <translation>Bỏ qua</translation>
@@ -3575,9 +3609,64 @@ Nút gán hiện tại: %s</translation>
         <translation>Bật gán cảm biến</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Di chuyển sang trái</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Di chuyển sang phải</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Di chuyển lên</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Di chuyển xuống</translation>
+    </message>
+    <message>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Đổi chế độ Multitap</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Hiển thị tay cầm cảm ứng</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Chọn thời điểm hiển thị tay cầm cảm ứng.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Không bao giờ</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Khi không có tay cầm</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Ngoài chế độ Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Luôn luôn</translation>
     </message>
     <message>
         <source>Rewind Here</source>
@@ -4703,16 +4792,6 @@ Bạn có thể thay đổi sau bằng tùy chọn &quot;Khởi động ở ch�
         <source>Hides touch controls after the specified time. A delay of zero will not hide the controls.</source>
         <comment>settings_summary_touchscreen_auto_hide_time</comment>
         <translation>Ẩn nút điều khiển cảm ứng sau thời gian đã chỉ định. Độ trễ bằng không sẽ không ẩn các nút điều khiển.</translation>
-    </message>
-    <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Gán cho cần phải</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Gán thao tác vuốt màn hình cảm ứng cho cần phải, nếu có.</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
@@ -6084,37 +6163,6 @@ Trò chơi nhiều rãnh ở định dạng bin cần có tệp mô tả rãnh (
         <translation>Không thể tạo lối tắt. Hãy đảm bảo trình khởi chạy của bạn hỗ trợ tính năng này.</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation có thể tự động tải ảnh bìa cho các trò chơi chưa có ảnh bìa. Chúng tôi không lưu trữ ảnh bìa; người dùng phải tự cung cấp nguồn ảnh.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Tùy theo khu vực pháp lý của bạn, ảnh bìa trò chơi có thể được bảo hộ bản quyền. Bạn chỉ được phép dùng công cụ này với máy chủ và ảnh của riêng mình.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>Trong ô bên dưới, hãy chỉ định các URL để tải ảnh bìa, mỗi URL mẫu một dòng. Có thể dùng các biến sau:
-
-${title}: Tên trò chơi.
-${savetitle}: Tên dùng để lưu trò chơi, bao gồm hậu tố khu vực.
-${localizedtitle}: Tên đã bản địa hóa của trò chơi bằng ngôn ngữ gốc.
-${filetitle}: Phần tên trong tên tệp của trò chơi.
-${serial}: Mã sê-ri của trò chơi.
-
-Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>Download</source>
         <comment>game_list_download_covers_start</comment>
         <translation>Tải xuống</translation>
@@ -6125,9 +6173,62 @@ Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <translation>URL không chứa ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} hoặc ${serial}.</translation>
     </message>
     <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Vuốt để điều khiển cần phải</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Vuốt bên ngoài các nút điều khiển để di chuyển cần phải. Khi bật Cần trái nổi, thao tác này chỉ hoạt động ở nửa bên phải màn hình.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Cần trái nổi</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Chạm vào nửa bên trái màn hình sẽ đặt cần trái dưới ngón tay thay vì ở một vị trí cố định.</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation có thể tự động tải ảnh bìa cho những trò chơi chưa được đặt ảnh bìa. Tùy theo pháp luật tại nơi bạn sống, ảnh bìa trò chơi có thể được bảo hộ bản quyền. Bạn chỉ được phép sử dụng công cụ này với máy chủ và hình ảnh của riêng mình; chúng tôi không cung cấp máy chủ hay hình ảnh.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>URL ảnh bìa</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Chỉ định các URL để tải ảnh bìa, mỗi dòng một mẫu URL. Nhấn vào một biến bên dưới để chèn biến đó tại vị trí con trỏ.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Tên trò chơi.
+${savetitle}: Tên dùng để lưu trò chơi, bao gồm hậu tố khu vực.
+${localizedtitle}: Tên đã bản địa hóa của trò chơi bằng ngôn ngữ gốc.
+${filetitle}: Phần tên trong tên tệp của trò chơi.
+${serial}: Mã sê-ri của trò chơi.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
         <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Theo mặc định, ảnh bìa tải xuống sẽ được lưu theo tên trò chơi. Nếu không muốn vậy, bạn có thể bật “Dùng mã sê-ri làm tên tệp” bên dưới. Dùng mã sê-ri thay cho tên trò chơi sẽ tránh xung đột khi dùng nhiều phiên bản khu vực của cùng một trò chơi.</translation>
+        <translation>Lưu ảnh bìa bằng mã sê-ri thay vì tên trò chơi để tránh xung đột khi sử dụng nhiều phiên bản khu vực của cùng một trò chơi.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6663,6 +6764,26 @@ Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <translation>Bật thêm 6MB RAM để đạt tổng cộng 2+6 = 8MB, thường có trên máy chơi game dành cho nhà phát triển.</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>RAM đã lắp</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>RAM mở rộng có thể khiến trò chơi không hoạt động, vì vậy chỉ sử dụng với các bản mod tương thích.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Buộc ánh xạ toàn bộ RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Ánh xạ toàn bộ RAM đã lắp bất kể cấu hình BIOS hoặc trò chơi.</translation>
+    </message>
+    <message>
         <source>Preload Images to RAM</source>
         <comment>settings_load_image_to_ram</comment>
         <translation>Tải trước ảnh đĩa vào RAM</translation>
@@ -6760,6 +6881,116 @@ Ví dụ: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Thư mục</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Ngôn ngữ, giao diện, danh sách trò chơi và hành vi</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Hiển thị trên màn hình</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Giao diện, phông chữ, thông báo và lớp phủ thống kê</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Khu vực, CPU và CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Tốc độ, độ trễ, tua lại và trạng thái lưu</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Trình kết xuất, độ phân giải, hiển thị và ảnh chụp màn hình</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Âm lượng và cấu hình đầu ra âm thanh</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Chuỗi shader và lớp phủ viền</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>Tài khoản RetroAchievements và thông báo</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Loại và vị trí thẻ nhớ</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Chọn và cài đặt ảnh BIOS</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Vị trí lưu trữ dữ liệu</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Ghi nhật ký, gỡ lỗi và tùy chọn cấp thấp</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Chi tiết và xác minh trò chơi</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Bản sửa lỗi và cải tiến cho trò chơi này</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Mã gian lận cho trò chơi này</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Bố cục và hình thức tay cầm trên màn hình</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Loại tay cầm và gán nút</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Phím tắt cho các thao tác của trình giả lập</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Các thư mục được quét để tìm trò chơi</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Các đường dẫn bị loại khỏi danh sách trò chơi</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Trò chơi được lưu trong bộ nhớ riêng của ứng dụng</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10725,6 +10956,14 @@ Tệp này có kích thước khoảng 206KB, bạn có muốn tải ngay không
         <translation>Điểm dừng</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Ký hiệu</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Cửa sổ</translation>
+    </message>
+    <message>
         <source>Toolbar</source>
         <translation>Thanh công cụ</translation>
     </message>
@@ -10845,6 +11084,22 @@ Tệp này có kích thước khoảng 206KB, bạn có muốn tải ngay không
         <translation>F9</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Dùng ký hiệu &amp;tự động</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Tải ký hiệu...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>Tải &amp;lại ký hiệu</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Vô hiệu hóa ký hiệu</translation>
+    </message>
+    <message>
         <source>&amp;Close</source>
         <translation>Đón&amp;g</translation>
     </message>
@@ -10941,20 +11196,26 @@ Tệp này có kích thước khoảng 206KB, bạn có muốn tải ngay không
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Địa chỉ không hợp lệ. Phải ở dạng thập lục phân (0x12345678 hoặc 12345678)</translation>
-    </message>
-    <message>
         <source>No address selected.</source>
         <translation>Chưa chọn địa chỉ.</translation>
     </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Nhập địa chỉ mã:</translation>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Đã tải %n ký hiệu từ %1.</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Enter memory address:</source>
-        <translation>Nhập địa chỉ bộ nhớ:</translation>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Không thể tải ký hiệu từ %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Nhập địa chỉ mã hoặc ký hiệu:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Nhập địa chỉ bộ nhớ hoặc ký hiệu:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11001,6 +11262,30 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Theo địa chỉ tải/lưu</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Đi tới &amp;mã</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Đi tới &amp;ngăn xếp</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Sao chép &amp;tên ký hiệu</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Sao chép &amp;địa chỉ</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Sao chép địa chỉ &amp;khung ngăn xếp</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Sao chép</translation>
     </message>
     <message>
         <source>Modify Register</source>
@@ -11074,6 +11359,22 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
         <translation>Tìm thấy mẫu tại 0x%1.</translation>
     </message>
     <message>
+        <source>Load Symbols</source>
+        <translation>Tải ký hiệu</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Tệp ký hiệu (*.elf *.map);;Tất cả tệp (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Không thể tải ký hiệu: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Đặt lại bố cục</translation>
+    </message>
+    <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>Không thể thêm điểm dừng. Có thể đã có điểm dừng tại địa chỉ này.</translation>
     </message>
@@ -11090,6 +11391,10 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
     <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Giá trị không hợp lệ. Phải ở dạng thập lục phân (0x12345678 hoặc 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Địa chỉ không hợp lệ. Địa chỉ phải là tên ký hiệu hoặc số thập lục phân (0x12345678 hoặc 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11151,28 +11456,20 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
         <translation>Độ lệch dòng kết thúc hiển thị</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Số nhịp tối đa mỗi lát DMA</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> chu kỳ</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>Số nhịp tạm dừng DMA</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Số chu kỳ tối đa mỗi lát DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>Kích thước FIFO của GPU</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>Số chu kỳ dừng DMA</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> từ</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>Mức chạy trước tối đa của GPU</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Số chu kỳ chạy trước tối đa của GPU</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11443,10 +11740,6 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
         <translation>Tần suất lưu tua lại:</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> khung hình</translation>
-    </message>
-    <message>
         <source>Rewind Buffer Size:</source>
         <translation>Kích thước bộ đệm tua lại:</translation>
     </message>
@@ -11457,10 +11750,6 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
     <message>
         <source>Enable Rewinding</source>
         <translation>Bật tua lại</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Dùng bộ kết xuất phần mềm (Chế độ ít VRAM)</translation>
     </message>
     <message>
         <source>Runahead</source>
@@ -11607,36 +11896,12 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
         <translation>Tua lại</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Bật tua lại:&lt;/b&gt; Lưu trạng thái định kỳ để bạn có thể tua lại khi mắc lỗi trong lúc chơi.&lt;br&gt; &lt;b&gt;Tần suất lưu tua lại:&lt;/b&gt; Tần suất tạo trạng thái tua lại. Tần suất cao hơn đòi hỏi hệ thống mạnh hơn.&lt;br&gt; &lt;b&gt;Kích thước bộ đệm tua lại:&lt;/b&gt; Số bản lưu được giữ để tua lại. Giá trị cao hơn đòi hỏi nhiều bộ nhớ hơn.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Dùng bộ kết xuất phần mềm khi tạo trạng thái tua lại để tránh dùng thêm VRAM. Đặc biệt hữu ích khi tăng độ phân giải vì giúp giảm đáng kể yêu cầu hệ thống để tua lại.</translation>
-    </message>
-    <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Mô phỏng hệ thống chạy trước rồi quay lại/phát lại để giảm độ trễ đầu vào. Đòi hỏi hệ thống rất mạnh.</translation>
     </message>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>Kích hoạt chạy trước khi đầu vào analog thay đổi, làm tăng đáng kể yêu cầu hệ thống.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Tua lại %n khung hình, kéo dài %1 giây, sẽ cần %2MB RAM và %3MB VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Tua lại %n khung hình, kéo dài %1 giây, sẽ cần %2MB RAM.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Tua lại bị tắt vì đã bật chạy trước. Chạy trước sẽ làm tăng đáng kể yêu cầu hệ thống.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -11651,16 +11916,26 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
         <translation>Lưu trạng thái định kỳ để bạn có thể tua lại khi mắc lỗi trong lúc chơi.</translation>
     </message>
     <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Tần suất lưu để tua lại</translation>
+    </message>
+    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Tần suất tạo trạng thái tua lại. Tần suất cao hơn đòi hỏi hệ thống mạnh hơn.</translation>
+    </message>
+    <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Kích thước bộ đệm tua lại</translation>
     </message>
     <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Dung lượng bộ nhớ dành cho các trạng thái tua lại. Xác định bạn có thể tua lại bao xa.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>Bộ đệm tua lại %1MB chứa %n trạng thái, cho phép tua lại tối đa %2 giây.</translation>
+        <translation>
+            <numerusform>Bộ đệm tua lại %1MB chứa %n trạng thái, cho phép bạn tua lại tối đa %2 giây.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11744,10 +12019,6 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
     <message>
         <source>%.2f Seconds</source>
         <translation>%.2f giây</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d khung hình</translation>
     </message>
     <message>
         <source>%d cycles</source>
@@ -11928,6 +12199,10 @@ Do you want to delete the save state and boot the game anyway?</source>
 {}
 
 Bạn có muốn xóa trạng thái lưu và vẫn khởi động trò chơi không?</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Bộ đệm tua lại {0} MB chứa {1} trạng thái, cho phép bạn tua lại tối đa {2:.2f} giây.</translation>
     </message>
     <message>
         <source>AMOLED</source>
@@ -13464,10 +13739,6 @@ Lỗi:</translation>
         <translation>Phím tắt</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Số bản lưu được giữ lại để tua lại. Giá trị cao hơn cần nhiều bộ nhớ hơn.</translation>
-    </message>
-    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Tần suất tạo trạng thái tua lại. Tần suất cao hơn đòi hỏi hệ thống mạnh hơn.</translation>
     </message>
@@ -14436,22 +14707,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Tần suất lưu để tua lại</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>Số ô lưu để tua lại</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Tua lại {0} khung hình, kéo dài {1:.2f} giây sẽ cần {2} MB RAM và {3} MB VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Tua lại {0} khung hình, kéo dài {1:.2f} giây sẽ cần {2} MB RAM.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Tua lại bị tắt vì đã bật chạy trước. Chạy trước sẽ làm tăng đáng kể yêu cầu hệ thống.</translation>
-    </message>
-    <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Chưa bật tua lại. Lưu ý rằng bật tua lại có thể làm tăng đáng kể yêu cầu hệ thống.</translation>
     </message>
@@ -15384,10 +15639,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Dùng một thẻ cho trò chơi nhiều đĩa</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Dùng bộ kết xuất phần mềm (Chế độ ít VRAM)</translation>
-    </message>
-    <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Dùng bộ kết xuất phần mềm để đọc ngược</translation>
     </message>
@@ -15450,10 +15701,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Dùng cài đặt trò chơi riêng cho từng đĩa của trò chơi nhiều đĩa. Chỉ có thể đặt trên đĩa đầu tiên/chính.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Dùng bộ kết xuất phần mềm khi tạo trạng thái tua lại để tránh dùng thêm VRAM. Đặc biệt hữu ích khi tăng độ phân giải.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
@@ -16548,10 +16795,6 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Chu kỳ tăng tốc đọc CD-ROM tối đa</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>Kích thước FIFO GPU</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>Mức chạy trước GPU tối đa</translation>
     </message>
@@ -16728,6 +16971,11 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Không có</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Tự động</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22242,12 +22490,12 @@ Lỗi: {1}</translation>
         <translation>Lưu đệm trước ảnh CD thất bại, ảnh có thể không đáng tin cậy.</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Tua lại bị tắt khi chạy trước được bật.</translation>
-    </message>
-    <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Tua lại bị tắt khi chế độ an toàn được bật.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Không thể cấp phát các trạng thái tua lại.</translation>
     </message>
     <message>
         <source>Rewinding is not enabled.</source>
@@ -25305,14 +25553,6 @@ Vì lý do pháp lý, bạn phải lấy BIOS từ máy PS1/PS2 thực sự do b
     <message>
         <source>Startup was cancelled.</source>
         <translation>Đã hủy khởi động.</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Đã tắt tua lại.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Không thể dùng đồng thời tua lại và chạy trước.</translation>
     </message>
     <message>
         <source>CPU Overclock</source>

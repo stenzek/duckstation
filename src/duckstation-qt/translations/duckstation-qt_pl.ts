@@ -607,6 +607,10 @@ Unread messages: {}</source>
 Nieprzeczytane wiadomości: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Osiągnięcia niedostępne</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>Wynik: {} ({} w trybie swobodnym)</translation>
     </message>
@@ -2185,11 +2189,6 @@ Bieżące powiązanie: %s</translation>
         <translation>Pozwala naciskać wiele przycisków przednich kontrolera przez przesuwanie palca po ekranie.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Inny plik…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Bieżący</translation>
@@ -2218,11 +2217,6 @@ Bieżące powiązanie: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Kontrola bezpieczeństwa nie powiodła się</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Czas wygenerowania tokenu</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3349,16 +3343,6 @@ Bieżące powiązanie: %s</translation>
         <translation>Ukrywa elementy sterowania dotykowego po upływie określonego czasu. Wartość zerowa wyłącza ich ukrywanie.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Przypisz do prawego drążka</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Przypisuje gesty przesuwania po ekranie dotykowym do prawego drążka, jeśli jest dostępny.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Zaawansowane ustawienia</translation>
@@ -3712,6 +3696,16 @@ Bieżące powiązanie: %s</translation>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Automatycznie zapisuje bieżący stan przy zamykaniu gry lub opuszczaniu aplikacji.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Zapamiętaj stronę menu pauzy</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Ponownie otwiera menu pauzy na stronie, na której je zamknięto, chyba że zostało zamknięte przez działanie takie jak wczytanie stanu.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4169,6 +4163,11 @@ Bieżące powiązanie: %s</translation>
         <translation>Nakładki ekranowe</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Menu pauzy</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Ekran gry</translation>
@@ -4214,9 +4213,29 @@ Bieżące powiązanie: %s</translation>
         <translation>Zaawansowane renderowanie</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Z listy gier</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>Nie znaleziono płyt w folderach z grami.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Z pliku</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Wyjmij płytę</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Płyty</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4478,6 +4497,11 @@ Bieżące powiązanie: %s</translation>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Zawsze wyświetla bieżący ciąg Rich Presence RetroAchievements w obszarze wskaźników.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Zalogowano: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4539,6 +4563,26 @@ Bieżące powiązanie: %s</translation>
         <translation>Pokazuje stan kontrolera w lewym dolnym rogu wyświetlacza.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Przesuń w lewo</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Przesuń w prawo</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Przesuń w górę</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Przesuń w dół</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Spowoduje to zresetowanie położenia, rozmiaru i widoczności każdego przycisku w tym widoku i orientacji. Czy chcesz kontynuować?</translation>
@@ -4552,6 +4596,41 @@ Bieżące powiązanie: %s</translation>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Zmień tryb multitapa</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Pokaż kontroler dotykowy</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Określa, kiedy wyświetlany jest kontroler dotykowy.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Nigdy</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Bez kontrolera</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Poza trybem Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Zawsze</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5096,6 +5175,26 @@ Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Pictur
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Wybiera miejsce renderowania obrazu w orientacji pionowej.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Przesuwanie palcem steruje prawym drążkiem</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Przesuwanie palcem poza elementami sterowania porusza prawym drążkiem. Gdy włączony jest pływający lewy drążek, działa to tylko w prawej połowie ekranu.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Pływający lewy drążek</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Dotknięcie lewej połowy ekranu umieszcza lewy drążek pod palcem zamiast w stałym miejscu.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -6029,45 +6128,9 @@ Gry z wieloma ścieżkami w formacie bin wymagają do uruchomienia pliku arkusza
         <translation>Grafika okładki tej gry już istnieje, czy chcesz ją zastąpić?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation potrafi automatycznie pobierać okładki gier, które nie mają obecnie ustawionej okładki. Nie udostępniamy żadnych obrazów okładek. Użytkownik musi podać własne źródło obrazów.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>W zależności od jurysdykcji okładki gier mogą być chronione prawem autorskim. Możesz korzystać z tego narzędzia wyłącznie z własnymi serwerami i obrazami.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>W polu poniżej podaj adresy URL, z których mają być pobierane okładki, umieszczając jeden szablon adresu URL w każdym wierszu. Dostępne są następujące zmienne:
-
-${title}: Tytuł gry.
-${savetitle}: Tytuł używany do zapisu gry, wraz z przyrostkiem regionu.
-${localizedtitle}: Zlokalizowany tytuł gry w jej rodzimym języku.
-${filetitle}: Część nazwy pliku gry bez rozszerzenia.
-${serial}: Numer seryjny gry.
-
-Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>Adres URL nie zawiera ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} ani ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Domyślnie pobrane okładki będą zapisywane pod tytułem gry. Jeśli tego nie chcesz, możesz włączyć poniżej opcję „Użyj numerów seryjnych”. Używanie numerów seryjnych zamiast tytułów gier zapobiegnie konfliktom, gdy używane są wersje tej samej gry z różnych regionów.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6475,6 +6538,44 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <translation>Osiągnięcia</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation może automatycznie pobierać okładki gier, którym jeszcze ich nie przypisano. Zależnie od obowiązujących w Twojej jurysdykcji przepisów okładki gier mogą być chronione prawem autorskim. Wolno używać tego narzędzia wyłącznie z własnymi serwerami i obrazami. Nie udostępniamy żadnych z nich.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>Adresy URL okładek</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Podaj adresy URL, z których mają być pobierane okładki, po jednym szablonie URL w wierszu. Dotknij zmiennej poniżej, aby wstawić ją w miejscu kursora.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Tytuł gry.
+${savetitle}: Tytuł gry do zapisu, włącznie z przyrostkiem regionu.
+${localizedtitle}: Zlokalizowany tytuł gry w jej oryginalnym języku.
+${filetitle}: Część nazwy pliku gry zawierająca nazwę.
+${serial}: Numer seryjny gry.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Zapisuj okładki pod numerem seryjnym gry zamiast jej tytułu, aby uniknąć konfliktów przy używaniu kilku wersji regionalnych tej samej gry.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Określa typ emulowanego sprzętu.</translation>
@@ -6538,6 +6639,26 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Włącza dodatkowe 6 MB pamięci RAM, zwiększając jej łączną ilość do 2 + 6 = 8 MB, zwykle dostępnych na konsolach deweloperskich.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Zainstalowana pamięć RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Rozszerzona pamięć RAM może zakłócić działanie gier, dlatego używaj jej tylko ze zgodnymi modyfikacjami.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Wymuś mapowanie całej pamięci RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Mapuje całą zainstalowaną pamięć RAM niezależnie od konfiguracji BIOS-u lub gry.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6627,6 +6748,116 @@ Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</trans
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Foldery</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Język, motyw, lista gier i zachowanie</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Informacje na ekranie</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Motyw, czcionki, komunikaty i nakładki statystyk</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Region, CPU i CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Szybkość, opóźnienie, przewijanie wstecz i stany zapisu</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Renderer, rozdzielczość, wyświetlanie i zrzuty ekranu</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Głośność i konfiguracja wyjścia dźwięku</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Łańcuchy shaderów i nakładki ramek</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>Konto RetroAchievements i powiadomienia</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Typy i lokalizacje kart pamięci</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Wybór i instalacja obrazu BIOS-u</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Lokalizacje przechowywania danych</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Rejestrowanie, debugowanie i opcje niskiego poziomu</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Szczegóły gry i weryfikacja</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Poprawki i ulepszenia dla tej gry</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Kody oszustw dla tej gry</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Układ i wygląd kontrolera ekranowego</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Typ kontrolera i przypisania przycisków</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Skróty do działań emulatora</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Foldery przeszukiwane w celu znalezienia gier</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Ścieżki wykluczone z listy gier</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Gry w pamięci własnej aplikacji</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10800,6 +11031,14 @@ Ten plik ma około 206 KB. Czy chcesz go teraz pobrać?</translation>
         <translation>Punkty wstrzymania</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Symbole</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Okno</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Dezasemblacja</translation>
     </message>
@@ -10988,6 +11227,22 @@ Ten plik ma około 206 KB. Czy chcesz go teraz pobrać?</translation>
         <translation>Pasek narzędzi</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Używaj &amp;automatycznych symboli</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Wczytaj symbole...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>Wczytaj symbole &amp;ponownie</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Wyłącz symbole</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>Dodaj &amp;punkt wstrzymania</translation>
     </message>
@@ -11018,14 +11273,6 @@ Ten plik ma około 206 KB. Czy chcesz go teraz pobrać?</translation>
     <message>
         <source>No address selected.</source>
         <translation>Nie wybrano adresu.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Wpisz adres kodu:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Wpisz adres pamięci:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11097,6 +11344,26 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <source>Debugger</source>
         <translation>Debugger</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Wczytano %n symbol z %1.</numerusform>
+            <numerusform>Wczytano %n symbole z %1.</numerusform>
+            <numerusform>Wczytano %n symboli z %1.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Nie udało się wczytać symboli z %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Wprowadź adres kodu lub symbol:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Wprowadź adres pamięci lub symbol:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Nie udało się dodać punktu wstrzymania wyjścia. Czy korzystasz z prawidłowej funkcji?</translation>
@@ -11120,6 +11387,30 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     <message>
         <source>View in &amp;Dump</source>
         <translation>Zobacz w &amp;zrzucie</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Przejdź do &amp;kodu</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Przejdź do &amp;stosu</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Kopiuj &amp;nazwę symbolu</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Kopiuj &amp;adres</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Kopiuj adres &amp;ramki stosu</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopiuj</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11158,6 +11449,22 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <source>Pattern found at 0x%1.</source>
         <translation>Wzorzec znaleziony w 0x%1.</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>Wczytaj symbole</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Pliki symboli (*.elf *.map);;Wszystkie pliki (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Nie udało się wczytać symboli: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Zresetuj układ</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11167,12 +11474,12 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         </translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Błędny adres. Powinien być zapisany szesnastkowo (0x12345678 lub 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Nieprawidłowa wartość. Musi być szesnastkowa (0x12345678 lub 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Nieprawidłowy adres. Podaj nazwę symbolu lub liczbę szesnastkową (0x12345678 lub 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11234,28 +11541,20 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <translation>Przesunięcie końcowej linii obrazu</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Maksymalna liczba taktów wycinka DMA</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> cykli</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>Takty zatrzymania DMA</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Maksymalna liczba cykli na odcinek DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>Rozmiar GPU FIFO</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>Cykle zatrzymania DMA</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> słów</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>Maksymalne wyprzedzenie GPU</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Maksymalna liczba cykli wyprzedzenia GPU</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11538,14 +11837,6 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Przewijanie do tyłu</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> klatek</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Użyj renderera programowego (tryb niskiego zużycia VRAM)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>Wyprzedzanie:</translation>
     </message>
@@ -11678,48 +11969,32 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Przewijanie do tyłu</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Włącz przewijanie do tyłu:&lt;/b&gt; Okresowo zapisuje stan, umożliwiając cofnięcie pomyłek podczas gry.&lt;br&gt; &lt;b&gt;Częstotliwość zapisów przewijania do tyłu:&lt;/b&gt; Określa, jak często tworzony będzie stan przewijania do tyłu. Częstsze zapisy zwiększają wymagania sprzętowe.&lt;br&gt; &lt;b&gt;Wielkość bufora przewijania:&lt;/b&gt; Liczba zapisów przechowywanych na potrzeby przewijania do tyłu. Większe wartości zwiększają zapotrzebowanie na pamięć.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Używa renderera programowego podczas tworzenia stanów przewijania do tyłu, aby uniknąć dodatkowego zużycia VRAM. Szczególnie przydatne przy zwiększaniu rozdzielczości, ponieważ znacznie zmniejsza wymagania sprzętowe przewijania do tyłu.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Przewijanie do tyłu o %n klatkę, obejmujące %1 s, będzie wymagać %2MB RAM i %3MB VRAM.</numerusform>
-            <numerusform>Przewijanie do tyłu o %n klatki, obejmujące %1 s, będzie wymagać %2MB RAM i %3MB VRAM.</numerusform>
-            <numerusform>Przewijanie do tyłu o %n klatek, obejmujące %1 s, będzie wymagać %2MB RAM i %3MB VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Przewijanie do tyłu o %n klatkę, obejmujące %1 s, będzie wymagać %2MB RAM.</numerusform>
-            <numerusform>Przewijanie do tyłu o %n klatki, obejmujące %1 s, będzie wymagać %2MB RAM.</numerusform>
-            <numerusform>Przewijanie do tyłu o %n klatek, obejmujące %1 s, będzie wymagać %2MB RAM.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Przewijanie do tyłu jest wyłączone, ponieważ włączono wyprzedzanie klatek. Wyprzedzanie klatek znacznie zwiększa wymagania sprzętowe.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Okresowo zapisuje stan, dzięki czemu można cofnąć wszelkie błędy podczas rozgrywki.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Częstotliwość zapisu przewijania wstecz</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Określa, jak często tworzony będzie stan przewijania do tyłu. Częstsze zapisy zwiększają wymagania sprzętowe.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Rozmiar bufora przewijania wstecz</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Ilość pamięci zarezerwowanej na stany przewijania do tyłu. Określa, jak daleko można przewinąć do tyłu.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>Bufor przewijania do tyłu o wielkości %1MB mieści następującą liczbę stanów: %n, umożliwiając przewinięcie do tyłu o maksymalnie %2 s.</translation>
+        <translation>
+            <numerusform>Bufor przewijania wstecz o rozmiarze %1MB mieści %n stan i pozwala cofnąć grę o maksymalnie %2 s.</numerusform>
+            <numerusform>Bufor przewijania wstecz o rozmiarze %1MB mieści %n stany i pozwala cofnąć grę o maksymalnie %2 s.</numerusform>
+            <numerusform>Bufor przewijania wstecz o rozmiarze %1MB mieści %n stanów i pozwala cofnąć grę o maksymalnie %2 s.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11899,6 +12174,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     <message>
         <source>9x (for 4K)</source>
         <translation>9x (dla 4K)</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Bufor przewijania wstecz o rozmiarze {0} MB: liczba stanów — {1}, możliwość cofnięcia gry o maksymalnie {2:.2f} s.</translation>
     </message>
     <message>
         <source>About</source>
@@ -12660,10 +12939,6 @@ Błąd:</translation>
         <translation>${title}: Tytuł gry.</translation>
     </message>
     <message>
-        <source>%d Frames</source>
-        <translation>Liczba klatek: %d</translation>
-    </message>
-    <message>
         <source>%d ms</source>
         <translation>%d ms</translation>
     </message>
@@ -12826,10 +13101,6 @@ Błąd:</translation>
     <message>
         <source>Graphics Settings</source>
         <translation>Ustawienia graficzne</translation>
-    </message>
-    <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Liczba zapisów przechowywanych na potrzeby przewijania do tyłu. Większe wartości zwiększają zapotrzebowanie na pamięć.</translation>
     </message>
     <message>
         <source>Installed RAM</source>
@@ -13207,22 +13478,6 @@ Błąd:</translation>
     <message>
         <source>Restore Defaults</source>
         <translation>Przywróć domyślne</translation>
-    </message>
-    <message>
-        <source>Rewind Save Slots</source>
-        <translation>Liczba zapisów przewijania do tyłu</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Przewijanie do tyłu obejmujące {0} klatek ({1:.2f} s) będzie wymagać {2} MB RAM i {3} MB VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Przewijanie do tyłu obejmujące {0} klatek ({1:.2f} s) będzie wymagać {2} MB RAM.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Przewijanie do tyłu jest wyłączone, ponieważ włączono wyprzedzanie klatek. Wyprzedzanie klatek znacznie zwiększa wymagania sprzętowe.</translation>
     </message>
     <message>
         <source>Right: </source>
@@ -13645,10 +13900,6 @@ Błąd:</translation>
         <translation>Używaj osobnych ustawień płyt</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Użyj renderera programowego (tryb niskiego zużycia VRAM)</translation>
-    </message>
-    <message>
         <source>Use This Directory</source>
         <translation>Użyj tego katalogu</translation>
     </message>
@@ -13687,10 +13938,6 @@ Błąd:</translation>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Używa osobnych ustawień gry dla każdej płyty w grach wielopłytowych. Można je ustawić tylko dla pierwszej/głównej płyty.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Używa renderera programowego podczas tworzenia stanów przewijania do tyłu, aby uniknąć dodatkowego zużycia VRAM. Szczególnie przydatne przy zwiększaniu rozdzielczości.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
@@ -16646,10 +16893,6 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Cykle maks. przyspieszenia odczytu CD-ROM</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>Rozmiar GPU FIFO</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>Maksymalne wyprzedzenie GPU</translation>
     </message>
@@ -16830,6 +17073,11 @@ Czy na pewno chcesz kontynuować?</translation>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Brak</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Automatycznie</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22391,10 +22639,6 @@ Błąd: {1}</translation>
         <translation>Włączono kontrolę szybkości zegara procesora ({:.3f} MHz).</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Przewijanie do tyłu jest wyłączone, gdy włączone jest wyprzedzanie klatek.</translation>
-    </message>
-    <message>
         <source>CPU clock speed control disabled ({:.3f} MHz).</source>
         <translation>Wyłączono kontrolę szybkości zegara procesora ({:.3f} MHz).</translation>
     </message>
@@ -22417,6 +22661,10 @@ Błąd: {1}</translation>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Przewijanie do tyłu jest wyłączone, gdy włączony jest tryb bezpieczny.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Nie udało się przydzielić pamięci na stany przewijania wstecz.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25908,14 +26156,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 Do działania DuckStation wymaga BIOS-u PS1 lub PS2.
 
 Ze względów prawnych musisz uzyskać BIOS z posiadanej przez siebie konsoli PS1/PS2 (pożyczenie się nie liczy).</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Przewijanie do tyłu zostało wyłączone.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Przewijania do tyłu i wyprzedzania klatek nie można używać jednocześnie.</translation>
     </message>
 </context>
 <context>

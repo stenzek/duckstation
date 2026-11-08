@@ -102,7 +102,7 @@
     <message numerus="yes">
         <source>Synchronizing %n offline unlocks with the server.</source>
         <comment>Synchronizing Unlocks</comment>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Synchronizing %n offline unlock with the server.</numerusform>
             <numerusform>Synchronizing %n offline unlocks with the server.</numerusform>
         </translation>
@@ -167,6 +167,13 @@
 <context>
     <name>DebuggerWindow</name>
     <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Loaded %n symbol from %1.</numerusform>
+            <numerusform>Loaded %n symbols from %1.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>&amp;Nop %n Instruction(s)</source>
         <translation>
             <numerusform>&amp;Nop %n Instruction</numerusform>
@@ -199,17 +206,10 @@
 <context>
     <name>EmulationSettingsWidget</name>
     <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</numerusform>
-            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2MB of RAM.</numerusform>
-            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2MB of RAM.</numerusform>
+        <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
+	<translation>
+            <numerusform>A %1MB rewind buffer holds %n state, allowing you to rewind up to %2 second(s).</numerusform>
+            <numerusform>A %1MB rewind buffer holds %n states, allowing you to rewind up to %2 second(s).</numerusform>
         </translation>
     </message>
 </context>
@@ -234,7 +234,7 @@
     <message numerus="yes">
         <source>%n Frames</source>
         <comment>Subframe count</comment>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n Frame</numerusform>
             <numerusform>%n Frames</numerusform>
         </translation>

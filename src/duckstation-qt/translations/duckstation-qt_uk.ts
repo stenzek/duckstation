@@ -628,6 +628,10 @@ We will keep trying to submit this request.</source>
         <translation>Оновлення прогресу досягнень...</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Досягнення недоступні</translation>
+    </message>
+    <message>
         <source>Offline Mode</source>
         <translation>Автономний режим</translation>
     </message>
@@ -2184,11 +2188,6 @@ Current Binding: %s</source>
         <translation>Дозволяє натискати кілька основних кнопок контролера, проводячи пальцем по екрану.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Інший файл…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Поточний</translation>
@@ -2217,11 +2216,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Перевірка безпеки не пройдена</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Час створення токена</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3348,16 +3342,6 @@ Current Binding: %s</source>
         <translation>Приховує сенсорне керування через зазначений час. Нульова затримка вимикає приховування.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Прив&apos;язати до правого стіка</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Прив&apos;язує жести проведення по сенсорному екрану до правого стіка, якщо він є.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Додаткові налаштування</translation>
@@ -3711,6 +3695,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Автоматично зберігає поточний стан при закритті гри або виході із застосунку.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Запам&apos;ятовувати сторінку меню паузи</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Знову відкриває меню паузи на сторінці, на якій його було закрито, крім випадків, коли його закрила дія на кшталт завантаження стану.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4168,6 +4162,11 @@ Current Binding: %s</source>
         <translation>Екранні накладення</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Меню паузи</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Відображення гри</translation>
@@ -4213,9 +4212,29 @@ Current Binding: %s</source>
         <translation>Додаткові налаштування рендерингу</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Зі списку ігор</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>У теках з іграми не знайдено дисків.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Із файлу</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Вийняти диск</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Диски</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4477,6 +4496,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Завжди відображає поточний рядок Rich Presence RetroAchievements в області індикаторів.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Вхід виконано: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4538,6 +4562,26 @@ Current Binding: %s</source>
         <translation>Відображає поточний стан контролера системи в нижньому лівому кутку екрана.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Перемістити ліворуч</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Перемістити праворуч</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Перемістити вгору</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Перемістити вниз</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Це скине положення, розмір і видимість кожної кнопки для поточного вигляду й орієнтації. Бажаєте продовжити?</translation>
@@ -4551,6 +4595,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Змінити режим Multitap</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Мультитап: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Показувати сенсорний контролер</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Визначає, коли відображається сенсорний контролер.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Ніколи</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Без контролера</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Поза режимом Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Завжди</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5095,6 +5174,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Вибирає місце відображення екрана в портретній орієнтації.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Керувати правим стіком проведенням</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Проведення поза елементами керування рухає правий стік. Якщо ввімкнено плаваючий лівий стік, це працює лише в правій половині екрана.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Плаваючий лівий стік</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Дотик до лівої половини екрана розміщує лівий стік під пальцем, а не у фіксованому місці.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -6028,45 +6127,9 @@ Multi-track games in bin format require a cuesheet (.cue) to start.</source>
         <translation>Обкладинка для цієї гри вже існує, ви хочете замінити її?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation може автоматично завантажувати обкладинки для ігор, у яких їх ще немає. Ми не зберігаємо зображення обкладинок; користувач має самостійно вказати джерело зображень.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Залежно від законодавства вашої країни, обкладинки ігор можуть бути захищені авторським правом. Ви маєте право використовувати цей інструмент лише з вашими власними серверами та зображеннями.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>У полі нижче вкажіть URL-адреси для завантаження обкладинок, по одному шаблону URL на рядок. Доступні такі змінні:
-
-${title}: Назва гри.
-${savetitle}: Назва гри для збережень, включно із суфіксом регіону.
-${localizedtitle}: Локалізована назва гри її рідною мовою.
-${filetitle}: Назва файлу гри без розширення.
-${serial}: Серійний номер гри.
-
-Приклад: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL не містить ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} або ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>За замовчуванням завантажені обкладинки зберігатимуться під назвою гри. Якщо це небажано, нижче можна увімкнути «Використовувати серійні номери у назвах файлів». Використання серійних номерів замість назв ігор запобігає конфліктам, коли використовуються версії однієї гри для різних регіонів.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6474,6 +6537,44 @@ ${serial}: Серійний номер гри.
         <translation>Досягнення</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation може автоматично завантажувати обкладинки для ігор, яким їх ще не призначено. Залежно від законодавства вашої країни обкладинки ігор можуть бути захищені авторським правом. Цей інструмент дозволено використовувати лише з власними серверами та зображеннями. Ми їх не надаємо.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>URL обкладинок</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Укажіть адреси для завантаження обкладинок: по одному шаблону URL на рядок. Торкніться змінної нижче, щоб вставити її в позицію курсора.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Приклад: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Назва гри.
+${savetitle}: Назва гри для збереження, включно із суфіксом регіону.
+${localizedtitle}: Локалізована назва гри її рідною мовою.
+${filetitle}: Іменна частина назви файлу гри.
+${serial}: Серійний номер гри.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Зберігати обкладинки за серійним номером гри замість назви, щоб уникнути конфліктів під час використання кількох регіональних версій однієї гри.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Визначає тип емульованого обладнання.</translation>
@@ -6537,6 +6638,26 @@ ${serial}: Серійний номер гри.
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Вмикає додаткові 6 МБ ОЗП, щоб отримати загалом 2+6 = 8 МБ, як зазвичай на консолях для розробників.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Установлена ОЗП</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Розширена ОЗП може порушити роботу ігор, тому використовуйте її лише із сумісними модифікаціями.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Примусово відображати всю ОЗП</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Відображає всю встановлену ОЗП незалежно від конфігурації BIOS або гри.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6626,6 +6747,116 @@ ${serial}: Серійний номер гри.
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Каталоги</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Мова, тема, список ігор і поведінка</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Екранна індикація</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Тема, шрифти, повідомлення та накладання статистики</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Регіон, CPU та CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Швидкість, затримка, перемотування та збереження стану</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Рендерер, роздільна здатність, виведення зображення та знімки екрана</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Гучність і налаштування виведення звуку</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Ланцюжки шейдерів і накладання рамок</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>Обліковий запис RetroAchievements і сповіщення</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Типи й розташування карт пам&apos;яті</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Вибір і встановлення образів BIOS</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Місця зберігання даних</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Журналювання, налагодження та низькорівневі параметри</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Відомості про гру та перевірка</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Виправлення та покращення для цієї гри</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Чит-коди для цієї гри</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Розташування та вигляд екранного контролера</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Тип контролера та призначення кнопок</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Сполучення клавіш для дій емулятора</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Теки для пошуку ігор</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Шляхи, виключені зі списку ігор</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Ігри у власному сховищі застосунку</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10799,6 +11030,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Точки зупину</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Символи</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Вікно</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Дизасемблювання</translation>
     </message>
@@ -10869,6 +11108,22 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Pause/Continue</source>
         <translation>Пауза/Продовжити</translation>
+    </message>
+    <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Використовувати &amp;автоматичні символи</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Завантажити символи...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>&amp;Перезавантажити символи</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Вимкнути символи</translation>
     </message>
     <message>
         <source>Ctrl+T</source>
@@ -11019,14 +11274,6 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Адресу не вибрано.</translation>
     </message>
     <message>
-        <source>Enter code address:</source>
-        <translation>Введіть адресу коду:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Введіть адресу пам’яті:</translation>
-    </message>
-    <message>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Трасування розпочато у файл cpu_log.txt.
@@ -11096,6 +11343,26 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Debugger</source>
         <translation>Відладчик</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Із %1 завантажено %n символ.</numerusform>
+            <numerusform>Із %1 завантажено %n символи.</numerusform>
+            <numerusform>Із %1 завантажено %n символів.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Не вдалося завантажити символи з %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Введіть адресу коду або символ:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Введіть адресу пам&apos;яті або символ:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Не вдалося додати точку зупину для виходу з функції. Перевірте, чи ви перебуваєте у допустимій функції.</translation>
@@ -11119,6 +11386,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>View in &amp;Dump</source>
         <translation>Переглянути в &amp;дампі</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Перейти до &amp;коду</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Перейти до &amp;стека</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Копіювати &amp;назву символу</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Копіювати &amp;адресу</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Копіювати адресу &amp;кадру стека</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Копіювати</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11157,6 +11448,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Pattern found at 0x%1.</source>
         <translation>Шаблон виявлено за адресою 0x%1.</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>Завантажити символи</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Файли символів (*.elf *.map);;Усі файли (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Не вдалося завантажити символи: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Скинути розташування</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11166,12 +11473,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         </translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Неправильна адреса. Вона має бути у шістнадцятковому форматі (0x12345678 або 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Неприпустиме значення. Воно має бути шістнадцятковим (0x12345678 або 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Неприпустима адреса. Укажіть назву символу або шістнадцяткове число (0x12345678 або 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11217,28 +11524,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Зміщення кінця рядка відображення</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Максимальна кількість тактів DMA на фрагмент</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> циклів</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>Кількість тактів зупинки DMA</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Максимум тактів на зріз DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>ГП: Розмір FIFO</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>Такти зупинки DMA</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> слів</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>ГП: Максимальне випередження</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Максимум тактів випередження GPU</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11537,14 +11836,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Перемотування назад</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> кадрів</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Використовувати програмний рендерер (режим економії відеопам&apos;яті)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>Випередження (Runahead):</translation>
     </message>
@@ -11677,48 +11968,32 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Перемотування назад</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Увімкнути перемотування назад:&lt;/b&gt; періодично зберігає стан, щоб ви могли перемотати назад і виправити помилки під час гри.&lt;br&gt; &lt;b&gt;Частота точок перемотування:&lt;/b&gt; як часто створюватиметься стан для перемотування назад. Вища частота збільшує системні вимоги.&lt;br&gt; &lt;b&gt;Розмір буфера перемотування:&lt;/b&gt; кількість збережень, які зберігатимуться для перемотування назад. Вищі значення збільшують вимоги до обсягу пам&apos;яті.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Використовує програмний рендерер під час створення станів перемотування назад, щоб уникнути додаткового використання відеопам&apos;яті. Особливо корисно при підвищенні роздільної здатності, оскільки значно зменшує системні вимоги для перемотування назад.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Для перемотування назад на %n кадр тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті та %3 МБ відеопам&apos;яті.</numerusform>
-            <numerusform>Для перемотування назад на %n кадри тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті та %3 МБ відеопам&apos;яті.</numerusform>
-            <numerusform>Для перемотування назад на %n кадрів тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті та %3 МБ відеопам&apos;яті.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Для перемотування назад на %n кадр тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті.</numerusform>
-            <numerusform>Для перемотування назад на %n кадри тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті.</numerusform>
-            <numerusform>Для перемотування назад на %n кадрів тривалістю %1 с потрібно %2 МБ оперативної пам&apos;яті.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Перемотування назад вимкнено, оскільки ввімкнено випередження. Випередження значно збільшує системні вимоги.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Періодично зберігає стан, щоб ви могли перемотати назад і виправити помилки під час гри.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Частота збереження для перемотування</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Як часто створюватиметься стан перемотування назад. Вищі частоти висувають більші вимоги до системи.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Розмір буфера перемотування</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Обсяг пам&apos;яті, зарезервований для станів перемотування назад. Визначає, наскільки далеко можна перемотати назад.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>Буфер перемотування розміром %1 МБ вміщує стани в кількості %n, що дає змогу перемотати назад до %2 с.</translation>
+        <translation>
+            <numerusform>Буфер перемотування обсягом %1МБ вміщує %n стан і дозволяє перемотувати назад на час до %2 с.</numerusform>
+            <numerusform>Буфер перемотування обсягом %1МБ вміщує %n стани й дозволяє перемотувати назад на час до %2 с.</numerusform>
+            <numerusform>Буфер перемотування обсягом %1МБ вміщує %n станів і дозволяє перемотувати назад на час до %2 с.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -13714,10 +13989,6 @@ Do you want to {1} anyway?</source>
         <translation>%.2f секунд</translation>
     </message>
     <message>
-        <source>%d Frames</source>
-        <translation>Кадрів: %d</translation>
-    </message>
-    <message>
         <source>%d cycles</source>
         <translation>%d циклів</translation>
     </message>
@@ -13748,6 +14019,10 @@ Do you want to delete the save state and boot the game anyway?</source>
 {}
 
 Бажаєте видалити цей збережений стан та все одно запустити гру?</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Буфер перемотування обсягом {0} МБ: кількість станів — {1}, час перемотування назад — до {2:.2f} с.</translation>
     </message>
     <message>
         <source>AMOLED</source>
@@ -14200,10 +14475,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Приховує вказівник/курсор миші, коли емулятор перебуває у повноекранному режимі.</translation>
-    </message>
-    <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Кількість збережень, які зберігатимуться для перемотування назад. Вищі значення збільшують вимоги до обсягу пам&apos;яті.</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -15006,22 +15277,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Частота збереження перемотування назад</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>Комірки збереження для перемотування назад</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Для перемотування назад на {0} кадрів тривалістю {1:.2f} с потрібно {2} МБ оперативної пам&apos;яті та {3} МБ відеопам&apos;яті.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Для перемотування назад на {0} кадрів тривалістю {1:.2f} с потрібно {2} МБ оперативної пам&apos;яті.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Перемотування назад вимкнено, оскільки ввімкнено випередження. Випередження значно збільшує системні вимоги.</translation>
-    </message>
-    <message>
         <source>Round Upscaled Texture Coordinates</source>
         <translation>Округлення масштабованих текстурних координат</translation>
     </message>
@@ -15558,10 +15813,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Використовувати окремі налаштування диска</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Використовувати програмний рендерер (режим економії відеопам&apos;яті)</translation>
-    </message>
-    <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Використовувати програмний рендерер для зворотного зчитування</translation>
     </message>
@@ -15600,10 +15851,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Використання окремих налаштувань гри в багатодискових іграх для кожного диска. Можна встановити лише на перший/основний диск.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Використовує програмний рендерер під час створення станів перемотування назад, щоб уникнути додаткового використання відеопам&apos;яті. Особливо корисно при підвищенні роздільної здатності.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
@@ -16670,10 +16917,6 @@ Are you sure you want to continue?</source>
         <translation>Кількість циклів при максимальному прискоренні читання дисководу</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>ГП: Розмір черги</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>ГП: Максимальне випередження</translation>
     </message>
@@ -16818,6 +17061,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Немає</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Автоматично</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22395,6 +22643,10 @@ Error: {1}</source>
         <translation>Перемотування назад не увімкнено.</translation>
     </message>
     <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Не вдалося виділити пам&apos;ять для станів перемотування.</translation>
+    </message>
+    <message>
         <source>CPU clock speed control enabled ({:.3f} MHz).</source>
         <translation>Увімкнено керування тактовою частотою процесора ({:.3f} МГц).</translation>
     </message>
@@ -22441,10 +22693,6 @@ Error: {1}</source>
     <message>
         <source>Volume: Muted</source>
         <translation>Гучність: без звуку</translation>
-    </message>
-    <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Перемотування назад вимкнено, поки ввімкнено випередження.</translation>
     </message>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
@@ -25900,14 +26148,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 Для роботи DuckStation потрібен BIOS PS1 або PS2.
 
 З юридичних причин ви маєте отримати BIOS із фактичного пристрою PS1/PS2, яким володієте (позичений не підходить).</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Перемотування назад вимкнено.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Перемотування назад і випередження не можна використовувати одночасно.</translation>
     </message>
 </context>
 <context>

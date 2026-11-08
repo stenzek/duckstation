@@ -714,6 +714,10 @@ Uleste meldinger: {}</translation>
         <translation>Oppdatering av all fremdrift mislyktes</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Prestasjoner utilgjengelige</translation>
+    </message>
+    <message>
         <source>Rewinding</source>
         <translation>Tilbakespoling</translation>
     </message>
@@ -2651,11 +2655,6 @@ Gjeldende tilordning: %s</translation>
         <translation>Lar deg trykke på flere frontknapper på kontrolleren ved å dra fingeren over skjermen.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Annen fil…</translation>
-    </message>
-    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Ta ut plate</translation>
@@ -2919,11 +2918,6 @@ Gjeldende tilordning: %s</translation>
         <source>Always displays the current RetroAchievements rich presence string in the indicator area.</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Viser alltid den gjeldende teksten for detaljert aktivitetsstatus fra RetroAchievements i indikatorområdet.</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Tidspunkt for opprettelse av token</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3537,6 +3531,16 @@ Gjeldende tilordning: %s</translation>
         <translation>ADVARSEL: Spillet lagrer fortsatt til et minnekort. Hvis du fortsetter nå, kan data bli ødelagt. Vi anbefaler at du gjenopptar spillet og venter i 5 sekunder før du prøver igjen.</translation>
     </message>
     <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Husk side i pausemenyen</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Åpner pausemenyen igjen på siden den ble lukket fra, med mindre en handling som lasting av en tilstand lukket den.</translation>
+    </message>
+    <message>
         <source>Menu Volume</source>
         <comment>settings_menu_volume</comment>
         <translation>Menyvolum</translation>
@@ -3545,6 +3549,31 @@ Gjeldende tilordning: %s</translation>
         <source>Controls the volume of sound effects played by the Big Picture UI and achievement notifications.</source>
         <comment>settings_summary_menu_volume</comment>
         <translation>Styrer volumet på lydeffekter fra Big Picture-grensesnittet og prestasjonsvarsler.</translation>
+    </message>
+    <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Pausemeny</translation>
+    </message>
+    <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Fra spillisten</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>Fant ingen plater i spillmappene dine.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Fra fil</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Plater</translation>
     </message>
     <message>
         <source>Do you want to close the game anyway?</source>
@@ -3572,6 +3601,11 @@ Gjeldende tilordning: %s</translation>
         <translation>Vil du bytte plate likevel?</translation>
     </message>
     <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Innlogget siden %s</translation>
+    </message>
+    <message>
         <source>Skip</source>
         <comment>controller_binding_skip</comment>
         <translation>Hopp over</translation>
@@ -3597,9 +3631,64 @@ Gjeldende tilordning: %s</translation>
         <translation>Aktiver sensortilordning</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Flytt til venstre</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Flytt til høyre</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Flytt opp</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Flytt ned</translation>
+    </message>
+    <message>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Endre multitapmodus</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Vis berøringskontroller</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Velger når berøringskontrolleren vises.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Aldri</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Uten kontroller</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Utenfor Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Alltid</translation>
     </message>
     <message>
         <source>Rewind Here</source>
@@ -4729,16 +4818,6 @@ Du kan endre dette senere med «Start i Big Picture-modus» i grensesnittinnstil
         <source>Hides touch controls after the specified time. A delay of zero will not hide the controls.</source>
         <comment>settings_summary_touchscreen_auto_hide_time</comment>
         <translation>Skjuler berøringskontrollene etter angitt tid. En forsinkelse på null gjør at kontrollene ikke skjules.</translation>
-    </message>
-    <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Tilordne til høyre spak</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Tilordner sveipebevegelser på berøringsskjermen til høyre spak, hvis den finnes.</translation>
     </message>
     <message>
         <source>Advanced Settings</source>
@@ -6112,37 +6191,6 @@ Spill med flere spor i bin-format krever et CUE-ark (.cue) for å starte.</trans
         <translation>Kan ikke opprette snarvei. Kontroller at appstarteren støtter dette.</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation kan automatisk laste ned omslagsbilder til spill som ikke har et omslagsbilde. Vi lagrer ingen omslagsbilder på våre servere. Brukeren må oppgi en egen bildekilde.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Avhengig av lovgivningen der du er, kan spillomslag være beskyttet av opphavsrett. Du har bare tillatelse til å bruke dette verktøyet med dine egne servere og bilder.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>Angi nettadressene for nedlasting av omslagsbilder i feltet nedenfor, med én maladresse per linje. Følgende variabler er tilgjengelige:
-
-${title}: Spillets tittel.
-${savetitle}: Spillets lagringstittel, inkludert regionsuffikset.
-${localizedtitle}: Spillets lokaliserte tittel på originalspråket.
-${filetitle}: Navnedelen av spillets filnavn.
-${serial}: Spillets serienummer.
-
-Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>Download</source>
         <comment>game_list_download_covers_start</comment>
         <translation>Last ned</translation>
@@ -6153,9 +6201,62 @@ Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <translation>Nettadressen inneholder ikke ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} eller ${serial}.</translation>
     </message>
     <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Sveip for høyre spak</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Sveiping utenfor kontrollene beveger høyre spak. Når Flytende venstre spak er på, gjelder dette bare høyre halvdel av skjermen.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Flytende venstre spak</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Berøring av venstre halvdel av skjermen plasserer venstre spak under fingeren din i stedet for på en fast plass.</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation kan automatisk laste ned omslag til spill som ikke har et omslag fra før. Avhengig av lovgivningen der du bor, kan spillomslag være opphavsrettslig beskyttet. Du har bare tillatelse til å bruke dette verktøyet med dine egne servere og bilder. Vi tilbyr ingen av delene.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>Omslagsadresser</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Angi nettadressene omslag skal lastes ned fra, med én adressemal per linje. Trykk på en variabel nedenfor for å sette den inn ved markøren.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Spillets tittel.
+${savetitle}: Spillets lagringstittel, inkludert regionsuffikset.
+${localizedtitle}: Spillets lokaliserte tittel på originalspråket.
+${filetitle}: Navnedelen av spillets filnavn.
+${serial}: Spillets serienummer.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
         <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Som standard lagres nedlastede omslagsbilder med spillets tittel. Hvis du ikke ønsker dette, kan du aktivere «Bruk serienummer som filnavn» nedenfor. Serienumre i stedet for spilltitler hindrer konflikter når flere regionale utgaver av samme spill brukes.</translation>
+        <translation>Lagre omslag med spillets serienummer i stedet for tittelen for å unngå konflikter når flere regionversjoner av samme spill brukes.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6693,6 +6794,26 @@ Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <translation>Aktiverer 6 MB ekstra RAM for å få totalt 2+6 = 8 MB, som vanligvis finnes på utviklingskonsoller.</translation>
     </message>
     <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Installert RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Utvidet RAM kan føre til at spill slutter å virke. Bruk det derfor bare med kompatible modifikasjoner.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Tving full RAM-kartlegging</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Kartlegger alt installert RAM uavhengig av BIOS- eller spillkonfigurasjonen.</translation>
+    </message>
+    <message>
         <source>Preload Images to RAM</source>
         <comment>settings_load_image_to_ram</comment>
         <translation>Forhåndslast plateavbildninger i RAM</translation>
@@ -6790,6 +6911,116 @@ Eksempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transl
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Mapper</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Språk, tema, spilliste og oppførsel</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Skjermvisning</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Tema, skrifter, meldinger og statistikkoverlegg</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Region, CPU og CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Hastighet, forsinkelse, tilbakespoling og lagringstilstander</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Gjengiver, oppløsning, visning og skjermbilder</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Volum og lydutgangsoppsett</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Skyggeleggerkjeder og rammeoverlegg</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements-konto og varsler</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Minnekorttyper og plasseringer</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Valg og installasjon av BIOS-avbildninger</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Plasseringer for datalagring</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Logging, feilsøking og lavnivåalternativer</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Spilldetaljer og verifisering</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Rettelser og forbedringer for dette spillet</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Juksekoder for dette spillet</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Oppsett og utseende for skjermkontrolleren</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Kontrollertype og knappetilordninger</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Snarveier for emulatorhandlinger</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Mapper som gjennomsøkes etter spill</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Stier som utelates fra spillisten</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Spill lagret i appens eget lagringsområde</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10762,6 +10993,14 @@ Denne filen er omtrent 206 kB. Vil du laste den ned nå?</translation>
         <translation>Stoppunkter</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Symboler</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Vindu</translation>
+    </message>
+    <message>
         <source>Toolbar</source>
         <translation>Verktøylinje</translation>
     </message>
@@ -10882,6 +11121,22 @@ Denne filen er omtrent 206 kB. Vil du laste den ned nå?</translation>
         <translation>F9</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Bruk &amp;automatiske symboler</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Last inn symboler...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>Last inn symboler på &amp;nytt</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Deaktiver symboler</translation>
+    </message>
+    <message>
         <source>&amp;Close</source>
         <translation>&amp;Lukk</translation>
     </message>
@@ -10978,20 +11233,27 @@ Denne filen er omtrent 206 kB. Vil du laste den ned nå?</translation>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Ugyldig adresse. Den må være heksadesimal (0x12345678 eller 12345678)</translation>
-    </message>
-    <message>
         <source>No address selected.</source>
         <translation>Ingen adresse valgt.</translation>
     </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Angi kodeadresse:</translation>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Lastet inn %n symbol fra %1.</numerusform>
+            <numerusform>Lastet inn %n symboler fra %1.</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Enter memory address:</source>
-        <translation>Angi minneadresse:</translation>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Kunne ikke laste inn symboler fra %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Skriv inn kodeadresse eller symbol:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Skriv inn minneadresse eller symbol:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11040,6 +11302,30 @@ Denne filen kan bli flere gigabyte stor, så vær oppmerksom på SSD-slitasje.</
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>&amp;Følg lasting/lagring</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Gå til &amp;kode</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Gå til &amp;stakk</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Kopier symbol&amp;navn</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Kopier &amp;adresse</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Kopier &amp;rammeadresse</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Kopier</translation>
     </message>
     <message>
         <source>Modify Register</source>
@@ -11114,6 +11400,22 @@ Denne filen kan bli flere gigabyte stor, så vær oppmerksom på SSD-slitasje.</
         <translation>Fant mønsteret på 0x%1.</translation>
     </message>
     <message>
+        <source>Load Symbols</source>
+        <translation>Last inn symboler</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Symbolfiler (*.elf *.map);;Alle filer (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Kunne ikke laste inn symboler: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Tilbakestill oppsett</translation>
+    </message>
+    <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>Kunne ikke legge til stoppunkt. Det finnes kanskje allerede et stoppunkt på denne adressen.</translation>
     </message>
@@ -11131,6 +11433,10 @@ Denne filen kan bli flere gigabyte stor, så vær oppmerksom på SSD-slitasje.</
     <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Ugyldig verdi. Den må være heksadesimal (0x12345678 eller 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Ugyldig adresse. Den må være et symbolnavn eller et heksadesimalt tall (0x12345678 eller 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11192,28 +11498,20 @@ Denne filen kan bli flere gigabyte stor, så vær oppmerksom på SSD-slitasje.</
         <translation>Sluttforskyvning for visningslinjer</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Maksimalt antall klokkeslag per DMA-tidsluke</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> sykluser</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>Klokkeslag for DMA-stans</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Maksimalt antall sykluser per DMA-tidsluke</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO-størrelse</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA-stanssykluser</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> ord</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>Maksimal GPU-forhåndskjøring</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Maksimalt antall GPU-forsprangssykluser</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11484,10 +11782,6 @@ Klikk på Tilbakestill for å gjenopprette serienummeret som ble lest fra platea
         <translation>Lagringsfrekvens for tilbakespoling:</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> bilder</translation>
-    </message>
-    <message>
         <source>Rewind Buffer Size:</source>
         <translation>Bufferstørrelse for tilbakespoling:</translation>
     </message>
@@ -11498,10 +11792,6 @@ Klikk på Tilbakestill for å gjenopprette serienummeret som ble lest fra platea
     <message>
         <source>Enable Rewinding</source>
         <translation>Aktiver tilbakespoling</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Bruk programvaregjengivelse (modus med lite VRAM)</translation>
     </message>
     <message>
         <source>Runahead</source>
@@ -11648,38 +11938,12 @@ Klikk på Tilbakestill for å gjenopprette serienummeret som ble lest fra platea
         <translation>Tilbakespoling</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Aktiver tilbakespoling:&lt;/b&gt; Lagrer tilstanden med jevne mellomrom slik at du kan spole tilbake feil under spillingen.&lt;br&gt; &lt;b&gt;Lagringsfrekvens for tilbakespoling:&lt;/b&gt; Hvor ofte en tilbakespolingstilstand opprettes. Høyere frekvenser krever mer av systemet.&lt;br&gt; &lt;b&gt;Bufferstørrelse for tilbakespoling:&lt;/b&gt; Hvor mange lagringstilstander som beholdes for tilbakespoling. Høyere verdier krever mer minne.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Bruker programvaregjengivelse når tilbakespolingstilstander opprettes for å unngå ekstra VRAM-bruk. Spesielt nyttig ved oppskalering, siden det reduserer systemkravene for tilbakespoling betydelig.</translation>
-    </message>
-    <message>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Simulerer systemet på forskudd og ruller tilbake/spiller av på nytt for å redusere inndataforsinkelse. Svært høye systemkrav.</translation>
     </message>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>Aktiverer forhåndskjøring når analoge inndata endres, noe som øker systemkravene betydelig.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Tilbakespoling i %n bilde, som varer i %1 sekund(er), krever %2 MB RAM og %3 MB VRAM.</numerusform>
-            <numerusform>Tilbakespoling i %n bilder, som varer i %1 sekund(er), krever %2 MB RAM og %3 MB VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Tilbakespoling i %n bilde, som varer i %1 sekund(er), krever %2 MB RAM.</numerusform>
-            <numerusform>Tilbakespoling i %n bilder, som varer i %1 sekund(er), krever %2 MB RAM.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Tilbakespoling er deaktivert fordi forhåndskjøring er aktivert. Forhåndskjøring øker systemkravene betydelig.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -11694,16 +11958,27 @@ Klikk på Tilbakestill for å gjenopprette serienummeret som ble lest fra platea
         <translation>Lagrer tilstanden med jevne mellomrom slik at du kan spole tilbake feil under spillingen.</translation>
     </message>
     <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Lagringsfrekvens for tilbakespoling</translation>
+    </message>
+    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Hvor ofte en tilbakespolingstilstand opprettes. Høyere frekvenser krever mer av systemet.</translation>
+    </message>
+    <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Bufferstørrelse for tilbakespoling</translation>
     </message>
     <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Hvor mye minne som reserveres til tilbakespolingstilstander. Avgjør hvor langt tilbake du kan spole.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>En tilbakespolingsbuffer på %1 MB rommer %n tilstand(er), slik at du kan spole tilbake opptil %2 sekund(er).</translation>
+        <translation>
+            <numerusform>En tilbakespolingsbuffer på %1MB rommer %n tilstand og lar deg spole tilbake opptil %2 sekund(er).</numerusform>
+            <numerusform>En tilbakespolingsbuffer på %1MB rommer %n tilstander og lar deg spole tilbake opptil %2 sekund(er).</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11787,10 +12062,6 @@ Klikk på Tilbakestill for å gjenopprette serienummeret som ble lest fra platea
     <message>
         <source>%.2f Seconds</source>
         <translation>%.2f sekunder</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d bilder</translation>
     </message>
     <message>
         <source>%d cycles</source>
@@ -11971,6 +12242,10 @@ Do you want to delete the save state and boot the game anyway?</source>
 {}
 
 Vil du slette lagringstilstanden og starte spillet likevel?</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>En tilbakespolingsbuffer på {0} MB: antall tilstander — {1}, opptil {2:.2f} sekunder med tilbakespoling.</translation>
     </message>
     <message>
         <source>AMOLED</source>
@@ -13507,10 +13782,6 @@ Feilen var:</translation>
         <translation>Hurtigtaster</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Hvor mange lagringstilstander som beholdes for tilbakespoling. Høyere verdier krever mer minne.</translation>
-    </message>
-    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Hvor ofte en tilbakespolingstilstand opprettes. Høyere frekvenser krever mer av systemet.</translation>
     </message>
@@ -14479,22 +14750,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Lagringsfrekvens for tilbakespoling</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>Lagringsplasser for tilbakespoling</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Tilbakespoling i {0} bilder, som varer i {1:.2f} sekunder, krever {2} MB RAM og {3} MB VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Tilbakespoling i {0} bilder, som varer i {1:.2f} sekunder, krever {2} MB RAM.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Tilbakespoling er deaktivert fordi forhåndskjøring er aktivert. Forhåndskjøring øker systemkravene betydelig.</translation>
-    </message>
-    <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Tilbakespoling er ikke aktivert. Vær oppmerksom på at aktivering av tilbakespoling kan øke systemkravene betydelig.</translation>
     </message>
@@ -15427,10 +15682,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Bruk ett kort for spill med flere plater</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Bruk programvaregjengivelse (modus med lite VRAM)</translation>
-    </message>
-    <message>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Bruk programvaregjengivelse for tilbakelesing</translation>
     </message>
@@ -15493,10 +15744,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Bruker separate spillinnstillinger for hver plate i spill med flere plater. Kan bare angis på den første/hovedplaten.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Bruker programvaregjengivelse når tilbakespolingstilstander opprettes for å unngå ekstra VRAM-bruk. Spesielt nyttig ved oppskalering.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
@@ -16595,10 +16842,6 @@ Er du sikker på at du vil fortsette?</translation>
         <translation>Maksimalt antall sykluser for CD-ROM-leseakselerasjon</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO-størrelse</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>Maksimal GPU-forhåndskjøring</translation>
     </message>
@@ -16775,6 +17018,11 @@ Er du sikker på at du vil fortsette?</translation>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Automatisk</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22304,12 +22552,12 @@ Feil: {1}</translation>
         <translation>Forhåndsbufring av CD-avbildningen mislyktes. Den kan være upålitelig.</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Tilbakespoling er deaktivert mens forhåndskjøring er aktivert.</translation>
-    </message>
-    <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>Tilbakespoling er deaktivert mens sikker modus er aktivert.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Kunne ikke tildele minne til tilbakespolingstilstander.</translation>
     </message>
     <message>
         <source>Rewinding is not enabled.</source>
@@ -25368,14 +25616,6 @@ Av juridiske grunner må du hente en BIOS fra en faktisk PS1-/PS2-enhet du eier 
     <message>
         <source>Startup was cancelled.</source>
         <translation>Oppstarten ble avbrutt.</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Tilbakespoling er deaktivert.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Tilbakespoling og forhåndskjøring kan ikke brukes samtidig.</translation>
     </message>
     <message>
         <source>CPU Overclock</source>

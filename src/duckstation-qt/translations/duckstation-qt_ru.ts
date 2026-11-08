@@ -632,6 +632,10 @@ We will keep trying to submit this request.</source>
         <translation>Обновляется прогресс достижений...</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>Достижения недоступны</translation>
+    </message>
+    <message>
         <source>Offline Mode</source>
         <translation>Автономный режим</translation>
     </message>
@@ -2200,11 +2204,6 @@ Current Binding: %s</source>
         <translation>Позволяет нажимать несколько лицевых кнопок контроллера, проводя пальцем по экрану.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Другой файл…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Текущий</translation>
@@ -2233,11 +2232,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Проверка безопасности не пройдена</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Время создания токена</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3364,16 +3358,6 @@ Current Binding: %s</source>
         <translation>Скрывает сенсорные элементы управления через указанное время. При нулевой задержке элементы управления не скрываются.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Привязать к правому стику</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Привязывает жесты смахивания по сенсорному экрану к правому стику, если он есть.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Расширенные настройки</translation>
@@ -3727,6 +3711,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Автоматически сохраняет текущее состояние при закрытии игры или выходе из приложения.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Запоминать страницу меню паузы</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Повторно открывает меню паузы на странице, на которой оно было закрыто, кроме случаев, когда его закрыло действие, например загрузка состояния.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4184,6 +4178,11 @@ Current Binding: %s</source>
         <translation>Экранные наложения</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Меню паузы</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Отображение игры</translation>
@@ -4229,9 +4228,29 @@ Current Binding: %s</source>
         <translation>Расширенные настройки отрисовки</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Из списка игр</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>В папках с играми не найдены диски.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Из файла</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Извлечь диск</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Диски</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4493,6 +4512,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Всегда отображает текущую строку Rich Presence RetroAchievements в области индикаторов.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Вход выполнен: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4554,6 +4578,26 @@ Current Binding: %s</source>
         <translation>Показывает текущее состояние контроллера системы в левом нижнем углу экрана.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Переместить влево</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Переместить вправо</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Переместить вверх</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Переместить вниз</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Будут сброшены положение, размер и видимость всех кнопок в этом представлении и ориентации экрана. Хотите продолжить?</translation>
@@ -4567,6 +4611,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Изменить режим Multitap</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Мультитап: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Показывать сенсорный контроллер</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Определяет, когда отображается сенсорный контроллер.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Никогда</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Без контроллера</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Вне режима Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Всегда</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5111,6 +5190,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Выбор положения изображения в книжной ориентации.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Управлять правым стиком смахиванием</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Смахивание вне элементов управления перемещает правый стик. Если включён плавающий левый стик, это работает только в правой половине экрана.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Плавающий левый стик</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>При касании левой половины экрана левый стик размещается под пальцем, а не в фиксированном положении.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -6044,45 +6143,9 @@ Multi-track games in bin format require a cuesheet (.cue) to start.</source>
         <translation>Изображение обложки для этой игры уже существует. Хотите заменить его?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation может автоматически загружать обложки для игр, у которых ещё не задана обложка. Мы не храним изображения обложек, поэтому пользователь должен предоставить собственный источник изображений.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>В зависимости от законодательства вашей страны обложки игр могут быть защищены авторским правом. Вы имеете право использовать данный инструмент только с вашими собственными серверами и изображениями.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>В поле ниже укажите URL для загрузки обложек: один шаблон URL на строку. Доступны следующие переменные:
-
-${title}: Название игры.
-${savetitle}: Название игры для сохранений, включая суффикс региона.
-${localizedtitle}: Локализованное название игры на её родном языке.
-${filetitle}: Имя файла игры без расширения.
-${serial}: Серийный номер игры.
-
-Пример: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL не содержит ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} или ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>По умолчанию загруженные обложки сохраняются под названием игры. Если это не подходит, ниже можно включить параметр «Использовать серийные имена файлов». Использование серийных номеров вместо названий игр предотвратит конфликты между версиями одной игры для разных регионов.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6490,6 +6553,44 @@ ${serial}: Серийный номер игры.
         <translation>Достижения</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation может автоматически загружать обложки для игр, которым они ещё не назначены. В зависимости от законодательства вашей страны обложки игр могут охраняться авторским правом. Этот инструмент разрешено использовать только с вашими собственными серверами и изображениями. Мы их не предоставляем.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>URL обложек</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Укажите адреса для загрузки обложек: по одному шаблону URL на строку. Нажмите на переменную ниже, чтобы вставить её в позицию курсора.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Пример: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Название игры.
+${savetitle}: Название игры для сохранения, включая суффикс региона.
+${localizedtitle}: Локализованное название игры на её родном языке.
+${filetitle}: Именная часть имени файла игры.
+${serial}: Серийный номер игры.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Сохранять обложки по серийному номеру игры вместо названия, чтобы избежать конфликтов при использовании нескольких региональных версий одной игры.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Определяет тип эмулируемого оборудования.</translation>
@@ -6553,6 +6654,26 @@ ${serial}: Серийный номер игры.
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Добавляет 6 МБ ОЗУ к исходным 2 МБ, увеличивая общий объём до 8 МБ, как на консолях для разработчиков.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>Установленный объём ОЗУ</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Расширенная оперативная память может нарушить работу игр, поэтому используйте её только с совместимыми модификациями.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Принудительное отображение всего ОЗУ</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Отображает всю установленную оперативную память в адресное пространство независимо от конфигурации BIOS или игры.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6642,6 +6763,116 @@ ${serial}: Серийный номер игры.
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Папки</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Язык, тема, список игр и поведение</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Экранная индикация</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Тема, шрифты, сообщения и наложение статистики</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Регион, CPU и CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Скорость, задержка, перемотка и сохранения состояния</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Рендерер, разрешение, вывод изображения и снимки экрана</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Громкость и настройка вывода звука</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Цепочки шейдеров и наложение рамок</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>Учётная запись RetroAchievements и уведомления</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Типы и расположение карт памяти</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Выбор и установка образов BIOS</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Расположение хранилищ данных</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Журналирование, отладка и низкоуровневые параметры</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Сведения об игре и проверка</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Исправления и улучшения для этой игры</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Чит-коды для этой игры</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Расположение и внешний вид экранного контроллера</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Тип контроллера и назначение кнопок</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Сочетания клавиш для действий эмулятора</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Папки для поиска игр</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Пути, исключённые из списка игр</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Игры во внутреннем хранилище приложения</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10833,6 +11064,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Точки останова</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;Символы</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;Окно</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>Дизассемблирование</translation>
     </message>
@@ -11024,6 +11263,22 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>Использовать &amp;автоматические символы</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;Загрузить символы...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>&amp;Перезагрузить символы</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;Отключить символы</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;Добавить точку останова</translation>
     </message>
@@ -11054,14 +11309,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>No address selected.</source>
         <translation>Адрес не выбран.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>Введите адрес кода:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>Введите адрес памяти:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11133,6 +11380,26 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Debugger</source>
         <translation>Отладчик</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>Из %1 загружен %n символ.</numerusform>
+            <numerusform>Из %1 загружено %n символа.</numerusform>
+            <numerusform>Из %1 загружено %n символов.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>Не удалось загрузить символы из %1: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>Введите адрес кода или символ:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>Введите адрес памяти или символ:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Не удалось добавить точку останова для выхода из функции. Вы находитесь в допустимой функции?</translation>
@@ -11156,6 +11423,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>View in &amp;Dump</source>
         <translation>Посмотреть в &amp;дампе</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>Перейти к &amp;коду</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>Перейти к &amp;стеку</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>Копировать &amp;имя символа</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>Копировать &amp;адрес</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>Копировать адрес &amp;кадра стека</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;Копировать</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11195,6 +11486,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Pattern found at 0x%1.</source>
         <translation>Шаблон обнаружен в 0x%1.</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>Загрузить символы</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>Файлы символов (*.elf *.map);;Все файлы (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>Не удалось загрузить символы: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;Сбросить расположение</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11204,12 +11511,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         </translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Неверный адрес. Он должен быть в шестнадцатеричном формате (0x12345678 или 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Недопустимое значение. Введите его в шестнадцатеричном виде (0x12345678 или 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>Недопустимый адрес. Укажите имя символа или шестнадцатеричное число (0x12345678 или 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11255,28 +11562,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Смещение конца строки экрана</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Максимальное число тактов среза DMA</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> циклов</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Максимум тактов на срез DMA</translation>
+    </message>
+    <message>
+        <source>DMA Halt Cycles</source>
         <translation>Такты остановки DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>ГП: Размер FIFO</translation>
-    </message>
-    <message>
-        <source> words</source>
-        <translation> слов</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>ГП: Максимальное опережение</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Максимум тактов опережения GPU</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11575,14 +11874,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Перемотка назад</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> кадр.</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Использовать программную отрисовку (экономия видеопамяти)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>Опережение:</translation>
     </message>
@@ -11715,48 +12006,32 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Перемотка назад</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;Включить перемотку назад:&lt;/b&gt; Периодически сохраняет состояние, чтобы вы могли перемотать назад и исправить ошибки во время игры.&lt;br&gt; &lt;b&gt;Частота сохранения перемотки назад:&lt;/b&gt; Как часто будет создаваться состояние для перемотки назад. Более высокая частота повышает системные требования.&lt;br&gt; &lt;b&gt;Размер буфера перемотки назад:&lt;/b&gt; Количество сохранений, хранящихся для перемотки назад. Более высокие значения требуют больше памяти.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>Использует программную отрисовку при создании состояний для перемотки назад, чтобы избежать дополнительного расхода видеопамяти. Особенно полезно при повышении разрешения, так как значительно снижает системные требования для перемотки назад.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>Для перемотки назад на %n кадр (%1 сек.) потребуется %2 МБ оперативной памяти и %3 МБ видеопамяти.</numerusform>
-            <numerusform>Для перемотки назад на %n кадра (%1 сек.) потребуется %2 МБ оперативной памяти и %3 МБ видеопамяти.</numerusform>
-            <numerusform>Для перемотки назад на %n кадров (%1 сек.) потребуется %2 МБ оперативной памяти и %3 МБ видеопамяти.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>Для перемотки назад на %n кадр (%1 сек.) потребуется %2 МБ оперативной памяти.</numerusform>
-            <numerusform>Для перемотки назад на %n кадра (%1 сек.) потребуется %2 МБ оперативной памяти.</numerusform>
-            <numerusform>Для перемотки назад на %n кадров (%1 сек.) потребуется %2 МБ оперативной памяти.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Перемотка назад отключена, поскольку включено опережение. Опережение значительно повышает системные требования.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Периодически сохраняет состояние, чтобы вы могли перемотать назад и исправить ошибки во время игры.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>Частота сохранения для перемотки</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>Как часто будет создаваться состояние перемотки назад. Более высокие частоты предъявляют более высокие системные требования.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>Размер буфера перемотки</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>Объём памяти, зарезервированный для состояний перемотки назад. Определяет, насколько далеко можно перемотать назад.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>Буфер перемотки назад размером %1 МБ вмещает состояний: %n, позволяя перемотать назад на %2 сек.</translation>
+        <translation>
+            <numerusform>Буфер перемотки объёмом %1МБ вмещает %n состояние и позволяет перематывать назад на время до %2 сек.</numerusform>
+            <numerusform>Буфер перемотки объёмом %1МБ вмещает %n состояния и позволяет перематывать назад на время до %2 сек.</numerusform>
+            <numerusform>Буфер перемотки объёмом %1МБ вмещает %n состояний и позволяет перематывать назад на время до %2 сек.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -13853,10 +14128,6 @@ Do you want to {1} anyway?</source>
         <translation>%.2f секунд</translation>
     </message>
     <message>
-        <source>%d Frames</source>
-        <translation>Кадров: %d</translation>
-    </message>
-    <message>
         <source>%d cycles</source>
         <translation>%d циклов</translation>
     </message>
@@ -13888,6 +14159,10 @@ Do you want to delete the save state and boot the game anyway?</source>
 {}
 
 Хотите удалить файл сохранения и всё равно запустить игру?</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>Буфер перемотки объёмом {0} МБ: количество состояний — {1}, время перемотки назад — до {2:.2f} сек.</translation>
     </message>
     <message>
         <source>AMOLED</source>
@@ -14360,10 +14635,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Скрывает курсор мыши, когда эмулятор находится в полноэкранном режиме.</translation>
-    </message>
-    <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>Количество сохранений, хранящихся для перемотки назад. Более высокие значения требуют больше памяти.</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -15183,22 +15454,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Частота сохранений перемотки назад</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>Ячейки сохранений перемотки назад</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Для перемотки назад на указанное число кадров ({0}), то есть на {1:.2f} сек., потребуется {2} МБ оперативной памяти и {3} МБ видеопамяти.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Для перемотки назад на указанное число кадров ({0}), то есть на {1:.2f} сек., потребуется {2} МБ оперативной памяти.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>Перемотка назад отключена, поскольку включено опережение. Опережение значительно повышает системные требования.</translation>
-    </message>
-    <message>
         <source>Round Upscaled Texture Coordinates</source>
         <translation>Округление масштабированных текстурных координат</translation>
     </message>
@@ -15765,10 +16020,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Использовать отдельные настройки диска</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>Использовать программную отрисовку (экономия видеопамяти)</translation>
-    </message>
-    <message>
         <source>Use Software Renderer For Readbacks</source>
         <translatorcomment>Настройки графики
 *Использование программной отрисовки для считывания данных
@@ -15810,10 +16061,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>Использование отдельных настроек игры, в многодисковых играх для каждого диска. Можно установить только на первый/основной диск.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>Использует программную отрисовку при создании состояний для перемотки назад, чтобы избежать дополнительного расхода видеопамяти. Особенно полезно при повышении разрешения.</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
@@ -16893,10 +17140,6 @@ Are you sure you want to continue?</source>
         <translation>Максимальное ускорение чтения CD-ROM: циклы</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>ГП: Размер очереди</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translatorcomment>**GPU Max Run-Ahead (UI - advanced settings)</translatorcomment>
         <translation>ГП: Максимальное опережение</translation>
@@ -17043,6 +17286,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>Нет</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Автоматически</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22666,6 +22914,10 @@ Error: {1}</source>
         <translation>Перемотка назад не включена.</translation>
     </message>
     <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>Не удалось выделить память для состояний перемотки.</translation>
+    </message>
+    <message>
         <source>CPU clock speed control enabled ({:.3f} MHz).</source>
         <translation>Включено управление тактовой частотой процессора ({:.3f} МГц).</translation>
     </message>
@@ -22712,10 +22964,6 @@ Error: {1}</source>
     <message>
         <source>Volume: Muted</source>
         <translation>Громкость: без звука</translation>
-    </message>
-    <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>Перемотка назад отключена, пока включено опережение.</translation>
     </message>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
@@ -26182,14 +26430,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 Для запуска DuckStation требуется BIOS PS1 или PS2.
 
 По юридическим причинам вы должны получить BIOS с настоящей консоли PS1/PS2, которой вы владеете (заимствование не считается).</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>Перемотка назад отключена.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>Перемотку назад и опережение нельзя использовать одновременно.</translation>
     </message>
 </context>
 <context>

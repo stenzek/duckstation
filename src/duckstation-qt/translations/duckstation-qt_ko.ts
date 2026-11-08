@@ -558,6 +558,10 @@ Unread messages: {}</source>
 읽지 않은 메시지: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>도전 과제를 사용할 수 없음</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>점수: {} ({} 캐주얼)</translation>
     </message>
@@ -2164,11 +2168,6 @@ Current Binding: %s</source>
         <translation>화면에서 손가락을 끌어 컨트롤러의 여러 전면 버튼을 누를 수 있습니다.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>다른 파일…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>현재</translation>
@@ -2197,11 +2196,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>안전 확인 실패</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>토큰 생성 시간</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3304,16 +3298,6 @@ Current Binding: %s</source>
         <translation>지정한 시간이 지나면 터치 조작부를 숨깁니다. 지연 시간을 0으로 설정하면 숨기지 않습니다.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>오른쪽 스틱에 할당</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>오른쪽 스틱이 있으면 터치스크린 밀기 동작을 할당합니다.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>고급 설정</translation>
@@ -3667,6 +3651,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>게임을 닫거나 앱을 나갈 때 현재 상태를 자동으로 저장합니다.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>일시 정지 메뉴 페이지 기억</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>상태 불러오기 등의 동작으로 메뉴가 닫힌 경우를 제외하고, 일시 정지 메뉴를 닫았던 페이지에서 다시 엽니다.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4124,6 +4118,11 @@ Current Binding: %s</source>
         <translation>화면 오버레이</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>일시 정지 메뉴</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>게임 화면</translation>
@@ -4169,9 +4168,29 @@ Current Binding: %s</source>
         <translation>고급 렌더링</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>게임 목록에서</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>게임 폴더에서 디스크를 찾지 못했습니다.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>파일에서</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>디스크 꺼내기</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>디스크</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4433,6 +4452,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>항상 표시기 영역에 현재 RetroAchievements 리치 프레즌스 문자열을 표시합니다.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>로그인한 날짜: %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4492,6 +4516,26 @@ Current Binding: %s</source>
         <translation>화면 왼쪽 하단에 시스템의 현재 컨트롤러 상태를 표시합니다.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>왼쪽으로 이동</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>오른쪽으로 이동</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>위로 이동</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>아래로 이동</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>현재 보기와 화면 방향에서 모든 버튼의 위치, 크기 및 표시 여부를 초기화합니다. 계속하시겠습니까?</translation>
@@ -4505,6 +4549,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>멀티탭 모드 변경</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>멀티탭: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>터치스크린 컨트롤러 표시</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>터치스크린 컨트롤러를 표시할 시점을 선택합니다.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>표시하지 않음</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>컨트롤러가 없을 때</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Big Picture 외부에서</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>항상</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5049,6 +5128,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>세로 모드에서 화면을 렌더링할 위치를 선택합니다.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>밀어서 오른쪽 스틱 조작</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>조작 버튼 바깥을 밀면 오른쪽 스틱이 움직입니다. 유동형 왼쪽 스틱을 켜면 화면 오른쪽 절반에서만 작동합니다.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>유동형 왼쪽 스틱</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>화면 왼쪽 절반을 터치하면 왼쪽 스틱이 고정된 위치 대신 손가락 아래에 배치됩니다.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -5978,45 +6077,9 @@ bin 형식의 멀티트랙 게임을 시작하려면 큐 시트(.cue)가 필요�
         <translation>이 게임의 커버 이미지가 이미 존재합니다, 교체하시겠습니까?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation은 현재 커버가 없는 게임의 커버를 자동으로 내려받을 수 있습니다. DuckStation은 어떠한 커버 이미지도 호스팅하지 않으며, 사용자가 직접 이미지 소스를 제공해야 합니다.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>관할 지역에 따라 게임 커버는 저작권으로 보호될 수 있습니다. 본인의 서버와 이미지에만 이 도구를 사용할 권한이 있습니다.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>아래 상자에 커버를 내려받을 URL을 한 줄에 하나씩 템플릿 URL로 지정하세요. 다음 변수를 사용할 수 있습니다.
-
-${title}: 게임 타이틀.
-${savetitle}: 지역 접미사를 포함한 게임의 저장용 타이틀.
-${localizedtitle}: 게임의 원래 언어로 현지화된 타이틀.
-${filetitle}: 게임 파일 이름에서 확장자를 제외한 부분.
-${serial}: 게임 일련번호.
-
-예: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL에 ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} 또는 ${serial}이 없습니다.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>기본적으로 내려받은 커버는 게임 타이틀을 파일 이름으로 사용하여 저장됩니다. 이를 원하지 않으면 아래의 &quot;시리얼 파일 이름 사용&quot;을 활성화할 수 있습니다. 게임 타이틀 대신 일련번호를 사용하면 같은 게임의 여러 지역 버전을 사용할 때 충돌을 방지할 수 있습니다.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6420,6 +6483,44 @@ ${serial}: 게임 일련번호.
         <translation>도전 과제</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation은 표지가 설정되지 않은 게임의 표지를 자동으로 다운로드할 수 있습니다. 관할 지역에 따라 게임 표지는 저작권의 보호를 받을 수 있습니다. 이 도구는 본인의 서버와 이미지로만 사용할 수 있으며, 당사는 이를 제공하지 않습니다.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>표지 URL</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>표지를 다운로드할 URL을 한 줄에 하나의 URL 템플릿으로 지정하세요. 아래 변수를 누르면 커서 위치에 삽입됩니다.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>예: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: 게임 제목.
+${savetitle}: 지역 접미사가 포함된 게임의 저장용 제목.
+${localizedtitle}: 게임의 원래 언어로 현지화된 제목.
+${filetitle}: 게임 파일명에서 이름에 해당하는 부분.
+${serial}: 게임 일련번호.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>게임 제목 대신 일련번호로 표지를 저장하여 같은 게임의 여러 지역 버전을 사용할 때 충돌을 방지합니다.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>에뮬레이트된 하드웨어 유형을 결정합니다.</translation>
@@ -6483,6 +6584,26 @@ ${serial}: 게임 일련번호.
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>6MB의 램을 추가로 확보하여 총 2+6=8MB를 확보할 수 있으며, 이는 일반적으로 개발 콘솔에 존재합니다.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>설치된 RAM</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>RAM을 확장하면 게임이 작동하지 않을 수 있으므로 호환되는 모드에서만 사용하세요.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>전체 RAM 매핑 강제</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>BIOS나 게임 설정에 관계없이 설치된 RAM 전체를 매핑합니다.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6572,6 +6693,116 @@ ${serial}: 게임 일련번호.
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>폴더</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>언어, 테마, 게임 목록 및 동작</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>화면 표시</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>테마, 글꼴, 메시지 및 통계 오버레이</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>지역, CPU 및 CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>속도, 지연 시간, 되감기 및 상태 저장</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>렌더러, 해상도, 화면 및 스크린샷</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>음량 및 사운드 출력 설정</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>셰이더 체인 및 테두리 오버레이</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements 계정 및 알림</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>메모리 카드 유형 및 위치</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>BIOS 이미지 선택 및 설치</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>데이터 저장 위치</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>로깅, 디버깅 및 저수준 옵션</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>게임 세부 정보 및 검증</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>이 게임의 수정 사항 및 개선 기능</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>이 게임의 치트 코드</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>화면 컨트롤러 배치 및 모양</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>컨트롤러 유형 및 버튼 할당</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>에뮬레이터 동작 단축키</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>게임을 검색할 폴더</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>게임 목록에서 제외할 경로</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>앱 전용 저장소에 저장된 게임</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10746,6 +10977,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>브레이크포인트</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>심볼(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>창(&amp;W)</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>역어셈블리</translation>
     </message>
@@ -10934,6 +11173,22 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>도구 모음</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>자동 심볼 사용(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>심볼 불러오기(&amp;L)...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>심볼 다시 불러오기(&amp;R)</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>심볼 비활성화(&amp;D)</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>중단점 추가(&amp;A)</translation>
     </message>
@@ -10964,14 +11219,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>No address selected.</source>
         <translation>주소가 선택되지 않았습니다.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>코드 주소 입력 :</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>메모리 주소 입력 :</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11029,9 +11276,51 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>View in &amp;Dump</source>
         <translation>덤프에 표시(&amp;D)</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>%1에서 심볼 %n개를 불러왔습니다.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>%1에서 심볼을 불러오지 못했습니다: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>코드 주소 또는 심볼 입력:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>메모리 주소 또는 심볼 입력:</translation>
+    </message>
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>로드/스토어 따라가기(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>코드로 이동(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>스택으로 이동(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>심볼 이름 복사(&amp;N)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>주소 복사(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>프레임 주소 복사(&amp;F)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>복사(&amp;C)</translation>
     </message>
     <message>
         <source>Modify Register</source>
@@ -11097,6 +11386,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>0x%1에서 패턴을 찾았습니다.</translation>
     </message>
     <message>
+        <source>Load Symbols</source>
+        <translation>심볼 불러오기</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>심볼 파일 (*.elf *.map);;모든 파일 (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>심볼을 불러오지 못했습니다: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>레이아웃 초기화(&amp;R)</translation>
+    </message>
+    <message>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>중단점을 추가하지 못했습니다. 이 주소에 중단점이 이미 있을 수 있습니다.</translation>
     </message>
@@ -11105,12 +11410,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>중단점을 제거하지 못했습니다. 이 중단점은 존재하지 않을 수 있습니다.</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>잘못된 주소입니다. 주소는 16진수(0x12345678 또는 12345678)여야 함</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>잘못된 값입니다. 16진수여야 합니다 (0x12345678 또는 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>잘못된 주소입니다. 심볼 이름이나 16진수(0x12345678 또는 12345678)를 입력하세요.</translation>
     </message>
 </context>
 <context>
@@ -11172,28 +11477,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>디스플레이 라인 종료 오프셋</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>DMA 최대 슬라이스 틱</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> 주기</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA 중지 틱</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>DMA 슬라이스 최대 사이클 수</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 크기</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA 정지 사이클 수</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> 워드</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>GPU 최대 런어헤드</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>GPU 최대 선행 사이클 수</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11476,14 +11773,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>되감기</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> 프레임</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>소프트웨어 렌더러 사용(VRAM 절약 모드)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>선행 실행 :</translation>
     </message>
@@ -11620,44 +11909,30 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>되감기</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;되감기 활성화 :&lt;/b&gt; 주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.&lt;br&gt; &lt;b&gt;되감기 저장 빈도 :&lt;/b&gt; 되감기 상태를 생성하는 빈도입니다. 빈도가 높을수록 더 높은 시스템 성능이 필요합니다.&lt;br&gt; &lt;b&gt;되감기 버퍼 크기 :&lt;/b&gt; 되감기에 사용할 저장 상태의 보관 개수입니다. 값이 클수록 더 많은 메모리가 필요합니다.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>되감기 상태를 생성할 때 소프트웨어 렌더러를 사용하여 추가 VRAM 사용을 방지합니다. 특히 업스케일링 시 되감기에 필요한 시스템 성능을 크게 낮출 수 있어 유용합니다.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>%n프레임(%1초)을 되감으려면 RAM %2MB와 VRAM %3MB가 필요합니다.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>%n프레임(%1초)을 되감으려면 RAM %2MB가 필요합니다.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>선행 실행이 활성화되어 있어 되감기가 비활성화됩니다. 선행 실행을 사용하면 훨씬 높은 시스템 성능이 필요합니다.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>되감기 저장 빈도</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>되감기 상태를 생성하는 빈도입니다. 빈도가 높을수록 더 높은 시스템 성능이 필요합니다.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>되감기 버퍼 크기</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>되감기 상태에 사용할 메모리 예약량입니다. 되감을 수 있는 시간을 결정합니다.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>%1MB 되감기 버퍼에 상태 %n개가 저장되며, 최대 %2초까지 되감을 수 있습니다.</translation>
+        <translation>
+            <numerusform>%1MB 되감기 버퍼에는 상태 %n개가 저장되며, 최대 %2초까지 되감을 수 있습니다.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -12732,10 +13007,6 @@ Error was:</source>
         <translation>회백질</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>되감기에 사용할 저장 상태의 보관 개수입니다. 값이 클수록 더 많은 메모리가 필요합니다.</translation>
-    </message>
-    <message>
         <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
         <translation>이 기능을 활성화하면 게임 화면이 오버레이 이미지의 투명도에 따라 혼합됩니다.</translation>
     </message>
@@ -13000,22 +13271,6 @@ Please check your username and password, and try again.</source>
         <translation>이전 메뉴로 돌아갑니다.</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>되감기 저장 슬롯</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{0}프레임({1:.2f}초)을 되감으려면 RAM {2}MB와 VRAM {3}MB가 필요합니다.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>{0}프레임({1:.2f}초)을 되감으려면 RAM {2}MB가 필요합니다.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>선행 실행이 활성화되어 있어 되감기가 비활성화됩니다. 선행 실행을 사용하면 훨씬 높은 시스템 성능이 필요합니다.</translation>
-    </message>
-    <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>되감기가 활성화되어 있지 않습니다. 되감기를 활성화하면 시스템 요구 사항이 크게 증가할 수 있습니다.</translation>
     </message>
@@ -13252,10 +13507,6 @@ Please check your username and password, and try again.</source>
         <translation>멀티 디스크 게임에 단일 카드 사용</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>소프트웨어 렌더러 사용(VRAM 절약 모드)</translation>
-    </message>
-    <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
         <translation>메모리 연산뿐 아니라 모든 명령어에 PGXP를 사용합니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용합니다.</translation>
     </message>
@@ -13266,10 +13517,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
         <translation>여러 디스크로 구성된 게임의 경우 각 디스크에 별도의 게임 설정을 사용합니다. 1번째/메인 디스크에만 설정할 수 있습니다.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>되감기 상태를 생성할 때 소프트웨어 렌더러를 사용하여 추가 VRAM 사용을 방지합니다. 특히 업스케일링 시 유용합니다.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -13328,10 +13575,6 @@ Please check your username and password, and try again.</source>
         <translation>%.2f초</translation>
     </message>
     <message>
-        <source>%d Frames</source>
-        <translation>%d프레임</translation>
-    </message>
-    <message>
         <source>%d cycles</source>
         <translation>%d주기</translation>
     </message>
@@ -13342,6 +13585,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>%u MB</source>
         <translation>%uMB</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>{0} MB 되감기 버퍼에는 상태 {1}개가 저장되며, 최대 {2:.2f}초까지 되감을 수 있습니다.</translation>
     </message>
     <message>
         <source>Achievements: </source>
@@ -16617,10 +16864,6 @@ Are you sure you want to continue?</source>
         <translation>CD-ROM 최대 읽기 속도 향상 주기</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 크기</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>GPU 최대 런어헤드</translation>
     </message>
@@ -16765,6 +17008,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>없음</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>자동</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22323,6 +22571,10 @@ Error: {1}</source>
         <translation>되감기가 활성화되지 않았습니다.</translation>
     </message>
     <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>되감기 상태를 할당할 수 없습니다.</translation>
+    </message>
+    <message>
         <source>CPU clock speed control enabled ({:.3f} MHz).</source>
         <translation>CPU 클럭 속도 제어가 활성화되었습니다({:.3f}MHz).</translation>
     </message>
@@ -22369,10 +22621,6 @@ Error: {1}</source>
     <message>
         <source>Volume: Muted</source>
         <translation>음량 : 음소거</translation>
-    </message>
-    <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>선행 실행이 활성화된 동안에는 되감기가 비활성화됩니다.</translation>
     </message>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
@@ -25855,14 +26103,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 DuckStation을 실행하려면 PS1 또는 PS2 BIOS가 필요합니다.
 
 법적인 이유로, 소유한 실제 PS1/PS2 본체에서 BIOS를 얻어야 합니다(본체를 빌리는 것은 해당하지 않습니다).</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>되감기가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>되감기와 선행 실행은 동시에 사용할 수 없습니다.</translation>
     </message>
 </context>
 <context>

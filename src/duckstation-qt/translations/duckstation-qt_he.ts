@@ -638,6 +638,10 @@ Unread messages: {}</source>
 הודעות שלא נקראו: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>ההישגים אינם זמינים</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)</source>
         <translation>ניקוד: {} ({} במצב רגיל)</translation>
     </message>
@@ -2171,11 +2175,6 @@ Current Binding: %s</source>
         <translation>מאפשר ללחוץ על כמה כפתורי חזית בבקר על ידי גרירת האצבע על המסך.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>קובץ אחר…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>נוכחי</translation>
@@ -2204,11 +2203,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>בדיקת הבטיחות נכשלה</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>זמן יצירת האסימון</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3323,16 +3317,6 @@ Current Binding: %s</source>
         <translation>מסתיר את פקדי המגע לאחר הזמן שצוין. השהיה של אפס לא תסתיר את הפקדים.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>מיפוי למוט הימני</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>ממפה מחוות החלקה במסך המגע למוט הימני, אם קיים.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>הגדרות מתקדמות</translation>
@@ -3686,6 +3670,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>שומר אוטומטית את המצב הנוכחי בעת סגירת משחק או יציאה מהיישום.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>זכירת העמוד בתפריט ההשהיה</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>פותח מחדש את תפריט ההשהיה בעמוד שממנו נסגר, אלא אם הוא נסגר בעקבות פעולה כגון טעינת מצב.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4143,6 +4137,11 @@ Current Binding: %s</source>
         <translation>שכבות־על על המסך</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>תפריט השהיה</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>תצוגת משחק</translation>
@@ -4188,9 +4187,29 @@ Current Binding: %s</source>
         <translation>רינדור מתקדם</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>מרשימת המשחקים</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>לא נמצאו תקליטורים בתיקיות המשחקים שלך.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>מקובץ</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>הסר דיסק</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>תקליטורים</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4452,6 +4471,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>מציג תמיד את מחרוזת ה־Rich Presence הנוכחית של RetroAchievements באזור המחוונים.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>מחובר מאז %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4512,6 +4536,26 @@ Current Binding: %s</source>
         <translation>מציג את מצב הבקר הנוכחי של המערכת בפינה השמאלית התחתונה של התצוגה.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>הזזה שמאלה</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>הזזה ימינה</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>הזזה למעלה</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>הזזה למטה</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>פעולה זו תאפס את המיקום, הגודל והנראות של כל כפתור בתצוגה ובכיוון המסך הנוכחיים. האם ברצונך להמשיך?</translation>
@@ -4525,6 +4569,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>שינוי מצב Multitap</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>מפצל בקרים: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>הצגת בקר מסך המגע</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>קובע מתי יוצג בקר מסך המגע.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>אף פעם</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>כשאין בקר</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>מחוץ למצב Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>תמיד</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5069,6 +5148,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>בוחר היכן התצוגה תרונדר במצב לאורך.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>החלקה להפעלת המוט הימני</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>החלקה מחוץ לפקדים מזיזה את המוט הימני. כאשר המוט השמאלי הצף מופעל, רק החלקה בחצי הימני של המסך עושה זאת.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>מוט שמאלי צף</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>נגיעה בחצי השמאלי של המסך ממקמת את המוט השמאלי מתחת לאצבע במקום במיקום קבוע.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -6000,45 +6099,9 @@ Multi-track games in bin format require a cuesheet (.cue) to start.</source>
         <translation>תמונת עטיפה למשחק זה כבר קיימת, האם ברצונך להחליף אותה?</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation יכול להוריד באופן אוטומטי עטיפות למשחקים שאין להם כרגע עטיפה מוגדרת. איננו מארחים תמונות עטיפה, ועל המשתמש לספק מקור תמונות משלו.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>בהתאם לתחום השיפוט שלך, עטיפות משחק עשויות להיות מוגנות בזכויות יוצרים. מותר לך להשתמש בכלי זה רק עם השרתים והתמונות שלך.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>בתיבה שלהלן, יש לציין את כתובות ה־URL להורדת עטיפות, עם תבנית כתובת URL אחת בכל שורה. המשתנים הבאים זמינים:
-
-${title}: כותרת המשחק.
-${savetitle}: כותרת השמירה של המשחק, כולל סיומת האזור.
-${localizedtitle}: כותרת המשחק בשפתו המקורית.
-${filetitle}: רכיב השם מתוך שם הקובץ של המשחק.
-${serial}: המספר הסידורי של המשחק.
-
-דוגמה: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>כתובת ה־URL אינה מכילה ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} או ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>כברירת מחדל, העטיפות שהורדו יישמרו עם כותרת המשחק. אם אפשרות זו אינה רצויה, ניתן להפעיל את האפשרות &quot;שימוש בשמות קבצים סידוריים&quot; שלהלן. שימוש במספרים סידוריים במקום בכותרות משחקים ימנע התנגשויות בעת שימוש בגרסאות של אותו משחק מאזורים שונים.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6444,6 +6507,44 @@ ${serial}: המספר הסידורי של המשחק.
         <translation>הישגים</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation יכול להוריד אוטומטית עטיפות למשחקים שטרם הוגדרה להם עטיפה. בהתאם לתחום השיפוט שלך, עטיפות משחקים עשויות להיות מוגנות בזכויות יוצרים. מותר להשתמש בכלי זה רק עם שרתים ותמונות משלך. איננו מספקים אותם.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>כתובות עטיפות</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>יש לציין את כתובות ההורדה של העטיפות, עם תבנית כתובת אחת בכל שורה. יש להקיש על משתנה למטה כדי להוסיף אותו במיקום הסמן.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>דוגמה: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: שם המשחק.
+${savetitle}: שם המשחק לשמירה, כולל סיומת האזור.
+${localizedtitle}: שם המשחק המותאם לשפת המקור שלו.
+${filetitle}: רכיב השם מתוך שם הקובץ של המשחק.
+${serial}: המספר הסידורי של המשחק.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>שמירת עטיפות לפי המספר הסידורי של המשחק במקום שמו, כדי למנוע התנגשויות בעת שימוש בכמה גרסאות אזוריות של אותו משחק.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>קובע את סוג החומרה המדומה.</translation>
@@ -6507,6 +6608,26 @@ ${serial}: המספר הסידורי של המשחק.
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>מפעיל 6MB RAM נוספים לקבלת סך של 2+6 = 8MB, כפי שנמצא בדרך כלל בקונסולות פיתוח.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>זיכרון RAM מותקן</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>זיכרון RAM מורחב עלול לפגוע בפעולת משחקים, לכן יש להשתמש בו רק עם מודים תואמים.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>אילוץ מיפוי מלא של זיכרון RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>ממפה את כל זיכרון ה־RAM המותקן ללא תלות בתצורת ה־BIOS או המשחק.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6596,6 +6717,116 @@ ${serial}: המספר הסידורי של המשחק.
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>תיקיות</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>שפה, ערכת נושא, רשימת משחקים והתנהגות</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>תצוגה על המסך</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>ערכת נושא, גופנים, הודעות ושכבות נתונים סטטיסטיים</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>אזור, מעבד ו־CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>מהירות, השהיה, הרצה לאחור ושמירות מצב</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>מנוע ציור, רזולוציה, תצוגה וצילומי מסך</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>עוצמת קול ותצורת פלט שמע</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>שרשראות מצללים ושכבות מסגרת</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>חשבון RetroAchievements והתראות</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>סוגים ומיקומים של כרטיסי זיכרון</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>בחירה והתקנה של קובצי דמות BIOS</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>מיקומי אחסון נתונים</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>רישום יומן, ניפוי שגיאות ואפשרויות ברמה נמוכה</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>פרטי המשחק ואימות</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>תיקונים ושיפורים למשחק זה</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>קודי רמאות למשחק זה</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>פריסה ומראה של הבקר על המסך</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>סוג הבקר ומיפוי לחצנים</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>קיצורי דרך לפעולות האמולטור</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>תיקיות שנסרקות לאיתור משחקים</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>נתיבים שאינם נכללים ברשימת המשחקים</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>משחקים המאוחסנים באחסון הפרטי של היישומון</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10762,6 +10993,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>נקודות עצירה</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>&amp;סמלים</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>&amp;חלון</translation>
+    </message>
+    <message>
         <source>Disassembly</source>
         <translation>פירוק</translation>
     </message>
@@ -10950,6 +11189,22 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>סרגל כלים</translation>
     </message>
     <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>שימוש בסמלים &amp;אוטומטיים</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>&amp;טעינת סמלים...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>טעינת סמלים &amp;מחדש</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>&amp;השבתת סמלים</translation>
+    </message>
+    <message>
         <source>&amp;Add Breakpoint</source>
         <translation>&amp;הוספת נקודת עצירה</translation>
     </message>
@@ -10980,14 +11235,6 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>No address selected.</source>
         <translation>לא נבחרה כתובת.</translation>
-    </message>
-    <message>
-        <source>Enter code address:</source>
-        <translation>הזן כתובת קוד:</translation>
-    </message>
-    <message>
-        <source>Enter memory address:</source>
-        <translation>הזן כתובת זיכרון:</translation>
     </message>
     <message>
         <source>Trace logging started to cpu_log.txt.
@@ -11053,6 +11300,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Invalid Instruction</source>
         <translation>פקודה לא חוקית</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>טעינת סמלים</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>קובצי סמלים (*.elf *.map);;כל הקבצים (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>טעינת הסמלים נכשלה: %1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>&amp;איפוס פריסה</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11076,6 +11339,25 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Debugger</source>
         <translation>מנפה</translation>
     </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>נטען סמל אחד מתוך %1.</numerusform>
+            <numerusform>נטענו %n סמלים מתוך %1.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>טעינת הסמלים מתוך %1 נכשלה: %2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>יש להזין כתובת קוד או סמל:</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>יש להזין כתובת זיכרון או סמל:</translation>
+    </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>הוספת נקודת עצירה ליציאה מהפונקציה נכשלה; האם אתה נמצא בפונקציה חוקית?</translation>
@@ -11087,6 +11369,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>View in &amp;Dump</source>
         <translation>הצגה ב־&amp;Dump</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>מעבר ל&amp;קוד</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>מעבר ל&amp;מחסנית</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>העתקת &amp;שם הסמל</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>העתקת &amp;כתובת</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>העתקת כתובת &amp;מסגרת המחסנית</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>&amp;העתקה</translation>
     </message>
     <message>
         <source>Failed to write one or more patched instructions. Patched %1 of %2 instructions; the first failure was at 0x%3.</source>
@@ -11125,12 +11431,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>התבנית נמצאה ב־0x%1.</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>כתובת לא חוקית. עליה להיות בהקסדצימלי (0x12345678 או 12345678)</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>ערך לא תקין. עליו להיות בהקסדצימלי (0x12345678 או 12345678)</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>כתובת לא תקינה. עליה להיות שם סמל או מספר הקסדצימלי (0x12345678 או 12345678).</translation>
     </message>
 </context>
 <context>
@@ -11192,28 +11498,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>היסט סיום שורת התצוגה</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>מספר טיקים מרבי לפרוסת DMA</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> מחזורים</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>טיקים לעצירת DMA</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>מספר מחזורים מרבי לפרוסת DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>גודל FIFO של GPU</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>מחזורי עצירת DMA</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> מילים</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>הרצה מקדימה מרבית של GPU</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>מספר מחזורי הקדמה מרבי של המעבד הגרפי</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11496,14 +11794,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>החזרה לאחור</translation>
     </message>
     <message>
-        <source> Frames</source>
-        <translation> פריימים</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>שימוש במרנדר תוכנה (מצב שימוש מופחת ב־VRAM)</translation>
-    </message>
-    <message>
         <source>Runahead:</source>
         <translation>:הרצה מקדימה</translation>
     </message>
@@ -11632,46 +11922,31 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>החזרה לאחור</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;הפעלת החזרה לאחור:&lt;/b&gt; שומר מצב מדי פעם כדי לאפשר לך לחזור לאחור ולתקן טעויות במהלך המשחק.&lt;br&gt; &lt;b&gt;תדירות שמירות החזרה לאחור:&lt;/b&gt; באיזו תדירות ייווצר מצב החזרה לאחור. תדירויות גבוהות יותר דורשות יותר משאבי מערכת.&lt;br&gt; &lt;b&gt;גודל מאגר החזרה לאחור:&lt;/b&gt; כמה שמירות יישמרו לצורך חזרה לאחור. ערכים גבוהים יותר דורשים יותר זיכרון.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>משתמש במרנדר תוכנה בעת יצירת מצבי חזרה לאחור כדי למנוע שימוש נוסף ב־VRAM. שימושי במיוחד בעת הגדלת הרזולוציה, שכן הדבר יפחית משמעותית את דרישות המערכת לחזרה לאחור.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>חזרה לאחור של %n פריים, במשך %1 שניות, תדרוש %2MB של RAM ו־%3MB של VRAM.</numerusform>
-            <numerusform>חזרה לאחור של %n פריימים, במשך %1 שניות, תדרוש %2MB של RAM ו־%3MB של VRAM.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>חזרה לאחור של %n פריים, במשך %1 שניות, תדרוש %2MB של RAM.</numerusform>
-            <numerusform>חזרה לאחור של %n פריימים, במשך %1 שניות, תדרוש %2MB של RAM.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>החזרה לאחור מושבתת מכיוון שההרצה המקדימה מופעלת. הרצה מקדימה תגדיל משמעותית את דרישות המערכת.</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>שומר את המצב מעת לעת כדי שתוכל לחזור לאחור ולתקן טעויות במהלך המשחק.</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>תדירות שמירה להרצה לאחור</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>באיזו תדירות ייווצר מצב חזרה לאחור. תדירויות גבוהות יותר דורשות יותר משאבי מערכת.</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>גודל מאגר ההרצה לאחור</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>כמות הזיכרון שתוקצה למצבי חזרה לאחור. קובעת כמה רחוק ניתן לחזור לאחור.</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>מאגר חזרה לאחור בגודל %1MB מכיל %n מצבים ומאפשר לחזור לאחור עד %2 שניות.</translation>
+        <translation>
+            <numerusform>מאגר הרצה לאחור בגודל %1MB מכיל מצב אחד ומאפשר להריץ לאחור עד %2 שניות.</numerusform>
+            <numerusform>מאגר הרצה לאחור בגודל %1MB מכיל %n מצבים ומאפשר להריץ לאחור עד %2 שניות.</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11855,6 +12130,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>9x (for 4K)</source>
         <translation>9x (עבור 4K)</translation>
+    </message>
+    <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>מאגר הרצה לאחור בגודל {0} MB: מספר מצבים — {1}, משך הרצה לאחור — עד {2:.2f} שניות.</translation>
     </message>
     <message>
         <source>Achievement Notifications</source>
@@ -12547,10 +12826,6 @@ Error was:</source>
         <translation>מסתיר את מצביע העכבר/הסמן כאשר האמולטור נמצא במצב מסך מלא.</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>כמה שמירות יישמרו לצורך חזרה לאחור. ערכים גבוהים יותר דורשים יותר זיכרון.</translation>
-    </message>
-    <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>באיזו תדירות ייווצר מצב חזרה לאחור. תדירויות גבוהות יותר דורשות יותר משאבי מערכת.</translation>
     </message>
@@ -12773,10 +13048,6 @@ Error was:</source>
     <message>
         <source>%.2f Seconds</source>
         <translation>%.2f שניות</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d פריימים</translation>
     </message>
     <message>
         <source>%d cycles</source>
@@ -14423,10 +14694,6 @@ Please check your username and password, and try again.</source>
         <translation>שימוש בהגדרות תקליטור נפרדות</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>שימוש במרנדר תוכנה (מצב שימוש מופחת ב־VRAM)</translation>
-    </message>
-    <message>
         <source>Use This Directory</source>
         <translation>שימוש בתיקייה זו</translation>
     </message>
@@ -14457,10 +14724,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>משתמש במיקומים על המסך כדי לזהות את נתוני PGXP המתאימים. עשוי לשפר את הגרפיקה בחלק מהמשחקים. האפשרות האוטומטית משתמשת בהגדרה שבמסד נתוני המשחקים.</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>משתמש במרנדר תוכנה בעת יצירת מצבי חזרה לאחור כדי למנוע שימוש נוסף ב־VRAM. שימושי במיוחד בעת הגדלת הרזולוציה.</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -14845,22 +15108,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Rewind Save Frequency</source>
         <translation>תדירות שמירת חזרה לאחור</translation>
-    </message>
-    <message>
-        <source>Rewind Save Slots</source>
-        <translation>משבצות שמירה לחזרה לאחור</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>חזרה לאחור של {0} פריימים, במשך {1:.2f} שניות, תדרוש {2} MB של RAM ו־{3} MB של VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>חזרה לאחור של {0} פריימים, במשך {1:.2f} שניות, תדרוש {2} MB של RAM.</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>החזרה לאחור מושבתת מכיוון שההרצה המקדימה מופעלת. הרצה מקדימה תגדיל משמעותית את דרישות המערכת.</translation>
     </message>
     <message>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
@@ -16595,10 +16842,6 @@ Are you sure you want to continue?</source>
         <translation>מחזורי האצת קריאה מרביים של CD-ROM</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>גודל FIFO של GPU</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>הרצה מקדימה מרבית של GPU</translation>
     </message>
@@ -16771,6 +17014,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>ללא</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>אוטומטי</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22426,12 +22674,12 @@ Error: {1}</source>
         <translation>עוצמת קול: מושתק</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>החזרה לאחור מושבתת כאשר ההרצה המקדימה מופעלת.</translation>
-    </message>
-    <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>הרצה לאחור מושבתת כאשר מצב בטוח מופעל.</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>לא ניתן להקצות זיכרון למצבי ההרצה לאחור.</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25839,14 +26087,6 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 {0}
 
 ייתכן שהסיבה לכך היא שה־GPU שלך אינו תומך במרנדר שנבחר ({1}), או שיש לעדכן את מנהלי ההתקן הגרפיים שלך.</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>החזרה לאחור הושבתה.</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>לא ניתן להשתמש בחזרה לאחור ובהרצה מקדימה בו־זמנית.</translation>
     </message>
 </context>
 <context>

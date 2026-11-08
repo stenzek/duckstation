@@ -524,6 +524,10 @@ Error: {}</source>
 错误: {}</translation>
     </message>
     <message>
+        <source>Achievements Unavailable</source>
+        <translation>成就不可用</translation>
+    </message>
+    <message>
         <source>Offline Mode</source>
         <translation>离线模式</translation>
     </message>
@@ -2158,11 +2162,6 @@ Current Binding: %s</source>
         <translation>允许在屏幕上拖动手指来按下多个控制器正面按钮。</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>其他文件…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>当前</translation>
@@ -2191,11 +2190,6 @@ Current Binding: %s</source>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>安全检查失败</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>令牌生成时间</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3298,16 +3292,6 @@ Current Binding: %s</source>
         <translation>在指定时间后隐藏触屏控件。延迟为零时不会隐藏控件。</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>绑定到右摇杆</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>将触屏滑动手势绑定到右摇杆（如果有）。</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>高级设置</translation>
@@ -3661,6 +3645,16 @@ Current Binding: %s</source>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>关闭游戏或离开应用时，自动保存当前即时存档。</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>记住暂停菜单页面</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>重新打开暂停菜单时，显示关闭前的页面；但因加载即时存档等操作而关闭菜单的情况除外。</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4118,6 +4112,11 @@ Current Binding: %s</source>
         <translation>屏幕叠加层</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>暂停菜单</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>游戏显示</translation>
@@ -4163,9 +4162,29 @@ Current Binding: %s</source>
         <translation>高级渲染</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>从游戏列表</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>在游戏文件夹中未找到光盘。</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>从文件</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>移除光盘</translation>
+    </message>
+    <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>光盘</translation>
     </message>
     <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
@@ -4427,6 +4446,11 @@ Current Binding: %s</source>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>始终在指示区域显示当前的 RetroAchievements 富状态字符串。</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>登录时间：%s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4486,6 +4510,26 @@ Current Binding: %s</source>
         <translation>在显示左下角显示系统的当前控制器状态。</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>向左移动</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>向右移动</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>向上移动</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>向下移动</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>这将重置此视图在当前屏幕方向下所有按钮的位置、大小和可见性。您想要继续吗？</translation>
@@ -4499,6 +4543,41 @@ Current Binding: %s</source>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>更改Multitap模式</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>多路连接器：%1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>显示触屏控制器</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>选择何时显示触屏控制器。</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>从不</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>未连接控制器时</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>大屏幕模式之外</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>始终</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -5043,6 +5122,26 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>选择竖屏模式下画面的显示位置。</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>滑动操控右摇杆</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>在控件外滑动可移动右摇杆。启用浮动左摇杆后，仅在屏幕右半边滑动才会移动右摇杆。</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>浮动左摇杆</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>触摸屏幕左半边时，将左摇杆放置在手指下方，而非固定位置。</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -5972,45 +6071,9 @@ bin格式的多轨游戏需要提示单（.cue）才能启动。</translation>
         <translation>此游戏的封面图片已经存在，您想要替换它吗？</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation可以自动为尚未设置封面的游戏下载封面图。我们不托管任何封面图片，用户必须自行提供图片来源。</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>根据您所在的司法管辖区，游戏封面可能受版权保护。您只能将此工具用于您自己的服务器和图像。</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>在下方框内指定下载封面的URL，每行一个URL模板。可使用以下变量：
-
-${title}：游戏标题。
-${savetitle}：游戏的存档标题，包含地区后缀。
-${localizedtitle}：游戏原始语言的本地化标题。
-${filetitle}：游戏文件名的名称部分。
-${serial}：游戏序号。
-
-示例：https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>URL不包含${title}、${savetitle}、${localizedtitle}、${filetitle}或${serial}。</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>默认情况下，下载的封面将以游戏标题命名保存。如果您不希望这样，可以启用下方的“使用序号文件名”。使用序号代替游戏标题，可避免同一游戏的多个地区版本之间发生冲突。</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6414,6 +6477,44 @@ ${serial}：游戏序号。
         <translation>成就</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation 可以自动为尚未设置封面的游戏下载封面。根据您所在司法管辖区的规定，游戏封面可能受版权保护。您仅获准将此工具与您自己的服务器和图像配合使用，我们不提供任何服务器或图像。</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>封面网址</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>指定下载封面的网址，每行填写一个网址模板。点击下方变量即可将其插入光标位置。</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>示例：https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}：游戏标题。
+${savetitle}：游戏的保存用标题，包含地区后缀。
+${localizedtitle}：游戏原始语言的本地化标题。
+${filetitle}：游戏文件名中的名称部分。
+${serial}：游戏序列号。</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>使用游戏序列号而非标题保存封面，以避免使用同一游戏的多个地区版本时发生冲突。</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>确定模拟硬件类型。</translation>
@@ -6477,6 +6578,26 @@ ${serial}：游戏序号。
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>已安装的内存</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>扩展内存可能导致游戏无法正常运行，请仅配合兼容的模组使用。</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>强制映射全部内存</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>无论 BIOS 或游戏如何配置，都映射全部已安装的内存。</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6566,6 +6687,116 @@ ${serial}：游戏序号。
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>文件夹</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>语言、主题、游戏列表和行为</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>屏幕显示</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>主题、字体、消息和统计信息叠加层</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>地区、CPU 和 CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>速度、延迟、倒带和即时存档</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>渲染器、分辨率、显示和截图</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>音量和声音输出配置</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>着色器链和边框叠加层</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>RetroAchievements 账户和通知</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>记忆卡类型和位置</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>BIOS 镜像选择和安装</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>数据存储位置</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>日志、调试和底层选项</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>游戏详情和验证</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>此游戏的修复和增强功能</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>此游戏的作弊码</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>屏幕控制器的布局和外观</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>控制器类型和按键绑定</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>模拟器操作快捷键</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>扫描游戏的文件夹</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>从游戏列表中排除的路径</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>存储在应用专用存储空间中的游戏</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -10745,10 +10976,6 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>EXP1</translation>
     </message>
     <message>
-        <source>Enter memory address:</source>
-        <translation>输入内存地址:</translation>
-    </message>
-    <message>
         <source>Stack</source>
         <translation>堆栈</translation>
     </message>
@@ -10801,6 +11028,14 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
+        <source>&amp;Symbols</source>
+        <translation>符号(&amp;S)</translation>
+    </message>
+    <message>
+        <source>&amp;Window</source>
+        <translation>窗口(&amp;W)</translation>
+    </message>
+    <message>
         <source>Toolbar</source>
         <translation>工具栏</translation>
     </message>
@@ -10823,6 +11058,22 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <source>Call Stack</source>
         <translation>调用栈</translation>
+    </message>
+    <message>
+        <source>Use &amp;Automatic Symbols</source>
+        <translation>使用自动符号(&amp;A)</translation>
+    </message>
+    <message>
+        <source>&amp;Load Symbols...</source>
+        <translation>加载符号(&amp;L)...</translation>
+    </message>
+    <message>
+        <source>&amp;Reload Symbols</source>
+        <translation>重新加载符号(&amp;R)</translation>
+    </message>
+    <message>
+        <source>&amp;Disable Symbols</source>
+        <translation>禁用符号(&amp;D)</translation>
     </message>
     <message>
         <source>&amp;Add Breakpoint</source>
@@ -10943,10 +11194,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>跨进(&amp;S)</translation>
     </message>
     <message>
-        <source>Enter code address:</source>
-        <translation>输入代码地址:</translation>
-    </message>
-    <message>
         <source>Trace logging to cpu_log.txt stopped.</source>
         <translation>追踪日志记录写入cpu_log.txt已停止。</translation>
     </message>
@@ -10977,6 +11224,30 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>&amp;Follow Load/Store</source>
         <translation>跟随加载/存储(&amp;F)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Code</source>
+        <translation>转到代码(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Go To &amp;Stack</source>
+        <translation>转到堆栈(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Copy Symbol &amp;Name</source>
+        <translation>复制符号名称(&amp;N)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Address</source>
+        <translation>复制地址(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Copy &amp;Frame Address</source>
+        <translation>复制栈帧地址(&amp;F)</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>复制(&amp;C)</translation>
     </message>
     <message>
         <source>Modify Register</source>
@@ -11018,6 +11289,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <source>Patched %1 of %2 selected instructions.</source>
         <translation>已修补所选%2条指令中的%1条。</translation>
     </message>
+    <message>
+        <source>Load Symbols</source>
+        <translation>加载符号</translation>
+    </message>
+    <message>
+        <source>Symbol Files (*.elf *.map);;All Files (*)</source>
+        <translation>符号文件 (*.elf *.map);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <source>Failed to load symbols: %1</source>
+        <translation>加载符号失败：%1</translation>
+    </message>
+    <message>
+        <source>&amp;Reset Layout</source>
+        <translation>重置布局(&amp;R)</translation>
+    </message>
     <message numerus="yes">
         <source>Loaded %n saved breakpoint(s).</source>
         <translation>
@@ -11027,6 +11314,24 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <source>Patched instruction at 0x%1.</source>
         <translation>已修补位于0x%1的指令。</translation>
+    </message>
+    <message numerus="yes">
+        <source>Loaded %n symbol(s) from %1.</source>
+        <translation>
+            <numerusform>已从 %1 加载 %n 个符号。</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Failed to load symbols from %1: %2</source>
+        <translation>无法从 %1 加载符号：%2</translation>
+    </message>
+    <message>
+        <source>Enter code address or symbol:</source>
+        <translation>输入代码地址或符号：</translation>
+    </message>
+    <message>
+        <source>Enter memory address or symbol:</source>
+        <translation>输入内存地址或符号：</translation>
     </message>
     <message>
         <source>Patched %1 instructions.</source>
@@ -11084,12 +11389,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>没有所选的地址。</translation>
     </message>
     <message>
-        <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>地址无效。地址应为十六进制格式（0x12345678 或 12345678）</translation>
-    </message>
-    <message>
         <source>Invalid value. It should be in hex (0x12345678 or 12345678)</source>
         <translation>无效值。应为十六进制数（0x12345678或12345678）</translation>
+    </message>
+    <message>
+        <source>Invalid address. It should be a symbol name or in hex (0x12345678 or 12345678).</source>
+        <translation>地址无效。请输入符号名称或十六进制地址（0x12345678 或 12345678）。</translation>
     </message>
 </context>
 <context>
@@ -11151,28 +11456,20 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>显示线结束偏移量</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>DMA最大片段周期数</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> 周期</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA停顿周期数</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>DMA 时间片最大周期数</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU的FIFO大小</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>DMA 停顿周期数</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> 字</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>GPU最大超前运行</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>GPU 最大超前周期数</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11407,44 +11704,30 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>跳过非唯一的帧呈现/显示。可以与驱动程序级帧生成相结合，以提高可感知的帧率。可能导致帧间距变差，并且与本机刷新同步不兼容。</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;启用倒带：&lt;/b&gt;定期保存即时档案，使您可以在游戏时倒回操作失误之前。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带用即时档案的创建频率。频率越高对系统的需求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
-        <translation>创建倒带即时档案时使用软件渲染器，以避免额外占用显存。使用分辨率放大时尤其有用，可显著降低倒带对系统的需求。</translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
-            <numerusform>倒带%n帧（共%1秒）需要%2MB内存和%3MB显存。</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
-        <translation>
-            <numerusform>倒带%n帧（共%1秒）需要%2MB内存。</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>由于启用了超前运行，倒带已禁用。超前运行将显著提高对系统的需求。</translation>
-    </message>
-    <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>定期保存即时档案，使您可以在游戏时倒回操作失误之前。</translation>
+    </message>
+    <message>
+        <source>Rewind Save Frequency</source>
+        <translation>倒带保存频率</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>倒带用即时档案的创建频率。频率越高对系统的需求就越大。</translation>
     </message>
     <message>
+        <source>Rewind Buffer Size</source>
+        <translation>倒带缓冲区大小</translation>
+    </message>
+    <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
         <translation>为倒带用即时档案预留的内存量。决定可以倒回多长时间之前。</translation>
     </message>
-    <message>
+    <message numerus="yes">
         <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-        <translation>%1MB的倒带缓冲可容纳%n个即时档案，允许您倒带最多%2秒。</translation>
+        <translation>
+            <numerusform>%1MB 的倒带缓冲区可容纳 %n 个即时存档，最多可倒带 %2 秒。</numerusform>
+        </translation>
     </message>
     <message>
         <source>The rewind buffer is too small to hold a single state.</source>
@@ -11537,14 +11820,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Rewind</source>
         <translation>倒带</translation>
-    </message>
-    <message>
-        <source> Frames</source>
-        <translation> 帧</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>使用软件渲染器（低显存模式）</translation>
     </message>
     <message>
         <source>7 Frames</source>
@@ -12042,6 +12317,10 @@ Do you want to delete the save state and boot the game anyway?</source>
 您想要删除该即时存档并仍然启动游戏吗？</translation>
     </message>
     <message>
+        <source>A {0} MB rewind buffer holds {1} states, allowing you to rewind up to {2:.2f} seconds.</source>
+        <translation>{0} MB 的倒带缓冲区可容纳 {1} 个即时存档，最多可倒带 {2:.2f} 秒。</translation>
+    </message>
+    <message>
         <source>AMOLED</source>
         <translation>黑曜</translation>
     </message>
@@ -12482,10 +12761,6 @@ You cannot undo this action.</source>
         <translation>帧率</translation>
     </message>
     <message>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>为倒带保留的即时档案数量。数值越高，需要的内存就越多。</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <translation>已安装 RAM</translation>
     </message>
@@ -12534,22 +12809,6 @@ You cannot undo this action.</source>
         <translation>游戏启动时重置SPU，消除未初始化SPU的游戏中残留的BIOS混响回声。快速启动时无效。</translation>
     </message>
     <message>
-        <source>Rewind Save Slots</source>
-        <translation>倒带保存槽位</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>倒带{0}帧（共{1:.2f}秒）需要{2} MB内存和{3} MB显存。</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>倒带{0}帧（共{1:.2f}秒）需要{2} MB内存。</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>由于启用了超前运行，倒带已禁用。超前运行将显著提高对系统的需求。</translation>
-    </message>
-    <message>
         <source>Runs the game very slightly faster or slower to match your display&apos;s refresh rate when VSync is on. Turn this off with GSync/FreeSync displays.</source>
         <translation>开启 VSync 时，略微加快或减慢游戏运行速度，使其帧率与显示器刷新率一致。使用 GSync/FreeSync 显示器时请关闭此选项。</translation>
     </message>
@@ -12588,10 +12847,6 @@ You cannot undo this action.</source>
     <message>
         <source>Session: {}</source>
         <translation>会话: {}</translation>
-    </message>
-    <message>
-        <source>%d Frames</source>
-        <translation>%d帧</translation>
     </message>
     <message>
         <source>Enable Stage</source>
@@ -15284,10 +15539,6 @@ Please check your username and password, and try again.</source>
         <translation>使用每个游戏的输入源</translation>
     </message>
     <message>
-        <source>Use Software Renderer (Low VRAM Mode)</source>
-        <translation>使用软件渲染器（低显存模式）</translation>
-    </message>
-    <message>
         <source>Use This Directory</source>
         <translation>使用此目录</translation>
     </message>
@@ -15306,10 +15557,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>使用屏幕位置来解析PGXP数据。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置。</translation>
-    </message>
-    <message>
-        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
-        <translation>创建倒带即时档案时使用软件渲染器，以避免额外占用显存。使用分辨率放大时尤其有用。</translation>
     </message>
     <message>
         <source>Value: {}</source>
@@ -16548,10 +16795,6 @@ Are you sure you want to continue?</source>
         <translation>CD-ROM最大读取加速周期</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>GPU的FIFO大小</translation>
-    </message>
-    <message>
         <source>GPU Max Runahead</source>
         <translation>GPU最大超前运行</translation>
     </message>
@@ -16724,6 +16967,11 @@ Are you sure you want to continue?</source>
         <source>None</source>
         <comment>IconSource</comment>
         <translation>无</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>自动</translation>
     </message>
     <message>
         <source>Cover</source>
@@ -22266,10 +22514,6 @@ Error: {1}</source>
         <translation>倒带未启用。</translation>
     </message>
     <message>
-        <source>Rewinding is disabled while runahead is enabled.</source>
-        <translation>启用超前运行时无法倒带。</translation>
-    </message>
-    <message>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
         <translation>PGXP保留投影精度现已启用。</translation>
     </message>
@@ -22312,6 +22556,10 @@ Error: {1}</source>
     <message>
         <source>Rewinding is disabled while safe mode is enabled.</source>
         <translation>启用安全模式时无法倒带。</translation>
+    </message>
+    <message>
+        <source>Rewind states could not be allocated.</source>
+        <translation>无法为倒带即时存档分配内存。</translation>
     </message>
     <message>
         <source>Rewinding unavailable.</source>
@@ -25775,14 +26023,6 @@ For legal reasons, you must obtain a BIOS from an actual PS1/PS2 unit that you o
 DuckStation 需要 PS1 或 PS2 BIOS 才能运行。
 
 出于法律原因，您必须从自己拥有的实际 PS1/PS2 主机中获取 BIOS（借用的主机不算）。</translation>
-    </message>
-    <message>
-        <source>Rewind has been disabled.</source>
-        <translation>倒带已禁用。</translation>
-    </message>
-    <message>
-        <source>Rewind and runahead cannot be used at the same time.</source>
-        <translation>倒带和超前运行不能同时使用。</translation>
     </message>
 </context>
 <context>
