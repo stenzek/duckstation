@@ -80,14 +80,23 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImagePatches, Settings::CDROM_SECTION_NAME,
                                                  "LoadImagePatches", false);
-    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromIgnoreDriveSubcode, Settings::CDROM_SECTION_NAME,
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromIgnoreHostSubcode, Settings::CDROM_SECTION_NAME,
                                                  "IgnoreHostSubcode", false);
+    SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromHostReadSpeed, Settings::CDROM_SECTION_NAME,
+                                                "HostReadSpeed", 8);
+    QtUtils::FixSpinBoxTextMargins(m_ui.cdromHostReadSpeed);
   }
   else
   {
-    m_ui.cdromGridLayout->removeWidget(m_ui.cdromIgnoreDriveSubcode);
-    delete m_ui.cdromIgnoreDriveSubcode;
-    m_ui.cdromIgnoreDriveSubcode = nullptr;
+    m_ui.cdromLayout->removeWidget(m_ui.cdromHostReadSpeedLabel);
+    delete m_ui.cdromHostReadSpeedLabel;
+    m_ui.cdromHostReadSpeedLabel = nullptr;
+    m_ui.cdromLayout->removeWidget(m_ui.cdromHostReadSpeed);
+    delete m_ui.cdromHostReadSpeed;
+    m_ui.cdromHostReadSpeed = nullptr;
+    m_ui.cdromGridLayout->removeWidget(m_ui.cdromIgnoreHostSubcode);
+    delete m_ui.cdromIgnoreHostSubcode;
+    m_ui.cdromIgnoreHostSubcode = nullptr;
     m_ui.cdromGridLayout->removeWidget(m_ui.cdromLoadImagePatches);
     delete m_ui.cdromLoadImagePatches;
     m_ui.cdromLoadImagePatches = nullptr;
@@ -160,7 +169,11 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
     tr("Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur "
        "if the last disc in the game is already selected. <strong>Does not work for all games.</strong>"));
   dialog->registerWidgetHelp(
-    m_ui.cdromIgnoreDriveSubcode, tr("Ignore Drive Subcode"), tr("Unchecked"),
+    m_ui.cdromHostReadSpeed, tr("Physical Drive Speed"), tr("8x"),
+    tr("Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the "
+       "drive louder. Set to \"Don't Change\" to leave the drive at its own speed. Not all drives support this."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromIgnoreHostSubcode, tr("Ignore Physical Drive Subcode"), tr("Unchecked"),
     tr("Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel "
        "data. Won't work with libcrypt games, but can improve read reliability on some drives."));
 

@@ -182,6 +182,12 @@ enum class SCSIReadMode : u8
   return !Core::GetBaseBoolSettingValue(Settings::CDROM_SECTION_NAME, "IgnoreHostSubcode", false);
 }
 
+[[maybe_unused]] static u32 GetReadSpeedMultiplier()
+{
+  // 8x by default. A good balance between readahead and spinning up way too high. 0 leaves the drive speed alone.
+  return Core::GetBaseUIntSettingValue(Settings::CDROM_SECTION_NAME, "HostReadSpeed", 8);
+}
+
 #if defined(_WIN32)
 
 // The include order here is critical.
@@ -274,12 +280,13 @@ bool CDImageDeviceWin32::Open(const char* path, Error* error)
     }
   }
 
-  // Set it to 8x speed. A good balance between readahead and spinning up way too high.
-  static constexpr u32 READ_SPEED_MULTIPLIER = 8;
-  static constexpr u32 READ_SPEED_KBS = (DATA_SECTOR_SIZE * FRAMES_PER_SECOND * READ_SPEED_MULTIPLIER) / 1024;
-  CDROM_SET_SPEED set_speed = {CdromSetSpeed, READ_SPEED_KBS, 0, CdromDefaultRotation};
-  if (!DeviceIoControl(m_hDevice, IOCTL_CDROM_SET_SPEED, &set_speed, sizeof(set_speed), nullptr, 0, nullptr, nullptr))
-    WARNING_LOG("DeviceIoControl(IOCTL_CDROM_SET_SPEED) failed: {:08X}", GetLastError());
+  if (const u32 read_speed = GetReadSpeedMultiplier(); read_speed > 0)
+  {
+    const u32 read_speed_kbs = (DATA_SECTOR_SIZE * FRAMES_PER_SECOND * read_speed) / 1024;
+    CDROM_SET_SPEED set_speed = {CdromSetSpeed, static_cast<USHORT>(read_speed_kbs), 0, CdromDefaultRotation};
+    if (!DeviceIoControl(m_hDevice, IOCTL_CDROM_SET_SPEED, &set_speed, sizeof(set_speed), nullptr, 0, nullptr, nullptr))
+      WARNING_LOG("DeviceIoControl(IOCTL_CDROM_SET_SPEED) failed: {:08X}", GetLastError());
+  }
 
   CDROM_READ_TOC_EX read_toc_ex = {};
   read_toc_ex.Format = CDROM_READ_TOC_EX_FORMAT_TOC;
@@ -752,10 +759,11 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
     return false;
   }
 
-  // Set it to 4x speed. A good balance between readahead and spinning up way too high.
-  const int read_speed = 4;
-  if (!DoSetSpeed(read_speed) && ioctl(m_fd, CDROM_SELECT_SPEED, &read_speed) != 0)
+  if (const u32 read_speed = GetReadSpeedMultiplier();
+      read_speed > 0 && !DoSetSpeed(read_speed) && ioctl(m_fd, CDROM_SELECT_SPEED, static_cast<int>(read_speed)) != 0)
+  {
     WARNING_LOG("ioctl(CDROM_SELECT_SPEED) failed: {}", errno);
+  }
 
   // Read ToC
   cdrom_tochdr toc_hdr = {};
@@ -1245,8 +1253,8 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
     return false;
   }
 
-  constexpr int read_speed = 8;
-  DoSetSpeed(read_speed);
+  if (const u32 read_speed = GetReadSpeedMultiplier(); read_speed > 0)
+    DoSetSpeed(read_speed);
 
   // Read ToC
   static constexpr u32 TOC_BUFFER_SIZE = 2048;

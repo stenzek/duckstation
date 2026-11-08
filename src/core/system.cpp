@@ -1243,6 +1243,7 @@ void System::SetDefaultSettings(SettingsInterface& si, bool ignore_user_prefs)
   Settings::SetDefaultLogConfig(si);
 
   si.SetBoolValue(Settings::CDROM_SECTION_NAME, "IgnoreHostSubcode", false);
+  si.SetUIntValue(Settings::CDROM_SECTION_NAME, "HostReadSpeed", 8);
   si.SetBoolValue(Settings::CDROM_SECTION_NAME, "AllowBootingWithoutSBIFile", false);
   si.SetStringValue(Settings::GPU_SECTION_NAME, "DumpCompressionMode",
                     Settings::GetGPUDumpCompressionModeName(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE));
