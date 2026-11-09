@@ -1632,28 +1632,28 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 	)";
 
     /* =========================================================================
-     * MMPX Advanced v3.2
-     * =========================================================================
-     * An optimized and heavily expanded derivative of the MMPX algorithm.
-     *
-     * The baseline MMPX implementation relies on a minimalist rule-set, which
-     * inherently suffers from topological conflicts at complex intersections,
-     * manifesting as jarring structural artifacts, "bubbles," and "spurs."
-     *
-     * MMPX Advanced introduces comprehensive morphological analysis, utilizing a
-     * vast array of high-precision conditional predicates to expand the
-     * architectural logic by an order of magnitude. Through exhaustive conflict-
-     * scenario analysis and granular edge-case resolution, this refinement
-     * completely eliminates morphological glitches.
-     *
-     * Furthermore, the integration of approximate pixel-matching logic effectively
-     * addresses unmapped topological configurations overlooked by the baseline
-     * specification, thereby delivering flawless detail reconstruction while
-     * preserving the authentic pixel-art aesthetic.
+ * MMPX Advanced v3.5
+ * =========================================================================
+ * An optimized and heavily expanded derivative of the MMPX algorithm.
+ * 
+ * The baseline MMPX implementation relies on a minimalist rule-set, which 
+ * inherently suffers from topological conflicts at complex intersections, 
+ * manifesting as jarring structural artifacts, "bubbles," and "spurs." 
+ * 
+ * MMPX Advanced introduces comprehensive morphological analysis, utilizing a 
+ * vast array of high-precision conditional predicates to expand the 
+ * architectural logic by an order of magnitude. Through exhaustive conflict-
+ * scenario analysis and granular edge-case resolution, this refinement 
+ * completely eliminates morphological glitches. 
+ * 
+ * Furthermore, the integration of approximate pixel-matching logic effectively 
+ * addresses unmapped topological configurations overlooked by the baseline 
+ * specification, thereby delivering flawless detail reconstruction while 
+ * preserving the authentic pixel-art aesthetic.
 
-     * License: MIT
-     * Copyright (c) 2025-2026 by crashGG.
-     * ========================================================================= */
+ * License: MIT
+ * Copyright (c) 2025-2026 by crashGG.
+ * ========================================================================= */
 
     ss << R"(
 
@@ -1661,7 +1661,9 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 float luma(float4 col) {
 
 	//Use CRT-era BT.601 standard. Clamp range to [0.0 - 0.999]
-    return min(dot(col.rgb, float3(0.299, 0.587, 0.114)), 0.999);
+	float colBT601 = min(dot(col.rgb, float3(0.299, 0.587, 0.114)), 0.999);
+	//*	x2 value for pure blue
+	return colBT601 * (1.0 + step(col.r+col.g, 0.01));
 }
 
 /* Constant Descriptions:
@@ -1718,21 +1720,67 @@ float mixGate(float4 col1, float4 col2) {
 }
 
 #define eq(a,b) (a==b)
-
-#define neq(a,b) (a!=b)
-
-#define all_eq2(a, b1, b2) \
-	( eq(a,b1) && eq(a,b2))
-
-#define all_eq3(a, b1, b2, b3) \
-	( eq(a,b1) && eq(a,b2) && eq(a,b3))
-
-#define all_eq4(a, b1, b2, b3, b4) \
-	( eq(a,b1) && eq(a,b2) && eq(a,b3) && eq(a,b4))
+#define ne(a,b) (a!=b)
 
 #define any_eq2(a, b1, b2) (eq(a,b1)||eq(a,b2))
 #define any_eq3(a, b1, b2, b3) (eq(a,b1)||eq(a,b2)||eq(a,b3))
-#define none_eq2(a, b1, b2) !any_eq2(a, b1, b2)
+#define any_eq4(a, b1, b2, b3, b4) (eq(a,b1)||eq(a,b2)||eq(a,b3)||eq(a,b4))
+#define not_eq2(a, b1, b2)  (ne(a,b1) && ne(a,b2))
+#define not_eq3(a, b1, b2, b3)  (ne(a,b1) && ne(a,b2) && ne(a,b3))
+#define not_eq4(a, b1, b2, b3, b4) (ne(a,b1) && ne(a,b2) && ne(a,b3) && ne(a,b4))
+
+
+#if GLSL
+
+	#define all_eq2(a, b1, b2) \
+		( eq(a,b1) && eq(a,b2) )
+
+	#define all_eq3(a, b1, b2, b3) \
+		( eq(a,b1) && eq(a,b2) && eq(a,b3) )
+
+	#define all_eq4(a, b1, b2, b3, b4) \
+		( eq(a,b1) && eq(a,b2) && eq(a,b3) && eq(a,b4) )
+
+    #define checkblack(col) all(lessThan((col).rgb, float3(0.1, 0.078, 0.1)))
+    #define checkwhite(col) all(greaterThan((col).rgb, float3(0.92, 0.92, 0.92)))
+	//#define checkeq(a,b) all(lessThan(abs((a).rgb-(b).rgb), float3(0.001, 0.001, 0.001)))
+
+	bool checkeq(float4 a, float4 b) {
+		uvec3 diff = floatBitsToUint(a.rgb) ^ floatBitsToUint(b.rgb);
+		return ((diff.r | diff.g | diff.b) == 0u);
+	}
+
+	float checknonzero(float4 res) {
+		uvec4 uBits = floatBitsToUint(res);
+		return float((uBits.r | uBits.g | uBits.b | uBits.a) != 0u);
+	}
+
+#else
+	//* faster on dx12
+	#define all_eq2(a, b1, b2) \
+		( ((a ^ b1) | (a ^ b2)) == 0u )
+
+	#define all_eq3(a, b1, b2, b3) \
+		( ((a ^ b1) | (a ^ b2) | (a ^ b3)) == 0u )
+
+	#define all_eq4(a, b1, b2, b3, b4) \
+		( ((a ^ b1) | (a ^ b2) | (a ^ b3) | (a ^ b4)) == 0u )
+
+    #define checkblack(col) all((col).rgb < float3(0.1, 0.078, 0.1))
+    #define checkwhite(col) all((col).rgb > float3(0.92, 0.92, 0.92))
+	//#define checkeq(a,b) all(abs((a).rgb - (b).rgb) < float3(0.001, 0.001, 0.001))
+
+	bool checkeq(float4 a, float4 b) {
+		uint3 diff = asuint(a.rgb) ^ asuint(b.rgb);
+		return ((diff.r | diff.g | diff.b) == 0u);
+	}
+
+	float checknonzero(float4 res) {
+		uint4 uBits = asuint(res);
+		return float((uBits.r | uBits.g | uBits.b | uBits.a) != 0u);
+	}
+
+#endif
 
 
 // Debug Hooks
@@ -1740,151 +1788,129 @@ float mixGate(float4 col1, float4 col2) {
 //#define testcolor2 float4(0.0, 1.0, 1.0, 1.0)  // Cyan
 //#define testcolor3 float4(1.0, 1.0, 0.0, 1.0)  // Yellow
 //#define testcolor4 float4(1.0, 1.0, 1.0, 1.0)  // White
-#define slopOFF float4(2.0, 2.0, 2.0, 2.0)
+#define slopeOFF float4(2.0, 2.0, 2.0, 2.0)
 #define slopeBAD float4(4.0, 4.0, 4.0, 4.0)
 #define theEXIT float4(8.0, 8.0, 8.0, 8.0)
 
 #define mixXE mix(vX,vE,mixFactor)
-#define mixXEoff mixXE+slopOFF
-#define Xoff vX+slopOFF
+#define mixXEoff mixXE+slopeOFF
+#define Xoff vX+slopeOFF
 
-#if GLSL
-
-    #define checkblack(col) all(lessThan((col).rgb, float3(0.1, 0.078, 0.1)))
-    #define checkwhite(col) all(greaterThan((col).rgb, float3(0.92, 0.92, 0.92)))
-
-#else
-
-    #define checkblack(col) all((col).rgb < float3(0.1, 0.078, 0.1))
-    #define checkwhite(col) all((col).rgb > float3(0.92, 0.92, 0.92))
-
-#endif
 
 float4 admixC(float4 vX, float4 vE) {
-
 	float mixFactor = mixGate(vX, vE) * (-0.381966) + 1.0;
 
 	return mixXE;
 }
 
 float4 admixK(float4 vX, float4 vE) {
-
     float4 diff = vX - vE;
 
-	float mixFactor = dot(diff.rgb, diff.rgb) * 0.16666 + 0.5;	// xxx.alpha
+	float mixFactor = clamp(dot(diff.rgb, diff.rgb), 0.0, 1.0) * 0.5 + 0.5; // xxx.alpha
 
 	return mixXE;
 }
 
-float4 admixL(float4 vE, float4 vX) {
-
-	float mixFactor = 0.381966 * mixGate(vX,vE) * step(0.002,vE.r+vE.g+vE.b+vE.a); // xxx.alpha.duck
-
-    return mixXE;
-}
 
 //**************************************************************************************************************************************
 //* 												main slope + X cross-processing mechanism						                *
 //******************************************************************************************************************************** zz  *
 float4 admixX( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, uint I
 		  , uint P, uint PA, uint PC, uint Q, uint QA, uint QG, uint R, uint RC, uint RI, uint S, uint SG, uint SI, uint AA, uint CC, uint GG
-		  , float El, float Bl, float Dl, float Fl, float Hl
-		  , float4 vE, float4 vB, float4 vD, float4 vC, float4 vG
+		  , float El, float Bl, float Dl, float Fl, float Hl, bool simEC, bool simEG, bool simEI
+		  , float4 vE, float4 vB, float4 vD
 		  ) {
 
 
-	bool eq_B_C = eq(B,C);
-	bool eq_D_G = eq(D,G);
+	bool doubleWall = eq(B,C) && eq(D,G);
 
-    if (eq_B_C && eq_D_G) return slopeBAD;
+	bool Xisblack = checkblack(vB);
+	bool triBlack = Xisblack && El >0.5 && (Fl<0.078 || Hl<0.078);
+	bool transBD = B==0u||D==0u;	//xxx.alpha.duck
+	if (doubleWall||triBlack||transBD) return slopeBAD;
 
-
-	//Pre-declare
-	bool eq_B_P;		bool eq_B_PA;		bool eq_B_PC;
-	bool eq_D_Q;		bool eq_D_QA;		bool eq_D_QG;
-	bool eq_E_F;		bool eq_E_H;		bool eq_A_AA;
-
-	float4 vX;
-	float mixFactor;
-
-	bool eq_E_C = eq(E,C);
-	bool eq_E_G = eq(E,G);
-    bool eq_A_P = eq(A,P);
-    bool eq_A_Q = eq(A,Q);
-    bool comboE3 = eq_E_C && eq_E_G;
-    bool comboA3 = eq_A_P && eq_A_Q;
-
-	// remove the alpha weighting first ,to avoid jagged edges when E is fully transparent and interacts with black and gray.
-	// xxx.alpha.duck
-	Bl = fract(Bl);
-	Dl = fract(Dl);
-	El = fract(El);
-	Fl = fract(Fl);
-	Hl = fract(Hl);
 
 //* =========================================
 //*                    B != D
 //* ==================================== zz =
-if (neq(B,D)){
+if (ne(B,D)){
 
-	if (eq(E,A)) return slopeBAD;
+	float4 vX = Bl>Dl ? vB : vD;
 
-	float diffBD = abs(Bl-Dl);
-	if (diffBD > El-Bl || diffBD > El-Dl) return slopeBAD;
+	float mixFactor = 0.145898 * mixGate(vX,vE) * float(E!=0u);	//xxx.alpha.duck
+
+	if (eq(E,A)) {
+
+		bool okB = El>Bl && eq(E,C) && eq(A,P) && eq(B,PC);
+		bool okD = El>Bl && eq(E,G) && eq(A,Q) && eq(D,QG);
+
+		return mixXEoff +float(!okB&&!okD)*2.0;
+	}
 
 
-	vX = mix(vB, vD, 0.5);
 
-	mixFactor = 0.381966 * mixGate(vX,vE) * float(E!=0u);
+    if (not_eq2(A,B,D)){
+		bool na1 = all_eq2(A,P,Q);
+		bool na2 = eq(A,P) && eq(B,PC) && ne(B,C);
+		bool na3 = eq(A,Q) && eq(D,QG) && ne(D,G);
 
-	eq_B_PC = eq(B,PC);
-	eq_D_QG = eq(D,QG);
- 
-    if (none_eq2(A,B,D)){
-		if (comboA3) return mixXEoff;
-		if ( eq_A_P && eq_B_PC && !eq_B_C ) return mixXEoff;
-		if ( eq_A_Q && eq_D_QG && !eq_D_G ) return mixXEoff;
+		bool na4 = eq(A,P) && eq(E,G);
+		bool na5 = eq(A,Q) && eq(E,C);
 
-		if ( eq_A_P && eq_E_G ) return mixXEoff;
-		if ( eq_A_Q && eq_E_C ) return mixXEoff;
+		bool goodFH = min(Fl,Hl)>max(Bl,Dl)+0.145898||min(Fl,Hl)>=El;
+		bool na6 = eq(E,C) && eq(B,P) && not_eq2(B,PA,PC) && goodFH;
+		bool na7 = eq(E,G) && eq(D,Q) && not_eq2(D,QA,QG) && goodFH;
 
-		if ( eq_E_C && eq_D_G ) return mixXEoff;
-		if ( eq_E_G && eq_B_C ) return mixXEoff;
+		bool na8 = eq(E,C) && eq(D,G) && ne(D,S) && (ne(D,Q)||ne(D,QG));
+		bool na9 = eq(E,G) && eq(B,C) && ne(B,R) && (ne(B,P)||ne(B,PC));
 
-}
-    if ( comboE3 ) return mixXEoff;
+		float4 vA = unpackUnorm4x8(A);
+		float Al = luma(vA);
 
-    if ( eq_E_C && eq_B_PC && neq(B,P)) return mixXEoff;
-	if ( eq_E_G && eq_D_QG && neq(D,Q)) return mixXEoff;
+		bool Disbetter = all_eq2(E,G,QG) && Al>Bl;
+		bool Bisbetter = all_eq2(E,C,PC) && Al>Dl;
+		vX = Disbetter ? vD :
+			 Bisbetter ? vB :
+						vX ;
+		
+		if (na1||na2||na3||na4||na5||na6||na7||na8||na9) return mixXEoff;
+	}
 
-	eq_E_F = eq(E,F);
+	vX = eq(A,D)&&ne(E,G) ?  vB :
+		 eq(A,B)&&ne(E,C) ?  vD :
+				vX ;
 
 	if (eq(F,H)) {
 
-		if ( eq_E_C && !eq_D_G && (!eq_E_F||neq(E,P)) ) return mixXEoff;
-		if ( eq_E_G && !eq_B_C && (!eq_E_F||neq(E,Q)) ) return mixXEoff;
 
-		if ( !eq_E_F && eq_B_PC && eq(F,RC) ) return mixXEoff;
-		if ( !eq_E_F && eq_D_QG && eq(H,SG) ) return mixXEoff;
+		bool FH1 = eq(E,C) && ne(D,G) && (ne(E,F)||ne(E,P));
+		bool FH2 = eq(E,G) && ne(B,C) && (ne(E,F)||ne(E,Q));
+
+		bool FH3 = ne(E,F) && eq(B,PC) && eq(F,RC);
+		bool FH4 = ne(E,F) && eq(D,QG) && eq(H,SG);
+		
+		if (FH1||FH2||FH3||FH4) return mixXEoff;
 	}
 
-    return slopeBAD;
+	bool ECG1 = all_eq2(E,C,G);
+	bool ECG2 = eq(E,C) && eq(B,PC) && ne(B,P);
+	bool ECG3 = eq(E,G) && eq(D,QG) && ne(D,Q);
+
+    return mixXEoff +float(!ECG1&&!ECG2&&!ECG3)*2.0;
 } //* B != D
 
 
 						//*********  B == D  *********
 
-	bool Xisblack = checkblack(vB);
-	if ( Xisblack && El >0.5 && (Fl<0.078 || Hl<0.078) ) return theEXIT;
+	float4 vX = vB;
 
-	vX = vB;
+	float mixFactor = 0.145898 * mixGate(vX,vE) * float(E!=0u);	// xxx.alpha
 
-	mixFactor = 0.381966 * mixGate(vX,vE) * float(E!=0u);
+	bool B_slope;		bool B_tower;		bool B_wall;
+	bool D_slope;		bool D_tower;		bool D_wall;
 
-	bool B_slope;	bool B_tower;	bool B_wall;
-    bool D_slope;	bool D_tower;	bool D_wall;
-	bool En3;
-    #define En4square En3&&eq(E,I)
+	bool comboE3 = all_eq2(E,C,G);
+	bool comboA3 = all_eq2(A,P,Q);
 
 //* ===================================================
 //*                   E - A  x cross
@@ -1892,169 +1918,194 @@ if (neq(B,D)){
 if (eq(E,A)) {
 
 
-	eq_E_F = eq(E,F);
-	eq_E_H = eq(E,H);
-
 	bool Eisblack = checkblack(vE);
 
-    if ( comboE3 && !eq_E_F && !eq_E_H && eq(E,I) ) {
+    if ( comboE3 && not_eq2(E,F,H) && eq(E,I) ) {
 
-		if (Eisblack) return theEXIT;
-		mixFactor = 0.618034 * (1.0 - mixFactor);
-		return mixXEoff;
+		mixFactor = 0.618034 - 1.618034 * mixFactor;
+		return mixXEoff +float(Eisblack)*8.0; 
 	}
 
-	eq_A_AA = eq(A,AA);
 
-    if ( comboA3 && eq_A_AA && none_eq2(A,PA,QA) )  {
-		if (Eisblack) return theEXIT;
-		mixFactor = 0.618034 * (1.0 - mixFactor);
-		if ( neq(B,PA) && eq(PA,QA) ) return mixXEoff;
-		mixFactor += 0.236068;
-		return mixXEoff;
+    if ( comboA3 && eq(A,AA) && not_eq2(A,PA,QA) )  {
+
+		mixFactor = 0.8541 -1.618034*mixFactor -0.236068*float(ne(B,PA)&&eq(PA, QA)) ;
+		return mixXEoff +float(Eisblack)*8.0; 
 	}
 
-    eq_B_PC = eq(B,PC);
-    eq_B_PA = eq(B,PA);
-    eq_D_QG = eq(D,QG);
-    eq_D_QA = eq(D,QA);
 
 
 	if ( comboE3 && comboA3 &&
-		(eq_B_PC || eq_D_QG) && eq_D_QA && eq_B_PA) {
-		mixFactor = mixFactor * (-0.618034) + 0.8541;
+		(eq(B,PC) || eq(D,QG)) && eq(D,QA) && eq(B,PA)) {
+		mixFactor = 0.8541 - 1.618034 * mixFactor;
 		mixFactor = max(mixFactor, float(E==0u));	// xxx.alpha.duck
         return mixXEoff;
 	}
 
-
-	if ( comboE3 && eq_A_P
-		 && eq_B_PA && eq_D_QA && eq_D_QG
-		 && eq_E_H
+	if ( comboE3 && eq(D,QA) && eq(B,PA)
+		&& (  eq(A,P) && eq(D,QG) && eq(E,H)
+			|| eq(A,Q) && eq(B,PC) && eq(E,F))
 		) {
-		mixFactor = mixFactor * (-0.618034) + 0.8541;
+		mixFactor = 0.8541 - 1.618034 * mixFactor;
 		mixFactor = max(mixFactor, float(E==0u));	// xxx.alpha.duck
         return mixXEoff;
 		}
 
-	if ( comboE3 && eq_A_Q
-		 && eq_B_PA && eq_D_QA && eq_B_PC
-		 && eq_E_F
-		) {
-		mixFactor = mixFactor * (-0.618034) + 0.8541;
-		mixFactor = max(mixFactor, float(E==0u));	// xxx.alpha.duck
-        return mixXEoff;
-		}
+	mixFactor *= comboA3 ? 0.145898 : 1.0;
+
+	bool ECG1 = comboA3;
+
+	bool ECG2 = comboE3;
+
+	B_slope = eq(B,PC) && not_eq3(B,P,C,PA);
+	D_slope = eq(D,QG) && not_eq3(D,Q,G,QA);
 
 
-	if (comboA3) return Xoff;
-
-    if (comboE3) return mixXEoff;
-
-	eq_B_P = eq(B, P);
-	eq_D_Q = eq(D, Q);
-
-	B_slope = eq_B_PC && !eq_B_P && !eq_B_C && !eq_B_PA;
-	D_slope = eq_D_QG && !eq_D_Q && !eq_D_G && !eq_D_QA;
-
-	B_wall = eq_B_C && !eq_B_PC && !eq_B_P;
-	D_wall = eq_D_G && !eq_D_QG && !eq_D_Q;
-	
-	B_tower = eq_B_P && !eq_B_PC && !eq_B_C && !eq_B_PA;
-	D_tower = eq_D_Q && !eq_D_QG && !eq_D_G && !eq_D_QA;
-
-	if ( B_slope && eq_E_G ) return mixXEoff;
-	if ( D_slope && eq_E_C ) return mixXEoff;
-
+	bool ECG3 = B_slope && eq(E,G);
+	bool ECG4 = D_slope && eq(E,C);
+	if (ECG1||ECG2||ECG3||ECG4) return mixXEoff;
 
 //* E B D Region Checkerboard Scoring Rule
 
     float scoreE = 0.0; float scoreB = 0.0; float scoreD = 0.0; float scoreZ = 0.0;
 
+
+	B_wall = eq(B,C) && not_eq3(B,PC,P,PA);
+	D_wall = eq(D,G) && not_eq3(D,QG,Q,QA);
+
+	B_tower = eq(B,P) && not_eq3(B,PC,C,PA);
+	D_tower = eq(D,Q) && not_eq3(D,QG,G,QA);
+
+
 //*	E Zone
-    if (eq_E_C) {
-		scoreE += 1.0 +float(eq(F,H)) +float(B_slope);
-		scoreE -= float(all_eq2(E,P,PC)&&!D_wall);
-	}
 
-    if (eq_E_G) {
-        scoreE += 1.0 +float(eq(F,H)) +float(D_slope);
-		scoreE -= float(all_eq2(E,Q,QG)&&!B_wall);
+	scoreE += float(eq(E,C)) * (
+				1.0 + float(eq(F,H)) + float(eq(B,PC)&&ne(B,PA)) + float(eq(A,Q))
+				);
+
+	scoreE += float(eq(E,G)) * (
+				1.0 + float(eq(F,H)) + float(eq(D,QG)&&ne(D,QA)) + float(eq(A,P))
+				);
+
+
+	scoreE += float( (B_slope||B_wall) && eq(A,Q) || (D_slope||D_wall) && eq(A,P) );
+
+
+
+    bool En3 = all_eq2(E,F,H);
+
+	bool EisWhite = checkwhite(vE);
+
+	if ( scoreE<0.01 && !En3 ) {
+
+		bool leftA= eq(A,QA) && not_eq4(A,PA,AA,P,Q);
+		bool upA  = eq(A,PA) && not_eq4(A,QA,AA,P,Q);
+
+		bool leftA_leftD = leftA == D_tower;
+		bool upA_upB     =   upA == B_tower;
+
+		bool upA_leftD   =   upA == D_tower;
+		bool leftA_downD = leftA == D_wall;
+
+		bool EAdarkerBD = Bl > El+0.333 && Bl < 0.92 ||Eisblack||EisWhite;
+
+		bool bad1a = B_wall && eq(E,F) && ne(E,I) && (leftA || leftA_leftD || EAdarkerBD&&ne(A,P));
+		bool bad1b = B_wall && D_tower && leftA && (EAdarkerBD&&ne(A,P));
+		
+		bool bad2a = D_wall && eq(E,H) && ne(E,I) && (upA || upA_upB || EAdarkerBD&&ne(A,Q));
+		bool bad2b = D_wall && B_tower && upA  && (EAdarkerBD&&ne(A,Q));
+
+		bool bad3 = B_wall && eq(E,H) && ne(E,I) && (upA || upA_leftD);
+		bool bad4 = D_wall && eq(E,F) && ne(E,I) && (leftA || leftA_downD);
+
+		if (bad1a||bad1b||bad2a||bad2b||bad3||bad4) return theEXIT;
     }
 
-	scoreE += float(B_slope && eq_A_Q || D_slope && eq_A_P);
+	scoreE += float(B_slope && eq(A,P) || D_slope && eq(A,Q));
 
-    En3 = eq_E_F && eq_E_H;
+	bool ext_FH = any_eq2(F,RC,SG);
 
-	if ( scoreE<0.01 && mixFactor<0.01 && En4square && eq(E,S)==eq(E,SI) && eq(E,R)==eq(E,RI) ) return theEXIT;
+	bool En4 = En3 && eq(E,I);
 
+    if ( !En4 && eq(F,H) ) {
 
-	if ( scoreE<0.01 && !En3 && neq(E,I) ) {
-		if ( B_wall && eq_E_F ) return theEXIT;
-		if ( D_wall && eq_E_H ) return theEXIT;
-    }
+		bool AEIstrong= EisWhite || Bl<0.92 && Fl<0.92 && min(Bl,Fl)-El>0.145898;
+		
+		bool badcond0 = scoreE<0.01 && (Eisblack && ne(E,F) || eq(E,I) && AEIstrong && !simEC && !simEG);
 
-	if (E==0u && !Xisblack) return vX;	// xxx.alpha.duck
+		bool badcond1 = En3 && !ext_FH;
+		bool badcond2 = eq(F,I) && (Eisblack || EisWhite || !(ext_FH || any_eq2(F,C,R) || any_eq2(H,G,S)));
 
-	scoreE += float(B_slope && eq_A_P || D_slope && eq_A_Q);
+		bool condZ1 = eq(B,C) && ne(B,P);
+		bool condZ2 = eq(D,G) && ne(D,Q);
 
-    if ( !En3 && eq(F,H) ) {
-		if (Eisblack) return slopeBAD;
-
-		bool condZ1 = B_wall && (eq(F,R) || eq(F,RC) || eq(G,H) || eq(F,I));
-		bool condZ2 = D_wall && (eq(C,F) || eq(H,SG) || eq(H,S) || eq(F,I));
-		scoreZ = float(condZ1 || condZ2);
+		scoreZ = float((condZ1 || condZ2) && !badcond0 && !badcond1 && !badcond2);
     }
 
 
+//*	A Zone
+
+	bool An4 = all_eq3(A,AA,PA,QA);
+
+	scoreZ += float(eq(PA,QA) && !An4 && scoreZ>0.99);
+
+
+	bool Bn4 = all_eq3(B,P,PC,C);
+	bool Dn4 = all_eq3(D,Q,QG,G);
+
+	float in_B = float(eq(C,P) && !Bn4);
+	float in_D = float(eq(G,Q) && !Dn4);
+	
 //*	B Zone
 
-    if (eq_B_PA) {
-		scoreB -= 1.0 +float(eq(P,C)) +float(eq_A_AA);
-	}
+	scoreB -= float(eq(B,PA)) * (
+		1.0 + float(eq(C,P)) + float(eq(A,AA))
+		);
 
-	if (eq(P,C)){
-		scoreB -= float(eq_A_AA);
-		scoreZ *= float(scoreE < 0.01);
-	}
+	scoreB -= in_B * float(eq(A,AA));
+
 
 //*  D Zone
 
-    if (eq_D_QA) {
-		scoreD -= 1.0 +float(eq(G,Q)) +float(eq_A_AA);
-	}
+	scoreD -= float(eq(D,QA)) * (
+		1.0 + float(eq(G,Q)) + float(eq(A,AA))
+		);
 
-	if (eq(G,Q)){
-		scoreD -= float(eq_A_AA);
-		scoreZ *= float(scoreE < 0.01);
-	}
+	scoreD -= in_D * float(eq(A,AA));
 
-    float scoreFinal = scoreE + scoreB + scoreD + scoreZ ;
+	scoreZ = clamp(scoreZ -in_B -in_D, 0.0, 1.0);
 
-	scoreFinal += float(min(scoreB,scoreD) > -0.01 && (B_wall && D_tower || B_tower && D_wall)) *2.0;
+	float scoreBD = scoreB + scoreD;
+    float scoreFinal = scoreE + scoreBD + scoreZ ;
 
-	mixFactor *= (1.0 - step(1.99, scoreFinal));
-	return mixXE + slopeBAD*(1.0 - step(0.99, scoreFinal));
+	scoreFinal += float( scoreFinal<0.01&&scoreBD>-0.01 && !Eisblack && !EisWhite && (B_wall && D_tower || B_tower && D_wall) );
+
+	mixFactor *= scoreFinal>1.99 ? 0.145898 : 1.0;
+	bool closeB = all_eq4(E,C,F,P,PC) && eq(A,PA) && (ne(D,G) || eq(D,Q));
+	bool closeD = all_eq4(E,H,G,Q,QG) && eq(A,QA) && (ne(B,C) || eq(B,P));
+
+	return mixXE +step(scoreFinal, 0.01)*4.0 +float(closeB||closeD)*8.0;
 
 }	//* E == A
 
+		mixFactor *= comboA3 ? 0.145898 : 1.0;
 
 //* ===============================================
 //*              	E - C - G     main rules
 //* ========================================= zz ==
 
-    if (eq_E_C ) {
-		if (comboA3) return vX;
-		if (comboE3) return mixXE;
-		if (all_eq2(B,A,PA) && all_eq3(E,F,P,PC)) return theEXIT;
-		return mixXE;
+    if (eq(E,C) ) {
+
+		bool badC = ne(E,G) && all_eq2(B,A,PA) && all_eq3(E,F,P,PC);
+
+		return mixXE +float(badC)*8.0;
 	}
 
-	if (eq_E_G) {
-		if (comboA3) return vX;
-		if (comboE3) return mixXE;
-		if (all_eq2(D,A,QA) && all_eq3(E,H,Q,QG)) return theEXIT;
-		return mixXE;
+	if (eq(E,G)) {
+
+		bool badC = ne(E,C) && all_eq2(D,A,QA) && all_eq3(E,H,Q,QG);
+
+		return mixXE +float(badC)*8.0;
 	}
 
 	if (E==0u) return theEXIT;		// xxx.alpha
@@ -2064,141 +2115,222 @@ if (eq(E,A)) {
 //* ================================================= zz ==
 
 
-    bool eq_A_B = eq(A,B);
-    bool eq_F_H = eq(F,H);
+	B_slope = eq(B,PC) && ne(B,P) && ne(B,C) && (ne(C,P)||eq(A,P));
+	D_slope = eq(D,QG) && ne(D,Q) && ne(D,G) && (ne(G,Q)||eq(A,Q));
 
-	eq_B_P  = eq(B,P);
-	eq_B_PC = eq(B,PC);
-	eq_B_PA = eq(B,PA);
-	eq_D_Q  = eq(D,Q);
-	eq_D_QG = eq(D,QG);
-	eq_D_QA = eq(D,QA);
+	bool B_slopeFoot = B_slope && (ne(B,RC) || eq(C,CC));
+	bool D_slopeFoot = D_slope && (ne(D,SG) || eq(G,GG));
 
-	B_slope = eq_B_PC && !eq_B_P && !eq_B_C;
-	D_slope = eq_D_QG && !eq_D_Q && !eq_D_G;
-	B_tower = eq_B_P && !eq_B_PC && !eq_B_C && !eq_B_PA;
-	D_tower = eq_D_Q && !eq_D_QG && !eq_D_G && !eq_D_QA;
-	B_wall = eq_B_C && !eq_B_PC && !eq_B_P;
-	D_wall = eq_D_G && !eq_D_QG && !eq_D_Q;
+	bool B_slopeHead = B_slope && (ne(B,PA) || ne(A,AA));
+	bool D_slopeHead = D_slope && (ne(D,QA) || ne(A,AA));
 
 
-    if (!eq_A_B) {
+	bool B_slopeL2 = B_slopeHead && B_slopeFoot;
+	bool D_slopeL2 = D_slopeHead && D_slopeFoot;
+	B_tower = eq(B,P) && ne(B,PC) && ne(B,C);
+	D_tower = eq(D,Q) && ne(D,QG) && ne(D,G);
 
-        if (comboA3) return Xoff;
+	bool anyWall = eq(B,C) || eq(D,G);
+	bool anySlope = eq(B,PC) || eq(D,QG);
 
-        if ( (B_slope||B_tower) && (D_slope||D_tower) ) return Xoff;
+	bool anyStickE = eq(E,F)||eq(E,H);
+	
 
-        if ( B_slope && eq_A_P ) return mixXEoff;
-        if ( D_slope && eq_A_Q ) return mixXEoff;
+    if (ne(A,B)) {
 
-        if ( (B_slope || D_slope) && eq_F_H ) return mixXEoff;
+        bool na1 = comboA3 && anySlope;
 
-        if ( B_slope && eq(H,SG) ) return mixXEoff;
-        if ( D_slope && eq(F,RC) ) return mixXEoff;
+        bool na2a =  B_slopeL2 && D_slopeL2;
+        bool na2b =  B_slope && D_tower;
+        bool na2c =  B_tower && D_slope;
 
-        if ( B_slope && eq_A_Q && eq(Q,QG) ) return mixXEoff;
-        if ( D_slope && eq_A_P && eq(P,PC) ) return mixXEoff;
+		bool na2 = na2a||na2b||na2c;
+
+        bool na3 =  B_slopeFoot && eq(A,P);
+        bool na4 =  D_slopeFoot && eq(A,Q);
+
+        bool na5 =  B_slopeFoot && eq(A,Q) && ne(D,G);
+        bool na6 =  D_slopeFoot && eq(A,P) && ne(B,C);
+
+        bool na7a =  B_slopeHead && simEC;
+        bool na7b =  D_slopeHead && simEG;
+        bool na7c =  B_slopeL2 && (simEG && ne(D,G));
+        bool na7d =  D_slopeL2 && (simEC && ne(B,C));
+
+
+		bool na7 = na7a||na7b||na7c||na7d;
+
+
+		bool na81 =  eq(A,Q) && ne(A,QA) && (simEC && ne(B,C)) && anySlope;
+		bool na82 =  eq(A,P) && ne(A,PA) && (simEG && ne(D,G)) && anySlope;
+		bool na8 = na81||na82;
+
+
+
+        bool na9 =  (B_slopeL2 || D_slopeL2) && eq(F,H);
+	
+
+        bool na10 =  B_slopeL2 && eq(H,SG);
+        bool na11 =  D_slopeL2 && eq(F,RC);
+
+		mixFactor *= float(!na2);
+
+		if (na1||na2||na3||na4||na5||na6||na7||na8||na9||na10||na11) return mixXE +float(!anyStickE)*2.0;
+
 
     }
 
-	bool sim_EC = E!=0u && C!=0u && sim(vE, vC);	// xxx.alpha.duck
-	bool sim_EG = E!=0u && G!=0u && sim(vE, vG);	// xxx.alpha.duck
 
-	float E_lumDiff = mix(0.381966, 0.145898, max((El - 0.8541),0.0) * 6.8541);
+	float E_lumDiff = mix(0.33, 0.10, clamp((El - 0.8541) * 6.8541, 0.0, 1.0));
+	bool aloneE =  mixFactor<0.01 && !simEC && !simEG && !simEI && El-Fl>E_lumDiff && El-Hl>E_lumDiff;
 
-    if ( mixFactor<0.01 && !sim_EC && !sim_EG && neq(E,I) && abs(El-Fl)>E_lumDiff && abs(El-Hl)>E_lumDiff ) return slopeBAD;
+	bool En3 = all_eq2(E,F,H);
+	bool ext_FH = eq(F,H) && (eq(F,RC) || eq(H,SG));
+
+	bool badEn3 = En3 && mixFactor<0.01 && !ext_FH && !simEC && !simEG && !simEI;
+
+	bool En4 = En3 && eq(E,I);
+
+	bool aloneEn4 = !ext_FH && !simEC && !simEG && eq(E,S)==eq(E,SI) && eq(E,R)==eq(E,RI);
+	bool badEn4a = mixFactor<0.01 && aloneEn4;
+	bool badEn4b = (eq(B,C) && eq(B,RC) && eq(E,R) || eq(D,G) && eq(D,SG) && eq(E,S)) && aloneEn4;
+	bool badEn4c = eq(A,B) && anyWall;
+
+	bool badEn4 = En4 && (badEn4a||badEn4b||badEn4c);
 
 
-	eq_E_F = eq(E,F);
-	eq_E_H = eq(E,H);
+	if (!anyWall && !aloneE && !badEn4) {
 
-	if ( eq_B_C && eq_D_Q ) {
-		if ( eq(P,PC) && eq(A,QA) && !eq_D_QG && eq_E_F && !eq_E_H && eq(H,I)) return theEXIT;
-		if ( eq_A_B ) return slopeBAD;
-		if ( B_wall && D_tower && eq_E_F) return vX;
-		return mixXEoff;
+		bool B_hook = eq(B,PA) && not_eq2(A,P,AA);
+		bool D_hook = eq(D,QA) && not_eq2(A,Q,AA);
+
+		bool nwall01 = ne(A,B) && (B_slopeL2&&D_hook||B_hook&&D_slopeL2);
+
+
+
+		bool goodFH = min(Fl,Hl)>Bl+0.145898||min(Fl,Hl)>=El;
+		bool nwall02 = ne(A,B) && B_tower  && goodFH && (ne(E,H)||eq(E,I)||simEC||simEG);
+		bool nwall03 = ne(A,B) && D_tower  && goodFH && (ne(E,F)||eq(E,I)||simEC||simEG);
+
+
+		bool aloneBD =  !anyWall && !anySlope && ne(B,P) && ne(D,Q);
+		bool BDfirefly = eq(F,H) && eq(F,I) && El-Fl>0.06 && any_eq2(F,P,Q);
+		bool shortFH = eq(F,H) && not_eq2(F,E,I) && !ext_FH;
+
+		bool badBD1 =  aloneBD && (eq(A,B)||BDfirefly);
+		bool badBD2 =  aloneBD && (eq(A,B)||ne(F,H)||BDfirefly||shortFH);
+
+		bool nwall1 = comboA3 && eq(F,H) && !badBD1;
+		bool nwall4 = comboA3 && ne(B,PA) && eq(PA,QA) && !badBD1;
+
+		bool nwall2 = (comboA3||ne(A,B)&&eq(A,P)) && eq(B,PC) && eq(C,CC);
+		bool nwall3 = (comboA3||ne(A,B)&&eq(A,Q)) && eq(D,QG) && eq(G,GG);
+
+
+
+
+
+		bool nwall7 = eq(A,Q) && (ne(A,AA)||eq(A,B)||eq(A,PA)||eq(PA,QA)) && (ne(B,PA)||eq(B,P)) &&simEC && !badBD1;
+		bool nwall8 = eq(A,P) && (ne(A,AA)||eq(A,B)||eq(A,QA)||eq(PA,QA)) && (ne(D,QA)||eq(D,Q)) &&simEG && !badBD1;
+
+
+		bool nwall9 = (ne(A,B)||eq(A,P)||eq(A,Q)||eq(A,PA)||eq(A,QA)) && simEC && simEG && !badBD2;
+
+		bool nwall10 = ne(A,B) && En4;
+
+
+		if (nwall01||nwall02||nwall03||nwall1||nwall2||nwall3||nwall4||nwall7||nwall8||nwall9||nwall10)  return mixXEoff;
+
 	}
 
-	if ( eq(D,G) && eq(B,P)) {
-		if ( eq(Q,QG) && eq(A,PA) && !eq_B_PC && eq_E_H && !eq_E_F && eq(F,I)) return theEXIT;
-		if ( eq_A_B ) return slopeBAD;
-		if ( B_tower && D_wall && eq_E_H) return vX;
-		return mixXEoff;
+
+	bool betterFH = eq(F,H)&&(ne(E,I)||not_eq2(F,RI,SI)) || En4;
+
+
+	if (ne(A,B) && eq(B,C) && (ne(B,R)||eq(F,RC))) {
+		bool bad1 = not_eq3(B,PC,PA,CC) && not_eq3(D,Q,QA,QG) && ne(F,H);
+		bool bad2 = eq(H,I) && ne(F,H) && Bl>Hl-0.01;
+		bool bad = bad1||bad2||badEn4;
+
+		B_wall = not_eq2(B,P,PC);
+		bool longH = B_wall && D_tower;
+		bool snake = not_eq2(B,P,PA) && eq(C,CC) && ne(C,RC) && (eq(A,P)||eq(A,Q)||eq(PA,QA)||eq(A,QA)&&eq(D,Q)) && (ne(PC,RC)||eq(F,RC));
+		bool good1 = all_eq2(F,I,RC);
+		bool good2 = simEG;
+		bool good3 = betterFH && (!aloneE && !badEn3 ||longH);
+		bool good4 = B_wall && all_eq2(D,Q,QG);
+		bool good = snake||good1||good2||good3||good4;
+		return mixXE + float(bad||!good)*4.0 +float(!anyStickE)*2.0;
 	}
 
+	if (ne(A,B) && eq(D,G) && (ne(D,S)||eq(H,SG))) {
 
-    En3 = eq_E_F && eq_E_H;
-
-	if ( En4square ) {
-        if ( ( eq_B_C || eq_D_G) && eq_A_B) return theEXIT;
-        if ( ( eq_B_C || eq_D_G || mixFactor<0.01) && (eq(E,S) == eq(E, SI) && eq(E,R) == eq(E, RI)) ) return theEXIT;
-        return mixXEoff;
-    }
-
-	if (!eq_B_C && !eq_D_G ) {
-		if ( comboA3 && eq_F_H ) return Xoff;
-
-		if ( comboA3&&eq_B_PC&&eq(C,CC) ) return Xoff;
-		if ( comboA3&&eq_D_QG&&eq(G,GG) ) return Xoff;
-
-		if ( !eq_B_P && !eq_B_PC && !eq_D_Q && !eq_D_QG && !En3 ) return slopeBAD;
-
-		if (eq_A_Q&&sim_EC) return mixXEoff;
-		if (eq_A_P&&sim_EG) return mixXEoff;
-		if (sim_EC&&sim_EG ) return mixXEoff;
+		bool bad1 = not_eq3(D,QG,QA,GG) && not_eq3(B,P,PA,PC) && ne(F,H);
+		bool bad2 = eq(F,I) && ne(F,H) && Bl>Fl-0.01;
+		bool bad = bad1||bad2||badEn4;
+		D_wall = not_eq2(D,Q,QG);
+		bool longV = D_wall && B_tower;
+		bool snake = not_eq2(D,Q,QA) && eq(G,GG) && ne(G,SG) && (eq(A,P)||eq(A,Q)||eq(PA,QA)||eq(A,PA)&&eq(B,P)) && (ne(QG,SG)||eq(H,SG));
+		bool good1 = all_eq2(H,I,SG);
+		bool good2 = simEC;
+		bool good3 = betterFH && (!aloneE && !badEn3 ||longV);
+		bool good4 = D_wall && all_eq2(B,P,PC);
+		bool good = snake||good1||good2||good3||good4;
+		return mixXE + float(bad||!good)*4.0 +float(!anyStickE)*2.0;
 	}
 
- 	if ( En3 && eq_A_B) return theEXIT;
+	bool ext1 = ne(A,B) && all_eq2(F,H,RC) && eq(B,PC) && eq(B,P)!=eq(B,C);
+	bool ext2 = ne(A,B) && all_eq2(F,H,SG) && eq(D,QG) && eq(D,Q)!=eq(D,G);
 
-	if (eq_F_H) {
+	bool sideW1 = ne(A,B) && betterFH && (eq(B,PC) && ne(P,C) && ne(B,RC)) && !aloneE && !badEn3 && !badEn4;
+	bool sideW2 = ne(A,B) && betterFH && (eq(D,QG) && ne(Q,G) && ne(D,SG)) && !aloneE && !badEn3 && !badEn4;
 
-		if ( eq_B_PC&&eq(F,RC) || eq_D_QG&&eq(H,SG) ) return mixXEoff;
+	bool lastgood = ext1||ext2||sideW1||sideW2;
 
-		if (eq_A_B) return slopeBAD;
 
-		if ( eq_B_C || eq_D_G) return mixXEoff;
-		if ( eq_B_PC || eq_D_QG) return mixXEoff;
-
-	}
-
-	return slopeBAD;
+	return mixXE +float(!lastgood)*4.0 +float(!anyStickE)*2.0;
 
 }	//* admixX
 
 
 float4 admixS( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, uint I
-		   , uint R, uint RC, uint RI, uint S, uint SG, uint SI, uint II, uint CC
-		   , float4 vE, float4 vF, float4 vC
+		   , uint Q, uint R, uint RC, uint RI, uint S, uint SG, uint SI, uint CC, bool simEC
+		   , float4 vE, float4 vF
 		   ) {
 
 
+    bool bad1 = any_eq2(F,C,I);
 
-    if (any_eq2(F,C,I)) return vE;
+    bool bad2 =  (eq(F,RI) || eq(G,S) || eq(R, RI)) && ne(R,I);
 
-	if ( (eq(F,RI) || eq(G,S) || eq(R, RI)) && neq(R,I) ) return vE;
+    bool bad3 = eq(H, S) && not_eq2(H,I,SG);
 
-    if (eq(H, S) && none_eq2(H,I,SG)) return vE;
+    bool bad4 =  eq(R, RC) || eq(G,SG);
 
-    if ( eq(R, RC) || eq(G,SG) ) return vE;
-
-	if ( checkwhite(vE) && all_eq2(E,C,D) && none_eq2(E,RC,CC)) return vE;
+	bool extC = any_eq2(C,RC,CC);
 
 
 	#define vX vF
-	float mixFactor = 0.381966 * mixGate(vX,vE) * float(E!=0);	// xxx.alpha.duck
+	float mixFactor = 0.381966 * mixGate(vX,vE) * float(E!=0u);	// xxx.alpha.duck
 
-	if ( eq(E,C) && (eq(E,D)||eq(B,D)) ) return mixXE;
+	mixFactor =  (bad1||bad2||bad3||bad4||F==0u) ? 1.0 : mixFactor;	// xxx.alpha.duck
 
-	bool sim_E_C = E!=0u && E!=0u && sim(vE,vC);	// xxx.alpha.duck
+	if ( all_eq2(E,C,D) ) {
+		mixFactor = ( !checkwhite(vE) || extC ) ? mixFactor : 1.0;
+		return mixXE;
+		}
 
-	if ( sim_E_C && eq(E,D) && eq(B,C) ) return mixXE;
+	bool ok1 = eq(E,C) && eq(B,D) && (extC || any_eq2(D,Q,A) ||eq(A,Q));
 
-	if ( (sim_E_C || mixFactor>0.01) && all_eq2(B,C,D) ) return mixXE;
+	bool ok2 = simEC && eq(E,D) && eq(B,C);
 
-    return vE;
+	bool ok3 = (simEC || mixFactor>0.01) && all_eq2(B,C,D) && (extC || any_eq2(Q,A,D)) && !all_eq2(E,A,I);
+
+	mixFactor = ok1||ok2||ok3 ? mixFactor : 1.0;
+	return mixXE;
 }
 )"
-          //**************************************************************************************************zz**
+//**************************************************************************************************zz**
           R"(
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
@@ -2222,15 +2354,9 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 	ialpha = float(E != 0u);
 	texcol = vE;
 
-    bool eq_E_D = eq(E,D);
-    bool eq_E_F = eq(E,F);
-    bool eq_E_B = eq(E,B);
-    bool eq_E_H = eq(E,H);
-    bool eq_B_H = eq(B,H);
-    bool eq_D_F = eq(D,F);
 
 //* Skip processing for horizontal/vertical 3-pixel identical & mirror symmetric patterns
-bool skiprest = (eq_E_D && eq_E_F) || (eq_E_B && eq_E_H) || (eq_B_H && eq_D_F);
+bool skiprest = all_eq2(E,D,F) || all_eq2(E,B,H) || eq(B,H)&&eq(D,F);
 if (!skiprest) {
 
 
@@ -2241,15 +2367,33 @@ if (!skiprest) {
 	float4 vG = srcf(-1.0, +1.0);
 	float4 vI = srcf(+1.0, +1.0);
 
-    uint A = packUnorm4x8(vA);
-    uint C = packUnorm4x8(vC);
-    uint G = packUnorm4x8(vG);
-    uint I = packUnorm4x8(vI);
+
+	uint A = packUnorm4x8(vA);
+	uint C = packUnorm4x8(vC);
+	uint G = packUnorm4x8(vG);
+	uint I = packUnorm4x8(vI);
+
+	bool simEA = sim(vE,vA) && ((E==0u)==(A==0u));	//* xxx.alpha.duck
+	bool simEC = sim(vE,vC) && ((E==0u)==(C==0u));
+	bool simEG = sim(vE,vG) && ((E==0u)==(G==0u));
+	bool simEI = sim(vE,vI) && ((E==0u)==(I==0u));
 
 	uint P  = src( 0.0, -2.0);
 	uint Q  = src(-2.0,  0.0);
 	uint R  = src(+2.0,  0.0);
 	uint S  = src( 0.0, +2.0);
+
+    float Bl = luma(vB) + float(B==0u);	// xxx.alpha.duck
+    float Dl = luma(vD) + float(D==0u);
+    float El = luma(vE) + float(E==0u);
+    float Fl = luma(vF) + float(F==0u);
+    float Hl = luma(vH) + float(H==0u);
+
+    float4 J = vE;    float4 K = vE;    float4 L = vE;    float4 M = vE;
+
+
+if (ne(B,H) && ne(D,F)) {
+
 
 	uint PA = src(-1.0, -2.0);
 	uint PC = src(+1.0, -2.0);
@@ -2265,364 +2409,341 @@ if (!skiprest) {
 	uint II = src(+2.0, +2.0); //*             GG   SG   [S]  SI   II
 
 
-    float4 J = vE;    float4 K = vE;    float4 L = vE;    float4 M = vE;
-
-
-	//*	pre-cal
-    float Bl = luma(vB) + float(B==0u);
-    float Dl = luma(vD) + float(D==0u);
-    float El = luma(vE) + float(E==0u);
-    float Fl = luma(vF) + float(F==0u);
-    float Hl = luma(vH) + float(H==0u);
-
-    bool eq_B_D = eq(B,D);
-    bool eq_B_F = eq(B,F);
-    bool eq_D_H = eq(D,H);
-    bool eq_F_H = eq(F,H);
-
-
-    bool oppoPix =  eq_B_H || eq_D_F;
-
     bool slope1 = false;    bool slope2 = false;    bool slope3 = false;    bool slope4 = false;
-
-    bool slope1ok = false;  bool slope2ok = false;  bool slope3ok = false;  bool slope4ok = false;
     bool slope1end = false;  bool slope2end = false;  bool slope3end = false;  bool slope4end = false;
 
 
-// B - D
-	if ( (B!=0u && D!=0u) && // xxx.alpha
-		(!eq_E_B && !eq_E_D && !oppoPix) && (!eq_D_H && !eq_B_F)
-	 && (eq(E,A) || El>=Dl&&El>=Bl) && ( (El<Dl&&El<Bl) || none_eq2(A,B,D) || neq(E,P) || neq(E,Q) )
-	 && ( eq_B_D &&(eq(E,A)||eq(B,PC)||eq(D,QG)||sim(vE,vC)||sim(vE,vG)) || simb(vB,vD)&&(eq_F_H||eq(E,C)||eq(E,G)) )
+//*	B - D
+
+	if ((ne(D,H) && ne(B,F))
+	 && (eq(E,A)&&El<min(Bl,Dl)||El>max(Bl,Dl)) && ( not_eq2(A,B,D) || ne(E,P) || ne(E,Q) )
+	 && ( eq(B,D) &&(eq(E,A)||any_eq3(B,P,C,PC)||any_eq3(D,Q,G,QG)||simEC||simEG) || simb(vB,vD)&&(eq(F,H)||any_eq2(E,C,G)) )
 		) {
 		J=admixX(A,B,C,D,E,F,G,H,I
 				,P,PA,PC,Q,QA,QG,R,RC,RI,S,SG,SI,AA,CC,GG
-				,El, Bl, Dl, Fl, Hl
-				,vE, vB, vD, vC, vG
+				,El,Bl,Dl,Fl,Hl, simEC,simEG,simEI
+				,vE,vB,vD
 				);
-		slope1 = true;
-		slope1ok = (J.b < 1.1);
-		slope1end = (J.b < 3.1);
-		skiprest = (J.b > 7.1);
-		J = (J.b > 3.1) ? vE :
-			(J.b > 1.1) ? (J - 2.0) :
+		bool slope1ok = (J.b < 1.01) && max(sign(El-Dl)*(Fl-El),sign(El-Dl)*(Hl-El))>-0.1;
+		bool isCopy=checkeq(J,vD);
+		float4 mixL2 = mix(J,vE,0.145898);
+		if (slope1ok && all_eq2(D,C,Q) && ne(D,QG) && (ne(C,R)||eq(R, RI)) && (ne(D,QA)||eq(D,A)) ) {K=isCopy ? J : mixL2;}
+		if (slope1ok && all_eq2(D,G,P) && ne(D,PC) && (ne(G,S)||eq(S, SI)) && (ne(D,PA)||eq(D,A)) ) {L=isCopy ? J : mixL2;}
+
+		slope1end = (J.b < 3.99);
+
+		J = (J.b > 3.99) ? vE :
+			(J.b > 1.01) ? (J - 2.0) :
 			J;
+
+		slope1 = true;
 	}
-// B - F
-	if ( !slope1 && (B!=0u && F!=0u)
-	 && (!eq_E_B && !eq_E_F && !oppoPix) && (!eq_B_D && !eq_F_H)
-	 && (eq(E,C) || El>=Bl&&El>=Fl) && ( (El<Bl&&El<Fl) || none_eq2(C,B,F) || neq(E,P) || neq(E,R) )
-	 && ( eq_B_F &&(eq(E,C)||eq(B,PA)||eq(F,RI)||sim(vE,vA)||sim(vE,vI)) || simb(vB,vF)&&(eq_D_H||eq(E,A)||eq(E,I)) )
+
+//*	B - F
+
+	if ( (ne(B,D) && ne(F,H))
+	 && (eq(E,C)&&El<min(Bl,Fl)||El>max(Bl,Fl)) && ( not_eq2(C,B,F) || ne(E,P) || ne(E,R) )
+	 && ( eq(B,F) &&(eq(E,C)||any_eq3(B,P,A,PA)||any_eq3(F,R,I,RI)||simEI||simEA) || simb(vB,vF)&&(eq(D,H)||any_eq2(E,A,I)) )
 	 ) {
 		K=admixX(C,F,I,B,E,H,A,D,G
 				,R,RC,RI,P,PC,PA,S,SI,SG,Q,QA,QG,CC,II,AA
-				,El,Fl,Bl,Hl,Dl
-				,vE,vF,vB,vI,vA
+				,El,Fl,Bl,Hl,Dl, simEI,simEA,simEG
+				,vE,vF,vB
 				);
-		slope2 = true;
-		slope2ok = (K.b < 1.1);
-		slope2end = (K.b < 3.1);
-		skiprest = (K.b > 7.1);
-		K = (K.b > 3.1) ? vE :
-			(K.b > 1.1) ? (K - 2.0) :
+
+		bool slope2ok = K.b<1.01 && max(sign(El-Fl)*(Dl-El),sign(El-Fl)*(Hl-El))>-0.1;
+		bool isCopy=checkeq(K,vF);
+		float4 mixL2 = mix(K,vE,0.145898);
+		if ( slope2ok && all_eq2(F,A,R) && ne(F,RI) && (ne(F,RC)||eq(F,C)) && (ne(A,Q)||eq(Q, QG)) ) {J=isCopy ? K : mixL2;}
+		if ( slope2ok && all_eq2(F,I,P) && ne(F,PA) && (ne(F,PC)||eq(F,C)) && (ne(I,S)||eq(S, SG)) ) {M=isCopy ? K : mixL2;}
+
+		slope2end = (K.b < 3.99);
+
+		K = (K.b > 3.99) ? vE :
+			(K.b > 1.01) ? (K - 2.0) :
 			K;
+
+		slope2 = true;
 	}
-// D - H
-	if ( !slope1 && !skiprest && (D!=0u && H!=0u)
-	 && (!eq_E_D && !eq_E_H && !oppoPix) && (!eq_F_H && !eq_B_D)
-	 && (eq(E,G) || El>=Hl&&El>=Dl)  &&  ((El<Hl&&El<Dl) || none_eq2(G,D,H) || neq(E,S) || neq(E,Q))
-	 &&	( eq_D_H &&(eq(E,G)||eq(D,QA)||eq(H,SI)||sim(vE,vA)||sim(vE,vI)) || simb(vD,vH)&&(eq_B_F||eq(E,A)||eq(E,I)) )
+
+//*	D - H
+
+	if ( (ne(F,H) && ne(B,D))
+	 && (eq(E,G)&&El<min(Dl,Hl)||El>max(Dl,Hl))  &&  (not_eq2(G,D,H) || ne(E,S) || ne(E,Q))
+	 &&	( eq(D,H) &&(eq(E,G)||any_eq3(D,A,Q,QA)||any_eq3(H,S,I,SI)||simEA||simEI) || simb(vD,vH)&&(eq(B,F)||any_eq2(E,A,I)) )
 	 ) {
 		L=admixX(G,D,A,H,E,B,I,F,C
 				,Q,QG,QA,S,SG,SI,P,PA,PC,R,RI,RC,GG,AA,II
-				,El,Dl,Hl,Bl,Fl
-				,vE,vD,vH,vA,vI
+				,El,Dl,Hl,Bl,Fl, simEA,simEI,simEC
+				,vE,vD,vH
 				);
-		slope3 = true;
-		slope3ok = (L.b < 1.1);
-		slope3end = (L.b < 3.1);
-		skiprest = (L.b > 7.1);
-		L = (L.b > 3.1) ? vE :
-			(L.b > 1.1) ? (L - 2.0) :
+
+		bool slope3ok = (L.b < 1.01) && max(sign(El-Dl)*(Bl-El),sign(El-Dl)*(Fl-El))>-0.1;
+		bool isCopy=checkeq(L,vD);
+		float4 mixL2 = mix(L,vE,0.145898);
+		if (slope3ok && all_eq2(D,I,Q) && ne(D,QA) && (ne(D,QG)||eq(D,G)) && (ne(R,I)||eq(R, RC)) ) {M=isCopy ? L : mixL2;}
+		if (slope3ok && all_eq2(D,A,S) && ne(D,SI) && (ne(D,SG)||eq(D,G)) && (ne(A,P)||eq(P, PC)) ) {J=isCopy ? L : mixL2;}
+
+		slope3end = (L.b < 3.99);
+		L = (L.b > 3.99) ? vE :
+			(L.b > 1.01) ? (L - 2.0) :
 			L;
+
+		slope3 = true;
 	}
-// F - H
-	if ( !slope2 && !slope3 && !skiprest && (F!=0u && H!=0u)
-	 && (!eq_E_F && !eq_E_H && !oppoPix) && (!eq_B_F && !eq_D_H)
-	 && (eq(E,I) || El>=Fl&&El>=Hl)  &&  ((El<Fl&&El<Hl) || none_eq2(I,F,H) || neq(E,R) || neq(E,S))
-	 && ( eq_F_H &&(eq(E,I)||eq(F,RC)||eq(H,SG)||sim(vE,vC)||sim(vE,vG)) || simb(vF,vH)&&(eq_B_D||eq(E,C)||eq(E,G)) )
+
+//*	F - H
+
+	if ( (ne(B,F) && ne(D,H))
+	 && (eq(E,I)&&El<min(Fl,Hl)||El>max(Fl,Hl))  &&  (not_eq2(I,F,H) || ne(E,R) || ne(E,S))
+	 && ( eq(F,H) &&(eq(E,I)||any_eq3(F,R,C,RC)||any_eq3(H,S,G,SG)||simEG||simEC) || simb(vF,vH)&&(eq(B,D)||any_eq2(E,C,G)) )
 	  ) {
 		M=admixX(I,H,G,F,E,D,C,B,A
 				,S,SI,SG,R,RI,RC,Q,QG,QA,P,PC,PA,II,GG,CC
-				,El,Hl,Fl,Dl,Bl
-				,vE,vH,vF,vG,vC
+				,El,Hl,Fl,Dl,Bl, simEG,simEC,simEA
+				,vE,vH,vF
 				);
-		slope4 = true;
-		slope4ok = (M.b < 1.1);
-		slope4end = (M.b < 3.1);
-		skiprest = (M.b > 7.1);
-		M = (M.b > 3.1) ? vE :
-			(M.b > 1.1) ? (M - 2.0) :
+
+		bool slope4ok = (M.b < 1.01) && max(sign(El-Fl)*(Bl-El), sign(El-Fl)*(Dl-El))>-0.1;
+		bool isCopy=checkeq(M,vF);
+		float4 mixL2 = mix(M,vE,0.145898);
+		if ( slope4ok && all_eq2(F,G,R) && ne(F,RC) && (ne(F,RI)||eq(F,I)) && (ne(Q,G)||eq(Q, QA)) ) {L=isCopy ? M : mixL2;}
+		if ( slope4ok && all_eq2(F,C,S) && ne(F,SG) && (ne(F,SI)||eq(F,I)) && (ne(P,C)||eq(P, PA)) ) {K=isCopy ? M : mixL2;}
+
+		slope4end = (M.b < 3.99);
+		M = (M.b > 3.99) ? vE :
+			(M.b > 1.01) ? (M - 2.0) :
 			M;
+
+		slope4 = true;
 	}
 
-//* =========================  2:1 long stepped slope  =========================
-
-	if (slope4ok) {
-		if (all_eq2(R,F,G) && neq(R, RC) && (neq(Q,G)||eq(Q, QA))) {L=admixL(vE,vH); skiprest = true;}
-		if (all_eq2(S,H,C) && neq(S, SG) && (neq(P,C)||eq(P, PA))) {K=admixL(vE,vF); skiprest = true;}
-	}
-
-	if (slope3ok) {
-		if (all_eq2(Q,D,I) && neq(Q, QA) && (neq(R,I)||eq(R, RC))) {M=admixL(vE,vH); skiprest = true;}
-		if (all_eq2(S,H,A) && neq(S, SI) && (neq(A,P)||eq(P, PC))) {J=admixL(vE,vD); skiprest = true;}
-	}
-
-	if (slope2ok) {
-		if (all_eq2(R,F,A) && neq(R, RI) && (neq(A,Q)||eq(Q, QG))) {J=admixL(vE,vB); skiprest = true;}
-		if (all_eq2(P,B,I) && neq(P, PA) && (neq(I,S)||eq(S, SG))) {M=admixL(vE,vF); skiprest = true;}
-	}
-
-	if (slope1ok) {
-		if (all_eq2(Q,D,C) && neq(Q, QG) && (neq(C,R)||eq(R, RI))) {K=admixL(vE,vB); skiprest = true;}
-		if (all_eq2(P,B,G) && neq(P, PC) && (neq(G,S)||eq(S, SI))) {L=admixL(vE,vD); skiprest = true;}
-	}
-
+skiprest = slope1||slope2||slope3||slope4;
 
 
 //* =========================  2:1 staggered slope  (new rule)  ===========================
 
-if (!skiprest && !oppoPix) {
+    bool bottonH = not_eq3(H,E,A,C);
 
-
-    if (!eq_E_H && none_eq2(H,A,C)) {
-
-        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope4end && !eq_F_H) && F!=0u &&
-            !eq_E_F && eq(R,H) && eq(F,G) ) {
+        if ( bottonH &&(!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope4end && ne(F,H)) &&
+            ne(E,F) && eq(R,H) && eq(F,G) ) {
             M = admixS( A, B, C, D, E, F, G, H, I
-                      , R, RC, RI, S, SG, SI, II, CC
-                      , vE, vF, vC
+                      , Q, R, RC, RI, S, SG, SI, CC, simEC
+                      , vE, vF
                       );
             skiprest = true;}
 
-        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope3end && !eq_D_H) && D!=0u &&
-             !eq_E_D && eq(Q,H) && eq(D,I) ) {
+        if ( bottonH && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope3end && ne(D,H)) &&
+             ne(E,D) && eq(Q,H) && eq(D,I) ) {
             L = admixS( C, B, A, F, E, D, I, H, G
-                      , Q, QA, QG, S, SI, SG, GG, AA
-                      , vE, vD, vA
+                      , R, Q, QA, QG, S, SI, SG, AA, simEA
+                      , vE, vD
                       );
             skiprest = true;}
-    }
 
-    if ( !skiprest && !eq_E_B && none_eq2(B,G,I)) {
 
-        if ( (!slope1 && !eq_B_D)  && (!slope4 && !eq_F_H) && (!slope2end && !eq_B_F) && F!=0u &&
-              !eq_E_F && eq(B,R) && eq(A,F) ) {
+    bool topH = not_eq3(B,E,G,I);
+
+        if ( topH &&(!slope1 && ne(B,D))  && (!slope4 && ne(F,H)) && (!slope2end && ne(B,F)) &&
+              ne(E,F) && eq(B,R) && eq(A,F) ) {
             K = admixS( G, H, I, D, E, F, A, B, C
-                      , R, RI, RC, P, PA, PC, CC, II
-                      , vE, vF, vI
+                      , Q, R, RI, RC, P, PA, PC, II, simEI
+                      , vE, vF
                       );
             skiprest = true;}
 
-        if ( !skiprest && (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope1end && !eq_B_D) && D!=0u &&
-             !eq_E_D && eq(B,Q) && eq(C,D) ) {
+        if ( topH && (!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope1end && ne(B,D)) &&
+             ne(E,D) && eq(B,Q) && eq(C,D) ) {
             J = admixS( I, H, G, F, E, D, C, B, A
-                      , Q, QG, QA, P, PC, PA, AA, GG
-                      , vE, vD, vG
+                      , R, Q, QG, QA, P, PC, PA, GG, simEG
+                      , vE, vD
                       );
             skiprest = true;}
 
-    }
 
 
-    if ( !skiprest && !eq_E_D && none_eq2(D,C,I) ) {
+    bool leftV = not_eq3(D,E,C,I);
 
-        if ( (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope3end && !eq_D_H) && H!=0u &&
-              !eq_E_H && eq(D,S) && eq(A,H) ) {
+        if ( leftV && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope3end && ne(D,H)) &&
+              ne(E,H) && eq(D,S) && eq(A,H) ) {
             L = admixS( C, F, I, B, E, H, A, D, G
-                      , S, SI, SG, Q, QA, QG, GG, II
-                      , vE, vH, vI
+                      , P, S, SI, SG, Q, QA, QG, II, simEI
+                      , vE, vH
                       );
             skiprest = true;}
 
-        if ( !skiprest && (!slope3 && !eq_D_H) && (!slope2 && !eq_B_F) && (!slope1end && !eq_B_D) && B!=0u &&
-              !eq_E_B && eq(P,D) && eq(B,G) ) {
+        if ( leftV && (!slope3 && ne(D,H)) && (!slope2 && ne(B,F)) && (!slope1end && ne(B,D)) &&
+              ne(E,B) && eq(P,D) && eq(B,G) ) {
             J = admixS( I, F, C, H, E, B, G, D, A
-                      , P, PC, PA, Q, QG, QA, AA, CC
-                      , vE, vB, vC
+                      , S, P, PC, PA, Q, QG, QA, CC, simEC
+                      , vE, vB
                       );
             skiprest = true;}
 
-    }
 
-    if ( !skiprest && !eq_E_F && none_eq2(F,A,G) ) {
 
-        if ( (!slope2 && !eq_B_F) && (!slope3 && !eq_D_H) && (!slope4end && !eq_F_H) && H!=0u &&
-              !eq_E_H && eq(S,F) && eq(H,C) ) {
+    bool rightV = not_eq3(F,E,A,G);
+
+        if ( rightV && (!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope4end && ne(F,H)) &&
+              ne(E,H) && eq(S,F) && eq(H,C) ) {
             M = admixS( A, D, G, B, E, H, C, F, I
-                      , S, SG, SI, R, RC, RI, II, GG
-                      , vE, vH, vG
+                      , P, S, SG, SI, R, RC, RI, GG, simEG
+                      , vE, vH
                       );
             skiprest = true;}
 
-        if ( !skiprest && (!slope1 && !eq_B_D) && (!slope4 && !eq_F_H) && (!slope2end && !eq_B_F) && B!=0u &&
-             !eq_E_B && eq(P,F) && eq(B,I) ) {
+        if ( rightV && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope2end && ne(B,F)) &&
+             ne(E,B) && eq(P,F) && eq(B,I) ) {
             K = admixS( G, D, A, H, E, B, I, F, C
-                      , P, PA, PC, R, RI, RC, CC, AA
-                      , vE, vB, vA
+                      , S, P, PA, PC, R, RI, RC, AA, simEA
+                      , vE, vB
                       );
             skiprest = true;}
 
-    }
 }
 
-skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u||H==0u;
+skiprest = skiprest||E==0u||B==0u||D==0u||F==0u||H==0u;	// xxx.alpha
+
+if (!skiprest) {
 
 //* =================== Concave+Cross pattern (P100) =================
 
-float4 vT;		float maxl;
  //* top [B]
-if (!skiprest &&
-    Bl<El && !eq_E_D && !eq_E_F && eq_E_H && none_eq2(E,A,C) && all_eq3(E,G,I,S) ) {
+    if( Bl<El && not_eq4(E,A,C,D,F) && all_eq4(E,G,H,I,S) ) {
 
-	float B1 = float(eq(B, A));
-	float B2 = float(eq(B, C));
-	float DD = float(eq(A, D));
-	float FF = float(eq(C, F));
+	bool DD = eq(A, D);
+	bool FF = eq(C, F);
 
-	float sideFactor = eq_D_F && DD!=FF ? 1.0 : -0.145898;
-	Bl = Bl - (B1 +B2 +B1*B2) *0.381966;
-	Dl = Dl - step(El, Dl) + DD*sideFactor;
-	Fl = Fl - step(El, Fl) + FF*sideFactor;
+	Bl = any_eq2(B, A, C) ? -1.0 : Bl;
 
-	maxl = max(Bl, max(Dl, Fl));
+	float tinS = eq(D,F) && DD!=FF ? 2.0 : 0.0;
 
-	vT = eq_B_D || eq_B_F ? vB :
-		 maxl <= Dl      ? vD :
-		 maxl <= Fl      ? vF :
-						   vB ;
+	float brightLoss = float(ne(D,F)) + abs(Dl - El) * 1.618034;
+	
+	Dl = Dl - step(El,Dl)*brightLoss - float(DD) + tinS;
+	Fl = Fl - step(El,Fl)*brightLoss - float(FF) + tinS;
+
+	float maxl = max(Bl, max(Dl, Fl));
+
+	float4 vT =	any_eq2(B,D,F) ? vB :
+			maxl <= 0.0 ? vE :
+			maxl <= Dl ? vD :
+			maxl <= Fl ? vF :
+						vB ;
 	vT = admixC(vT,vE);
 
-	bool nolink = !eq_D_F && (DD==0.0) && (FF==0.0);
+	bool nolink = ne(D,F) && !DD && !FF;
+
 	J = Dl<0.0&&nolink ? vE : vT;
     K = Fl<0.0&&nolink ? vE : vT;
-	L = mix(vE, J, 0.381966*float(eq_D_F));
-	M = L;
-
-   skiprest = true;
 }
+
  //* bottom (H)
-if (!skiprest &&
-    Hl<El && !eq_E_D && !eq_E_F && eq_E_B && none_eq2(E,G,I) && all_eq3(E,A,C,P) ) {
+if ( Hl<El && not_eq4(E,G,I,D,F) && all_eq4(E,A,B,C,P) ) {
 
-	float H1 = float(eq(H, G));
-	float H2 = float(eq(H, I));
-	float DD = float(eq(D, G));
-	float FF = float(eq(F, I));
+	bool DD = eq(D, G);
+	bool FF = eq(F, I);
 
-	float sideFactor = eq_D_F && DD!=FF ? 1.0 : -0.145898;
+	Hl = any_eq2(H, G, I) ? -1.0 : Hl;
 
-	Hl = Hl - (H1+H2+H1*H2) *0.381966;
-	Dl = Dl - step(El, Dl) + DD*sideFactor;
-	Fl = Fl - step(El, Fl) + FF*sideFactor;
+	float tinS = eq(D,F) && DD!=FF ? 2.0 : 0.0;
 
-	maxl = max(Hl, max(Dl, Fl));
+	float brightLoss = float(ne(D,F)) + abs(Dl - El) * 1.618034;
 
-	vT = eq_D_H || eq_F_H ? vH :
-		 maxl <= Dl      ? vD :
-		 maxl <= Fl      ? vF :
-						   vH ;
+	Dl = Dl - step(El,Dl)*brightLoss - float(DD) + tinS;
+	Fl = Fl - step(El,Fl)*brightLoss - float(FF) + tinS;
+
+	float maxl = max(Hl, max(Dl, Fl));
+	
+	float4 vT = any_eq2(H,D,F) ? vH :
+			maxl <= 0.0 ? vE :
+			maxl <= Dl ? vD :
+			maxl <= Fl ? vF :
+						vH ;
 	vT=admixC(vT,vE);
 
-	bool nolink = !eq_D_F && (DD==0.0) && (FF==0.0);
+	bool nolink = ne(D,F) && !DD && !FF;
 
 	L = Dl<0.0&&nolink ? vE : vT;
     M = Fl<0.0&&nolink ? vE : vT;
-	J = mix(vE, L, 0.381966*float(eq_D_F));
-	K = J;
-
-   skiprest = true;
 }
+
  //* right [F]
-if (!skiprest &&
-    Fl<El && !eq_E_B && !eq_E_H && eq_E_D && none_eq2(E,C,I) && all_eq3(E,A,G,Q) ) {
+if ( Fl<El && not_eq4(E,B,C,H,I) && all_eq4(E,A,D,G,Q) ) {
 
-	float F1 = float(eq(F, C));
-	float F2 = float(eq(F, I));
-	float BB = float(eq(B, C));
-	float HH = float(eq(H, I));
+	bool BB = eq(B, C);
+	bool HH = eq(H, I);
 
-	float sideFactor = eq_B_H && BB!=HH ? 1.0 : -0.145898;
+	Fl = any_eq2(F, C, I) ? -1.0 : Fl;
 
-	Fl = Fl - (F1+F2+F1*F2) *0.381966;
-	Bl = Bl - step(El, Bl) + BB*sideFactor;
-	Hl = Hl - step(El, Hl) + HH*sideFactor;
+	float tinS = eq(B,H) && BB!=HH ? 2.0 : 0.0;
 
-	maxl = max(Fl, max(Bl, Hl));
+	float brightLoss = float(ne(B,H)) + abs(Bl - El) * 1.618034;
 
-	vT = eq_B_F || eq_F_H ? vF :
-		 maxl <= Bl      ? vB :
-		 maxl <= Hl      ? vH :
-						   vF ;
+	Bl = Bl - step(El,Bl)*brightLoss - float(BB) + tinS;
+	Hl = Hl - step(El,Hl)*brightLoss - float(HH) + tinS;
+
+	float maxl = max(Fl, max(Bl, Hl));
+
+	float4 vT =any_eq2(F,B,H) ? vF :
+			maxl <= 0.0 ? vE :
+			maxl <= Bl ? vB :
+			maxl <= Hl ? vH :
+						vF ;
 	vT=admixC(vT,vE);
 
-	bool nolink =  !eq_B_H && (BB==0.0) && (HH==0.0);
+	bool nolink = ne(B,H) && !BB && !HH;
 
 	K = Bl<0.0&&nolink ? vE : vT;
     M = Hl<0.0&&nolink ? vE : vT;
-	J = mix(vE, K, 0.381966*float(eq_B_H));
-	L = J;
-
-   skiprest = true;
 }
+
  //* left [D]
-if (!skiprest &&
-    Dl<El && !eq_E_B && !eq_E_H && eq_E_F && none_eq2(E,A,G) && all_eq3(E,C,I,R) ) {
+if ( Dl<El && not_eq4(E,A,B,G,H) && all_eq4(E,C,F,I,R) ) {
 
-	float D1 = float(eq(D, A));
-	float D2 = float(eq(D, G));
-	float BB = float(eq(B, A));
-	float HH = float(eq(H, G));
+	bool BB = eq(B, A);
+	bool HH = eq(H, G);
 
-	float sideFactor = eq_B_H && BB!=HH ? 1.0 : -0.145898;
+	Dl = any_eq2(D, A, G) ? -1.0 : Dl;
 
-	Dl = Dl - (D1+D2+D1*D2) *0.381966;
-	Bl = Bl - step(El, Bl) + BB*sideFactor;
-	Hl = Hl - step(El, Hl) + HH*sideFactor;
+	float tinS = eq(B,H) && BB!=HH ? 2.0 : 0.0;
 
-	maxl = max(Dl, max(Bl, Hl));
+	float brightLoss = float(ne(B,H)) + abs(Bl - El) * 1.618034;
 
-	vT = eq_B_D || eq_D_H ? vD :
-		 maxl <= Bl      ? vB :
-		 maxl <= Hl      ? vH :
-						   vD ;
+	Bl = Bl - step(El,Bl)*brightLoss - float(BB) + tinS;
+	Hl = Hl - step(El,Hl)*brightLoss - float(HH) + tinS;
+
+	float maxl = max(Dl, max(Bl, Hl));
+
+	float4 vT =any_eq2(D,B,H) ? vD :
+			maxl <= 0.0 ? vE :
+			maxl <= Bl ? vB :
+			maxl <= Hl ? vH :
+						vD ;
 	vT=admixC(vT,vE);
 
-	bool nolink =  !eq_B_H && (BB==0.0) && (HH==0.0);
+	bool nolink = ne(B,H) && !BB && !HH;
 
 	J = Bl<0.0&&nolink ? vE : vT;
     L = Hl<0.0&&nolink ? vE : vT;
-	K = mix(vE, J, 0.381966*float(eq_B_H));
-	M = K;
-
-   skiprest = true;
 }
 
 //* ===================  SKorpion pattern (P99) ==================
 
 
-if (!skiprest && !eq_E_F&&eq_E_D&&eq_B_F&&eq_F_H && all_eq2(E,C,I) && (eq(E,Q)||El>Fl) && neq(F,src(+3.0, 0.0)) ) {K=admixK(vF,vE); M=K; skiprest=true;}	//* RIGHT
-if (!skiprest && !eq_E_D&&eq_E_F&&eq_B_D&&eq_D_H && all_eq2(E,A,G) && (eq(E,R)||El>Dl) && neq(D,src(-3.0, 0.0)) ) {J=admixK(vD,vE); L=J; skiprest=true;}	//* LEFT
-if (!skiprest && !eq_E_H&&eq_E_B&&eq_D_H&&eq_F_H && all_eq2(E,G,I) && (eq(E,P)||El>Hl) && neq(H,src(0.0, +3.0)) ) {L=admixK(vH,vE); M=L; skiprest=true;}	//* BOTTOM
-if (!skiprest && !eq_E_B&&eq_E_H&&eq_B_D&&eq_B_F && all_eq2(E,A,C) && (eq(E,S)||El>Bl) && neq(B,src(0.0, -3.0)) ) {J=admixK(vB,vE); K=J;}					//* TOP
+if (ne(E,F) && all_eq2(B,F,H) && all_eq3(E,D,C,I) && (eq(E,Q)||El>Fl) && ne(F,src(+3.0, 0.0)) ) {K=admixK(vF,vE); M=K;}	//* RIGHT
+if (ne(E,D) && all_eq2(B,D,H) && all_eq3(E,F,A,G) && (eq(E,R)||El>Dl) && ne(D,src(-3.0, 0.0)) ) {J=admixK(vD,vE); L=J;}	//* LEFT
+if (ne(E,H) && all_eq2(D,F,H) && all_eq3(E,B,G,I) && (eq(E,P)||El>Hl) && ne(H,src(0.0, +3.0)) ) {L=admixK(vH,vE); M=L;}	//* BOTTOM
+if (ne(E,B) && all_eq2(B,D,F) && all_eq3(E,H,A,C) && (eq(E,S)||El>Bl) && ne(B,src(0.0, -3.0)) ) {J=admixK(vB,vE); K=J;}	//* TOP
 
+}
 
 	//final write
 	float2 fpart = frac(coords);
 
 	float4 res = (fpart.x < 0.5) ? ((fpart.y < 0.5) ? J : L) : ((fpart.y < 0.5) ? K : M);
 
-	ialpha = step(0.002, res.r+res.g+res.b+res.a);
+	ialpha = checknonzero(res);
 	texcol = res;
 }
 	
