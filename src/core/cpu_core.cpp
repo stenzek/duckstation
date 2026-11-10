@@ -1683,7 +1683,7 @@ restart_instruction:
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>((inst.op == InstructionOp::lwr) ? addr : aligned_addr);
         MemoryBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
       }
 
@@ -1774,7 +1774,7 @@ restart_instruction:
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>((inst.op == InstructionOp::swr) ? addr : aligned_addr);
         MemoryBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
       }
 

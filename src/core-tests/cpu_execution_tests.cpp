@@ -409,6 +409,51 @@ TEST_P(CPUCop0Breakpoints, AddressEnablesAndTrapControl)
   }
 }
 
+TEST_P(CPUCop0Breakpoints, PartialWordBreakpointsUseFirstAccessedByte)
+{
+  for (const bool write : {false, true})
+  {
+    for (const bool right : {false, true})
+    {
+      for (const s16 offset : {0, 1, 2, 3})
+      {
+        for (const u32 breakpoint_offset : {0u, 1u, 2u, 3u, 4u})
+        {
+          for (const u32 mask : {0xFFFFFFFFu, 0xFFFFFFFCu})
+          {
+            SCOPED_TRACE(::testing::Message()
+                         << "write=" << write << " right=" << right << " offset=" << offset
+                         << " breakpoint offset=" << breakpoint_offset << " mask=" << std::hex << mask);
+            // Status-only matching lets the access finish, so the program can report which byte matched.
+            const u32 dcic = (1u << 23) | (1u << 25) | (1u << 29) | (1u << (write ? 27 : 26));
+            CPU::g_state.cop0_regs.sr.bits = 0;
+            CPU::g_state.cop0_regs.dcic.bits = dcic;
+            CPU::g_state.cop0_regs.BDA = RAM_TEST_ADDR + breakpoint_offset;
+            CPU::g_state.cop0_regs.BDAM = mask;
+            CPU::UpdateDebugDispatcherFlag();
+
+            Program prog;
+            prog.LoadImmediate(Reg::T0, RAM_TEST_ADDR);
+            prog.Emit(write ? (right ? swr(Reg::R0, offset, Reg::T0) : swl(Reg::R0, offset, Reg::T0)) :
+                              (right ? lwr(Reg::T1, offset, Reg::T0) : lwl(Reg::T1, offset, Reg::T0)));
+            prog.Emit(mfc0(Reg::V0, 7));
+            prog.Emit(nop());
+            const u32 captured_dcic = prog.StoreResult(Reg::V0);
+            prog.Run();
+
+            // Left accesses start at the aligned byte; right accesses start at the effective address.
+            const u32 first_byte = right ? static_cast<u32>(offset) : 0u;
+            const bool matches = (mask == 0xFFFFFFFFu) ? (breakpoint_offset == first_byte) : (breakpoint_offset < 4);
+            EXPECT_EQ(prog.Result(captured_dcic), dcic | (matches ? (write ? 21u : 13u) : 0u));
+            CPU::g_state.cop0_regs.dcic.bits = 0;
+            CPU::UpdateDebugDispatcherFlag();
+          }
+        }
+      }
+    }
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(Interpreter, CPUCop0Breakpoints, ::testing::Values(CPUExecutionMode::Interpreter),
                          GetExecutionModeTestName);
 
