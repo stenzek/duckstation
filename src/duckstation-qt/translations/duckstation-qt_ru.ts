@@ -6523,7 +6523,7 @@ Would you like to import one now?</source>
     <message>
         <source>Start: %1$s | Length: %2$s</source>
         <comment>disc_verify_track_times</comment>
-        <translation>Начало: %1\(s \vert{} Длина: \%2\)s</translation>
+        <translation>Начало: %1$s | Длина: %2$s</translation>
     </message>
     <message>
         <source>Hash: %1$s</source>
@@ -6895,7 +6895,7 @@ Would you like to import one now?</source>
     <message>
         <source>Start Big Picture Mode</source>
         <comment>game_list_start_fullscreen_ui</comment>
-        <translation></translation>
+        <translation>Режим Big Picture</translation>
     </message>
     <message>
         <source>Confirm Close Game</source>
@@ -11508,7 +11508,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
     <message>
         <source>Symbol Files (*.elf *.map);;All Files (*)</source>
-        <translation>Файлы символов (*.elf .map);;Все файлы (*)</translation>
+        <translation>Файлы символов (*.elf *.map);;Все файлы (*)</translation>
     </message>
     <message>
         <source>Failed to load symbols: %1</source>
