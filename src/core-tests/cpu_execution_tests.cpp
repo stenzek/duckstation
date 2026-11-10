@@ -527,6 +527,193 @@ TEST_P(CPUCop0Breakpoints, DataTrapsStopAccessesAndPreserveAlignmentExceptions)
   }
 }
 
+TEST_P(CPUCop0Breakpoints, ExecutionMatchesBeforeFetchFaults)
+{
+  const bool old_tty_logging = g_settings.bios_tty_logging;
+  std::vector<u32> addresses = {0x20010000u, 0x40010000u, 0x60010000u, 0xC0010000u,
+                                0xE0010000u, 0x00030001u, 0x80030001u};
+  for (const u32 segment : {0u, 0x80000000u, 0xA0000000u})
+  {
+    // Physical holes, scratchpad, and I/O aren't instruction-fetchable in any of these aliases.
+    for (const u32 physical : {0x01000000u, 0x1F800000u, 0x1F801000u})
+    {
+      for (const u32 offset : {0u, 4u, 8u, 12u})
+        addresses.push_back(segment | physical | offset);
+    }
+  }
+  for (const u32 address : addresses)
+  {
+    const u32 physical_line = address & CPU::KSEG_MASK & ~0xFu;
+    const bool physical_hole =
+      (physical_line == 0x01000000u || physical_line == 0x1F800000u || physical_line == 0x1F801000u);
+    // Physical holes don't force the debug interpreter; exercise their faults with TTY forcing it on.
+    g_settings.bios_tty_logging = physical_hole;
+    for (const u32 address_enables : {0u, 1u << 29, 1u << 30, 3u << 29})
+    {
+      for (const bool trap : {false, true})
+      {
+        for (const bool match : {false, true})
+        {
+          for (const u32 initial_status : {0u, 0x3Fu})
+          {
+            for (const u32 mask : {0xFFFFFFFFu, 0xFFFFFF00u})
+            {
+              SCOPED_TRACE(::testing::Message()
+                           << "address=" << std::hex << address << " enables=" << address_enables << " trap=" << trap
+                           << " match=" << match << " status=" << initial_status << " mask=" << mask);
+              for (const u32 vector : {0x40u, 0x80u})
+              {
+                const std::array handler = {addiu(Reg::V1, Reg::R0, static_cast<s16>(vector)),
+                                            lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)),
+                                            sb(Reg::R0, static_cast<s16>(ADDR_EXIT), Reg::AT), nop()};
+                std::memcpy(&g_bus.ram[vector], handler.data(), sizeof(handler));
+              }
+              const u32 dcic = (1u << 23) | (1u << 24) | address_enables | ((trap) ? (1u << 31) : 0u) | initial_status;
+              CPU::g_state.cop0_regs.sr.bits = 0;
+              CPU::g_state.cop0_regs.cause.bits = 0;
+              CPU::g_state.cop0_regs.BadVaddr = 0xDEADBEEFu;
+              CPU::g_state.cop0_regs.dcic.bits = dcic;
+              CPU::g_state.cop0_regs.BPC = address + ((match) ? 0u : 0x100u);
+              CPU::g_state.cop0_regs.BPCM = mask;
+              CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] = 0;
+              CPU::UpdateDebugDispatcherFlag();
+              EXPECT_EQ(CPU::g_state.using_debug_dispatcher, physical_hole || address_enables != 0u);
+
+              Program prog;
+              prog.LoadImmediate(Reg::T0, address);
+              prog.Emit(jr(Reg::T0));
+              prog.Emit(nop());
+              prog.Run();
+
+              const bool matched = match && (address_enables & (1u << ((address & 0x80000000u) ? 29 : 30)));
+              const bool misaligned = (address & 3u) != 0;
+              const bool trapped = matched && trap && !misaligned;
+              EXPECT_EQ(CPU::g_state.cop0_regs.EPC, address);
+              EXPECT_EQ(CPU::g_state.cop0_regs.cause.bits, (misaligned) ? 0x10u : ((trapped) ? 0x24u : 0x18u));
+              EXPECT_EQ(CPU::g_state.cop0_regs.BadVaddr, (misaligned) ? address : 0xDEADBEEFu);
+              EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)], (trapped) ? 0x40u : 0x80u);
+              EXPECT_EQ(CPU::g_state.cop0_regs.dcic.bits, dcic | ((matched) ? 3u : 0u));
+              CPU::g_state.cop0_regs.dcic.bits = 0;
+              CPU::UpdateDebugDispatcherFlag();
+            }
+          }
+        }
+      }
+    }
+  }
+  g_settings.bios_tty_logging = old_tty_logging;
+  CPU::UpdateDebugDispatcherFlag();
+}
+
+TEST_P(CPUCop0Breakpoints, ExecutionBreakpointsMatchExpansionCode)
+{
+  for (const u32 address : {0x1F000000u, 0x9F000000u, 0xBF000000u})
+  {
+    for (const bool trap : {false, true})
+    {
+      SCOPED_TRACE(::testing::Message() << "address=" << std::hex << address << " trap=" << trap);
+      for (const u32 vector : {0x40u, 0x80u})
+      {
+        const std::array handler = {addiu(Reg::V1, Reg::R0, static_cast<s16>(vector)),
+                                    lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)),
+                                    sb(Reg::R0, static_cast<s16>(ADDR_EXIT), Reg::AT), nop()};
+        std::memcpy(&g_bus.ram[vector], handler.data(), sizeof(handler));
+      }
+      const u32 dcic = (1u << 23) | (1u << 24) | (3u << 29) | ((trap) ? (1u << 31) : 0u);
+      CPU::g_state.cop0_regs.sr.bits = 0;
+      CPU::g_state.cop0_regs.cause.bits = 0;
+      CPU::g_state.cop0_regs.dcic.bits = dcic;
+      CPU::g_state.cop0_regs.BPC = address;
+      CPU::g_state.cop0_regs.BPCM = 0xFFFFFFFFu;
+      CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] = 0;
+      CPU::UpdateDebugDispatcherFlag();
+      EXPECT_TRUE(CPU::g_state.using_debug_dispatcher);
+
+      Program prog;
+      prog.LoadImmediate(Reg::T0, address);
+      prog.Emit(jr(Reg::T0));
+      prog.Emit(nop());
+      prog.Run();
+
+      // The null PIO device returns FFFFFFFF: fetching succeeds, then the instruction is reserved.
+      EXPECT_EQ(CPU::g_state.cop0_regs.cause.Excode, (trap) ? CPU::Exception::BP : CPU::Exception::RI);
+      EXPECT_EQ(CPU::g_state.cop0_regs.EPC, address);
+      EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)], (trap) ? 0x40u : 0x80u);
+      EXPECT_EQ(CPU::g_state.cop0_regs.dcic.bits, dcic | 3u);
+      CPU::g_state.cop0_regs.dcic.bits = 0;
+      CPU::UpdateDebugDispatcherFlag();
+    }
+  }
+}
+
+TEST_P(CPUCop0Breakpoints, FailedCacheFillPreservesPrefetchedExceptionHandler)
+{
+  for (const u32 segment : {0u, 0x80000000u})
+  {
+    for (const bool trap : {false, true})
+    {
+      const u32 vector = (trap) ? 0x80000040u : 0x80000080u;
+      const u32 address = segment | 0x01000000u | (vector & 0xFFu);
+      SCOPED_TRACE(::testing::Message() << "address=" << std::hex << address << " trap=" << trap);
+      const u32 handler_instruction = addiu(Reg::V1, Reg::R0, 1);
+      std::memcpy(&g_bus.ram[vector & g_bus.ram_mask], &handler_instruction, sizeof(handler_instruction));
+      CPU::g_state.cop0_regs.sr.bits = 0;
+      CPU::g_state.cop0_regs.dcic.bits = (1u << 23) | (1u << 24) | (3u << 29) | ((trap) ? (1u << 31) : 0u);
+      CPU::g_state.cop0_regs.BPC = address;
+      CPU::g_state.cop0_regs.BPCM = 0xFFFFFFFFu;
+      CPU::UpdateDebugDispatcherFlag();
+      CPU::ClearICache();
+
+      u32 instruction;
+      ASSERT_TRUE(CPU::FillICache<true>(vector, &instruction));
+      ASSERT_EQ(instruction, handler_instruction);
+      EXPECT_FALSE(CPU::FillICache<true>(address, &instruction));
+      EXPECT_EQ(CPU::g_state.pc, vector);
+      EXPECT_EQ(CPU::g_state.next_instruction.bits, handler_instruction);
+      EXPECT_EQ(CPU::g_state.cop0_regs.cause.Excode, (trap) ? CPU::Exception::BP : CPU::Exception::IBE);
+      CPU::g_state.cop0_regs.dcic.bits = 0;
+      CPU::UpdateDebugDispatcherFlag();
+    }
+  }
+}
+
+TEST_P(CPUCop0Breakpoints, BPCAndBPCMWriteOrderDoesNotAffectDispatch)
+{
+  for (const bool mask_first : {false, true})
+  {
+    SCOPED_TRACE(::testing::Message() << "mask first=" << mask_first);
+    const std::array handler = {addiu(Reg::V1, Reg::R0, 0x40), lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)),
+                                sb(Reg::R0, static_cast<s16>(ADDR_EXIT), Reg::AT), nop()};
+    std::memcpy(&g_bus.ram[0x40], handler.data(), sizeof(handler));
+    CPU::g_state.cop0_regs.sr.bits = 0;
+    CPU::g_state.cop0_regs.cause.bits = 0;
+    CPU::g_state.cop0_regs.dcic.bits = (1u << 23) | (1u << 24) | (1u << 29) | (1u << 31);
+    CPU::g_state.cop0_regs.BPC = 0x81000000u;
+    CPU::g_state.cop0_regs.BPCM = 0xFFFFFFFFu;
+    CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] = 0;
+    CPU::UpdateDebugDispatcherFlag();
+    EXPECT_FALSE(CPU::g_state.using_debug_dispatcher);
+
+    const u32 target = PROGRAM_BASE + 28;
+    Program prog;
+    prog.LoadImmediate(Reg::T0, 0xFFFFFFFFu);
+    prog.LoadImmediate(Reg::T1, target);
+    prog.Emit((mask_first) ? mtc0(Reg::T0, 11) : mtc0(Reg::T1, 3));
+    prog.Emit((mask_first) ? mtc0(Reg::T1, 3) : mtc0(Reg::T0, 11));
+    prog.Emit(addiu(Reg::V1, Reg::R0, 0x11));
+    prog.Run();
+    // Enabling the debug dispatcher exits execution; resume until the program or handler exits.
+    for (u32 attempt = 0; attempt < 2 && CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] == 0; attempt++)
+      CPU::Execute();
+
+    EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)], 0x40u);
+    EXPECT_EQ(CPU::g_state.cop0_regs.EPC, target);
+    EXPECT_EQ(CPU::g_state.cop0_regs.cause.Excode, CPU::Exception::BP);
+    CPU::g_state.cop0_regs.dcic.bits = 0;
+    CPU::UpdateDebugDispatcherFlag();
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(Interpreter, CPUCop0Breakpoints, ::testing::Values(CPUExecutionMode::Interpreter),
                          GetExecutionModeTestName);
 

@@ -86,6 +86,7 @@ ALWAYS_INLINE bool CompareICacheTag(VirtualMemoryAddress address)
 
 TickCount GetInstructionReadTicks(VirtualMemoryAddress address);
 TickCount GetICacheFillTicks(VirtualMemoryAddress address);
+template<bool debug>
 bool FillICache(VirtualMemoryAddress address, u32* instruction);
 void CheckAndUpdateICacheTags(u32 line_count);
 
