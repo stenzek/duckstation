@@ -219,7 +219,12 @@ TinyString Host::FormatRelativeDateTime(std::time_t timestamp, bool long_format 
     return TranslatePluralToTinyString("Host", TRANSLATE_PLURAL_NOOP("Host", "%n hours ago", "Time difference"),
                                        "Time difference", static_cast<int>(delta) / (60 * 60));
   }
-  else if (use_extended_relative_time && delta >= WEEK)
+  else if (use_extended_relative_time && delta < WEEK)
+  {
+    // Today, yesterday or N days ago.
+    return FormatRelativeDate(timestamp, long_format, for_title);
+  }
+  else if (use_extended_relative_time)
   {
     const std::tm current_tm = Common::LocalTime(static_cast<std::time_t>(current_time)).value_or(std::tm{});
     const std::optional<std::tm> timestamp_tm = Common::LocalTime(timestamp);
