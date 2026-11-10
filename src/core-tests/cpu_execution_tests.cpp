@@ -454,6 +454,79 @@ TEST_P(CPUCop0Breakpoints, PartialWordBreakpointsUseFirstAccessedByte)
   }
 }
 
+TEST_P(CPUCop0Breakpoints, DataTrapsStopAccessesAndPreserveAlignmentExceptions)
+{
+  struct Access
+  {
+    u32 opcode;
+    u32 alignment;
+    bool write;
+    u32 ce;
+  };
+  const Access accesses[] = {
+    {0x20, 1, false, 0}, {0x24, 1, false, 0}, {0x21, 2, false, 1}, {0x25, 2, false, 1}, {0x23, 4, false, 3},
+    {0x22, 1, false, 2}, {0x26, 1, false, 2}, {0x28, 1, true, 0},  {0x29, 2, true, 1},  {0x2B, 4, true, 3},
+    {0x2A, 1, true, 2},  {0x2E, 1, true, 2},  {0x30, 4, false, 0}, {0x31, 4, false, 1}, {0x32, 4, false, 2},
+    {0x33, 4, false, 3}, {0x38, 4, true, 0},  {0x39, 4, true, 1},  {0x3A, 4, true, 2},  {0x3B, 4, true, 3},
+  };
+  for (const Access& access : accesses)
+  {
+    for (const bool mapped : {false, true})
+    {
+      for (const u32 offset : {0u, 1u, 2u, 3u})
+      {
+        for (const bool delay_slot : {false, true})
+        {
+          SCOPED_TRACE(::testing::Message() << "opcode=" << std::hex << access.opcode << " mapped=" << mapped
+                                            << " offset=" << offset << " delay slot=" << delay_slot);
+          for (const u32 vector : {0x40u, 0x80u})
+          {
+            const std::array handler = {addiu(Reg::V1, Reg::R0, static_cast<s16>(vector)),
+                                        lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)),
+                                        sb(Reg::R0, static_cast<s16>(ADDR_EXIT), Reg::AT), nop()};
+            std::memcpy(&g_bus.ram[vector], handler.data(), sizeof(handler));
+          }
+          const u32 address = ((mapped) ? RAM_TEST_ADDR : 0x40180000u) + offset;
+          const u32 dcic = (1u << 23) | (1u << 25) | (3u << 29) | (1u << 31) | (1u << ((access.write) ? 27 : 26));
+          CPU::g_state.cop0_regs.sr.bits = 0xF0000000u;
+          CPU::g_state.cop0_regs.cause.bits = 0;
+          CPU::g_state.cop0_regs.BadVaddr = 0xDEADBEEFu;
+          CPU::g_state.cop0_regs.dcic.bits = dcic;
+          CPU::g_state.cop0_regs.BDA = (access.opcode == 0x22 || access.opcode == 0x2A) ? (address & ~3u) : address;
+          CPU::g_state.cop0_regs.BDAM = 0xFFFFFFFFu;
+          CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] = 0;
+          CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::t1)] = 0xAABBCCDDu;
+          const u32 original_memory = 0x12345678u;
+          std::memcpy(&g_bus.ram[RAM_TEST_ADDR & g_bus.ram_mask], &original_memory, sizeof(original_memory));
+          CPU::UpdateDebugDispatcherFlag();
+
+          Program prog;
+          prog.LoadImmediate(Reg::T0, address);
+          if (delay_slot)
+            prog.Emit(beq(Reg::R0, Reg::R0, 1));
+          prog.Emit((access.opcode << 26) | srcVal(Reg::T0) | tgtVal(Reg::T1));
+          prog.Emit(nop());
+          prog.Run();
+
+          const bool misaligned = (offset % access.alignment) != 0;
+          const u32 exception = (misaligned) ? ((access.write) ? 5u : 4u) : 9u;
+          const u32 cause =
+            (exception << 2) | ((misaligned) ? (access.ce << 28) : 0u) | ((delay_slot) ? 0xC0000000u : 0u);
+          EXPECT_EQ(CPU::g_state.cop0_regs.cause.bits, cause);
+          EXPECT_EQ(CPU::g_state.cop0_regs.EPC, PROGRAM_BASE + 12);
+          EXPECT_EQ(CPU::g_state.cop0_regs.BadVaddr, (misaligned) ? address : 0xDEADBEEFu);
+          EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)], (misaligned) ? 0x80u : 0x40u);
+          EXPECT_EQ(CPU::g_state.cop0_regs.dcic.bits, dcic | ((access.write) ? 21u : 13u));
+          EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::t1)], 0xAABBCCDDu);
+          EXPECT_EQ(Program::ReadRAM(RAM_TEST_ADDR), original_memory);
+          CPU::g_state.cop0_regs.dcic.bits = 0;
+          CPU::UpdateDebugDispatcherFlag();
+        }
+      }
+    }
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(Interpreter, CPUCop0Breakpoints, ::testing::Values(CPUExecutionMode::Interpreter),
                          GetExecutionModeTestName);
 

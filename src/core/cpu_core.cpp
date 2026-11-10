@@ -59,8 +59,8 @@ static void WriteRegDelayed(Reg rd, u32 value);
 static void DispatchCop0Breakpoint(bool data);
 static bool IsCop0ExecutionBreakpointUnmasked();
 static bool Cop0ExecutionBreakpointCheck(u32 pc);
-template<MemoryAccessType type>
-static void Cop0DataBreakpointCheck(VirtualMemoryAddress address);
+template<MemoryAccessType type, MemoryAccessSize size>
+static bool Cop0DataBreakpointCheck(VirtualMemoryAddress address);
 
 static BreakpointList& GetBreakpointList(BreakpointType type);
 static bool CheckBreakpointList(BreakpointType type, VirtualMemoryAddress address);
@@ -577,25 +577,25 @@ ALWAYS_INLINE_RELEASE bool CPU::Cop0ExecutionBreakpointCheck(u32 pc)
   return true;
 }
 
-template<MemoryAccessType type>
-ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress address)
+template<MemoryAccessType type, MemoryAccessSize size>
+ALWAYS_INLINE_RELEASE bool CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress address)
 {
   if constexpr (type == MemoryAccessType::Read)
   {
     if (!g_state.cop0_regs.dcic.DataReadBreakpointsEnabled((address & 0x80000000u) == 0))
-      return;
+      return false;
   }
   else
   {
     if (!g_state.cop0_regs.dcic.DataWriteBreakpointsEnabled((address & 0x80000000u) == 0))
-      return;
+      return false;
   }
 
   // Break condition is "((addr XOR BDA) AND BDAM)=0".
   const u32 bda = g_state.cop0_regs.BDA;
   const u32 bdam = g_state.cop0_regs.BDAM;
   if (bdam == 0 || ((address ^ bda) & bdam) != 0u)
-    return;
+    return false;
 
   DEV_LOG("Cop0 data breakpoint for {:08X} at {:08X}", address, g_state.current_instruction_pc);
 
@@ -606,8 +606,14 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
   else
     g_state.cop0_regs.dcic.status_bda_data_write_break = true;
 
-  if (g_state.cop0_regs.dcic.trap_enable)
+  if (!g_state.cop0_regs.dcic.trap_enable)
+    return false;
+
+  // Alignment faults take priority over the debug trap, but retain the match status.
+  if (DoAlignmentCheck<type, size>(address))
     DispatchCop0Breakpoint(true);
+
+  return true;
 }
 
 namespace CPU {
@@ -1561,7 +1567,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -1586,7 +1593,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -1610,7 +1618,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -1633,7 +1642,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Byte>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -1657,7 +1667,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::HalfWord>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -1683,7 +1694,11 @@ restart_instruction:
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>((inst.op == InstructionOp::lwr) ? addr : aligned_addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Byte>(
+              (inst.op == InstructionOp::lwr) ? addr : aligned_addr))
+        {
+          return;
+        }
         MemoryBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
       }
 
@@ -1721,7 +1736,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::Byte>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
@@ -1738,7 +1754,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::HalfWord>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
@@ -1755,7 +1772,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
@@ -1774,7 +1792,11 @@ restart_instruction:
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>((inst.op == InstructionOp::swr) ? addr : aligned_addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::Byte>(
+              (inst.op == InstructionOp::swr) ? addr : aligned_addr))
+        {
+          return;
+        }
         MemoryBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
       }
 
@@ -2131,7 +2153,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -2160,7 +2183,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
@@ -2195,7 +2219,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Read, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
       }
 
@@ -2217,7 +2242,8 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        if (Cop0DataBreakpointCheck<MemoryAccessType::Write, MemoryAccessSize::Word>(addr))
+          return;
         MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
       }
 
