@@ -24,6 +24,7 @@
 #include <atomic>
 #include <cstring>
 #include <deque>
+#include <iterator>
 #include <limits>
 #include <mutex>
 #include <string>
@@ -916,6 +917,12 @@ struct MediaFoundationAudioCodec
   u32 min_bitrate;
   u32 max_bitrate;
 };
+struct MediaFoundationAudioContainer
+{
+  const char* name;
+  const char* display_name;
+  const GUID& default_codec;
+};
 // clang-format off
 static constexpr const MediaFoundationVideoCodec s_media_foundation_video_codecs[] = {
   {"h264", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "H.264 with Software Encoding", "VideoCodec"), MFVideoFormat_H264, false},
@@ -927,6 +934,11 @@ static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs
   {"aac", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Advanced Audio Coding", "AudioCodec"), MFAudioFormat_AAC, 64, 224},
   {"mp3", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "MPEG-2 Audio Layer III", "AudioCodec"), MFAudioFormat_MP3, 64, 320},
   {"pcm", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Uncompressed PCM", "AudioCodec"), MFAudioFormat_PCM, 0, std::numeric_limits<u32>::max()},
+};
+static constexpr const MediaFoundationAudioContainer s_media_foundation_audio_containers[] = {
+  {"mp4", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "MPEG-4 Part 14", "ContainerFormat"), MFAudioFormat_AAC},
+  {"mp3", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat"), MFAudioFormat_MP3},
+  {"wav", TRANSLATE_DISAMBIG_NOOP("MediaCapture", "Waveform Audio File Format", "ContainerFormat"), MFAudioFormat_PCM},
 };
 // clang-format on
 
@@ -991,11 +1003,14 @@ std::unique_ptr<MediaCapture> MediaCaptureMF::Create(Error* error)
 
 MediaCapture::ContainerList MediaCaptureMF::GetAudioContainerList()
 {
-  return {
-    {"mp4", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-4 Part 14", "ContainerFormat")},
-    {"mp3", TRANSLATE_DISAMBIG_STR("MediaCapture", "MPEG-2 Audio Layer III", "ContainerFormat")},
-    {"wav", TRANSLATE_DISAMBIG_STR("MediaCapture", "Waveform Audio File Format", "ContainerFormat")},
-  };
+  ContainerList ret;
+  ret.reserve(std::size(s_media_foundation_audio_containers));
+  for (const MediaFoundationAudioContainer& container : s_media_foundation_audio_containers)
+  {
+    ret.emplace_back(container.name,
+                     Host::TranslateToString("MediaCapture", container.display_name, "ContainerFormat"));
+  }
+  return ret;
 }
 
 MediaCapture::ContainerList MediaCaptureMF::GetAudioCodecList(const char* container)
@@ -1892,6 +1907,16 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
   }
   else
   {
+    const std::string_view extension = Path::GetExtension(m_path);
+    for (const MediaFoundationAudioContainer& container : s_media_foundation_audio_containers)
+    {
+      if (StringUtil::EqualNoCase(extension, container.name))
+      {
+        output_subtype = container.default_codec;
+        break;
+      }
+    }
+
     bitrate = std::clamp(bitrate, 32u, 320u);
   }
 
