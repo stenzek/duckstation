@@ -1339,21 +1339,49 @@ ALWAYS_INLINE InstructionImpl GetSpecializedHandler(Instruction inst)
   return handlers[inst.sf][BoolToUInt8(inst.lm)];
 }
 
+// Command latencies for implemented opcodes. Unhandled opcodes have zero latency.
+// clang-format off
+static constexpr u8 s_instruction_ticks[64] = {
+  //   RTPS    RTPS       -       -       -       -   NCLIP       -
+         16,     15,      0,      0,      0,      0,      8,      0,
+  //      -       -       -       -      OP       -       -       -
+          0,      0,      0,      0,      6,      0,      0,      0,
+  //   DPCS   INTPL   MVMVA    NCDS     CDP       -    NCDT       -
+          8,      8,      8,     19,     13,      0,     44,      0,
+  //      -       -    DCPL    NCCS      CC       -     NCS       -
+          0,      0,      8,     17,     11,      0,     14,      0,
+  //    NCT       -       -       -       -       -       -       -
+         30,      0,      0,      0,      0,      0,      0,      0,
+  //    SQR    DCPL    DPCT       -       -   AVSZ3   AVSZ4       -
+          5,      8,     17,      0,      0,      5,      6,      0,
+  //   RTPT       -       -       -       -       -       -       -
+         23,      0,      0,      0,      0,      0,      0,      0,
+  //      -       -       -       -       -     GPF     GPL    NCCT
+          0,      0,      0,      0,      0,      5,      5,     39,
+};
+// clang-format on
+
+static void Execute_Unimplemented(Instruction inst)
+{
+  ERROR_LOG("Unhandled GTE opcode 0x{:08X}", inst.bits);
+}
+
 } // namespace GTE
 
 void GTE::ExecuteInstruction(u32 inst_bits)
 {
   const Instruction inst{inst_bits};
-  switch (inst.command)
+  const u8 command = inst.command;
+  CPU::AddGTETicks(s_instruction_ticks[command]);
+  switch (command)
   {
+    case 0x00: // RTPS alias
     case 0x01:
-      CPU::AddGTETicks(15);
       GetSpecializedHandler<&Execute_RTPS>(inst)(inst);
       break;
 
     case 0x06:
     {
-      CPU::AddGTETicks(8);
       if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
         Execute_NCLIP_PGXP(inst);
       else
@@ -1362,92 +1390,75 @@ void GTE::ExecuteInstruction(u32 inst_bits)
     break;
 
     case 0x0C:
-      CPU::AddGTETicks(6);
       GetSpecializedHandler<&Execute_OP>(inst)(inst);
       break;
 
     case 0x10:
-      CPU::AddGTETicks(8);
       GetSpecializedHandler<&Execute_DPCS>(inst)(inst);
       break;
 
     case 0x11:
-      CPU::AddGTETicks(8);
       GetSpecializedHandler<&Execute_INTPL>(inst)(inst);
       break;
 
     case 0x12:
-      CPU::AddGTETicks(8);
       GetSpecializedHandler<&Execute_MVMVA>(inst)(inst);
       break;
 
     case 0x13:
-      CPU::AddGTETicks(19);
       GetSpecializedHandler<&Execute_NCDS>(inst)(inst);
       break;
 
     case 0x14:
-      CPU::AddGTETicks(13);
       GetSpecializedHandler<&Execute_CDP>(inst)(inst);
       break;
 
     case 0x16:
-      CPU::AddGTETicks(44);
       GetSpecializedHandler<&Execute_NCDT>(inst)(inst);
       break;
 
     case 0x1B:
-      CPU::AddGTETicks(17);
       GetSpecializedHandler<&Execute_NCCS>(inst)(inst);
       break;
 
     case 0x1C:
-      CPU::AddGTETicks(11);
       GetSpecializedHandler<&Execute_CC>(inst)(inst);
       break;
 
     case 0x1E:
-      CPU::AddGTETicks(14);
       GetSpecializedHandler<&Execute_NCS>(inst)(inst);
       break;
 
     case 0x20:
-      CPU::AddGTETicks(30);
       GetSpecializedHandler<&Execute_NCT>(inst)(inst);
       break;
 
     case 0x28:
-      CPU::AddGTETicks(5);
       GetSpecializedHandler<&Execute_SQR>(inst)(inst);
       break;
 
+    case 0x1A: // DCPL alias
     case 0x29:
-      CPU::AddGTETicks(8);
       GetSpecializedHandler<&Execute_DCPL>(inst)(inst);
       break;
 
     case 0x2A:
-      CPU::AddGTETicks(17);
       GetSpecializedHandler<&Execute_DPCT>(inst)(inst);
       break;
 
     case 0x2D:
-      CPU::AddGTETicks(5);
       Execute_AVSZ3(inst);
       break;
 
     case 0x2E:
-      CPU::AddGTETicks(6);
       Execute_AVSZ4(inst);
       break;
 
     case 0x30:
-      CPU::AddGTETicks(23);
       GetSpecializedHandler<&Execute_RTPT>(inst)(inst);
       break;
 
     case 0x3D:
-      CPU::AddGTETicks(5);
       if (g_settings.UsingPGXPCPUMode())
         Execute_GPF_PGXP(inst);
       else
@@ -1455,7 +1466,6 @@ void GTE::ExecuteInstruction(u32 inst_bits)
       break;
 
     case 0x3E:
-      CPU::AddGTETicks(5);
       if (g_settings.UsingPGXPCPUMode())
         Execute_GPL_PGXP(inst);
       else
@@ -1463,16 +1473,15 @@ void GTE::ExecuteInstruction(u32 inst_bits)
       break;
 
     case 0x3F:
-      CPU::AddGTETicks(39);
       GetSpecializedHandler<&Execute_NCCT>(inst)(inst);
       break;
 
       // clang-format off
-    [[unlikely]] case 0: [[unlikely]] case 2: [[unlikely]] case 3: [[unlikely]] case 4:
+    [[unlikely]] case 2: [[unlikely]] case 3: [[unlikely]] case 4:
     [[unlikely]] case 5: [[unlikely]] case 7: [[unlikely]] case 8: [[unlikely]] case 9:
     [[unlikely]] case 10: [[unlikely]] case 11: [[unlikely]] case 13: [[unlikely]] case 14:
     [[unlikely]] case 15: [[unlikely]] case 21: [[unlikely]] case 23: [[unlikely]] case 24:
-    [[unlikely]] case 25: [[unlikely]] case 26: [[unlikely]] case 29: [[unlikely]] case 31:
+    [[unlikely]] case 25: [[unlikely]] case 29: [[unlikely]] case 31:
     [[unlikely]] case 33: [[unlikely]] case 34: [[unlikely]] case 35: [[unlikely]] case 36:
     [[unlikely]] case 37: [[unlikely]] case 38: [[unlikely]] case 39: [[unlikely]] case 43:
     [[unlikely]] case 44: [[unlikely]] case 47: [[unlikely]] case 49: [[unlikely]] case 50:
@@ -1480,7 +1489,7 @@ void GTE::ExecuteInstruction(u32 inst_bits)
     [[unlikely]] case 55: [[unlikely]] case 56: [[unlikely]] case 57: [[unlikely]] case 58:
     [[unlikely]] case 59: [[unlikely]] case 60:
       // clang-format on
-      ERROR_LOG("Unhandled GTE opcode 0x{:08X}", inst.bits);
+      Execute_Unimplemented(inst);
       break;
 
       DefaultCaseIsUnreachable();
@@ -1490,15 +1499,15 @@ void GTE::ExecuteInstruction(u32 inst_bits)
 GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
 {
   const Instruction inst{inst_bits};
+  *ticks = s_instruction_ticks[inst.command];
   switch (inst.command)
   {
+    case 0x00: // RTPS alias
     case 0x01:
-      *ticks = 15;
       return GetSpecializedHandler<&Execute_RTPS>(inst);
 
     case 0x06:
     {
-      *ticks = 8;
       if (g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_culling)
         return &Execute_NCLIP_PGXP;
       else
@@ -1506,93 +1515,74 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
     }
 
     case 0x0C:
-      *ticks = 6;
       return GetSpecializedHandler<&Execute_OP>(inst);
 
     case 0x10:
-      *ticks = 8;
       return GetSpecializedHandler<&Execute_DPCS>(inst);
 
     case 0x11:
-      *ticks = 8;
       return GetSpecializedHandler<&Execute_INTPL>(inst);
 
     case 0x12:
-      *ticks = 8;
       return GetSpecializedHandler<&Execute_MVMVA>(inst);
 
     case 0x13:
-      *ticks = 19;
       return GetSpecializedHandler<&Execute_NCDS>(inst);
 
     case 0x14:
-      *ticks = 13;
       return GetSpecializedHandler<&Execute_CDP>(inst);
 
     case 0x16:
-      *ticks = 44;
       return GetSpecializedHandler<&Execute_NCDT>(inst);
 
     case 0x1B:
-      *ticks = 17;
       return GetSpecializedHandler<&Execute_NCCS>(inst);
 
     case 0x1C:
-      *ticks = 11;
       return GetSpecializedHandler<&Execute_CC>(inst);
 
     case 0x1E:
-      *ticks = 14;
       return GetSpecializedHandler<&Execute_NCS>(inst);
 
     case 0x20:
-      *ticks = 30;
       return GetSpecializedHandler<&Execute_NCT>(inst);
 
     case 0x28:
-      *ticks = 5;
       return GetSpecializedHandler<&Execute_SQR>(inst);
 
+    case 0x1A: // DCPL alias
     case 0x29:
-      *ticks = 8;
       return GetSpecializedHandler<&Execute_DCPL>(inst);
 
     case 0x2A:
-      *ticks = 17;
       return GetSpecializedHandler<&Execute_DPCT>(inst);
 
     case 0x2D:
-      *ticks = 5;
       return &Execute_AVSZ3;
 
     case 0x2E:
-      *ticks = 6;
       return &Execute_AVSZ4;
 
     case 0x30:
-      *ticks = 23;
       return GetSpecializedHandler<&Execute_RTPT>(inst);
 
     case 0x3D:
-      *ticks = 5;
       if (g_settings.UsingPGXPCPUMode())
         return &Execute_GPF_PGXP;
       else
         return GetSpecializedHandler<&Execute_GPF>(inst);
 
     case 0x3E:
-      *ticks = 5;
       if (g_settings.UsingPGXPCPUMode())
         return &Execute_GPL_PGXP;
       else
         return GetSpecializedHandler<&Execute_GPL>(inst);
 
     case 0x3F:
-      *ticks = 39;
       return GetSpecializedHandler<&Execute_NCCT>(inst);
 
     default:
-      Panic("Missing handler");
+      return &Execute_Unimplemented;
   }
 }
 
