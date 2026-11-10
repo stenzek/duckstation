@@ -226,8 +226,9 @@ TEST_F(BusMemory, COP0ExecutionBreakpointRangeFollowsInstalledRAM)
   const auto uses_debug_dispatcher_for_breakpoint = [](u32 bpc) {
     CPU::g_state.cop0_regs.BPC = bpc;
     CPU::g_state.cop0_regs.BPCM = 0xFFFFFFFFu;
-    CPU::g_state.cop0_regs.dcic.super_master_enable_1 = true;
-    CPU::g_state.cop0_regs.dcic.super_master_enable_2 = true;
+    CPU::g_state.cop0_regs.dcic.debug_enable = true;
+    CPU::g_state.cop0_regs.dcic.trap_enable = true;
+    CPU::g_state.cop0_regs.dcic.kernel_debug_enable = true;
     CPU::g_state.cop0_regs.dcic.execution_breakpoint_enable = true;
     CPU::UpdateDebugDispatcherFlag();
     return CPU::g_state.using_debug_dispatcher;

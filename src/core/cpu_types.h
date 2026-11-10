@@ -382,36 +382,34 @@ struct Cop0Registers
     BitField<u32, bool, 4, 1> status_bda_data_write_break;
     BitField<u32, bool, 5, 1> status_any_jump_break;
     BitField<u32, u8, 12, 2> jump_redirection;
-    BitField<u32, bool, 23, 1> super_master_enable_1;
+    BitField<u32, bool, 23, 1> debug_enable;
     BitField<u32, bool, 24, 1> execution_breakpoint_enable;
     BitField<u32, bool, 25, 1> data_access_breakpoint;
     BitField<u32, bool, 26, 1> break_on_data_read;
     BitField<u32, bool, 27, 1> break_on_data_write;
     BitField<u32, bool, 28, 1> break_on_any_jump;
-    BitField<u32, bool, 29, 1> master_enable_any_jump;
-    BitField<u32, bool, 30, 1> master_enable_break;
-    BitField<u32, bool, 31, 1> super_master_enable_2;
+    BitField<u32, bool, 29, 1> kernel_debug_enable;
+    BitField<u32, bool, 30, 1> user_debug_enable;
+    BitField<u32, bool, 31, 1> trap_enable;
 
     static constexpr u32 WRITE_MASK = 0b1111'1111'1000'0000'1111'0000'0011'1111;
 
-    static constexpr u32 ANY_BREAKPOINTS_ENABLED_BITS = (1u << 24) | (1u << 26) | (1u << 27) | (1u << 28);
-    static constexpr u32 MASTER_ENABLE_BITS = (1u << 23) | (1u << 31);
-
-    constexpr bool ExecutionBreakpointsEnabled() const
+    // Kernel/user debug enables select the address range, independently of SR.KUc.
+    constexpr bool ExecutionBreakpointsEnabled(bool user_address) const
     {
-      const u32 mask = (1u << 23) | (1u << 24) | (1u << 31);
+      const u32 mask = (1u << 23) | (1u << 24) | (1u << (user_address ? 30 : 29));
       return ((bits & mask) == mask);
     }
 
-    constexpr bool DataReadBreakpointsEnabled() const
+    constexpr bool DataReadBreakpointsEnabled(bool user_address) const
     {
-      const u32 mask = (1u << 23) | (1u << 25) | (1u << 26) | (1u << 31);
+      const u32 mask = (1u << 23) | (1u << 25) | (1u << 26) | (1u << (user_address ? 30 : 29));
       return ((bits & mask) == mask);
     }
 
-    constexpr bool DataWriteBreakpointsEnabled() const
+    constexpr bool DataWriteBreakpointsEnabled(bool user_address) const
     {
-      const u32 mask = (1u << 23) | (1u << 25) | (1u << 27) | (1u << 31);
+      const u32 mask = (1u << 23) | (1u << 25) | (1u << 27) | (1u << (user_address ? 30 : 29));
       return ((bits & mask) == mask);
     }
   } dcic;

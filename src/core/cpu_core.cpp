@@ -557,7 +557,7 @@ ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
 
 ALWAYS_INLINE_RELEASE bool CPU::Cop0ExecutionBreakpointCheck(u32 pc)
 {
-  if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled())
+  if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled((pc & 0x80000000u) == 0))
     return false;
 
   const u32 bpc = g_state.cop0_regs.BPC;
@@ -570,6 +570,9 @@ ALWAYS_INLINE_RELEASE bool CPU::Cop0ExecutionBreakpointCheck(u32 pc)
   DEV_LOG("Cop0 execution breakpoint at {:08X}", pc);
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bpc_code_break = true;
+  if (!g_state.cop0_regs.dcic.trap_enable)
+    return false;
+
   DispatchCop0Breakpoint(false);
   return true;
 }
@@ -579,12 +582,12 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
 {
   if constexpr (type == MemoryAccessType::Read)
   {
-    if (!g_state.cop0_regs.dcic.DataReadBreakpointsEnabled())
+    if (!g_state.cop0_regs.dcic.DataReadBreakpointsEnabled((address & 0x80000000u) == 0))
       return;
   }
   else
   {
-    if (!g_state.cop0_regs.dcic.DataWriteBreakpointsEnabled())
+    if (!g_state.cop0_regs.dcic.DataWriteBreakpointsEnabled((address & 0x80000000u) == 0))
       return;
   }
 
@@ -603,7 +606,8 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
   else
     g_state.cop0_regs.dcic.status_bda_data_write_break = true;
 
-  DispatchCop0Breakpoint(true);
+  if (g_state.cop0_regs.dcic.trap_enable)
+    DispatchCop0Breakpoint(true);
 }
 
 namespace CPU {
@@ -2288,8 +2292,10 @@ bool CPU::UpdateDebugDispatcherFlag()
   const bool has_any_breakpoints = (HasAnyBreakpoints() || s_locals.break_type == ExecutionBreakType::SingleStep);
 
   const auto& dcic = g_state.cop0_regs.dcic;
-  const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
-                                    dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();
+  const bool has_cop0_breakpoints =
+    dcic.debug_enable && (dcic.kernel_debug_enable || dcic.user_debug_enable) &&
+    ((dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked()) ||
+     (dcic.data_access_breakpoint && (dcic.break_on_data_read || dcic.break_on_data_write)));
 
   // Interpreter uses the debug dispatcher while booting to check for the game entry point.
   const bool use_debug_dispatcher = has_any_breakpoints || has_cop0_breakpoints || s_locals.trace_to_log ||

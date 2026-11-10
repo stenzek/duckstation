@@ -28,6 +28,10 @@ class CPUExecution : public ExecutionModeTest
 {
 };
 
+class CPUCop0Breakpoints : public ExecutionModeTest
+{
+};
+
 struct CPUMemoryExecution : public ExecutionModeTest
 {
 protected:
@@ -344,6 +348,69 @@ TEST_P(CPUExecution, CallStackLeafAfterOutOfLineBlocks)
 }
 
 INSTANTIATE_TEST_SUITE_P(ExecutionModes, CPUExecution, ::testing::ValuesIn(EXECUTION_MODES), GetExecutionModeTestName);
+
+TEST_P(CPUCop0Breakpoints, AddressEnablesAndTrapControl)
+{
+  for (const bool user_mode : {false, true})
+  {
+    for (const bool user_address : {false, true})
+    {
+      for (const u32 mode_enables : {0u, 1u << 29, 1u << 30, 3u << 29})
+      {
+        for (const bool debug_enable : {false, true})
+        {
+          for (const bool trap_enable : {false, true})
+          {
+            for (const u32 access : {0u, 1u, 2u})
+            {
+              SCOPED_TRACE(::testing::Message() << "user mode=" << user_mode << " user address=" << user_address
+                                                << " modes=" << std::hex << mode_enables << " debug=" << debug_enable
+                                                << " trap=" << trap_enable << " access=" << access);
+              const u32 base = (access == 0 && user_address) ? (PROGRAM_BASE & CPU::KSEG_MASK) : PROGRAM_BASE;
+              const u32 data_address = user_address ? (RAM_TEST_ADDR & CPU::KSEG_MASK) : RAM_TEST_ADDR;
+              const u32 access_enable = (access == 0) ? (1u << 24) : ((1u << 25) | (1u << (25 + access)));
+              const u32 dcic =
+                mode_enables | access_enable | (debug_enable ? (1u << 23) : 0u) | (trap_enable ? (1u << 31) : 0u);
+              const bool matches = debug_enable && (mode_enables & (1u << (user_address ? 30 : 29)));
+              const u32 status = matches ? ((access == 0) ? 3u : ((access == 1) ? 13u : 21u)) : 0u;
+
+              // Both paths capture DCIC and store the result through the common epilogue.
+              const std::array handler = {mfc0(Reg::V0, 7),           nop(),        nop(),
+                                          addiu(Reg::V1, Reg::R0, 1), j(base + 32), nop()};
+              std::memcpy(&g_bus.ram[0x40], handler.data(), sizeof(handler));
+              CPU::g_state.cop0_regs.sr.bits = (1u << 28) | (user_mode ? 2u : 0u);
+              CPU::g_state.cop0_regs.dcic.bits = dcic;
+              CPU::g_state.cop0_regs.BPC = base + 4;
+              CPU::g_state.cop0_regs.BPCM = 0xFFFFFFFFu;
+              CPU::g_state.cop0_regs.BDA = data_address;
+              CPU::g_state.cop0_regs.BDAM = 0xFFFFFFFFu;
+              CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v1)] = 0;
+              CPU::UpdateDebugDispatcherFlag();
+
+              Program prog;
+              prog.Emit(nop());
+              prog.LoadImmediate(Reg::T0, data_address);
+              prog.Emit((access == 1) ? lw(Reg::T1, 0, Reg::T0) : sw(Reg::R0, 0, Reg::T0));
+              prog.Emit(mfc0(Reg::V0, 7));
+              prog.Emit(nop());
+              prog.Emit(nop());
+              const u32 captured_dcic = prog.StoreResult(Reg::V0);
+              const u32 trapped = prog.StoreResult(Reg::V1);
+              prog.RunAt(base);
+              EXPECT_EQ(prog.Result(captured_dcic), dcic | status);
+              EXPECT_EQ(prog.Result(trapped), matches && trap_enable ? 1u : 0u);
+              CPU::g_state.cop0_regs.dcic.bits = 0;
+              CPU::UpdateDebugDispatcherFlag();
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(Interpreter, CPUCop0Breakpoints, ::testing::Values(CPUExecutionMode::Interpreter),
+                         GetExecutionModeTestName);
 
 TEST_P(CPUMemoryExecution, FastmemAccessesFollowDRAMWindowsAndInstalledRAM)
 {
