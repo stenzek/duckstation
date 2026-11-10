@@ -32,6 +32,30 @@ class CPUCop0Breakpoints : public ExecutionModeTest
 {
 };
 
+class CPUInterruptTiming : public ExecutionModeTest
+{
+protected:
+  void SetUp() override
+  {
+    ExecutionModeTest::SetUp();
+    m_old_tty_logging = g_settings.bios_tty_logging;
+    const std::array handler = {lui(Reg::AT, static_cast<u16>(ADDR_EXIT >> 16)),
+                                sb(Reg::R0, static_cast<s16>(ADDR_EXIT), Reg::AT), nop()};
+    std::memcpy(&g_bus.ram[0x80], handler.data(), sizeof(handler));
+  }
+
+  void TearDown() override
+  {
+    CPU::g_state.cop0_regs.sr.bits = 0;
+    CPU::g_state.cop0_regs.cause.bits = 0;
+    g_settings.bios_tty_logging = m_old_tty_logging;
+    CPU::UpdateDebugDispatcherFlag();
+    s_event->SetIntervalAndSchedule(1000000);
+  }
+
+  bool m_old_tty_logging;
+};
+
 struct CPUMemoryExecution : public ExecutionModeTest
 {
 protected:
@@ -715,6 +739,92 @@ TEST_P(CPUCop0Breakpoints, BPCAndBPCMWriteOrderDoesNotAffectDispatch)
 }
 
 INSTANTIATE_TEST_SUITE_P(Interpreter, CPUCop0Breakpoints, ::testing::Values(CPUExecutionMode::Interpreter),
+                         GetExecutionModeTestName);
+
+TEST_P(CPUInterruptTiming, StatusWriteAllowsFollowingInstructionBeforeInterrupt)
+{
+  for (const bool debug : {false, true})
+  {
+    for (const u32 base : {PROGRAM_BASE, PROGRAM_BASE | 0x20000000u})
+    {
+      for (const u32 irq : {0x100u, 0x200u, 0x400u})
+      {
+        for (const bool enable_ie : {false, true})
+        {
+          for (const u32 following : {0u, 1u, 2u})
+          {
+            SCOPED_TRACE(::testing::Message() << "debug=" << debug << " base=" << std::hex << base << " irq=" << irq
+                                              << " enable IE=" << enable_ie << " following=" << following);
+            g_settings.bios_tty_logging = debug;
+            CPU::g_state.cop0_regs.sr.bits = (enable_ie) ? irq : 1u;
+            CPU::g_state.cop0_regs.cause.bits = irq;
+            CPU::g_state.cop0_regs.EPC = 0;
+            CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v0)] = 0;
+            CPU::g_state.regs.lo = 0x12345678u;
+            CPU::g_state.muldiv_completion_tick = CPU::g_state.pending_ticks + 128;
+            CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::t3)] = RAM_TEST_ADDR;
+            const u32 loaded_value = 0x55667788u;
+            std::memcpy(&g_bus.ram[RAM_TEST_ADDR & g_bus.ram_mask], &loaded_value, sizeof(loaded_value));
+            CPU::UpdateDebugDispatcherFlag();
+            EXPECT_EQ(CPU::g_state.using_debug_dispatcher, debug);
+            // Exercise the boundary even when another event is already due at the SR write.
+            s_event->SetIntervalAndSchedule(1);
+
+            Program prog;
+            prog.LoadImmediate(Reg::T0, irq | 1u);
+            prog.Emit(mtc0(Reg::T0, 12));
+            const std::array instructions = {addiu(Reg::V0, Reg::R0, 1), mflo(Reg::V0), lw(Reg::V0, 0, Reg::T3)};
+            prog.Emit(instructions[following]);
+            prog.Emit(divu(Reg::R0, Reg::R0));
+            prog.Emit(nop());
+            prog.RunAt(base);
+
+            const std::array expected = {1u, 0x12345678u, loaded_value};
+            EXPECT_EQ(CPU::g_state.cop0_regs.EPC, base + 20);
+            EXPECT_EQ(CPU::g_state.cop0_regs.cause.bits, irq);
+            EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v0)], expected[following]);
+            EXPECT_EQ(CPU::g_state.regs.lo, 0x12345678u);
+            CPU::g_state.cop0_regs.sr.bits = 0;
+            CPU::g_state.cop0_regs.cause.bits = 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_P(CPUInterruptTiming, CauseWriteInterruptRemainsImmediate)
+{
+  for (const bool debug : {false, true})
+  {
+    for (const u32 base : {PROGRAM_BASE, PROGRAM_BASE | 0x20000000u})
+    {
+      for (const u32 irq : {0x100u, 0x200u})
+      {
+        g_settings.bios_tty_logging = debug;
+        CPU::g_state.cop0_regs.sr.bits = irq | 1u;
+        CPU::g_state.cop0_regs.cause.bits = 0;
+        CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v0)] = 0;
+        CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::t2)] = 1;
+        CPU::UpdateDebugDispatcherFlag();
+
+        Program prog;
+        prog.LoadImmediate(Reg::T0, irq);
+        prog.Emit(mtc0(Reg::T0, 13));
+        prog.Emit(addu(Reg::V0, Reg::T2, Reg::R0));
+        prog.RunAt(base);
+
+        EXPECT_EQ(CPU::g_state.cop0_regs.EPC, base + 16);
+        EXPECT_EQ(CPU::g_state.cop0_regs.cause.bits, irq);
+        EXPECT_EQ(CPU::g_state.regs.r[static_cast<u32>(CPU::Reg::v0)], 0u);
+        CPU::g_state.cop0_regs.sr.bits = 0;
+        CPU::g_state.cop0_regs.cause.bits = 0;
+      }
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(Interpreter, CPUInterruptTiming, ::testing::Values(CPUExecutionMode::Interpreter),
                          GetExecutionModeTestName);
 
 TEST_P(CPUMemoryExecution, FastmemAccessesFollowDRAMWindowsAndInstalledRAM)

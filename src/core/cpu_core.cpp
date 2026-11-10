@@ -2025,7 +2025,11 @@ restart_instruction:
                 DEBUG_LOG("COP0 SR <- {:08X} (now {:08X})", value, g_state.cop0_regs.sr.bits);
                 value = g_state.cop0_regs.sr.bits;
                 UpdateMemoryPointers();
-                CheckForPendingInterrupt();
+
+                // The interpreter must execute the following instruction before taking the pending interrupt.
+                // This is pretty hacky but gets the job done.
+                if (HasPendingInterrupt())
+                  g_state.downcount = (g_state.using_interpreter) ? (g_state.pending_ticks + 1) : 0;
               }
               break;
 
