@@ -189,18 +189,19 @@ struct State
   bool relative_mouse_mode_active = false;
   bool hide_host_mouse_cursor = false;
   bool hide_host_mouse_cursor_active = false;
+  InputBindingKey paused_by_controller_disconnection = INVALID_BINDING_KEY;
   std::atomic<GamepadButtonType> last_gamepad_button_type{GamepadButtonType::Unknown};
 
   // Binding capture (for setting bindings), which intercepts events before the normal bindings while it's running.
   // Inputs moved past the threshold join binding_capture_keys as a chord, which is complete when one of them returns to
   // rest.
-  std::vector<BindingCaptureInput> binding_capture_inputs;
-  std::vector<InputBindingKey> binding_capture_keys;
-  InputManager::BindingCaptureCallback binding_capture_callback;
   bool binding_capture_running = false;
   bool binding_capture_completed = false;
   bool binding_capture_sensors = false;
   bool binding_capture_pointer = false;
+  std::vector<BindingCaptureInput> binding_capture_inputs;
+  std::vector<InputBindingKey> binding_capture_keys;
+  InputManager::BindingCaptureCallback binding_capture_callback;
 
 #ifdef _WIN32
   // Only written on the core thread, but read from any thread. It only bounds loops over fixed-size arrays and doesn't
@@ -1927,7 +1928,15 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
   Host::OnInputDeviceConnected(key, identifier, device_name);
 
   const bool has_fsui = (System::IsValid() || VideoThread::IsFullscreenUIRequested());
-  if (has_fsui && Core::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
+  if (s_state.paused_by_controller_disconnection == key && System::IsPaused())
+  {
+    System::PauseSystem(false);
+
+    Host::AddIconOSDMessage(OSDMessageType::Info, "PauseOnDisconnection", ICON_FA_PLAY,
+                            TRANSLATE_STR("InputManager", "System resumed by controller."),
+                            fmt::format(TRANSLATE_FS("InputManager", "{} was reconnected."), identifier));
+  }
+  else if (has_fsui && Core::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("InputManager", "Controller {} connected."), identifier));
@@ -1967,20 +1976,22 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
   ClearBindStateFromSource(key);
   Host::OnInputDeviceDisconnected(key, identifier);
 
-  if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
+  if (g_settings.pause_on_controller_disconnection &&
+      s_state.paused_by_controller_disconnection == INVALID_BINDING_KEY &&
+      System::GetState() == System::State::Running && HasAnyBindingsForSource(key))
+  {
+    System::PauseSystem(true);
+    s_state.paused_by_controller_disconnection = key;
+
+    // has to be done after pause, otherwise pause message takes precedence
+    Host::AddIconOSDMessage(OSDMessageType::Warning, "PauseOnDisconnection", ICON_FA_PAUSE,
+                            TRANSLATE_STR("InputManager", "System paused by controller."),
+                            fmt::format(TRANSLATE_FS("QtHost", "{} was disconnected."), identifier));
+  }
+  else if (System::IsValid() || VideoThread::IsFullscreenUIRequested())
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier));
-  }
-
-  if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
-      HasAnyBindingsForSource(key))
-  {
-    System::PauseSystem(true);
-
-    // has to be done after pause, otherwise pause message takes precedence
-    Host::ReportStatusMessage(
-      fmt::format(TRANSLATE_FS("InputManager", "System paused because controller {} was disconnected."), identifier));
   }
 }
 
@@ -2585,6 +2596,13 @@ void InputManager::PauseVibration()
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
   InternalPauseVibration();
+}
+
+void InputManager::ClearPausingController()
+{
+  // Threading: Only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
+  s_state.paused_by_controller_disconnection = INVALID_BINDING_KEY;
 }
 
 void InputManager::ReloadDevices()

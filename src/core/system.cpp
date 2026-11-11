@@ -1690,6 +1690,7 @@ void System::PauseSystem(bool paused)
   {
     FullscreenUI::OnSystemResumed();
 
+    InputManager::ClearPausingController();
     InputManager::UpdateHostMouseMode();
 
     if (g_settings.inhibit_screensaver)
@@ -2089,6 +2090,7 @@ void System::DestroySystem()
   });
 
   InputManager::ClearEffects();
+  InputManager::ClearPausingController();
   InputManager::UpdateHostMouseMode();
 
   if (g_settings.inhibit_screensaver)

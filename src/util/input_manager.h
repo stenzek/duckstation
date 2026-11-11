@@ -207,6 +207,9 @@ inline constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 /// Number of macro buttons per controller.
 inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 8;
 
+/// Can be used as a sentinel value.
+inline constexpr InputBindingKey INVALID_BINDING_KEY = {.bits = 0xFFFFFFFFFFFFFFFFULL};
+
 /// Converts an input class to a string.
 const char* InputSourceToString(InputSourceType clazz);
 
@@ -339,6 +342,9 @@ void PauseVibration();
 
 /// Disables all vibration and LED effects. Call when stopping emulation.
 void ClearEffects();
+
+/// Forgets that the system was paused due to a controller disconnection. Call when resuming or stopping emulation.
+void ClearPausingController();
 
 /// Returns the number of currently-connected pointer devices.
 u32 GetPointerCount();
