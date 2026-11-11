@@ -1630,8 +1630,7 @@ skiprest = skiprest||slope1||slope2||slope3||slope4||E==0u||B==0u||D==0u||F==0u|
 
 	#define src(xoffs,yoffs) packUnorm4x8(srcf(xoffs,yoffs))
 	)";
-
-    /* =========================================================================
+/* =========================================================================
  * MMPX Advanced v3.5
  * =========================================================================
  * An optimized and heavily expanded derivative of the MMPX algorithm.
@@ -1824,10 +1823,12 @@ float4 admixX( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, u
 
 	bool doubleWall = eq(B,C) && eq(D,G);
 
-	bool Xisblack = checkblack(vB);
-	bool triBlack = Xisblack && El >0.5 && (Fl<0.078 || Hl<0.078);
+	bool Bisblack = checkblack(vB);
+	bool Disblack = checkblack(vD);	//xxx.alpha.duck
+	bool triBlack = Bisblack && El >0.5 && (Fl<0.078 || Hl<0.078);
 	bool transBD = B==0u||D==0u;	//xxx.alpha.duck
-	if (doubleWall||triBlack||transBD) return slopeBAD;
+	bool border1dark = ne(B,D) && (Bisblack||Disblack) && E==0u;	//xxx.alpha.duck
+	if (doubleWall||triBlack||transBD||border1dark) return slopeBAD;	//xxx.alpha.duck
 
 
 //* =========================================
@@ -1835,7 +1836,10 @@ float4 admixX( uint A, uint B, uint C, uint D, uint E, uint F, uint G, uint H, u
 //* ==================================== zz =
 if (ne(B,D)){
 
-	float4 vX = Bl>Dl ? vB : vD;
+	float4 midBD = mix(vB,vD,0.5);		// xxx.alpha
+
+	float4 vX = E==0u ? midBD :		// xxx.alpha.duck
+				Bl>Dl ? vB : vD;
 
 	float mixFactor = 0.145898 * mixGate(vX,vE) * float(E!=0u);	//xxx.alpha.duck
 
@@ -1846,7 +1850,6 @@ if (ne(B,D)){
 
 		return mixXEoff +float(!okB&&!okD)*2.0;
 	}
-
 
 
     if (not_eq2(A,B,D)){
@@ -1867,12 +1870,15 @@ if (ne(B,D)){
 		float4 vA = unpackUnorm4x8(A);
 		float Al = luma(vA);
 
-		bool Disbetter = all_eq2(E,G,QG) && Al>Bl;
-		bool Bisbetter = all_eq2(E,C,PC) && Al>Dl;
+		int BDscore = int(eq(D,Q)&&ne(B,PC)) +int(eq(E,G)) +int(eq(B,C)) -int(eq(B,P)&&ne(D,QG)) -int(eq(D,G)) -int(eq(E,C));
+
+		bool Disbetter = BDscore>0 && (Al>Bl||E==0u);	// xxx.alpha.duck
+		bool Bisbetter = BDscore<0 && (Al>Dl||E==0u);	// xxx.alpha.duck
+
 		vX = Disbetter ? vD :
 			 Bisbetter ? vB :
 						vX ;
-		
+
 		if (na1||na2||na3||na4||na5||na6||na7||na8||na9) return mixXEoff;
 	}
 
@@ -1965,9 +1971,8 @@ if (eq(E,A)) {
 	bool ECG4 = D_slope && eq(E,C);
 	if (ECG1||ECG2||ECG3||ECG4) return mixXEoff;
 
-//* E B D Region Checkerboard Scoring Rule
 
-    float scoreE = 0.0; float scoreB = 0.0; float scoreD = 0.0; float scoreZ = 0.0;
+//* E B D Zone Checkerboard Scoring Rule
 
 
 	B_wall = eq(B,C) && not_eq3(B,PC,P,PA);
@@ -1978,17 +1983,18 @@ if (eq(E,A)) {
 
 
 //*	E Zone
+int scoreE = 0;
 
-	scoreE += float(eq(E,C)) * (
-				1.0 + float(eq(F,H)) + float(eq(B,PC)&&ne(B,PA)) + float(eq(A,Q))
+	scoreE += int(eq(E,C)) * (
+				1 + int(eq(F,H)) + int(eq(B,PC)&&ne(B,PA)) + int(eq(A,Q))
 				);
 
-	scoreE += float(eq(E,G)) * (
-				1.0 + float(eq(F,H)) + float(eq(D,QG)&&ne(D,QA)) + float(eq(A,P))
+	scoreE += int(eq(E,G)) * (
+				1 + int(eq(F,H)) + int(eq(D,QG)&&ne(D,QA)) + int(eq(A,P))
 				);
 
 
-	scoreE += float( (B_slope||B_wall) && eq(A,Q) || (D_slope||D_wall) && eq(A,P) );
+	scoreE += int( (B_slope||B_wall) && eq(A,Q) || (D_slope||D_wall) && eq(A,P) );
 
 
 
@@ -1996,7 +2002,7 @@ if (eq(E,A)) {
 
 	bool EisWhite = checkwhite(vE);
 
-	if ( scoreE<0.01 && !En3 ) {
+	if ( scoreE==0 && !En3 ) {
 
 		bool leftA= eq(A,QA) && not_eq4(A,PA,AA,P,Q);
 		bool upA  = eq(A,PA) && not_eq4(A,QA,AA,P,Q);
@@ -2021,7 +2027,10 @@ if (eq(E,A)) {
 		if (bad1a||bad1b||bad2a||bad2b||bad3||bad4) return theEXIT;
     }
 
-	scoreE += float(B_slope && eq(A,P) || D_slope && eq(A,Q));
+	scoreE += int(B_slope && eq(A,P) || D_slope && eq(A,Q));
+
+
+int scoreZ = 0;
 
 	bool ext_FH = any_eq2(F,RC,SG);
 
@@ -2031,7 +2040,7 @@ if (eq(E,A)) {
 
 		bool AEIstrong= EisWhite || Bl<0.92 && Fl<0.92 && min(Bl,Fl)-El>0.145898;
 		
-		bool badcond0 = scoreE<0.01 && (Eisblack && ne(E,F) || eq(E,I) && AEIstrong && !simEC && !simEG);
+		bool badcond0 = scoreE==0 && (Eisblack && ne(E,F) || eq(E,I) && AEIstrong && !simEC && !simEG);
 
 		bool badcond1 = En3 && !ext_FH;
 		bool badcond2 = eq(F,I) && (Eisblack || EisWhite || !(ext_FH || any_eq2(F,C,R) || any_eq2(H,G,S)));
@@ -2039,7 +2048,7 @@ if (eq(E,A)) {
 		bool condZ1 = eq(B,C) && ne(B,P);
 		bool condZ2 = eq(D,G) && ne(D,Q);
 
-		scoreZ = float((condZ1 || condZ2) && !badcond0 && !badcond1 && !badcond2);
+		scoreZ = int((condZ1 || condZ2) && !badcond0 && !badcond1 && !badcond2);
     }
 
 
@@ -2047,44 +2056,48 @@ if (eq(E,A)) {
 
 	bool An4 = all_eq3(A,AA,PA,QA);
 
-	scoreZ += float(eq(PA,QA) && !An4 && scoreZ>0.99);
+	scoreZ += int(eq(PA,QA) && !An4 && scoreZ==1);
 
 
 	bool Bn4 = all_eq3(B,P,PC,C);
 	bool Dn4 = all_eq3(D,Q,QG,G);
 
-	float in_B = float(eq(C,P) && !Bn4);
-	float in_D = float(eq(G,Q) && !Dn4);
+	int in_B = int(eq(C,P) && !Bn4);
+	int in_D = int(eq(G,Q) && !Dn4);
 	
 //*	B Zone
+ int scoreB = 0;
 
-	scoreB -= float(eq(B,PA)) * (
-		1.0 + float(eq(C,P)) + float(eq(A,AA))
+	scoreB -= int(eq(B,PA)) * (
+		1 + int(eq(C,P)) + int(eq(A,AA))
 		);
 
-	scoreB -= in_B * float(eq(A,AA));
+	scoreB -= in_B * int(eq(A,AA));
 
 
 //*  D Zone
-
-	scoreD -= float(eq(D,QA)) * (
-		1.0 + float(eq(G,Q)) + float(eq(A,AA))
+ int scoreD = 0; 
+ 
+	scoreD -= int(eq(D,QA)) * (
+		1 + int(eq(G,Q)) + int(eq(A,AA))
 		);
 
-	scoreD -= in_D * float(eq(A,AA));
+	scoreD -= in_D * int(eq(A,AA));
 
-	scoreZ = clamp(scoreZ -in_B -in_D, 0.0, 1.0);
+	scoreZ = clamp(scoreZ -in_B -in_D, 0, 1);
 
-	float scoreBD = scoreB + scoreD;
-    float scoreFinal = scoreE + scoreBD + scoreZ ;
+	int scoreFinal = scoreE + scoreB + scoreD + scoreZ ;
+	scoreFinal += int(
+				((scoreFinal | scoreB | scoreD) == 0) && 
+				!Eisblack && !EisWhite && 
+				(B_wall && D_tower || B_tower && D_wall) 
+				);
 
-	scoreFinal += float( scoreFinal<0.01&&scoreBD>-0.01 && !Eisblack && !EisWhite && (B_wall && D_tower || B_tower && D_wall) );
-
-	mixFactor *= scoreFinal>1.99 ? 0.145898 : 1.0;
+	mixFactor *= scoreFinal>=2 ? 0.145898 : 1.0;
 	bool closeB = all_eq4(E,C,F,P,PC) && eq(A,PA) && (ne(D,G) || eq(D,Q));
 	bool closeD = all_eq4(E,H,G,Q,QG) && eq(A,QA) && (ne(B,C) || eq(B,P));
 
-	return mixXE +step(scoreFinal, 0.01)*4.0 +float(closeB||closeD)*8.0;
+	return mixXE +float(scoreFinal<=0)*4.0 +float(closeB||closeD)*8.0;
 
 }	//* E == A
 
