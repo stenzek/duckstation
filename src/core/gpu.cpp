@@ -89,6 +89,9 @@ enum : u16
   NTSC_TOTAL_LINES = 263,
   PAL_HALF_TICKS_PER_LINE = 6810,
   PAL_TOTAL_LINES = 314,
+
+  // The line counter is 10 bits, a line past the end of the field runs on until it wraps.
+  LINE_COUNTER_WRAP = 1024,
 };
 
 // Positions within a GPU tick are in units of the CPU to GPU clock divider. Half and quarter ticks are exact.
@@ -686,9 +689,10 @@ void GPU::ResetCRTCTiming(bool was_in_hblank)
 {
   // Hardware restarts the video timing at the start of the line before line 0, i.e. the last line of an odd field,
   // so the next field is even. Blanking is level-triggered: a reset during active display raises the vblank IRQ
-  // immediately, a reset during vblank does not. Same for the hblank timer tick.
+  // immediately, a reset during vblank does not. Same for the hblank timer tick. The last line of the counter is the
+  // line before line 0 in every mode, so a mode change before it ends doesn't move it.
   CRTCState& cs = s_locals.crtc_state;
-  cs.current_scanline = cs.vertical_total - 1;
+  cs.current_scanline = LINE_COUNTER_WRAP - 1;
   cs.current_tick_in_scanline = 0;
   cs.fractional_ticks = 0;
   cs.interlaced_field = 1;
@@ -1189,7 +1193,8 @@ u64 GPU::GetCRTCLineSubTicks()
 
 u64 GPU::GetCRTCFieldSubTicks()
 {
-  return GetCRTCLineSubTicks() * s_locals.crtc_state.vertical_total;
+  const CRTCState& cs = s_locals.crtc_state;
+  return GetCRTCLineSubTicks() * ((cs.current_scanline < cs.vertical_total) ? cs.vertical_total : LINE_COUNTER_WRAP);
 }
 
 float GPU::ComputeHorizontalFrequency()
@@ -1200,8 +1205,12 @@ float GPU::ComputeHorizontalFrequency()
 
 float GPU::ComputeVerticalFrequency()
 {
+  // Interlaced fields alternate between the long and short field, so use the average of the two.
+  const CRTCState& cs = s_locals.crtc_state;
+  const double lines = s_locals.GPUSTAT.vertical_interlace ? (cs.vertical_total + cs.interlaced_field - 0.5) :
+                                                             static_cast<double>(cs.vertical_total);
   return static_cast<float>(static_cast<double>(u64(System::GetTicksPerSecond()) * GetCRTCSubTicksPerSystemTick()) /
-                            static_cast<double>(GetCRTCFieldSubTicks()));
+                            (static_cast<double>(GetCRTCLineSubTicks()) * lines));
 }
 
 float GPU::ComputePixelAspectRatio()
@@ -1378,7 +1387,6 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
       ((static_cast<u32>(cs.vertical_display_end) * NTSC_TOTAL_LINES) + (PAL_TOTAL_LINES - 1)) / PAL_TOTAL_LINES);
 
     cs.vertical_total = NTSC_TOTAL_LINES;
-    cs.current_scanline %= NTSC_TOTAL_LINES;
     half_ticks_per_line = NTSC_HALF_TICKS_PER_LINE;
   }
   else if (!s_locals.GPUSTAT.pal_mode && g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL)
@@ -1395,9 +1403,12 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
       ((static_cast<u32>(cs.vertical_display_end) * PAL_TOTAL_LINES) + (NTSC_TOTAL_LINES - 1)) / NTSC_TOTAL_LINES);
 
     cs.vertical_total = PAL_TOTAL_LINES;
-    cs.current_scanline %= PAL_TOTAL_LINES;
     half_ticks_per_line = PAL_HALF_TICKS_PER_LINE;
   }
+
+  // Interlaced fields alternate between 263 and 262 lines in NTSC, 313 and 312 in PAL. The odd field is the short one.
+  if (s_locals.GPUSTAT.vertical_interlace)
+    cs.vertical_total = cs.vertical_total - BoolToUInt16(cs.vertical_total == PAL_TOTAL_LINES) - cs.interlaced_field;
 
   cs.horizontal_display_start =
     static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_start)));
@@ -1424,9 +1435,13 @@ void GPU::UpdateCRTCConfig(u16 old_vram_width, u16 old_vram_height)
   cs.fractional_ticks = static_cast<TickCount>(position % CRTC_SUBTICKS_PER_TICK);
   UpdateCRTCHBlankFlag();
 
-  // The last line stays the last line, so the line before line 0 after GP1(00h) survives a mode change.
-  cs.current_scanline = (cs.current_scanline == old_vertical_total - 1) ? (cs.vertical_total - 1) :
-                                                                          (cs.current_scanline % cs.vertical_total);
+  // Switching between NTSC and PAL keeps the line within the field. Switching interlace leaves the line counter alone,
+  // even if it is now past the end, and a line already past the end keeps running on until the counter wraps.
+  if (cs.current_scanline < old_vertical_total &&
+      (old_vertical_total > NTSC_TOTAL_LINES) != (cs.vertical_total > NTSC_TOTAL_LINES))
+  {
+    cs.current_scanline %= cs.vertical_total;
+  }
 
   System::SetVideoFrameRate(ComputeVerticalFrequency());
 
@@ -1695,9 +1710,10 @@ ALWAYS_INLINE_RELEASE TickCount GPU::GetPendingCommandTicks()
 ALWAYS_INLINE_RELEASE TickCount GPU::GetTicksUntilLine(u32 line)
 {
   const CRTCState& cs = s_locals.crtc_state;
-  line = line ? line : cs.vertical_total;
+  const u32 wrap_line = (cs.current_scanline < cs.vertical_total) ? cs.vertical_total : LINE_COUNTER_WRAP;
+  line = line ? line : wrap_line;
   return static_cast<TickCount>((line > cs.current_scanline) ? (line - cs.current_scanline) :
-                                                               (cs.vertical_total - cs.current_scanline + line));
+                                                               (wrap_line - cs.current_scanline + line));
 }
 
 void GPU::RescheduleCRTC()
@@ -1891,17 +1907,17 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
   bool frame_done = false;
   while (lines_to_draw > 0)
   {
-    const u32 lines_to_draw_this_loop =
-      std::min(lines_to_draw, static_cast<u32>(cs.vertical_total - cs.current_scanline));
+    // A mode change can leave the line past the end of the field, it then runs on until the counter wraps.
+    const u32 wrap_line = (cs.current_scanline < cs.vertical_total) ? cs.vertical_total : LINE_COUNTER_WRAP;
+    const u32 lines_to_draw_this_loop = std::min(lines_to_draw, wrap_line - cs.current_scanline);
     const u32 prev_scanline = cs.current_scanline;
     cs.current_scanline = Truncate16(cs.current_scanline + lines_to_draw_this_loop);
-    DebugAssert(cs.current_scanline <= cs.vertical_total);
     lines_to_draw -= lines_to_draw_this_loop;
 
     // Vblank starts when the scan reaches Y2 and ends when it reaches Y1, the current line isn't compared against the
     // range. Line 0 is reached at the wrap. If both are passed, apply them in scan order, Y2 wins on the same line.
-    const u32 start_line = cs.vertical_display_start ? cs.vertical_display_start : cs.vertical_total;
-    const u32 end_line = cs.vertical_display_end ? cs.vertical_display_end : cs.vertical_total;
+    const u32 start_line = cs.vertical_display_start ? cs.vertical_display_start : wrap_line;
+    const u32 end_line = cs.vertical_display_end ? cs.vertical_display_end : wrap_line;
     const bool reached_start = (prev_scanline < start_line && cs.current_scanline >= start_line);
     const bool reached_end = (prev_scanline < end_line && cs.current_scanline >= end_line);
     if (reached_start && (!reached_end || start_line < end_line))
@@ -1911,23 +1927,28 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
     if (reached_start && reached_end && end_line < start_line)
       SetCRTCVBlank(false);
 
-    // the 480i display field was latched at vblank start, which may have been before the switch to 480i
-    const u8 next_field =
-      s_locals.GPUSTAT.InInterleaved480iMode() ? cs.interlaced_display_field : (cs.interlaced_field ^ 1u);
-
-    // v2 GPUs change bit 13 at the start of the last line, and hold it while interlace is off
+    // v2 GPUs change bit 13 at the start of the last line, to the inverse of the next field. It holds while interlace
+    // is off, or the line counter runs past the field, so the field does too.
     if (s_locals.GPUSTAT.vertical_interlace && prev_scanline < (cs.vertical_total - 1u) &&
         cs.current_scanline >= (cs.vertical_total - 1u))
     {
-      s_locals.GPUSTAT.interlaced_field = BoolToUInt8(!ConvertToBoolUnchecked(next_field));
+      s_locals.GPUSTAT.interlaced_field = ConvertToBoolUnchecked(cs.interlaced_field);
     }
 
     // past the end of vblank?
-    if (cs.current_scanline == cs.vertical_total)
+    if (cs.current_scanline == wrap_line)
     {
-      // start the new frame
+      // start the new frame, interlaced odd fields are one line shorter
+      const u8 new_field = BoolToUInt8(!s_locals.GPUSTAT.interlaced_field);
+      if (s_locals.GPUSTAT.vertical_interlace)
+        cs.vertical_total = cs.vertical_total + cs.interlaced_field - new_field;
       cs.current_scanline = 0;
-      cs.interlaced_field = s_locals.GPUSTAT.vertical_interlace ? next_field : 0;
+      cs.interlaced_field = new_field;
+
+      // The display field is switched early at vblank start for drawing, but that may have been before the switch to
+      // 480i, or vblank may not have started in this field.
+      if (s_locals.GPUSTAT.InInterleaved480iMode())
+        cs.interlaced_display_field = new_field;
     }
   }
 
@@ -2081,6 +2102,9 @@ bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_
 
 u64 GPU::GetCRTCBeamSubTicks()
 {
+  // Fields differ in length, so catch up first, pending ticks could have crossed into the next field.
+  SynchronizeCRTC();
+
   const CRTCState& cs = s_locals.crtc_state;
   const u64 position = cs.current_scanline * GetCRTCLineSubTicks() +
                        u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks) +
@@ -4606,9 +4630,9 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
       execute_all_commands();
 
       // we _should_ be using the tick count for the event, but it breaks with looping.
-      // instead, just add a fixed amount
-      const TickCount system_ticks_per_frame =
-        CRTCSubTicksToSystemTicks(GetCRTCFieldSubTicks() - u64(s_locals.crtc_state.fractional_ticks));
+      // instead, just add a fixed amount. The line counter doesn't move, so it can't run on past the field.
+      const TickCount system_ticks_per_frame = CRTCSubTicksToSystemTicks(
+        GetCRTCLineSubTicks() * s_locals.crtc_state.vertical_total - u64(s_locals.crtc_state.fractional_ticks));
       s_locals.crtc_state.fractional_ticks =
         SystemTicksToCRTCTicks(system_ticks_per_frame, s_locals.crtc_state.fractional_ticks).second;
       TimingEvents::SetGlobalTickCounter(TimingEvents::GetGlobalTickCounter() +

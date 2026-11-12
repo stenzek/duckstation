@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <array>
 #include <string_view>
+#include <tuple>
 
 namespace {
 
@@ -167,32 +168,6 @@ TEST_F(GPUFrontend, LineParityBitClearDuringVBlank)
     run(100);
   }
   EXPECT_GT(set_reads, 0u);
-}
-
-// The 480i display field is latched at vblank start, so switching to 480i after that doesn't advance the field at the
-// end of the frame, and the next field after the switch is the odd one.
-TEST_F(GPUFrontend, SwitchTo480iInVBlankKeepsLatchedField)
-{
-  const auto run_lines = [](u32 lines) {
-    const u32 target = Timers::ReadRegister(0x10) + lines;
-    while (Timers::ReadRegister(0x10) < target)
-    {
-      CPU::AddPendingTicks(1);
-      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
-        TimingEvents::RunEvents();
-    }
-  };
-
-  // Y1 == Y2 stays in vblank, so the frame wraps without the display updating. Count lines with timer 1, past the
-  // first wrap.
-  GPU::WriteRegister(4, 0x07000000 | 100 | (100 << 10));
-  Timers::WriteRegister(0x14, 0x0100); // hblank clock
-  run_lines(263 + 5);
-  ASSERT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
-
-  GPU::WriteRegister(4, 0x08000024); // 480i
-  run_lines(263);
-  EXPECT_NE(GPU::ReadRegister(4) & (1u << 13), 0u);
 }
 
 TEST_F(GPUFrontend, CommandBufferResetPreservesInterrupt)
@@ -423,6 +398,240 @@ TEST_F(GPUFrontend, ForcedVideoTimingUsesTheSelectedLineLength)
   GPU::UpdateSettings(old_settings);
   GPU::WriteRegister(4, 0x08000000);
   EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 100), SystemTicksForGPUQuarterTicks(100 * 13620));
+}
+
+static void RunGPUTicks(TickCount ticks)
+{
+  while (ticks > 0)
+  {
+    const TickCount step = std::min<TickCount>(ticks, 256);
+    CPU::AddPendingTicks(step);
+    ticks -= step;
+    if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+      TimingEvents::RunEvents();
+  }
+}
+
+// Interlaced fields differ in length, so a wait that pending ticks carried into the next field must use its length.
+TEST_F(GPUFrontend, BeamWaitAcrossAPendingFieldChangeUsesTheNextField)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000028);
+  GPU::WriteRegister(4, 0x07000000 | 0x125 | (0x125 << 10)); // Y1 == Y2 stays in vblank.
+  for (u32 i = 0; i < 2; i++)
+  {
+    SCOPED_TRACE(i);
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 150));
+    CPU::g_state.pending_ticks += SystemTicksForGPUQuarterTicks(200 * 13620);
+    // The beam is now at line 37 or 38 of the next field, so the wait wraps.
+    const TickCount pending_wait = GPU::GetSystemTicksUntilTicksAndLine(0, 20);
+    GPU::SynchronizeCRTC();
+    EXPECT_EQ(GPU::GetSystemTicksUntilTicksAndLine(0, 20), pending_wait);
+    RunGPUTicks(1000);
+  }
+}
+
+// Returns the hblanks until GPUSTAT.13 next changes, at the start of the last line of the field, and whether it fell.
+// Gives up after the longest possible field, so a stuck field fails instead of hanging.
+static std::pair<u32, bool> RunToFieldBitChange()
+{
+  const u32 start = Timers::ReadRegister(0x10);
+  const u32 field_bit = GPU::ReadRegister(4) & (1u << 13);
+  while ((GPU::ReadRegister(4) & (1u << 13)) == field_bit && (Timers::ReadRegister(0x10) - start) <= 1024)
+    RunGPUTicks(256);
+  return {Timers::ReadRegister(0x10) - start, field_bit != 0};
+}
+
+// Interlaced fields alternate between 263 and 262 lines in NTSC, and 313 and 312 in PAL, with GPUSTAT.13 falling at
+// the end of the long one. The horizontal phase carries across fields, so each pair of fields has 525 or 625 hblanks.
+// Y1 == Y2 stays in vblank, the fields alternate in 480i without the display field being latched.
+TEST_F(GPUFrontend, InterlacedFieldsAlternateBetweenLongAndShort)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+
+  for (const auto [mode, long_lines] : {std::pair<u32, u32>{0x20, 263}, {0x28, 313}, {0x24, 263}, {0x2C, 313}})
+  {
+    SCOPED_TRACE(mode);
+    CPU::g_state.pending_ticks = 0;
+    GPU::Reset(false);
+    GPU::WriteRegister(4, 0x08000000 | mode);
+    GPU::WriteRegister(4, 0x07000000 | 0x100 | (0x100 << 10));
+    Timers::WriteRegister(0x14, 0x0100); // hblank clock
+    RunToFieldBitChange();
+
+    u32 previous_lines = 0;
+    for (u32 i = 0; i < 6; i++)
+    {
+      SCOPED_TRACE(i);
+      const auto [lines, fell] = RunToFieldBitChange();
+      EXPECT_EQ(lines, fell ? long_lines : (long_lines - 1));
+      if (i > 0)
+        EXPECT_EQ(lines + previous_lines, long_lines * 2 - 1);
+      previous_lines = lines;
+    }
+  }
+}
+
+// The field only toggles at the end of an interlaced field, so it holds through progressive frames: turning interlace
+// back on resumes the same field type.
+TEST_F(GPUFrontend, ProgressiveFramesHoldTheInterlacedField)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000028);
+  GPU::WriteRegister(4, 0x07000000 | 0x125 | (0x125 << 10)); // Y1 == Y2 stays in vblank.
+  Timers::WriteRegister(0x14, 0x0100);                       // hblank clock
+
+  for (const bool short_field : {true, false, true})
+  {
+    SCOPED_TRACE(short_field);
+
+    // GPUSTAT.13 reads 0 in the short field, until its last line.
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    while (((GPU::ReadRegister(4) & (1u << 13)) == 0) != short_field)
+    {
+      RunGPUTicks(1000);
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    }
+
+    GPU::WriteRegister(4, 0x08000008);
+    for (u32 i = 0; i < 3; i++)
+    {
+      RunGPUTicks(1000);
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    }
+    GPU::WriteRegister(4, 0x08000028);
+
+    // GPUSTAT.13 changes at the start of the field's last line.
+    const auto [lines, fell] = RunToFieldBitChange();
+    EXPECT_EQ(lines, short_field ? 211u : 212u);
+    EXPECT_EQ(fell, !short_field);
+  }
+}
+
+// The line counter is 10 bits. In PAL, interlace turned off at line 309 and back on at 312 of a short field misses the
+// end of the field, and the counter runs on to 1023: with Y2=293 the vblank IRQ comes 1008 lines after the first
+// write. In a long field, line 312 is still part of the field.
+TEST_F(GPUFrontend, InterlaceSwitchPastTheEndOfTheFieldRunsTheLineCounterOn)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000028);
+  GPU::WriteRegister(4, 0x07000000 | 0x125 | (0x125 << 10)); // Y1 == Y2 stays in vblank.
+  Timers::WriteRegister(0x14, 0x0100);                       // hblank clock
+
+  for (const auto [short_field, expected_lines] : {std::pair<bool, u32>{true, 1008}, {false, 297}})
+  {
+    SCOPED_TRACE(short_field);
+
+    // GPUSTAT.13 reads 0 in the short field, until its last line.
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    while (((GPU::ReadRegister(4) & (1u << 13)) == 0) != short_field)
+    {
+      RunGPUTicks(1000);
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    }
+
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 309));
+    GPU::WriteRegister(4, 0x08000008);
+    const u32 start = Timers::ReadRegister(0x10);
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 312));
+    GPU::WriteRegister(4, 0x08000028);
+
+    u32 tick, line;
+    if (short_field)
+    {
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 1000));
+      GPU::GetBeamPosition(&tick, &line);
+      EXPECT_EQ(line, 1000u);
+    }
+
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 293));
+    GPU::GetBeamPosition(&tick, &line);
+    EXPECT_EQ(line, 293u);
+    EXPECT_EQ(Timers::ReadRegister(0x10) - start, expected_lines);
+  }
+}
+
+// Turning interlace off on the last line of a short field leaves the line counter alone, so the field ends at the
+// progressive length instead of skipping lines.
+TEST_F(GPUFrontend, DisablingInterlaceOnTheLastLineKeepsTheLineCounter)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+
+  for (const auto [mode, progressive_lines] : {std::pair<u32, u32>{0x20, 263}, {0x28, 314}})
+  {
+    SCOPED_TRACE(mode);
+    CPU::g_state.pending_ticks = 0;
+    GPU::Reset(false);
+    GPU::WriteRegister(4, 0x08000000 | mode);
+    GPU::WriteRegister(4, 0x07000000 | 0x100 | (0x100 << 10)); // Y1 == Y2 stays in vblank.
+    Timers::WriteRegister(0x14, 0x0100);                       // hblank clock
+
+    // GPUSTAT.13 rises at the start of the last line of the short field.
+    while (RunToFieldBitChange().second)
+      ;
+    u32 tick, line;
+    GPU::GetBeamPosition(&tick, &line);
+    ASSERT_EQ(line, (mode == 0x20) ? 261u : 311u);
+
+    GPU::WriteRegister(4, 0x08000000 | (mode & 0x08));
+    u32 new_line;
+    GPU::GetBeamPosition(&tick, &new_line);
+    EXPECT_EQ(new_line, line);
+
+    const u32 start = Timers::ReadRegister(0x10);
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 0));
+    EXPECT_EQ(Timers::ReadRegister(0x10) - start, progressive_lines - line);
+  }
+}
+
+// GP1(00h) leaves the line counter on its last line, the line before line 0 in every mode, so a mode change before
+// that line ends still starts a long field on the next line.
+TEST_F(GPUFrontend, ResetLineIsTheLineBeforeLineZeroInEveryMode)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+
+  for (const auto [mode, long_lines] : {std::pair<u32, u32>{0x20, 263}, {0x28, 313}})
+  {
+    SCOPED_TRACE(mode);
+    GPU::WriteRegister(4, 0x00000000);
+    GPU::WriteRegister(4, 0x08000000 | mode);
+    GPU::WriteRegister(4, 0x07000000 | 0x100 | (0x100 << 10)); // Y1 == Y2 stays in vblank.
+    Timers::WriteRegister(0x14, 0x0100);                       // hblank clock
+
+    // The reset line, then the long field up to its last line.
+    const auto [lines, fell] = RunToFieldBitChange();
+    EXPECT_TRUE(fell);
+    EXPECT_EQ(lines, long_lines);
+  }
+}
+
+// Enabling interlace on the last line after its hblank must not take the hblank back from Timer 1.
+TEST_F(GPUFrontend, EnablingInterlaceAfterTheLastHBlankKeepsCountingHBlanks)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x070FFC00);   // Keep the display range open.
+  Timers::WriteRegister(0x14, 0x0100); // hblank clock
+  CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(262 * 13650 + 3300 * 4);
+  ASSERT_EQ(Timers::ReadRegister(0x10), 263u);
+
+  GPU::WriteRegister(4, 0x08000020);
+  EXPECT_EQ(Timers::ReadRegister(0x10), 263u);
+  CPU::g_state.pending_ticks += SystemTicksForGPUQuarterTicks(13650);
+  EXPECT_EQ(Timers::ReadRegister(0x10), 264u);
 }
 
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)
