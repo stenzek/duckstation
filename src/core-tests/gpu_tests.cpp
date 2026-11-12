@@ -336,21 +336,51 @@ TEST_F(GPUFrontend, NTSCScanlinesDoNotDriftAcrossSynchronizations)
   }
 }
 
+// Timer 0 only counts the dots completed in each line: 3412.5 / 10 is 341 per line in NTSC, 3405 / 10 is 340 in PAL.
+// PAL 320 is the exception, 3405 / 8 counts 426 like NTSC's 3412.5 / 8.
 TEST_F(GPUFrontend, TimersCountDotsAndHBlanksAcrossFractionalScanlines)
 {
-  GPU::WriteRegister(4, 0x070FFC00);
-  Timers::WriteRegister(0x04, 1u << 8); // Timer 0 counts dots, at the default ten GPU ticks per dot.
-  Timers::WriteRegister(0x14, 1u << 8); // Timer 1 counts HBlanks.
-  // Synchronize on every line, so each update carries a fractional scanline end.
-  for (u32 expected_line = 1; expected_line <= 100; expected_line++)
+  for (const auto [mode, line_quarter_ticks, dots_per_line, half_line_dots] :
+       {std::tuple<u32, u64, u32, u32>{0x00, 13650, 341, 170},
+        {0x08, 13620, 340, 170},
+        {0x01, 13650, 426, 213},
+        {0x09, 13620, 426, 213}})
   {
-    SCOPED_TRACE(expected_line);
-    CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(expected_line * 13650);
-    const u64 expected_dots = (static_cast<u64>(CPU::g_state.pending_ticks) * GPU::GetCRTCFrequency()) /
-                              (static_cast<u64>(System::MASTER_CLOCK) * 10);
-    EXPECT_EQ(Timers::ReadRegister(0x00), expected_dots);
-    EXPECT_EQ(Timers::ReadRegister(0x10), expected_line);
+    SCOPED_TRACE(mode);
+    CPU::g_state.pending_ticks = 0;
+    GPU::Reset(false);
+    GPU::WriteRegister(4, 0x08000000 | mode);
+    GPU::WriteRegister(4, 0x070FFC00);
+    Timers::WriteRegister(0x04, 1u << 8); // Timer 0 counts dots.
+    Timers::WriteRegister(0x14, 1u << 8); // Timer 1 counts HBlanks.
+
+    // Synchronize on every line, and halfway through it, so updates carry partial dots across the line end.
+    for (u32 expected_line = 1; expected_line <= 100; expected_line++)
+    {
+      SCOPED_TRACE(expected_line);
+      CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks((expected_line - 1) * line_quarter_ticks + 1705 * 4);
+      EXPECT_EQ(Timers::ReadRegister(0x00), (expected_line - 1) * dots_per_line + half_line_dots);
+      CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(expected_line * line_quarter_ticks);
+      EXPECT_EQ(Timers::ReadRegister(0x00), expected_line * dots_per_line);
+      EXPECT_EQ(Timers::ReadRegister(0x10), expected_line);
+    }
   }
+}
+
+// The CRTC wakes up for a Timer 0 IRQ on a later line, skipping the partial dot at the end of each line.
+TEST_F(GPUFrontend, DotTimerIRQSkipsThePartialDotAtTheEndOfTheLine)
+{
+  GPU::WriteRegister(4, 0x070FFC00);
+  CPU::g_state.pending_ticks = SystemTicksForGPUQuarterTicks(100 * 4);
+  Timers::WriteRegister(0x08, 1000);                              // target
+  Timers::WriteRegister(0x04, (1u << 8) | (1u << 4) | (1u << 3)); // dot clock, IRQ and reset at target
+  ASSERT_EQ(Timers::ReadRegister(0x00), 0u);
+
+  // 1000 dots from tick 100 of line 0: 331 in line 0, 341 in line 1, and 328 into line 2.
+  const TimingEvent* const crtc_event = FindEvent("GPU CRTC Tick");
+  ASSERT_NE(crtc_event, nullptr);
+  const TickCount target_time = SystemTicksForGPUQuarterTicks(2 * 13650 + 3280 * 4);
+  EXPECT_EQ(CPU::g_state.pending_ticks + crtc_event->GetTicksUntilNextExecution(), target_time);
 }
 
 TEST_F(GPUFrontend, GatedTimerAdvancesPastFractionalHBlankBoundaries)

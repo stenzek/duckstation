@@ -319,8 +319,6 @@ struct CRTCState
   TickCount fractional_ticks;
   TickCount current_tick_in_scanline;
 
-  TickCount fractional_dot_ticks; // only used when timer0 is enabled
-
   bool in_hblank;
   bool in_vblank;
 
@@ -603,7 +601,6 @@ void GPU::Reset(bool clear_vram)
   s_locals.enable_upper_vram = false;
   s_locals.GPUREAD_latch = 0;
   s_locals.crtc_state.fractional_ticks = 0;
-  s_locals.crtc_state.fractional_dot_ticks = 0;
   s_locals.crtc_state.current_tick_in_scanline = 0;
   s_locals.crtc_state.current_scanline = 0;
   s_locals.crtc_state.in_hblank = false;
@@ -781,9 +778,8 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.crtc_state.fractional_ticks);
   sw.Do(&s_locals.crtc_state.current_tick_in_scanline);
   s_locals.crtc_state.current_scanline = Truncate16(sw.DoValue(static_cast<u32>(s_locals.crtc_state.current_scanline)));
-  sw.DoEx(&s_locals.crtc_state.fractional_dot_ticks, 46, 0);
-  if (sw.IsReading() && sw.GetVersion() < 98) [[unlikely]]
-    s_locals.crtc_state.fractional_dot_ticks *= static_cast<TickCount>(CRTC_SUBTICKS_PER_TICK); // was GPU ticks
+  if (sw.GetVersion() >= 46 && sw.GetVersion() < 99) [[unlikely]]
+    sw.SkipBytes(sizeof(TickCount)); // fractional_dot_ticks, dots are counted from the line position since version 99
   sw.Do(&s_locals.crtc_state.in_hblank);
   sw.Do(&s_locals.crtc_state.in_vblank);
   sw.Do(&s_locals.crtc_state.interlaced_field);
@@ -1735,10 +1731,26 @@ void GPU::RescheduleCRTC()
   u64 subticks_until_event = u64(lines_until_event) * line_subticks - position;
   if (Timers::IsExternalIRQEnabled(DOT_TIMER_INDEX))
   {
-    const TickCount dots_until_irq = Timers::GetTicksUntilIRQ(DOT_TIMER_INDEX);
-    const s64 subticks_until_irq =
-      s64(dots_until_irq) * cs.dot_clock_divider * s64(CRTC_SUBTICKS_PER_TICK) - cs.fractional_dot_ticks;
-    subticks_until_event = std::min(subticks_until_event, static_cast<u64>(std::max<s64>(subticks_until_irq, 0)));
+    // Dots restart on every line, and PAL 320's partial dot counts at the end of the line, see CRTCTickEvent().
+    const u64 dots_until_irq = static_cast<u64>(std::max<TickCount>(Timers::GetTicksUntilIRQ(DOT_TIMER_INDEX), 0));
+    const u64 subticks_per_dot = u64(cs.dot_clock_divider) * CRTC_SUBTICKS_PER_TICK;
+    const u64 dots_per_line = line_subticks / subticks_per_dot +
+                              BoolToUInt64(cs.dot_clock_divider == 8 && cs.vertical_total > NTSC_TOTAL_LINES);
+    const u64 line_dot = position / subticks_per_dot;
+    u64 subticks_until_irq;
+    if (dots_until_irq <= (dots_per_line - line_dot))
+    {
+      subticks_until_irq =
+        std::max(std::min((line_dot + dots_until_irq) * subticks_per_dot, line_subticks), position) - position;
+    }
+    else
+    {
+      const u64 next_line_dots = dots_until_irq - (dots_per_line - line_dot);
+      const u64 full_lines = (next_line_dots - 1) / dots_per_line;
+      subticks_until_irq = (line_subticks - position) + full_lines * line_subticks +
+                           std::min((next_line_dots - full_lines * dots_per_line) * subticks_per_dot, line_subticks);
+    }
+    subticks_until_event = std::min(subticks_until_event, subticks_until_irq);
   }
 
   if (Timers::IsSyncEnabled(DOT_TIMER_INDEX))
@@ -1846,23 +1858,27 @@ void GPU::CRTCTickEvent(void*, TickCount ticks)
 
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
   const TickCount prev_tick = cs.current_tick_in_scanline;
+  const u64 prev_position = u64(prev_tick) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks);
   const auto [gpu_ticks, fractional_ticks] = SystemTicksToCRTCTicks(ticks, cs.fractional_ticks);
   cs.fractional_ticks = fractional_ticks;
   cs.current_tick_in_scanline += gpu_ticks;
 
-  if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
-  {
-    // count dots from elapsed time, NTSC line wrapping moves fractional_ticks by half a tick
-    const u64 subticks_per_dot = u64(cs.dot_clock_divider) * CRTC_SUBTICKS_PER_TICK;
-    const u64 dot_subticks = u64(cs.fractional_dot_ticks) + u64(ticks) * GetCRTCSubTicksPerSystemTick();
-    const TickCount dots = static_cast<TickCount>(dot_subticks / subticks_per_dot);
-    cs.fractional_dot_ticks = static_cast<TickCount>(dot_subticks % subticks_per_dot);
-    if (dots > 0)
-      Timers::AddTicks(DOT_TIMER_INDEX, dots);
-  }
-
   const u64 line_subticks = GetCRTCLineSubTicks();
   u64 position = u64(cs.current_tick_in_scanline) * CRTC_SUBTICKS_PER_TICK + u64(cs.fractional_ticks);
+
+  if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
+  {
+    // The dot clock restarts on every line, so Timer 0 only counts the dots completed in each line, rounded down.
+    // Except PAL 320, which counts 426 like NTSC: the partial dot at the end of the line counts as one.
+    const u64 subticks_per_dot = u64(cs.dot_clock_divider) * CRTC_SUBTICKS_PER_TICK;
+    const u64 dots_per_line = line_subticks / subticks_per_dot +
+                              BoolToUInt64(cs.dot_clock_divider == 8 && cs.vertical_total > NTSC_TOTAL_LINES);
+    const u64 lines = position / line_subticks;
+    const u64 dots =
+      lines * dots_per_line + (position % line_subticks) / subticks_per_dot - prev_position / subticks_per_dot;
+    if (dots > 0)
+      Timers::AddTicks(DOT_TIMER_INDEX, static_cast<TickCount>(dots));
+  }
   if (position < line_subticks)
   {
     // short path when we execute <1 line.. this shouldn't occur often, except when gated (konami lightgun games).
