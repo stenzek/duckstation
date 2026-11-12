@@ -551,7 +551,8 @@ TEST_P(CPUCop0Breakpoints, DataTrapsStopAccessesAndPreserveAlignmentExceptions)
   }
 }
 
-TEST_P(CPUCop0Breakpoints, ExecutionMatchesBeforeFetchFaults)
+// Disabled along with the unfetchable-segment check in IsCop0ExecutionBreakpointUnmasked() (breaks libcrypt games).
+TEST_P(CPUCop0Breakpoints, DISABLED_ExecutionMatchesBeforeFetchFaults)
 {
   const bool old_tty_logging = g_settings.bios_tty_logging;
   std::vector<u32> addresses = {0x20010000u, 0x40010000u, 0x60010000u, 0xC0010000u,
@@ -629,7 +630,8 @@ TEST_P(CPUCop0Breakpoints, ExecutionMatchesBeforeFetchFaults)
   CPU::UpdateDebugDispatcherFlag();
 }
 
-TEST_P(CPUCop0Breakpoints, ExecutionBreakpointsMatchExpansionCode)
+// Disabled along with the EXP1 check in IsCop0ExecutionBreakpointUnmasked().
+TEST_P(CPUCop0Breakpoints, DISABLED_ExecutionBreakpointsMatchExpansionCode)
 {
   for (const u32 address : {0x1F000000u, 0x9F000000u, 0xBF000000u})
   {
