@@ -620,6 +620,10 @@ void GPU::Reset(bool clear_vram)
 
   SoftReset();
 
+  // GP1(00h) selects NTSC, but at power-on the BIOS will set the console's region, which fast boot skips.
+  s_locals.GPUSTAT.pal_mode = System::IsPALRegion();
+  UpdateCRTCConfig();
+
   // Can skip the VRAM clear if it's not a hardware reset.
   if (clear_vram)
     GPUBackend::PushCommand(GPUBackend::NewClearVRAMCommand());
@@ -646,7 +650,7 @@ void GPU::SoftReset()
   s_locals.GPUSTAT.horizontal_resolution_2 = 0;
   s_locals.GPUSTAT.horizontal_resolution_1 = 0;
   s_locals.GPUSTAT.vertical_resolution = false;
-  s_locals.GPUSTAT.pal_mode = System::IsPALRegion();
+  s_locals.GPUSTAT.pal_mode = false;
   s_locals.GPUSTAT.display_area_color_depth_24 = false;
   s_locals.GPUSTAT.vertical_interlace = false;
   s_locals.GPUSTAT.interlaced_field = 1u;
