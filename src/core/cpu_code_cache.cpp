@@ -256,6 +256,7 @@ void CPU::CodeCache::Reset()
 void CPU::CodeCache::Initialize()
 {
   AllocateLUTs();
+  Reset();
 }
 
 void CPU::CodeCache::ReallocateLUTs()

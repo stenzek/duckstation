@@ -340,6 +340,10 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
     UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
                     false);
   }
+  else
+  {
+    ClearVRAM();
+  }
 
   m_drawing_area_changed = true;
   LoadInternalPostProcessing();

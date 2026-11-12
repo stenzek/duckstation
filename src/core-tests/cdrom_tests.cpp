@@ -255,7 +255,7 @@ protected:
 
     // Time can't advance without something to count down to.
     m_idle_event.Activate();
-    CDROM::Initialize();
+    ASSERT_TRUE(CDROM::Initialize(nullptr, DiscRegion::NonPS1, {}, {}, {}, nullptr));
 
     std::unique_ptr<CDImage> image = std::make_unique<TestDiscImage>(70 * CDImage::FRAMES_PER_MINUTE);
     ASSERT_TRUE(CDROM::InsertMedia(image, DiscRegion::NTSC_U, {}, {}, {}, nullptr));

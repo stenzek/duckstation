@@ -784,6 +784,7 @@ bool PIO::Initialize(Error* error)
     return false;
   }
 
+  g_pio_device->Reset();
   return true;
 }
 

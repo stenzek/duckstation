@@ -566,12 +566,18 @@ const char* CDROM::GetCommandName(Command command)
            "Unknown";
 }
 
-void CDROM::Initialize()
+bool CDROM::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, std::string_view serial,
+                       std::string_view title, std::string_view save_title, Error* error)
 {
   s_state.disc_region = DiscRegion::NonPS1;
   s_state.manual_lid_control = MANUAL_LID_CONTROL_DISABLED;
   CDROMAsyncReader::SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
+  if (disc && !InsertMedia(disc, disc_region, serial, title, save_title, error))
+    return false;
+
+  // Reset after inserting media, so the drive starts with the motor on and the shell closed.
   Reset();
+  return true;
 }
 
 void CDROM::Shutdown()

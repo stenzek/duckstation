@@ -196,8 +196,7 @@ void CPU::Initialize()
   s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   s_locals.break_type = ExecutionBreakType::None;
 
-  UpdateMemoryPointers();
-  UpdateDebugDispatcherFlag();
+  Reset();
 }
 
 void CPU::Shutdown()

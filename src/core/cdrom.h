@@ -16,7 +16,8 @@ class StateWrapper;
 
 namespace CDROM {
 
-void Initialize();
+bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, std::string_view serial, std::string_view title,
+                std::string_view save_title, Error* error);
 void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);

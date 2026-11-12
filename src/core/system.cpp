@@ -165,7 +165,6 @@ static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bo
                        std::optional<bool> start_fullscreen, Error* error);
 static bool LoadBIOS(bool* using_auto_select, Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
-static void InternalReset();
 static void ResetGameStarted();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1639,7 +1638,33 @@ void System::ResetSystem()
 
   SaveUndoLoadState();
   ClearMemorySaveStates(false, false);
-  InternalReset();
+
+  // reset and clear taints
+  SetTaintsFromSettings();
+
+  TimingEvents::Reset();
+  ResetGameStarted();
+  CPU::Reset();
+  CPU::CodeCache::Reset();
+  if (g_settings.gpu_pgxp_enable)
+    CPU::PGXP::Reset();
+
+  Bus::Reset();
+  PIO::Reset();
+  DMA::Reset();
+  InterruptController::Reset();
+  Timers::Reset();
+  GPU::Reset(true);
+  CDROM::Reset();
+  Pad::Reset();
+  SPU::Reset();
+  MDEC::Reset();
+  SIO::Reset();
+  PCDrv::Reset();
+  Achievements::OnSystemReset();
+
+  s_state.frame_number = 1;
+  s_state.internal_frame_number = 0;
 
   // Reset boot mode/reload BIOS if needed. Preserve exe/psf boot.
   const BootMode new_boot_mode = (s_state.boot_mode == BootMode::BootEXE || s_state.boot_mode == BootMode::BootPSF) ?
@@ -1939,9 +1964,13 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
   s_state.exe_override = std::move(exe_override);
 
   UpdateControllers();
+  ResetControllers();
   UpdateMemoryCards();
   UpdateMultitaps();
-  InternalReset();
+
+  // Components were reset to power-on state in Initialize(), controllers need to apply force analog on reset.
+  SetTaintsFromSettings();
+  ResetGameStarted();
 
   // Good to go.
   s_state.state = State::Running;
@@ -2023,22 +2052,24 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_state.rewind_save_frequency = -1;
   s_state.rewind_save_counter = -1;
 
+  // Components reset themselves on initialization. Ordering matters, as GPU reset sets timer gates and DMA requests.
   TimingEvents::Initialize();
-
   Bus::Initialize();
   CPU::CodeCache::Initialize();
   CPU::Initialize();
-  CDROM::Initialize();
-
-  if (!PIO::Initialize(error))
-    return false;
+  InterruptController::Reset();
+  DMA::Initialize();
+  Timers::Initialize();
 
   // CDROM before GPU, that way we don't modeswitch.
-  if (disc && !CDROM::InsertMedia(disc, disc_region, s_state.running_game_serial, s_state.running_game_title,
-                                  GetCurrentGameSaveTitle(), error))
+  if (!CDROM::Initialize(std::move(disc), disc_region, s_state.running_game_serial, s_state.running_game_title,
+                         GetCurrentGameSaveTitle(), error))
   {
     return false;
   }
+
+  if (!PIO::Initialize(error))
+    return false;
 
   GPU::Initialize();
 
@@ -2059,9 +2090,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
 
-  DMA::Initialize();
   Pad::Initialize();
-  Timers::Initialize();
   SPU::Initialize();
   MDEC::Initialize();
   SIO::Initialize();
@@ -3007,38 +3036,6 @@ bool System::LoadBIOS(bool* using_auto_select, Error* error)
 
   std::memcpy(g_bus.bios, bios_image->data.data(), Bus::BIOS_SIZE);
   return true;
-}
-
-void System::InternalReset()
-{
-  if (IsShutdown())
-    return;
-
-  // reset and clear taints
-  SetTaintsFromSettings();
-
-  TimingEvents::Reset();
-  ResetGameStarted();
-  CPU::Reset();
-  CPU::CodeCache::Reset();
-  if (g_settings.gpu_pgxp_enable)
-    CPU::PGXP::Reset();
-
-  Bus::Reset();
-  PIO::Reset();
-  DMA::Reset();
-  InterruptController::Reset();
-  Timers::Reset();
-  GPU::Reset(true);
-  CDROM::Reset();
-  Pad::Reset();
-  SPU::Reset();
-  MDEC::Reset();
-  SIO::Reset();
-  PCDrv::Reset();
-  Achievements::OnSystemReset();
-  s_state.frame_number = 1;
-  s_state.internal_frame_number = 0;
 }
 
 bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error)
@@ -4594,7 +4591,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   }
 
   // Re-arm the entry point check if the disc was changed before the game started, e.g. in the shell.
-  // When booting, this happens in InternalReset() instead, once the boot mode is known.
+  // When booting, this happens in BootSystem() instead, once the boot mode is known.
   if (!booting && !s_state.game_started)
     ResetGameStarted();
 

@@ -392,6 +392,7 @@ void Bus::Initialize()
 {
   SetRAMSize(g_settings.cpu_ram_size);
   MapFastmemViews();
+  Reset();
 }
 
 void Bus::SetRAMSize(CPURAMSize size)

@@ -53,7 +53,7 @@ bool GPU_SW::Initialize(bool upload_vram, Error* error)
 
   // if we're using "new" vram, clear it out here
   if (!upload_vram)
-    std::memset(g_vram, 0, sizeof(g_vram));
+    ClearVRAM();
 
   return true;
 }

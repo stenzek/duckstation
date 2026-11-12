@@ -331,6 +331,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Create(u32 index)
 {
   std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>(index);
   mc->Format();
+  mc->m_changed = false;
   return mc;
 }
 
