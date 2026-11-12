@@ -28,7 +28,7 @@
      <property name="title">
       <string>Console</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,1" columnminimumwidth="120,0,0">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -36,7 +36,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="1" colspan="2">
        <widget class="QComboBox" name="region"/>
       </item>
       <item row="1" column="0">
@@ -46,7 +46,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="1" column="1" colspan="2">
        <widget class="QComboBox" name="forceVideoTiming"/>
       </item>
       <item row="2" column="0">
@@ -57,10 +57,83 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="ramSize"/>
+       <widget class="QComboBox" name="ramSize">
+        <item>
+         <property name="text">
+          <string>2MB RAM (Retail Console)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/emulation-line.svg</normaloff>:/icons/monochrome/svg/emulation-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4MB RAM (Arcade Boards)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8MB RAM (Dev Console)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/code-box-line.svg</normaloff>:/icons/monochrome/svg/code-box-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16MB RAM (Mods/Arcade Boards)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/tools-line.svg</normaloff>:/icons/monochrome/svg/tools-line.svg</iconset>
+         </property>
+        </item>
+       </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="2" column="2">
+       <widget class="QComboBox" name="vramSize">
+        <item>
+         <property name="text">
+          <string>1MB VRAM (Retail Console)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/emulation-line.svg</normaloff>:/icons/monochrome/svg/emulation-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2MB VRAM (Arcade Boards)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout_2">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="forceFullRAMMapping">
+          <property name="text">
+           <string>Force Full RAM Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="fastForwardBoot">
+          <property name="text">
+           <string>Fast Forward Boot</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="fastBoot">
           <property name="text">
@@ -75,20 +148,6 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="fastForwardBoot">
-          <property name="text">
-           <string>Fast Forward Boot</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="forceFullRAMMapping">
-          <property name="text">
-           <string>Force Full RAM Mapping</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>
@@ -99,7 +158,7 @@
      <property name="title">
       <string>CPU Emulation</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
+     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1" columnminimumwidth="120,0">
       <item row="0" column="0">
        <widget class="QLabel" name="cpuExecutionModeLabel">
         <property name="text">
@@ -187,7 +246,7 @@
      <property name="title">
       <string>CD-ROM Emulation</string>
      </property>
-     <layout class="QGridLayout" name="cdromLayout" columnstretch="0,1">
+     <layout class="QGridLayout" name="cdromLayout" columnstretch="0,1" columnminimumwidth="120,0">
       <item row="0" column="0">
        <widget class="QLabel" name="cdromReadSpeedupLabel">
         <property name="text">

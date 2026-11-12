@@ -3515,6 +3515,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
                   FSUI_VSTR("Changes the amount of RAM installed in the emulated console."), Settings::CPU_SECTION_NAME,
                   "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
                   &Settings::GetCPURAMSizeDisplayName, CPURAMSize::Count);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_IMAGE, "Enable 2MB VRAM"),
+                    FSUI_VSTR("Installs a second 1MB bank of video RAM, as present on some arcade boards and "
+                              "development hardware. Retail games do not use it."),
+                    Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_MAXIMIZE, "Force Full RAM Mapping"),
     FSUI_VSTR("Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with "
@@ -3856,6 +3860,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
     const CPURAMSize ram_size =
       Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
         .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
+    const bool vram_2mb = GetEffectiveBoolSetting(bsi, Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
     const bool enable_texture_cache =
       GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const float rewind_frequency =
@@ -3867,7 +3872,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, multisamples, use_software_renderer,
-                                       ram_size, enable_texture_cache, &ram_usage, &vram_usage);
+                                       ram_size, vram_2mb, enable_texture_cache, &ram_usage, &vram_usage);
     if (vram_usage > 0)
     {
       rewind_summary.format(

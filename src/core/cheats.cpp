@@ -261,7 +261,7 @@ Cheats::CheatCode::~CheatCode() = default;
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
   return (m_metadata.disable_widescreen_rendering || m_metadata.force_pgxp_preserve_projection_precision ||
-          m_metadata.override_ram_size.has_value() || m_metadata.force_full_ram_mapping ||
+          m_metadata.override_ram_size.has_value() || m_metadata.force_full_ram_mapping || m_metadata.enable_2mb_vram ||
           m_metadata.override_aspect_ratio.has_value() || m_metadata.override_cpu_overclock.has_value());
 }
 
@@ -288,6 +288,11 @@ void Cheats::CheatCode::ApplySettingOverrides()
   {
     DEV_LOG("Forcing full RAM mapping from {} patch.", GetName());
     g_settings.cpu_force_full_ram_mapping = true;
+  }
+  if (m_metadata.enable_2mb_vram && !g_settings.gpu_enable_2mb_vram)
+  {
+    DEV_LOG("Enabling 2MB VRAM from {} patch.", GetName());
+    g_settings.gpu_enable_2mb_vram = true;
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
@@ -666,6 +671,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "OverrideRAMSize = {}\n", Settings::GetCPURAMSizeName(code.override_ram_size.value()));
   if (code.force_full_ram_mapping)
     fmt::format_to(appender, "ForceFullRAMMapping = true\n");
+  if (code.enable_2mb_vram)
+    fmt::format_to(appender, "Enable2MBVRAM = true\n");
   if (code.disallow_for_achievements)
     fmt::format_to(appender, "DisallowForAchievements = true\n");
 
@@ -1811,6 +1818,10 @@ bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view
   else if (key == "ForceFullRAMMapping")
   {
     metadata->force_full_ram_mapping = StringUtil::FromChars<bool>(value).value_or(false);
+  }
+  else if (key == "Enable2MBVRAM")
+  {
+    metadata->enable_2mb_vram = StringUtil::FromChars<bool>(value).value_or(false);
   }
   else if (key == "DisallowForAchievements")
   {

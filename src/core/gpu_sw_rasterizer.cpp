@@ -38,6 +38,8 @@ FillVRAMFunction FillVRAM = nullptr;
 WriteVRAMFunction WriteVRAM = nullptr;
 CopyVRAMFunction CopyVRAM = nullptr;
 GPUDrawingArea g_drawing_area = {};
+u32 g_addressable_vram_height = VRAM_HEIGHT;
+u32 g_addressable_vram_height_mask = VRAM_HEIGHT_MASK;
 } // namespace GPU_SW_Rasterizer
 
 void GPU_SW_Rasterizer::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)

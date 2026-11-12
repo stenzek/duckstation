@@ -62,7 +62,7 @@ protected:
   static bool SaveBus(std::vector<u8>* data)
   {
     const CPURAMSize size = Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value();
-    data->resize(System::GetMaxSaveStateSize(size, false));
+    data->resize(System::GetMaxSaveStateSize(size, false, false));
     StateWrapper sw(std::span<u8>(*data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     const bool result = Bus::DoState(sw);
     data->resize(sw.GetPosition());

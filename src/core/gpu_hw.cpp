@@ -153,12 +153,12 @@ ALWAYS_INLINE bool IsBlendedTextureFiltering(GPUTextureFilter filter)
   return (filter < GPUTextureFilter::SharpBilinear && ((static_cast<u8>(filter) & 1u) == 1u));
 }
 
-/// Computes the area affected by a VRAM transfer, including wrap-around of X.
-ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
+/// Computes the area affected by a VRAM transfer, including wrap-around of X, and Y at vram_height.
+ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height, u32 vram_height)
 {
   GSVector4i ret;
   ret.left = x % VRAM_WIDTH;
-  ret.top = y % VRAM_HEIGHT;
+  ret.top = y & (vram_height - 1);
   ret.right = ret.left + width;
   ret.bottom = ret.top + height;
   if (ret.right > static_cast<s32>(VRAM_WIDTH))
@@ -166,10 +166,10 @@ ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 
     ret.left = 0;
     ret.right = static_cast<s32>(VRAM_WIDTH);
   }
-  if (ret.bottom > static_cast<s32>(VRAM_HEIGHT))
+  if (ret.bottom > static_cast<s32>(vram_height))
   {
     ret.top = 0;
-    ret.bottom = static_cast<s32>(VRAM_HEIGHT);
+    ret.bottom = static_cast<s32>(vram_height);
   }
   return ret;
 }
@@ -242,7 +242,7 @@ private:
 
 } // namespace
 
-GPU_HW::GPU_HW() : GPUBackend()
+GPU_HW::GPU_HW(bool enable_2mb_vram) : GPUBackend(enable_2mb_vram)
 {
 #if defined(_DEBUG) || defined(_DEVEL)
   s_draw_number = 0;
@@ -337,8 +337,8 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   // If we're not initializing VRAM, need to upload it here. Implies RestoreDeviceContext().
   if (upload_vram)
   {
-    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
-                    false);
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, m_vram_height, m_vram_height, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
+                    GetVRAMSizeRect(), false);
   }
   else
   {
@@ -368,7 +368,7 @@ void GPU_HW::ClearVRAM()
   m_texpage_dirty = false;
   m_compute_uv_range = m_clamp_uvs;
 
-  std::memset(g_vram, 0, sizeof(g_vram));
+  std::memset(g_vram, 0, GetVRAMSizeInBytes());
   std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
 
   m_batch = {};
@@ -422,13 +422,15 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
 {
   ClearBatch();
 
-  std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
+  std::memcpy(g_vram, cmd->vram_data, GetVRAMSizeInBytes());
   std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
-  UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT, false);
+  UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, m_vram_height, m_vram_height, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
+                  GetVRAMSizeRect(), false);
 
   if (m_use_texture_cache)
   {
-    StateWrapper sw(std::span<const u8>(cmd->texture_cache_state, cmd->texture_cache_state_size),
+    StateWrapper sw(std::span<const u8>(reinterpret_cast<const u8*>(cmd->vram_data) + GetVRAMSizeInBytes(),
+                                        cmd->texture_cache_state_size),
                     StateWrapper::Mode::Read, cmd->texture_cache_state_version);
     if (!GPUTextureCache::DoState(sw, false)) [[unlikely]]
       Panic("Failed to process texture cache state.");
@@ -462,7 +464,7 @@ bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
 
   u32 buffer_size = 0;
   if (m_draw_with_software_renderer || m_use_texture_cache)
-    buffer_size += sizeof(g_vram);
+    buffer_size += GetVRAMSizeInBytes();
   if (m_draw_with_software_renderer)
     buffer_size += sizeof(g_gpu_clut);
   if (m_use_texture_cache)
@@ -492,7 +494,7 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 
   // Save VRAM/CLUT.
   if (m_draw_with_software_renderer || m_use_texture_cache)
-    sw.DoBytes(g_vram, sizeof(g_vram));
+    sw.DoBytes(g_vram, GetVRAMSizeInBytes());
   if (m_draw_with_software_renderer)
     sw.DoBytes(g_gpu_clut, sizeof(g_gpu_clut));
   if (m_use_texture_cache)
@@ -514,8 +516,8 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
     }
     else
     {
-      UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
-                      false);
+      UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, m_vram_height, m_vram_height, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
+                      GetVRAMSizeRect(), false);
     }
 
     PostLoadState();
@@ -633,7 +635,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   if (framebuffer_changed)
   {
     RestoreDeviceContext();
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    ReadVRAM(0, 0, VRAM_WIDTH, m_vram_height);
     DestroyBuffers();
   }
 
@@ -699,8 +701,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
     UpdateDownsamplingLevels();
     RestoreDeviceContext();
-    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT,
-                    false);
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, m_vram_height, m_vram_height, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
+                    GetVRAMSizeRect(), false);
     if (m_write_mask_as_depth)
       UpdateDepthBufferFromMaskBit();
   }
@@ -738,7 +740,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   // Need to reload CLUT if we're enabling SW rendering.
   if (software_renderer_changed && draw_with_software_renderer)
   {
-    DownloadVRAMFromGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    DownloadVRAMFromGPU(0, 0, VRAM_WIDTH, m_vram_height);
 
     if (m_draw_mode.mode_reg.texture_mode <= GPUTextureMode::Palette8Bit)
     {
@@ -893,7 +895,7 @@ bool GPU_HW::IsUsingDownsampling(const GPUBackendUpdateDisplayCommand* cmd) cons
 
 void GPU_HW::SetFullVRAMDirtyRectangle()
 {
-  m_vram_dirty_draw_rect = VRAM_SIZE_RECT;
+  m_vram_dirty_draw_rect = GetVRAMSizeRect();
   m_draw_mode.bits = INVALID_DRAW_MODE_BITS;
 }
 
@@ -940,7 +942,8 @@ void GPU_HW::SetTexPageChangedOnOverlap(const GSVector4i update_rect)
   // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
   // shadow texture is updated
   if (m_draw_mode.bits != INVALID_DRAW_MODE_BITS && m_batch.texture_mode != BatchTextureMode::Disabled &&
-      (GetTextureRect(m_draw_mode.mode_reg.texture_page, m_draw_mode.mode_reg.texture_mode).rintersects(update_rect) ||
+      (GetTextureRect(m_draw_mode.mode_reg.GetTexturePageIndex(), m_draw_mode.mode_reg.texture_mode)
+         .rintersects(update_rect) ||
        (m_draw_mode.mode_reg.IsUsingPalette() &&
         GetPaletteRect(m_draw_mode.palette_reg, m_draw_mode.mode_reg.texture_mode).rintersects(update_rect))))
   {
@@ -951,7 +954,7 @@ void GPU_HW::SetTexPageChangedOnOverlap(const GSVector4i update_rect)
 void GPU_HW::PrintSettingsToLog()
 {
   INFO_LOG("Resolution Scale: {} ({}x{}), maximum {}", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,
-           VRAM_HEIGHT * m_resolution_scale, GetMaxResolutionScale());
+           m_vram_height * m_resolution_scale, GetMaxResolutionScale());
   INFO_LOG("Multisampling: {}x{}", m_multisamples,
            (g_gpu_settings.gpu_per_sample_shading && g_gpu_device->GetFeatures().per_sample_shading) ?
              " (per sample shading)" :
@@ -995,7 +998,7 @@ bool GPU_HW::CreatePersistentBuffers(Error* error)
   if (g_gpu_device->GetFeatures().memory_import)
   {
     m_vram_readback_download_texture =
-      g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, VRAM_RT_FORMAT, g_vram, sizeof(g_vram),
+      g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, m_vram_height, VRAM_RT_FORMAT, g_vram, sizeof(g_vram),
                                           VRAM_WIDTH * sizeof(u16), shader_write, error);
     if (!m_vram_readback_download_texture)
       DEV_LOG("Could not import VRAM for downloads, using a staging buffer.");
@@ -1003,12 +1006,12 @@ bool GPU_HW::CreatePersistentBuffers(Error* error)
   if (!m_vram_readback_download_texture)
   {
     m_vram_readback_download_texture =
-      g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, VRAM_RT_FORMAT, shader_write, error);
+      g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, m_vram_height, VRAM_RT_FORMAT, shader_write, error);
     if (!m_vram_readback_download_texture && shader_write)
     {
       WARNING_LOG("Failed to create shader-writable VRAM download buffer, using fragment shader for readbacks.");
       m_vram_readback_download_texture =
-        g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, VRAM_RT_FORMAT, false, error);
+        g_gpu_device->CreateDownloadTexture(VRAM_WIDTH / 2, m_vram_height, VRAM_RT_FORMAT, false, error);
     }
     if (!m_vram_readback_download_texture)
       return false;
@@ -1017,7 +1020,7 @@ bool GPU_HW::CreatePersistentBuffers(Error* error)
   if (!m_vram_readback_download_texture->IsShaderWritable())
   {
     if (!(m_vram_readback_texture =
-            g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Type::RenderTarget,
+            g_gpu_device->FetchTexture(VRAM_WIDTH / 2, m_vram_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
                                        VRAM_RT_FORMAT, GPUTexture::Flags::None, nullptr, 0, error)))
     {
       Error::AddPrefix(error, "Failed to create VRAM readback texture: ");
@@ -1033,7 +1036,7 @@ bool GPU_HW::CreateBuffers(Error* error)
 {
   // scale vram size to internal resolution
   const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
-  const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
+  const u32 texture_height = m_vram_height * m_resolution_scale;
   const u8 samples = static_cast<u8>(m_multisamples);
   const bool needs_depth_buffer = m_write_mask_as_depth || m_pgxp_depth_buffer;
 
@@ -1446,6 +1449,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   vssel.pgxp_depth = m_pgxp_depth_buffer;
   vssel.disable_color_perspective = disable_color_perspective;
   vssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
+  vssel.vram_2mb = (m_vram_height == VRAM_MAX_HEIGHT);
   for (u8 textured = 0; textured < 2; textured++)
   {
     vssel.textured = (textured != 0);
@@ -1497,6 +1501,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   fssel.disable_color_perspective = disable_color_perspective;
   fssel.write_mask_as_depth = m_write_mask_as_depth;
   fssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
+  fssel.vram_2mb = (m_vram_height == VRAM_MAX_HEIGHT);
 
   for (u8 depth_test = 0; depth_test < 2; depth_test++)
   {
@@ -3218,7 +3223,8 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   bool draw_with_software_renderer = m_draw_with_software_renderer;
   if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable &&
       !cmd->check_mask_before_draw && cmd->x >= 0 && cmd->y >= 0 &&
-      (static_cast<u32>(cmd->x) + cmd->width) <= VRAM_WIDTH && (static_cast<u32>(cmd->y) + cmd->height) <= VRAM_HEIGHT)
+      (static_cast<u32>(cmd->x) + cmd->width) <= VRAM_WIDTH &&
+      (static_cast<u32>(cmd->y) + cmd->height) <= GPU_SW_Rasterizer::g_addressable_vram_height)
   {
     // For small fills, we don't go down the FillVRAM() path as that will wipe out the drawn state on the pages, as this
     // has the potential to cause false positives. Instead we just throw the draw down the software path in addition.
@@ -3654,7 +3660,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(const GPUBackendDrawCo
   uv_rect = uv_rect.blend32<5>(uv_rect.srl32(xshift));   // shift only goes on the x
   uv_rect = uv_rect.add32(page_offset);                  // page offset
   uv_rect = uv_rect.add32(GSVector4i::cxpr(0, 0, 1, 1)); // make exclusive
-  uv_rect = uv_rect.rintersect(VRAM_SIZE_RECT);          // clamp to vram bounds
+  uv_rect = uv_rect.rintersect(GetVRAMSizeRect());       // clamp to vram bounds
 
   const GSVector4i new_uv_rect = m_current_uv_rect.runion(uv_rect);
 
@@ -3832,6 +3838,9 @@ ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb)
 {
+  const u32 vram_height = GPU_SW_Rasterizer::g_addressable_vram_height;
+  const u32 vram_height_mask = GPU_SW_Rasterizer::g_addressable_vram_height_mask;
+
   FlushRender();
   DeactivateROV();
 
@@ -3839,7 +3848,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
 
   GL_INS_FMT("Dirty draw area before: {}", m_vram_dirty_draw_rect);
 
-  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
+  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height, vram_height);
 
   // If TC is enabled, we have to update local memory.
   if (m_use_texture_cache && !interlaced_rendering)
@@ -3856,7 +3865,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
 
   GL_INS_FMT("Dirty draw area after: {}", m_vram_dirty_draw_rect);
 
-  const bool is_oversized = (((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT));
+  const bool is_oversized = (((x + width) > VRAM_WIDTH || (y + height) > vram_height));
   g_gpu_device->SetPipeline(m_vram_fill_pipelines[BoolToUInt8(is_oversized)][BoolToUInt8(interlaced_rendering)].get());
 
   struct VRAMFillUBOData
@@ -3871,9 +3880,9 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
   };
   VRAMFillUBOData uniforms;
   uniforms.u_dst_x = (x % VRAM_WIDTH) * m_resolution_scale;
-  uniforms.u_dst_y = (y % VRAM_HEIGHT) * m_resolution_scale;
+  uniforms.u_dst_y = (y & vram_height_mask) * m_resolution_scale;
   uniforms.u_end_x = ((x + width) % VRAM_WIDTH) * m_resolution_scale;
-  uniforms.u_end_y = ((y + height) % VRAM_HEIGHT) * m_resolution_scale;
+  uniforms.u_end_y = ((y + height) & vram_height_mask) * m_resolution_scale;
   // drop precision unless true colour is enabled
   uniforms.u_fill_color =
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
@@ -3908,8 +3917,8 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
 
   // TODO: Only read if it's in the drawn area
 
-  // Get bounds with wrap-around handled.
-  GSVector4i copy_rect = GetVRAMTransferBounds(x, y, width, height);
+  // Get bounds with wrap-around handled. The core thread handles Y wrap-around, so the rect fits in physical VRAM.
+  GSVector4i copy_rect = GetVRAMTransferBounds(x, y, width, height, m_vram_height);
 
   // Has to be aligned to an even pixel for the download, due to 32-bit packing.
   if (copy_rect.left & 1)
@@ -3983,13 +3992,15 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
+  const u32 vram_height = GPU_SW_Rasterizer::g_addressable_vram_height;
+
   FlushRender();
 
   GL_SCOPE_FMT("UpdateVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
 
   // TODO: Handle wrapped transfers... break them up or something
-  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
-  DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
+  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height, vram_height);
+  DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(m_vram_height));
   AddWrittenRectangle(bounds);
 
   GPUTextureCache::WriteVRAM(x, y, width, height, data, set_mask, check_mask, bounds);
@@ -4014,11 +4025,11 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     }
   }
 
-  UpdateVRAMOnGPU(x, y, width, height, data, sizeof(u16) * width, set_mask, check_mask, bounds, true);
+  UpdateVRAMOnGPU(x, y, width, height, vram_height, data, sizeof(u16) * width, set_mask, check_mask, bounds, true);
 }
 
-void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
-                             bool check_mask, const GSVector4i bounds, bool allow_filtering)
+void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, u32 vram_height, const void* data, u32 data_pitch,
+                             bool set_mask, bool check_mask, const GSVector4i bounds, bool allow_filtering)
 {
   // Without the mask in the depth buffer, the shader checks it by reading the destination, via ROV if available.
   const bool shader_check_mask = (check_mask && !m_write_mask_as_depth && m_allow_shader_blend);
@@ -4067,17 +4078,19 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
     u32 u_buffer_base_offset;
     u32 u_mask_or_bits;
     float u_depth_value;
+    float u_vram_height;
   };
   const VRAMWriteUBOData uniforms = {static_cast<float>(x % VRAM_WIDTH),
-                                     static_cast<float>(y % VRAM_HEIGHT),
+                                     static_cast<float>(y & (vram_height - 1)),
                                      static_cast<float>((x + width) % VRAM_WIDTH),
-                                     static_cast<float>((y + height) % VRAM_HEIGHT),
+                                     static_cast<float>((y + height) & (vram_height - 1)),
                                      static_cast<float>(width),
                                      static_cast<float>(height),
                                      static_cast<float>(m_resolution_scale),
                                      map_index,
                                      (set_mask) ? 0x8000u : 0x00,
-                                     GetCurrentNormalizedVertexDepth()};
+                                     GetCurrentNormalizedVertexDepth(),
+                                     static_cast<float>(vram_height)};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
@@ -4110,20 +4123,23 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask)
 {
+  const u32 vram_height = GPU_SW_Rasterizer::g_addressable_vram_height;
+  const u32 vram_height_mask = GPU_SW_Rasterizer::g_addressable_vram_height_mask;
+
   FlushRender();
 
   GL_SCOPE_FMT("CopyVRAM({}x{} @ {},{} => {},{}", width, height, src_x, src_y, dst_x, dst_y);
 
   // masking enabled, oversized, or overlapping
-  const GSVector4i src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-  const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+  const GSVector4i src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height, vram_height);
+  const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height, vram_height);
   const bool intersect_with_draw = m_vram_dirty_draw_rect.rintersects(src_bounds);
   const bool intersect_with_write = m_vram_dirty_write_rect.rintersects(src_bounds);
   const bool overlaps_with_self = src_bounds.rintersects(dst_bounds);
   const bool use_shader =
     (set_mask || check_mask || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
-     ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
-     ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT) ||
+     ((src_y & vram_height_mask) + height) > vram_height || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
+     ((dst_y & vram_height_mask) + height) > vram_height) ||
     (!intersect_with_draw && !intersect_with_write && !overlaps_with_self);
 
   // If we're copying a region that hasn't been drawn to, and we're using the TC, we can do it in local memory.
@@ -4131,7 +4147,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   {
     GL_INS("Performed in local memory.");
     GPUTextureCache::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, set_mask, check_mask, src_bounds, dst_bounds);
-    UpdateVRAMOnGPU(dst_bounds.left, dst_bounds.top, dst_bounds.width(), dst_bounds.height(),
+    UpdateVRAMOnGPU(dst_bounds.left, dst_bounds.top, dst_bounds.width(), dst_bounds.height(), vram_height,
                     &g_vram[dst_bounds.top * VRAM_WIDTH + dst_bounds.left], VRAM_WIDTH * sizeof(u16), false, false,
                     dst_bounds, false);
     return;
@@ -4193,13 +4209,13 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       u32 pad;
     };
     const VRAMCopyUBOData uniforms = {static_cast<float>((src_x % VRAM_WIDTH) * m_resolution_scale),
-                                      static_cast<float>((src_y % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>((src_y & vram_height_mask) * m_resolution_scale),
                                       static_cast<float>((dst_x % VRAM_WIDTH) * m_resolution_scale),
-                                      static_cast<float>((dst_y % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>((dst_y & vram_height_mask) * m_resolution_scale),
                                       static_cast<float>(((dst_x + width) % VRAM_WIDTH) * m_resolution_scale),
-                                      static_cast<float>(((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>(((dst_y + height) & vram_height_mask) * m_resolution_scale),
                                       static_cast<float>(m_vram_texture->GetWidth()),
-                                      static_cast<float>(m_vram_texture->GetHeight()),
+                                      static_cast<float>(vram_height * m_resolution_scale),
                                       static_cast<float>(m_resolution_scale),
                                       BoolToUInt32(set_mask),
                                       GetCurrentNormalizedVertexDepth(),
@@ -4332,7 +4348,8 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
       const GPUTextureMode gpu_texture_mode =
         (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ? GPUTextureMode::Direct16Bit :
                                                                                       m_draw_mode.mode_reg.texture_mode;
-      const GSVector4i page_rect = GetTextureRect(m_draw_mode.mode_reg.texture_page, m_draw_mode.mode_reg.texture_mode);
+      const GSVector4i page_rect =
+        GetTextureRect(m_draw_mode.mode_reg.GetTexturePageIndex(), m_draw_mode.mode_reg.texture_mode);
 
       // TODO: This will result in incorrect global-space UVs when the texture page wraps around.
       // Need to deal with it if it becomes a problem.
@@ -4342,8 +4359,8 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
       if (use_texture_cache)
       {
         texture_mode = BatchTextureMode::PageTexture;
-        texture_cache_key =
-          GPUTextureCache::SourceKey(m_draw_mode.mode_reg.texture_page, m_draw_mode.palette_reg, gpu_texture_mode);
+        texture_cache_key = GPUTextureCache::SourceKey(m_draw_mode.mode_reg.GetTexturePageIndex(),
+                                                       m_draw_mode.palette_reg, gpu_texture_mode);
 
         const bool is_drawn = GPUTextureCache::IsRectDrawn(page_rect);
         if (is_drawn)
@@ -4607,7 +4624,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   }
   else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() && cmd->scanout_start_row == 0 &&
            !cmd->partial_scanout && (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
-           (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
+           (scaled_vram_offset_y + scaled_display_height) <=
+             (GPU_SW_Rasterizer::g_addressable_vram_height * resolution_scale) &&
            (!m_internal_postfx || !m_internal_postfx->IsActive()))
   {
     VideoPresenter::SetDisplayTexture(m_vram_texture.get(), GSVector4i(scaled_vram_offset_x, scaled_vram_offset_y,
@@ -4703,9 +4721,11 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
         u32 vram_offset_y;
         float skip_x;
         float line_skip;
+        u32 vram_height;
       };
       const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
-                                        static_cast<float>(line_skip ? 2 : 1)};
+                                        static_cast<float>(line_skip ? 2 : 1),
+                                        GPU_SW_Rasterizer::g_addressable_vram_height};
       g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     }
 
@@ -5015,7 +5035,7 @@ void GPU_HW::UpdatePostProcessingSettings(bool force_reload)
   }
 }
 
-Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateHardwareBackend()
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateHardwareBackend(bool enable_2mb_vram)
 {
-  return Common::make_unique_aligned<GPU_HW>(HOST_CACHE_LINE_SIZE);
+  return Common::make_unique_aligned<GPU_HW>(HOST_CACHE_LINE_SIZE, enable_2mb_vram);
 }

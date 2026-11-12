@@ -851,6 +851,8 @@ PhysicalMemoryAddress Bus::GetMemoryRegionEnd(MemoryRegion region)
 {
   if (region == MemoryRegion::RAM)
     return g_bus.ram_mask + 1;
+  else if (region == MemoryRegion::VRAM)
+    return VRAM_WIDTH * GPU::GetVRAMHeight() * sizeof(u16);
 
   return std::get<1>(s_code_region_ranges[static_cast<u32>(region)]);
 }

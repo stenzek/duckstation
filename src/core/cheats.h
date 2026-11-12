@@ -57,6 +57,7 @@ struct CodeMetadata
   bool disable_widescreen_rendering = false;
   bool force_pgxp_preserve_projection_precision = false;
   bool force_full_ram_mapping = false;
+  bool enable_2mb_vram = false;
   bool disallow_for_achievements = false;
   bool has_options = false; // unused in CodeInfo
 };

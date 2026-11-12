@@ -722,7 +722,8 @@ void RegTestHost::DumpSystemStateHashes()
   // don't save full state on gpu dump, it's not going to be complete...
   if (!System::IsReplayingGPUDump())
   {
-    DynamicHeapArray<u8> state_data(System::GetMaxSaveStateSize(g_settings.cpu_ram_size, g_settings.gpu_texture_cache));
+    DynamicHeapArray<u8> state_data(
+      System::GetMaxSaveStateSize(g_settings.cpu_ram_size, GPU::Is2MBVRAMEnabled(), g_settings.gpu_texture_cache));
     size_t state_data_size;
     if (!System::SaveStateDataToBuffer(state_data, &state_data_size, &error))
     {
@@ -748,8 +749,8 @@ void RegTestHost::DumpSystemStateHashes()
     GPUBackend::PushCommandAndSync(cmd, false);
   }
 
-  INFO_LOG("VRAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(
-                              std::span<const u8>(reinterpret_cast<const u8*>(g_vram), VRAM_SIZE))));
+  INFO_LOG("VRAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(std::span<const u8>(
+                              reinterpret_cast<const u8*>(g_vram), VRAM_WIDTH * GPU::GetVRAMHeight() * sizeof(u16)))));
 }
 
 void RegTestHost::InitializeEarlyConsole()

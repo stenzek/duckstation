@@ -17,7 +17,7 @@
 class GPU_SW final : public GPUBackend
 {
 public:
-  GPU_SW();
+  explicit GPU_SW(bool enable_2mb_vram);
   ~GPU_SW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
@@ -55,12 +55,14 @@ private:
   static constexpr GPUTextureFormat FORMAT_FOR_24BIT = GPUTextureFormat::RGBA8; // RGBA8 always supported.
 
   template<GPUTextureFormat display_format>
-  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row);
+  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row,
+                    u32 vram_height);
 
-  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row);
+  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, u32 start_row, u32 end_row,
+                    u32 vram_height);
 
   bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit, u32 start_row,
-               u32 end_row);
+               u32 end_row, u32 vram_height);
 
   GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format, u32& start_row);
 

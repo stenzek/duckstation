@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core/gpu.h"
+#include "core/gpu_helpers.h"
 #include "core/gpu_sw_rasterizer.h"
 #include "core/gpu_types.h"
 #include "core/video_thread_commands.h"
@@ -42,7 +43,7 @@ protected:
 
     // Fill VRAM with noise, so that the mask bit shows up everywhere, with some transparent texels mixed in.
     XorShift128PlusPlus rng(0x1234);
-    for (u32 i = 0; i < (VRAM_WIDTH * VRAM_HEIGHT); i++)
+    for (u32 i = 0; i < std::size(g_vram); i++)
     {
       const u64 value = rng.Next();
       g_vram[i] = ((i % VRAM_WIDTH) >= TEXTURE_AREA_LEFT && (value >> 16) % 8 == 0) ? 0 : static_cast<u16>(value);
@@ -54,7 +55,18 @@ protected:
     m_expected_vram = m_initial_vram;
   }
 
-  static u32 GetVRAMIndex(u32 x, u32 y) { return ((y % VRAM_HEIGHT) * VRAM_WIDTH) + (x % VRAM_WIDTH); }
+  void TearDown() override { SetAddressableVRAMHeight(VRAM_HEIGHT); }
+
+  static void SetAddressableVRAMHeight(u32 height)
+  {
+    GPU_SW_Rasterizer::g_addressable_vram_height = height;
+    GPU_SW_Rasterizer::g_addressable_vram_height_mask = height - 1;
+  }
+
+  static u32 GetVRAMIndex(u32 x, u32 y)
+  {
+    return ((y & GPU_SW_Rasterizer::g_addressable_vram_height_mask) * VRAM_WIDTH) + (x % VRAM_WIDTH);
+  }
 
   static bool IsInsideDrawingArea(s32 x, s32 y)
   {
@@ -216,7 +228,7 @@ protected:
   void CheckVRAM() const
   {
     u32 num_mismatches = 0;
-    for (u32 i = 0; i < (VRAM_WIDTH * VRAM_HEIGHT); i++)
+    for (u32 i = 0; i < std::size(g_vram); i++)
     {
       if (g_vram[i] == m_expected_vram[i])
         continue;
@@ -462,7 +474,7 @@ TEST_F(GPUSWRasterizer, DrawTriangleClipping)
   XorShift128PlusPlus rng(0x9ABC);
   const auto random = [&rng](u32 min, u32 max) { return min + static_cast<u32>(rng.Next() % (max - min + 1)); };
 
-  std::vector<u16> unclipped_vram(VRAM_WIDTH * VRAM_HEIGHT);
+  std::vector<u16> unclipped_vram(std::size(g_vram));
   for (u32 i = 0; i < 96; i++)
   {
     GPUBackendDrawCommand cmd = {};
@@ -521,4 +533,89 @@ TEST_F(GPUSWRasterizer, DrawTriangleClipping)
       break;
     }
   }
+}
+
+TEST_F(GPUSWRasterizer, TransfersWrapAtAddressableHeight)
+{
+  // With the upper bank enabled, fills, writes and copies cross Y=512 and wrap at 1024 instead.
+  SetAddressableVRAMHeight(VRAM_MAX_HEIGHT);
+
+  const u16 fill_color = VRAMRGBA8888ToRGBA5551(0x00406080u);
+  for (u32 row = 0; row < 16; row++)
+  {
+    for (u32 col = 0; col < 64; col++)
+      m_expected_vram[GetVRAMIndex(32 + col, 1016 + row)] = fill_color;
+  }
+  GPU_SW_Rasterizer::FillVRAM(32, 1016, 64, 16, 0x00406080u, false, 0);
+
+  XorShift128PlusPlus rng(0x2468);
+  std::vector<u16> data(40 * 9);
+  for (u16& pixel : data)
+    pixel = static_cast<u16>(rng.Next());
+  for (u32 row = 0; row < 9; row++)
+  {
+    for (u32 col = 0; col < 40; col++)
+      m_expected_vram[GetVRAMIndex(200 + col, 507 + row)] = data[(row * 40) + col];
+  }
+  GPU_SW_Rasterizer::WriteVRAM(200, 507, 40, 9, data.data(), false, false);
+
+  struct CopyCase
+  {
+    u32 src_x, src_y, dst_x, dst_y, width, height;
+  };
+  for (const CopyCase& tc : {CopyCase{100, 500, 600, 1010, 30, 30}, CopyCase{700, 1020, 300, 700, 17, 9}})
+  {
+    for (u32 row = 0; row < tc.height; row++)
+    {
+      for (u32 col = 0; col < tc.width; col++)
+      {
+        m_expected_vram[GetVRAMIndex(tc.dst_x + col, tc.dst_y + row)] =
+          m_expected_vram[GetVRAMIndex(tc.src_x + col, tc.src_y + row)];
+      }
+    }
+    GPU_SW_Rasterizer::CopyVRAM(tc.src_x, tc.src_y, tc.dst_x, tc.dst_y, tc.width, tc.height, false, false);
+  }
+
+  CheckVRAM();
+}
+
+TEST_F(GPUSWRasterizer, DrawRectangleUpperBank)
+{
+  // Texture pages and CLUTs in the upper bank, drawn to the upper bank.
+  SetAddressableVRAMHeight(VRAM_MAX_HEIGHT);
+  GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 600, DRAW_AREA_RIGHT, 1000};
+
+  s32 y = 590;
+  for (const GPUTextureMode texture_mode : TEXTURE_MODES)
+  {
+    for (const bool bank3 : {false, true})
+    {
+      GPUTexturePaletteReg palette = {};
+      palette.x = 40;
+      palette.y = bank3 ? 1013 : 700;
+      GPU_SW_Rasterizer::UpdateCLUT(palette, texture_mode == GPUTextureMode::Palette8Bit);
+      for (u32 i = 0; i < ((texture_mode == GPUTextureMode::Palette8Bit) ? 256u : 16u); i++)
+        ASSERT_EQ(g_gpu_clut[i], g_vram[palette.GetYBase() * VRAM_WIDTH + palette.GetXBase() + i]);
+
+      GPUBackendDrawRectangleCommand cmd = {};
+      cmd.draw_mode.texture_page = static_cast<u8>(FIRST_TEXTURE_PAGE + 1 + (bank3 ? 0x10 : 0x00));
+      cmd.draw_mode.texture_page_y_base_2 = true;
+      cmd.draw_mode.texture_mode = texture_mode;
+      cmd.palette = palette;
+      cmd.window.and_x = 0xFF;
+      cmd.window.and_y = 0xFF;
+      cmd.x = 300;
+      cmd.y = y;
+      cmd.width = 61;
+      cmd.height = 40;
+      cmd.texcoord = static_cast<u16>(13 | (230 << 8)); // V wraps within the page
+      ASSERT_EQ(cmd.draw_mode.GetTexturePageBaseY(), bank3 ? 768u : 512u);
+      ASSERT_EQ(cmd.draw_mode.GetTexturePageIndex(), cmd.draw_mode.texture_page + 32u);
+
+      DrawRectangle(cmd, TextureModulationMode::NoModulation);
+      y += 70;
+    }
+  }
+
+  CheckVRAM();
 }

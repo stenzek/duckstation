@@ -453,7 +453,7 @@ ALWAYS_INLINE_RELEASE static bool ListIterateWithEarlyExit(const TList<T>& list,
 template<typename F>
 ALWAYS_INLINE_RELEASE static void LoopRectPages(u32 left, u32 top, u32 right, u32 bottom, const F& f)
 {
-  DebugAssert(right <= VRAM_WIDTH && bottom <= VRAM_HEIGHT);
+  DebugAssert(right <= VRAM_WIDTH && bottom <= VRAM_MAX_HEIGHT);
   DebugAssert((right - left) > 0 && (bottom - top) > 0);
 
   const u32 start_x = left / VRAM_PAGE_WIDTH;
@@ -476,7 +476,7 @@ ALWAYS_INLINE_RELEASE static void LoopRectPages(u32 left, u32 top, u32 right, u3
 template<typename F>
 ALWAYS_INLINE_RELEASE static bool LoopRectPagesWithEarlyExit(u32 left, u32 top, u32 right, u32 bottom, const F& f)
 {
-  DebugAssert(right <= VRAM_WIDTH && bottom <= VRAM_HEIGHT);
+  DebugAssert(right <= VRAM_WIDTH && bottom <= VRAM_MAX_HEIGHT);
   DebugAssert((right - left) > 0 && (bottom - top) > 0);
 
   const u32 start_x = left / VRAM_PAGE_WIDTH;

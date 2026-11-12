@@ -114,6 +114,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
                                             "ForcePGXPPreserveProjectionPrecision = true\n"
                                             "OverrideRAMSize = 8MB\n"
                                             "ForceFullRAMMapping = true\n"
+                                            "Enable2MBVRAM = true\n"
                                             "DisallowForAchievements = true\n"
                                             "80010000 0001\n";
 
@@ -131,6 +132,7 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
   EXPECT_TRUE(code.force_pgxp_preserve_projection_precision);
   EXPECT_EQ(code.override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
   EXPECT_TRUE(code.force_full_ram_mapping);
+  EXPECT_TRUE(code.enable_2mb_vram);
   EXPECT_TRUE(code.disallow_for_achievements);
 
   // writing the code back out should preserve the overrides
@@ -319,6 +321,30 @@ TEST(Cheats, ForceFullRAMMappingOverride)
       g_settings.cpu_force_full_ram_mapping = setting;
       code->ApplySettingOverrides();
       EXPECT_EQ(g_settings.cpu_force_full_ram_mapping, force_mapping || setting);
+    }
+  }
+}
+
+TEST(Cheats, Enable2MBVRAMOverride)
+{
+  const Settings old_settings = g_settings;
+  const ScopedGuard restore_settings([&old_settings]() { g_settings = old_settings; });
+
+  for (const bool enable : {false, true})
+  {
+    Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
+    metadata.enable_2mb_vram = enable;
+    Error error;
+    std::unique_ptr<Cheats::CheatCode> code = Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error);
+    ASSERT_NE(code, nullptr) << error.GetDescription();
+    EXPECT_EQ(code->HasAnySettingOverrides(), enable);
+
+    // Only ever enables the option.
+    for (const bool setting : {false, true})
+    {
+      g_settings.gpu_enable_2mb_vram = setting;
+      code->ApplySettingOverrides();
+      EXPECT_EQ(g_settings.gpu_enable_2mb_vram, enable || setting);
     }
   }
 }

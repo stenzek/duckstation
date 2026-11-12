@@ -30,6 +30,11 @@ extern const DitherLUT g_dither_lut;
 // TODO: Pack in struct
 extern GPUDrawingArea g_drawing_area;
 
+/// Addressable VRAM height for drawing and VRAM transfers, i.e. 1024 when 2MB VRAM is present and enabled.
+/// Y coordinates wrap at this height. Updated with the drawing area.
+extern u32 g_addressable_vram_height;
+extern u32 g_addressable_vram_height_mask;
+
 extern void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit);
 
 using DrawRectangleFunction = void (*)(const GPUBackendDrawRectangleCommand* cmd);

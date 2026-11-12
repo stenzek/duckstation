@@ -26,7 +26,7 @@ inline constexpr u32 MAX_SAVE_STATE_DATA_SIZE = 1 * 1024 * 1024;
 /// 4 pages in C16 mode, 2+4 pages in P8 mode, 1+1 pages in P4 mode.
 inline constexpr u32 MAX_PAGE_REFS_PER_SOURCE = 6;
 
-inline constexpr u32 MAX_PAGE_REFS_PER_WRITE = 32;
+inline constexpr u32 MAX_PAGE_REFS_PER_WRITE = NUM_VRAM_PAGES;
 
 enum class PaletteRecordFlags : u32
 {

@@ -42,20 +42,13 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                Settings::DEFAULT_FAST_BOOT_VALUE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, Settings::BIOS_SECTION_NAME,
                                                "FastForwardBoot", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize", &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
-    &Settings::GetCPURAMSizeDisplayName, Settings::DEFAULT_CPU_RAM_SIZE, CPURAMSize::Count, +[](CPURAMSize size) {
-      static constexpr const char* icons[] = {
-        ":/icons/monochrome/svg/emulation-line.svg", // 2MB - Retail
-        ":/icons/monochrome/svg/arcade-line.svg",    // 4MB - Arcade
-        ":/icons/monochrome/svg/code-box-line.svg",  // 8MB - Dev Console
-        ":/icons/monochrome/svg/tools-line.svg",     // 16MB - Mods
-      };
-      static_assert(std::size(icons) == static_cast<size_t>(CPURAMSize::Count));
-      return QIcon(QString::fromLatin1(icons[static_cast<size_t>(size)]));
-    });
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize",
+                                               &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
+                                               Settings::DEFAULT_CPU_RAM_SIZE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceFullRAMMapping, Settings::CPU_SECTION_NAME,
                                                "ForceFullRAMMapping", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vramSize, Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
@@ -134,6 +127,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                              tr("Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail "
                                 "BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. "
                                 "Only has an effect when expanded RAM is installed."));
+  dialog->registerWidgetHelp(m_ui.vramSize, tr("Installed VRAM"), tr("1MB (Retail Console)"),
+                             tr("Installs a second 1MB bank of video RAM, as present on some arcade boards and "
+                                "development hardware. Retail games do not use it."));
 
   dialog->registerWidgetHelp(
     m_ui.cpuExecutionMode, tr("Execution Mode"),
