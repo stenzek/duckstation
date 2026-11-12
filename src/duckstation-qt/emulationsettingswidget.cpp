@@ -7,6 +7,8 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "util/translation.h"
+
 #include <QtCore/QSignalBlocker>
 #include <algorithm>
 #include <cmath>
@@ -296,13 +298,13 @@ void EmulationSettingsWidget::updateRewind()
 
     m_ui.rewindSummary->setText(
       (vram_usage > 0) ?
-        tr("Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.", "", frames)
+        tr("Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM and %3 of VRAM.", "", frames)
           .arg(duration)
-          .arg(ram_usage / 1048576)
-          .arg(vram_usage / 1048576) :
-        tr("Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.", "", frames)
+          .arg(QtUtils::StringViewToQString(Host::FormatByteSize(ram_usage)))
+          .arg(QtUtils::StringViewToQString(Host::FormatByteSize(vram_usage))) :
+        tr("Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM.", "", frames)
           .arg(duration)
-          .arg(ram_usage / 1048576));
+          .arg(QtUtils::StringViewToQString(Host::FormatByteSize(ram_usage))));
     m_ui.rewindSaveFrequency->setEnabled(true);
     m_ui.rewindSaveSlots->setEnabled(true);
   }

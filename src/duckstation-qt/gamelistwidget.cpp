@@ -215,8 +215,7 @@ static void resizeGameIcon(T& pm, int icon_size)
 
 static QString sizeToString(s64 size)
 {
-  static constexpr s64 one_mb = 1024 * 1024;
-  return (size >= 0) ? QStringLiteral("%1 MB").arg((size + (one_mb - 1)) / one_mb) :
+  return (size >= 0) ? QtUtils::StringViewToQString(Host::FormatByteSize(static_cast<u64>(size))) :
                        QCoreApplication::translate("GameList", "Unknown");
 }
 
@@ -2494,7 +2493,7 @@ void GameListListView::updateFixedColumnWidths()
               width_for(QtUtils::StringViewToQString(Host::FormatRelativeDate(std::time(nullptr), false, true)))}));
 
   // Assume 8 is the widest digit.
-  const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)),
+  const int size_width = std::max(width_for(sizeToString(888 * 1024 * 1024)),
                                   width_for(sizeToString(-1))); // Unknown size
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_DataSize, size_width);

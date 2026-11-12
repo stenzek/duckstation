@@ -3,6 +3,7 @@
 
 #include "advancedsettingswidget.h"
 #include "logwindow.h"
+#include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
@@ -10,6 +11,7 @@
 
 #include "util/http_cache.h"
 #include "util/object_archive.h"
+#include "util/translation.h"
 
 #include "common/error.h"
 
@@ -147,14 +149,13 @@ void AdvancedSettingsWidget::refreshWebCacheSize()
 {
   const ObjectArchive& cache = HTTPCache::GetCacheArchive();
 
-  static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
   const u64 cache_size = cache.GetTotalSize();
   const u64 object_size = cache.GetTotalObjectSize();
   const size_t num_objects = cache.GetSize();
 
-  m_ui.webCacheSize->setText(tr("Current Cache Size: %1 MB (%2 MB in %3 objects)")
-                               .arg(to_mb(cache_size))
-                               .arg(to_mb(object_size))
+  m_ui.webCacheSize->setText(tr("Current Cache Size: %1 (%2 in %3 objects)")
+                               .arg(QtUtils::StringViewToQString(Host::FormatByteSize(cache_size)))
+                               .arg(QtUtils::StringViewToQString(Host::FormatByteSize(object_size)))
                                .arg(num_objects));
 }
 

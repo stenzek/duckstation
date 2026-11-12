@@ -3871,13 +3871,13 @@ void FullscreenUI::DrawEmulationSettingsPage()
     if (vram_usage > 0)
     {
       rewind_summary.format(
-        FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM."),
-        rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
+        FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} of RAM and {3} of VRAM."),
+        rewind_save_slots, duration, Host::FormatByteSize(ram_usage), Host::FormatByteSize(vram_usage));
     }
     else
     {
-      rewind_summary.format(FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM."),
-                            rewind_save_slots, duration, ram_usage / 1048576);
+      rewind_summary.format(FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} of RAM."),
+                            rewind_save_slots, duration, Host::FormatByteSize(ram_usage));
     }
   }
   else
@@ -6111,14 +6111,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<Threading::Mute
 
     if (const ObjectArchive& cache = HTTPCache::GetCacheArchive(); cache.IsOpen())
     {
-      static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
-
       const u64 size = cache.GetTotalSize();
       const u64 object_size = cache.GetTotalObjectSize();
       const size_t count = cache.GetSize();
 
-      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_GLOBE, "Web Cache Size: {0} MB ({1} MB in {2} objects)")),
-                 to_mb(size), to_mb(object_size), count);
+      str.format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_GLOBE, "Web Cache Size: {0} ({1} in {2} objects)")),
+                 Host::FormatByteSize(size), Host::FormatByteSize(object_size), count);
       MenuButtonWithoutSummary(str, false);
     }
   }

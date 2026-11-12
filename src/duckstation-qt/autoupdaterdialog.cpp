@@ -474,7 +474,8 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const std::str
         m_ui.newVersion->setText(tr("%1 (%2)")
                                    .arg(QtUtils::StringViewToQStringView(getCurrentUpdateTag()))
                                    .arg(QtUtils::StringViewToQStringView(release_date)));
-        m_ui.downloadSize->setText(tr("%1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
+        m_ui.downloadSize->setText(
+          QtUtils::StringViewToQString(Host::FormatByteSize(static_cast<u64>(m_download_size), true)));
 
         m_ui.downloadAndInstall->setEnabled(true);
         m_ui.updateNotes->setText(tr("Loading..."));

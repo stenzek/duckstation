@@ -688,13 +688,11 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
 
 void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
 {
-  const u32 vram_usage_mb = static_cast<u32>((g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
-  const u32 stream_kb = static_cast<u32>((s_stats.host_buffer_streamed + (1024 - 1)) / 1024);
-
-  str.format("{}MB " BOLD("VRAM") DOT_SEP "{}KB " BOLD("STR") DOT_SEP "{} " BOLD("B") DOT_SEP "{} " BOLD("RP") DOT_SEP
+  str.format("{} " BOLD("VRAM") DOT_SEP "{} " BOLD("STR") DOT_SEP "{} " BOLD("B") DOT_SEP "{} " BOLD("RP") DOT_SEP
              "{} " BOLD("TC") DOT_SEP "{} " BOLD("TU"),
-             vram_usage_mb, stream_kb, s_stats.host_num_barriers, s_stats.host_num_render_passes,
-             s_stats.host_num_copies, s_stats.host_num_uploads);
+             Host::FormatByteSize(g_gpu_device->GetVRAMUsage()), Host::FormatByteSize(s_stats.host_buffer_streamed),
+             s_stats.host_num_barriers, s_stats.host_num_render_passes, s_stats.host_num_copies,
+             s_stats.host_num_uploads);
 }
 
 void GPUBackend::GetFrameNumberString(SmallStringBase& str) const

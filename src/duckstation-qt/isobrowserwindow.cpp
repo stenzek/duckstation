@@ -334,7 +334,7 @@ void ISOBrowserWindow::populateFiles(const QString& path)
     item->setData(0, Qt::UserRole + 1, entry.IsDirectory());
     item->setText(1, QString::fromStdString(entry.recoding_time.GetFormattedTime()));
     if (!entry.IsDirectory())
-      item->setText(2, tr("%1 KB").arg(Common::AlignUpPow2(entry.length_le, 1024) / 1024));
+      item->setText(2, QtUtils::StringViewToQString(Host::FormatByteSize(entry.length_le)));
     m_ui.fileView->addTopLevelItem(item);
   };
 

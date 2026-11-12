@@ -305,3 +305,23 @@ TinyString Host::FormatTimespan(std::time_t timespan, bool long_format /*= false
       return TinyString(TRANSLATE_SV("Host", "None"));
   }
 }
+
+TinyString Host::FormatByteSize(u64 size, bool exact /* = false */)
+{
+  static constexpr u64 KB = 1024;
+  static constexpr u64 MB = KB * 1024;
+  static constexpr u64 GB = MB * 1024;
+
+  if (size >= GB)
+    return TinyString::from_format(TRANSLATE_FS("Host", "{:.1f} GB"), static_cast<double>(size) / GB);
+  else if (size >= MB && exact)
+    return TinyString::from_format(TRANSLATE_FS("Host", "{:.1f} MB"), static_cast<double>(size) / MB);
+  else if (size >= MB)
+    return TinyString::from_format(TRANSLATE_FS("Host", "{} MB"), (size + (MB - 1)) / MB);
+  else if (size >= KB && exact)
+    return TinyString::from_format(TRANSLATE_FS("Host", "{:.1f} KB"), static_cast<double>(size) / KB);
+  else if (size >= KB)
+    return TinyString::from_format(TRANSLATE_FS("Host", "{} KB"), (size + (KB - 1)) / KB);
+  else
+    return TinyString::from_format(TRANSLATE_FS("Host", "{} B"), size);
+}

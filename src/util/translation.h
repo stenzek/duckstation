@@ -49,6 +49,10 @@ TinyString FormatRelativeDateTime(std::time_t timestamp, bool long_format, bool 
 /// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
 TinyString FormatTimespan(std::time_t timespan, bool long_format);
 
+/// Formats a size in bytes to something human readable (e.g. 512 B, 12 KB, 5 MB, 1.2 GB).
+/// If exact is set, KB and MB sizes also include a fractional part (e.g. 4.5 MB), otherwise they are rounded up.
+TinyString FormatByteSize(u64 size, bool exact = false);
+
 namespace Internal {
 /// Implementation to retrieve a translated string.
 s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, std::string_view disambiguation, char* tbuf,
