@@ -28,7 +28,6 @@
 LOG_CHANNEL(GPUDump);
 
 namespace GPUDump {
-static constexpr GPUVersion GPU_VERSION = GPUVersion::V2_1MB_VRAM;
 
 // Write the file header.
 static constexpr u8 FILE_HEADER[] = {'P', 'S', 'X', 'G', 'P', 'U', 'D', 'U', 'M', 'P', 'v', '1', '\0', '\0'};
@@ -77,8 +76,10 @@ std::unique_ptr<GPUDump::Recorder> GPUDump::Recorder::Create(std::string path, s
 
   ret = std::unique_ptr<Recorder>(new Recorder(std::move(fp), num_frames, std::move(path)));
   ret->WriteHeaders(serial);
-  GPU::WriteCurrentVideoModeToDump(ret.get());
+
+  // VRAM goes first, so the mask bits and GP1(09h) state from the video mode apply after the upload.
   ret->WriteCurrentVRAM();
+  GPU::WriteCurrentVideoModeToDump(ret.get());
 
   // Write start of stream.
   ret->BeginPacket(PacketType::TraceBegin);
@@ -276,7 +277,8 @@ void GPUDump::Recorder::WriteHeaders(std::string_view serial)
 
   // Write GPU version.
   BeginPacket(PacketType::GPUVersion, 1);
-  WriteWord(static_cast<u32>(GPU_VERSION));
+  WriteWord(
+    static_cast<u32>((GPU::GetVRAMHeight() == VRAM_MAX_HEIGHT) ? GPUVersion::V2_2MB_VRAM : GPUVersion::V2_1MB_VRAM));
   EndPacket();
 
   // Write Game ID.
@@ -298,17 +300,25 @@ void GPUDump::Recorder::WriteHeaders(std::string_view serial)
 
 void GPUDump::Recorder::WriteCurrentVRAM()
 {
-  BeginPacket(PacketType::GPUPort0Data, sizeof(u32) * 2 + (VRAM_SIZE / sizeof(u32)));
+  // The upper half has to be enabled to upload it with 2MB VRAM. The actual GP1(09h) value is written afterwards.
+  const u32 num_banks = GPU::GetVRAMHeight() / VRAM_HEIGHT;
+  if (num_banks > 1)
+    WriteGP1Command(GP1Command::SetVRAMSize, 1);
 
-  // command, coords, size. size is written as zero, for 1024x512
-  WriteWord(0xA0u << 24);
-  WriteWord(0);
-  WriteWord(0);
+  for (u32 bank = 0; bank < num_banks; bank++)
+  {
+    BeginPacket(PacketType::GPUPort0Data, sizeof(u32) * 2 + (VRAM_SIZE / sizeof(u32)));
 
-  // actual vram data
-  WriteBytes(g_vram, VRAM_SIZE);
+    // command, coords, size. size is written as zero, for 1024x512
+    WriteWord(0xA0u << 24);
+    WriteWord((bank * VRAM_HEIGHT) << 16);
+    WriteWord(0);
 
-  EndPacket();
+    // actual vram data
+    WriteBytes(&g_vram[bank * VRAM_HEIGHT * VRAM_WIDTH], VRAM_SIZE);
+
+    EndPacket();
+  }
 }
 
 GPUDump::Player::Player(std::string path, DynamicHeapArray<u8> data) : m_data(std::move(data)), m_path(std::move(path))
@@ -417,6 +427,15 @@ bool GPUDump::Player::ProcessHeader(Error* error)
 
     switch (packet->type)
     {
+      case PacketType::GPUVersion:
+      {
+        const GPUVersion version =
+          packet->data.empty() ? GPUVersion::V2_1MB_VRAM : static_cast<GPUVersion>(packet->data.front());
+        DEV_LOG("Dump GPU version: {}", static_cast<u32>(version));
+        m_vram_2mb = (version == GPUVersion::V2_2MB_VRAM);
+      }
+      break;
+
       case PacketType::TextualVideoFormat:
       {
         const std::string_view region_str = packet->GetNullTerminatedString();

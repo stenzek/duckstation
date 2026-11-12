@@ -56,12 +56,11 @@ public:
                 static_cast<u8>(BatchTextureMode::Palette8Bit) == static_cast<u8>(GPUTextureMode::Palette8Bit) &&
                 static_cast<u8>(BatchTextureMode::Direct16Bit) == static_cast<u8>(GPUTextureMode::Direct16Bit));
 
-  static constexpr GSVector4i VRAM_SIZE_RECT = GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
   static constexpr GSVector4i INVALID_RECT =
     GSVector4i::cxpr(std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max(), std::numeric_limits<s32>::min(),
                      std::numeric_limits<s32>::min());
 
-  GPU_HW();
+  explicit GPU_HW(bool enable_2mb_vram);
   ~GPU_HW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
@@ -116,7 +115,7 @@ private:
   static constexpr u32 INVALID_DRAW_MODE_TEXTURE_BITS = 0xFFFFu;
   static constexpr u32 INVALID_DRAW_MODE_BITS = 0xFFFFFFFFu;
 
-  static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
+  static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_MAX_HEIGHT));
 
   struct alignas(16) BatchVertex
   {
@@ -172,6 +171,10 @@ private:
 
   /// Returns true if a depth buffer should be created.
   GPUTextureFormat GetDepthBufferFormat() const;
+
+  /// Returns the rectangle/size of the physical VRAM, which is 1024 lines with 2MB VRAM.
+  GSVector4i GetVRAMSizeRect() const { return GSVector4i(0, 0, VRAM_WIDTH, static_cast<s32>(m_vram_height)); }
+  u32 GetVRAMSizeInBytes() const { return VRAM_WIDTH * m_vram_height * sizeof(u16); }
 
   bool CreatePersistentBuffers(Error* error);
   bool CreateBuffers(Error* error);
@@ -241,8 +244,10 @@ private:
   bool NeedsShaderBlending(GPUTransparencyMode transparency, BatchTextureMode texture, bool check_mask) const;
 
   void DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height);
-  void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
-                       bool check_mask, const GSVector4i bounds, bool allow_filtering);
+
+  /// vram_height is where Y wraps, the addressable height for game writes, or the physical height for full uploads.
+  void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, u32 vram_height, const void* data, u32 data_pitch,
+                       bool set_mask, bool check_mask, const GSVector4i bounds, bool allow_filtering);
   bool BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   /// Expands a line into two triangles.

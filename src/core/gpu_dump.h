@@ -107,6 +107,7 @@ public:
   ALWAYS_INLINE const std::string& GetPath() const { return m_path; }
   ALWAYS_INLINE const std::string& GetSerial() const { return m_serial; }
   ALWAYS_INLINE ConsoleRegion GetRegion() const { return m_region; }
+  ALWAYS_INLINE bool Is2MBVRAM() const { return m_vram_2mb; }
   ALWAYS_INLINE size_t GetFrameCount() const { return m_frame_offsets.size(); }
 
   static std::unique_ptr<Player> Open(std::string path, Error* error);
@@ -139,6 +140,7 @@ private:
   std::string m_path;
   std::string m_serial;
   ConsoleRegion m_region = ConsoleRegion::NTSC_U;
+  bool m_vram_2mb = false;
   std::vector<size_t> m_frame_offsets;
 };
 

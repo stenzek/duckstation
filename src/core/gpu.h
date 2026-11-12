@@ -86,8 +86,14 @@ void UpdateSettings(const Settings& old_settings);
 /// Returns the full display resolution of the GPU, including padding.
 std::pair<u32, u32> GetFullDisplayResolution();
 
-/// Computes clamped drawing area.
-GSVector4i GetClampedDrawingArea(const GPUDrawingArea& drawing_area);
+/// Computes clamped drawing area, for the given addressable VRAM height.
+GSVector4i GetClampedDrawingArea(const GPUDrawingArea& drawing_area, u32 vram_height);
+
+/// Returns the physical height of VRAM in lines, 1024 with 2MB VRAM.
+u32 GetVRAMHeight();
+
+/// Changes the physical VRAM size. VRAM contents are lost, the caller must reset the GPU or load state afterwards.
+void Set2MBVRAM(bool enabled);
 
 /// Computes the pixel aspect ratio based on the current display mode and settings.
 float ComputePixelAspectRatio();
@@ -144,5 +150,5 @@ void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_si
                        GSVector4i* out_display_rect, GSVector4i* out_draw_rect, GSVector4* out_crop_amount = nullptr);
 }; // namespace GPU
 
-extern u16 g_vram[VRAM_SIZE / sizeof(u16)];
+extern u16 g_vram[VRAM_MAX_SIZE / sizeof(u16)];
 extern u16 g_gpu_clut[GPU_CLUT_SIZE];

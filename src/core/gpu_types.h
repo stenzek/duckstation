@@ -14,6 +14,15 @@ enum : u32
   VRAM_SIZE = VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16),
   VRAM_WIDTH_MASK = VRAM_WIDTH - 1,
   VRAM_HEIGHT_MASK = VRAM_HEIGHT - 1,
+
+  // v2 GPUs can address 2MB of VRAM (1024 lines) when the second bank is present and enabled via GP1(09h).
+  VRAM_MAX_HEIGHT = 1024,
+  VRAM_MAX_SIZE = VRAM_WIDTH * VRAM_MAX_HEIGHT * sizeof(u16),
+  VRAM_MAX_HEIGHT_MASK = VRAM_MAX_HEIGHT - 1,
+
+  // Transfer/fill sizes are always masked to 9 bits, even with 2MB VRAM.
+  VRAM_TRANSFER_HEIGHT_MASK = 0x1FF,
+
   TEXTURE_PAGE_WIDTH = 256,
   TEXTURE_PAGE_HEIGHT = 256,
   GPU_CLUT_SIZE = 256,
@@ -27,9 +36,9 @@ enum : u32
   VRAM_PAGE_WIDTH = 64,
   VRAM_PAGE_HEIGHT = 256,
   VRAM_PAGES_WIDE = VRAM_WIDTH / VRAM_PAGE_WIDTH,
-  VRAM_PAGES_HIGH = VRAM_HEIGHT / VRAM_PAGE_HEIGHT,
+  VRAM_PAGES_HIGH = VRAM_MAX_HEIGHT / VRAM_PAGE_HEIGHT,
   VRAM_PAGE_X_MASK = 0xf,  // 16 pages wide
-  VRAM_PAGE_Y_MASK = 0x10, // 2 pages high
+  VRAM_PAGE_Y_MASK = 0x30, // 4 pages high with 2MB VRAM, 2 with 1MB
   NUM_VRAM_PAGES = VRAM_PAGES_WIDE * VRAM_PAGES_HIGH,
 };
 
@@ -208,7 +217,7 @@ union GPUVertexPosition
 union GPUDrawModeReg
 {
   static constexpr u16 MASK = 0b11111111111111;
-  static constexpr u16 TEXTURE_MODE_AND_PAGE_MASK = UINT16_C(0b0000000110011111);
+  static constexpr u16 TEXTURE_MODE_AND_PAGE_MASK = UINT16_C(0b0000100110011111);
 
   // Polygon texpage commands only affect bits 0-8, 11
   static constexpr u16 POLYGON_TEXPAGE_MASK = 0b0000100111111111;
@@ -230,7 +239,16 @@ union GPUDrawModeReg
   BitField<u16, bool, 13, 1> texture_y_flip;
 
   ALWAYS_INLINE u32 GetTexturePageBaseX() const { return ZeroExtend32(texture_page_x_base.GetValue()) * 64; }
-  ALWAYS_INLINE u32 GetTexturePageBaseY() const { return ZeroExtend32(texture_page_y_base.GetValue()) * 256; }
+  ALWAYS_INLINE u32 GetTexturePageBaseY() const
+  {
+    return (ZeroExtend32(texture_page_y_base.GetValue()) * 256) + (texture_page_y_base_2 ? 512u : 0u);
+  }
+
+  /// Returns the VRAM page index of the texture page, including the upper 1MB bank.
+  ALWAYS_INLINE u8 GetTexturePageIndex() const
+  {
+    return texture_page.GetValue() | (texture_page_y_base_2 ? 0x20u : 0u);
+  }
 
   /// Returns true if the texture mode requires a palette.
   ALWAYS_INLINE bool IsUsingPalette() const { return (bits & (2 << 7)) == 0; }
@@ -238,12 +256,15 @@ union GPUDrawModeReg
 
 union GPUTexturePaletteReg
 {
-  static constexpr u16 MASK = UINT16_C(0b0111111111111111);
+  static constexpr u16 MASK = UINT16_C(0b1111111111111111);
+
+  /// Bit 15 is the upper bit of the Y coordinate, only used with 2MB VRAM.
+  static constexpr u16 UPPER_VRAM_BIT = UINT16_C(0b1000000000000000);
 
   u16 bits;
 
   BitField<u16, u16, 0, 6> x;
-  BitField<u16, u16, 6, 9> y;
+  BitField<u16, u16, 6, 10> y;
 
   ALWAYS_INLINE constexpr u32 GetXBase() const { return static_cast<u32>(x) * 16u; }
   ALWAYS_INLINE constexpr u32 GetYBase() const { return static_cast<u32>(y); }

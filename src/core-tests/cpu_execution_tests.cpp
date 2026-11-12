@@ -1177,7 +1177,7 @@ TEST_P(CPUMemoryExecution, Expanded16MBCodeUsesCodeCacheAfterStateLoad)
     SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
     ResetMemory(CPURAMSize::Expanded16MB, mode);
     SetWindow(0xF88);
-    std::vector<u8> data(System::GetMaxSaveStateSize(CPURAMSize::Expanded16MB, false));
+    std::vector<u8> data(System::GetMaxSaveStateSize(CPURAMSize::Expanded16MB, false, false));
     StateWrapper save_sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     ASSERT_TRUE(Bus::DoState(save_sw));
     data.resize(save_sw.GetPosition());

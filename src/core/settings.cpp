@@ -282,6 +282,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   region =
     ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region")).value_or(DEFAULT_CONSOLE_REGION);
+  gpu_enable_2mb_vram = si.GetBoolValue(CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
 
   emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
@@ -682,6 +683,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   TinyString skey;
 
   si.SetStringValue(CONSOLE_SECTION_NAME, "Region", GetConsoleRegionName(region));
+  si.SetBoolValue(CONSOLE_SECTION_NAME, "Enable2MBVRAM", gpu_enable_2mb_vram);
 
   si.SetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", emulation_speed);
   si.SetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", fast_forward_speed);
@@ -1189,6 +1191,7 @@ void Settings::ApplySettingRestrictions()
     cpu_overclock_active = false;
     cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
     cpu_force_full_ram_mapping = false;
+    gpu_enable_2mb_vram = false;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
     gpu_automatic_resolution_scale = false;

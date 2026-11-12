@@ -133,6 +133,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
   DefineMacro(ss, "DISABLE_UPSCALED_DIRECT_TEXTURES", sel.disable_upscaled_direct_textures);
   DefineMacro(ss, "PGXP_DEPTH", sel.pgxp_depth);
   DefineMacro(ss, "UPSCALED", sel.upscaled);
+  DefineMacro(ss, "VRAM_HEIGHT", static_cast<s32>(sel.vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT));
 
   WriteBatchUniformBuffer(ss);
 
@@ -183,7 +184,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
 
   // 0..+1023 -> -1..1
   float pos_x = ((a_pos.x + vertex_offset) / 512.0) - 1.0;
-  float pos_y = ((a_pos.y + vertex_offset) / -256.0) + 1.0;
+  float pos_y = ((a_pos.y + vertex_offset) / -float(VRAM_HEIGHT / 2)) + 1.0;
 
 #if PGXP_DEPTH
   // Interpolate reciprocal camera Z in screen space, preserving W for perspective correction.
@@ -218,10 +219,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
     #if !PAGE_TEXTURE
       // base_x,base_y,palette_x,palette_y
       v_texpage.x = (a_texpage & 15u) * 64u;
-      v_texpage.y = ((a_texpage >> 4) & 1u) * 256u;
+      v_texpage.y = (((a_texpage >> 4) & 1u) * 256u) + (((a_texpage >> 11) & 1u) * 512u);
       #if PALETTE
         v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
-        v_texpage.w = ((a_texpage >> 22) & 511u);
+        v_texpage.w = ((a_texpage >> 22) & 1023u);
       #endif
     #endif
 
@@ -2914,8 +2915,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(const BatchFragmentSha
   DefineMacro(ss, "UPSCALED", sel.upscaled);
 
   // Used for converting to normalized coordinates for sampling.
-  ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << VRAM_HEIGHT
+  const u32 vram_height = sel.vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << vram_height
      << "));\n";
+  ss << "CONSTANT uint2 VRAM_COORD_MASK = uint2(" << (VRAM_WIDTH - 1) << "u, " << (vram_height - 1) << "u);\n";
 
   WriteColorConversionFunctions(ss);
   WriteBatchUniformBuffer(ss);
@@ -3065,13 +3068,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
     // Direct texturing - usually render-to-texture effects.
     #if !UPSCALED
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
-      uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+      uint2 vicoord = (texpage.xy + icoord) & VRAM_COORD_MASK;
       return LOAD_TEXTURE(samp0, int2(vicoord), 0);
     #elif DISABLE_UPSCALED_DIRECT_TEXTURES
       // Treat direct textures as native resolution, so filtering offsets move to adjacent native texels instead of
       // duplicated upscaled texels.
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
-      uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+      uint2 vicoord = (texpage.xy + icoord) & VRAM_COORD_MASK;
       return SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
@@ -3080,7 +3083,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
       float2 ncoords = APPLY_UV_LIMITS(coords, uv_limits) * u_rcp_resolution_scale;
       float2 nfpart = frac(ncoords);
       uint2 nicoord = ApplyTextureWindow(uint2(floor(ncoords)));
-      uint2 nvicoord = (texpage.xy + nicoord) & uint2(1023, 511);
+      uint2 nvicoord = (texpage.xy + nicoord) & VRAM_COORD_MASK;
       ncoords = (float2(nvicoord) + nfpart);
       return SAMPLE_TEXTURE_LEVEL(samp0, ncoords * RCP_VRAM_SIZE, 0.0);
     #endif
@@ -3409,10 +3412,10 @@ std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(u32 resolution_s
   DefineMacro(ss, "DEPTH_BUFFER", depth_buffer);
   DefineMacro(ss, "MULTISAMPLING", msaa);
   ss << "CONSTANT uint RESOLUTION_SCALE = " << resolution_scale << "u;\n";
-  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT uint MULTISAMPLES = " << multisamples << "u;\n";
 
-  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "float u_skip_x", "float u_line_skip"}, true);
+  // Scanout wraps at the addressable VRAM height, which depends on GP1(09h).
+  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "float u_skip_x", "float u_line_skip", "uint u_vram_height"}, true);
   DeclareTexture(ss, "samp0", 0, msaa);
   if (depth_buffer)
     DeclareTexture(ss, "samp1", 1, msaa);
@@ -3450,7 +3453,7 @@ float LoadDepth(int2 coords)
 float3 SampleVRAM24(uint2 icoords)
 {
   // load adjacent 16-bit texels
-  uint2 clamp_size = uint2(1024, 512);
+  uint2 clamp_size = uint2(1024u, u_vram_height);
 
   // relative to start of scanout
   uint2 vram_coords = u_vram_offset + uint2((icoords.x * 3u) / 2u, icoords.y);
@@ -3472,7 +3475,7 @@ float3 SampleVRAM24(uint2 icoords)
   // Have to floor because SV_Position is at the pixel center.
   float2 v_pos_floored = floor(v_pos.xy);
   uint2 icoords = uint2(v_pos_floored.x + u_skip_x, v_pos_floored.y * u_line_skip);
-  int2 wrapped_coords = int2((icoords + u_vram_offset) % VRAM_SIZE);
+  int2 wrapped_coords = int2((icoords + u_vram_offset) % (uint2(1024u, u_vram_height) * RESOLUTION_SCALE));
 
   #if COLOR_24BIT
     o_col0 = float4(SampleVRAM24(icoords), 1.0);
@@ -3722,11 +3725,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   if (filtering)
     DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
 
-  ss << "CONSTANT float2 VRAM_SIZE = float2(" << VRAM_WIDTH << ".0, " << VRAM_HEIGHT << ".0);\n";
-
+  // Writes wrap at the addressable VRAM height, which depends on GP1(09h).
   DeclareUniformBuffer(ss,
                        {"float2 u_base_coords", "float2 u_end_coords", "float2 u_size", "float u_resolution_scale",
-                        "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
+                        "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value",
+                        "float u_vram_height"},
                        false);
 
   if (!use_buffer)
@@ -3812,8 +3815,8 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits)
 
   // find offset from the start of the row/column
   float2 offset;
-  offset.x = (coords.x < u_base_coords.x) ? (VRAM_SIZE.x - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
-  offset.y = (coords.y < u_base_coords.y) ? (VRAM_SIZE.y - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
+  offset.x = (coords.x < u_base_coords.x) ? (1024.0 - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
+  offset.y = (coords.y < u_base_coords.y) ? (u_vram_height - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
   #if !USE_BUFFER
     uint value = LOAD_TEXTURE(samp0, int2(offset), 0).x;

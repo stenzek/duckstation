@@ -992,6 +992,7 @@ void CheatCodeEditorDialog::saveClicked()
     m_code.override_ram_size =
       ram_size.isNull() ? std::nullopt : std::make_optional(static_cast<CPURAMSize>(ram_size.toUInt()));
     m_code.force_full_ram_mapping = m_ui.forceFullRAMMapping->isChecked();
+    m_code.enable_2mb_vram = m_ui.enable2MBVRAM->isChecked();
     m_code.disallow_for_achievements = m_ui.disallowForAchievements->isChecked();
   }
 
@@ -1135,6 +1136,7 @@ void CheatCodeEditorDialog::fillUi()
     m_ui.overrideRAMSize->setCurrentIndex(
       std::max(m_ui.overrideRAMSize->findData(static_cast<uint>(m_code.override_ram_size.value())), 0));
   m_ui.forceFullRAMMapping->setChecked(m_code.force_full_ram_mapping);
+  m_ui.enable2MBVRAM->setChecked(m_code.enable_2mb_vram);
   m_ui.disallowForAchievements->setChecked(m_code.disallow_for_achievements);
   onCodeTypeChanged(m_ui.type->currentIndex());
   onOptionTypeChanged(m_ui.optionsType->currentIndex());

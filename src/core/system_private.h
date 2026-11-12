@@ -53,6 +53,9 @@ void UpdateGTEAspectRatio();
 /// Updates the resolution scale when it is set to automatic.
 void UpdateAutomaticResolutionScale();
 
+/// Recreates the GPU backend, preserving VRAM. enable_2mb_vram keeps the current VRAM size if not set.
+void RecreateGPU(GPURenderer renderer, std::optional<bool> enable_2mb_vram = std::nullopt);
+
 /// Called on card read/write, handles fast forwarding.
 void OnMemoryCardAccessed();
 

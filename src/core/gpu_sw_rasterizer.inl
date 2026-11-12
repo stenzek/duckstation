@@ -24,8 +24,8 @@ namespace GPU_SW_Rasterizer {
 #ifdef USE_VECTOR
 // #define CHECK_VECTOR
 #ifdef CHECK_VECTOR
-static u16 s_vram_backup[VRAM_WIDTH * VRAM_HEIGHT];
-static u16 s_new_vram[VRAM_WIDTH * VRAM_HEIGHT];
+static u16 s_vram_backup[VRAM_WIDTH * VRAM_MAX_HEIGHT];
+static u16 s_new_vram[VRAM_WIDTH * VRAM_MAX_HEIGHT];
 static u32 s_bad_counter = 0;
 #define BACKUP_VRAM()                                                                                                  \
   do                                                                                                                   \
@@ -40,7 +40,7 @@ static u32 s_bad_counter = 0;
     std::memcpy(g_vram, s_vram_backup, sizeof(g_vram));                                                                \
                                                                                                                        \
     drawer;                                                                                                            \
-    for (u32 vidx = 0; vidx < (VRAM_WIDTH * VRAM_HEIGHT); vidx++)                                                      \
+    for (u32 vidx = 0; vidx < (VRAM_WIDTH * VRAM_MAX_HEIGHT); vidx++)                                                      \
     {                                                                                                                  \
       if (s_new_vram[vidx] != g_vram[vidx])                                                                            \
       {                                                                                                                \
@@ -98,7 +98,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       {
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 4)) % VRAM_WIDTH,
-                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
+                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
         const size_t palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
         texture_color = g_gpu_clut[palette_index];
       }
@@ -108,7 +108,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       {
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 2)) % VRAM_WIDTH,
-                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
+                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
         const size_t palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
         texture_color = g_gpu_clut[palette_index];
       }
@@ -117,7 +117,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       default:
       {
         texture_color = GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x)) % VRAM_WIDTH,
-                                 (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
+                                 (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
       }
       break;
     }
@@ -235,7 +235,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
   if ((bg_color & mask_and) != 0)
     return;
 
-  DebugAssert(static_cast<u32>(x) < VRAM_WIDTH && static_cast<u32>(y) < VRAM_HEIGHT);
+  DebugAssert(static_cast<u32>(x) < VRAM_WIDTH && static_cast<u32>(y) < VRAM_MAX_HEIGHT);
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color | cmd->GetMaskOR());
 }
 
@@ -264,7 +264,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
       continue;
     }
 
-    const u32 draw_y = static_cast<u32>(y) & VRAM_HEIGHT_MASK;
+    const u32 draw_y = static_cast<u32>(y) & g_addressable_vram_height_mask;
 
     u32 texcoord_x = origin_texcoord_x;
     for (u32 offset_x = 0; offset_x < cmd->width; offset_x++, texcoord_x += texcoord_step_x)
@@ -547,7 +547,7 @@ struct PixelVectors
       texture_window_and_x = GSVectorNi(cmd->window.and_x);
       texture_window_or_x = GSVectorNi(cmd->window.or_x);
       texture_window_and_y = GSVectorNi(cmd->window.and_y);
-      // The base of the page is either 0 or 256, and the texture coordinate is 8 bits, so it can be ORed in too.
+      // The base of the page is a multiple of 256, and the texture coordinate is 8 bits, so it can be ORed in too.
       texture_window_or_y = GSVectorNi(cmd->window.or_y | cmd->draw_mode.GetTexturePageBaseY());
       texture_base_x = GSVectorNi(cmd->draw_mode.GetTexturePageBaseX());
 
@@ -859,7 +859,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
         (!cmd->interlaced_rendering ||
          cmd->active_line_lsb != ConvertToBoolUnchecked(Truncate8(static_cast<u32>(y)) & 1u)))
     {
-      const s32 draw_y = (y & VRAM_HEIGHT_MASK);
+      const s32 draw_y = (y & g_addressable_vram_height_mask);
       const u32 texture_y = cmd->draw_mode.GetTexturePageBaseY() +
                             ((static_cast<u32>(texcoord_y.extract32<0>()) & cmd->window.and_y) | cmd->window.or_y);
 
@@ -991,7 +991,7 @@ static void DrawLine(const GPUBackendDrawCommand* RESTRICT cmd, const GPUBackend
       const u8 b = shading_enable ? unfp_rgb(curb) : p0->b;
 
       ShadePixel<TextureModulationMode::Disabled, transparency_enable>(
-        cmd, static_cast<u32>(x), static_cast<u32>(y) & VRAM_HEIGHT_MASK, r, g, b, 0, 0);
+        cmd, static_cast<u32>(x), static_cast<u32>(y) & g_addressable_vram_height_mask, r, g, b, 0, 0);
     }
 
     curx += dxdk;
@@ -1226,7 +1226,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
         continue;
       }
 
-      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & g_addressable_vram_height_mask, unfp_xy(left_x),
                                                                      unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
     } while (current_y > end_y);
   }
@@ -1255,7 +1255,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
           (!cmd->interlaced_rendering ||
            cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
-        DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+        DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & g_addressable_vram_height_mask, unfp_xy(left_x),
                                                                        unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
       }
 
@@ -1471,7 +1471,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
         continue;
       }
 
-      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & g_addressable_vram_height_mask, unfp_xy(left_x),
                                                                      unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
     } while (current_y > end_y);
   }
@@ -1503,7 +1503,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
            cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
         DrawSpan<shading_enable, modulation_mode, transparency_enable>(
-          cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
+          cmd, y & g_addressable_vram_height_mask, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
       }
 
       current_y++;
@@ -1744,6 +1744,7 @@ constinit const DrawTriangleFunctionTable DrawTriangleFunctions = {
 
 void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced, u8 active_line_lsb)
 {
+  const u32 vram_height_mask = g_addressable_vram_height_mask;
 #ifdef USE_VECTOR
   const u16 color16 = VRAMRGBA8888ToRGBA5551(color);
   const GSVector4i fill = GSVector4i(color16, color16, color16, color16, color16, color16, color16, color16);
@@ -1754,7 +1755,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      const u32 row = (y + yoffs) & vram_height_mask;
 
       u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH + x];
       u32 xoffs = 0;
@@ -1773,7 +1774,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
     {
       for (u32 yoffs = 0; yoffs < height; yoffs++)
       {
-        const u32 row = (y + yoffs) % VRAM_HEIGHT;
+        const u32 row = (y + yoffs) & vram_height_mask;
         if ((row & u32(1)) == active_field)
           continue;
 
@@ -1789,7 +1790,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
     {
       for (u32 yoffs = 0; yoffs < height; yoffs++)
       {
-        const u32 row = (y + yoffs) % VRAM_HEIGHT;
+        const u32 row = (y + yoffs) & vram_height_mask;
         if ((row & u32(1)) == active_field)
           continue;
 
@@ -1806,7 +1807,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      const u32 row = (y + yoffs) & vram_height_mask;
       u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
@@ -1821,7 +1822,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      const u32 row = (y + yoffs) & vram_height_mask;
       std::fill_n(&g_vram[row * VRAM_WIDTH + x], width, color16);
     }
   }
@@ -1832,7 +1833,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
 
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      const u32 row = (y + yoffs) & vram_height_mask;
       if ((row & u32(1)) == active_field)
         continue;
 
@@ -1848,7 +1849,7 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
+      const u32 row = (y + yoffs) & vram_height_mask;
       u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
@@ -1862,8 +1863,9 @@ void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlace
 
 void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT data, bool set_mask, bool check_mask)
 {
+  const u32 vram_height_mask = g_addressable_vram_height_mask;
   // Fast path when the copy is not oversized.
-  if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
+  if ((x + width) <= VRAM_WIDTH && (y + height) <= g_addressable_vram_height && !set_mask && !check_mask)
   {
     const u16* RESTRICT src_ptr = static_cast<const u16*>(data);
     u16* dst_ptr = &g_vram[y * VRAM_WIDTH + x];
@@ -1891,7 +1893,7 @@ void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT dat
 
     for (u32 row = 0; row < height;)
     {
-      u16* dst_row_ptr = &g_vram[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((y + row++) & vram_height_mask) * VRAM_WIDTH];
 
       u32 col = 0;
 
@@ -1939,6 +1941,8 @@ void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT dat
 
 void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask)
 {
+  const u32 vram_height = g_addressable_vram_height;
+  const u32 vram_height_mask = g_addressable_vram_height_mask;
   // Break up oversized copies. This behavior has not been verified on console.
   if ((src_x + width) > VRAM_WIDTH || (dst_x + width) > VRAM_WIDTH)
   {
@@ -1948,7 +1952,7 @@ void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 hei
     while (remaining_rows > 0)
     {
       const u32 rows_to_copy =
-        std::min<u32>(remaining_rows, std::min<u32>(VRAM_HEIGHT - current_src_y, VRAM_HEIGHT - current_dst_y));
+        std::min<u32>(remaining_rows, std::min<u32>(vram_height - current_src_y, vram_height - current_dst_y));
 
       u32 remaining_columns = width;
       u32 current_src_x = src_x;
@@ -1964,8 +1968,8 @@ void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 hei
         remaining_columns -= columns_to_copy;
       }
 
-      current_src_y = (current_src_y + rows_to_copy) % VRAM_HEIGHT;
-      current_dst_y = (current_dst_y + rows_to_copy) % VRAM_HEIGHT;
+      current_src_y = (current_src_y + rows_to_copy) & vram_height_mask;
+      current_dst_y = (current_dst_y + rows_to_copy) & vram_height_mask;
       remaining_rows -= rows_to_copy;
     }
 
@@ -1978,12 +1982,12 @@ void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 hei
 
   // Copy in reverse when src_x < dst_x, this is verified on console. Rows are always copied from top to bottom, so
   // the direction only makes a difference when the source and destination overlap within the same row.
-  if ((src_y % VRAM_HEIGHT) == (dst_y % VRAM_HEIGHT) && src_x < dst_x && dst_x < (src_x + width))
+  if ((src_y & vram_height_mask) == (dst_y & vram_height_mask) && src_x < dst_x && dst_x < (src_x + width))
   {
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) & vram_height_mask) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) & vram_height_mask) * VRAM_WIDTH];
 
       for (s32 col = static_cast<s32>(width - 1); col >= 0; col--)
       {
@@ -2005,8 +2009,8 @@ void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 hei
 
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) & vram_height_mask) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) & vram_height_mask) * VRAM_WIDTH];
 
       u32 col = 0;
 

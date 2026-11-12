@@ -56,6 +56,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
     });
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceFullRAMMapping, Settings::CPU_SECTION_NAME,
                                                "ForceFullRAMMapping", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable2MBVRAM, Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
@@ -134,6 +136,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                              tr("Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail "
                                 "BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. "
                                 "Only has an effect when expanded RAM is installed."));
+  dialog->registerWidgetHelp(m_ui.enable2MBVRAM, tr("Enable 2MB VRAM"), tr("Unchecked"),
+                             tr("Installs a second 1MB bank of video RAM, as present on some arcade boards and "
+                                "development hardware. Software must enable the bank via GP1(09h) to use it, retail "
+                                "games do not. Takes effect when the system is reset."));
 
   dialog->registerWidgetHelp(
     m_ui.cpuExecutionMode, tr("Execution Mode"),

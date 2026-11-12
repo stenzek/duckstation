@@ -56,9 +56,9 @@ public:
 
   static bool IsUsingHardwareBackend();
 
-  static Common::unique_aligned_ptr<GPUBackend> CreateHardwareBackend();
-  static Common::unique_aligned_ptr<GPUBackend> CreateSoftwareBackend();
-  static Common::unique_aligned_ptr<GPUBackend> CreateNullBackend();
+  static Common::unique_aligned_ptr<GPUBackend> CreateHardwareBackend(bool enable_2mb_vram);
+  static Common::unique_aligned_ptr<GPUBackend> CreateSoftwareBackend(bool enable_2mb_vram);
+  static Common::unique_aligned_ptr<GPUBackend> CreateNullBackend(bool enable_2mb_vram);
 
   static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
                                        Error* error);
@@ -72,8 +72,12 @@ public:
   static bool AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error);
 
 public:
-  GPUBackend();
+  explicit GPUBackend(bool enable_2mb_vram);
   virtual ~GPUBackend();
+
+  /// Returns the physical VRAM height, 1024 lines with 2MB VRAM. Fixed for the lifetime of the backend.
+  ALWAYS_INLINE u32 GetVRAMHeight() const { return m_vram_height; }
+  ALWAYS_INLINE bool Is2MBVRAMEnabled() const { return (m_vram_height == VRAM_MAX_HEIGHT); }
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
@@ -183,6 +187,7 @@ protected:
   void HandleSubmitFrameCommand(const GPUBackendFramePresentationParameters* cmd);
 
   GSVector4i m_clamped_drawing_area = {};
+  const u32 m_vram_height; ///< Physical VRAM height, 1024 lines with 2MB VRAM.
 
   static Counters s_counters;
   static Stats s_stats;

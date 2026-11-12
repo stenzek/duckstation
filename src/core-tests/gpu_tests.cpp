@@ -9,6 +9,7 @@
 #include "core/system.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
+#include "core/video_thread.h"
 
 #include <gtest/gtest.h>
 
@@ -32,6 +33,7 @@ protected:
     TimingEvents::Reset();
     InterruptController::Reset();
     Timers::Initialize();
+    VideoThread::CreateNullBackendForTests();
     GPU::Initialize();
     GPU::Reset(false);
   }
@@ -42,6 +44,7 @@ protected:
     CPU::g_state.pending_ticks = 0;
     GPU::Reset(false);
     GPU::Shutdown();
+    VideoThread::DestroyNullBackendForTests();
     Timers::Shutdown();
     CPU::g_state.pending_ticks = 0;
     g_settings = m_old_settings;
@@ -808,6 +811,70 @@ TEST_F(GPUFrontend, EnablingInterlaceAfterTheLastHBlankKeepsCountingHBlanks)
   EXPECT_EQ(Timers::ReadRegister(0x10), 263u);
   CPU::g_state.pending_ticks += SystemTicksForGPUQuarterTicks(13650);
   EXPECT_EQ(Timers::ReadRegister(0x10), 264u);
+}
+
+namespace {
+
+/// Reads one pixel back through a GP0(C0h) transfer. The software path reads g_vram directly.
+static u16 ReadVRAMPixelThroughGPUREAD(u32 x, u32 y)
+{
+  GPU::WriteRegister(0, 0xC0000000);
+  GPU::WriteRegister(0, (y << 16) | x);
+  GPU::WriteRegister(0, 0x00010001);
+  return static_cast<u16>(GPU::ReadRegister(0));
+}
+
+} // namespace
+
+TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
+{
+  std::fill_n(g_vram, std::size(g_vram), 0);
+  g_vram[(1000 * VRAM_WIDTH) + 5] = 0x1234;
+  g_vram[((1000 - VRAM_HEIGHT) * VRAM_WIDTH) + 5] = 0x5678;
+
+  // 1MB console: Y aliases the lower bank, with or without GP1(09h).
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_HEIGHT);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
+  GPU::WriteRegister(4, 0x09000001);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
+
+  // 2MB console: still aliased until GP1(09h).0 is set.
+  GPU::Shutdown();
+  g_settings.gpu_enable_2mb_vram = true;
+  GPU::Initialize();
+  GPU::Reset(false);
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_MAX_HEIGHT);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
+  GPU::WriteRegister(4, 0x09000001);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
+
+  // GP1(00h) does not reset GP1(09h).
+  GPU::WriteRegister(4, 0x00000000);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
+
+  // Reads wrap at 1024 lines, without carrying into X.
+  g_vram[(1023 * VRAM_WIDTH) + 1023] = 0x1111;
+  g_vram[1023] = 0x2222;
+  GPU::WriteRegister(0, 0xC0000000);
+  GPU::WriteRegister(0, (1023u << 16) | 1023u);
+  GPU::WriteRegister(0, 0x00020001); // 1x2, both pixels in one word
+  EXPECT_EQ(GPU::ReadRegister(0), 0x22221111u);
+
+  // The transfer height is still masked to 9 bits: 513 rows is a single row.
+  GPU::WriteRegister(0, 0xC0000000);
+  GPU::WriteRegister(0, (1000u << 16) | 4u);
+  GPU::WriteRegister(0, 0x02010002); // 2x513
+  EXPECT_NE(GPU::ReadRegister(4) & (1u << 27), 0u);
+  EXPECT_EQ(GPU::ReadRegister(0), 0x12340000u);
+  EXPECT_EQ(GPU::ReadRegister(4) & (1u << 27), 0u);
+
+  GPU::WriteRegister(4, 0x09000000);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
+
+  // Like the RAM size, the setting only applies on power on, not on reset.
+  g_settings.gpu_enable_2mb_vram = false;
+  GPU::Reset(false);
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_MAX_HEIGHT);
 }
 
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)

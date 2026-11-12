@@ -257,6 +257,7 @@ struct CRTCState
   struct Regs
   {
     static constexpr u32 DISPLAY_ADDRESS_START_MASK = 0b111'11111111'11111110;
+    static constexpr u32 DISPLAY_ADDRESS_START_MASK_2MB = 0b1111'11111111'11111110;
     static constexpr u32 HORIZONTAL_DISPLAY_RANGE_MASK = 0b11111111'11111111'11111111;
     static constexpr u32 VERTICAL_DISPLAY_RANGE_MASK = 0b1111'11111111'11111111;
 
@@ -264,7 +265,7 @@ struct CRTCState
     {
       u32 display_address_start;
       BitField<u32, u16, 0, 10> X;
-      BitField<u32, u16, 10, 9> Y;
+      BitField<u32, u16, 10, 10> Y;
     };
     union
     {
@@ -348,7 +349,8 @@ struct Locals
   bool console_is_pal : 1 = false;
   bool vblank_end_cheats_enabled : 1 = false;
 
-  bool enable_upper_vram = false;
+  bool upper_vram_present = false;
+  bool upper_vram_active = false;
   bool drawing_area_changed = false;
   bool texture_enable_mask = false;
   bool force_raw_texture = false;
@@ -414,6 +416,24 @@ struct Locals
 } // namespace
 
 ALIGN_TO_CACHE_LINE static Locals s_locals;
+
+/// Returns true if the upper 1MB of VRAM is present and enabled through GP1(09h).
+ALWAYS_INLINE static bool IsUpperVRAMAddressable()
+{
+  return (s_locals.upper_vram_active && s_locals.upper_vram_present);
+}
+
+/// Returns the number of VRAM lines that commands can currently address. Coordinates wrap at this height.
+ALWAYS_INLINE static u32 GetAddressableVRAMHeight()
+{
+  return IsUpperVRAMAddressable() ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+}
+
+/// Returns the mask for wrapping Y coordinates at the addressable height.
+ALWAYS_INLINE static u32 GetAddressableVRAMHeightMask()
+{
+  return IsUpperVRAMAddressable() ? VRAM_MAX_HEIGHT_MASK : VRAM_HEIGHT_MASK;
+}
 
 } // namespace GPU
 
@@ -503,7 +523,7 @@ static_assert(s_GP0_command_table[0x02].num_words == 3 && s_GP0_command_table[0x
 #else
 #define VRAM_STORAGE_ALIGNMENT HOST_PAGE_SIZE
 #endif
-alignas(VRAM_STORAGE_ALIGNMENT) u16 g_vram[VRAM_SIZE / sizeof(u16)];
+alignas(VRAM_STORAGE_ALIGNMENT) u16 g_vram[VRAM_MAX_SIZE / sizeof(u16)];
 u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 void GPU::Initialize()
@@ -511,6 +531,8 @@ void GPU::Initialize()
   s_locals.force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead_cycles;
   s_locals.console_is_pal = System::IsPALRegion();
+  // Like the RAM size, the VRAM size only changes on power on, or when loading a state.
+  s_locals.upper_vram_present = g_settings.gpu_enable_2mb_vram;
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
 
@@ -601,7 +623,7 @@ std::pair<u32, u32> GPU::GetFullDisplayResolution()
 void GPU::Reset(bool clear_vram)
 {
   s_locals.GPUSTAT.bits = 0x14802000;
-  s_locals.enable_upper_vram = false;
+  s_locals.upper_vram_active = false;
   s_locals.GPUREAD_latch = 0;
   s_locals.crtc_state.fractional_ticks = 0;
   s_locals.crtc_state.current_tick_in_scanline = 0;
@@ -623,6 +645,9 @@ void GPU::Reset(bool clear_vram)
   s_locals.command_tick_event.Deactivate();
 
   SoftReset();
+
+  // VRAM transfers before the next draw need the addressable height, which is updated with the drawing area.
+  PrepareForDraw();
 
   // GP1(00h) selects NTSC, but at power-on the BIOS will set the console's region, which fast boot skips.
   s_locals.GPUSTAT.pal_mode = System::IsPALRegion();
@@ -718,7 +743,7 @@ bool GPU::DoState(StateWrapper& sw)
   if (sw.IsWriting())
   {
     // Need to ensure our copy of VRAM is good.
-    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    ReadVRAM(0, 0, VRAM_WIDTH, Truncate16(GetVRAMHeight()));
   }
 
   // The display size is replaced when loading, so we need the previous size to detect resolution changes.
@@ -756,7 +781,7 @@ bool GPU::DoState(StateWrapper& sw)
   if (sw.GetVersion() < 87) [[unlikely]]
     sw.SkipBytes(1); // console_is_pal
 
-  sw.Do(&s_locals.enable_upper_vram);
+  sw.Do(&s_locals.upper_vram_active);
 
   sw.Do(&s_locals.crtc_state.regs.display_address_start);
   sw.Do(&s_locals.crtc_state.regs.horizontal_display_range);
@@ -846,28 +871,44 @@ bool GPU::DoState(StateWrapper& sw)
   if (!sw.DoMarker("GPU-VRAM"))
     return false;
 
+  // Like the RAM size, the VRAM size of the state takes priority over the setting.
+  u16 vram_height = Truncate16(GetVRAMHeight());
+  sw.DoEx(&vram_height, 101, static_cast<u16>(VRAM_HEIGHT));
+  if (vram_height != VRAM_HEIGHT && vram_height != VRAM_MAX_HEIGHT) [[unlikely]]
+  {
+    ERROR_LOG("Invalid VRAM height in save state: {}", vram_height);
+    return false;
+  }
+
+  const u32 vram_size = VRAM_WIDTH * vram_height * sizeof(u16);
   if (sw.IsReading())
   {
+    if (vram_height != GetVRAMHeight())
+    {
+      WARNING_LOG("Save state has {} MB VRAM, switching from {} MB.", vram_height / VRAM_HEIGHT,
+                  GetVRAMHeight() / VRAM_HEIGHT);
+      Set2MBVRAM(vram_height == VRAM_MAX_HEIGHT);
+    }
+
     // Need to calculate the TC data size. But skip over VRAM first, we'll grab it later.
     const size_t vram_start_pos = sw.GetPosition();
-    sw.SkipBytes(VRAM_SIZE);
+    sw.SkipBytes(vram_size);
     u32 tc_data_size;
     if (!GPUTextureCache::GetStateSize(sw, &tc_data_size)) [[unlikely]]
       return false;
 
     // Now we can actually allocate FIFO storage, and push it to the GPU thread.
     GPUBackendLoadStateCommand* cmd = static_cast<GPUBackendLoadStateCommand*>(VideoThread::AllocateCommand(
-      VideoThreadCommandType::LoadState, sizeof(GPUBackendLoadStateCommand) + tc_data_size));
+      VideoThreadCommandType::LoadState, sizeof(GPUBackendLoadStateCommand) + vram_size + tc_data_size));
     std::memcpy(cmd->clut_data, load_clut_data, sizeof(cmd->clut_data));
-    std::memcpy(cmd->vram_data, sw.GetData() + vram_start_pos, VRAM_SIZE);
     cmd->texture_cache_state_version = sw.GetVersion();
     cmd->texture_cache_state_size = tc_data_size;
-    if (tc_data_size > 0)
-      std::memcpy(cmd->texture_cache_state, sw.GetData() + vram_start_pos + VRAM_SIZE, tc_data_size);
+    std::memcpy(cmd->vram_data, sw.GetData() + vram_start_pos, vram_size + tc_data_size);
     VideoThread::PushCommand(cmd);
 
     s_locals.drawing_area_changed = true;
     SetClampedDrawingArea();
+    PrepareForDraw();
     UpdateDMARequest();
     UpdateCRTCConfig(old_vram_width, old_vram_height);
     UpdateCommandTickEvent();
@@ -875,7 +916,7 @@ bool GPU::DoState(StateWrapper& sw)
   else // if not memory state
   {
     // write vram
-    sw.DoBytes(g_vram, VRAM_SIZE);
+    sw.DoBytes(g_vram, vram_size);
 
     // write TC data, we have to be super careful here, since we're reading GPU thread state...
     GPUTextureCache::DoState(sw, false);
@@ -897,7 +938,7 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
-  sw.Do(&s_locals.enable_upper_vram);
+  sw.Do(&s_locals.upper_vram_active);
 
   sw.DoBytes(&s_locals.crtc_state, sizeof(s_locals.crtc_state));
 
@@ -922,6 +963,7 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   {
     s_locals.drawing_area_changed = true;
     SetClampedDrawingArea();
+    PrepareForDraw();
     UpdateDMARequest();
     UpdateCRTCConfig();
     UpdateCommandTickEvent();
@@ -1608,12 +1650,13 @@ void GPU::UpdateCRTCDisplayParameters(u16 old_vram_width, u16 old_vram_height)
   if (vertical_display_start >= cs.vertical_visible_start)
   {
     cs.display_origin_top = (vertical_display_start - cs.vertical_visible_start) << y_shift;
-    cs.display_vram_top = cs.regs.Y;
+    cs.display_vram_top = cs.regs.Y & GetAddressableVRAMHeightMask();
   }
   else
   {
     cs.display_origin_top = 0;
-    cs.display_vram_top = (cs.regs.Y + ((cs.vertical_visible_start - vertical_display_start) << y_shift)) % VRAM_HEIGHT;
+    cs.display_vram_top =
+      (cs.regs.Y + ((cs.vertical_visible_start - vertical_display_start) << y_shift)) & GetAddressableVRAMHeightMask();
   }
 
   if (vertical_display_end <= cs.vertical_visible_end)
@@ -2178,7 +2221,7 @@ u32 GPU::ReadGPUREAD()
   {
     // Read with correct wrap-around behavior.
     const u16 read_x = (s_locals.vram_transfer.x + s_locals.vram_transfer.col) % VRAM_WIDTH;
-    const u16 read_y = (s_locals.vram_transfer.y + s_locals.vram_transfer.row) % VRAM_HEIGHT;
+    const u16 read_y = (s_locals.vram_transfer.y + s_locals.vram_transfer.row) & GetAddressableVRAMHeightMask();
     value |= ZeroExtend32(g_vram[read_y * VRAM_WIDTH + read_x]) << (i * 16);
 
     if (++s_locals.vram_transfer.col == s_locals.vram_transfer.width)
@@ -2276,7 +2319,9 @@ void GPU::WriteGP1(u32 value)
 
     case static_cast<u8>(GP1Command::SetDisplayStartAddress):
     {
-      const u32 new_value = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
+      // The upper Y bit is only latched with 2MB VRAM, and masked at use when the upper bank isn't enabled.
+      const u32 new_value = param & (s_locals.upper_vram_present ? CRTCState::Regs::DISPLAY_ADDRESS_START_MASK_2MB :
+                                                         CRTCState::Regs::DISPLAY_ADDRESS_START_MASK);
       DEBUG_LOG("Display address start <- 0x{:08X}", new_value);
 
       System::IncrementInternalFrameNumber();
@@ -2388,8 +2433,24 @@ void GPU::WriteGP1(u32 value)
 
     case static_cast<u8>(GP1Command::SetVRAMSize):
     {
-      s_locals.enable_upper_vram = ConvertToBoolUnchecked(param & 0x01);
-      DEBUG_LOG("Upper VRAM addressing <- {}", s_locals.enable_upper_vram ? "allowed" : "ignored");
+      // TODO: On 1MB consoles, enabling the upper bank should drop VRAM writes to Y>=512, read FFFFh from there, and
+      // make textures from E1h.11 pages disappear, since the second chip select is not connected. We alias instead.
+      const bool upper_vram_active = ConvertToBoolUnchecked(param & 0x01);
+      DEBUG_LOG("Upper VRAM addressing <- {}", upper_vram_active ? "allowed" : "ignored");
+      if (s_locals.upper_vram_active != upper_vram_active)
+      {
+        const bool was_addressable = IsUpperVRAMAddressable();
+        s_locals.upper_vram_active = upper_vram_active;
+        if (IsUpperVRAMAddressable() != was_addressable)
+        {
+          // Coordinates are masked differently now. VRAM transfers before the next draw need the new height.
+          s_locals.drawing_area_changed = true;
+          SetClampedDrawingArea();
+          PrepareForDraw();
+          InvalidateCLUT();
+          UpdateCRTCDisplayParameters();
+        }
+      }
     }
     break;
 
@@ -2472,6 +2533,9 @@ void GPU::UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut)
   if (texmode >= GPUTextureMode::Direct16Bit)
     return;
 
+  if (!IsUpperVRAMAddressable())
+    clut.bits &= ~GPUTexturePaletteReg::UPPER_VRAM_BIT;
+
   const bool needs_8bit = (texmode == GPUTextureMode::Palette8Bit);
   if ((clut.bits != s_locals.current_clut_reg_bits) ||
       BoolToUInt8(needs_8bit) > BoolToUInt8(s_locals.current_clut_is_8bit))
@@ -2497,18 +2561,18 @@ void GPU::InvalidateCLUT()
 
 void GPU::SetClampedDrawingArea()
 {
-  s_locals.clamped_drawing_area = GetClampedDrawingArea(s_locals.drawing_area);
+  s_locals.clamped_drawing_area = GetClampedDrawingArea(s_locals.drawing_area, GetAddressableVRAMHeight());
 }
 
-GSVector4i GPU::GetClampedDrawingArea(const GPUDrawingArea& drawing_area)
+GSVector4i GPU::GetClampedDrawingArea(const GPUDrawingArea& drawing_area, u32 vram_height)
 {
   if (drawing_area.left > drawing_area.right || drawing_area.top > drawing_area.bottom) [[unlikely]]
     return GSVector4i::zero();
 
   const u32 right = std::min(drawing_area.right + 1, static_cast<u32>(VRAM_WIDTH));
   const u32 left = std::min(drawing_area.left, std::min(drawing_area.right, VRAM_WIDTH - 1));
-  const u32 bottom = std::min(drawing_area.bottom + 1, static_cast<u32>(VRAM_HEIGHT));
-  const u32 top = std::min(drawing_area.top, std::min(drawing_area.bottom, VRAM_HEIGHT - 1));
+  const u32 bottom = std::min(drawing_area.bottom + 1, vram_height);
+  const u32 top = std::min(drawing_area.top, std::min(drawing_area.bottom, vram_height - 1));
   return GSVector4i(left, top, right, bottom);
 }
 
@@ -2525,7 +2589,9 @@ void GPU::SetDrawMode(u16 value)
 
 void GPU::SetTexturePalette(u16 value)
 {
-  s_locals.texture_palette_reg.bits = value & GPUTexturePaletteReg::MASK;
+  // The upper Y bit is only stored with 2MB VRAM.
+  s_locals.texture_palette_reg.bits =
+    value & (s_locals.upper_vram_present ? GPUTexturePaletteReg::MASK : static_cast<u16>(~GPUTexturePaletteReg::UPPER_VRAM_BIT));
 }
 
 void GPU::SetTextureWindow(u32 value)
@@ -2724,6 +2790,24 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
   *out_display_rect = GSVector4i(GSVector4::loadh(fvideo_size) + padding4);
 }
 
+u32 GPU::GetVRAMHeight()
+{
+  return s_locals.upper_vram_present ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+}
+
+void GPU::Set2MBVRAM(bool enabled)
+{
+  if (s_locals.upper_vram_present == enabled)
+    return;
+
+  INFO_LOG("Switching to {} MB VRAM.", enabled ? 2 : 1);
+  s_locals.upper_vram_present = enabled;
+
+  // The backend's VRAM size is fixed, so it has to be recreated. This also clears memory save states.
+  // Callers (reset/state load) are responsible for the registers, drawing area and CLUT.
+  System::RecreateGPU(VideoThread::GetRequestedRenderer().value_or(g_settings.gpu_renderer), enabled);
+}
+
 void GPU::ReadVRAM(u16 x, u16 y, u16 width, u16 height)
 {
   // If we're using the software renderer, we only need to sync the thread.
@@ -2807,16 +2891,16 @@ void GPU::UpdateDisplay(bool submit_frame)
   else
   {
     cmd->display_width = VRAM_WIDTH;
-    cmd->display_height = VRAM_HEIGHT;
+    cmd->display_height = GetVRAMHeight();
     cmd->display_origin_left = 0;
     cmd->display_origin_top = 0;
     cmd->display_vram_left = 0;
     cmd->display_vram_top = 0;
     cmd->display_vram_width = VRAM_WIDTH;
-    cmd->display_vram_height = VRAM_HEIGHT;
+    cmd->display_vram_height = GetVRAMHeight();
     cmd->X = 0;
     cmd->scanout_start_row = 0;
-    cmd->scanout_end_row = VRAM_HEIGHT;
+    cmd->scanout_end_row = GetVRAMHeight();
     cmd->interlaced_display_enabled = false;
     cmd->interlaced_display_field = false;
     cmd->interlaced_display_interleaved = false;
@@ -2939,16 +3023,17 @@ u8 GPU::CalculateAutomaticResolutionScale()
 
 bool GPU::DumpVRAMToFile(std::string path, Error* error)
 {
-  ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  const u32 vram_height = GetVRAMHeight();
+  ReadVRAM(0, 0, VRAM_WIDTH, Truncate16(vram_height));
 
   const std::string_view extension = Path::GetExtension(path);
   if (StringUtil::EqualNoCase(extension, "png"))
   {
-    return DumpVRAMToFile(std::move(path), VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, g_vram, true, error);
+    return DumpVRAMToFile(std::move(path), VRAM_WIDTH, vram_height, sizeof(u16) * VRAM_WIDTH, g_vram, true, error);
   }
   else if (StringUtil::EqualNoCase(extension, "bin"))
   {
-    return FileSystem::WriteAtomicRenamedFile(std::move(path), g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16), error);
+    return FileSystem::WriteAtomicRenamedFile(std::move(path), g_vram, VRAM_WIDTH * vram_height * sizeof(u16), error);
   }
   else
   {
@@ -3267,6 +3352,7 @@ void GPU::PrepareForDraw()
     s_locals.drawing_area_changed = false;
     GPUBackendSetDrawingAreaCommand* cmd = GPUBackend::NewSetDrawingAreaCommand();
     cmd->new_area = s_locals.drawing_area;
+    cmd->vram_height = static_cast<u16>(GetAddressableVRAMHeight());
     GPUBackend::PushCommand(cmd);
   }
 }
@@ -3297,9 +3383,11 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   else
     cmd->dither_enable = (dither_enable && (shading_enable || (texture_enable && !raw_texture_enable)));
 
-  // Only the populated 1 MiB bank is passed to the renderer for now, until 2MB VRAM is supported.
-  cmd->draw_mode.bits = s_locals.draw_mode_reg.bits & ~(1u << 11);
-  cmd->palette.bits = s_locals.texture_palette_reg.bits;
+  // The upper bank bits of the texture page and CLUT are ignored unless 2MB VRAM is present and enabled.
+  const bool upper_vram = IsUpperVRAMAddressable();
+  cmd->draw_mode.bits = upper_vram ? s_locals.draw_mode_reg.bits : (s_locals.draw_mode_reg.bits & ~(1u << 11));
+  cmd->palette.bits = upper_vram ? s_locals.texture_palette_reg.bits :
+                                   (s_locals.texture_palette_reg.bits & ~GPUTexturePaletteReg::UPPER_VRAM_BIT);
   cmd->window = s_locals.texture_window;
 }
 
@@ -4050,9 +4138,9 @@ void GPU::HandleFillRectangleCommand()
 
   const u32 color = FifoPop() & 0x00FFFFFF;
   const u32 dst_x = FifoPeek() & 0x3F0;
-  const u32 dst_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & GetAddressableVRAMHeightMask();
   const u32 width = ((FifoPeek() & VRAM_WIDTH_MASK) + 0xF) & ~0xF;
-  const u32 height = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 height = (FifoPop() >> 16) & VRAM_TRANSFER_HEIGHT_MASK;
 
   DEBUG_LOG("Fill VRAM rectangle offset=({},{}), size=({},{})", dst_x, dst_y, width, height);
 
@@ -4087,14 +4175,14 @@ void GPU::HandleCopyRectangleCPUToVRAMCommand()
   if (size == 0xFFFFFFFFu) [[unlikely]]
   {
     ERROR_LOG("Ignoring likely-invalid VRAM write to ({},{})", (coords & VRAM_WIDTH_MASK),
-              ((coords >> 16) & VRAM_HEIGHT_MASK));
+              ((coords >> 16) & GetAddressableVRAMHeightMask()));
     return;
   }
 
   const u32 dst_x = coords & VRAM_WIDTH_MASK;
-  const u32 dst_y = (coords >> 16) & VRAM_HEIGHT_MASK;
+  const u32 dst_y = (coords >> 16) & GetAddressableVRAMHeightMask();
   const u32 copy_width = ReplaceZero(size & VRAM_WIDTH_MASK, 0x400);
-  const u32 copy_height = ReplaceZero((size >> 16) & VRAM_HEIGHT_MASK, 0x200);
+  const u32 copy_height = ReplaceZero((size >> 16) & VRAM_TRANSFER_HEIGHT_MASK, 0x200);
   const u32 num_pixels = copy_width * copy_height;
   const u32 num_words = ((num_pixels + 1) / 2);
 
@@ -4167,18 +4255,21 @@ void GPU::HandleCopyRectangleVRAMToCPUCommand()
 {
   s_locals.fifo.RemoveOne();
 
+  const u32 vram_height = GetAddressableVRAMHeight();
+  const u32 vram_height_mask = GetAddressableVRAMHeightMask();
   s_locals.vram_transfer.x = Truncate16(FifoPeek() & VRAM_WIDTH_MASK);
-  s_locals.vram_transfer.y = Truncate16((FifoPop() >> 16) & VRAM_HEIGHT_MASK);
+  s_locals.vram_transfer.y = Truncate16((FifoPop() >> 16) & vram_height_mask);
   s_locals.vram_transfer.width = ((Truncate16(FifoPeek()) - 1) & VRAM_WIDTH_MASK) + 1;
-  s_locals.vram_transfer.height = ((Truncate16(FifoPop() >> 16) - 1) & VRAM_HEIGHT_MASK) + 1;
+  s_locals.vram_transfer.height = ((Truncate16(FifoPop() >> 16) - 1) & VRAM_TRANSFER_HEIGHT_MASK) + 1;
 
   DEBUG_LOG("Copy rectangle from VRAM to CPU offset=({},{}), size=({},{})", s_locals.vram_transfer.x,
             s_locals.vram_transfer.y, s_locals.vram_transfer.width, s_locals.vram_transfer.height);
   DebugAssert(s_locals.vram_transfer.col == 0 && s_locals.vram_transfer.row == 0);
 
-  // ensure VRAM shadow is up to date
-  ReadVRAM(s_locals.vram_transfer.x, s_locals.vram_transfer.y, s_locals.vram_transfer.width,
-           s_locals.vram_transfer.height);
+  // ensure VRAM shadow is up to date, syncing the whole addressable height if the read wraps around the bottom
+  const bool wraps_y = (static_cast<u32>(s_locals.vram_transfer.y) + s_locals.vram_transfer.height) > vram_height;
+  ReadVRAM(s_locals.vram_transfer.x, wraps_y ? 0 : s_locals.vram_transfer.y, s_locals.vram_transfer.width,
+           wraps_y ? Truncate16(vram_height) : s_locals.vram_transfer.height);
 
   if (g_settings.gpu_dump_vram_to_cpu_copies) [[unlikely]]
   {
@@ -4190,7 +4281,7 @@ void GPU::HandleCopyRectangleVRAMToCPUCommand()
     std::vector<u16> pixels(width * height);
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src = &g_vram[((s_locals.vram_transfer.y + row) & VRAM_HEIGHT_MASK) * VRAM_WIDTH];
+      const u16* src = &g_vram[((s_locals.vram_transfer.y + row) & vram_height_mask) * VRAM_WIDTH];
       u16* dst = &pixels[row * width];
       std::memcpy(dst, src + x, first_width * sizeof(u16));
       std::memcpy(dst + first_width, src, (width - first_width) * sizeof(u16));
@@ -4214,12 +4305,13 @@ void GPU::HandleCopyRectangleVRAMToVRAMCommand()
 {
   s_locals.fifo.RemoveOne();
 
+  const u32 vram_height_mask = GetAddressableVRAMHeightMask();
   const u32 src_x = FifoPeek() & VRAM_WIDTH_MASK;
-  const u32 src_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 src_y = (FifoPop() >> 16) & vram_height_mask;
   const u32 dst_x = FifoPeek() & VRAM_WIDTH_MASK;
-  const u32 dst_y = (FifoPop() >> 16) & VRAM_HEIGHT_MASK;
+  const u32 dst_y = (FifoPop() >> 16) & vram_height_mask;
   const u32 width = ReplaceZero(FifoPeek() & VRAM_WIDTH_MASK, 0x400);
-  const u32 height = ReplaceZero((FifoPop() >> 16) & VRAM_HEIGHT_MASK, 0x200);
+  const u32 height = ReplaceZero((FifoPop() >> 16) & VRAM_TRANSFER_HEIGHT_MASK, 0x200);
 
   DEBUG_LOG("Copy rectangle from VRAM to VRAM src=({},{}), dst=({},{}), size=({},{})", src_x, src_y, dst_x, dst_y,
             width, height);
@@ -4325,6 +4417,8 @@ void GPU::DrawDebugStateWindow(float scale)
     flag("Set mask bit", s_locals.GPUSTAT.set_mask_while_drawing);
     flag("Check mask bit", s_locals.GPUSTAT.check_mask_before_draw);
     flag("Reverse flag", s_locals.GPUSTAT.reverse_flag);
+    ImGui::Text("VRAM Size: %u MB, Upper Bank %s", s_locals.upper_vram_present ? 2u : 1u,
+                s_locals.upper_vram_active ? "Enabled" : "Disabled");
     ImGui::EndTable();
   }
 
@@ -4498,7 +4592,7 @@ bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
   }
 
   // ensure vram is up to date
-  ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  ReadVRAM(0, 0, VRAM_WIDTH, Truncate16(GetVRAMHeight()));
 
   std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(path));
   Error error;
@@ -4586,7 +4680,7 @@ void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump)
   dump->WriteGP1Command(GP1Command::SetDisplayStartAddress, s_locals.crtc_state.regs.display_address_start);
   dump->WriteGP1Command(GP1Command::SetHorizontalDisplayRange, s_locals.crtc_state.regs.horizontal_display_range);
   dump->WriteGP1Command(GP1Command::SetVerticalDisplayRange, s_locals.crtc_state.regs.vertical_display_range);
-  dump->WriteGP1Command(GP1Command::SetVRAMSize, BoolToUInt32(s_locals.enable_upper_vram));
+  dump->WriteGP1Command(GP1Command::SetVRAMSize, BoolToUInt32(s_locals.upper_vram_active));
 
   // display mode
   GP1SetDisplayMode dispmode = {};

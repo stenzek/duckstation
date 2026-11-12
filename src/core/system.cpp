@@ -170,7 +170,6 @@ static void ResetGameStarted();
 static void ClearRunningGame();
 static void DestroySystem();
 
-static void RecreateGPU(GPURenderer new_renderer);
 static bool StartMediaCapture(MediaCaptureMode mode, std::string path, u32 video_width, u32 video_height);
 static void StopMediaCapture(std::unique_ptr<MediaCapture> cap);
 
@@ -467,6 +466,7 @@ std::string_view System::GetTaintDisplayName(Taint taint)
     TRANSLATE_DISAMBIG_NOOP("System", "Cheats", "Taint"),
     TRANSLATE_DISAMBIG_NOOP("System", "Game Patches", "Taint"),
     TRANSLATE_DISAMBIG_NOOP("System", "Memory Card Mismatch", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "Expanded VRAM", "Taint"),
   }};
 
   return Host::TranslateToStringView("System", names[static_cast<size_t>(taint)], "Taint");
@@ -483,6 +483,7 @@ const char* System::GetTaintName(Taint taint)
     "Cheats",
     "Patches",
     "MemoryCardMismatch",
+    "ExpandedVRAM",
   }};
 
   return names[static_cast<size_t>(taint)];
@@ -1093,13 +1094,13 @@ DiscRegion System::GetRegionForPsf(const char* path)
   return psf.GetRegion();
 }
 
-void System::RecreateGPU(GPURenderer renderer)
+void System::RecreateGPU(GPURenderer renderer, std::optional<bool> enable_2mb_vram)
 {
   FreeMemoryStateStorage(false, true, false);
   StopMediaCapture();
 
   Error error;
-  if (!VideoThread::CreateGPUBackend(renderer, true, std::nullopt, &error))
+  if (!VideoThread::CreateGPUBackend(renderer, enable_2mb_vram, true, std::nullopt, &error))
   {
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
@@ -1146,6 +1147,10 @@ void System::LoadSettings(bool display_osd_messages)
 
   // patch overrides take precedence over compat settings
   Cheats::ApplySettingOverrides();
+
+  // GPU dumps recorded with 2MB VRAM need it to replay.
+  if (s_state.gpu_dump_player && s_state.gpu_dump_player->Is2MBVRAM())
+    g_settings.gpu_enable_2mb_vram = true;
 
   g_settings.FixIncompatibleSettings(si, display_osd_messages);
 }
@@ -2054,6 +2059,21 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_state.rewind_save_frequency = -1;
   s_state.rewind_save_counter = -1;
 
+  // Game info must be set prior to backend creation because of texture replacements.
+  // We don't do it in UpdateRunningGame() when booting because it can fail in a number of locations.
+  VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
+                              s_state.running_game_hash, false);
+
+  // The backend is created first, so that components can send commands to it when they reset.
+  // This can fail due to the application being closed during startup.
+  if (!VideoThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer,
+                                     static_cast<bool>(g_settings.gpu_enable_2mb_vram), false, start_fullscreen, error))
+  {
+    // Game info has to be manually cleared since the backend won't shutdown naturally.
+    VideoThread::ClearGameInfo();
+    return false;
+  }
+
   // Components reset themselves on initialization. Ordering matters, as GPU reset sets timer gates and DMA requests.
   TimingEvents::Initialize();
   Bus::Initialize();
@@ -2074,20 +2094,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
     return false;
 
   GPU::Initialize();
-
-  // Game info must be set prior to backend creation because of texture replacements.
-  // We don't do it in UpdateRunningGame() when booting because it can fail in a number of locations.
-  VideoThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
-                              s_state.running_game_hash, false);
-
-  // This can fail due to the application being closed during startup.
-  if (!VideoThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
-                                     start_fullscreen, error))
-  {
-    // Game info has to be manually cleared since the backend won't shutdown naturally.
-    VideoThread::ClearGameInfo();
-    return false;
-  }
 
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
@@ -2837,9 +2843,9 @@ bool System::AllocateMemoryStates(size_t state_count, bool recycle_old_textures)
   // Allocate CPU buffers.
   // TODO: Maybe look at host memory limits here...
   // Loaded states can change the RAM size, so use the active size instead of the setting.
-  const size_t size =
-    GetMaxMemorySaveStateSize(Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE),
-                              CPU::PGXP::ShouldSavePGXPState(), g_settings.gpu_texture_cache);
+  const size_t size = GetMaxMemorySaveStateSize(
+    Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE),
+    GPU::GetVRAMHeight() == VRAM_MAX_HEIGHT, CPU::PGXP::ShouldSavePGXPState(), g_settings.gpu_texture_cache);
   for (MemorySaveState& mss : s_state.memory_save_states)
   {
     mss.state_size = 0;
@@ -3114,16 +3120,16 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
   return true;
 }
 
-size_t System::GetMaxSaveStateSize(CPURAMSize ram_size, bool enable_texture_cache)
+size_t System::GetMaxSaveStateSize(CPURAMSize ram_size, bool vram_2mb, bool enable_texture_cache)
 {
-  // Allow roughly 3MB of emulator overhead plus serialized RAM.
-  return ((3 * 1024 * 1024) + Settings::GetCPURAMSizeBytes(ram_size) +
+  // Allow roughly 3MB of emulator overhead plus serialized RAM, and the upper half of VRAM if present.
+  return ((3 * 1024 * 1024) + Settings::GetCPURAMSizeBytes(ram_size) + (vram_2mb ? VRAM_SIZE : 0) +
           (enable_texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0));
 }
 
-size_t System::GetMaxMemorySaveStateSize(CPURAMSize ram_size, bool pgxp, bool enable_texture_cache)
+size_t System::GetMaxMemorySaveStateSize(CPURAMSize ram_size, bool vram_2mb, bool pgxp, bool enable_texture_cache)
 {
-  return GetMaxSaveStateSize(ram_size, enable_texture_cache) + (pgxp ? CPU::PGXP::GetStateSize(ram_size) : 0);
+  return GetMaxSaveStateSize(ram_size, vram_2mb, enable_texture_cache) + (pgxp ? CPU::PGXP::GetStateSize(ram_size) : 0);
 }
 
 std::string System::GetBootPathFromSaveState(const char* path)
@@ -3251,6 +3257,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   Achievements::DisableHardcoreMode(true, true);
 
   const u32 old_ram_size = g_bus.ram_size;
+  const u32 old_vram_height = GPU::GetVRAMHeight();
   StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
   if (!DoState(sw, update_display))
   {
@@ -3258,8 +3265,8 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
     return false;
   }
 
-  // Undo and memory state buffers are sized for the previous RAM size, so they can't be reused.
-  if (g_bus.ram_size != old_ram_size) [[unlikely]]
+  // Undo and memory state buffers are sized for the previous RAM/VRAM size, so they can't be reused.
+  if (g_bus.ram_size != old_ram_size || GPU::GetVRAMHeight() != old_vram_height) [[unlikely]]
   {
     // Undo state is released by the caller when it's the one being loaded.
     if (s_state.undo_load_state.has_value() && &buffer != &s_state.undo_load_state.value())
@@ -3695,7 +3702,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
     // Loaded states can change the RAM size, so use the active size instead of the setting.
     buffer->state_data.resize(
       GetMaxSaveStateSize(Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE),
-                          g_settings.gpu_texture_cache));
+                          GPU::GetVRAMHeight() == VRAM_MAX_HEIGHT, g_settings.gpu_texture_cache));
   }
 
   return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
@@ -5326,6 +5333,8 @@ void System::SetTaintsFromSettings()
     SetTaint(Taint::ForceFrameTimings);
   if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
     SetTaint(Taint::ExpandedRAM);
+  if (g_settings.gpu_enable_2mb_vram)
+    SetTaint(Taint::ExpandedVRAM);
   if (Cheats::GetActivePatchCount() > 0)
     SetTaint(Taint::Patches);
   if (Cheats::GetActiveCheatCount() > 0)
@@ -5385,6 +5394,8 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "Overclock disabled."));
     if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
       append(TRANSLATE_SV("System", "RAM size set to default."));
+    if (g_settings.gpu_enable_2mb_vram)
+      append(TRANSLATE_SV("System", "2MB VRAM disabled."));
     if (g_settings.gpu_resolution_scale != 1)
       append(TRANSLATE_SV("System", "Resolution scale set to 1x."));
     if (g_settings.gpu_multisamples != 1)
@@ -5482,6 +5493,8 @@ void System::WarnAboutUnsafeSettings()
     }
     if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
       append(TRANSLATE_SV("System", "Expanded RAM is enabled, this may be incompatible with some games."));
+    if (g_settings.gpu_enable_2mb_vram)
+      append(TRANSLATE_SV("System", "2MB VRAM is enabled, this may be incompatible with some games."));
     if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
       append(TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
 
@@ -5545,14 +5558,15 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples,
-                                        bool use_software_renderer, CPURAMSize ram_size, bool gpu_texture_cache,
-                                        u64* ram_usage, u64* vram_usage)
+                                        bool use_software_renderer, CPURAMSize ram_size, bool vram_2mb,
+                                        bool gpu_texture_cache, u64* ram_usage, u64* vram_usage)
 {
   const u32 real_resolution_scale = std::max<u32>(resolution_scale, 1u);
-  *ram_usage = GetMaxMemorySaveStateSize(ram_size, false, gpu_texture_cache) * static_cast<u64>(num_saves);
+  const u32 vram_height = vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  *ram_usage = GetMaxMemorySaveStateSize(ram_size, vram_2mb, false, gpu_texture_cache) * static_cast<u64>(num_saves);
   *vram_usage = use_software_renderer ? 0 :
                                         ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *
-                                          static_cast<u64>(VRAM_HEIGHT * real_resolution_scale) * 4) *
+                                          static_cast<u64>(vram_height * real_resolution_scale) * 4) *
                                          static_cast<u64>(multisamples) * static_cast<u64>(num_saves));
 }
 
@@ -5579,7 +5593,8 @@ void System::UpdateMemorySaveStateSettings()
     u64 ram_usage, vram_usage;
     CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale,
                                g_settings.gpu_multisamples, g_settings.gpu_use_software_renderer_for_memory_states,
-                               g_settings.cpu_ram_size, g_settings.gpu_texture_cache, &ram_usage, &vram_usage);
+                               g_settings.cpu_ram_size, GPU::GetVRAMHeight() == VRAM_MAX_HEIGHT,
+                               g_settings.gpu_texture_cache, &ram_usage, &vram_usage);
     INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
              std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
              vram_usage / 1048576);
@@ -6615,7 +6630,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   GSVector2 requested_size;
   if (g_settings.gpu_show_vram)
   {
-    requested_size = GSVector2::cxpr(static_cast<s32>(VRAM_WIDTH), static_cast<s32>(VRAM_HEIGHT));
+    requested_size = GSVector2(GSVector2i(VRAM_WIDTH, static_cast<s32>(GPU::GetVRAMHeight())));
   }
   else
   {
@@ -6723,6 +6738,13 @@ bool System::ChangeGPUDump(std::string new_path)
   s_state.gpu_dump_player = std::move(new_dump);
   s_state.region = s_state.gpu_dump_player->GetRegion();
   UpdateRunningGame(s_state.gpu_dump_player->GetPath(), nullptr, false);
+
+  // The new dump may need a different VRAM size, which otherwise only changes on power on.
+  if (GPU::GetVRAMHeight() != (g_settings.gpu_enable_2mb_vram ? VRAM_MAX_HEIGHT : VRAM_HEIGHT))
+  {
+    GPU::Set2MBVRAM(g_settings.gpu_enable_2mb_vram);
+    GPU::Reset(true);
+  }
 
   // current player object has been changed out, toss call stack
   InterruptExecution();

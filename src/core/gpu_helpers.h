@@ -220,10 +220,10 @@ ALWAYS_INLINE constexpr GSVector4i GetTextureRect(u32 pn, GPUTextureMode mode)
     left = 0;
     right = VRAM_WIDTH;
   }
-  if (bottom > VRAM_HEIGHT) [[unlikely]]
+  if (bottom > VRAM_MAX_HEIGHT) [[unlikely]]
   {
     top = 0;
-    bottom = VRAM_HEIGHT;
+    bottom = VRAM_MAX_HEIGHT;
   }
 
   return GSVector4i::cxpr(left, top, right, bottom);
