@@ -1997,7 +1997,7 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
       {
         for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
-          if (!add_msl_resource_binding(2, i, i, i, i))
+          if (!add_msl_resource_binding(2, i, i, MAX_TEXTURE_SAMPLERS + i, i))
             return false;
         }
       }
