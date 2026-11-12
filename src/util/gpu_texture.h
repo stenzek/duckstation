@@ -184,7 +184,7 @@ IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTexture::Flags);
 class GPUDownloadTexture
 {
 public:
-  GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported);
+  GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported, bool shader_write);
   virtual ~GPUDownloadTexture();
 
   /// Basically, this has dimensions only because of DX11.
@@ -194,6 +194,7 @@ public:
   ALWAYS_INLINE bool NeedsFlush() const { return m_needs_flush; }
   ALWAYS_INLINE bool IsMapped() const { return (m_map_pointer != nullptr); }
   ALWAYS_INLINE bool IsImported() const { return m_is_imported; }
+  ALWAYS_INLINE bool IsShaderWritable() const { return m_shader_write; }
   ALWAYS_INLINE const u8* GetMapPointer() const { return m_map_pointer; }
   ALWAYS_INLINE u32 GetMapPitch() const { return m_current_pitch; }
 
@@ -254,4 +255,5 @@ protected:
 
   bool m_is_imported = false;
   bool m_needs_flush = false;
+  bool m_shader_write = false;
 };

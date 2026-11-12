@@ -130,11 +130,12 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage st
 
 D3D11Pipeline::D3D11Pipeline(ComPtr<ID3D11RasterizerState> rs, ComPtr<ID3D11DepthStencilState> ds,
                              ComPtr<ID3D11BlendState> bs, ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs,
-                             ComPtr<ID3D11GeometryShader> gs, ComPtr<ID3D11DeviceChild> ps_or_cs,
+                             ComPtr<ID3D11GeometryShader> gs, ComPtr<ID3D11DeviceChild> ps_or_cs, Layout layout,
                              D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor)
   : m_rs(std::move(rs)), m_ds(std::move(ds)), m_bs(std::move(bs)), m_il(std::move(il)), m_vs(std::move(vs)),
-    m_gs(std::move(gs)), m_ps_or_cs(std::move(ps_or_cs)), m_topology(topology), m_vertex_stride(vertex_stride),
-    m_blend_factor(blend_factor), m_blend_factor_float(GPUDevice::RGBA8ToFloat(blend_factor))
+    m_gs(std::move(gs)), m_ps_or_cs(std::move(ps_or_cs)), m_layout(layout), m_topology(topology),
+    m_vertex_stride(vertex_stride), m_blend_factor(blend_factor),
+    m_blend_factor_float(GPUDevice::RGBA8ToFloat(blend_factor))
 {
 }
 
@@ -418,7 +419,7 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
     std::move(rs), std::move(ds), std::move(bs), std::move(il),
     static_cast<const D3D11Shader*>(config.vertex_shader)->GetVertexShader(),
     config.geometry_shader ? static_cast<const D3D11Shader*>(config.geometry_shader)->GetGeometryShader() : nullptr,
-    static_cast<const D3D11Shader*>(config.fragment_shader)->GetPixelShader(),
+    static_cast<const D3D11Shader*>(config.fragment_shader)->GetPixelShader(), config.layout,
     primitives[static_cast<u8>(config.primitive)], vertex_stride, config.blend.constant));
 }
 
@@ -442,7 +443,7 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Comp
 
   return std::unique_ptr<GPUPipeline>(
     new D3D11Pipeline(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                      static_cast<const D3D11Shader*>(config.compute_shader)->GetComputeShader(),
+                      static_cast<const D3D11Shader*>(config.compute_shader)->GetComputeShader(), config.layout,
                       D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED, 0, 0));
 }
 

@@ -472,21 +472,66 @@ std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuf
   return tb;
 }
 
-D3D11DownloadTexture::D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height,
-                                           GPUTextureFormat format)
-  : GPUDownloadTexture(width, height, format, false), m_texture(std::move(tex))
+D3D11DownloadTexture::D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex,
+                                           Microsoft::WRL::ComPtr<ID3D11Buffer> write_buffer,
+                                           Microsoft::WRL::ComPtr<ID3D11Buffer> read_buffer,
+                                           Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> uav, u32 width, u32 height,
+                                           GPUTextureFormat format, u32 pitch)
+  : GPUDownloadTexture(width, height, format, false, static_cast<bool>(uav)), m_texture(std::move(tex)),
+    m_write_buffer(std::move(write_buffer)), m_read_buffer(std::move(read_buffer)), m_uav(std::move(uav))
 {
+  m_current_pitch = pitch;
 }
 
 D3D11DownloadTexture::~D3D11DownloadTexture()
 {
+  if (D3D11Device& dev = D3D11Device::GetInstance(); dev.m_compute_output_buffer == this)
+    dev.SetComputeOutputBuffer(nullptr);
   if (IsMapped())
     D3D11DownloadTexture::Unmap();
 }
 
 std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
-                                                                   Error* error)
+                                                                   bool shader_write, Error* error)
 {
+  if (shader_write)
+  {
+    const u32 pitch = Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), sizeof(u32));
+    Microsoft::WRL::ComPtr<ID3D11Buffer> write_buffer, read_buffer;
+    Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> uav;
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = pitch * height;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    desc.StructureByteStride = sizeof(u32);
+    ID3D11Device* const device = D3D11Device::GetD3DDevice();
+    HRESULT hr = device->CreateBuffer(&desc, nullptr, write_buffer.GetAddressOf());
+    if (SUCCEEDED(hr))
+    {
+      D3D11_UNORDERED_ACCESS_VIEW_DESC view = {};
+      view.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+      view.Buffer.NumElements = desc.ByteWidth / sizeof(u32);
+      hr = device->CreateUnorderedAccessView(write_buffer.Get(), &view, uav.GetAddressOf());
+    }
+    if (SUCCEEDED(hr))
+    {
+      desc.Usage = D3D11_USAGE_STAGING;
+      desc.BindFlags = 0;
+      desc.MiscFlags = 0;
+      desc.StructureByteStride = 0;
+      desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+      hr = device->CreateBuffer(&desc, nullptr, read_buffer.GetAddressOf());
+    }
+    if (FAILED(hr))
+    {
+      Error::SetHResult(error, "Failed to create compute download buffers: ", hr);
+      return {};
+    }
+    return std::unique_ptr<D3D11DownloadTexture>(new D3D11DownloadTexture(
+      {}, std::move(write_buffer), std::move(read_buffer), std::move(uav), width, height, format, pitch));
+  }
+
   D3D11_TEXTURE2D_DESC desc = {};
   desc.Width = width;
   desc.Height = height;
@@ -506,12 +551,14 @@ std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u3
     return {};
   }
 
-  return std::unique_ptr<D3D11DownloadTexture>(new D3D11DownloadTexture(std::move(tex), width, height, format));
+  return std::unique_ptr<D3D11DownloadTexture>(
+    new D3D11DownloadTexture(std::move(tex), {}, {}, {}, width, height, format, 0));
 }
 
 void D3D11DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
                                            u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
 {
+  DebugAssert(!m_shader_write);
   D3D11Texture* src11 = static_cast<D3D11Texture*>(src);
 
   DebugAssert(src11->GetFormat() == m_format);
@@ -543,13 +590,27 @@ void D3D11DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
   m_needs_flush = true;
 }
 
+void D3D11DownloadTexture::RecordShaderWrite(u32 rows)
+{
+  if (IsMapped())
+    Unmap();
+
+  // Copy only the rows written, which start at the beginning of the buffer.
+  const D3D11_BOX box = {0, 0, 0, std::min(rows, m_height) * m_current_pitch, 1, 1};
+  D3D11Device::GetD3DContext()->CopySubresourceRegion(m_read_buffer.Get(), 0, 0, 0, 0, m_write_buffer.Get(), 0, &box);
+  m_needs_flush = true;
+  D3D11Device::GetStatistics().num_downloads++;
+}
+
 bool D3D11DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
 {
   if (IsMapped())
     return true;
 
   D3D11_MAPPED_SUBRESOURCE sr;
-  HRESULT hr = D3D11Device::GetD3DContext()->Map(m_texture.Get(), 0, D3D11_MAP_READ, 0, &sr);
+  HRESULT hr = D3D11Device::GetD3DContext()->Map(m_shader_write ? static_cast<ID3D11Resource*>(m_read_buffer.Get()) :
+                                                                  static_cast<ID3D11Resource*>(m_texture.Get()),
+                                                 0, D3D11_MAP_READ, 0, &sr);
   if (FAILED(hr))
   {
     ERROR_LOG("Map() failed: {:08X}", hr);
@@ -557,7 +618,8 @@ bool D3D11DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
   }
 
   m_map_pointer = static_cast<u8*>(sr.pData);
-  m_current_pitch = sr.RowPitch;
+  if (!m_shader_write)
+    m_current_pitch = sr.RowPitch;
   return true;
 }
 
@@ -566,7 +628,9 @@ void D3D11DownloadTexture::Unmap()
   if (!IsMapped())
     return;
 
-  D3D11Device::GetD3DContext()->Unmap(m_texture.Get(), 0);
+  D3D11Device::GetD3DContext()->Unmap(m_shader_write ? static_cast<ID3D11Resource*>(m_read_buffer.Get()) :
+                                                       static_cast<ID3D11Resource*>(m_texture.Get()),
+                                      0);
   m_map_pointer = nullptr;
 }
 
@@ -589,20 +653,26 @@ void D3D11DownloadTexture::SetDebugName(std::string_view name)
   if (name.empty())
     return;
 
-  SetD3DDebugObjectName(m_texture.Get(), name);
+  if (m_texture)
+    SetD3DDebugObjectName(m_texture.Get(), name);
+  if (m_write_buffer)
+    SetD3DDebugObjectName(m_write_buffer.Get(), name);
+  if (m_read_buffer)
+    SetD3DDebugObjectName(m_read_buffer.Get(), name);
 }
 
 #endif
 
 std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                       Error* error /* = nullptr */)
+                                                                       bool shader_write, Error* error /* = nullptr */)
 {
-  return D3D11DownloadTexture::Create(width, height, format, error);
+  return D3D11DownloadTexture::Create(width, height, format, shader_write, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride, Error* error /* = nullptr */)
+                                                                       u32 memory_stride, bool shader_write,
+                                                                       Error* error /* = nullptr */)
 {
   Error::SetStringView(error, "D3D11 cannot import memory for download textures");
   return {};

@@ -944,7 +944,7 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
 
 OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool imported,
                                              GLuint buffer_id, u8* cpu_buffer, const u8* map_ptr, u32 map_pitch)
-  : GPUDownloadTexture(width, height, format, imported), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
+  : GPUDownloadTexture(width, height, format, imported, false), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
 {
   m_map_pointer = map_ptr;
   m_current_pitch = map_pitch;
@@ -1147,15 +1147,26 @@ void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 #endif
 
 std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                        Error* error /* = nullptr */)
+                                                                        bool shader_write, Error* error /* = nullptr */)
 {
+  if (shader_write)
+  {
+    Error::SetStringView(error, "Compute buffer output is not supported by OpenGL.");
+    return {};
+  }
   return OpenGLDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                         void* memory, size_t memory_size,
-                                                                        u32 memory_stride, Error* error /* = nullptr */)
+                                                                        u32 memory_stride, bool shader_write,
+                                                                        Error* error /* = nullptr */)
 {
+  if (shader_write)
+  {
+    Error::SetStringView(error, "Compute buffer output is not supported by OpenGL.");
+    return {};
+  }
   // not _really_ memory importing, but PBOs are broken on Intel....
   return OpenGLDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
 }

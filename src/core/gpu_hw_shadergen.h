@@ -63,6 +63,7 @@ public:
   std::string GenerateBatchFragmentShader(const BatchFragmentShaderSelector sel) const;
   std::string GenerateWireframeGeometryShader() const;
   std::string GenerateWireframeFragmentShader() const;
+  std::string GenerateVRAMReadComputeShader(u32 resolution_scale, u32 multisamples) const;
   std::string GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const;
   std::string GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, GPUTextureFilter texture_filter,
                                               bool write_mask_as_depth, bool write_depth_as_rt, bool check_mask,
@@ -91,6 +92,7 @@ private:
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, bool is_int, bool is_unsigned) const;
   void DeclareImage(std::stringstream& ss, const char* name, u32 index, const char* hlsl_format,
                     const char* glsl_format) const;
+  void WriteVRAMReadFunctions(std::stringstream& ss, u32 resolution_scale, u32 multisamples) const;
   void WriteColorConversionFunctions(std::stringstream& ss) const;
   void WriteBatchUniformBuffer(std::stringstream& ss) const;
   void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter) const;

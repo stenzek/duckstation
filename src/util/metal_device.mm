@@ -702,9 +702,9 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
-MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, MTLCullMode cull_mode,
-                             MTLPrimitiveType primitive, u32 blend_constants)
-  : m_pipeline(pipeline), m_depth(depth), m_compute(compute), m_cull_mode(static_cast<u8>(cull_mode)),
+MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, Layout layout,
+                             MTLCullMode cull_mode, MTLPrimitiveType primitive, u32 blend_constants)
+  : m_pipeline(pipeline), m_depth(depth), m_compute(compute), m_layout(layout), m_cull_mode(static_cast<u8>(cull_mode)),
     m_primitive(static_cast<u8>(primitive)), m_blend_constants(blend_constants)
 {
 }
@@ -931,7 +931,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     const u32 blend_constants = uses_blend_constants ? config.blend.constant.GetValue() : 0;
 
     return std::unique_ptr<GPUPipeline>(
-      new MetalPipeline(pipeline, depth, false, cull_mode, primitive, blend_constants));
+      new MetalPipeline(pipeline, depth, false, config.layout, cull_mode, primitive, blend_constants));
   }
 }
 
@@ -947,10 +947,11 @@ std::unique_ptr<GPUPipeline> MetalDevice::LoadPipeline(const GPUPipeline::Comput
 
 std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
 {
-  return CreateComputePipeline(static_cast<MetalShader*>(config.compute_shader)->GetFunction(), error);
+  return CreateComputePipeline(static_cast<MetalShader*>(config.compute_shader)->GetFunction(), config.layout, error);
 }
 
-std::unique_ptr<GPUPipeline> MetalDevice::CreateComputePipeline(id<MTLFunction> function, Error* error)
+std::unique_ptr<GPUPipeline> MetalDevice::CreateComputePipeline(id<MTLFunction> function, GPUPipeline::Layout layout,
+                                                                Error* error)
 {
   @autoreleasepool
   {
@@ -970,7 +971,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreateComputePipeline(id<MTLFunction> 
     }
 
     return std::unique_ptr<GPUPipeline>(
-      new MetalPipeline(pipeline, nil, true, MTLCullModeNone, MTLPrimitiveTypePoint, 0));
+      new MetalPipeline(pipeline, nil, true, layout, MTLCullModeNone, MTLPrimitiveTypePoint, 0));
   }
 }
 
@@ -1004,8 +1005,9 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreateDepthResolvePipeline(GPUTextureF
       return {};
     }
 
-    return std::unique_ptr<GPUPipeline>(
-      new MetalPipeline(pipeline, depth, false, MTLCullModeNone, MTLPrimitiveTypeTriangle, 0));
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, false,
+                                                          GPUPipeline::Layout::SingleTextureAndPushConstants,
+                                                          MTLCullModeNone, MTLPrimitiveTypeTriangle, 0));
   }
 }
 
@@ -1276,8 +1278,9 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
 }
 
 MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTextureFormat format, u8* import_buffer,
-                                           size_t buffer_offset, id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch)
-  : GPUDownloadTexture(width, height, format, (import_buffer != nullptr)), m_buffer_offset(buffer_offset),
+                                           size_t buffer_offset, id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch,
+                                           bool shader_write)
+  : GPUDownloadTexture(width, height, format, (import_buffer != nullptr), shader_write), m_buffer_offset(buffer_offset),
     m_buffer(buffer)
 {
   m_map_pointer = map_ptr;
@@ -1286,12 +1289,14 @@ MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTextureForm
 
 MetalDownloadTexture::~MetalDownloadTexture()
 {
+  if (MetalDevice::GetInstance().m_compute_output_buffer == this)
+    MetalDevice::GetInstance().SetComputeOutputBuffer(nullptr);
   MetalDevice::DeferRelease(m_copy_fence_counter, m_buffer);
 }
 
 std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                    void* memory, size_t memory_size, u32 memory_stride,
-                                                                   Error* error)
+                                                                   bool shader_write, Error* error)
 {
   @autoreleasepool
   {
@@ -1345,14 +1350,21 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       memory_offset = page_offset;
     }
 
+    if (shader_write && ((memory_offset % sizeof(u32)) != 0))
+    {
+      [buffer release];
+      Error::SetStringView(error, "Imported buffer is not aligned for shader writes.");
+      return {};
+    }
     return std::unique_ptr<MetalDownloadTexture>(new MetalDownloadTexture(
-      width, height, format, static_cast<u8*>(memory), memory_offset, buffer, map_ptr, map_pitch));
+      width, height, format, static_cast<u8*>(memory), memory_offset, buffer, map_ptr, map_pitch, shader_write));
   }
 }
 
 void MetalDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
                                            u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
 {
+  DebugAssert(!m_shader_write);
   MetalTexture* const mtlTex = static_cast<MetalTexture*>(src);
   MetalDevice& dev = MetalDevice::GetInstance();
 
@@ -1388,6 +1400,15 @@ void MetalDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
 
   m_copy_fence_counter = dev.m_current_fence_counter;
   m_needs_flush = true;
+}
+
+void MetalDownloadTexture::RecordShaderWrite()
+{
+  DebugAssert(m_shader_write);
+  MetalDevice& dev = MetalDevice::GetInstance();
+  m_copy_fence_counter = dev.GetCurrentFenceCounter();
+  m_needs_flush = true;
+  dev.GetStatistics().num_downloads++;
 }
 
 bool MetalDownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
@@ -1432,16 +1453,17 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
 #endif
 
 std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                       Error* error)
+                                                                       bool shader_write, Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
+  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0, shader_write, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride, Error* error)
+                                                                       u32 memory_stride, bool shader_write,
+                                                                       Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
+  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, shader_write, error);
 }
 
 MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
@@ -1666,7 +1688,7 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
         if (function == nil)
           Panic("Failed to get resolve kernel");
 
-        pipeline = CreateComputePipeline(function, nullptr);
+        pipeline = CreateComputePipeline(function, GPUPipeline::Layout::ComputeImageOutput, nullptr);
       }
 
       if (!pipeline)
@@ -2183,6 +2205,18 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   }
 }
 
+void MetalDevice::SetComputeOutputBuffer(GPUDownloadTexture* buffer)
+{
+  DebugAssert(!buffer || buffer->IsShaderWritable());
+  m_compute_output_buffer = static_cast<MetalDownloadTexture*>(buffer);
+  if (InComputePass())
+  {
+    [m_compute_encoder setBuffer:m_compute_output_buffer ? m_compute_output_buffer->GetBuffer() : nil
+                          offset:m_compute_output_buffer ? m_compute_output_buffer->GetBufferOffset() : 0
+                         atIndex:COMPUTE_BINDING_OUTPUT_BUFFER];
+  }
+}
+
 void MetalDevice::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
   id<MTLBuffer> B = buffer ? static_cast<MetalTextureBuffer*>(buffer)->GetMTLBuffer() : nil;
@@ -2411,6 +2445,14 @@ void MetalDevice::BeginComputePass()
   if ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
     BindRenderTargetsAsComputeImages();
 
+  if (m_current_pipeline && m_current_pipeline->GetLayout() == GPUPipeline::Layout::ComputeBufferOutput)
+  {
+    DebugAssert(m_compute_output_buffer);
+    [m_compute_encoder setBuffer:m_compute_output_buffer->GetBuffer()
+                          offset:m_compute_output_buffer->GetBufferOffset()
+                         atIndex:COMPUTE_BINDING_OUTPUT_BUFFER];
+  }
+
   if (m_current_pipeline && m_current_pipeline->IsComputePipeline())
     [m_compute_encoder setComputePipelineState:m_current_pipeline->GetComputePipelineState()];
 }
@@ -2611,6 +2653,11 @@ void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   // TODO: We could remap to the optimal group size..
   [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
                threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
+  if (m_current_pipeline->GetLayout() == GPUPipeline::Layout::ComputeBufferOutput)
+  {
+    DebugAssert(m_compute_output_buffer);
+    m_compute_output_buffer->RecordShaderWrite();
+  }
 }
 
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)

@@ -23,8 +23,12 @@ class D3D11Shader;
 class D3D11Texture;
 class D3D11TextureBuffer;
 
+class D3D11DownloadTexture;
+
 class D3D11Device final : public GPUDevice
 {
+  friend D3D11DownloadTexture;
+
 public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -56,10 +60,10 @@ public:
                                                         Error* error = nullptr) override;
 
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             void* memory, size_t memory_size, u32 memory_stride,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTextureFormat format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -98,6 +102,7 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(GPUTextureBuffer* buffer) override;
+  void SetComputeOutputBuffer(GPUDownloadTexture* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -216,6 +221,7 @@ private:
   u32 m_current_uniform_offset = 0;
   u32 m_current_uniform_size = 0;
 
+  D3D11DownloadTexture* m_compute_output_buffer = nullptr;
   std::array<ID3D11ShaderResourceView*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<ID3D11SamplerState*, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
 

@@ -53,6 +53,8 @@ public:
                             bool push_constant) const;
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled = false,
                       bool is_int = false, bool is_unsigned = false) const;
+  void DeclareComputeOutputBuffer(std::stringstream& ss, const char* name) const;
+  void DeclareComputeEntryPoint(std::stringstream& ss, u32 group_size_x, u32 group_size_y, u32 group_size_z) const;
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,
                                const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,

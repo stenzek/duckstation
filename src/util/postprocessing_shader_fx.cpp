@@ -1487,7 +1487,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTextureFormat format, u
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   GPUPipeline::ComputeConfig cplconfig;
-  cplconfig.layout = GPUPipeline::Layout::ComputeMultiTextureAndUBO;
+  cplconfig.layout = GPUPipeline::Layout::ComputeImageOutput;
 
   progress->PushState();
 

@@ -166,10 +166,15 @@ public:
   ~VulkanDownloadTexture() override;
 
   static std::unique_ptr<VulkanDownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, void* memory,
-                                                       size_t memory_size, u32 memory_stride, Error* error);
+                                                       size_t memory_size, u32 memory_stride, bool shader_write,
+                                                       Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  ALWAYS_INLINE VkBuffer GetBuffer() const { return m_buffer; }
+  ALWAYS_INLINE VkDeviceSize GetBufferOffset() const { return m_memory_offset; }
+  void RecordShaderWrite();
 
   bool Map(u32 x, u32 y, u32 width, u32 height) override;
   void Unmap() override;
@@ -182,7 +187,8 @@ public:
 
 private:
   VulkanDownloadTexture(u32 width, u32 height, GPUTextureFormat format, VmaAllocation allocation, VkDeviceMemory memory,
-                        VkBuffer buffer, VkDeviceSize memory_offset, const u8* map_ptr, u32 map_pitch);
+                        VkBuffer buffer, VkDeviceSize memory_offset, const u8* map_ptr, u32 map_pitch,
+                        bool shader_write);
 
   VmaAllocation m_allocation = VK_NULL_HANDLE;
   VkDeviceMemory m_memory = VK_NULL_HANDLE;

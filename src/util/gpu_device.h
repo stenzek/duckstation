@@ -149,8 +149,11 @@ public:
     // GPU-HW batch with render targets bound as storage images.
     HWImageBatch,
 
-    // Multiple textures, 1 streamed UBO, compute shader.
-    ComputeMultiTextureAndUBO,
+    // Multiple sampled textures, 1 streamed UBO, writable storage images.
+    ComputeImageOutput,
+
+    // Multiple sampled textures, 1 streamed UBO, 1 writable download buffer (uint elements).
+    ComputeBufferOutput,
 
     MaxCount
   };
@@ -672,7 +675,8 @@ public:
       1,                    // HWBatch
       1,                    // HWFeedbackLoopBatch
       1,                    // HWImageBatch
-      MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndUBO
+      MAX_TEXTURE_SAMPLERS, // ComputeImageOutput
+      MAX_TEXTURE_SAMPLERS, // ComputeBufferOutput
     };
 
     return counts[static_cast<u8>(layout)];
@@ -687,7 +691,7 @@ public:
   /// Returns true if the given pipeline layout is used for compute shaders.
   static constexpr bool IsComputeLayout(GPUPipeline::Layout layout)
   {
-    return (layout >= GPUPipeline::Layout::ComputeMultiTextureAndUBO);
+    return (layout >= GPUPipeline::Layout::ComputeImageOutput);
   }
 
   /// Returns the number of thread groups to dispatch for a given total count and local size.
@@ -763,11 +767,24 @@ public:
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                            Error* error = nullptr)
+  {
+    return CreateDownloadTexture(width, height, format, false, error);
+  }
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                            void* memory, size_t memory_size, u32 memory_stride,
+                                                            Error* error = nullptr)
+  {
+    return CreateDownloadTexture(width, height, format, memory, memory_size, memory_stride, false, error);
+  }
+
+  /// shader_write selects a fixed-pitch buffer for ComputeBufferOutput; otherwise populated by CopyFromTexture().
   virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                    Error* error = nullptr) = 0;
+                                                                    bool shader_write, Error* error = nullptr) = 0;
   virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                     void* memory, size_t memory_size, u32 memory_stride,
-                                                                    Error* error = nullptr) = 0;
+                                                                    bool shader_write, Error* error = nullptr) = 0;
 
   virtual void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                                  u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) = 0;
@@ -836,6 +853,10 @@ public:
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
   virtual void SetTextureBuffer(GPUTextureBuffer* buffer) = 0;
+
+  /// Binds a writable buffer for ComputeBufferOutput. Flush() completes GPU writes before CPU access.
+  virtual void SetComputeOutputBuffer(GPUDownloadTexture* buffer);
+
   virtual void SetViewport(const GSVector4i rc) = 0;
   virtual void SetScissor(const GSVector4i rc) = 0;
   void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,

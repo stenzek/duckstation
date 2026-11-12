@@ -448,6 +448,25 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
   }
 }
 
+void ShaderGen::DeclareComputeOutputBuffer(std::stringstream& ss, const char* name) const
+{
+  if (m_glsl)
+    ss << "layout(std430, set = 2, binding = 0) writeonly restrict buffer OutputBuffer { uint " << name << "[]; };\n";
+  else
+    ss << "RWStructuredBuffer<uint> " << name << " : register(u0);\n";
+}
+
+void ShaderGen::DeclareComputeEntryPoint(std::stringstream& ss, u32 group_size_x, u32 group_size_y,
+                                         u32 group_size_z) const
+{
+  if (m_glsl)
+    ss << "layout(local_size_x = " << group_size_x << ", local_size_y = " << group_size_y
+       << ", local_size_z = " << group_size_z << ") in;\n#define GLOBAL_ID gl_GlobalInvocationID\nvoid main()\n";
+  else
+    ss << "[numthreads(" << group_size_x << ", " << group_size_y << ", " << group_size_z
+       << ")]\nvoid main(uint3 GLOBAL_ID : SV_DispatchThreadID)\n";
+}
+
 const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
                                                  bool sample_interpolation, bool is_out) const
 {

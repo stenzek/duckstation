@@ -173,6 +173,7 @@ private:
   /// Returns true if a depth buffer should be created.
   GPUTextureFormat GetDepthBufferFormat() const;
 
+  bool CreatePersistentBuffers(Error* error);
   bool CreateBuffers(Error* error);
   void ClearFramebuffer();
   void DestroyBuffers();

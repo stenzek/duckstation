@@ -869,22 +869,32 @@ std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuf
 }
 
 D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                           ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer)
-  : GPUDownloadTexture(width, height, format, false), m_allocation(std::move(allocation)), m_buffer(std::move(buffer))
+                                           ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer,
+                                           const D3D12DescriptorHandle& uav_descriptor, u32 pitch)
+  : GPUDownloadTexture(width, height, format, false, static_cast<bool>(uav_descriptor)),
+    m_allocation(std::move(allocation)), m_buffer(std::move(buffer)), m_uav_descriptor(uav_descriptor)
 {
+  m_current_pitch = pitch;
 }
 
 D3D12DownloadTexture::~D3D12DownloadTexture()
 {
+  D3D12Device& dev = D3D12Device::GetInstance();
+  if (dev.m_compute_output_buffer == this)
+    dev.SetComputeOutputBuffer(nullptr);
+  if (m_uav_descriptor)
+    dev.DeferDescriptorDestruction(dev.GetDescriptorHeapManager(), &m_uav_descriptor);
   if (IsMapped())
     D3D12DownloadTexture::Unmap();
 
-  if (m_buffer)
+  if (m_allocation)
     D3D12Device::GetInstance().DeferResourceDestruction(std::move(m_allocation), std::move(m_buffer));
+  else if (m_buffer)
+    dev.DeferObjectDestruction(std::move(m_buffer));
 }
 
 std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
-                                                                   Error* error)
+                                                                   bool shader_write, Error* error)
 {
   const u32 buffer_size = GetBufferSize(width, height, format, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 
@@ -900,27 +910,55 @@ std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u3
                                              DXGI_FORMAT_UNKNOWN,
                                              {1, 0},
                                              D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-                                             D3D12_RESOURCE_FLAG_NONE};
+                                             shader_write ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS :
+                                                            D3D12_RESOURCE_FLAG_NONE};
 
   ComPtr<D3D12MA::Allocation> allocation;
   ComPtr<ID3D12Resource> buffer;
 
-  const HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
-    &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.GetAddressOf(),
-    IID_PPV_ARGS(buffer.GetAddressOf()));
+  // Readback heaps can't be written by shaders, so use CPU-visible custom heap memory instead. D3D12MA only supports
+  // custom heaps through pools, so this is a committed resource.
+  static constexpr D3D12_HEAP_PROPERTIES shader_write_heap_properties = {
+    D3D12_HEAP_TYPE_CUSTOM, D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0, 0, 0};
+  D3D12Device& dev = D3D12Device::GetInstance();
+  const HRESULT hr =
+    shader_write ?
+      dev.GetDevice()->CreateCommittedResource(&shader_write_heap_properties, D3D12_HEAP_FLAG_NONE, &resource_desc,
+                                               D3D12_RESOURCE_STATE_COMMON, nullptr,
+                                               IID_PPV_ARGS(buffer.GetAddressOf())) :
+      dev.GetAllocator()->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                         allocation.GetAddressOf(), IID_PPV_ARGS(buffer.GetAddressOf()));
   if (FAILED(hr))
   {
     Error::SetHResult(error, "CreateResource() failed: ", hr);
     return {};
   }
 
+  D3D12DescriptorHandle uav_descriptor;
+  u32 pitch = 0;
+  if (shader_write)
+  {
+    if (!dev.GetDescriptorHeapManager().Allocate(&uav_descriptor))
+    {
+      Error::SetStringView(error, "Failed to allocate compute buffer UAV.");
+      return {};
+    }
+    D3D12_UNORDERED_ACCESS_VIEW_DESC view = {};
+    view.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    view.Buffer.NumElements = buffer_size / sizeof(u32);
+    view.Buffer.StructureByteStride = sizeof(u32);
+    dev.GetDevice()->CreateUnorderedAccessView(buffer.Get(), nullptr, &view, uav_descriptor.cpu_handle);
+    pitch = Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  }
+
   return std::unique_ptr<D3D12DownloadTexture>(
-    new D3D12DownloadTexture(width, height, format, std::move(allocation), std::move(buffer)));
+    new D3D12DownloadTexture(width, height, format, std::move(allocation), std::move(buffer), uav_descriptor, pitch));
 }
 
 void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
                                            u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
 {
+  DebugAssert(!m_shader_write);
   D3D12Texture* const src12 = static_cast<D3D12Texture*>(src);
   D3D12Device& dev = D3D12Device::GetInstance();
 
@@ -974,6 +1012,17 @@ void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src
 
   m_copy_fence_value = dev.GetCurrentFenceValue();
   m_needs_flush = true;
+}
+
+void D3D12DownloadTexture::RecordShaderWrite()
+{
+  // Remap afterwards so that the read range is invalidated. The buffer is implicitly promoted to UAV by the dispatch.
+  if (IsMapped())
+    Unmap();
+
+  m_copy_fence_value = D3D12Device::GetInstance().GetCurrentFenceValue();
+  m_needs_flush = true;
+  D3D12Device::GetStatistics().num_downloads++;
 }
 
 bool D3D12DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
@@ -1046,14 +1095,15 @@ void D3D12DownloadTexture::SetDebugName(std::string_view name)
 #endif
 
 std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                       Error* error /* = nullptr */)
+                                                                       bool shader_write, Error* error /* = nullptr */)
 {
-  return D3D12DownloadTexture::Create(width, height, format, error);
+  return D3D12DownloadTexture::Create(width, height, format, shader_write, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride, Error* error /* = nullptr */)
+                                                                       u32 memory_stride, bool shader_write,
+                                                                       Error* error /* = nullptr */)
 {
   Error::SetStringView(error, "D3D12 cannot import memory for download textures");
   return {};

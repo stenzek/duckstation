@@ -804,6 +804,11 @@ void GPUDevice::UploadIndexBuffer(const u16* indices, u32 index_count, u32* base
   UnmapIndexBuffer(index_count);
 }
 
+void GPUDevice::SetComputeOutputBuffer(GPUDownloadTexture* buffer)
+{
+  Panic("Compute buffer output is not supported by this backend.");
+}
+
 void GPUDevice::UploadUniformBuffer(const void* data, u32 data_size)
 {
   void* map = MapUniformBuffer(data_size);
@@ -1997,7 +2002,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
       {
         for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
-          if (!add_msl_resource_binding(2, i, i, MAX_TEXTURE_SAMPLERS + i, i))
+          // Buffer index must match MetalDevice::COMPUTE_BINDING_OUTPUT_BUFFER.
+          if (!add_msl_resource_binding(2, i, 3 + i, MAX_TEXTURE_SAMPLERS + i, i))
             return false;
         }
       }

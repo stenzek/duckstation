@@ -386,8 +386,9 @@ void GPUTexture::MakeReadyForSampling()
 {
 }
 
-GPUDownloadTexture::GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported)
-  : m_width(width), m_height(height), m_format(format), m_is_imported(is_imported)
+GPUDownloadTexture::GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported,
+                                       bool shader_write)
+  : m_width(width), m_height(height), m_format(format), m_is_imported(is_imported), m_shader_write(shader_write)
 {
 }
 

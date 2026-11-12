@@ -986,9 +986,9 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
 
 VulkanDownloadTexture::VulkanDownloadTexture(u32 width, u32 height, GPUTextureFormat format, VmaAllocation allocation,
                                              VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset,
-                                             const u8* map_ptr, u32 map_pitch)
-  : GPUDownloadTexture(width, height, format, (memory != VK_NULL_HANDLE)), m_allocation(allocation), m_memory(memory),
-    m_buffer(buffer), m_memory_offset(memory_offset)
+                                             const u8* map_ptr, u32 map_pitch, bool shader_write)
+  : GPUDownloadTexture(width, height, format, (memory != VK_NULL_HANDLE), shader_write), m_allocation(allocation),
+    m_memory(memory), m_buffer(buffer), m_memory_offset(memory_offset)
 {
   m_map_pointer = map_ptr;
   m_current_pitch = map_pitch;
@@ -996,6 +996,8 @@ VulkanDownloadTexture::VulkanDownloadTexture(u32 width, u32 height, GPUTextureFo
 
 VulkanDownloadTexture::~VulkanDownloadTexture()
 {
+  if (VulkanDevice::GetInstance().m_compute_output_buffer == this)
+    VulkanDevice::GetInstance().SetComputeOutputBuffer(nullptr);
   if (m_allocation != VK_NULL_HANDLE)
   {
     // Buffer was created mapped, no need to manually unmap.
@@ -1011,7 +1013,7 @@ VulkanDownloadTexture::~VulkanDownloadTexture()
 
 std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                      void* memory, size_t memory_size,
-                                                                     u32 memory_stride, Error* error)
+                                                                     u32 memory_stride, bool shader_write, Error* error)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VmaAllocation allocation = VK_NULL_HANDLE;
@@ -1028,14 +1030,16 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     map_pitch = Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), dev.GetBufferCopyRowPitchAlignment());
     buffer_size = height * map_pitch;
 
-    const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                                    nullptr,
-                                    0u,
-                                    buffer_size,
-                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                    VK_SHARING_MODE_EXCLUSIVE,
-                                    0u,
-                                    nullptr};
+    const VkBufferCreateInfo bci = {
+      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      nullptr,
+      0u,
+      buffer_size,
+      static_cast<VkBufferUsageFlags>(VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                      (shader_write ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0)),
+      VK_SHARING_MODE_EXCLUSIVE,
+      0u,
+      nullptr};
 
     VmaAllocationCreateInfo aci = {};
     aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
@@ -1059,8 +1063,11 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     buffer_size = height * map_pitch;
     Assert(buffer_size <= memory_size);
 
-    if (!dev.TryImportHostMemory(memory, memory_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, &dev_memory, &buffer,
-                                 &memory_offset, error))
+    if (!dev.TryImportHostMemory(
+          memory, memory_size,
+          static_cast<VkBufferUsageFlags>(VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                          (shader_write ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0)),
+          &dev_memory, &buffer, &memory_offset, error))
     {
       return {};
     }
@@ -1068,13 +1075,31 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     map_ptr = static_cast<u8*>(memory);
   }
 
-  return std::unique_ptr<VulkanDownloadTexture>(new VulkanDownloadTexture(width, height, format, allocation, dev_memory,
-                                                                          buffer, memory_offset, map_ptr, map_pitch));
+  if (shader_write && ((memory_offset % dev.m_device_properties.limits.minStorageBufferOffsetAlignment) != 0 ||
+                       buffer_size > dev.m_device_properties.limits.maxStorageBufferRange))
+  {
+    if (allocation != VK_NULL_HANDLE)
+    {
+      vmaDestroyBuffer(dev.GetAllocator(), buffer, allocation);
+    }
+    else
+    {
+      vkDestroyBuffer(dev.GetVulkanDevice(), buffer, nullptr);
+      vkFreeMemory(dev.GetVulkanDevice(), dev_memory, nullptr);
+    }
+
+    Error::SetStringView(error, "Download buffer cannot be bound as shader storage.");
+    return {};
+  }
+
+  return std::unique_ptr<VulkanDownloadTexture>(new VulkanDownloadTexture(
+    width, height, format, allocation, dev_memory, buffer, memory_offset, map_ptr, map_pitch, shader_write));
 }
 
 void VulkanDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
                                             u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
 {
+  DebugAssert(!m_shader_write);
   VulkanTexture* const vkTex = static_cast<VulkanTexture*>(src);
   VulkanDevice& dev = VulkanDevice::GetInstance();
 
@@ -1145,6 +1170,28 @@ void VulkanDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
   m_needs_flush = true;
 }
 
+void VulkanDownloadTexture::RecordShaderWrite()
+{
+  // Also orders the write against later dispatches to this buffer.
+  VulkanDevice& dev = VulkanDevice::GetInstance();
+  const VkBufferMemoryBarrier barrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                                         nullptr,
+                                         VK_ACCESS_SHADER_WRITE_BIT,
+                                         VK_ACCESS_HOST_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+                                         VK_QUEUE_FAMILY_IGNORED,
+                                         VK_QUEUE_FAMILY_IGNORED,
+                                         m_buffer,
+                                         m_memory_offset,
+                                         static_cast<VkDeviceSize>(m_current_pitch) * m_height};
+  vkCmdPipelineBarrier(dev.GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                       VK_PIPELINE_STAGE_HOST_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0,
+                       nullptr);
+  m_copy_fence_counter = dev.GetCurrentFenceCounter();
+  m_needs_cache_invalidate = true;
+  m_needs_flush = true;
+  dev.GetStatistics().num_downloads++;
+}
+
 bool VulkanDownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
 {
   // Always mapped, but we might need to invalidate the cache.
@@ -1206,14 +1253,15 @@ void VulkanDownloadTexture::SetDebugName(std::string_view name)
 #endif
 
 std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                                        Error* error /* = nullptr */)
+                                                                        bool shader_write, Error* error /* = nullptr */)
 {
-  return VulkanDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
+  return VulkanDownloadTexture::Create(width, height, format, nullptr, 0, 0, shader_write, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                         void* memory, size_t memory_size,
-                                                                        u32 memory_stride, Error* error /* = nullptr */)
+                                                                        u32 memory_stride, bool shader_write,
+                                                                        Error* error /* = nullptr */)
 {
-  return VulkanDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
+  return VulkanDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, shader_write, error);
 }

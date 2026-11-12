@@ -1702,7 +1702,8 @@ void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, b
     0, // HWBatch
     0, // HWFeedbackLoopBatch
     0, // HWImageBatch
-    0, // ComputeMultiTextureAndUBO
+    0, // ComputeImageOutput
+    0, // ComputeBufferOutput
   };
 
   s_stats.buffer_streamed += data_size;
@@ -1776,16 +1777,17 @@ bool D3D12Device::CreateRootSignatures(Error* error)
     D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
   }
 
+  for (const auto layout : {GPUPipeline::Layout::ComputeImageOutput, GPUPipeline::Layout::ComputeBufferOutput})
   {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::ComputeMultiTextureAndUBO)];
-
+    auto& rs = m_root_signatures[static_cast<u8>(layout)];
     rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0,
+                           (layout == GPUPipeline::Layout::ComputeBufferOutput) ? 1 : MAX_IMAGE_RENDER_TARGETS,
+                           D3D12_SHADER_VISIBILITY_ALL);
     if (!(rs = rsb.Create(error, true)))
       return false;
-    D3D12::SetObjectName(rs.Get(), "Compute Multi Texture + UBO Pipeline Layout");
   }
 
   {
@@ -2201,6 +2203,15 @@ void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   }
 }
 
+void D3D12Device::SetComputeOutputBuffer(GPUDownloadTexture* buffer)
+{
+  DebugAssert(!buffer || buffer->IsShaderWritable());
+  if (m_compute_output_buffer == buffer)
+    return;
+  m_compute_output_buffer = static_cast<D3D12DownloadTexture*>(buffer);
+  m_dirty_flags |= DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER;
+}
+
 void D3D12Device::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
   if (m_current_texture_buffer == buffer)
@@ -2565,7 +2576,7 @@ void D3D12Device::PreDispatchCheck()
       }
     }
     else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_TEXTURE_BUFFER |
-                      DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
+                      DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS | DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER))
     {
       if (!UpdateRootParameters(dirty))
       {
@@ -2664,16 +2675,18 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
 {
   ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
 
-  static_assert(layout == GPUPipeline::Layout::SingleTextureAndUBO ||
-                layout == GPUPipeline::Layout::SingleTextureAndPushConstants ||
-                layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
-                layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
-                layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
+  static_assert(
+    layout == GPUPipeline::Layout::SingleTextureAndUBO ||
+    layout == GPUPipeline::Layout::SingleTextureAndPushConstants ||
+    layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
+    layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
+    (layout == GPUPipeline::Layout::ComputeImageOutput || layout == GPUPipeline::Layout::ComputeBufferOutput));
 
   constexpr bool is_compute = IsComputeLayout(layout);
-  constexpr bool has_ubo = (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
-                            layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
-                            layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO);
+  constexpr bool has_ubo =
+    (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
+     layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
+     (layout == GPUPipeline::Layout::ComputeImageOutput || layout == GPUPipeline::Layout::ComputeBufferOutput));
 
   if constexpr (has_ubo)
   {
@@ -2739,7 +2752,7 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
     }
   }
 
-  if constexpr (is_compute)
+  if constexpr (layout == GPUPipeline::Layout::ComputeImageOutput)
   {
     if (dirty & DIRTY_FLAG_RT_UAVS)
     {
@@ -2766,6 +2779,20 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
         cmdlist->SetGraphicsRootDescriptorTable(base_param + 2, gpu_handle);
       else
         cmdlist->SetComputeRootDescriptorTable(base_param + 2, gpu_handle);
+    }
+  }
+
+  if constexpr (layout == GPUPipeline::Layout::ComputeBufferOutput)
+  {
+    if (dirty & DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER)
+    {
+      DebugAssert(m_compute_output_buffer);
+      D3D12DescriptorHandle descriptor;
+      if (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &descriptor))
+        return false;
+      m_device->CopyDescriptorsSimple(1, descriptor.cpu_handle, m_compute_output_buffer->GetUAVDescriptor(),
+                                      D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+      cmdlist->SetComputeRootDescriptorTable(base_param + 2, descriptor.gpu_handle);
     }
   }
 
@@ -2857,8 +2884,11 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
     case GPUPipeline::Layout::HWImageBatch:
       return UpdateParametersForHWBatchLayout(m_current_pipeline_layout, dirty);
 
-    case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
-      return UpdateParametersForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);
+    case GPUPipeline::Layout::ComputeImageOutput:
+      return UpdateParametersForLayout<GPUPipeline::Layout::ComputeImageOutput>(dirty);
+
+    case GPUPipeline::Layout::ComputeBufferOutput:
+      return UpdateParametersForLayout<GPUPipeline::Layout::ComputeBufferOutput>(dirty);
 
     default:
       UnreachableCode();
@@ -2910,4 +2940,6 @@ void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   const auto [groups_x, groups_y, groups_z] =
     GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
+  if (m_current_pipeline_layout == GPUPipeline::Layout::ComputeBufferOutput && m_compute_output_buffer)
+    m_compute_output_buffer->RecordShaderWrite();
 }

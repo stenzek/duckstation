@@ -1212,6 +1212,12 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   }
 }
 
+void D3D11Device::SetComputeOutputBuffer(GPUDownloadTexture* buffer)
+{
+  DebugAssert(!buffer || buffer->IsShaderWritable());
+  m_compute_output_buffer = static_cast<D3D11DownloadTexture*>(buffer);
+}
+
 void D3D11Device::SetTextureBuffer(GPUTextureBuffer* buffer)
 {
   ID3D11ShaderResourceView* B = buffer ? static_cast<D3D11TextureBuffer*>(buffer)->GetSRV() : nullptr;
@@ -1316,7 +1322,16 @@ void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   DebugAssert(m_current_compute_shader);
   s_stats.num_draws++;
 
+  const bool buffer_output = m_current_pipeline->GetLayout() == GPUPipeline::Layout::ComputeBufferOutput;
+  if (buffer_output)
+  {
+    DebugAssert(m_compute_output_buffer);
+    ID3D11UnorderedAccessView* view = m_compute_output_buffer->GetUAV();
+    m_context->CSSetUnorderedAccessViews(0, 1, &view, nullptr);
+  }
   const auto [groups_x, groups_y, groups_z] =
     GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   m_context->Dispatch(groups_x, groups_y, groups_z);
+  if (buffer_output)
+    m_compute_output_buffer->RecordShaderWrite(threads_y);
 }

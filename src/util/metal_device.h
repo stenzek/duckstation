@@ -85,6 +85,7 @@ public:
 
   ALWAYS_INLINE bool IsRenderPipeline() const { return !m_compute; }
   ALWAYS_INLINE bool IsComputePipeline() const { return m_compute; }
+  ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
   ALWAYS_INLINE id<MTLRenderPipelineState> GetRenderPipelineState() const
   {
     return (id<MTLRenderPipelineState>)m_pipeline;
@@ -103,12 +104,13 @@ public:
 #endif
 
 private:
-  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, MTLCullMode cull_mode,
+  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, bool compute, Layout layout, MTLCullMode cull_mode,
                 MTLPrimitiveType primitive, u32 blend_constants);
 
   id m_pipeline;
   id<MTLDepthStencilState> m_depth;
   bool m_compute;
+  Layout m_layout;
   u8 m_cull_mode;
   u8 m_primitive;
   u32 m_blend_constants;
@@ -164,10 +166,15 @@ public:
   ~MetalDownloadTexture() override;
 
   static std::unique_ptr<MetalDownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, void* memory,
-                                                      size_t memory_size, u32 memory_stride, Error* error);
+                                                      size_t memory_size, u32 memory_stride, bool shader_write,
+                                                      Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  ALWAYS_INLINE id<MTLBuffer> GetBuffer() const { return m_buffer; }
+  ALWAYS_INLINE size_t GetBufferOffset() const { return m_buffer_offset; }
+  void RecordShaderWrite();
 
   bool Map(u32 x, u32 y, u32 width, u32 height) override;
   void Unmap() override;
@@ -180,7 +187,7 @@ public:
 
 private:
   MetalDownloadTexture(u32 width, u32 height, GPUTextureFormat format, u8* import_buffer, size_t buffer_offset,
-                       id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch);
+                       id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch, bool shader_write);
 
   size_t m_buffer_offset = 0;
   id<MTLBuffer> m_buffer = nil;
@@ -259,10 +266,10 @@ public:
                                                         Error* error = nullptr) override;
 
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             void* memory, size_t memory_size, u32 memory_stride,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTextureFormat format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -301,6 +308,7 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(GPUTextureBuffer* buffer) override;
+  void SetComputeOutputBuffer(GPUDownloadTexture* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -356,6 +364,7 @@ private:
   static constexpr u32 COMPUTE_BINDING_UBO = 0;
   static constexpr u32 COMPUTE_BINDING_SSBO = 1;
   static constexpr u32 COMPUTE_BINDING_PUSH_CONSTANTS = 2;
+  static constexpr u32 COMPUTE_BINDING_OUTPUT_BUFFER = 3;
 
   using DepthStateMap = std::unordered_map<u8, id<MTLDepthStencilState>>;
 
@@ -377,7 +386,8 @@ private:
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                  std::string_view entry_point, Error* error);
-  std::unique_ptr<GPUPipeline> CreateComputePipeline(id<MTLFunction> function, Error* error);
+  std::unique_ptr<GPUPipeline> CreateComputePipeline(id<MTLFunction> function, GPUPipeline::Layout layout,
+                                                     Error* error);
   std::unique_ptr<GPUPipeline> CreateDepthResolvePipeline(GPUTextureFormat dst_format, Error* error);
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
   ClearPipelineConfig GetCurrentClearPipelineConfig() const;
@@ -458,6 +468,7 @@ private:
 
   std::array<id<MTLTexture>, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<id<MTLSamplerState>, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
+  MetalDownloadTexture* m_compute_output_buffer = nullptr;
   id<MTLBuffer> m_current_ssbo = nil;
   GSVector4i m_current_viewport = {};
   GSVector4i m_current_scissor = {};

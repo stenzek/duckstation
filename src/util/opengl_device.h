@@ -60,10 +60,10 @@ public:
                                                         Error* error = nullptr) override;
 
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             void* memory, size_t memory_size, u32 memory_stride,
-                                                            Error* error = nullptr) override;
+                                                            bool shader_write, Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTextureFormat format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,

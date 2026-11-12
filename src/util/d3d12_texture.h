@@ -189,10 +189,14 @@ public:
 
   ~D3D12DownloadTexture() override;
 
-  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, Error* error);
+  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, bool shader_write,
+                                                      Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  ALWAYS_INLINE D3D12_CPU_DESCRIPTOR_HANDLE GetUAVDescriptor() const { return m_uav_descriptor; }
+  void RecordShaderWrite();
 
   bool Map(u32 x, u32 y, u32 width, u32 height) override;
   void Unmap() override;
@@ -205,10 +209,11 @@ public:
 
 private:
   D3D12DownloadTexture(u32 width, u32 height, GPUTextureFormat format, ComPtr<D3D12MA::Allocation> allocation,
-                       ComPtr<ID3D12Resource> buffer);
+                       ComPtr<ID3D12Resource> buffer, const D3D12DescriptorHandle& uav_descriptor, u32 pitch);
 
   ComPtr<D3D12MA::Allocation> m_allocation;
   ComPtr<ID3D12Resource> m_buffer;
 
+  D3D12DescriptorHandle m_uav_descriptor;
   u64 m_copy_fence_value = 0;
 };

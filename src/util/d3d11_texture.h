@@ -136,10 +136,14 @@ class D3D11DownloadTexture final : public GPUDownloadTexture
 public:
   ~D3D11DownloadTexture() override;
 
-  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, Error* error);
+  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, bool shader_write,
+                                                      Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  ALWAYS_INLINE ID3D11UnorderedAccessView* GetUAV() const { return m_uav.Get(); }
+  void RecordShaderWrite(u32 rows);
 
   bool Map(u32 x, u32 y, u32 width, u32 height) override;
   void Unmap() override;
@@ -151,7 +155,13 @@ public:
 #endif
 
 private:
-  D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height, GPUTextureFormat format);
+  D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, Microsoft::WRL::ComPtr<ID3D11Buffer> write_buffer,
+                       Microsoft::WRL::ComPtr<ID3D11Buffer> read_buffer,
+                       Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> uav, u32 width, u32 height,
+                       GPUTextureFormat format, u32 pitch);
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
+  Microsoft::WRL::ComPtr<ID3D11Buffer> m_write_buffer;
+  Microsoft::WRL::ComPtr<ID3D11Buffer> m_read_buffer;
+  Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_uav;
 };

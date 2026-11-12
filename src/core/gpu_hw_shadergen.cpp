@@ -3597,20 +3597,12 @@ std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader() const
   return std::move(ss).str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const
+void GPU_HW_ShaderGen::WriteVRAMReadFunctions(std::stringstream& ss, u32 resolution_scale, u32 multisamples) const
 {
   const bool msaa = (multisamples > 1);
-
-  std::stringstream ss;
-  WriteHeader(ss);
-  WriteColorConversionFunctions(ss);
-
   DefineMacro(ss, "MULTISAMPLING", msaa);
   ss << "CONSTANT uint RESOLUTION_SCALE = " << resolution_scale << "u;\n";
   ss << "CONSTANT uint MULTISAMPLES = " << multisamples << "u;\n";
-
-  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
-  DeclareTexture(ss, "samp0", 0, msaa);
 
   ss << R"(
 float4 LoadVRAM(int2 coords)
@@ -3634,15 +3626,62 @@ uint SampleVRAM(uint2 coords)
   // Box filter for downsampling.
   float4 value = float4(0.0, 0.0, 0.0, 0.0);
   uint2 base_coords = coords * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  for (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
+  FOR_LOOP (uint offset_x = 0u; offset_x < RESOLUTION_SCALE; offset_x++)
   {
-    for (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
+    FOR_LOOP (uint offset_y = 0u; offset_y < RESOLUTION_SCALE; offset_y++)
       value += LoadVRAM(int2(base_coords + uint2(offset_x, offset_y)));
   }
   value /= float(RESOLUTION_SCALE * RESOLUTION_SCALE);
   return RGBA8ToRGBA5551(value);
 }
 )";
+}
+
+std::string GPU_HW_ShaderGen::GenerateVRAMReadComputeShader(u32 resolution_scale, u32 multisamples) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteColorConversionFunctions(ss);
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size", "uint u_output_offset", "uint u_output_stride"},
+                       false);
+  DeclareTexture(ss, "samp0", 0, multisamples > 1);
+  WriteVRAMReadFunctions(ss, resolution_scale, multisamples);
+  DeclareComputeOutputBuffer(ss, "output_buffer");
+  if (m_glsl)
+    ss << "shared uint s_right[32];\n#define GROUP_BARRIER barrier()\n";
+  else
+    ss << "groupshared uint s_right[32];\n#define GROUP_BARRIER GroupMemoryBarrierWithGroupSync()\n";
+  DeclareComputeEntryPoint(ss, 8, 8, 1);
+  ss << R"(
+{
+  // One pixel per thread, odd lanes hand their pixel to the even lane to pack. Sampling two pixels per thread
+  // doubles the stride between lanes' fetches, which is much slower on some GPUs (35x on NVIDIA at 12x/8xMSAA).
+  uint2 pos = GLOBAL_ID.xy;
+  bool in_bounds = (pos.x < u_size.x && pos.y < u_size.y);
+  uint pair_index = ((pos.y & 7u) * 8u + (pos.x & 7u)) >> 1;
+  uint value = 0u;
+  if (in_bounds)
+    value = SampleVRAM(u_base_coords + pos);
+  if ((pos.x & 1u) != 0u)
+    s_right[pair_index] = value;
+  GROUP_BARRIER;
+  if (in_bounds && (pos.x & 1u) == 0u)
+    output_buffer[u_output_offset + pos.y * u_output_stride + (pos.x >> 1)] = value | (s_right[pair_index] << 16u);
+})";
+  return std::move(ss).str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const
+{
+  const bool msaa = (multisamples > 1);
+
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteColorConversionFunctions(ss);
+
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
+  DeclareTexture(ss, "samp0", 0, msaa);
+  WriteVRAMReadFunctions(ss, resolution_scale, multisamples);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
   ss << R"(
