@@ -175,7 +175,6 @@ private:
 
   bool CreatePersistentBuffers(Error* error);
   bool CreateBuffers(Error* error);
-  void ClearFramebuffer();
   void DestroyBuffers();
 
   bool CompileCommonShaders(Error* error);

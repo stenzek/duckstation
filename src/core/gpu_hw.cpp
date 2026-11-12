@@ -369,7 +369,22 @@ void GPU_HW::ClearVRAM()
 
   m_batch = {};
   m_current_depth = 1;
-  ClearFramebuffer();
+  m_last_depth_z = 1.0f;
+
+  g_gpu_device->ClearRenderTarget(m_vram_texture.get(), 0);
+  if (m_vram_depth_texture)
+  {
+    if (m_use_rov_for_shader_blend)
+      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0);
+    else
+      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 0.0f);
+  }
+  if (m_vram_depth_copy_texture)
+    g_gpu_device->ClearRenderTarget(m_vram_depth_copy_texture.get(), 0);
+  m_depth_dirty_rect = INVALID_RECT;
+  SetFullVRAMDirtyRectangle();
+  if (m_use_texture_cache)
+    GPUTextureCache::Invalidate();
 }
 
 void GPU_HW::ClearBatch()
@@ -1070,26 +1085,6 @@ bool GPU_HW::CreateBuffers(Error* error)
 
   SetFullVRAMDirtyRectangle();
   return true;
-}
-
-void GPU_HW::ClearFramebuffer()
-{
-  g_gpu_device->ClearRenderTarget(m_vram_texture.get(), 0);
-  if (m_vram_depth_texture)
-  {
-    if (m_use_rov_for_shader_blend)
-      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0);
-    else
-      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 0.0f);
-  }
-  if (m_vram_depth_copy_texture)
-    g_gpu_device->ClearRenderTarget(m_vram_depth_copy_texture.get(), 0);
-  m_depth_dirty_rect = INVALID_RECT;
-  ClearVRAMDirtyRectangle();
-  if (m_use_texture_cache)
-    GPUTextureCache::Invalidate();
-  m_last_depth_z = 1.0f;
-  m_current_depth = 1;
 }
 
 void GPU_HW::BindVRAMRenderTarget()
