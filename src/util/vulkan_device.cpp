@@ -3555,12 +3555,20 @@ void VulkanDevice::PreDrawCheck()
 
 void VulkanDevice::PreDispatchCheck()
 {
+  if (InRenderPass())
+    EndRenderPass();
+
   // All textures should be in shader read only optimal already, but just in case..
   const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
   for (u32 i = 0; i < num_textures; i++)
   {
     if (m_current_textures[i])
+    {
+      if (m_current_textures[i]->GetState() == GPUTexture::State::Cleared)
+        m_current_textures[i]->CommitClear(m_current_command_buffer);
       m_current_textures[i]->TransitionToLayout(m_current_command_buffer, VulkanTexture::Layout::ShaderReadOnly);
+      m_current_textures[i]->SetUseFenceCounter(GetCurrentFenceCounter());
+    }
   }
 
   // Binding as image, but we still need to clear it.
@@ -3987,8 +3995,7 @@ void VulkanDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 gro
   PreDispatchCheck();
   s_stats.num_draws++;
 
-  const u32 groups_x = threads_x / group_size_x;
-  const u32 groups_y = threads_y / group_size_y;
-  const u32 groups_z = threads_z / group_size_z;
+  const auto [groups_x, groups_y, groups_z] =
+    GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   vkCmdDispatch(m_current_command_buffer, groups_x, groups_y, groups_z);
 }

@@ -2518,6 +2518,7 @@ void D3D12Device::PreDispatchCheck()
   {
     if (m_current_textures[i])
     {
+      m_current_textures[i]->CommitClear(cmdlist);
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
       m_current_textures[i]->SetUseFenceValue(GetCurrentFenceValue());
     }
@@ -2906,8 +2907,7 @@ void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   PreDispatchCheck();
   s_stats.num_draws++;
 
-  const u32 groups_x = threads_x / group_size_x;
-  const u32 groups_y = threads_y / group_size_y;
-  const u32 groups_z = threads_z / group_size_z;
+  const auto [groups_x, groups_y, groups_z] =
+    GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
   GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
 }
