@@ -7738,6 +7738,8 @@ SCES-01564:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -7756,6 +7758,8 @@ SCES-01564:
 SCED-02133:
   name: "Ape Escape (Demo)"
   saveName: "Ape Escape (Europe) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     genre: "** DEMO **"
 SCES-02028:
@@ -7764,6 +7768,8 @@ SCES-02028:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -7785,6 +7791,8 @@ SCES-02029:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -7806,6 +7814,8 @@ SCES-02030:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -7830,6 +7840,8 @@ SCUS-94423:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -7847,11 +7859,15 @@ SCUS-94423:
 SCUS-94470:
   name: "Ape Escape (Demo 1) (EDC)"
   saveName: "Ape Escape (USA) (Demo 1) (EDC)"
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     genre: "** DEMO **"
 SCUS-94489:
   name: "Ape Escape (Demo 2)"
   saveName: "Ape Escape (USA) (Demo 2)"
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     genre: "** DEMO **"
   compatibility:
@@ -7863,6 +7879,8 @@ SCES-02031:
   controllers:
     - AnalogController
     - AnalogJoystick
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -149688,6 +149706,8 @@ SCPS-45411:
   name: "Saru! Get You!"
   controllers:
     - AnalogController
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -149708,6 +149728,8 @@ SCPS-10091:
   saveName: "Saru! Get You! (Japan)"
   controllers:
     - AnalogController
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -149728,6 +149750,8 @@ PAPX-90079:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   codes:
     - PAPX-90079
     - SCPS-10084
@@ -149751,6 +149775,8 @@ SCPS-91196:
   saveName: "Saru! Get You! (Japan) (Rev 1)"
   controllers:
     - AnalogController
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -149769,6 +149795,8 @@ SCPS-91331:
   name: "Saru! Get You! [PSOne Books]"
   controllers:
     - AnalogController
+  traits:
+    - ForcePGXPCPUMode # Screen-space subdivision uses MVMVA and CPU arithmetic.
   metadata:
     publisher: "Sony"
     developer: "Sony"
