@@ -26,6 +26,9 @@
 
 #include "fmt/format.h"
 
+#include "IconsEmoji.h"
+#include "IconsFontAwesome.h"
+
 #include <array>
 #include <memory>
 #include <vector>
@@ -988,71 +991,82 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
 
 void DMA::DrawDebugStateWindow(float scale)
 {
-  static constexpr std::array column_names = {"#",    "Req",    "Addr",     "Direction", "Chopping", "Mode",
-                                              "Busy", "Enable", "Priority", "IRQ",       "Flag"};
-  static constexpr std::array sync_mode_names = {"Manual", "Request", "LinkedList", "Reserved"};
+  static constexpr std::array column_names = {"Channel", "Request",      "Address",    "Direction",
+                                              "Step",    "Chop DMA/CPU", "Mode",       "State",
+                                              "Enabled", "Priority",     "IRQ enable", "IRQ flag"};
+  static constexpr std::array sync_mode_names = {"Manual", "Request", "Linked list", "Reserved"};
 
-  ImGui::Columns(static_cast<int>(column_names.size()));
-  ImGui::SetColumnWidth(0, 80.0f * scale);
-  ImGui::SetColumnWidth(1, 50.0f * scale);
-  ImGui::SetColumnWidth(2, 80.0f * scale);
-  ImGui::SetColumnWidth(3, 110.0f * scale);
-  ImGui::SetColumnWidth(4, 100.0f * scale);
-  ImGui::SetColumnWidth(5, 80.0f * scale);
-  ImGui::SetColumnWidth(6, 80.0f * scale);
-  ImGui::SetColumnWidth(7, 80.0f * scale);
-  ImGui::SetColumnWidth(8, 60.0f * scale);
-  ImGui::SetColumnWidth(9, 80.0f * scale);
-  ImGui::SetColumnWidth(10, 80.0f * scale);
+  const float left = ImGui::GetCursorPosX();
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  ImGui::SetCursorPosX(left + ImGui::GetContentRegionAvail().x - button_width);
 
-  for (const char* title : column_names)
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+
+  ImGui::SameLine(left);
+  ImGui::AlignTextToFramePadding();
+  ImGui::Text("IRQ %s " ICON_EMOJI_MIDDLE_DOT " Master IRQ %s " ICON_EMOJI_MIDDLE_DOT " Bus error %s",
+              s_state.DICR.master_flag ? "asserted" : "clear", s_state.DICR.master_enable ? "enabled" : "disabled",
+              s_state.DICR.bus_error ? "asserted" : "clear");
+  ImGui::Spacing();
+
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(8.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+  if (ImGui::BeginTable("channels", static_cast<int>(column_names.size()),
+                        ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_SizingStretchProp))
   {
-    ImGui::TextUnformatted(title);
-    ImGui::NextColumn();
+    for (const char* title : column_names)
+      ImGui::TableSetupColumn(title);
+    ImGui::TableHeadersRow();
+
+    for (u32 i = 0; i < NUM_CHANNELS; i++)
+    {
+      const ChannelState& cs = s_state.channels[i];
+      const Channel channel = static_cast<Channel>(i);
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+      ImGui::Text("%u %s", i, s_channel_names[i]);
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.request ? "Asserted" : "Clear");
+      ImGui::TableNextColumn();
+      ImGui::Text("%08X", cs.base_address);
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.channel_control.copy_to_device ? "From RAM" : "To RAM");
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.channel_control.address_step_reverse ? "-4" : "+4");
+      ImGui::TableNextColumn();
+      if (cs.channel_control.chopping_enable)
+      {
+        ImGui::Text("%u / %u cycles", 1u << cs.channel_control.chopping_dma_window_size.GetValue(),
+                    1u << cs.channel_control.chopping_cpu_window_size.GetValue());
+      }
+      else
+      {
+        ImGui::TextUnformatted("Disabled");
+      }
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(sync_mode_names[static_cast<u8>(cs.channel_control.sync_mode.GetValue())]);
+      ImGui::TableNextColumn();
+      ImGui::TextWrapped("%s%s", cs.channel_control.enable_busy ? "Busy" : "Idle",
+                         cs.channel_control.start_trigger ? " (trigger)" : "");
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(s_state.DPCR.GetMasterEnable(channel) ? "Enabled" : "Disabled");
+      ImGui::TableNextColumn();
+      ImGui::Text("%u", s_state.DPCR.GetPriority(channel));
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(s_state.DICR.GetIRQEnabled(channel) ? "Enabled" : "Disabled");
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(s_state.DICR.GetIRQFlag(channel) ? "Asserted" : "Clear");
+    }
+    ImGui::EndTable();
   }
 
-  const ImVec4 active(1.0f, 1.0f, 1.0f, 1.0f);
-  const ImVec4 inactive(0.5f, 0.5f, 0.5f, 1.0f);
-
-  for (u32 i = 0; i < NUM_CHANNELS; i++)
-  {
-    const ChannelState& cs = s_state.channels[i];
-
-    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%u[%s]", i, s_channel_names[i]);
-    ImGui::NextColumn();
-    ImGui::TextColored(cs.request ? active : inactive, cs.request ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(cs.request ? active : inactive, "%08X", cs.base_address);
-    ImGui::NextColumn();
-    ImGui::Text("%s%s", cs.channel_control.copy_to_device ? "FromRAM" : "ToRAM",
-                cs.channel_control.address_step_reverse ? " Addr+" : " Addr-");
-    ImGui::NextColumn();
-    ImGui::TextColored(cs.channel_control.chopping_enable ? active : inactive, "%s/%u/%u",
-                       cs.channel_control.chopping_enable ? "Yes" : "No",
-                       cs.channel_control.chopping_cpu_window_size.GetValue(),
-                       cs.channel_control.chopping_dma_window_size.GetValue());
-    ImGui::NextColumn();
-    ImGui::Text("%s", sync_mode_names[static_cast<u8>(cs.channel_control.sync_mode.GetValue())]);
-    ImGui::NextColumn();
-    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%s%s",
-                       cs.channel_control.enable_busy ? "Busy" : "Idle",
-                       cs.channel_control.start_trigger ? " (Trigger)" : "");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.DPCR.GetMasterEnable(static_cast<Channel>(i)) ? active : inactive,
-                       s_state.DPCR.GetMasterEnable(static_cast<Channel>(i)) ? "Enabled" : "Disabled");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.DPCR.GetMasterEnable(static_cast<Channel>(i)) ? active : inactive, "%u",
-                       s_state.DPCR.GetPriority(static_cast<Channel>(i)));
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.DICR.GetIRQEnabled(static_cast<Channel>(i)) ? active : inactive,
-                       s_state.DICR.GetIRQEnabled(static_cast<Channel>(i)) ? "Enabled" : "Disabled");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.DICR.GetIRQFlag(static_cast<Channel>(i)) ? active : inactive,
-                       s_state.DICR.GetIRQFlag(static_cast<Channel>(i)) ? "IRQ" : "");
-    ImGui::NextColumn();
-  }
-
-  ImGui::Columns(1);
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+  if (copy_state)
+    ImGui::LogFinish();
 }
 
 // Instantiate channel functions.

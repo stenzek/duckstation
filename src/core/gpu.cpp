@@ -13,6 +13,7 @@
 #include "gpu_hw_texture_cache.h"
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
+#include "imgui_overlays.h"
 #include "interrupt_controller.h"
 #include "performance_counters.h"
 #include "settings.h"
@@ -46,6 +47,7 @@
 #include "common/string_util.h"
 
 #include "IconsEmoji.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
@@ -2678,7 +2680,10 @@ void GPU::UpdateDisplay(bool submit_frame)
   submit_frame = (submit_frame && System::GetFramePresentationParameters(&frame));
 
   GPUBackendUpdateDisplayCommand* cmd = GPUBackend::NewUpdateDisplayCommand();
-  cmd->gpu_busy_pct = g_settings.display_show_gpu_stats ? UpdateOrGetGPUBusyPct() : 0;
+  cmd->gpu_busy_pct =
+    (g_settings.display_show_gpu_stats || ImGuiManager::IsGPUDebugWindowVisible(g_settings.debug_window_visibility)) ?
+      UpdateOrGetGPUBusyPct() :
+      0;
   if (!g_settings.gpu_show_vram) [[likely]]
   {
     FillUpdateDisplayCommand(cmd);
@@ -4127,58 +4132,234 @@ void GPU::HandleCopyRectangleVRAMToVRAMCommand()
 
 void GPU::DrawDebugStateWindow(float scale)
 {
-  if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    static constexpr std::array<const char*, 5> state_strings = {
-      {"Idle", "Reading VRAM", "Writing VRAM", "Drawing Polyline"}};
+  static constexpr const CRTCState& cs = s_locals.crtc_state;
+  static constexpr std::array<const char*, 4> state_strings = {
+    {"Idle", "Reading VRAM", "Writing VRAM", "Drawing Polyline"}};
+  const char* clock = s_locals.console_is_pal ? (s_locals.GPUSTAT.pal_mode ? "PAL-on-PAL" : "NTSC-on-PAL") :
+                                                (s_locals.GPUSTAT.pal_mode ? "PAL-on-NTSC" : "NTSC-on-NTSC");
 
-    ImGui::Text("State: %s", state_strings[static_cast<u8>(s_locals.blitter_state)]);
-    ImGui::Text("Dither: %s", s_locals.GPUSTAT.dither_enable ? "Enabled" : "Disabled");
-    ImGui::Text("Draw To Displayed Field: %s", s_locals.GPUSTAT.draw_to_displayed_field ? "Enabled" : "Disabled");
-    ImGui::Text("Draw Set Mask Bit: %s", s_locals.GPUSTAT.set_mask_while_drawing ? "Yes" : "No");
-    ImGui::Text("Draw To Masked Pixels: %s", s_locals.GPUSTAT.check_mask_before_draw ? "Yes" : "No");
-    ImGui::Text("Reverse Flag: %s", s_locals.GPUSTAT.reverse_flag ? "Yes" : "No");
-    ImGui::Text("Texture Page Upper Bank: %s", s_locals.GPUSTAT.texture_page_y_base_2 ? "Yes" : "No");
-    ImGui::Text("PAL Mode: %s", s_locals.GPUSTAT.pal_mode ? "Yes" : "No");
-    ImGui::Text("Interrupt Request: %s", s_locals.GPUSTAT.interrupt_request ? "Yes" : "No");
-    ImGui::Text("DMA Request: %s", s_locals.GPUSTAT.dma_data_request ? "Yes" : "No");
+  const char* standard = s_locals.GPUSTAT.pal_mode ? "PAL" : "NTSC";
+  const char* scan_mode = s_locals.GPUSTAT.vertical_interlace ? (s_locals.GPUSTAT.pal_mode ? "576i" : "480i") :
+                                                                (s_locals.GPUSTAT.pal_mode ? "288p" : "240p");
+
+  const float left = ImGui::GetCursorPosX();
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  ImGui::SetCursorPosX(left + ImGui::GetContentRegionAvail().x - button_width);
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+
+  ImGui::SameLine(left);
+  ImGui::PushFont(nullptr, std::ceil(18.0f * scale), 0.0f);
+  ImGui::AlignTextToFramePadding();
+  ImGui::TextWrapped("%s %s " ICON_EMOJI_MIDDLE_DOT " %u x %u " ICON_EMOJI_MIDDLE_DOT " %u-bit " ICON_EMOJI_MIDDLE_DOT
+                     " %.3f Hz " ICON_EMOJI_MIDDLE_DOT " %u%% Usage",
+                     standard, scan_mode, cs.display_width, cs.display_height,
+                     s_locals.GPUSTAT.display_area_color_depth_24 ? 24 : 15, ComputeVerticalFrequency(),
+                     s_locals.last_gpu_busy_pct);
+  ImGui::PopFont();
+  ImGui::Spacing();
+
+  constexpr ImGuiTableFlags table_flags =
+    ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_RowBg;
+  static constexpr auto label = [](const char* text) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    color.w *= 0.7f;
+    ImGui::TextColored(color, "%s", text);
+    ImGui::TableNextColumn();
+  };
+
+  static constexpr auto flag = [](const char* text, bool value) {
+    label(text);
+    ImGui::TextUnformatted(value ? "Enabled" : "Disabled");
+  };
+
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+  if (!ImGui::BeginTable("layout", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV))
+  {
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    if (copy_state)
+      ImGui::LogFinish();
+
+    return;
   }
 
-  if (ImGui::CollapsingHeader("CRTC", ImGuiTreeNodeFlags_DefaultOpen))
+  ImGui::TableNextRow();
+  ImGui::TableSetColumnIndex(0);
+  ImGui::SeparatorText("Drawing");
+  if (ImGui::BeginTable("drawing", 2, table_flags))
   {
-    const auto& cs = s_locals.crtc_state;
-    ImGui::Text("Clock: %s", (s_locals.console_is_pal ? (s_locals.GPUSTAT.pal_mode ? "PAL-on-PAL" : "NTSC-on-PAL") :
-                                                        (s_locals.GPUSTAT.pal_mode ? "PAL-on-NTSC" : "NTSC-on-NTSC")));
-    ImGui::Text("Horizontal Frequency: %.3f KHz", ComputeHorizontalFrequency() / 1000.0f);
-    ImGui::Text("Vertical Frequency: %.3f Hz", ComputeVerticalFrequency());
-    ImGui::Text("Dot Clock Divider: %u", cs.dot_clock_divider);
-    ImGui::Text("Vertical Interlace: %s (%s field)", s_locals.GPUSTAT.vertical_interlace ? "Yes" : "No",
-                cs.interlaced_field ? "odd" : "even");
-    ImGui::Text("Current Scanline: %u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
-    ImGui::Text("Display Disable: %s", s_locals.GPUSTAT.display_disable ? "Yes" : "No");
-    ImGui::Text("Displaying Odd Lines: %s", cs.active_line_lsb ? "Yes" : "No");
-    ImGui::Text("Color Depth: %u-bit", s_locals.GPUSTAT.display_area_color_depth_24 ? 24 : 15);
-    ImGui::Text("Start Offset in VRAM: (%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
-    ImGui::Text("Display Total: %u (%u) horizontal, %u vertical", cs.horizontal_total,
-                cs.horizontal_total / cs.dot_clock_divider, cs.vertical_total);
-    ImGui::Text("Configured Display Range: %u-%u (%u-%u), %u-%u", cs.regs.X1.GetValue(), cs.regs.X2.GetValue(),
-                cs.regs.X1.GetValue() / cs.dot_clock_divider, cs.regs.X2.GetValue() / cs.dot_clock_divider,
-                cs.regs.Y1.GetValue(), cs.regs.Y2.GetValue());
-    ImGui::Text("Output Display Range: %u-%u (%u-%u), %u-%u", cs.horizontal_display_start, cs.horizontal_display_end,
-                cs.horizontal_display_start / cs.dot_clock_divider, cs.horizontal_display_end / cs.dot_clock_divider,
-                cs.vertical_display_start, cs.vertical_display_end);
-    ImGui::Text("Cropping: %s", Settings::GetDisplayCropModeName(g_settings.display_crop_mode));
-    ImGui::Text("Visible Display Range: %u-%u (%u-%u), %u-%u", cs.horizontal_visible_start, cs.horizontal_visible_end,
-                cs.horizontal_visible_start / cs.dot_clock_divider, cs.horizontal_visible_end / cs.dot_clock_divider,
-                cs.vertical_visible_start, cs.vertical_visible_end);
-    ImGui::Text("Display Resolution: %ux%u", cs.display_width, cs.display_height);
-    ImGui::Text("Display Origin: %u, %u", cs.display_origin_left, cs.display_origin_top);
-    ImGui::Text("Displayed/Visible VRAM Portion: %ux%u @ (%u, %u)", cs.display_vram_width, cs.display_vram_height,
-                cs.display_vram_left, cs.display_vram_top);
-    ImGui::Text("Padding: Left=%d, Top=%d, Right=%d, Bottom=%d", cs.display_origin_left, cs.display_origin_top,
+    label("Blitter state");
+    ImGui::TextUnformatted(state_strings[static_cast<u8>(s_locals.blitter_state)]);
+    label("Drawing area (inclusive)");
+    ImGui::Text("(%u, %u) - (%u, %u)", s_locals.drawing_area.left, s_locals.drawing_area.top,
+                s_locals.drawing_area.right, s_locals.drawing_area.bottom);
+    label("Drawing offset");
+    ImGui::Text("(%d, %d)", s_locals.drawing_offset.x, s_locals.drawing_offset.y);
+    label("Semi-transparency");
+    static constexpr std::array<const char*, 4> transparency_modes = {{"B/2 + F/2", "B + F", "B - F", "B + F/4"}};
+    ImGui::TextUnformatted(transparency_modes[static_cast<u8>(s_locals.draw_mode_reg.transparency_mode.GetValue())]);
+    flag("Dithering", s_locals.GPUSTAT.dither_enable);
+    flag("Draw to displayed field", s_locals.GPUSTAT.draw_to_displayed_field);
+    flag("Set mask bit", s_locals.GPUSTAT.set_mask_while_drawing);
+    flag("Check mask bit", s_locals.GPUSTAT.check_mask_before_draw);
+    flag("Reverse flag", s_locals.GPUSTAT.reverse_flag);
+    ImGui::EndTable();
+  }
+
+  ImGui::SeparatorText("Texture");
+  if (ImGui::BeginTable("texture", 2, table_flags))
+  {
+    label("Texture page");
+    ImGui::Text("(%u, %u)", s_locals.draw_mode_reg.GetTexturePageBaseX(), s_locals.draw_mode_reg.GetTexturePageBaseY());
+    flag("Texture page upper bank", s_locals.GPUSTAT.texture_page_y_base_2);
+    label("Texture format");
+    static constexpr std::array<const char*, 4> texture_modes = {
+      {"4-bit indexed", "8-bit indexed", "16-bit direct", "Reserved (16-bit)"}};
+    ImGui::TextUnformatted(texture_modes[static_cast<u8>(s_locals.draw_mode_reg.texture_mode.GetValue())]);
+    label("CLUT");
+    ImGui::Text("(%u, %u)", s_locals.texture_palette_reg.GetXBase(), s_locals.texture_palette_reg.GetYBase());
+    label("Window AND (X / Y)");
+    ImGui::Text("0x%02X / 0x%02X", s_locals.texture_window.and_x, s_locals.texture_window.and_y);
+    label("Window OR (X / Y)");
+    ImGui::Text("0x%02X / 0x%02X", s_locals.texture_window.or_x, s_locals.texture_window.or_y);
+    ImGui::EndTable();
+  }
+
+  ImGui::SeparatorText("Timing");
+  if (ImGui::BeginTable("timing", 2, table_flags))
+  {
+    label("Clock");
+    ImGui::TextUnformatted(clock);
+    flag("PAL mode", s_locals.GPUSTAT.pal_mode);
+    label("Horizontal frequency");
+    ImGui::Text("%.3f kHz", ComputeHorizontalFrequency() / 1000.0f);
+    label("Vertical frequency");
+    ImGui::Text("%.3f Hz", ComputeVerticalFrequency());
+    label("Dot clock divider");
+    ImGui::Text("%u", cs.dot_clock_divider);
+    label("Horizontal total");
+    ImGui::Text("%u ticks (%u dots)", cs.horizontal_total, cs.horizontal_total / cs.dot_clock_divider);
+    label("Vertical total");
+    ImGui::Text("%u lines", cs.vertical_total);
+    flag("Interlace", s_locals.GPUSTAT.vertical_interlace);
+    label("Current field");
+    ImGui::TextUnformatted(cs.interlaced_field ? "Odd" : "Even");
+    label("Current scanline");
+    ImGui::Text("%u (tick %u)", cs.current_scanline, cs.current_tick_in_scanline);
+    label("Displaying odd lines");
+    ImGui::TextUnformatted(cs.active_line_lsb ? "Yes" : "No");
+    ImGui::EndTable();
+  }
+
+  ImGui::TableSetColumnIndex(1);
+  ImGui::SeparatorText("Signals");
+  if (ImGui::BeginTable("signals", 2, table_flags))
+  {
+    label("Interrupt request");
+    ImGui::TextUnformatted(s_locals.GPUSTAT.interrupt_request ? "Asserted" : "Clear");
+    label("DMA request");
+    ImGui::TextUnformatted(s_locals.GPUSTAT.dma_data_request ? "Asserted" : "Clear");
+    ImGui::EndTable();
+  }
+
+  ImGui::SeparatorText("Display");
+  if (ImGui::BeginTable("display", 2, table_flags))
+  {
+    flag("Display output", !s_locals.GPUSTAT.display_disable);
+    label("Color depth");
+    ImGui::Text("%u-bit", s_locals.GPUSTAT.display_area_color_depth_24 ? 24 : 15);
+    label("VRAM start");
+    ImGui::Text("(%u, %u)", cs.regs.X.GetValue(), cs.regs.Y.GetValue());
+    label("Resolution");
+    ImGui::Text("%u x %u", cs.display_width, cs.display_height);
+    label("Cropping");
+    ImGui::TextUnformatted(Settings::GetDisplayCropModeName(g_settings.display_crop_mode));
+    label("Display origin");
+    ImGui::Text("(%u, %u)", cs.display_origin_left, cs.display_origin_top);
+    label("Visible VRAM portion");
+    ImGui::Text("%u x %u at (%u, %u)", cs.display_vram_width, cs.display_vram_height, cs.display_vram_left,
+                cs.display_vram_top);
+    label("Padding (L / T / R / B)");
+    ImGui::Text("%u / %u / %d / %d", cs.display_origin_left, cs.display_origin_top,
                 cs.display_width - cs.display_vram_width - cs.display_origin_left,
                 cs.display_height - cs.display_vram_height - cs.display_origin_top);
+    ImGui::EndTable();
   }
+
+  const GSVector4i configured(cs.regs.X1.GetValue(), cs.regs.Y1.GetValue(), cs.regs.X2.GetValue(),
+                              cs.regs.Y2.GetValue());
+  const GSVector4i output(cs.horizontal_display_start, cs.vertical_display_start, cs.horizontal_display_end,
+                          cs.vertical_display_end);
+  const GSVector4i visible(cs.horizontal_visible_start, cs.vertical_visible_start, cs.horizontal_visible_end,
+                           cs.vertical_visible_end);
+  ImGui::SeparatorText("Display ranges");
+  if (ImGui::BeginTable("ranges", 4, table_flags))
+  {
+    ImGui::TableSetupColumn("Range");
+    ImGui::TableSetupColumn("H ticks");
+    ImGui::TableSetupColumn("H dots");
+    ImGui::TableSetupColumn("V lines");
+    ImGui::TableHeadersRow();
+    static constexpr auto range_row = [](const char* text, const GSVector4i& rect) {
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(text);
+      ImGui::TableNextColumn();
+      ImGui::Text("%d-%d", rect.x, rect.z);
+      ImGui::TableNextColumn();
+      ImGui::Text("%u-%u", rect.x / cs.dot_clock_divider, rect.z / cs.dot_clock_divider);
+      ImGui::TableNextColumn();
+      ImGui::Text("%d-%d", rect.y, rect.w);
+    };
+    range_row("Configured", configured);
+    range_row("Output", output);
+    range_row("Visible", visible);
+    ImGui::EndTable();
+  }
+  if (copy_state)
+    ImGui::LogFinish();
+
+  {
+    ImGui::Spacing();
+
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    const ImVec2 size(ImGui::GetContentRegionAvail().x, 140.0f * scale);
+    dl->AddRectFilled(origin, origin + size, ImGui::GetColorU32(ImGuiCol_FrameBg));
+    static constexpr auto draw_range = [](ImDrawList* const dl, float scale, const ImVec2& origin, const ImVec2& size,
+                                          const GSVector4i& rect, ImU32 color, float thickness) {
+      const ImVec2 start(origin.x + size.x * std::clamp(static_cast<float>(rect.x) / cs.horizontal_total, 0.0f, 1.0f),
+                         origin.y + size.y * std::clamp(static_cast<float>(rect.y) / cs.vertical_total, 0.0f, 1.0f));
+      const ImVec2 end(origin.x + size.x * std::clamp(static_cast<float>(rect.z) / cs.horizontal_total, 0.0f, 1.0f),
+                       origin.y + size.y * std::clamp(static_cast<float>(rect.w) / cs.vertical_total, 0.0f, 1.0f));
+      dl->AddRect(start, end, color, 0.0f, thickness * scale);
+    };
+
+    static constexpr ImU32 configured_color = IM_COL32(234, 190, 100, 255);
+    static constexpr ImU32 output_color = IM_COL32(110, 175, 235, 255);
+    static constexpr ImU32 visible_color = IM_COL32(120, 215, 165, 255);
+
+    // Different outline widths keep coincident ranges visible.
+    draw_range(dl, scale, origin, size, output, output_color, 5.0f);
+    draw_range(dl, scale, origin, size, configured, configured_color, 3.0f);
+    draw_range(dl, scale, origin, size, visible, visible_color, 1.0f);
+
+    ImGui::Dummy(size);
+    ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(configured_color), "Configured");
+    ImGui::SameLine();
+    ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(output_color), "Output");
+    ImGui::SameLine();
+    ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(visible_color), "Visible");
+  }
+  ImGui::EndTable();
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
 }
 
 GPUDump::Recorder* GPU::GetGPUDump()

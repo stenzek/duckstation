@@ -112,12 +112,12 @@ static void UpdateInputOverlay(void* buffer);
 static constexpr size_t NUM_DEBUG_WINDOWS = 7;
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
   {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 510, 500},
-  {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 820, 950},
-  {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 820, 555},
-  {"GPU", "GPU State", ":icons/applications-system.png", &GPU::DrawDebugStateWindow, 450, 550},
-  {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
-  {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
-  {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
+  {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 1100, 745},
+  {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 1050, 650},
+  {"GPU", "GPU State", ":icons/applications-system.png", &GPU::DrawDebugStateWindow, 1000, 650},
+  {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 1160, 215},
+  {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 900, 370},
+  {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 315},
 }};
 static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
 
@@ -149,9 +149,19 @@ void ImGuiManager::SaveDebugWindowVisibility(SettingsInterface& si, u8 debug_win
   }
 }
 
+bool ImGuiManager::IsCDROMDebugWindowVisible(u8 debug_window_visibility)
+{
+  return ((debug_window_visibility & (1u << 2)) != 0);
+}
+
 bool ImGuiManager::IsSPUDebugWindowVisible(u8 debug_window_visibility)
 {
   return ((debug_window_visibility & (1u << 1)) != 0);
+}
+
+bool ImGuiManager::IsGPUDebugWindowVisible(u8 debug_window_visibility)
+{
+  return ((debug_window_visibility & (1u << 3)) != 0);
 }
 
 bool ImGuiManager::UpdateDebugWindowConfig(u8 debug_window_visibility)

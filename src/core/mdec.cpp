@@ -16,9 +16,11 @@
 #include "common/gsvector.h"
 #include "common/log.h"
 
+#include "IconsFontAwesome.h"
 #include "imgui.h"
 
 #include <array>
+#include <cmath>
 #include <memory>
 
 LOG_CHANNEL(MDEC);
@@ -1254,37 +1256,132 @@ void MDEC::SetScaleMatrix(const u16* values)
 
 void MDEC::DrawDebugStateWindow(float scale)
 {
-  static constexpr std::array<const char*, 5> state_names = {
-    {"None", "Decoding Macroblock", "Writing Macroblock", "SetIqTab", "SetScale"}};
+  static constexpr std::array<const char*, 6> state_names = {{"Idle", "Decoding macroblock", "Writing macroblock",
+                                                              "Loading quantization table", "Loading scale table",
+                                                              "No command"}};
   static constexpr std::array<const char*, 4> output_depths = {{"4-bit", "8-bit", "24-bit", "15-bit"}};
-  static constexpr std::array<const char*, 7> block_names = {{"Crblk", "Cbblk", "Y1", "Y2", "Y3", "Y4", "Output"}};
+  static constexpr std::array<const char*, 7> block_names = {{"Cr", "Cb", "Y1", "Y2", "Y3", "Y4", "Output"}};
 
-#if defined(_DEBUG) || defined(_DEVEL)
-  ImGui::Text("Blocks Decoded: %u", s_state.total_blocks_decoded);
-  ImGui::Text("IDCT Fast Path: %u/%u (%.1f%%)", s_state.fast_idct_blocks, s_state.total_idct_blocks,
-              s_state.total_idct_blocks ? (static_cast<double>(s_state.fast_idct_blocks) * 100.0 /
-                                           static_cast<double>(s_state.total_idct_blocks)) :
-                                          0.0);
-#endif
-  ImGui::Text("Data-In FIFO Size: %u (%u bytes)", s_state.data_in_fifo.GetSize(), s_state.data_in_fifo.GetSize() * 4);
-  ImGui::Text("Data-Out FIFO Size: %u (%u bytes)", s_state.data_out_fifo.GetSize(),
-              s_state.data_out_fifo.GetSize() * 4);
-  ImGui::Text("DMA Enable: %s%s", s_state.enable_dma_in ? "In " : "", s_state.enable_dma_out ? "Out" : "");
-  ImGui::Text("Current State: %s", state_names[static_cast<u8>(s_state.state)]);
-  ImGui::Text("Current Block: %s", block_names[s_state.current_block]);
-  ImGui::Text("Current Coefficient: %u", s_state.current_coefficient);
+  const float left = ImGui::GetCursorPosX();
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  ImGui::SetCursorPosX(left + ImGui::GetContentRegionAvail().x - button_width);
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+  ImGui::SameLine(left);
+  ImGui::PushFont(nullptr, std::ceil(18.0f * scale), 0.0f);
+  ImGui::AlignTextToFramePadding();
+  ImGui::TextUnformatted(state_names[static_cast<u8>(s_state.state)]);
+  ImGui::PopFont();
+  ImGui::Spacing();
 
-  if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
+  constexpr ImGuiTableFlags table_flags =
+    ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_SizingStretchSame;
+  static constexpr auto label = [](const char* text) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    color.w *= 0.7f;
+    ImGui::TextColored(color, "%s", text);
+    ImGui::TableNextColumn();
+  };
+
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+  if (ImGui::BeginTable("layout", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV))
   {
-    ImGui::Text("Data-Out FIFO Empty: %s", s_state.status.data_out_fifo_empty ? "Yes" : "No");
-    ImGui::Text("Data-In FIFO Full: %s", s_state.status.data_in_fifo_full ? "Yes" : "No");
-    ImGui::Text("Command Busy: %s", s_state.status.command_busy ? "Yes" : "No");
-    ImGui::Text("Data-In Request: %s", s_state.status.data_in_request ? "Yes" : "No");
-    ImGui::Text("Output Depth: %s", output_depths[static_cast<u8>(s_state.status.data_output_depth.GetValue())]);
-    ImGui::Text("Output Signed: %s", s_state.status.data_output_signed ? "Yes" : "No");
-    ImGui::Text("Output Bit 15: %u", ZeroExtend32(s_state.status.data_output_bit15.GetValue()));
-    ImGui::Text("Current Block: %u", ZeroExtend32(s_state.status.current_block.GetValue()));
-    ImGui::Text("Parameter Words Remaining: %d",
-                static_cast<s32>(SignExtend32(s_state.status.parameter_words_remaining.GetValue())));
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::SeparatorText("Decoder");
+    if (ImGui::BeginTable("decoder", 2, table_flags))
+    {
+      label("Block");
+      ImGui::TextUnformatted(block_names[s_state.current_block]);
+      label("Coefficient");
+      ImGui::Text("%u", s_state.current_coefficient);
+      label("Q scale");
+      ImGui::Text("%u", s_state.current_q_scale);
+      label("Parameter halfwords");
+      ImGui::Text("%u", s_state.remaining_halfwords);
+      label("Command busy");
+      ImGui::TextUnformatted(s_state.status.command_busy ? "Yes" : "No");
+      ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("FIFO");
+    if (ImGui::BeginTable("fifo", 2, table_flags))
+    {
+      label("Input");
+      ImGui::TextWrapped("%u / %u halfwords (%u bytes)", s_state.data_in_fifo.GetSize(),
+                         s_state.data_in_fifo.GetCapacity(), s_state.data_in_fifo.GetSize() * 2);
+      label("Output");
+      ImGui::TextWrapped("%u / %u words (%u bytes)", s_state.data_out_fifo.GetSize(),
+                         s_state.data_out_fifo.GetCapacity(), s_state.data_out_fifo.GetSize() * 4);
+      label("Input full");
+      ImGui::TextUnformatted(s_state.status.data_in_fifo_full ? "Yes" : "No");
+      label("Output empty");
+      ImGui::TextUnformatted(s_state.status.data_out_fifo_empty ? "Yes" : "No");
+      ImGui::EndTable();
+    }
+#if defined(_DEBUG) || defined(_DEVEL)
+    ImGui::SeparatorText("Statistics");
+    if (ImGui::BeginTable("statistics", 2, table_flags))
+    {
+      label("Blocks decoded");
+      ImGui::Text("%u", s_state.total_blocks_decoded);
+      label("IDCT fast path");
+      ImGui::TextWrapped("%u / %u (%.1f%%)", s_state.fast_idct_blocks, s_state.total_idct_blocks,
+                         s_state.total_idct_blocks ? (static_cast<double>(s_state.fast_idct_blocks) * 100.0 /
+                                                      static_cast<double>(s_state.total_idct_blocks)) :
+                                                     0.0);
+      ImGui::EndTable();
+    }
+#endif
+
+    ImGui::TableSetColumnIndex(1);
+    ImGui::SeparatorText("Output");
+    if (ImGui::BeginTable("output", 2, table_flags))
+    {
+      label("Depth");
+      ImGui::TextUnformatted(output_depths[static_cast<u8>(s_state.status.data_output_depth.GetValue())]);
+      label("Signed");
+      ImGui::TextUnformatted(s_state.status.data_output_signed ? "Yes" : "No");
+      label("Bit 15");
+      ImGui::Text("%u", ZeroExtend32(s_state.status.data_output_bit15.GetValue()));
+      ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("DMA");
+    if (ImGui::BeginTable("dma", 2, table_flags))
+    {
+      label("Input");
+      ImGui::TextUnformatted(s_state.enable_dma_in ? "Enabled" : "Disabled");
+      label("Output");
+      ImGui::TextUnformatted(s_state.enable_dma_out ? "Enabled" : "Disabled");
+      label("Input request");
+      ImGui::TextUnformatted(s_state.status.data_in_request ? "Asserted" : "Clear");
+      label("Output request");
+      ImGui::TextUnformatted(s_state.status.data_out_request ? "Asserted" : "Clear");
+      ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("Status register");
+    if (ImGui::BeginTable("status", 2, table_flags))
+    {
+      label("Value");
+      ImGui::Text("%08X", s_state.status.bits);
+      label("Block");
+      ImGui::Text("%u", ZeroExtend32(s_state.status.current_block.GetValue()));
+      label("Parameter words - 1");
+      ImGui::Text("%u", ZeroExtend32(s_state.status.parameter_words_remaining.GetValue()));
+      ImGui::EndTable();
+    }
+    ImGui::EndTable();
   }
+
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+  if (copy_state)
+    ImGui::LogFinish();
 }

@@ -6,6 +6,7 @@
 // To generate: "<your emoji>".encode("utf-8") in Python 3.
 // List to use: https://www.freecodecamp.org/news/all-emojis-emoji-list-for-copy-and-paste/
 
+#define ICON_EMOJI_MIDDLE_DOT "\xc2\xb7"
 #define ICON_EMOJI_WARNING "\xe2\x9a\xa0"
 #define ICON_EMOJI_CHECKMARK_BUTTON "\xe2\x9c\x85"
 #define ICON_EMOJI_CROSS_MARK_BUTTON "\xe2\x9d\x8c"

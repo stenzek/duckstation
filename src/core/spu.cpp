@@ -25,9 +25,11 @@
 #include "common/path.h"
 
 #include "IconsEmoji.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
+#include <cmath>
 #include <memory>
 
 LOG_CHANNEL(SPU);
@@ -2858,307 +2860,384 @@ static constexpr const char* GetReverbModeName(const SPU::ReverbRegisters& rever
 
 void SPU::DrawDebugStateWindow(float scale)
 {
-  static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
-  static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
+  ImVec4 inactive_color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+  inactive_color.w *= 0.5f;
 
 #ifdef SPU_ENABLE_VU_METER
-  const auto draw_vu_meter = [&scale](s16* peaks) {
+  const auto draw_vu_meter = [scale](s16* peaks) {
     constexpr s32 num_sections = 12;
     constexpr s32 amp_per_section = 32767 / num_sections;
-    const s32 lidx = peaks[0] / amp_per_section;
-    const s32 ridx = peaks[1] / amp_per_section;
-
-    const ImVec2 section_size = ImVec2(std::floor(scale * 8.0f), std::floor(scale * 4.0f));
-    const float divider_size = std::floor(scale * 1.0f);
-    ImVec2 left_start = ImGui::GetCursorScreenPos() + ImVec2(0.0f, std::floor(scale * 4.0f));
-    ImVec2 right_start = left_start + ImVec2(0.0f, section_size.y + divider_size);
-    for (s32 i = 0; i < num_sections; i++)
+    const float width = std::max(1.0f, std::min(ImGui::GetContentRegionAvail().x, 108.0f * scale));
+    const float gap = std::min(scale, width / (num_sections * 2));
+    const ImVec2 section_size((width - gap * (num_sections - 1)) / num_sections, 4.0f * scale);
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    const float offset_y = std::max(0.0f, (ImGui::GetTextLineHeight() - section_size.y * 2.0f - gap) * 0.5f);
+    for (u32 channel = 0; channel < 2; channel++)
     {
-      u32 left_color = IM_COL32(30, 30, 30, 255);
-      if (peaks[0] > 0 && lidx >= i)
+      const s32 level = peaks[channel] / amp_per_section;
+      ImVec2 pos(origin.x, origin.y + offset_y + channel * (section_size.y + gap));
+      for (s32 section = 0; section < num_sections; section++)
       {
-        left_color = IM_COL32(255, 0, 0, 255);
-        left_color = (i <= 8) ? IM_COL32(255, 255, 0, 255) : left_color;
-        left_color = (i <= 6) ? IM_COL32(0, 255, 0, 255) : left_color;
+        const ImU32 color = (peaks[channel] > 0 && level >= section) ? (section <= 6 ? IM_COL32(0, 220, 80, 255) :
+                                                                        section <= 8 ? IM_COL32(240, 200, 60, 255) :
+                                                                                       IM_COL32(240, 70, 60, 255)) :
+                                                                       IM_COL32(30, 30, 30, 255);
+        ImGui::GetWindowDrawList()->AddRectFilled(pos, pos + section_size, color);
+        pos.x += section_size.x + gap;
       }
-      u32 right_color = IM_COL32(30, 30, 30, 255);
-      if (peaks[1] > 0 && ridx >= i)
-      {
-        right_color = IM_COL32(255, 0, 0, 255);
-        right_color = (i <= 8) ? IM_COL32(255, 255, 0, 255) : right_color;
-        right_color = (i <= 6) ? IM_COL32(0, 255, 0, 255) : right_color;
-      }
-
-      ImGui::GetWindowDrawList()->AddRectFilled(left_start, left_start + section_size, left_color);
-      ImGui::GetWindowDrawList()->AddRectFilled(right_start, right_start + section_size, right_color);
-      left_start.x += section_size.x + divider_size;
-      right_start.x += section_size.x + divider_size;
+      peaks[channel] = 0;
     }
-
-    peaks[0] = 0;
-    peaks[1] = 0;
+    ImGui::Dummy(ImVec2(width, ImGui::GetTextLineHeight()));
   };
 #endif
 
-  // status
-  if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
+  const ImVec2 content_pos = ImGui::GetCursorScreenPos();
+  const ImVec2 content_size = ImGui::GetContentRegionAvail();
+  const float content_height = std::max(1.0f, content_size.y - ImGui::GetFrameHeightWithSpacing());
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  // Submit the footer first so clipboard logging can capture both tabs on the same frame.
+  ImGui::SetCursorScreenPos(ImVec2(content_pos.x, content_pos.y + content_height + ImGui::GetStyle().ItemSpacing.y));
+  if (ImGui::Button("Key Off All Voices"))
   {
-    static constexpr std::array<const char*, 4> transfer_modes = {
-      {"Transfer Stopped", "Manual Write", "DMA Write", "DMA Read"}};
-    const std::array<float, 6> offsets = {
-      {100.0f * scale, 200.0f * scale, 300.0f * scale, 420.0f * scale, 500.0f * scale, 600.0f * scale}};
-
-    ImGui::Text("Control: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.SPUCNT.enable ? active_color : inactive_color, "SPU Enable");
-    ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(s_state.SPUCNT.mute_n ? inactive_color : active_color, "Mute SPU");
-    ImGui::SameLine(offsets[2]);
-    ImGui::TextColored(s_state.SPUCNT.external_audio_enable ? active_color : inactive_color, "External Audio");
-    ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(s_state.SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped ? active_color : inactive_color,
-                       "%s", transfer_modes[static_cast<u8>(s_state.SPUCNT.ram_transfer_mode.GetValue())]);
-
-    ImGui::Text("Status: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.SPUSTAT.irq9_flag ? active_color : inactive_color, "IRQ9");
-    ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(s_state.SPUSTAT.dma_request ? active_color : inactive_color, "DMA Request");
-    ImGui::SameLine(offsets[2]);
-    ImGui::TextColored(s_state.SPUSTAT.dma_read_request ? active_color : inactive_color, "DMA Read");
-    ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(s_state.SPUSTAT.dma_write_request ? active_color : inactive_color, "DMA Write");
-    ImGui::SameLine(offsets[4]);
-    ImGui::TextColored(s_state.SPUSTAT.transfer_busy ? active_color : inactive_color, "Transfer Busy");
-    ImGui::SameLine(offsets[5]);
-    ImGui::TextColored(s_state.SPUSTAT.second_half_capture_buffer ? active_color : inactive_color,
-                       "Second Capture Buffer");
-
-    ImGui::Text("Interrupt: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.SPUCNT.irq9_enable ? active_color : inactive_color,
-                       s_state.SPUCNT.irq9_enable ? "Enabled @ 0x%04X (actual 0x%08X)" :
-                                                    "Disabled @ 0x%04X (actual 0x%08X)",
-                       s_state.irq_address, (ZeroExtend32(s_state.irq_address) * 8) & RAM_MASK);
-
-    ImGui::Text("Volume: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::Text("Left: %.1f%%", ApplyVolumeF(100.0f, s_state.main_volume_left.current_level));
-    ImGui::SameLine(offsets[1]);
-    ImGui::Text("Right: %.1f%%", ApplyVolumeF(100.0f, s_state.main_volume_right.current_level));
-#ifdef SPU_ENABLE_VU_METER
-    ImGui::SameLine(offsets[2]);
-    draw_vu_meter(s_state.output_peaks);
-    ImGui::NewLine();
-#endif
-
-    ImGui::Text("CD Audio: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color,
-                       s_state.SPUCNT.cd_audio_enable ? "Enabled" : "Disabled");
-    ImGui::SameLine(offsets[1]);
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Left Volume: %.1f%%",
-                       ApplyVolumeF(100.0f, s_state.cd_audio_volume_left));
-    ImGui::SameLine(offsets[3]);
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %.1f%%",
-                       ApplyVolumeF(100.0f, s_state.cd_audio_volume_right));
-#ifdef SPU_ENABLE_VU_METER
-    ImGui::SameLine(offsets[5]);
-    draw_vu_meter(s_state.cd_audio_peaks);
-    ImGui::NewLine();
-#endif
-
-    ImGui::Text("Transfer FIFO: ");
-    ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.transfer_event.IsActive() ? active_color : inactive_color, "%u halfwords (%u bytes)",
-                       s_state.transfer_fifo.GetSize(), s_state.transfer_fifo.GetSize() * 2);
-  }
-
-  // draw voice states
-  if (ImGui::CollapsingHeader("Voice State", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    static constexpr std::array column_titles = {
-      "#",       "StartAddr", "RepeatAddr", "CurAddr", "SampleIdx", "SampleRate",
-      "VolLeft", "VolRight",  "ADSRPhase",  "ADSRVol", "ADSRTicks",
-#ifdef SPU_ENABLE_VU_METER
-      "VUMeter",
-#endif
-    };
-    static constexpr std::array adsr_phases = {"Off", "Attack", "Decay", "Sustain", "Release"};
-
-    ImGui::Columns(static_cast<int>(column_titles.size()));
-
-    // headers
-    for (const char* column_title : column_titles)
+    for (Voice& voice : s_state.voices)
     {
-      ImGui::TextUnformatted(column_title);
-      ImGui::NextColumn();
-    }
-
-    // states
-    for (u32 voice_index = 0; voice_index < NUM_VOICES; voice_index++)
-    {
-      const Voice& v = s_state.voices[voice_index];
-      ImVec4 color = v.IsOn() ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-      ImGui::TextColored(color, "%u", ZeroExtend32(voice_index));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adpcm_start_address));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adpcm_repeat_address));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.current_address));
-      ImGui::NextColumn();
-      if (IsVoiceNoiseEnabled(voice_index))
-        ImGui::TextColored(color, "NOISE");
-      else
-        ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.sample_index.GetValue()));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.left_volume.current_level));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.right_volume.current_level));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%s", adsr_phases[static_cast<u8>(v.adsr_phase)]);
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%.1f%%", ApplyVolumeF(100.0f, v.regs.adsr_volume));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%d", v.adsr_envelope.counter);
-      ImGui::NextColumn();
-#ifdef SPU_ENABLE_VU_METER
-      draw_vu_meter(s_state.voice_peaks[voice_index]);
-      ImGui::NextColumn();
-#endif
-    }
-
-    ImGui::Columns(1);
-  }
-
-  if (ImGui::CollapsingHeader("Reverb", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    ImGui::TextColored(s_state.SPUCNT.reverb_master_enable ? active_color : inactive_color, "Master Enable: %s",
-                       s_state.SPUCNT.reverb_master_enable ? "Yes" : "No");
-    ImGui::Text("Voices Enabled: ");
-
-    for (u32 i = 0; i < NUM_VOICES; i++)
-    {
-      ImGui::SameLine(0.0f, 16.0f);
-
-      const bool active = IsVoiceReverbEnabled(i);
-      ImGui::TextColored(active ? active_color : inactive_color, "%u", i);
-    }
-
-    ImGui::TextColored(s_state.SPUCNT.cd_audio_reverb ? active_color : inactive_color, "CD Audio Enable: %s",
-                       s_state.SPUCNT.cd_audio_reverb ? "Yes" : "No");
-
-    ImGui::TextColored(s_state.SPUCNT.external_audio_reverb ? active_color : inactive_color,
-                       "External Audio Enable: %s", s_state.SPUCNT.external_audio_reverb ? "Yes" : "No");
-
-    ImGui::Text("Base Address: 0x%08X (%04X)", s_state.reverb_base_address, s_state.reverb_registers.mBASE);
-    ImGui::Text("Current Address: 0x%08X", s_state.reverb_current_address);
-    ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_state.last_reverb_input[0],
-                s_state.last_reverb_input[1], s_state.last_reverb_output[0], s_state.last_reverb_output[1]);
-    ImGui::Text("Current Mode: %s", GetReverbModeName(s_state.reverb_registers));
-    ImGui::Text("Output Volume: Left %.1f%% Right %.1f%%", ApplyVolumeF(100.0f, s_state.reverb_registers.vLOUT),
-                ApplyVolumeF(100.0f, s_state.reverb_registers.vROUT));
-#ifdef SPU_ENABLE_VU_METER
-    ImGui::SameLine();
-    draw_vu_meter(s_state.reverb_peaks);
-    ImGui::NewLine();
-#endif
-
-    ImGui::Text("Pitch Modulation: ");
-    for (u32 i = 1; i < NUM_VOICES; i++)
-    {
-      ImGui::SameLine(0.0f, 16.0f);
-
-      const bool active = IsPitchModulationEnabled(i);
-      ImGui::TextColored(active ? active_color : inactive_color, "%u", i);
+      voice.KeyOff();
+      voice.adsr_envelope.counter = 0;
+      voice.regs.adsr_volume = 0;
     }
   }
+  ImGui::SetCursorScreenPos(ImVec2(content_pos.x + content_size.x - button_width,
+                                   content_pos.y + content_height + ImGui::GetStyle().ItemSpacing.y));
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+  ImGui::SetCursorScreenPos(content_pos);
 
-  if (ImGui::CollapsingHeader("Reverb Environment"))
+  constexpr ImGuiTableFlags table_flags =
+    ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_SizingStretchSame;
+  const auto label = [](const char* text) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    color.w *= 0.7f;
+    ImGui::TextColored(color, "%s", text);
+    ImGui::TableNextColumn();
+  };
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(6.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+
+  if (ImGui::BeginChild("state", ImVec2(0.0f, content_height)))
   {
-    ImGui::Columns(4);
-
-    ImGui::Text("[0] FB_SRC_A: 0x%04X", static_cast<u32>(s_state.reverb_registers.FB_SRC_A));
-    ImGui::NextColumn();
-    ImGui::Text("[1] FB_SRC_B: 0x%04X", static_cast<u32>(s_state.reverb_registers.FB_SRC_B));
-    ImGui::NextColumn();
-    ImGui::Text("[2] IIR_ALPHA: %d", static_cast<s32>(s_state.reverb_registers.IIR_ALPHA));
-    ImGui::NextColumn();
-    ImGui::Text("[3] ACC_COEF_A: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_A));
-    ImGui::NextColumn();
-    ImGui::Text("[4] ACC_COEF_B: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_B));
-    ImGui::NextColumn();
-    ImGui::Text("[5] ACC_COEF_C: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_C));
-    ImGui::NextColumn();
-    ImGui::Text("[6] ACC_COEF_D: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_D));
-    ImGui::NextColumn();
-    ImGui::Text("[7] IIR_COEF: %d", static_cast<s32>(s_state.reverb_registers.IIR_COEF));
-    ImGui::NextColumn();
-    ImGui::Text("[8] FB_ALPHA: %d", static_cast<s32>(s_state.reverb_registers.FB_ALPHA));
-    ImGui::NextColumn();
-    ImGui::Text("[9] FB_X: %d", static_cast<s32>(s_state.reverb_registers.FB_X));
-    ImGui::NextColumn();
-    ImGui::Text("[10] IIR_DEST_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_A[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[11] IIR_DEST_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_A[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[12] ACC_SRC_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_A[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[13] ACC_SRC_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_A[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[14] ACC_SRC_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_B[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[15] ACC_SRC_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_B[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[16] IIR_SRC_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_A[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[17] IIR_SRC_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_A[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[18] IIR_DEST_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_B[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[19] IIR_DEST_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_B[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[20] ACC_SRC_C[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_C[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[21] ACC_SRC_C[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_C[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[22] ACC_SRC_D[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_D[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[23] ACC_SRC_D[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_D[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[24] IIR_SRC_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_B[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[25] IIR_SRC_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_B[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[26] MIX_DEST_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_A[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[27] MIX_DEST_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_A[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[28] MIX_DEST_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_B[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[29] MIX_DEST_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_B[1]));
-    ImGui::NextColumn();
-    ImGui::Text("[30] IN_COEF[L]: %d", static_cast<u32>(s_state.reverb_registers.IN_COEF[0]));
-    ImGui::NextColumn();
-    ImGui::Text("[31] IN_COEF[R]: %d", static_cast<u32>(s_state.reverb_registers.IN_COEF[1]));
-    ImGui::NextColumn();
-
-    ImGui::Columns(1);
-  }
-
-  if (ImGui::CollapsingHeader("Hacks", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    if (ImGui::Button("Key Off All Voices"))
+    if (ImGui::BeginTable("overview", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV))
     {
-      for (u32 i = 0; i < NUM_VOICES; i++)
+      ImGui::TableNextRow();
+      ImGui::TableSetColumnIndex(0);
+      u32 active_voices = 0;
+      for (const Voice& voice : s_state.voices)
+        active_voices += BoolToUInt32(voice.IsOn());
+      ImGui::SeparatorText(
+        TinyString::from_format("Mixer ({} / {} voices active)", active_voices, static_cast<u32>(NUM_VOICES)).c_str());
+      if (ImGui::BeginTable("mixer",
+#ifdef SPU_ENABLE_VU_METER
+                            6,
+#else
+                            5,
+#endif
+                            table_flags))
       {
-        s_state.voices[i].KeyOff();
-        s_state.voices[i].adsr_envelope.counter = 0;
-        s_state.voices[i].regs.adsr_volume = 0;
+        ImGui::TableSetupColumn("Source", ImGuiTableColumnFlags_WidthStretch, 1.1f);
+        ImGui::TableSetupColumn("State", ImGuiTableColumnFlags_WidthStretch, 1.1f);
+        ImGui::TableSetupColumn("Left vol.", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+        ImGui::TableSetupColumn("Right vol.", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+        ImGui::TableSetupColumn("Reverb send", ImGuiTableColumnFlags_WidthStretch, 1.2f);
+#ifdef SPU_ENABLE_VU_METER
+        ImGui::TableSetupColumn("Peaks L/R", ImGuiTableColumnFlags_WidthFixed, 108.0f * scale);
+#endif
+        ImGui::TableHeadersRow();
+        const auto mix_row = [](const char* source, bool enabled, s16 volume_left, s16 volume_right, const char* send) {
+          ImGui::TableNextRow();
+          ImGui::TableNextColumn();
+          ImGui::TextUnformatted(source);
+          ImGui::TableNextColumn();
+          ImGui::TextUnformatted(enabled ? "Enabled" : "Disabled");
+          ImGui::TableNextColumn();
+          ImGui::Text("%.1f%%", ApplyVolumeF(100.0f, volume_left));
+          ImGui::TableNextColumn();
+          ImGui::Text("%.1f%%", ApplyVolumeF(100.0f, volume_right));
+          ImGui::TableNextColumn();
+          ImGui::TextUnformatted(send);
+        };
+        mix_row("Main", s_state.SPUCNT.enable, s_state.main_volume_left.current_level,
+                s_state.main_volume_right.current_level, "-");
+#ifdef SPU_ENABLE_VU_METER
+        ImGui::TableNextColumn();
+        draw_vu_meter(s_state.output_peaks);
+#endif
+        mix_row("CD", s_state.SPUCNT.cd_audio_enable, s_state.cd_audio_volume_left, s_state.cd_audio_volume_right,
+                s_state.SPUCNT.cd_audio_reverb ? "Yes" : "No");
+#ifdef SPU_ENABLE_VU_METER
+        ImGui::TableNextColumn();
+        draw_vu_meter(s_state.cd_audio_peaks);
+#endif
+        mix_row("External", s_state.SPUCNT.external_audio_enable, s_state.external_volume_left,
+                s_state.external_volume_right, s_state.SPUCNT.external_audio_reverb ? "Yes" : "No");
+#ifdef SPU_ENABLE_VU_METER
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("-");
+#endif
+        mix_row("Reverb", s_state.SPUCNT.reverb_master_enable, s_state.reverb_registers.vLOUT,
+                s_state.reverb_registers.vROUT, "-");
+#ifdef SPU_ENABLE_VU_METER
+        ImGui::TableNextColumn();
+        draw_vu_meter(s_state.reverb_peaks);
+#endif
+        ImGui::EndTable();
       }
+
+      if (ImGui::BeginTable("reverb_levels", 3, table_flags))
+      {
+        ImGui::TableSetupColumn("Reverb (raw)");
+        ImGui::TableSetupColumn("Left");
+        ImGui::TableSetupColumn("Right");
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Input");
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", s_state.last_reverb_input[0]);
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", s_state.last_reverb_input[1]);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Output");
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", s_state.last_reverb_output[0]);
+        ImGui::TableNextColumn();
+        ImGui::Text("%d", s_state.last_reverb_output[1]);
+        ImGui::EndTable();
+      }
+
+      ImGui::TableSetColumnIndex(1);
+      ImGui::SeparatorText("Transfer / IRQ");
+      if (ImGui::BeginTable("transfer", 2, table_flags))
+      {
+        ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.35f);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.65f);
+        static constexpr std::array transfer_modes = {"Stopped", "Manual write", "DMA write", "DMA read"};
+        label("Transfer mode");
+        ImGui::TextUnformatted(transfer_modes[static_cast<u8>(s_state.SPUCNT.ram_transfer_mode.GetValue())]);
+        label("Transfer FIFO");
+        ImGui::Text("%u halfwords (%u bytes)", s_state.transfer_fifo.GetSize(), s_state.transfer_fifo.GetSize() * 2);
+        label("Interrupt");
+        ImGui::Text("%s @ %04X (0x%05X bytes)", s_state.SPUCNT.irq9_enable ? "Enabled" : "Disabled",
+                    s_state.irq_address, (ZeroExtend32(s_state.irq_address) * 8) & RAM_MASK);
+        label("Capture buffer");
+        ImGui::TextUnformatted(s_state.SPUSTAT.second_half_capture_buffer ? "Second" : "First");
+        label("Muted");
+        ImGui::TextUnformatted(s_state.SPUCNT.mute_n ? "No" : "Yes");
+        ImGui::EndTable();
+      }
+      if (ImGui::BeginTable("signals", 5, table_flags))
+      {
+        ImGui::TableSetupColumn("IRQ9");
+        ImGui::TableSetupColumn("DMA");
+        ImGui::TableSetupColumn("DMA read");
+        ImGui::TableSetupColumn("DMA write");
+        ImGui::TableSetupColumn("Busy");
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(s_state.SPUSTAT.irq9_flag ? "Asserted" : "Clear");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(s_state.SPUSTAT.dma_request ? "Asserted" : "Clear");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(s_state.SPUSTAT.dma_read_request ? "Asserted" : "Clear");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(s_state.SPUSTAT.dma_write_request ? "Asserted" : "Clear");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(s_state.SPUSTAT.transfer_busy ? "Yes" : "No");
+        ImGui::EndTable();
+      }
+
+      if (ImGui::BeginTable("reverb_state", 3, table_flags))
+      {
+        ImGui::TableSetupColumn("Reverb preset");
+        ImGui::TableSetupColumn("Base (byte / reg)");
+        ImGui::TableSetupColumn("Current (byte)");
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(GetReverbModeName(s_state.reverb_registers));
+        ImGui::TableNextColumn();
+        ImGui::Text("0x%05X / %04X", s_state.reverb_base_address, s_state.reverb_registers.mBASE);
+        ImGui::TableNextColumn();
+        ImGui::Text("0x%05X", s_state.reverb_current_address);
+        ImGui::EndTable();
+      }
+      ImGui::EndTable();
+    }
+
+    if (ImGui::BeginTabBar("state_tabs"))
+    {
+      const bool voices_tab = ImGui::BeginTabItem("Voices");
+      // Clipboard logging includes both tabs, without retaining a separate snapshot.
+      if (voices_tab || copy_state)
+      {
+        static constexpr int num_columns =
+#ifdef SPU_ENABLE_VU_METER
+          14;
+#else
+          13;
+#endif
+        static constexpr std::array adsr_phases = {"Off", "Attack", "Decay", "Sustain", "Release"};
+        const float table_height = std::max(1.0f, ImGui::GetContentRegionAvail().y - ImGui::GetStyle().ItemSpacing.y);
+        ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(6.0f * scale, 1.0f * scale));
+        if (ImGui::BeginTable("voices", num_columns, table_flags | ImGuiTableFlags_ScrollY, ImVec2(0.0f, table_height)))
+        {
+          ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 22.0f * scale);
+          ImGui::TableSetupColumn("Start", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+          ImGui::TableSetupColumn("Repeat", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+          ImGui::TableSetupColumn("Current", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+          ImGui::TableSetupColumn("Sample", ImGuiTableColumnFlags_WidthStretch, 0.75f);
+          ImGui::TableSetupColumn("Rate (Hz)", ImGuiTableColumnFlags_WidthStretch, 1.25f);
+          ImGui::TableSetupColumn("Left vol.", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+          ImGui::TableSetupColumn("Right vol.", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+          ImGui::TableSetupColumn("ADSR", ImGuiTableColumnFlags_WidthStretch, 0.95f);
+          ImGui::TableSetupColumn("Level", ImGuiTableColumnFlags_WidthStretch, 0.9f);
+          ImGui::TableSetupColumn("Ticks", ImGuiTableColumnFlags_WidthStretch, 1.15f);
+          ImGui::TableSetupColumn("Reverb", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+          ImGui::TableSetupColumn("Pitch mod.", ImGuiTableColumnFlags_WidthStretch, 0.95f);
+#ifdef SPU_ENABLE_VU_METER
+          ImGui::TableSetupColumn("Peaks L/R", ImGuiTableColumnFlags_WidthFixed, 108.0f * scale);
+#endif
+          ImGui::TableSetupScrollFreeze(0, 1);
+          ImGui::TableHeadersRow();
+          for (u32 i = 0; i < NUM_VOICES; i++)
+          {
+            const Voice& voice = s_state.voices[i];
+            ImGui::PushStyleColor(ImGuiCol_Text,
+                                  voice.IsOn() ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : inactive_color);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("%u", i);
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", voice.regs.adpcm_start_address);
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", voice.regs.adpcm_repeat_address);
+            ImGui::TableNextColumn();
+            ImGui::Text("%04X", voice.current_address);
+            ImGui::TableNextColumn();
+            if (IsVoiceNoiseEnabled(i))
+              ImGui::TextUnformatted("Noise");
+            else
+              ImGui::Text("%u", ZeroExtend32(voice.counter.sample_index.GetValue()));
+            ImGui::TableNextColumn();
+            ImGui::Text("%.2f", (static_cast<float>(voice.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
+            ImGui::TableNextColumn();
+            ImGui::Text("%.1f%%", ApplyVolumeF(100.0f, voice.left_volume.current_level));
+            ImGui::TableNextColumn();
+            ImGui::Text("%.1f%%", ApplyVolumeF(100.0f, voice.right_volume.current_level));
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(adsr_phases[static_cast<u8>(voice.adsr_phase)]);
+            ImGui::TableNextColumn();
+            ImGui::Text("%.1f%%", ApplyVolumeF(100.0f, voice.regs.adsr_volume));
+            ImGui::TableNextColumn();
+            ImGui::Text("%d", voice.adsr_envelope.counter);
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(IsVoiceReverbEnabled(i) ? "Yes" : "-");
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(IsPitchModulationEnabled(i) ? "Yes" : "-");
+#ifdef SPU_ENABLE_VU_METER
+            ImGui::TableNextColumn();
+            draw_vu_meter(s_state.voice_peaks[i]);
+#endif
+            ImGui::PopStyleColor();
+          }
+          ImGui::EndTable();
+        }
+        ImGui::PopStyleVar();
+        if (voices_tab)
+          ImGui::EndTabItem();
+      }
+
+      const bool reverb_tab = ImGui::BeginTabItem("Reverb Registers");
+      if (reverb_tab || copy_state)
+      {
+        const ReverbRegisters& regs = s_state.reverb_registers;
+        if (ImGui::BeginTable("reverb_layout", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV))
+        {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          ImGui::SeparatorText("Coefficients");
+          if (ImGui::BeginTable("coefficients", 3, table_flags))
+          {
+            ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthFixed, 22.0f * scale);
+            ImGui::TableSetupColumn("Register", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+            ImGui::TableSetupColumn("Signed / Hex", ImGuiTableColumnFlags_WidthStretch, 1.5f);
+            ImGui::TableHeadersRow();
+            const auto coefficient = [&](u32 index, const char* name) {
+              ImGui::TableNextRow();
+              ImGui::TableNextColumn();
+              ImGui::Text("%u", index);
+              ImGui::TableNextColumn();
+              ImGui::TextUnformatted(name);
+              ImGui::TableNextColumn();
+              ImGui::Text("%d / 0x%04X", static_cast<s32>(static_cast<s16>(regs.rev[index])), regs.rev[index]);
+            };
+            static constexpr std::array names = {"IIR_ALPHA",  "ACC_COEF_A", "ACC_COEF_B", "ACC_COEF_C",
+                                                 "ACC_COEF_D", "IIR_COEF",   "FB_ALPHA",   "FB_X"};
+            for (u32 i = 0; i < names.size(); i++)
+              coefficient(i + 2, names[i]);
+            coefficient(30, "IN_COEF[L]");
+            coefficient(31, "IN_COEF[R]");
+            ImGui::EndTable();
+          }
+
+          ImGui::TableSetColumnIndex(1);
+          ImGui::SeparatorText("Offsets");
+          if (ImGui::BeginTable("offsets", 3, table_flags))
+          {
+            ImGui::TableSetupColumn("Register");
+            ImGui::TableSetupColumn("Left (hex)");
+            ImGui::TableSetupColumn("Right (hex)");
+            ImGui::TableHeadersRow();
+            for (u32 i = 0; i < 2; i++)
+            {
+              ImGui::TableNextRow();
+              ImGui::TableNextColumn();
+              ImGui::Text("%u FB_SRC_%c", i, 'A' + i);
+              ImGui::TableNextColumn();
+              ImGui::Text("%04X", regs.rev[i]);
+              ImGui::TableNextColumn();
+              ImGui::TextUnformatted("-");
+            }
+            static constexpr std::array names = {"IIR_DEST_A", "ACC_SRC_A", "ACC_SRC_B", "IIR_SRC_A",  "IIR_DEST_B",
+                                                 "ACC_SRC_C",  "ACC_SRC_D", "IIR_SRC_B", "MIX_DEST_A", "MIX_DEST_B"};
+            for (u32 i = 0; i < names.size(); i++)
+            {
+              const u32 index = 10 + i * 2;
+              ImGui::TableNextRow();
+              ImGui::TableNextColumn();
+              ImGui::Text("%u/%u %s", index, index + 1, names[i]);
+              ImGui::TableNextColumn();
+              ImGui::Text("%04X", regs.rev[index]);
+              ImGui::TableNextColumn();
+              ImGui::Text("%04X", regs.rev[index + 1]);
+            }
+            ImGui::EndTable();
+          }
+          ImGui::EndTable();
+        }
+        if (reverb_tab)
+          ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
     }
   }
+  ImGui::EndChild();
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+  if (copy_state)
+    ImGui::LogFinish();
 }

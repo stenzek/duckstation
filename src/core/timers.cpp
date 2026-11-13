@@ -13,6 +13,7 @@
 #include "common/bitfield.h"
 #include "common/log.h"
 
+#include "IconsFontAwesome.h"
 #include "imgui.h"
 
 #include <array>
@@ -689,62 +690,132 @@ void Timers::UpdateSysClkEvent()
 
 void Timers::DrawDebugStateWindow(float scale)
 {
-  static constexpr u32 NUM_COLUMNS = 10;
-  static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
-    {"#", "Value", "Target", "Sync", "Reset", "IRQ", "IRQRepeat", "IRQToggle", "Clock Source", "Reached"}};
   static constexpr std::array<const char*, 4> sync_mode_names = {
-    {"PauseOnGate", "ResetOnGate", "ResetAndRunOnGate", "FreeRunOnGate"}};
+    {"Pause on gate", "Reset on gate end", "Reset/run on gate start", "Free run on gate end"}};
   static constexpr std::array<std::array<const char*, 4>, 3> clock_source_names = {
-    {{{"SysClk", "DotClk", "SysClk", "DotClk"}},
-     {{"SysClk", "HBlank", "SysClk", "HBlank"}},
-     {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
+    {{{"System", "Dot clock", "System", "Dot clock"}},
+     {{"System", "HBlank", "System", "HBlank"}},
+     {{"System", "System", "System / 8", "System / 8"}}}};
 
-  ImGui::Columns(NUM_COLUMNS);
-  ImGui::SetColumnWidth(0, 20.0f * scale);
-  ImGui::SetColumnWidth(1, 50.0f * scale);
-  ImGui::SetColumnWidth(2, 50.0f * scale);
-  ImGui::SetColumnWidth(3, 100.0f * scale);
-  ImGui::SetColumnWidth(4, 80.0f * scale);
-  ImGui::SetColumnWidth(5, 80.0f * scale);
-  ImGui::SetColumnWidth(6, 80.0f * scale);
-  ImGui::SetColumnWidth(7, 80.0f * scale);
-  ImGui::SetColumnWidth(8, 80.0f * scale);
-  ImGui::SetColumnWidth(9, 80.0f * scale);
+  const ImVec2 content_pos = ImGui::GetCursorScreenPos();
+  const ImVec2 content_size = ImGui::GetContentRegionAvail();
+  const float table_height = std::max(1.0f, content_size.y - ImGui::GetFrameHeightWithSpacing());
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  // Submit the footer first so clipboard logging can capture the table on the same frame.
+  ImGui::SetCursorScreenPos(ImVec2(content_pos.x + content_size.x - button_width,
+                                   content_pos.y + table_height + ImGui::GetStyle().ItemSpacing.y));
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+  ImGui::SetCursorScreenPos(content_pos);
 
-  for (const char* title : column_names)
+  const auto row = [](const char* text) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    color.w *= 0.7f;
+    ImGui::TextColored(color, "%s", text);
+  };
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+  if (ImGui::BeginTable("timers", NUM_TIMERS + 1,
+                        ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_SizingStretchSame |
+                          ImGuiTableFlags_ScrollY,
+                        ImVec2(0.0f, table_height)))
   {
-    ImGui::TextUnformatted(title);
-    ImGui::NextColumn();
-  }
+    ImGui::TableSetupColumn("");
+    ImGui::TableSetupColumn("Timer 0");
+    ImGui::TableSetupColumn("Timer 1");
+    ImGui::TableSetupColumn("Timer 2");
+    ImGui::TableHeadersRow();
 
-  for (u32 i = 0; i < NUM_TIMERS; i++)
-  {
-    const CounterState& cs = s_state.counters[i];
-    ImGui::PushStyleColor(ImGuiCol_Text,
-                          cs.counting_enabled ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-    ImGui::Text("%u", i);
-    ImGui::NextColumn();
-    ImGui::Text("%u", cs.counter);
-    ImGui::NextColumn();
-    ImGui::Text("%u", cs.target);
-    ImGui::NextColumn();
-    ImGui::Text("%s",
-                cs.mode.sync_enable ? sync_mode_names[static_cast<u8>(cs.mode.sync_mode.GetValue())] : "Disabled");
-    ImGui::NextColumn();
-    ImGui::Text("%s", cs.mode.reset_at_target ? "@Target" : "@Overflow");
-    ImGui::NextColumn();
-    ImGui::Text("%s%s", cs.mode.irq_at_target ? "Target " : "", cs.mode.irq_on_overflow ? "Overflow" : "");
-    ImGui::NextColumn();
-    ImGui::Text("%s", cs.mode.irq_repeat ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("%s", cs.mode.irq_pulse_n ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::Text("%s%s", clock_source_names[i][cs.mode.clock_source], cs.external_counting_enabled ? " (External)" : "");
-    ImGui::NextColumn();
-    ImGui::Text("%s%s", cs.mode.reached_target ? "Target " : "", cs.mode.reached_overflow ? "Overflow" : "");
-    ImGui::NextColumn();
-    ImGui::PopStyleColor();
+    row("Counting");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.counting_enabled ? "Enabled" : "Disabled");
+    }
+    row("Value");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::Text("%u", cs.counter);
+    }
+    row("Target");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::Text("%u", cs.target);
+    }
+    row("Clock");
+    for (u32 i = 0; i < NUM_TIMERS; i++)
+    {
+      const CounterState& cs = s_state.counters[i];
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(clock_source_names[i][cs.mode.clock_source]);
+    }
+    row("Sync");
+    for (u32 i = 0; i < NUM_TIMERS; i++)
+    {
+      const CounterState& cs = s_state.counters[i];
+      ImGui::TableNextColumn();
+      if (!cs.mode.sync_enable)
+        ImGui::TextUnformatted("Disabled");
+      else if (i == 2)
+        ImGui::TextUnformatted(cs.counting_enabled ? "Free run" : "Stopped");
+      else
+        ImGui::TextWrapped("%s", sync_mode_names[static_cast<u8>(cs.mode.sync_mode.GetValue())]);
+    }
+    row("Gate");
+    for (u32 i = 0; i < NUM_TIMERS; i++)
+    {
+      const CounterState& cs = s_state.counters[i];
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(i == 2 ? "None" : (cs.gate ? "Active" : "Inactive"));
+    }
+    row("Reset");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.reset_at_target ? "Target" : "Overflow");
+    }
+    row("IRQ source");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.irq_at_target ? (cs.mode.irq_on_overflow ? "Target + overflow" : "Target") :
+                                                     (cs.mode.irq_on_overflow ? "Overflow" : "None"));
+    }
+    row("IRQ repeat");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.irq_repeat ? "Enabled" : "Disabled");
+    }
+    row("IRQ mode");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.irq_pulse_n ? "Toggle" : "Pulse");
+    }
+    row("IRQ request");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.interrupt_request_n ? "Clear" : "Asserted");
+    }
+    row("Reached");
+    for (const CounterState& cs : s_state.counters)
+    {
+      ImGui::TableNextColumn();
+      ImGui::TextUnformatted(cs.mode.reached_target ? (cs.mode.reached_overflow ? "Target + overflow" : "Target") :
+                                                      (cs.mode.reached_overflow ? "Overflow" : "None"));
+    }
+    ImGui::EndTable();
   }
-
-  ImGui::Columns(1);
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+  if (copy_state)
+    ImGui::LogFinish();
 }

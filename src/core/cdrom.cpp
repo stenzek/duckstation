@@ -8,6 +8,7 @@
 #include "dma.h"
 #include "fullscreenui.h"
 #include "host.h"
+#include "imgui_overlays.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "settings.h"
@@ -35,6 +36,7 @@
 #include "common/xorshift_prng.h"
 
 #include "IconsEmoji.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
@@ -502,7 +504,6 @@ struct CDROMState
 
   std::map<u32, std::pair<u32, std::string>> file_map;
   bool file_map_created = false;
-  bool show_current_file = false;
 };
 } // namespace
 
@@ -584,7 +585,6 @@ void CDROM::Shutdown()
 {
   s_state.file_map.clear();
   s_state.file_map_created = false;
-  s_state.show_current_file = false;
 
   s_state.drive_event.Deactivate();
   s_state.async_interrupt_event.Deactivate();
@@ -1035,8 +1035,8 @@ bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std:
   if (s_state.drive_state != DriveState::ShellOpening && !(s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN))
     StartMotor();
 
-  if (s_state.show_current_file)
-    CreateFileMap();
+  s_state.file_map.clear();
+  s_state.file_map_created = false;
 
   return true;
 }
@@ -1054,8 +1054,8 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   INFO_LOG("Removing CD...");
   std::unique_ptr<CDImage> image = CDROMAsyncReader::RemoveMedia();
 
-  if (s_state.show_current_file)
-    CreateFileMap();
+  s_state.file_map.clear();
+  s_state.file_map_created = false;
 
   s_state.last_sector_header_valid = false;
 
@@ -4235,6 +4235,12 @@ void CDROM::CheckForSectorBufferReadComplete()
 
 void CDROM::CreateFileMap()
 {
+  if (!System::IsValid() || !ImGuiManager::IsCDROMDebugWindowVisible(g_settings.debug_window_visibility) ||
+      s_state.file_map_created)
+  {
+    return;
+  }
+
   s_state.file_map.clear();
   s_state.file_map_created = true;
 
@@ -4302,301 +4308,282 @@ const std::string* CDROM::LookupFileMap(u32 lba, u32* start_lba, u32* end_lba)
 
 void CDROM::DrawDebugWindow(float scale)
 {
-  static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
-  static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
+  if (!s_state.file_map_created)
+    Host::RunOnCoreThread(static_cast<void (*)()>(&CDROM::CreateFileMap));
 
-  // draw voice states
-  if (ImGui::CollapsingHeader("Media", ImGuiTreeNodeFlags_DefaultOpen))
+  const float left = ImGui::GetCursorPosX();
+  const float button_width =
+    ImGui::CalcTextSize(ICON_FA_COPY " Copy State").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+  ImGui::SetCursorPosX(left + ImGui::GetContentRegionAvail().x - button_width);
+  const bool copy_state = ImGui::Button(ICON_FA_COPY " Copy State");
+  if (copy_state)
+    ImGui::LogToClipboard();
+  ImGui::SameLine(left);
+  ImGui::PushFont(nullptr, std::ceil(18.0f * scale), 0.0f);
+  ImGui::AlignTextToFramePadding();
+  const float drive_speed =
+    (s_state.last_sector_read_ticks > 0) ?
+      ((static_cast<float>(System::GetTicksPerSecond()) / static_cast<float>(SINGLE_SPEED_SECTORS_PER_SECOND)) /
+       static_cast<float>(s_state.last_sector_read_ticks)) :
+      0.0f;
+  if (!CDROMAsyncReader::HasMedia())
+    ImGui::TextUnformatted("No disc");
+  else if ((s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing) &&
+           drive_speed > 0.0f)
+    ImGui::Text("%s at %.2fx", s_drive_state_names[static_cast<u8>(s_state.drive_state)], drive_speed);
+  else
+    ImGui::TextUnformatted(s_drive_state_names[static_cast<u8>(s_state.drive_state)]);
+  ImGui::PopFont();
+  ImGui::Spacing();
+
+  constexpr ImGuiTableFlags table_flags =
+    ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX | ImGuiTableFlags_SizingStretchSame;
+  static constexpr auto label = [](const char* text) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+    color.w *= 0.7f;
+    ImGui::TextColored(color, "%s", text);
+    ImGui::TableNextColumn();
+  };
+  static constexpr auto flag = [](const char* text, bool value) {
+    label(text);
+    ImGui::TextUnformatted(value ? "Yes" : "No");
+  };
+
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.0f * scale, ImGui::GetStyle().CellPadding.y));
+  ImGui::PushStyleColor(ImGuiCol_TableRowBgAlt, ImVec4(1.0f, 1.0f, 1.0f, 0.035f));
+  if (ImGui::BeginTable("layout", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_BordersInnerV))
   {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::SeparatorText("Media");
     if (CDROMAsyncReader::HasMedia())
     {
       const CDImage* const media = CDROMAsyncReader::GetMedia();
       const CDImage::Position disc_position = CDImage::Position::FromLBA(s_state.current_lba);
-      const float start_y = ImGui::GetCursorPosY();
-
-      if (media->HasSubImages())
+      const CDImage::Index* const index = media->GetIndexForDiscPosition(s_state.current_lba);
+      if (ImGui::BeginTable("media", 2, table_flags))
       {
-        ImGui::Text("Filename: %s [Subimage %u of %u] [%u buffered sectors]", media->GetPath().c_str(),
-                    media->GetCurrentSubImage() + 1u, media->GetSubImageCount(),
-                    CDROMAsyncReader::GetBufferedSectorCount());
-      }
-      else
-      {
-        ImGui::Text("Filename: %s [%u buffered sectors]", media->GetPath().c_str(),
-                    CDROMAsyncReader::GetBufferedSectorCount());
-      }
-
-      ImGui::Text("Disc Position: MSF[%02u:%02u:%02u] LBA[%u]", disc_position.minute, disc_position.second,
-                  disc_position.frame, disc_position.ToLBA());
-
-      const CDImage::Index* index = media->GetIndexForDiscPosition(s_state.current_lba);
-      if (!index || index->track_number > media->GetTrackCount())
-      {
-        ImGui::Text("Track Position: Lead-out");
-      }
-      else
-      {
-        const CDImage::Position track_position = CDImage::Position::FromLBA(
-          s_state.current_lba - media->GetTrackStartPosition(Truncate8(index->track_number)));
-        ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", index->track_number,
-                    track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
-      }
-
-      ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", s_state.last_sector_header.minute,
-                  s_state.last_sector_header.second, s_state.last_sector_header.frame,
-                  s_state.last_sector_header.sector_mode);
-
-      if (s_state.show_current_file)
-      {
-        if (index && index->track_number == 1)
+        ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+        label("Image");
+        ImGui::TextWrapped("%s", media->GetPath().c_str());
+        if (media->HasSubImages())
         {
-          if (!s_state.file_map_created)
+          label("Subimage");
+          ImGui::Text("%u / %u", media->GetCurrentSubImage() + 1u, media->GetSubImageCount());
+        }
+        label("Buffered sectors");
+        ImGui::Text("%u", CDROMAsyncReader::GetBufferedSectorCount());
+        label("Disc position");
+        ImGui::Text("%02u:%02u:%02u (LBA %u)", disc_position.minute, disc_position.second, disc_position.frame,
+                    disc_position.ToLBA());
+        label("Track position");
+        if (!index || index->track_number > media->GetTrackCount())
+        {
+          ImGui::TextUnformatted("Lead-out");
+        }
+        else
+        {
+          const CDImage::Position track_position = CDImage::Position::FromLBA(
+            s_state.current_lba - media->GetTrackStartPosition(Truncate8(index->track_number)));
+          ImGui::TextWrapped("%u " ICON_EMOJI_MIDDLE_DOT " %02u:%02u:%02u (LBA %u)", index->track_number,
+                             track_position.minute, track_position.second, track_position.frame,
+                             track_position.ToLBA());
+        }
+        label("Last sector");
+        ImGui::Text("%02X:%02X:%02X (Mode %u)", s_state.last_sector_header.minute, s_state.last_sector_header.second,
+                    s_state.last_sector_header.frame, s_state.last_sector_header.sector_mode);
+        label("Current file");
+        if (!s_state.file_map_created)
+        {
+          ImGui::TextUnformatted("Loading...");
+        }
+        else if (index && index->track_number == 1)
+        {
+          u32 start_lba, end_lba;
+          const u32 track_lba = s_state.current_lba - media->GetTrackStartPosition(1);
+          const std::string* const file = LookupFileMap(track_lba, &start_lba, &end_lba);
+          ImGui::TextWrapped("%s", file ? file->c_str() : "Unknown");
+          if (file)
           {
-            Host::RunOnCoreThread(static_cast<void (*)()>(&CDROM::CreateFileMap));
-            return;
-          }
-
-          u32 current_file_start_lba, current_file_end_lba;
-          const u32 track_lba = s_state.current_lba - media->GetTrackStartPosition(Truncate8(index->track_number));
-          const std::string* current_file = LookupFileMap(track_lba, &current_file_start_lba, &current_file_end_lba);
-          if (current_file)
-          {
-            static constexpr auto readable_size = [](u32 val) {
-              // based on
-              // https://stackoverflow.com/questions/1449805/how-to-format-a-number-using-comma-as-thousands-separator-in-c
-              // don't want to use locale...
-              TinyString ret;
-              TinyString temp;
-              temp.append_format("{}", val);
-
-              u32 commas = 2u - (temp.length() % 3u);
-              for (const char* p = temp.c_str(); *p != 0u; p++)
-              {
-                ret.append(*p);
-                if (commas == 1)
-                  ret.append(',');
-                commas = (commas + 1) % 3;
-              }
-
-              DebugAssert(!ret.empty());
-              ret.erase(-1);
-              return ret;
-            };
-            ImGui::Text(
-              "Current File: %s (%s of %s bytes)", current_file->c_str(),
-              readable_size((track_lba - current_file_start_lba) * CDImage::DATA_SECTOR_SIZE).c_str(),
-              readable_size((current_file_end_lba - current_file_start_lba + 1) * CDImage::DATA_SECTOR_SIZE).c_str());
-          }
-          else
-          {
-            ImGui::Text("Current File: <Unknown>");
+            label("File position");
+            const TinyString position = TinyString::from_format(
+              "{} / {} bytes", fmt::group_digits((track_lba - start_lba) * CDImage::DATA_SECTOR_SIZE),
+              fmt::group_digits((end_lba - start_lba + 1) * CDImage::DATA_SECTOR_SIZE));
+            ImGui::TextWrapped("%s", position.c_str());
           }
         }
         else
         {
-          ImGui::Text("Current File: <Non-Data Track>");
+          ImGui::TextUnformatted("Non-data track");
         }
+        label("File map");
+        ImGui::Text("%u entries", static_cast<u32>(s_state.file_map.size()));
+        ImGui::EndTable();
+      }
+    }
+    else
+    {
+      ImGui::TextUnformatted("No disc inserted");
+    }
 
-        ImGui::SameLine();
-        ImGui::Text("[%u files on disc]", static_cast<u32>(s_state.file_map.size()));
+    ImGui::SeparatorText("Command / Interrupts");
+    if (ImGui::BeginTable("command", 2, table_flags))
+    {
+      ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+      label("Command");
+      if (HasPendingCommand())
+      {
+        ImGui::TextWrapped("%s (0x%02X, %d ticks)", GetCommandName(s_state.command), static_cast<u8>(s_state.command),
+                           s_state.command_event.IsActive() ? s_state.command_event.GetTicksUntilNextExecution() : 0);
       }
       else
       {
-        const float end_y = ImGui::GetCursorPosY();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 140.0f * scale);
-        ImGui::SetCursorPosY(start_y);
-        if (ImGui::Button("Show Current File"))
-          s_state.show_current_file = true;
-
-        ImGui::SetCursorPosY(end_y);
+        ImGui::TextUnformatted("None");
       }
+      label("Last read speed");
+      if (drive_speed > 0.0f)
+        ImGui::Text("%.2fx", drive_speed);
+      else
+        ImGui::TextUnformatted("None");
+      label("Drive ticks remaining");
+      ImGui::Text("%d", s_state.drive_event.IsActive() ? s_state.drive_event.GetTicksUntilNextExecution() : 0);
+      label("Read speedup");
+      if (g_settings.cdrom_read_speedup == 1)
+      {
+        ImGui::TextUnformatted("Disabled");
+      }
+      else
+      {
+        if (!IsDriveIdle() && !CanUseReadSpeedup())
+          ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Blocked");
+        else
+          ImGui::TextUnformatted("Enabled");
+      }
+
+      label("Interrupt enable");
+      ImGui::Text("0x%02X", s_state.interrupt_enable_register);
+      label("Interrupt flag");
+      ImGui::Text("0x%02X", s_state.interrupt_flag_register);
+      label("Pending interrupt");
+      if (HasPendingAsyncInterrupt())
+        ImGui::Text("0x%02X", s_state.pending_async_interrupt);
+      else
+        ImGui::TextUnformatted("None");
+      ImGui::EndTable();
     }
-    else
+
+    ImGui::SeparatorText("Status");
+    if (ImGui::BeginTable("status", 2, table_flags))
     {
-      ImGui::Text("No media inserted.");
+      ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+      flag("ADPBUSY", s_state.status.ADPBUSY);
+      flag("PRMEMPTY", s_state.status.PRMEMPTY);
+      flag("PRMWRDY", s_state.status.PRMWRDY);
+      flag("RSLRRDY", s_state.status.RSLRRDY);
+      flag("DRQSTS", s_state.status.DRQSTS);
+      flag("BUSYSTS", s_state.status.BUSYSTS);
+      ImGui::EndTable();
     }
+
+    ImGui::TableSetColumnIndex(1);
+    ImGui::SeparatorText("Secondary status");
+    if (ImGui::BeginTable("secondary", 2, table_flags))
+    {
+      ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+      flag("Error", s_state.secondary_status.error);
+      flag("Motor on", s_state.secondary_status.motor_on);
+      flag("Seek error", s_state.secondary_status.seek_error);
+      flag("ID error", s_state.secondary_status.id_error);
+      flag("Shell open", s_state.secondary_status.shell_open);
+      if (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED)
+      {
+        label("Manual lid");
+        ImGui::TextUnformatted((s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN) ? "Open" : "Closed");
+      }
+      flag("Reading", s_state.secondary_status.reading);
+      flag("Seeking", s_state.secondary_status.seeking);
+      flag("Playing CDDA", s_state.secondary_status.playing_cdda);
+      ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("Mode");
+    if (ImGui::BeginTable("mode", 2, table_flags))
+    {
+      ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+      flag("CDDA", s_state.mode.cdda);
+      flag("Auto pause", s_state.mode.auto_pause);
+      flag("Report audio", s_state.mode.report_audio);
+      flag("XA filter", s_state.mode.xa_filter);
+      label("XA filter file / channel");
+      ImGui::Text("%u / %u", s_state.xa_filter_file_number, s_state.xa_filter_channel_number);
+      flag("Ignore bit", s_state.mode.ignore_bit);
+      flag("Raw sectors", s_state.mode.read_raw_sector);
+      flag("XA enable", s_state.mode.xa_enable);
+      flag("Double speed", s_state.mode.double_speed);
+      ImGui::EndTable();
+    }
+
+    ImGui::SeparatorText("CD Audio");
+    if (ImGui::BeginTable("audio", 2, table_flags))
+    {
+      ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthStretch, 0.3f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.7f);
+      label("Playing");
+      if (s_state.drive_state == DriveState::Reading && s_state.mode.xa_enable)
+      {
+        ImGui::TextUnformatted("XA-ADPCM");
+        label("XA file / channel");
+        ImGui::Text("%u / %u", s_state.xa_current_file_number, s_state.xa_current_channel_number);
+        label("Format");
+        ImGui::TextWrapped("%s, %s, %u Hz", s_state.xa_current_codinginfo.IsStereo() ? "Stereo" : "Mono",
+                           s_state.xa_current_codinginfo.Is8BitADPCM() ? "8-bit" : "4-bit",
+                           s_state.xa_current_codinginfo.IsHalfSampleRate() ? 18900u : 37800u);
+      }
+      else if (s_state.drive_state == DriveState::Playing)
+      {
+        ImGui::Text("CDDA (track %X)", s_state.last_subq.track_number_bcd);
+      }
+      else
+      {
+        ImGui::TextUnformatted("Inactive");
+      }
+      flag("Muted", s_state.muted);
+      label("Audio FIFO");
+      ImGui::Text("%u frames", s_state.audio_fifo.GetSize());
+      ImGui::EndTable();
+    }
+    if (ImGui::BeginTable("volume", 3, table_flags))
+    {
+      ImGui::TableSetupColumn("");
+      ImGui::TableSetupColumn("Left output");
+      ImGui::TableSetupColumn("Right output");
+      ImGui::TableHeadersRow();
+      for (u32 input = 0; input < 2; input++)
+      {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(input == 0 ? "Left input" : "Right input");
+        for (u32 output = 0; output < 2; output++)
+        {
+          ImGui::TableNextColumn();
+          const u8 volume = s_state.cd_audio_volume_matrix[input][output];
+          ImGui::Text("%02X (%u%%)", volume, ZeroExtend32(volume) * 100 / 0x80);
+        }
+      }
+      ImGui::EndTable();
+    }
+    ImGui::EndTable();
   }
 
-  if (ImGui::CollapsingHeader("Status/Mode", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    ImGui::Columns(3);
-
-    ImGui::Text("Status");
-    ImGui::NextColumn();
-    ImGui::Text("Secondary Status");
-    ImGui::NextColumn();
-    ImGui::Text("Mode Status");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.ADPBUSY ? active_color : inactive_color, "ADPBUSY: %s",
-                       s_state.status.ADPBUSY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.error ? active_color : inactive_color, "Error: %s",
-                       s_state.secondary_status.error ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.cdda ? active_color : inactive_color, "CDDA: %s", s_state.mode.cdda ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.PRMEMPTY ? active_color : inactive_color, "PRMEMPTY: %s",
-                       s_state.status.PRMEMPTY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.motor_on ? active_color : inactive_color, "Motor On: %s",
-                       s_state.secondary_status.motor_on ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.auto_pause ? active_color : inactive_color, "Auto Pause: %s",
-                       s_state.mode.auto_pause ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.PRMWRDY ? active_color : inactive_color, "PRMWRDY: %s",
-                       s_state.status.PRMWRDY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.seek_error ? active_color : inactive_color, "Seek Error: %s",
-                       s_state.secondary_status.seek_error ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.report_audio ? active_color : inactive_color, "Report Audio: %s",
-                       s_state.mode.report_audio ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.RSLRRDY ? active_color : inactive_color, "RSLRRDY: %s",
-                       s_state.status.RSLRRDY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.id_error ? active_color : inactive_color, "ID Error: %s",
-                       s_state.secondary_status.id_error ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.xa_filter ? active_color : inactive_color, "XA Filter: %s (File %u Channel %u)",
-                       s_state.mode.xa_filter ? "Yes" : "No", s_state.xa_filter_file_number,
-                       s_state.xa_filter_channel_number);
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.DRQSTS ? active_color : inactive_color, "DRQSTS: %s",
-                       s_state.status.DRQSTS ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.shell_open ? active_color : inactive_color, "Shell Open: %s",
-                       s_state.secondary_status.shell_open ? "Yes" : "No");
-    if (s_state.manual_lid_control & MANUAL_LID_CONTROL_ENABLED)
-    {
-      const bool open = (s_state.manual_lid_control & MANUAL_LID_CONTROL_OPEN);
-      ImGui::SameLine();
-      ImGui::TextColored(open ? active_color : inactive_color, "Lid: %s", open ? "Open" : "Closed");
-    }
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.ignore_bit ? active_color : inactive_color, "Ignore Bit: %s",
-                       s_state.mode.ignore_bit ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_state.status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
-                       s_state.status.BUSYSTS ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.reading ? active_color : inactive_color, "Reading: %s",
-                       s_state.secondary_status.reading ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",
-                       s_state.mode.read_raw_sector ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.seeking ? active_color : inactive_color, "Seeking: %s",
-                       s_state.secondary_status.seeking ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.xa_enable ? active_color : inactive_color, "XA Enable: %s",
-                       s_state.mode.xa_enable ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.secondary_status.playing_cdda ? active_color : inactive_color, "Playing CDDA: %s",
-                       s_state.secondary_status.playing_cdda ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_state.mode.double_speed ? active_color : inactive_color, "Double Speed: %s",
-                       s_state.mode.double_speed ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::Columns(1);
-    ImGui::NewLine();
-
-    ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, std::ceil(scale * 500.0f));
-
-    if (HasPendingCommand())
-    {
-      ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)", GetCommandName(s_state.command),
-                         static_cast<u8>(s_state.command),
-                         s_state.command_event.IsActive() ? s_state.command_event.GetTicksUntilNextExecution() : 0);
-    }
-    else
-    {
-      ImGui::TextColored(inactive_color, "Command: None");
-    }
-
-    ImGui::NextColumn();
-    ImGui::Text("Interrupt Enable Register: 0x%02X", s_state.interrupt_enable_register);
-
-    ImGui::NextColumn();
-    const bool drive_idle = IsDriveIdle();
-    if (drive_idle)
-    {
-      ImGui::TextColored(inactive_color, "Drive: Idle");
-    }
-    else
-    {
-      ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
-                         s_drive_state_names[static_cast<u8>(s_state.drive_state)],
-                         s_state.drive_event.IsActive() ? s_state.drive_event.GetTicksUntilNextExecution() : 0);
-    }
-
-    ImGui::NextColumn();
-    ImGui::Text("Interrupt Flag Register: 0x%02X", s_state.interrupt_flag_register);
-
-    ImGui::NextColumn();
-    ImGui::TextColored(drive_idle ? inactive_color : active_color, "Effective Drive Speed: %.2fx",
-                       (s_state.last_sector_read_ticks > 0) ? ((static_cast<float>(System::GetTicksPerSecond()) /
-                                                                static_cast<float>(SINGLE_SPEED_SECTORS_PER_SECOND)) /
-                                                               static_cast<float>(s_state.last_sector_read_ticks)) :
-                                                              0.0f);
-    if (!drive_idle && g_settings.cdrom_read_speedup != 1 && !CanUseReadSpeedup())
-    {
-      ImGui::SameLine();
-      ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), 200.0f));
-      ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "SPEEDUP BLOCKED");
-    }
-
-    ImGui::NextColumn();
-    if (HasPendingAsyncInterrupt())
-    {
-      ImGui::SameLine();
-      ImGui::TextColored(inactive_color, "0x%02X pending", s_state.pending_async_interrupt);
-    }
-
-    ImGui::Columns(1);
-    ImGui::NewLine();
-  }
-
-  if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    if (s_state.drive_state == DriveState::Reading && s_state.mode.xa_enable)
-    {
-      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u | Channel %u | %s | %s | %s)",
-                         s_state.xa_current_file_number, s_state.xa_current_channel_number,
-                         s_state.xa_current_codinginfo.IsStereo() ? "Stereo" : "Mono",
-                         s_state.xa_current_codinginfo.Is8BitADPCM() ? "8-bit" : "4-bit",
-                         s_state.xa_current_codinginfo.IsHalfSampleRate() ? "18900hz" : "37800hz");
-    }
-    else if (s_state.drive_state == DriveState::Playing)
-    {
-      ImGui::TextColored(active_color, "Playing: CDDA (Track %x)", s_state.last_subq.track_number_bcd);
-    }
-    else
-    {
-      ImGui::TextColored(inactive_color, "Playing: Inactive");
-    }
-
-    ImGui::TextColored(s_state.muted ? inactive_color : active_color, "Muted: %s", s_state.muted ? "Yes" : "No");
-    ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)",
-                s_state.cd_audio_volume_matrix[0][0], ZeroExtend32(s_state.cd_audio_volume_matrix[0][0]) * 100 / 0x80,
-                s_state.cd_audio_volume_matrix[1][0], ZeroExtend32(s_state.cd_audio_volume_matrix[1][0]) * 100 / 0x80);
-    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)",
-                s_state.cd_audio_volume_matrix[0][1], ZeroExtend32(s_state.cd_audio_volume_matrix[0][1]) * 100 / 0x80,
-                s_state.cd_audio_volume_matrix[1][1], ZeroExtend32(s_state.cd_audio_volume_matrix[1][1]) * 100 / 0x80);
-
-    ImGui::Text("Audio FIFO Size: %u frames", s_state.audio_fifo.GetSize());
-  }
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar();
+  if (copy_state)
+    ImGui::LogFinish();
 }
