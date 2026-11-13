@@ -1184,8 +1184,8 @@ This session will start in offline mode.</source>
         <translation>有効にすると、実績の開発を可能にする RAIntegration DLL を読み込みます。&lt;br&gt;RA_Integration.dll ファイルを DuckStation の実行ファイルと同じディレクトリに配置する必要があります。</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>現在のキャッシュサイズ: %1 MB (%3 個のオブジェクトで %2 MB)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>現在のキャッシュサイズ: %1（%3 個のオブジェクト、合計 %2）</translation>
     </message>
     <message>
         <source>Show Debug Menu</source>
@@ -8507,10 +8507,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>ロード中...</translation>
     </message>
@@ -9323,6 +9319,22 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>最大 (より安全)</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>物理ドライブの速度:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>変更しない</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>物理ドライブのサブコードを無視</translation>
+    </message>
+    <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>停止時に次のディスクへ切り替え</translation>
     </message>
@@ -9365,10 +9377,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>ドライブサブコードを無視する</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -9473,6 +9481,18 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>ゲームが CD-ROM モーターを停止したとき、自動的に次のディスクへ切り替えます。最後のディスクが選択済みの場合は切り替えません。&lt;strong&gt;すべてのゲームで動作するわけではありません。&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>物理ドライブの速度</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>物理ディスクを使用する際のホストドライブの速度を設定します。速度を上げると途切れが減る場合がありますが、ドライブの動作音が大きくなります。「変更しない」に設定すると、ドライブ本来の速度を維持します。この設定に対応していないドライブもあります。</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13961,6 +13981,10 @@ You cannot undo this action.</source>
         <translation>各フレームを表示する前にディスプレイの更新を待ち、ティアリングを防ぎます。GSync/FreeSync 対応ディスプレイでも有効のままにしてください。</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Web キャッシュサイズ: {0}（{2} 個のオブジェクト、合計 {1}）</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
@@ -15804,10 +15828,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>Warning Message Duration</source>
         <translation>警告メッセージの表示時間</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Web キャッシュサイズ: {0} MB ({2} 個のオブジェクトに {1} MB)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18580,6 +18600,30 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>None</source>
         <translation>なし</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19127,10 +19171,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>{} を展開しています...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;親ディレクトリ&gt;</translation>
     </message>
@@ -19319,12 +19359,20 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>なし</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>コントローラーが再接続されたため、システムを再開しました。</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} が再接続されました。</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>コントローラー {} が接続されました。</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>コントローラー {} が切断されたためシステムを一時停止しました。</translation>
+        <source>System paused by controller.</source>
+        <translation>コントローラーの接続が切れたため、システムを一時停止しました。</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23487,6 +23535,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>Download failed: Data is empty.</source>
         <translation>ダウンロードに失敗しました: データが空です。</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} が切断されました。</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

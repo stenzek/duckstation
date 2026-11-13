@@ -1198,8 +1198,8 @@ Error: {}</source>
         <translation>이 기능을 활성화하면 DuckStation이 RAIntegration DLL을 불러와서 도전 과제를 개발할 수 있습니다.&lt;br&gt;RA_Integration.dll 파일은 DuckStation 실행 파일과 같은 디렉터리에 있어야 합니다.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>현재 캐시 크기: %1MB (%3개 개체에 %2MB)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>현재 캐시 크기: %1 (객체 %3개에 %2)</translation>
     </message>
 </context>
 <context>
@@ -8526,10 +8526,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>%1(%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1MB</translation>
-    </message>
-    <message>
         <source>Updater Warning</source>
         <translation>업데이터 경고</translation>
     </message>
@@ -9326,6 +9322,22 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>6배(12배속)</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>물리 드라이브 속도:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>변경 안 함</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>물리 드라이브 서브코드 무시</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>이미지 패치 적용</translation>
     </message>
@@ -9376,10 +9388,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>6x</source>
         <translation>6배</translation>
-    </message>
-    <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>드라이브 하위 코드 무시</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -9480,6 +9488,18 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>게임이 CD-ROM 모터를 멈추면 자동으로 게임의 다음 디스크로 전환합니다. 게임의 마지막 디스크가 이미 선택된 경우 전환이 발생하지 않습니다. &lt;strong&gt;모든 게임에서 작동하는 것은 아닙니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>물리 드라이브 속도</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>실제 디스크를 사용할 때 호스트 드라이브의 속도를 설정합니다. 속도가 높으면 끊김이 줄어들 수 있지만 드라이브 소음이 커집니다. 드라이브의 원래 속도를 유지하려면 ‘변경 안 함’을 선택하세요. 일부 드라이브는 이 설정을 지원하지 않습니다.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13539,6 +13559,10 @@ Please check your username and password, and try again.</source>
         <translation>경고 : 게임 패치를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>웹 캐시 크기: {0} (객체 {2}개에 {1})</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>활성화하면 DuckStation이 비공식 도전 과제를 추적합니다. 잠금 해제 정보는 로컬에 저장되며 RetroAchievements로 전송되지 않습니다.</translation>
     </message>
@@ -15819,10 +15843,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>Warning Message Duration</source>
         <translation>경고 메시지 표시 시간</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>웹 캐시 크기: {0}MB({2}개 객체에 {1}MB)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18625,6 +18645,30 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>None</source>
         <translation>없음</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19172,10 +19216,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>추출 중 {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;상위 디렉터리&gt;</translation>
     </message>
@@ -19364,12 +19404,20 @@ Shift 키를 누른 채 클릭하면 여러 할당을 설정할 수 있습니다
         <translation>없음</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>컨트롤러가 다시 연결되어 시스템을 재개했습니다.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{}이(가) 다시 연결되었습니다.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>컨트롤러 {}이(가) 연결되었습니다.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>컨트롤러 {}의 연결이 끊어져 시스템이 일시 중지되었습니다.</translation>
+        <source>System paused by controller.</source>
+        <translation>컨트롤러 연결이 끊어져 시스템을 일시 정지했습니다.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23528,6 +23576,10 @@ Would you like to update the shortcut to point to the current location?</source>
         <source>Unknown</source>
         <oldsource>Unknown</oldsource>
         <translation>알 수 없음</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} 연결이 끊어졌습니다.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

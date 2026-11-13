@@ -1072,8 +1072,8 @@ Unread messages: {}</source>
         <translation>启用后，DuckStation将加载允许成就开发的RAIntegration DLL。&lt;br&gt;RA_Integration.dll文件必须放在与DuckStation可执行文件相同的目录中。</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>当前缓存大小: %1 MB (%3个对象，共%2 MB)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>当前缓存大小：%1（%3 个对象，共 %2）</translation>
     </message>
     <message>
         <source>Log Level:</source>
@@ -8495,10 +8495,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Updater Warning</source>
         <translation>更新程序警告</translation>
     </message>
@@ -9267,6 +9263,22 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>6x</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>物理光驱速度：</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>不更改</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>忽略物理光驱子码</translation>
+    </message>
+    <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>在停止时切换到下一张光盘</translation>
     </message>
@@ -9317,6 +9329,18 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的下一张光盘。如果已经选择了游戏中的最后一张光盘，则不会进行切换。&lt;strong&gt;并非对所有游戏都有效。&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>物理光驱速度</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>设置使用实体光盘时宿主机光驱的速度。较高的速度可以减少卡顿，但会使光驱噪声增大。选择“不更改”可保持光驱原有速度。并非所有光驱都支持此设置。</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -9469,10 +9493,6 @@ This warning will only be shown once.</source>
     <message>
         <source>Force Full RAM Mapping</source>
         <translation>强制映射全部 RAM</translation>
-    </message>
-    <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>忽略驱动器子码</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -12993,6 +13013,10 @@ Do you want to {0} anyway?</source>
 您仍然想要{0}吗？</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>网页缓存大小：{0}（{2} 个对象，共 {1}）</translation>
+    </message>
+    <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>当启动大视画模式时，将会显示游戏列表而非主菜单。</translation>
     </message>
@@ -15577,10 +15601,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Warning Message Duration</source>
         <translation>警告消息持续时间</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>网络缓存大小: {0} MB ({2}个对象，共{1} MB)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18577,6 +18597,30 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>None</source>
         <translation>无</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19124,10 +19168,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>正在提取{}…</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;上级目录&gt;</translation>
     </message>
@@ -19316,12 +19356,20 @@ Shift-click to set multiple bindings.</source>
         <translation>无</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>控制器已重新连接，系统已恢复运行。</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} 已重新连接。</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>控制器{}已连接。</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>系统暂停，因为控制器{}已断开连接。</translation>
+        <source>System paused by controller.</source>
+        <translation>控制器连接已断开，系统已暂停。</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23483,6 +23531,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>未指定启动文件名，无法使用批处理模式。</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} 已断开连接。</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

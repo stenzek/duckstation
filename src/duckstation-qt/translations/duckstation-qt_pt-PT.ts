@@ -1207,8 +1207,8 @@ Esta sessão será iniciada em modo offline.</translation>
         <translation>Quando ativado, o DuckStation carrega a DLL RAIntegration, que permite desenvolver conquistas.&lt;br&gt;O ficheiro RA_Integration.dll tem de ser colocado no mesmo diretório que o executável do DuckStation.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Tamanho atual da cache: %1 MB (%2 MB em %3 objetos)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Tamanho atual da cache: %1 (%2 em %3 objetos)</translation>
     </message>
 </context>
 <context>
@@ -8548,10 +8548,6 @@ Pode atualizar manualmente o DuckStation transferindo novamente a versão mais r
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>A carregar...</translation>
     </message>
@@ -9353,10 +9349,6 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
         <translation>Máximo (mais seguro)</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Ignorar subcódigo da unidade</translation>
-    </message>
-    <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>Mudar para o disco seguinte ao parar</translation>
     </message>
@@ -9395,6 +9387,22 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
     <message>
         <source>6x</source>
         <translation>6x</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Velocidade da unidade física:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Não alterar</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ignorar subcódigo da unidade física</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9511,6 +9519,18 @@ A utilização desta batota não funcionará como esperado. Quer continuar?</tra
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Muda automaticamente para o disco seguinte do jogo quando este para o motor do CD-ROM. Não ocorrerá nenhuma mudança se o último disco do jogo já estiver selecionado. &lt;strong&gt;Não funciona com todos os jogos.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Velocidade da unidade física</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Define a velocidade da unidade do anfitrião ao utilizar discos físicos. Velocidades mais elevadas podem reduzir as quebras, mas tornam a unidade mais ruidosa. Selecione «Não alterar» para manter a velocidade própria da unidade. Nem todas as unidades suportam esta opção.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -14732,6 +14752,10 @@ Verifique o seu nome de utilizador e palavra-passe e tente novamente.</translati
         <translation>Valor: {}</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Tamanho da cache Web: {0} ({1} em {2} objetos)</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Quando ativado, o DuckStation acompanhará as conquistas não oficiais. Os desbloqueios serão guardados localmente e não enviados para o RetroAchievements.</translation>
     </message>
@@ -15842,10 +15866,6 @@ Pretende {0} mesmo assim?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Duração da mensagem de aviso</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Tamanho da cache Web: {0} MB ({1} MB em {2} objetos)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18639,6 +18659,30 @@ Analisar de forma recursiva demora mais tempo, mas irá identificar ficheiros em
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19186,10 +19230,6 @@ Analisar de forma recursiva demora mais tempo, mas irá identificar ficheiros em
         <translation>A extrair {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Pasta Superior&gt;</translation>
     </message>
@@ -19379,12 +19419,20 @@ Clique com Shift para definir várias atribuições.</translation>
         <translation>Nenhum</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Sistema retomado após o comando voltar a ser ligado.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} foi novamente ligado.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Comando {} ligado.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>O sistema foi pausado porque o comando {} foi desligado.</translation>
+        <source>System paused by controller.</source>
+        <translation>Sistema colocado em pausa devido à perda de ligação ao comando.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23549,6 +23597,10 @@ Deseja atualizar o atalho para apontar para a localização atual?</translation>
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível utilizar o modo em lote, porque não foi especificado um ficheiro de arranque.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} foi desligado.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

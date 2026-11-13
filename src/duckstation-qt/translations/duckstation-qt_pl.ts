@@ -1219,8 +1219,8 @@ Ta sesja rozpocznie się w trybie offline.</translation>
         <translation>Po włączeniu DuckStation załaduje bibliotekę DLL RAIntegration, która umożliwia tworzenie osiągnięć.&lt;br&gt;Plik RA_Integration.dll musi znajdować się w tym samym katalogu co plik wykonywalny DuckStation.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Bieżący rozmiar pamięci podręcznej: %1 MB (%2 MB w %3 obiektach)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Bieżący rozmiar pamięci podręcznej: %1 (%2 w %3 obiektach)</translation>
     </message>
 </context>
 <context>
@@ -8578,10 +8578,6 @@ Możesz ręcznie zaktualizować DuckStation, ponownie pobierając najnowsze wyda
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Updater Warning</source>
         <translation>Ostrzeżenie aktualizatora</translation>
     </message>
@@ -9436,12 +9432,24 @@ Próba użycia tego kodu nie zadziała zgodnie z oczekiwaniami. Czy chcesz konty
         <translation>6x</translation>
     </message>
     <message>
-        <source>Apply Image Patches</source>
-        <translation>Używaj łatek obrazów</translation>
+        <source>Physical Drive Speed:</source>
+        <translation>Prędkość fizycznego napędu:</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Zignoruj podkody dysku</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Nie zmieniaj</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ignoruj podkod fizycznego napędu</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <translation>Używaj łatek obrazów</translation>
     </message>
     <message>
         <source>Preload Image to RAM</source>
@@ -9542,6 +9550,18 @@ Próba użycia tego kodu nie zadziała zgodnie z oczekiwaniami. Czy chcesz konty
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Automatycznie przełącza na następną płytę w grze, gdy gra zatrzyma silnik CD-ROM. Przełączenie nie nastąpi, jeśli wybrano już ostatnią płytę gry. &lt;strong&gt;Nie działa ze wszystkimi grami.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Prędkość fizycznego napędu</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Ustawia prędkość napędu komputera podczas korzystania z fizycznych płyt. Wyższe prędkości mogą ograniczyć przycięcia, ale zwiększają hałas napędu. Wybierz „Nie zmieniaj”, aby pozostawić prędkość napędu bez zmian. Nie wszystkie napędy to obsługują.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13972,10 +13992,6 @@ Błąd:</translation>
         <translation>Czas wyświetlania komunikatów ostrzegawczych</translation>
     </message>
     <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Rozmiar pamięci podręcznej sieci: {0} MB ({1} MB w {2} obiektach)</translation>
-    </message>
-    <message>
         <source>Web cache cleared.</source>
         <translation>Wyczyszczono pamięć podręczną sieci.</translation>
     </message>
@@ -15907,6 +15923,10 @@ Do you want to {0} anyway?</source>
         <translation>OSTRZEŻENIE: Twoja gra nadal zapisuje się na karcie pamięci. Wykonanie polecenia „{0}” może NIEODWRACALNIE ZNISZCZYĆ TWOJĄ KARTĘ PAMIĘCI. Zalecamy wznowienie gry i odczekanie 5 sekund na zakończenie zapisywania.
 
 Czy mimo to wykonać polecenie „{0}”?</translation>
+    </message>
+    <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Rozmiar pamięci podręcznej sieci: {0} ({1} w {2} obiektach)</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
@@ -18699,6 +18719,30 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <source>None</source>
         <translation>Nic</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19246,10 +19290,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>Wypakowywanie {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Katalog nadrzędny&gt;</translation>
     </message>
@@ -19440,12 +19480,20 @@ Kliknij z klawiszem Shift, aby ustawić wiele powiązań.</translation>
         <translation>Nic</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Wznowiono działanie systemu po ponownym podłączeniu kontrolera.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>Ponownie połączono: {}.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Połączono kontroler {}.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Wstrzymano działanie systemu, ponieważ kontroler {} został odłączony.</translation>
+        <source>System paused by controller.</source>
+        <translation>Wstrzymano działanie systemu z powodu odłączenia kontrolera.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23486,6 +23534,10 @@ Błąd: {1}</translation>
     <message>
         <source>Download failed: Data is empty.</source>
         <translation>Pobieranie nie powiodło się: Dane są puste.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>Rozłączono: {}.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

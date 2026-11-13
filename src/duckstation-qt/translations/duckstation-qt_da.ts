@@ -1197,8 +1197,8 @@ Denne session starter i offlinetilstand.</translation>
         <translation>Når dette er aktiveret, indlæser DuckStation RAIntegration-DLL&apos;en, som muliggør udvikling af præstationer.&lt;br&gt;Filen RA_Integration.dll skal placeres i samme mappe som DuckStations eksekverbare fil.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Aktuel cachestørrelse: %1 MB (%2 MB i %3 objekter)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Aktuel cachestørrelse: %1 (%2 i %3 objekter)</translation>
     </message>
     <message>
         <source>Test Achievements Offline Mode</source>
@@ -8546,10 +8546,6 @@ Du kan opdatere DuckStation manuelt ved at hente den nyeste udgave igen. Vil du 
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Indlæser...</translation>
     </message>
@@ -9395,12 +9391,24 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
         <translation>6x</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Det fysiske drevs hastighed:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Skift ikke</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
         <source>Preload Image to RAM</source>
         <translation>Forudindlæs diskafbildning i RAM</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Ignorér drevets subkode</translation>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ignorér det fysiske drevs underkode</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9509,6 +9517,18 @@ Forsøg på at bruge denne snydekode vil ikke virke som forventet. Vil du forts�
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Skifter automatisk til næste disk i spillet, når spillet stopper CD-ROM-motoren. Der skiftes ikke, hvis spillets sidste disk allerede er valgt. &lt;strong&gt;Virker ikke med alle spil.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Det fysiske drevs hastighed</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Indstiller værtsdrevets hastighed ved brug af fysiske diske. Højere hastigheder kan reducere hakken, men gør drevet mere støjende. Vælg »Skift ikke« for at bevare drevets egen hastighed. Ikke alle drev understøtter dette.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13360,6 +13380,10 @@ Denne handling kan ikke fortrydes.</translation>
         <translation>Aktiverer adressejusterings- og busundtagelser. Ikke nødvendigt for nogen kendte spil.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Webcachens størrelse: {0} ({1} i {2} objekter)</translation>
+    </message>
+    <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Giver PGXP-data større præcision efter projektion. Kan forbedre grafikken i nogle spil. Automatisk bruger indstillingen fra spildatabasen.</translation>
     </message>
@@ -15796,10 +15820,6 @@ Vil du {0} alligevel?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Varighed af advarselsmeddelelser</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Webcachestørrelse: {0} MB ({1} MB i {2} objekter)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18636,6 +18656,30 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
         <source>None</source>
         <translation>Ingen</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19183,10 +19227,6 @@ Rekursiv scanning tager længere tid, men finder filer i undermapper.</translati
         <translation>Udpakker {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Overordnet mappe&gt;</translation>
     </message>
@@ -19376,12 +19416,20 @@ Skift-klik for at angive flere tilknytninger.</translation>
         <translation>Ingen</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Systemet blev genoptaget, fordi controlleren blev tilsluttet igen.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} blev tilsluttet igen.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Controller {} tilsluttet.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Systemet er sat på pause, fordi controller {} blev frakoblet.</translation>
+        <source>System paused by controller.</source>
+        <translation>Systemet blev sat på pause, fordi controlleren blev frakoblet.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23545,6 +23593,10 @@ Vil du opdatere genvejen, så den peger på den aktuelle placering?</translation
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Kan ikke bruge batchtilstand, fordi der ikke er angivet noget filnavn til opstart.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} blev frakoblet.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

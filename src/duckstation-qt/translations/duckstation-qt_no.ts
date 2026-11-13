@@ -1197,8 +1197,8 @@ Denne økten starter i frakoblet modus.</translation>
         <translation>Når dette er aktivert, laster DuckStation RAIntegration-DLL-en som gjør det mulig å utvikle prestasjoner.&lt;br&gt;Filen RA_Integration.dll må ligge i samme mappe som den kjørbare DuckStation-filen.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Gjeldende hurtigbufferstørrelse: %1 MB (%2 MB i %3 objekter)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Gjeldende hurtigbufferstørrelse: %1 (%2 i %3 objekter)</translation>
     </message>
     <message>
         <source>Test Achievements Offline Mode</source>
@@ -8546,10 +8546,6 @@ Du kan oppdatere DuckStation manuelt ved å laste ned den nyeste utgaven på nyt
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Laster...</translation>
     </message>
@@ -9395,12 +9391,24 @@ Denne juksekoden vil ikke fungere som forventet. Vil du fortsette?</translation>
         <translation>6x</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Hastighet for fysisk stasjon:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Ikke endre</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
         <source>Preload Image to RAM</source>
         <translation>Forhåndslast avbildning i RAM</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Ignorer underkode fra stasjonen</translation>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ignorer underkode fra fysisk stasjon</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9509,6 +9517,18 @@ Denne juksekoden vil ikke fungere som forventet. Vil du fortsette?</translation>
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Bytter automatisk til neste plate i spillet når spillet stopper CD-ROM-motoren. Det byttes ikke hvis spillets siste plate allerede er valgt. &lt;strong&gt;Fungerer ikke med alle spill.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Hastighet for fysisk stasjon</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Angir hastigheten til vertsmaskinens stasjon ved bruk av fysiske plater. Høyere hastigheter kan redusere hakking, men gjør stasjonen mer støyende. Velg «Ikke endre» for å beholde stasjonens egen hastighet. Ikke alle stasjoner støtter dette.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13360,6 +13380,10 @@ Denne handlingen kan ikke angres.</translation>
         <translation>Aktiverer unntak ved feiljusterte adresser og bussfeil. Ikke nødvendig for noen kjente spill.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Størrelse på netthurtigbuffer: {0} ({1} i {2} objekter)</translation>
+    </message>
+    <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Øker presisjonen til PGXP-data etter projeksjon. Kan forbedre grafikken i enkelte spill. Automatisk bruker innstillingen fra spilldatabasen.</translation>
     </message>
@@ -15796,10 +15820,6 @@ Vil du {0} likevel?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Visningstid for advarsler</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Nettbufferstørrelse: {0} MB ({1} MB i {2} objekter)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18636,6 +18656,30 @@ Rekursiv skanning tar lengre tid, men finner filer i undermapper.</translation>
         <source>None</source>
         <translation>Ingen</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19183,10 +19227,6 @@ Rekursiv skanning tar lengre tid, men finner filer i undermapper.</translation>
         <translation>Pakker ut {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Overordnet mappe&gt;</translation>
     </message>
@@ -19376,12 +19416,20 @@ Shift-klikk for å angi flere tilordninger.</translation>
         <translation>Ingen</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Systemet ble gjenopptatt fordi kontrolleren ble koblet til igjen.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} ble koblet til igjen.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Kontroller {} tilkoblet.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Systemet ble satt på pause fordi kontroller {} ble frakoblet.</translation>
+        <source>System paused by controller.</source>
+        <translation>Systemet ble satt på pause fordi kontrolleren ble koblet fra.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23545,6 +23593,10 @@ Vil du oppdatere snarveien slik at den peker til den gjeldende plasseringen?</tr
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Kan ikke bruke satsvis modus fordi ingen oppstartsfil er angitt.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} ble koblet fra.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

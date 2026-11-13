@@ -1092,8 +1092,8 @@ Sesi ini akan dimulai dalam mode offline.</translation>
         <translation>Ketika diaktifkan, DuckStation akan memuat file DLL RAIntegration yang memungkinkan pengembangan pencapaian.&lt;br&gt;File RA_Integration.dll harus ditempatkan pada direktori yang sama dengan berkas eksekutabel DuckStation.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Ukuran Cache Saat Ini: %1 MB (%2 MB dalam %3 objek)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Ukuran Cache Saat Ini: %1 (%2 dalam %3 objek)</translation>
     </message>
     <message>
         <source>Logging</source>
@@ -8515,10 +8515,6 @@ Anda dapat memperbarui DuckStation secara manual dengan mengunduh ulang rilis te
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Sedang memuat...</translation>
     </message>
@@ -9355,12 +9351,24 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
         <translation>6x</translation>
     </message>
     <message>
-        <source>Apply Image Patches</source>
-        <translation>Terapkan Patch Citra</translation>
+        <source>Physical Drive Speed:</source>
+        <translation>Kecepatan Drive Fisik:</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Abaikan Subkode Drive</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Jangan Ubah</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Abaikan Subkode Drive Fisik</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <translation>Terapkan Patch Citra</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -9473,6 +9481,18 @@ Mencoba menggunakan kode curang ini tidak akan bekerja seperti yang diharapkan. 
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Beralih secara otomatis ke cakram berikutnya dalam game saat game menghentikan motor CD-ROM. Peralihan tidak akan terjadi jika cakram terakhir game sudah dipilih. &lt;strong&gt;Tidak berfungsi untuk semua game.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Kecepatan Drive Fisik</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Mengatur kecepatan drive host saat menggunakan cakram fisik. Kecepatan yang lebih tinggi dapat mengurangi tersendatnya permainan, tetapi membuat drive lebih bising. Pilih "Jangan Ubah" untuk mempertahankan kecepatan drive. Tidak semua drive mendukung ini.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -14531,10 +14551,6 @@ Apakah Anda tetap ingin {0}?</translation>
         <translation>Durasi Pesan Peringatan</translation>
     </message>
     <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Ukuran Cache Web: {0} MB ({1} MB dalam {2} objek)</translation>
-    </message>
-    <message>
         <source>Web cache cleared.</source>
         <translation>Cache web dihapus.</translation>
     </message>
@@ -15581,6 +15597,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Value: {}</source>
         <translation>Nilai: {}</translation>
+    </message>
+    <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Ukuran Cache Web: {0} ({1} dalam {2} objek)</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
@@ -18577,6 +18597,30 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <source>None</source>
         <translation>Tidak Ada</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19124,10 +19168,6 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <translation>Mengekstrak {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Direktori Induk&gt;</translation>
     </message>
@@ -19316,12 +19356,20 @@ Shift-klik untuk menetapkan beberapa penetapan.</translation>
         <translation>Tidak Ada</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Sistem dilanjutkan karena kontroler tersambung kembali.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} tersambung kembali.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Kontroler {} terhubung.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Sistem dijeda karena kontroler {} terputus.</translation>
+        <source>System paused by controller.</source>
+        <translation>Sistem dijeda karena kontroler terputus.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23373,6 +23421,10 @@ Kesalahan: {1}</translation>
     <message>
         <source>No</source>
         <translation>Tidak</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} terputus.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

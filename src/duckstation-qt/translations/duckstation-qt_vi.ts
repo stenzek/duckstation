@@ -1184,8 +1184,8 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
         <translation>Khi được bật, DuckStation sẽ nạp thư viện DLL RAIntegration để phát triển thành tích.&lt;br&gt;Tệp RA_Integration.dll phải được đặt cùng thư mục với tệp thực thi DuckStation.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Kích thước bộ nhớ đệm hiện tại: %1 MB (%2 MB trong %3 đối tượng)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Kích thước bộ nhớ đệm hiện tại: %1 (%2 trong %3 đối tượng)</translation>
     </message>
     <message>
         <source>Test Achievements Offline Mode</source>
@@ -8515,10 +8515,6 @@ Bạn có thể cập nhật DuckStation thủ công bằng cách tải lại b�
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Đang tải...</translation>
     </message>
@@ -9359,12 +9355,24 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>6x</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Tốc độ ổ đĩa vật lý:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Không thay đổi</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
         <source>Preload Image to RAM</source>
         <translation>Nạp trước ảnh đĩa vào RAM</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Bỏ qua mã phụ của ổ đĩa</translation>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Bỏ qua mã phụ của ổ đĩa vật lý</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9473,6 +9481,18 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Tự động chuyển sang đĩa tiếp theo của trò chơi khi trò chơi dừng động cơ CD-ROM. Không chuyển nếu đã chọn đĩa cuối cùng. &lt;strong&gt;Không hoạt động với mọi trò chơi.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Tốc độ ổ đĩa vật lý</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Đặt tốc độ của ổ đĩa trên máy tính khi sử dụng đĩa vật lý. Tốc độ cao hơn có thể giảm giật, nhưng khiến ổ đĩa ồn hơn. Chọn “Không thay đổi” để giữ nguyên tốc độ của ổ đĩa. Không phải ổ đĩa nào cũng hỗ trợ tính năng này.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13317,6 +13337,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Bật ngoại lệ căn chỉnh và bus. Không cần thiết cho bất kỳ trò chơi nào đã biết.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Kích thước bộ nhớ đệm web: {0} ({1} trong {2} đối tượng)</translation>
+    </message>
+    <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Tăng độ chính xác của dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi.</translation>
     </message>
@@ -15753,10 +15777,6 @@ Bạn vẫn muốn {0} chứ?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Thời lượng thông báo cảnh báo</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Kích thước bộ nhớ đệm web: {0} MB ({1} MB trong {2} đối tượng)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18577,6 +18597,30 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <source>None</source>
         <translation>Không có</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19124,10 +19168,6 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <translation>Đang trích xuất {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Thư mục cha&gt;</translation>
     </message>
@@ -19316,12 +19356,20 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
         <translation>Không có</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Hệ thống đã tiếp tục hoạt động sau khi tay cầm được kết nối lại.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} đã được kết nối lại.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Tay cầm {} đã kết nối.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Hệ thống đã tạm dừng vì tay cầm {} bị ngắt kết nối.</translation>
+        <source>System paused by controller.</source>
+        <translation>Hệ thống đã tạm dừng do tay cầm bị ngắt kết nối.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23483,6 +23531,10 @@ Bạn có muốn cập nhật lối tắt để trỏ đến vị trí hiện t�
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Không thể dùng chế độ hàng loạt vì chưa chỉ định tên tệp khởi động.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} đã bị ngắt kết nối.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

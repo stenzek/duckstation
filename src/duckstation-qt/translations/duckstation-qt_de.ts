@@ -1205,8 +1205,8 @@ Diese Sitzung startet im Offline-Modus.</translation>
         <translation>Wenn aktiviert, lädt DuckStation die RAIntegration-DLL, die die Entwicklung von Achievements ermöglicht.&lt;br&gt;Die Datei RA_Integration.dll muss im selben Verzeichnis wie die DuckStation-Programmdatei abgelegt werden.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Aktuelle Cachegröße: %1 MB (%2 MB in %3 Objekten)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Aktuelle Cachegröße: %1 (%2 in %3 Objekten)</translation>
     </message>
 </context>
 <context>
@@ -8546,10 +8546,6 @@ Sie können DuckStation manuell aktualisieren, indem Sie die neueste Version ern
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Laden...</translation>
     </message>
@@ -9351,10 +9347,6 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
         <translation>Maximum (sicherer)</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Laufwerks-Subcode ignorieren</translation>
-    </message>
-    <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>Beim Anhalten zur nächsten Disc wechseln</translation>
     </message>
@@ -9393,6 +9385,22 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     <message>
         <source>6x</source>
         <translation>6x</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Geschwindigkeit des physischen Laufwerks:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Nicht ändern</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Subcode des physischen Laufwerks ignorieren</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9509,6 +9517,18 @@ Wenn Sie diesen Cheat verwenden, wird er nicht wie erwartet funktionieren. Möch
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Wechselt automatisch zur nächsten Disc im Spiel, wenn das Spiel den CD-ROM-Motor anhält. Es erfolgt kein Wechsel, wenn die letzte Disc im Spiel bereits ausgewählt ist. &lt;strong&gt;Funktioniert nicht bei allen Spielen.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Geschwindigkeit des physischen Laufwerks</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Legt die Geschwindigkeit des Laufwerks auf dem Host bei der Verwendung physischer Discs fest. Höhere Geschwindigkeiten können Ruckler verringern, machen das Laufwerk aber lauter. Wähle „Nicht ändern“, um die Geschwindigkeit des Laufwerks unverändert zu lassen. Nicht alle Laufwerke unterstützen dies.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -14739,6 +14759,10 @@ Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort und versuchen Sie es
         <translation>Wert: {}</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Web-Cachegröße: {0} ({1} in {2} Objekten)</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Wenn diese Option aktiviert ist, verfolgt DuckStation inoffizielle Achievements. Freischaltungen werden lokal gespeichert und nicht an RetroAchievements gesendet.</translation>
     </message>
@@ -15845,10 +15869,6 @@ Möchten Sie die Aktion „{0}“ trotzdem ausführen?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Dauer der Warnmeldung</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Web-Cache-Größe: {0} MB ({1} MB in {2} Objekten)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18637,6 +18657,30 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
         <source>None</source>
         <translation>Keine</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19184,10 +19228,6 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
         <translation>Extrahiere {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Übergeordneter Ordner&gt;</translation>
     </message>
@@ -19377,12 +19417,20 @@ Mit Umschalt+Klick mehrere Belegungen festlegen.</translation>
         <translation>Keine</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>System fortgesetzt, da der Controller wieder verbunden ist.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} wurde erneut verbunden.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Controller {} verbunden.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Das System wurde pausiert, weil Controller {} getrennt wurde.</translation>
+        <source>System paused by controller.</source>
+        <translation>System pausiert, da die Verbindung zum Controller getrennt wurde.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23546,6 +23594,10 @@ Möchten Sie die Verknüpfung auf den aktuellen Speicherort aktualisieren?</tran
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Der Batch-Modus kann nicht verwendet werden, da kein Boot-Dateiname angegeben wurde.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} wurde getrennt.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

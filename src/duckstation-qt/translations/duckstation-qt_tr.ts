@@ -1192,8 +1192,8 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <translation>Etkinleştirildiğinde DuckStation, başarım geliştirmeye olanak tanıyan RAIntegration DLL&apos;sini yükler.&lt;br&gt;RA_Integration.dll dosyası DuckStation çalıştırılabilir dosyasıyla aynı dizine yerleştirilmelidir.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Geçerli Önbellek Boyutu: %1 MB (%3 nesnede %2 MB)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Geçerli Önbellek Boyutu: %1 (%3 nesnede %2)</translation>
     </message>
 </context>
 <context>
@@ -8515,10 +8515,6 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Updater Warning</source>
         <translation>Güncelleyici Uyarısı</translation>
     </message>
@@ -9331,6 +9327,22 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Maksimum (Daha Güvenli)</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Fiziksel Sürücü Hızı:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Değiştirme</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Fiziksel Sürücü Alt Kodunu Yok Say</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>CD Yamalarını Uygula</translation>
     </message>
@@ -9365,10 +9377,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Sürücü Alt Kodunu Yok Say</translation>
     </message>
     <message>
         <source>Region</source>
@@ -9473,6 +9481,18 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Oyun CD okuyucunun motorunu durdurduğunda emülatör bir sonraki CD&apos;ye otomatik geçer. Eğer oyunun son CD&apos;si zaten seçiliyse bir şey olmaz. &lt;strong&gt;Tüm oyunlar için çalışmaz.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Fiziksel Sürücü Hızı</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Fiziksel diskler kullanılırken ana sistemdeki sürücünün hızını ayarlar. Daha yüksek hızlar takılmaları azaltabilir, ancak sürücüyü daha gürültülü hâle getirir. Sürücünün kendi hızını korumak için "Değiştirme" seçeneğini seçin. Bazı sürücüler bunu desteklemez.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -14027,6 +14047,10 @@ Hata şuydu:</translation>
         <translation>UYARI: Oyun yamalarını etkinleştirmek öngörülemeyen davranışlara, çökmelere, oyunda ilerlemenin durmasına veya kayıtlı oyunların bozulmasına neden olabilir.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Web Önbelleği Boyutu: {0} ({2} nesnede {1})</translation>
+    </message>
+    <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>Büyük Resim Modu başlatıldığında ana menü yerine oyun listesi gösterilir.</translation>
     </message>
@@ -15806,10 +15830,6 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Uyarı İletisi Süresi</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Web Önbelleği Boyutu: {0} MB ({2} nesnede {1} MB)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18578,6 +18598,30 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <source>None</source>
         <translation>Hiç</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19125,10 +19169,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>{} ayıklanıyor...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Üst Dizin&gt;</translation>
     </message>
@@ -19317,12 +19357,20 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
         <translation>Hiç</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Kumanda yeniden bağlandığı için sistem devam ettirildi.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} yeniden bağlandı.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Kol {} bağlandı.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Kol {} bağlantısı kesildiği için sistem duraklatıldı.</translation>
+        <source>System paused by controller.</source>
+        <translation>Kumandanın bağlantısı kesildiği için sistem duraklatıldı.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23374,6 +23422,10 @@ Hata: {1}</translation>
     <message>
         <source>No</source>
         <translation>Hayır</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} bağlantısı kesildi.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

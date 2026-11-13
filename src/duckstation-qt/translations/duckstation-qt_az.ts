@@ -1105,6 +1105,10 @@ Oxunmayan mesajlar: {}</translation>
         <translation>Yolaqoyuş seçməsi panelini artıq göstəricilər və tez quruluşlarla göstərir.</translation>
     </message>
     <message>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Cari keş ölçüsü: %1 (%3 obyektdə %2)</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Arayüz Quruluşları</translation>
     </message>
@@ -1203,10 +1207,6 @@ Oxunmayan mesajlar: {}</translation>
     <message>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
         <translation>Aktiv olduqda, DuckStation uğurların hazırlanmasına imkan verən RAIntegration DLL faylını yükləyəcək.&lt;br&gt;RA_Integration.dll faylı DuckStation icra faylı ilə eyni qovluğa yerləşdirilməlidir.</translation>
-    </message>
-    <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>İndiki Önyaddaş Ölçüsü: %1 MB (%3 obyektdə %2 MB)</translation>
     </message>
 </context>
 <context>
@@ -8538,10 +8538,6 @@ DuckStation&apos;ın ən son buraxılışını yenidən endirərək özünüz on
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Yüklənir...</translation>
     </message>
@@ -9391,8 +9387,20 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
         <translation>6x</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Disk Sürücüsünün Altkodunu Yox Say</translation>
+        <source>Physical Drive Speed:</source>
+        <translation>Fiziki sürücünün sürəti:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Dəyişdirmə</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Fiziki sürücünün alt kodunu nəzərə alma</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9505,6 +9513,18 @@ Bu hiyləni işlətməyə çalışmaq gözlənildiyi kimi çalışmaya bilər. D
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Oyun CD-ROM motorunu saxladığı zaman oyundakı sıradakı diskə özbaşına keçirdir. Oyundakı sonuncu disk artıq seçilmiş olduğunda keçid olunmur. &lt;strong&gt;Oyunların hamısında işləmir.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Fiziki sürücünün sürəti</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Fiziki disklərdən istifadə edərkən əsas kompüterdəki sürücünün sürətini təyin edir. Daha yüksək sürət ilişmələri azalda bilər, lakin sürücünün səsini artırır. Sürücünün öz sürətini saxlamaq üçün «Dəyişdirmə» seçin. Bəzi sürücülər bunu dəstəkləmir.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -15750,6 +15770,10 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
         <translation>Hər kadrı göstərməzdən əvvəl ekranınızın yenilənməsini gözləyərək görüntü cırılmasının qarşısını alır. GSync/FreeSync ekranları ilə də bunu açıq saxlayın.</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Veb keşinin ölçüsü: {0} ({2} obyektdə {1})</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Aktiv olduqda, DuckStation rəsmi olmayan uğurları izləyəcək. Açılan uğurlar yerli olaraq saxlanacaq və RetroAchievements xidmətinə göndərilməyəcək.</translation>
     </message>
@@ -15928,10 +15952,6 @@ Durum qorunuşunu silib oyunu yenə də başlatmaq istəyirsiniz?</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Uyarım Göndərişi Sürəsi</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Veb Önyaddaşı Ölçüsü: {0} MB ({2} obyektdə {1} MB)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18636,6 +18656,30 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <source>None</source>
         <translation>Heç biri</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19175,10 +19219,6 @@ Rekursiv daranış daha çox vaxt alır, ancaq alt-qovluqlardakı faylları gör
         <translation>Faylı Çıxart</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 KB</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Ana Qovluq&gt;</translation>
     </message>
@@ -19336,6 +19376,10 @@ Shift-click to set multiple bindings.</source>
         <translation>Heç biri</translation>
     </message>
     <message>
+        <source>System paused by controller.</source>
+        <translation>Kontrollerin bağlantısı kəsildiyi üçün sistemə ara verildi.</translation>
+    </message>
+    <message>
         <source>Keyboard</source>
         <translation>Klaviatur</translation>
     </message>
@@ -19384,12 +19428,16 @@ Shift-click to set multiple bindings.</source>
         <translation>Heç bir xəritələmə əlavə edilmədi. {} özbaşına bağlanışı dəstəkləməyə bilər və ya yönəldəniniz üçün heç bir uyğunluq tapılmayıb.</translation>
     </message>
     <message>
-        <source>Controller {} connected.</source>
-        <translation>Yönəldən {} taxıldı.</translation>
+        <source>System resumed by controller.</source>
+        <translation>Kontroller yenidən qoşulduğu üçün sistemin işi davam etdirildi.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Yönəldən {} çıxarıldığı üçün sistem ara verdi.</translation>
+        <source>{} was reconnected.</source>
+        <translation>{} yenidən qoşuldu.</translation>
+    </message>
+    <message>
+        <source>Controller {} connected.</source>
+        <translation>Yönəldən {} taxıldı.</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;{}&apos;. The controller/source may not support automatic mapping.</source>
@@ -23533,6 +23581,10 @@ Qısayolu cari yerə işarə edəcək şəkildə yeniləmək istəyirsiniz?</tra
     <message>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Başlatma faylının adı göstərilmədiyi üçün toplu rejimdən istifadə etmək mümkün deyil.</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} ayrıldı.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>

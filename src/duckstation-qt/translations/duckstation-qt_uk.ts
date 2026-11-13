@@ -1218,8 +1218,8 @@ This session will start in offline mode.</source>
         <translation>Якщо цю функцію увімкнено, DuckStation завантажуватиме DLL-бібліотеку RAIntegration, яка дозволяє розробляти досягнення.&lt;br&gt;Файл RA_Integration.dll має бути розташований у тому самому каталозі, що й виконуваний файл DuckStation.</translation>
     </message>
     <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Поточний розмір кешу: %1 МБ (%2 МБ у %3 об&apos;єктах)</translation>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Поточний розмір кешу: %1 (%2 у %3 об’єктах)</translation>
     </message>
 </context>
 <context>
@@ -8577,10 +8577,6 @@ DuckStation можна оновити вручну, повторно заван�
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 МБ</translation>
-    </message>
-    <message>
         <source>Loading...</source>
         <translation>Завантаження...</translation>
     </message>
@@ -9359,6 +9355,22 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>6x (12-кратна швидкість)</translation>
     </message>
     <message>
+        <source>Physical Drive Speed:</source>
+        <translation>Швидкість фізичного приводу:</translation>
+    </message>
+    <message>
+        <source>Don&apos;t Change</source>
+        <translation>Не змінювати</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ігнорувати субкод фізичного приводу</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Застосувати патчі до образів</translation>
     </message>
@@ -9413,10 +9425,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Ігнорувати субкод приводу</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -9541,6 +9549,18 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Автоматично перемикає на наступний диск, коли гра зупиняє двигун приводу CD-ROM. Перемикання не відбудеться, якщо вже вибрано останній диск гри. &lt;strong&gt;Працює не з усіма іграми.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Швидкість фізичного приводу</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Установлює швидкість приводу комп’ютера під час використання фізичних дисків. Вища швидкість може зменшити пригальмовування, але збільшує шум приводу. Виберіть «Не змінювати», щоб залишити швидкість приводу без змін. Не всі приводи підтримують цю функцію.</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -13909,6 +13929,10 @@ Please check your username and password, and try again.</source>
         <translation>Значення: {}</translation>
     </message>
     <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Розмір вебкешу: {0} ({1} у {2} об’єктах)</translation>
+    </message>
+    <message>
         <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
         <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
@@ -15887,10 +15911,6 @@ Do you want to {0} anyway?</source>
     <message>
         <source>Warning Message Duration</source>
         <translation>Тривалість попереджувального повідомлення</translation>
-    </message>
-    <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Розмір веб-кешу: {0} МБ ({1} МБ у {2} об&apos;єктах)</translation>
     </message>
     <message>
         <source>Web cache cleared.</source>
@@ -18695,6 +18715,30 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <source>None</source>
         <translation>Немає</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} ГБ</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} МБ</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} МБ</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} КБ</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} КБ</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} Б</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -19242,10 +19286,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Витягання {}...</translation>
     </message>
     <message>
-        <source>%1 KB</source>
-        <translation>%1 КБ</translation>
-    </message>
-    <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;Батьківський каталог&gt;</translation>
     </message>
@@ -19436,12 +19476,20 @@ Shift-click to set multiple bindings.</source>
         <translation>Немає</translation>
     </message>
     <message>
+        <source>System resumed by controller.</source>
+        <translation>Роботу системи відновлено після повторного підключення контролера.</translation>
+    </message>
+    <message>
+        <source>{} was reconnected.</source>
+        <translation>{} повторно підключено.</translation>
+    </message>
+    <message>
         <source>Controller {} connected.</source>
         <translation>Контролер {} підключено.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Систему призупинено, оскільки контролер {} було відключено.</translation>
+        <source>System paused by controller.</source>
+        <translation>Систему призупинено через відключення контролера.</translation>
     </message>
     <message>
         <source>Keyboard</source>
@@ -23588,6 +23636,10 @@ Would you like to update the shortcut to point to the current location?</source>
     <message>
         <source>Unknown</source>
         <translation>Невідомо</translation>
+    </message>
+    <message>
+        <source>{} was disconnected.</source>
+        <translation>{} відключено.</translation>
     </message>
     <message>
         <source>Controller {} disconnected.</source>
