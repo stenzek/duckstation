@@ -302,13 +302,14 @@ OpenGLPipeline::ProgramCacheKey OpenGLPipeline::GetProgramCacheKey(const Graphic
   return ret;
 }
 
-GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key,
-                                        const GPUPipeline::GraphicsConfig& plconfig, Error* error)
+template<typename Config>
+GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const Config& plconfig,
+                                        Error* error)
 {
   auto it = m_program_cache.find(key);
   if (it != m_program_cache.end() && it->second.program_id == 0 && it->second.file_uncompressed_size > 0)
   {
-    it->second.program_id = CreateProgramFromPipelineCache(it->second, plconfig);
+    it->second.program_id = CreateProgramFromPipelineCache(it->second, plconfig.layout);
     if (it->second.program_id == 0)
     {
       ERROR_LOG("Failed to create program from binary.");
@@ -478,12 +479,12 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
   if (geometry_shader)
     glDetachShader(program_id, geometry_shader->GetGLId());
 
-  PostLinkProgram(plconfig, program_id);
+  PostLinkProgram(plconfig.layout, program_id);
 
   return program_id;
 }
 
-void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id)
+void OpenGLDevice::PostLinkProgram(GPUPipeline::Layout layout, GLuint program_id)
 {
   if (!ShaderGen::UseGLSLBindingLayout())
   {
@@ -497,7 +498,7 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
     glUseProgram(program_id);
 
     // HW batches have a single texture, but also have the texture buffer.
-    const u32 num_textures = LayoutHasTextureBuffer(plconfig.layout) ? 2 : GetActiveTexturesForLayout(plconfig.layout);
+    const u32 num_textures = LayoutHasTextureBuffer(layout) ? 2 : GetActiveTexturesForLayout(layout);
     for (u32 i = 0; i < num_textures; i++)
     {
       const GLint samp_location = glGetUniformLocation(program_id, TinyString::from_format("samp{}", i));
@@ -633,10 +634,10 @@ void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)
 }
 
 OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, const VertexArrayCache::value_type* vao,
-                               const RasterizationState& rs, const DepthState& ds, const BlendState& bs,
+                               const RasterizationState& rs, const DepthState& ds, const BlendState& bs, Layout layout,
                                GLenum topology)
   : m_key(key), m_vao(vao), m_program(program), m_blend_state(bs), m_rasterization_state(rs), m_depth_state(ds),
-    m_topology(topology)
+    m_layout(layout), m_topology(topology)
 {
 }
 
@@ -645,7 +646,8 @@ OpenGLPipeline::~OpenGLPipeline()
   OpenGLDevice& dev = OpenGLDevice::GetInstance();
   dev.UnbindPipeline(this);
   dev.UnrefProgram(m_key);
-  dev.UnrefVAO(m_key.va_key);
+  if (m_vao)
+    dev.UnrefVAO(m_key.va_key);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -691,7 +693,86 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Gra
   }};
 
   return std::unique_ptr<GPUPipeline>(new OpenGLPipeline(pkey, program_id, vao, config.rasterization, config.depth,
-                                                         config.blend, primitives[static_cast<u8>(config.primitive)]));
+                                                         config.blend, config.layout,
+                                                         primitives[static_cast<u8>(config.primitive)]));
+}
+
+GLuint OpenGLDevice::CompileProgram(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  OpenGLShader* const shader = static_cast<OpenGLShader*>(config.compute_shader);
+  if (!shader || !shader->Compile(error))
+    return 0;
+
+  const GLuint program = glCreateProgram();
+  if (!program)
+  {
+    Error::SetStringView(error, "Failed to create compute program.");
+    return 0;
+  }
+
+  if (m_pipeline_disk_cache_file)
+    glProgramParameteri(program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+
+  glAttachShader(program, shader->GetGLId());
+  glLinkProgram(program);
+
+  GLint status = GL_FALSE, log_length = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &status);
+  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+  if (status == GL_FALSE || log_length > 0)
+  {
+    std::string log(static_cast<size_t>(log_length) + 1, '\0');
+    glGetProgramInfoLog(program, static_cast<GLsizei>(log.size()), nullptr, log.data());
+    if (status == GL_FALSE)
+    {
+      DumpBadShader(shader->GetSource(), log);
+      Error::SetStringFmt(error, "Compute program failed to link: {}", log);
+      glDeleteProgram(program);
+      return 0;
+    }
+
+    WARNING_LOG("Compute program linked with warnings: {}", log);
+  }
+
+  glDetachShader(program, shader->GetGLId());
+  PostLinkProgram(config.layout, program);
+  return program;
+}
+
+std::unique_ptr<GPUPipeline> OpenGLDevice::LoadPipeline(const GPUPipeline::ComputeConfig& config)
+{
+  Error error;
+  std::unique_ptr<GPUPipeline> ret = CreatePipeline(config, &error);
+  if (!ret)
+    ERROR_LOG("Failed to create compute pipeline: {}", error.GetDescription());
+
+  return ret;
+}
+
+std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  if (!m_features.compute_shaders ||
+      (config.layout != GPUPipeline::Layout::ComputeBufferOutput &&
+       config.layout != GPUPipeline::Layout::ComputeImageOutput) ||
+      !config.compute_shader || config.compute_shader->GetStage() != GPUShaderStage::Compute)
+  {
+    Error::SetStringView(error, "Unsupported OpenGL compute pipeline.");
+    return {};
+  }
+
+  // Graphics keys always have a vertex shader. A compute-only key uses the fragment hash slots
+  // with a zero vertex shader length, retaining the existing disk cache representation.
+  OpenGLPipeline::ProgramCacheKey key = {};
+  const GPUShaderCacheKey& shader_key = static_cast<OpenGLShader*>(config.compute_shader)->GetKey();
+  key.fs_hash_low = shader_key.source_hash_low;
+  key.fs_hash_high = shader_key.source_hash_high;
+  key.fs_length = shader_key.data_length;
+
+  const GLuint program = LookupProgramCache(key, config, error);
+  if (!program)
+    return {};
+
+  return std::unique_ptr<GPUPipeline>(new OpenGLPipeline(key, program, nullptr, {}, {}, {}, config.layout, 0));
 }
 
 ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyRasterizationState(GPUPipeline::RasterizationState rs)
@@ -813,14 +894,17 @@ void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
   OpenGLPipeline* const P = static_cast<OpenGLPipeline*>(pipeline);
   m_current_pipeline = P;
 
-  ApplyRasterizationState(P->GetRasterizationState());
-  ApplyDepthState(P->GetDepthState());
-  ApplyBlendState(P->GetBlendState());
-
-  if (m_last_vao != P->GetVAO())
+  if (P->GetVAO())
   {
-    m_last_vao = P->GetVAO();
-    glBindVertexArray(m_last_vao->second.vao_id);
+    ApplyRasterizationState(P->GetRasterizationState());
+    ApplyDepthState(P->GetDepthState());
+    ApplyBlendState(P->GetBlendState());
+
+    if (m_last_vao != P->GetVAO())
+    {
+      m_last_vao = P->GetVAO();
+      glBindVertexArray(m_last_vao->second.vao_id);
+    }
   }
   if (m_last_program != P->GetProgram())
   {
@@ -972,7 +1056,7 @@ bool OpenGLDevice::CreatePipelineCache(const std::string& path, Error* error)
 }
 
 GLuint OpenGLDevice::CreateProgramFromPipelineCache(const OpenGLPipeline::ProgramCacheItem& it,
-                                                    const GPUPipeline::GraphicsConfig& plconfig)
+                                                    GPUPipeline::Layout layout)
 {
   DynamicHeapArray<u8> compressed_data(it.file_compressed_size);
 
@@ -1012,7 +1096,7 @@ GLuint OpenGLDevice::CreateProgramFromPipelineCache(const OpenGLPipeline::Progra
     return 0;
   }
 
-  PostLinkProgram(plconfig, prog);
+  PostLinkProgram(layout, prog);
 
   return prog;
 }

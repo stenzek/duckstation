@@ -102,6 +102,7 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(GPUTextureBuffer* buffer) override;
+  void SetComputeOutputBuffer(GPUDownloadTexture* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
@@ -126,10 +127,11 @@ public:
   void CommitRTClearInFB(OpenGLTexture* tex, u32 idx);
   void CommitDSClearInFB(OpenGLTexture* tex);
 
-  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig,
-                            Error* error);
+  template<typename Config>
+  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const Config& plconfig, Error* error);
   GLuint CompileProgram(const GPUPipeline::GraphicsConfig& plconfig, Error* error);
-  void PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id);
+  GLuint CompileProgram(const GPUPipeline::ComputeConfig& plconfig, Error* error);
+  void PostLinkProgram(GPUPipeline::Layout layout, GLuint program_id);
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
   const OpenGLPipeline::VertexArrayCache::value_type* LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key,
@@ -185,8 +187,7 @@ private:
   void StartTimestampQuery();
   void EndTimestampQuery();
 
-  GLuint CreateProgramFromPipelineCache(const OpenGLPipeline::ProgramCacheItem& it,
-                                        const GPUPipeline::GraphicsConfig& plconfig);
+  GLuint CreateProgramFromPipelineCache(const OpenGLPipeline::ProgramCacheItem& it, GPUPipeline::Layout layout);
   void AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it);
   bool DiscardPipelineCache();
   bool WritePipelineCacheIndex(Error* error);
@@ -217,7 +218,6 @@ private:
   GPUPipeline::BlendState m_last_blend_state = {};
   GPUPipeline::RasterizationState m_last_rasterization_state = {};
   GPUPipeline::DepthState m_last_depth_state = {};
-  bool m_framebuffer_srgb = false;
   GLuint m_uniform_buffer_alignment = 1;
   GLuint m_last_program = 0;
   u32 m_last_texture_unit = 0;
@@ -230,11 +230,14 @@ private:
   GLuint m_write_fbo = 0;
 
   GLuint m_current_fbo = 0;
-  u32 m_num_current_render_targets = 0;
+  u8 m_num_current_render_targets = 0;
+  bool m_framebuffer_srgb = false;
+  bool m_bind_render_targets_as_images = false;
   std::array<OpenGLTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   OpenGLTexture* m_current_depth_target = nullptr;
 
   OpenGLPipeline* m_current_pipeline = nullptr;
+  OpenGLDownloadTexture* m_compute_output_buffer = nullptr;
 
   std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
   float m_accumulated_gpu_time = 0.0f;

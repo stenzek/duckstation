@@ -93,6 +93,10 @@ private:
 		if (_gles)
 			preamble += "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n";
 
+		if (_gles && _glsl_version >= 310)
+			preamble += "precision highp image2D;\nprecision highp iimage2D;\nprecision highp uimage2D;\n"
+				"precision highp image3D;\nprecision highp iimage3D;\nprecision highp uimage3D;\n";
+
 		if (_enable_16bit_types)
 			// GL_NV_gpu_shader5, GL_AMD_gpu_shader_half_float or GL_EXT_shader_16bit_storage
 			preamble += "#extension GL_NV_gpu_shader5 : require\n";
@@ -815,6 +819,16 @@ private:
 		code += "layout(binding = " + std::to_string(default_binding) + ", ";
 		write_texture_format(code, tex_info.format);
 		code += ") uniform ";
+		if (_gles)
+		{
+			// GLES only permits unqualified read/write images for the single-channel
+			// 32-bit formats. Other formats can be used as storage outputs, but
+			// reading them requires a sampler instead of imageLoad.
+			if (tex_info.format != texture_format::r32f && tex_info.format != texture_format::r32i &&
+				tex_info.format != texture_format::r32u)
+				code += "writeonly ";
+			code += "highp ";
+		}
 		write_type(code, info.type);
 		code += ' ' + id_to_name(res) + ";\n";
 

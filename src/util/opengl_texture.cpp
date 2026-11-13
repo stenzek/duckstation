@@ -148,12 +148,72 @@ bool OpenGLTexture::UseTextureStorage() const
   return UseTextureStorage(IsMultisampled());
 }
 
+GLenum OpenGLTexture::GetImageFormat(GPUTextureFormat format)
+{
+  // GLES supports fewer image formats. These must match the shader layout, substituting
+  // normalized formats with floating-point storage is not valid.
+  switch (format)
+  {
+    case GPUTextureFormat::RGBA8:
+      return GL_RGBA8;
+    case GPUTextureFormat::RGBA16F:
+      return GL_RGBA16F;
+    case GPUTextureFormat::RGBA32F:
+      return GL_RGBA32F;
+    case GPUTextureFormat::R32F:
+      return GL_R32F;
+    case GPUTextureFormat::R32I:
+      return GL_R32I;
+    case GPUTextureFormat::R32U:
+      return GL_R32UI;
+    default:
+      break;
+  }
+
+  if (OpenGLDevice::IsGLES())
+    return GL_NONE;
+
+  switch (format)
+  {
+    case GPUTextureFormat::R8:
+      return GL_R8;
+    case GPUTextureFormat::R16:
+      return GL_R16;
+    case GPUTextureFormat::R16F:
+      return GL_R16F;
+    case GPUTextureFormat::R16I:
+      return GL_R16I;
+    case GPUTextureFormat::R16U:
+      return GL_R16UI;
+    case GPUTextureFormat::RG8:
+      return GL_RG8;
+    case GPUTextureFormat::RG16:
+      return GL_RG16;
+    case GPUTextureFormat::RG16F:
+      return GL_RG16F;
+    case GPUTextureFormat::RG32F:
+      return GL_RG32F;
+    case GPUTextureFormat::RGBA16:
+      return GL_RGBA16;
+    case GPUTextureFormat::RGB10A2:
+      return GL_RGB10_A2;
+    default:
+      return GL_NONE;
+  }
+}
+
 std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                      Type type, GPUTextureFormat format, Flags flags, const void* data,
                                                      u32 data_pitch, Error* error)
 {
   if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return nullptr;
+  if ((flags & Flags::AllowBindAsImage) != Flags::None &&
+      (!OpenGLDevice::GetInstance().GetFeatures().compute_shaders || GetImageFormat(format) == GL_NONE))
+  {
+    Error::SetStringView(error, "Texture format or device does not support OpenGL compute image access.");
+    return {};
+  }
 
   if (layers > 1 && data)
   {
@@ -246,8 +306,7 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
             if (layers > 1)
             {
               glCompressedTexSubImage3D(target, i, 0, 0, 0, current_width, current_height, layers, gl_format,
-                                        compressed_size,
-                                        data_ptr);
+                                        compressed_size, data_ptr);
             }
             else
             {
@@ -270,8 +329,7 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
             if (layers > 1)
             {
               glCompressedTexImage3D(target, i, gl_internal_format, current_width, current_height, layers, 0,
-                                     compressed_size,
-                                     data_ptr);
+                                     compressed_size, data_ptr);
             }
             else
             {
@@ -599,7 +657,7 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
     (!IsGLES() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_EXT_texture_border_clamp || GLAD_GL_OES_texture_border_clamp);
   const auto get_address_mode = [has_border_clamp](GPUSampler::AddressMode mode) {
     return (mode == GPUSampler::AddressMode::ClampToBorder && !has_border_clamp) ? GL_CLAMP_TO_EDGE :
-                                                                                  ta[static_cast<u8>(mode)];
+                                                                                   ta[static_cast<u8>(mode)];
   };
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, get_address_mode(config.address_u.GetValue()));
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, get_address_mode(config.address_v.GetValue()));
@@ -615,8 +673,8 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
   glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, static_cast<float>(config.max_lod));
   if (has_border_clamp)
     glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, config.GetBorderFloatColor().data());
-  if (config.anisotropy > 1 && (GLAD_GL_VERSION_4_6 || GLAD_GL_ARB_texture_filter_anisotropic ||
-                                GLAD_GL_EXT_texture_filter_anisotropic))
+  if (config.anisotropy > 1 &&
+      (GLAD_GL_VERSION_4_6 || GLAD_GL_ARB_texture_filter_anisotropic || GLAD_GL_EXT_texture_filter_anisotropic))
   {
     glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(config.anisotropy.GetValue()));
   }
@@ -635,8 +693,8 @@ static void ClearColorBuffer(const OpenGLTexture* tex, GLint idx)
     case GPUTextureFormat::R16I:
     case GPUTextureFormat::R32I:
     {
-      const GLint icolor[4] = {static_cast<GLint>(color[0]), static_cast<GLint>(color[1]),
-                               static_cast<GLint>(color[2]), static_cast<GLint>(color[3])};
+      const GLint icolor[4] = {static_cast<GLint>(color[0]), static_cast<GLint>(color[1]), static_cast<GLint>(color[2]),
+                               static_cast<GLint>(color[3])};
       glClearBufferiv(GL_COLOR, idx, icolor);
     }
     break;
@@ -753,6 +811,12 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 
 void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
 {
+  if (m_bind_render_targets_as_images)
+  {
+    CommitClear(tex);
+    return;
+  }
+
   switch (tex->GetState())
   {
     case GPUTexture::State::Invalidated:
@@ -943,8 +1007,9 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
 }
 
 OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool imported,
-                                             GLuint buffer_id, u8* cpu_buffer, const u8* map_ptr, u32 map_pitch)
-  : GPUDownloadTexture(width, height, format, imported, false), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
+                                             GLuint buffer_id, u8* cpu_buffer, const u8* map_ptr, u32 map_pitch,
+                                             bool shader_write)
+  : GPUDownloadTexture(width, height, format, imported, shader_write), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
 {
   m_map_pointer = map_ptr;
   m_current_pitch = map_pitch;
@@ -952,6 +1017,9 @@ OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTextureFo
 
 OpenGLDownloadTexture::~OpenGLDownloadTexture()
 {
+  if (OpenGLDevice& dev = OpenGLDevice::GetInstance(); dev.m_compute_output_buffer == this)
+    dev.SetComputeOutputBuffer(nullptr);
+
   if (m_buffer_id != 0)
   {
     if (m_sync)
@@ -959,9 +1027,10 @@ OpenGLDownloadTexture::~OpenGLDownloadTexture()
 
     if (m_map_pointer)
     {
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, m_buffer_id);
-      glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+      const GLenum target = IsShaderWritable() ? GL_COPY_WRITE_BUFFER : GL_PIXEL_PACK_BUFFER;
+      glBindBuffer(target, m_buffer_id);
+      glUnmapBuffer(target);
+      glBindBuffer(target, 0);
     }
 
     glDeleteBuffers(1, &m_buffer_id);
@@ -974,7 +1043,7 @@ OpenGLDownloadTexture::~OpenGLDownloadTexture()
 
 std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                      void* memory, size_t memory_size, u32 memory_pitch,
-                                                                     Error* error)
+                                                                     bool shader_write, Error* error)
 {
   const u32 buffer_pitch =
     memory ? memory_pitch :
@@ -982,24 +1051,36 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
   const u32 buffer_size = memory ? static_cast<u32>(memory_size) : (height * buffer_pitch);
 
   const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage) &&
-                                  !memory && OpenGLDevice::ShouldUsePBOsForDownloads();
+                                  !memory && (shader_write || OpenGLDevice::ShouldUsePBOsForDownloads());
   if (use_buffer_storage)
   {
+    if (shader_write)
+    {
+      GLint64 max_size = 0;
+      glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_size);
+      if (static_cast<GLint64>(buffer_size) > max_size)
+      {
+        Error::SetStringView(error, "Compute download buffer exceeds the SSBO size limit.");
+        return {};
+      }
+    }
+
+    const GLenum target = shader_write ? GL_COPY_WRITE_BUFFER : GL_PIXEL_PACK_BUFFER;
     GLuint buffer_id;
     glGenBuffers(1, &buffer_id);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer_id);
+    glBindBuffer(target, buffer_id);
 
     const u32 flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
     const u32 map_flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
     if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage)
-      glBufferStorage(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, flags);
+      glBufferStorage(target, buffer_size, nullptr, flags);
     else if (GLAD_GL_EXT_buffer_storage)
-      glBufferStorageEXT(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, flags);
+      glBufferStorageEXT(target, buffer_size, nullptr, flags);
 
-    u8* buffer_map = static_cast<u8*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, buffer_size, map_flags));
+    u8* buffer_map = static_cast<u8*>(glMapBufferRange(target, 0, buffer_size, map_flags));
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindBuffer(target, 0);
 
     if (!buffer_map)
     {
@@ -1008,8 +1089,8 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
       return {};
     }
 
-    return std::unique_ptr<OpenGLDownloadTexture>(
-      new OpenGLDownloadTexture(width, height, format, false, buffer_id, nullptr, buffer_map, buffer_pitch));
+    return std::unique_ptr<OpenGLDownloadTexture>(new OpenGLDownloadTexture(
+      width, height, format, false, buffer_id, nullptr, buffer_map, buffer_pitch, shader_write));
   }
 
   // Fallback to glReadPixels() + CPU buffer.
@@ -1023,7 +1104,7 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
   }
 
   return std::unique_ptr<OpenGLDownloadTexture>(
-    new OpenGLDownloadTexture(width, height, format, imported, 0, cpu_buffer, cpu_buffer, buffer_pitch));
+    new OpenGLDownloadTexture(width, height, format, imported, 0, cpu_buffer, cpu_buffer, buffer_pitch, false));
 }
 
 void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
@@ -1109,6 +1190,19 @@ void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* sr
   glPixelStorei(GL_PACK_ROW_LENGTH, 0);
 }
 
+void OpenGLDownloadTexture::RecordShaderWrite()
+{
+  // Coherent persistent mappings need completion, not a client-mapped visibility barrier.
+  // Order subsequent shader writes to the same buffer as well.
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  if (m_sync)
+    glDeleteSync(m_sync);
+
+  m_sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  m_needs_flush = true;
+  GPUDevice::GetStatistics().num_downloads++;
+}
+
 bool OpenGLDownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
 {
   // Either always mapped, or CPU buffer.
@@ -1149,12 +1243,13 @@ void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                         bool shader_write, Error* error /* = nullptr */)
 {
-  if (shader_write)
+  if (shader_write && !m_features.compute_shaders)
   {
-    Error::SetStringView(error, "Compute buffer output is not supported by OpenGL.");
+    Error::SetStringView(error, "Compute buffer output is unavailable.");
     return {};
   }
-  return OpenGLDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
+
+  return OpenGLDownloadTexture::Create(width, height, format, nullptr, 0, 0, shader_write, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
@@ -1164,9 +1259,10 @@ std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 widt
 {
   if (shader_write)
   {
-    Error::SetStringView(error, "Compute buffer output is not supported by OpenGL.");
+    Error::SetStringView(error, "Host memory import is not supported for OpenGL compute output.");
     return {};
   }
+
   // not _really_ memory importing, but PBOs are broken on Intel....
-  return OpenGLDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
+  return OpenGLDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, false, error);
 }

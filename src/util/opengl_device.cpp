@@ -107,10 +107,9 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
   {
     const bool depth = S->IsDepthStencil();
     const bool stencil = GPUTexture::IsDepthStencilFormat(S->GetFormat());
-    const GLenum attachment = depth ? (stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT) :
-                                      GL_COLOR_ATTACHMENT0;
-    const GLbitfield mask = depth ? (GL_DEPTH_BUFFER_BIT | (stencil ? GL_STENCIL_BUFFER_BIT : 0)) :
-                                    GL_COLOR_BUFFER_BIT;
+    const GLenum attachment =
+      depth ? (stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT) : GL_COLOR_ATTACHMENT0;
+    const GLbitfield mask = depth ? (GL_DEPTH_BUFFER_BIT | (stencil ? GL_STENCIL_BUFFER_BIT : 0)) : GL_COLOR_BUFFER_BIT;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_read_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
     if (depth)
@@ -131,8 +130,8 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
       glFramebufferTexture2D(GL_READ_FRAMEBUFFER, attachment, S->GetGLTarget(), sid, src_level);
 
     glDisable(GL_SCISSOR_TEST);
-    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
-                      mask, GL_NEAREST);
+    glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height, mask,
+                      GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
 
     if (depth)
@@ -231,17 +230,6 @@ void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
     if (m_current_depth_target == t)
       CommitDSClearInFB(static_cast<OpenGLTexture*>(t));
   }
-}
-
-std::unique_ptr<GPUPipeline> OpenGLDevice::LoadPipeline(const GPUPipeline::ComputeConfig& config)
-{
-  return {};
-}
-
-std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
-{
-  ERROR_LOG("Compute shaders are not yet supported.");
-  return {};
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -495,7 +483,32 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
 
   m_features.geometry_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders) &&
                                 (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
-  m_features.compute_shaders = false;
+  // Deliberately require buffer storage for persistent coherent SSBO readback. A future
+  // nonpersistent path could use glBufferData(), GL_BUFFER_UPDATE_BARRIER_BIT, and
+  // glMapBufferRange(GL_MAP_READ_BIT), unmapping before the next GPU write.
+  // This bypasses pixel transfers, so the PBO driver blacklist does not apply.
+  m_features.compute_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders) &&
+                               (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1) &&
+                               (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage);
+  if (m_features.compute_shaders)
+  {
+    GLint images = 0;
+    glGetIntegerv(GL_MAX_COMPUTE_IMAGE_UNIFORMS, &images);
+    GLint blocks = 0, invocations = 0, shared_size = 0, samplers = 0, ubos = 0;
+    GLint group_x = 0, group_y = 0;
+    GLint64 buffer_size = 0;
+    glGetIntegerv(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &blocks);
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &invocations);
+    glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &shared_size);
+    glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &samplers);
+    glGetIntegerv(GL_MAX_COMPUTE_UNIFORM_BLOCKS, &ubos);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &group_x);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &group_y);
+    glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &buffer_size);
+    m_features.compute_shaders = (images >= static_cast<GLint>(MAX_IMAGE_RENDER_TARGETS) && blocks >= 1 &&
+                                  invocations >= 64 && shared_size >= 128 && samplers >= 1 && ubos >= 1 &&
+                                  group_x >= 8 && group_y >= 8 && buffer_size >= 1024 * 512 * 2);
+  }
 
   m_features.gpu_timing = m_gl_context->IsGLES() ?
                             (GLAD_GL_EXT_disjoint_timer_query && glGetQueryObjectivEXT && glGetQueryObjectui64vEXT) :
@@ -882,6 +895,13 @@ GPUPresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
 
+  if (m_bind_render_targets_as_images)
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+      glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+    m_bind_render_targets_as_images = false;
+  }
+
   m_current_fbo = 0;
   m_num_current_render_targets = 0;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
@@ -1065,7 +1085,7 @@ void OpenGLDevice::UnbindTexture(OpenGLTexture* tex)
 {
   UnbindTexture(tex->GetGLId());
 
-  if (tex->IsRenderTarget())
+  if (tex->IsRenderTarget() || (m_bind_render_targets_as_images && IsRenderTargetBound(tex) >= 0))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -1187,7 +1207,37 @@ void OpenGLDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index,
 void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                             u32 group_size_z)
 {
-  Panic("Compute shaders are not supported");
+  DebugAssert(m_current_pipeline && !m_current_pipeline->GetVAO());
+  const bool image_output = m_current_pipeline->GetLayout() == GPUPipeline::Layout::ComputeImageOutput;
+  if (image_output)
+  {
+    DebugAssert(m_bind_render_targets_as_images);
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      CommitClear(m_current_render_targets[i]);
+      m_current_render_targets[i]->SetState(GPUTexture::State::Dirty);
+    }
+  }
+  else
+  {
+    DebugAssert(m_compute_output_buffer);
+  }
+
+  const auto& [x, y, z] = GetDispatchCount(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
+  glDispatchCompute(x, y, z);
+  s_stats.num_draws++;
+
+  if (image_output)
+  {
+    // Publish image writes to later sampling, image accesses, framebuffer operations, and texture transfers
+    // (including readback and mipmap generation).
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT |
+                    GL_TEXTURE_UPDATE_BARRIER_BIT);
+  }
+  else
+  {
+    m_compute_output_buffer->RecordShaderWrite();
+  }
 }
 
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
@@ -1253,8 +1303,35 @@ void OpenGLDevice::UnmapUniformBuffer(u32 size)
 void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
                                     GPUPipeline::RenderPassFlag feedback_loop)
 {
-  // DebugAssert(!feedback_loop); TODO
-  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  const bool bind_images = (feedback_loop & GPUPipeline::BindRenderTargetsAsImages) != 0;
+  DebugAssert(!bind_images || (m_features.compute_shaders && !ds));
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds ||
+                  m_bind_render_targets_as_images != bind_images);
+  if (m_bind_render_targets_as_images && !bind_images)
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+      glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+  }
+  if (bind_images)
+  {
+    for (u32 i = 0; i < num_rts; i++)
+    {
+      auto* tex = static_cast<OpenGLTexture*>(rts[i]);
+      CommitClear(tex);
+      if (!m_bind_render_targets_as_images || i >= m_num_current_render_targets || m_current_render_targets[i] != tex)
+      {
+        DebugAssert(tex->HasFlag(GPUTexture::Flags::AllowBindAsImage));
+        glBindImageTexture(i, tex->GetGLId(), 0, GL_FALSE, 0, GL_READ_WRITE,
+                           OpenGLTexture::GetImageFormat(tex->GetFormat()));
+      }
+    }
+    if (m_bind_render_targets_as_images)
+    {
+      for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+        glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+    }
+  }
+  m_bind_render_targets_as_images = bind_images;
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
@@ -1272,7 +1349,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
   if (changed)
   {
     GLuint fbo = 0;
-    if (m_num_current_render_targets > 0 || m_current_depth_target)
+    if (!bind_images && (m_num_current_render_targets > 0 || m_current_depth_target))
     {
       if ((fbo = m_framebuffer_manager.Lookup(rts, num_rts, ds, 0)) == 0)
       {
@@ -1294,7 +1371,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
     if (!m_gl_context->IsGLES())
     {
       bool srgb = false;
-      for (u32 i = 0; i < num_rts; i++)
+      for (u32 i = 0; !bind_images && i < num_rts; i++)
         srgb |= (rts[i]->GetFormat() == GPUTextureFormat::SRGBA8);
       if (m_framebuffer_srgb != srgb)
       {
@@ -1304,7 +1381,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
     }
   }
 
-  if (needs_rt_clear)
+  if (needs_rt_clear && !bind_images)
   {
     for (u32 i = 0; i < num_rts; i++)
     {
@@ -1401,4 +1478,16 @@ void OpenGLDevice::UpdateViewport()
 void OpenGLDevice::UpdateScissor()
 {
   glScissor(m_last_scissor.left, m_last_scissor.top, m_last_scissor.width(), m_last_scissor.height());
+}
+
+void OpenGLDevice::SetComputeOutputBuffer(GPUDownloadTexture* buffer)
+{
+  m_compute_output_buffer = static_cast<OpenGLDownloadTexture*>(buffer);
+  DebugAssert(!buffer || buffer->IsShaderWritable());
+  const GLuint id = m_compute_output_buffer ? m_compute_output_buffer->GetBufferId() : 0;
+  if (m_last_ssbo != id)
+  {
+    m_last_ssbo = id;
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, id);
+  }
 }

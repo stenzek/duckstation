@@ -451,7 +451,8 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
 void ShaderGen::DeclareComputeOutputBuffer(std::stringstream& ss, const char* name) const
 {
   if (m_glsl)
-    ss << "layout(std430, set = 2, binding = 0) writeonly restrict buffer OutputBuffer { uint " << name << "[]; };\n";
+    ss << "layout(std430, " << (m_spirv ? "set = 2, " : "")
+       << "binding = 0) writeonly restrict buffer OutputBuffer { uint " << name << "[]; };\n";
   else
     ss << "RWStructuredBuffer<uint> " << name << " : register(u0);\n";
 }

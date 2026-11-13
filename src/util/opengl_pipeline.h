@@ -98,6 +98,7 @@ public:
 
   ~OpenGLPipeline() override;
 
+  ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
   ALWAYS_INLINE GLuint GetProgram() const { return m_program; }
   ALWAYS_INLINE const VertexArrayCache::value_type* GetVAO() const { return m_vao; }
   ALWAYS_INLINE const RasterizationState& GetRasterizationState() const { return m_rasterization_state; }
@@ -111,7 +112,8 @@ public:
 
 private:
   OpenGLPipeline(const ProgramCacheKey& key, GLuint program, const VertexArrayCache::value_type* vao,
-                 const RasterizationState& rs, const DepthState& ds, const BlendState& bs, GLenum topology);
+                 const RasterizationState& rs, const DepthState& ds, const BlendState& bs, Layout layout,
+                 GLenum topology);
 
   ProgramCacheKey m_key;
   const VertexArrayCache::value_type* m_vao;
@@ -119,5 +121,6 @@ private:
   BlendState m_blend_state;
   RasterizationState m_rasterization_state;
   DepthState m_depth_state;
+  Layout m_layout;
   GLenum m_topology;
 };
