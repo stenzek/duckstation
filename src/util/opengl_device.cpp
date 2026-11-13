@@ -105,21 +105,43 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
   }
   else
   {
+    const bool depth = S->IsDepthStencil();
+    const bool stencil = GPUTexture::IsDepthStencilFormat(S->GetFormat());
+    const GLenum attachment = depth ? (stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT) :
+                                      GL_COLOR_ATTACHMENT0;
+    const GLbitfield mask = depth ? (GL_DEPTH_BUFFER_BIT | (stencil ? GL_STENCIL_BUFFER_BIT : 0)) :
+                                    GL_COLOR_BUFFER_BIT;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_read_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
+    if (depth)
+    {
+      // Scratch FBOs may still have smaller colour attachments from previous transfers.
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+      glReadBuffer(GL_NONE);
+      glDrawBuffers(1, std::array<GLenum, 1>{GL_NONE}.data());
+    }
     if (D->IsTextureArray())
-      glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, did, dst_level, dst_layer);
+      glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, attachment, did, dst_level, dst_layer);
     else
-      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, D->GetGLTarget(), did, dst_level);
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, D->GetGLTarget(), did, dst_level);
     if (S->IsTextureArray())
-      glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, sid, src_level, src_layer);
+      glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, attachment, sid, src_level, src_layer);
     else
-      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, S->GetGLTarget(), sid, src_level);
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, attachment, S->GetGLTarget(), sid, src_level);
 
     glDisable(GL_SCISSOR_TEST);
     glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
-                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                      mask, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
+
+    if (depth)
+    {
+      glFramebufferTexture2D(GL_READ_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+      glReadBuffer(GL_COLOR_ATTACHMENT0);
+      glDrawBuffers(1, s_draw_buffers.data());
+    }
 
     if (m_current_fbo)
     {
