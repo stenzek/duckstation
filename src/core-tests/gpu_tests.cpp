@@ -562,6 +562,53 @@ TEST_F(GPUFrontend, ProgressiveFramesHoldTheInterlacedField)
   }
 }
 
+// The next field is chosen a quarter into scanline 311, the last line of a short field and the line before the last
+// of a long one. Interlace turned off before that holds the field in progress, and from there the next field.
+TEST_F(GPUFrontend, InterlaceOffInScanline311HoldsTheNextField)
+{
+  const Settings old_settings = g_settings;
+  g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Progressive; // No display clear on interlace.
+  GPU::UpdateSettings(old_settings);
+  GPU::WriteRegister(4, 0x08000028);
+  GPU::WriteRegister(4, 0x07000000 | 0x125 | (0x125 << 10)); // Y1 == Y2 stays in vblank.
+  Timers::WriteRegister(0x14, 0x0100);                       // hblank clock
+
+  for (const auto [short_field, off_line, off_tick, held_short] :
+       {std::tuple<bool, u32, u32, bool>{false, 310, 1700, false},
+        {false, 311, 100, false},
+        {false, 311, 1700, true},
+        {true, 310, 1700, true},
+        {true, 311, 100, true},
+        {true, 311, 1700, false}})
+  {
+    SCOPED_TRACE(short_field);
+    SCOPED_TRACE(off_line);
+    SCOPED_TRACE(off_tick);
+
+    // GPUSTAT.13 reads 0 in the short field, until its last line.
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    while (((GPU::ReadRegister(4) & (1u << 13)) == 0) != short_field)
+    {
+      RunGPUTicks(1000);
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    }
+
+    RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(off_tick, off_line));
+    GPU::WriteRegister(4, 0x08000008);
+    for (u32 i = 0; i < 3; i++)
+    {
+      RunGPUTicks(1000);
+      RunGPUTicks(GPU::GetSystemTicksUntilTicksAndLine(0, 100));
+    }
+    GPU::WriteRegister(4, 0x08000028);
+
+    // A held short field rises at its last line, 211 lines on, a held long field falls 212 lines on.
+    const auto [lines, fell] = RunToFieldBitChange();
+    EXPECT_EQ(lines, held_short ? 211u : 212u);
+    EXPECT_EQ(fell, !held_short);
+  }
+}
+
 // The line counter is 10 bits. In PAL, interlace turned off at line 309 and back on at 312 of a short field misses the
 // end of the field, and the counter runs on to 1023: with Y2=293 the vblank IRQ comes 1008 lines after the first
 // write. In a long field, line 312 is still part of the field.
