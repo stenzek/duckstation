@@ -32461,8 +32461,9 @@ SCPS-10003:
     versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in walls.
   settings:
-    dmaMaxSliceTicks: 100 # Stops DMA from blazing past the deferred CDROM async interrupt.
     displayActiveEndOffset: -1 # Fixes garbage on edge of screen in cutscenes.
   codes:
     - HASH-111C340E270B10A8
