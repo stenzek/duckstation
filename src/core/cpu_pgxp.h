@@ -22,6 +22,10 @@ enum : u32
   VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
 };
 
+/// Gives a bitwise result that packs halves of two values the average of their depths, the midpoint depth when the
+/// halves are interpolated, e.g. by Ape Escape's subdivision with MVMVA. Otherwise the depth of one value is kept.
+static constexpr bool BITWISE_AVERAGE_PACKED_DEPTH = true;
+
 /// State management.
 void Initialize();
 void Reset();
@@ -45,6 +49,16 @@ bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, f
 void GTE_RTPS(float x, float y, float z, u32 value);
 bool GTE_HasPreciseVertices(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
+
+/// Only the light/colour matrices are tracked through MVMVA, which games use for their own arithmetic, e.g. subdividing
+/// in screen space. The rotation matrix is left native, as it is for RTPS. Its results are used for much more than
+/// vertices, and games depend on them being truncated, e.g. Racingroovy VS positions its sky with libgte's
+/// ApplyMatrix(), and The Land Before Time: Return to the Great Valley its text with RotTrans().
+ALWAYS_INLINE bool TracksMVMVAMatrix(u32 matrix)
+{
+  return (matrix == 1 || matrix == 2);
+}
+void GTE_MVMVA(u32 inst_bits, const u32 old_ir[3]);
 void GTE_GPF_GPL(const u32 old_ir[3], const u32* old_mac, u8 shift);
 
 // CPU instruction implementations.

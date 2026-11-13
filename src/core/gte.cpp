@@ -261,6 +261,7 @@ static void NCDS(const s16 V[3], u8 shift, bool lm);
 static void DPCS(const u8 color[3], u8 shift, bool lm);
 
 static void Execute_MVMVA(Instruction inst);
+static void Execute_MVMVA_PGXP(Instruction inst);
 static void Execute_SQR(Instruction inst);
 static void Execute_OP(Instruction inst);
 static void Execute_RTPS(Instruction inst);
@@ -695,6 +696,13 @@ ALWAYS_INLINE void GTE::Execute_MVMVA(Instruction inst)
     MulMatVecBuggy(M, T, Vx, Vy, Vz, inst.GetShift(), inst.lm);
 
   REGS.FLAG.UpdateError();
+}
+
+void GTE::Execute_MVMVA_PGXP(Instruction inst)
+{
+  const u32 old_ir[3] = {REGS.dr32[9], REGS.dr32[10], REGS.dr32[11]};
+  Execute_MVMVA(inst);
+  CPU::PGXP::GTE_MVMVA(inst.bits, old_ir);
 }
 
 ALWAYS_INLINE void GTE::Execute_SQR(Instruction inst)
@@ -1319,24 +1327,38 @@ namespace GTE {
 
 /// Wraps an instruction handler, fixing the sf/lm bits at compile time. Once the handler is inlined, the shift amounts
 /// and saturation limits become constants, instead of being decoded and selected on each execution.
-template<void (*handler)(Instruction), bool sf, bool lm>
+template<void (*handler)(Instruction), bool sf, bool lm, bool pgxp_cpu>
 static void SpecializedHandler(Instruction inst)
 {
   inst.sf = BoolToUInt8(sf);
   inst.lm = lm;
   handler(inst);
+
+  // In CPU mode, PGXP tracks MAC/IR through MVMVA and GPF/GPL, which use their own handlers instead of this one. Every
+  // instruction that comes through here overwrites MAC/IR natively, so drop the precise values, otherwise they would
+  // come back if a later native result happened to match.
+  if constexpr (pgxp_cpu)
+  {
+    for (u32 i = 0; i < 3; i++)
+    {
+      CPU::g_state.pgxp_gte[9 + i].flags = 0;
+      CPU::g_state.pgxp_gte[25 + i].flags = 0;
+    }
+  }
 }
 
 /// Returns the specialization of the handler which matches the sf/lm bits in the instruction.
 template<void (*handler)(Instruction)>
 ALWAYS_INLINE InstructionImpl GetSpecializedHandler(Instruction inst)
 {
-  static constexpr InstructionImpl handlers[2][2] = {
-    {&SpecializedHandler<handler, false, false>, &SpecializedHandler<handler, false, true>},
-    {&SpecializedHandler<handler, true, false>, &SpecializedHandler<handler, true, true>},
+  static constexpr InstructionImpl handlers[2][2][2] = {
+    {{&SpecializedHandler<handler, false, false, false>, &SpecializedHandler<handler, false, true, false>},
+     {&SpecializedHandler<handler, true, false, false>, &SpecializedHandler<handler, true, true, false>}},
+    {{&SpecializedHandler<handler, false, false, true>, &SpecializedHandler<handler, false, true, true>},
+     {&SpecializedHandler<handler, true, false, true>, &SpecializedHandler<handler, true, true, true>}},
   };
 
-  return handlers[inst.sf][BoolToUInt8(inst.lm)];
+  return handlers[BoolToUInt8(g_settings.UsingPGXPCPUMode())][inst.sf][BoolToUInt8(inst.lm)];
 }
 
 // Command latencies for implemented opcodes. Unhandled opcodes have zero latency.
@@ -1402,7 +1424,10 @@ void GTE::ExecuteInstruction(u32 inst_bits)
       break;
 
     case 0x12:
-      GetSpecializedHandler<&Execute_MVMVA>(inst)(inst);
+      if (g_settings.UsingPGXPCPUMode() && CPU::PGXP::TracksMVMVAMatrix(inst.mvmva_multiply_matrix))
+        Execute_MVMVA_PGXP(inst);
+      else
+        GetSpecializedHandler<&Execute_MVMVA>(inst)(inst);
       break;
 
     case 0x13:
@@ -1524,7 +1549,10 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
       return GetSpecializedHandler<&Execute_INTPL>(inst);
 
     case 0x12:
-      return GetSpecializedHandler<&Execute_MVMVA>(inst);
+      if (g_settings.UsingPGXPCPUMode() && CPU::PGXP::TracksMVMVAMatrix(inst.mvmva_multiply_matrix))
+        return &Execute_MVMVA_PGXP;
+      else
+        return GetSpecializedHandler<&Execute_MVMVA>(inst);
 
     case 0x13:
       return GetSpecializedHandler<&Execute_NCDS>(inst);

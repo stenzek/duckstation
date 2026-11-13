@@ -3,6 +3,8 @@
 
 #include "core/cpu_core.h"
 #include "core/cpu_pgxp.h"
+#include "core/gte.h"
+#include "core/settings.h"
 
 #include <gtest/gtest.h>
 
@@ -798,4 +800,468 @@ TEST_F(PGXPTest, ShiftResultDoesNotDependOnAliasing)
       }
     }
   }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// MVMVA: matrix/vector precision and native execution
+//////////////////////////////////////////////////////////////////////////
+
+class PGXPMVMVATest : public PGXPTest
+{
+protected:
+  void SetUp() override
+  {
+    PGXPTest::SetUp();
+    CPU::g_state.gte_regs = {};
+    m_old_enable = g_settings.gpu_pgxp_enable;
+    m_old_cpu = g_settings.gpu_pgxp_cpu;
+    g_settings.gpu_pgxp_enable = true;
+    g_settings.gpu_pgxp_cpu = true;
+  }
+
+  void TearDown() override
+  {
+    g_settings.gpu_pgxp_enable = m_old_enable;
+    g_settings.gpu_pgxp_cpu = m_old_cpu;
+  }
+
+  static u32 Command(u32 matrix, u32 vector, u32 translation, bool shift = false, bool lm = false)
+  {
+    return 0x12u | (matrix << 17) | (vector << 15) | (translation << 13) | (u32(shift) << 19) | (u32(lm) << 10);
+  }
+
+  static void Shadow(u32 index, float x, float y, u32 flags = VALID_XY)
+  {
+    CPU::g_state.pgxp_gte[index] = {x, y, 500.0f, CPU::g_state.gte_regs.r32[index], flags};
+  }
+
+  bool m_old_enable;
+  bool m_old_cpu;
+};
+
+TEST_F(PGXPMVMVATest, ApeEscapeSubdivisionRetainsFractionsThroughCPUDivide)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.dr32[9] = 676;
+  regs.dr32[10] = 484;
+
+  // The game packs the X and Y of both projected endpoints with OR, and loads them into the light matrix with CTC2.
+  const auto pack = [](u32 llm_index, s16 c0, float p0, s16 c1, float p1) {
+    const u32 lo = static_cast<u16>(c0);
+    const u32 hi = static_cast<u32>(static_cast<u16>(c1)) << 16;
+    Set(R_A0, lo, p0, 0.0f, VALID_ALL, 676.0f);
+    Set(R_A1, hi, 0.0f, p1, VALID_ALL, 484.0f);
+    CPU_OR_(R(R_A0, R_A1, R_V0), lo, hi);
+    if constexpr (CPU::PGXP::BITWISE_AVERAGE_PACKED_DEPTH)
+      EXPECT_FLOAT_EQ(Get(R_V0).z, 580.0f);
+
+    const u32 control_reg = llm_index - 32;
+    CPU::Instruction ctc{0x48C00000u | (R_V0 << 16) | (control_reg << 11)};
+    GTE::WriteRegister(llm_index, lo | hi);
+    CPU_MTC2(ctc, lo | hi);
+  };
+  pack(40, 101, 101.75f, 387, 387.85f);
+  pack(43, 231, 231.6f, 290, 290.1f);
+
+  GTE::ExecuteInstruction(Command(1, 3, 3, false, true));
+  EXPECT_EQ(regs.MAC1, 255584);
+  EXPECT_EQ(regs.MAC3, 296516);
+  const auto& mac = CPU::g_state.pgxp_gte[25];
+  EXPECT_NEAR(Scalar(mac), 101.75 * 676 + 387.85 * 484, 0.02);
+  EXPECT_EQ(mac.flags & VALID_XYZ, VALID_XYZ);
+
+  // Midpoint depth of the camera space edge.
+  if constexpr (CPU::PGXP::BITWISE_AVERAGE_PACKED_DEPTH)
+    EXPECT_FLOAT_EQ(mac.z, 580.0f);
+
+  // MFC2 followed by ADD, DIV, MFLO preserves precision as used by the game.
+  CPU::Instruction mfc{};
+  mfc.r.rt = static_cast<CPU::Reg>(R_V0);
+  mfc.r.rd = static_cast<CPU::Reg>(25);
+  CPU_MFC2(mfc, regs.dr32[25]);
+  CPU_ADD(R(R_V0, R_A0, R_V0), regs.dr32[25], 1160);
+  CPU_DIV(R(R_V0, R_A1, R_V1), regs.dr32[25] + 1160, 1160);
+  const auto& lo = CPU::g_state.pgxp_gpr[static_cast<u32>(CPU::Reg::lo)];
+  EXPECT_NEAR(lo.x, (101.75 * 676 + 387.85 * 484) / 1160 + 1, 0.001);
+  EXPECT_TRUE(lo.flags & VALID_Z);
+  EXPECT_FLOAT_EQ(lo.z, mac.z);
+}
+
+TEST_F(PGXPMVMVATest, MatrixComponentsWithoutDepthGiveNoDepth)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 10;
+  regs.LLM[0][1] = 20;
+  regs.dr32[9] = 1;
+  regs.dr32[10] = 1;
+  Shadow(40, 10.5f, 20.5f, VALID_XY);
+  GTE::ExecuteInstruction(Command(1, 3, 3));
+  EXPECT_EQ(CPU::g_state.pgxp_gte[25].flags & VALID_XYZ, VALID_XY);
+}
+
+TEST_F(PGXPMVMVATest, AllStandardSelectorsKeepNativeRegistersAndFlags)
+{
+  for (u32 matrix = 0; matrix < 4; matrix++)
+  {
+    for (u32 vector = 0; vector < 4; vector++)
+    {
+      for (u32 translation = 0; translation < 4; translation++)
+      {
+        for (bool shift : {false, true})
+        {
+          for (bool lm : {false, true})
+          {
+            for (bool compiled : {false, true})
+            {
+              SCOPED_TRACE(testing::Message() << matrix << ',' << vector << ',' << translation << ',' << shift << ','
+                                              << lm << ',' << compiled);
+              auto& regs = CPU::g_state.gte_regs;
+              regs = {};
+              for (u32 i = 0; i < 63; i++)
+              {
+                const s16 lo = static_cast<s16>(int(i) * 13 - 300);
+                const s16 hi = static_cast<s16>(int(i) * 7 - 200);
+                regs.r32[i] = u32(u16(lo)) | (u32(u16(hi)) << 16);
+                Shadow(i, lo + 0.25f, hi - 0.5f);
+              }
+              for (u32 i = 9; i < 12; i++)
+              {
+                regs.dr32[i] = static_cast<u32>(static_cast<s32>(int(i) - 10));
+                Shadow(i, int(i) - 9.75f, int(i) < 10 ? -1.0f : 0.0f);
+              }
+              const auto initial = regs;
+              const u32 command = Command(matrix, vector, translation, shift, lm);
+              g_settings.gpu_pgxp_cpu = false;
+              GTE::ExecuteInstruction(command);
+              const auto expected = regs;
+              regs = initial;
+              g_settings.gpu_pgxp_cpu = true;
+              if (compiled)
+              {
+                TickCount ticks;
+                GTE::GetInstructionImpl(command, &ticks)(GTE::Instruction{command});
+              }
+              else
+              {
+                GTE::ExecuteInstruction(command);
+              }
+              EXPECT_EQ(std::memcmp(&regs, &expected, sizeof(regs)), 0);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_F(PGXPMVMVATest, IRInputsAreSnapshottedBeforeOutputsOverwriteThem)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  for (u32 row = 0; row < 3; row++)
+    regs.LLM[row][0] = 1;
+  regs.dr32[9] = 4;
+  Shadow(9, 4.5f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 3, 3));
+  for (u32 row = 0; row < 3; row++)
+    EXPECT_FLOAT_EQ(CPU::g_state.pgxp_gte[25 + row].x, 4.5f);
+}
+
+TEST_F(PGXPMVMVATest, PackedVectorAndPartialMatrixValidity)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.V1[1] = 3;
+  regs.LCM[0][1] = 2;
+  Shadow(2, 900.0f, 3.5f, VALID_Y);
+  Shadow(48, 900.0f, 2.25f, VALID_Y);
+  GTE::ExecuteInstruction(Command(2, 1, 3));
+  EXPECT_EQ(regs.MAC1, 6);
+  EXPECT_FLOAT_EQ(CPU::g_state.pgxp_gte[25].x, 7.875f);
+}
+
+TEST_F(PGXPMVMVATest, TranslationShiftAndSignedResult)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.BK[0] = -2;
+  Shadow(45, -1.5f, -1.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 1, true));
+  EXPECT_EQ(regs.MAC1, -2);
+  EXPECT_DOUBLE_EQ(Scalar(CPU::g_state.pgxp_gte[25]), -1.5);
+}
+
+TEST_F(PGXPMVMVATest, FarColorBugDiscardsTranslationAndFirstProduct)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.FC[0] = 100;
+  regs.LLM[0][0] = 10;
+  regs.LLM[0][1] = 2;
+  regs.LLM[0][2] = 3;
+  regs.V0[0] = 5;
+  regs.V0[1] = 6;
+  regs.V0[2] = 7;
+  Shadow(0, 5.5f, 6.25f);
+  Shadow(1, 7.5f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 2));
+  EXPECT_EQ(regs.MAC1, 33);
+  EXPECT_FLOAT_EQ(CPU::g_state.pgxp_gte[25].x, 35.0f);
+}
+
+TEST_F(PGXPMVMVATest, SaturatedIRDoesNotClampPreciseMAC)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 100;
+  regs.V0[0] = -400;
+  Shadow(0, -400.25f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 3, false, true));
+  EXPECT_EQ(regs.MAC1, -40000);
+  EXPECT_EQ(regs.IR1, 0);
+  EXPECT_DOUBLE_EQ(Scalar(CPU::g_state.pgxp_gte[25]), -40025.0);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[9].x, 0.0f);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[9].y, 0.0f);
+}
+
+TEST_F(PGXPMVMVATest, StaleInputsAndUnsupportedOrOverflowingResultsInvalidateOldPrecision)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  for (u32 kind = 0; kind < 5; kind++)
+  {
+    regs = {};
+    CPU::PGXP::Reset();
+    regs.RT[0][0] = 1;
+    regs.V0[0] = 1;
+    Shadow(0, 1.25f, 0.0f);
+    if (kind == 0)
+      CPU::g_state.pgxp_gte[0].value = 99;
+    else if (kind == 2)
+    {
+      regs.TR[0] = 0x7FFFFFFF;
+      regs.RT[0][0] = 32767;
+      regs.V0[0] = 32767;
+      Shadow(0, 32767.25f, 0.0f);
+    }
+    else if (kind == 3)
+    {
+      regs.TR[0] = 0x100000;
+      Shadow(37, 0.0f, 16.0f);
+    }
+    else if (kind == 4)
+    {
+      // Native MAC wraps at 32 bits even though the shadow result is just inside the signed range.
+      regs.TR[0] = 262160;
+      regs.RT[0][0] = 32767;
+      regs.V0[0] = 32767;
+      Shadow(0, 32765.5f, 0.0f);
+    }
+    // For the stale-input case, the old shadow's native value already equals the new result.
+    regs.dr32[25] = 1;
+    regs.dr32[9] = 1;
+    Shadow(25, 999.5f, 0.0f, VALID_ALL);
+    Shadow(9, 999.5f, 0.0f, VALID_ALL);
+    GTE::ExecuteInstruction(Command(kind == 1 ? 3 : 0, 0, kind >= 2 ? 0 : 3));
+    EXPECT_EQ(CPU::g_state.pgxp_gte[25].flags, 0u);
+    EXPECT_EQ(CPU::g_state.pgxp_gte[9].flags, 0u);
+  }
+}
+
+TEST_F(PGXPMVMVATest, StandardSelectorsPropagateVectorFractions)
+{
+  for (u32 matrix = 1; matrix < 3; matrix++)
+  {
+    for (u32 vector = 0; vector < 4; vector++)
+    {
+      for (u32 translation = 0; translation < 4; translation++)
+      {
+        for (bool shift : {false, true})
+        {
+          CPU::PGXP::Reset();
+          auto& regs = CPU::g_state.gte_regs;
+          regs = {};
+          const u32 matrix_base = 32 + matrix * 8;
+          for (u32 row = 0; row < 3; row++)
+          {
+            for (u32 col = 0; col < 3; col++)
+            {
+              const u32 offset = row * 3 + col;
+              regs.r32[matrix_base + offset / 2] |= (row + col + 1) << ((offset & 1) * 16);
+            }
+            regs.TR[row] = 2;
+            regs.BK[row] = 3;
+          }
+          if (vector == 3)
+          {
+            for (u32 i = 0; i < 3; i++)
+            {
+              regs.dr32[9 + i] = 2 * (i + 1);
+              Shadow(9 + i, 2 * (i + 1) + 0.5f, 0.0f);
+            }
+          }
+          else
+          {
+            regs.dr32[vector * 2] = 2 | (4 << 16);
+            regs.dr32[vector * 2 + 1] = 6;
+            Shadow(vector * 2, 2.5f, 4.5f);
+            Shadow(vector * 2 + 1, 6.5f, 0.0f);
+          }
+          GTE::ExecuteInstruction(Command(matrix, vector, translation, shift));
+          for (u32 row = 0; row < 3; row++)
+          {
+            double expected = translation < 2 ? (translation + 2) * 4096.0 : 0.0;
+            for (u32 col = translation == 2 ? 1 : 0; col < 3; col++)
+              expected += (row + col + 1) * (2 * (col + 1) + 0.5);
+            if (shift)
+              expected /= 4096.0;
+            const auto& mac = CPU::g_state.pgxp_gte[25 + row];
+            EXPECT_EQ(mac.flags & VALID_XY, VALID_XY);
+            EXPECT_NEAR(Scalar(mac), expected, 0.001);
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_F(PGXPMVMVATest, RotationMatrixResultsStayNative)
+{
+  // Games depend on the truncated results of libgte's ApplyMatrix(), RotTrans(), etc.
+  auto& regs = CPU::g_state.gte_regs;
+  regs.RT[0][0] = 2;
+  regs.TR[0] = 5;
+  regs.V0[0] = 3;
+  Shadow(32, 2.5f, 0.0f);
+  Shadow(37, 5.5f, 0.0f);
+  Shadow(0, 3.25f, 0.0f);
+  Shadow(9, 1.5f, 0.0f);
+  Shadow(25, 1.5f, 0.0f);
+  GTE::ExecuteInstruction(Command(0, 0, 0, true));
+  EXPECT_EQ(regs.MAC1, 5);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[25].flags, 0u);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[9].flags, 0u);
+}
+
+TEST_F(PGXPMVMVATest, TranslationUsesNativeValueLikeRTPS)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 2;
+  regs.TR[0] = 5;
+  regs.V0[0] = 3;
+  Shadow(40, 2.5f, 0.0f);
+  Shadow(37, 5.5f, 0.0f);
+  Shadow(0, 3.25f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 0, true));
+  EXPECT_EQ(regs.MAC1, 5);
+  EXPECT_NEAR(Scalar(CPU::g_state.pgxp_gte[25]), 5.0 + 8.125 / 4096.0, 1e-6);
+}
+
+TEST_F(PGXPMVMVATest, AccumulatedPrecisionIsKept)
+{
+  // 10.75 scaled by four is 43 against a native 40, which an identity transform must keep.
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 4;
+  regs.V0[0] = 10;
+  Shadow(40, 4.0f, 0.0f);
+  Shadow(0, 10.75f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 3));
+  EXPECT_EQ(regs.MAC1, 40);
+  EXPECT_NEAR(Scalar(CPU::g_state.pgxp_gte[25]), 43.0, 0.001);
+
+  regs.LLM[0][0] = 1;
+  Shadow(40, 1.0f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 3, 3));
+  EXPECT_EQ(regs.MAC1, 40);
+  EXPECT_NEAR(Scalar(CPU::g_state.pgxp_gte[25]), 43.0, 0.001);
+}
+
+TEST_F(PGXPMVMVATest, SelectingOneHalfOfPackedWordGivesNoDepth)
+{
+  // The word's depth is the average of both halves, which doesn't belong to either one alone.
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 101;
+  regs.LLM[0][1] = 387;
+  regs.IR1 = 1;
+  CPU::g_state.pgxp_gte[40] = {101.75f, 387.85f, 200.0f, regs.r32[40], VALID_ALL};
+  GTE::ExecuteInstruction(Command(1, 3, 3));
+  EXPECT_EQ(regs.MAC1, 101);
+  const auto& mac = CPU::g_state.pgxp_gte[25];
+  EXPECT_NEAR(Scalar(mac), 101.75, 0.001);
+  EXPECT_FALSE(mac.flags & VALID_Z);
+
+  regs.IR1 = 1;
+  regs.IR2 = 1;
+  GTE::ExecuteInstruction(Command(1, 3, 3));
+  EXPECT_NEAR(Scalar(mac), 101.75 + 387.85, 0.01);
+  EXPECT_TRUE(mac.flags & VALID_Z);
+  EXPECT_FLOAT_EQ(mac.z, 200.0f);
+}
+
+TEST_F(PGXPMVMVATest, PreciseIRIsClampedToSaturationRange)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  regs.LLM[0][0] = 1;
+  Shadow(40, 1.0f, 0.0f);
+  Shadow(0, -0.5f, 0.0f);
+  GTE::ExecuteInstruction(Command(1, 0, 3, false, true));
+  EXPECT_EQ(regs.IR1, 0);
+  EXPECT_NEAR(Scalar(CPU::g_state.pgxp_gte[25]), -0.5, 0.001);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[9].x, 0.0f);
+  EXPECT_EQ(CPU::g_state.pgxp_gte[9].y, 0.0f);
+}
+
+TEST_F(PGXPMVMVATest, OtherInstructionsInvalidatePreciseMACAndIR)
+{
+  auto& regs = CPU::g_state.gte_regs;
+  for (bool compiled : {false, true})
+  {
+    for (u32 command : {0x28u, 0x2Du})
+    {
+      SCOPED_TRACE(testing::Message() << compiled << ',' << command);
+      regs = {};
+      // SQR of IR=1 produces the same native MAC and IR as before.
+      for (u32 i = 0; i < 3; i++)
+      {
+        regs.dr32[9 + i] = 1;
+        regs.dr32[25 + i] = 1;
+        Shadow(9 + i, 1.25f, 0.0f);
+        Shadow(25 + i, 1.25f, 0.0f);
+      }
+      if (compiled)
+      {
+        TickCount ticks;
+        GTE::GetInstructionImpl(command, &ticks)(GTE::Instruction{command});
+      }
+      else
+      {
+        GTE::ExecuteInstruction(command);
+      }
+
+      // AVSZ3 only writes MAC0/OTZ, so it keeps them.
+      const u32 expected = (command == 0x2Du) ? VALID_XY : 0u;
+      for (u32 i = 0; i < 3; i++)
+      {
+        EXPECT_EQ(CPU::g_state.pgxp_gte[9 + i].flags, expected);
+        EXPECT_EQ(CPU::g_state.pgxp_gte[25 + i].flags, expected);
+      }
+    }
+  }
+}
+
+TEST_F(PGXPTest, ORPackingHalvesOfTwoValuesAveragesDepth)
+{
+  Set(R_A0, 0x00000065, 101.75f, 0.0f, VALID_ALL, 600.0f);
+  Set(R_A1, 0x01830000, 0.0f, 387.85f, VALID_ALL, 400.0f);
+  CPU_OR_(R(R_A0, R_A1, R_V0), 0x00000065, 0x01830000);
+  EXPECT_FLOAT_EQ(Get(R_V0).x, 101.75f);
+  EXPECT_FLOAT_EQ(Get(R_V0).y, 387.85f);
+  if constexpr (CPU::PGXP::BITWISE_AVERAGE_PACKED_DEPTH)
+    EXPECT_FLOAT_EQ(Get(R_V0).z, 500.0f);
+
+  // Both halves from one side keep that side's depth.
+  Set(R_A0, 0x01830065, 101.75f, 387.85f, VALID_ALL, 600.0f);
+  Set(R_A1, 0x00010001, 1.0f, 1.0f, VALID_ALL, 400.0f);
+  CPU_OR_(R(R_A0, R_A1, R_V0), 0x01830065, 0x00010001);
+  EXPECT_FLOAT_EQ(Get(R_V0).z, 600.0f);
+
+  // One side without depth keeps the depth of the other.
+  Set(R_A0, 0x00000065, 101.75f, 0.0f, VALID_XY, 0.0f);
+  Set(R_A1, 0x01830000, 0.0f, 387.85f, VALID_ALL, 400.0f);
+  CPU_OR_(R(R_A0, R_A1, R_V0), 0x00000065, 0x01830000);
+  EXPECT_FLOAT_EQ(Get(R_V0).z, 400.0f);
 }
