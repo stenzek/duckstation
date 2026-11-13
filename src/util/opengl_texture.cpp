@@ -1137,7 +1137,7 @@ void OpenGLDownloadTexture::Flush()
 
 void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 {
-  if (name.empty() || m_buffer_id != 0)
+  if (name.empty() || m_buffer_id == 0)
     return;
 
   if (glObjectLabel)
