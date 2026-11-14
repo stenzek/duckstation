@@ -719,6 +719,9 @@
            <layout class="QHBoxLayout" name="pgxpGeometryToleranceLayout" stretch="1,0">
             <item>
              <widget class="QDoubleSpinBox" name="pgxpGeometryTolerance">
+              <property name="specialValueText">
+               <string>Disabled</string>
+              </property>
               <property name="prefix">
                <string/>
               </property>

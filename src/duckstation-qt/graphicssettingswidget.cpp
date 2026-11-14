@@ -254,11 +254,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "PGXPDisableOn2DPolygons", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, Settings::GPU_SECTION_NAME,
                                                "PGXPTransparentDepthTest", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pgxpNormalizeDepth, Settings::GPU_SECTION_NAME,
-                                               "PGXPNormalizeDepth", &Settings::ParsePGXPDepthNormalizationModeName,
-                                               &Settings::GetPGXPDepthNormalizationModeName,
-                                               &Settings::GetPGXPDepthNormalizationModeDisplayName,
-                                               GPUPGXPDepthNormalizationMode::Automatic, GPUPGXPDepthNormalizationMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.pgxpNormalizeDepth, Settings::GPU_SECTION_NAME, "PGXPNormalizeDepth",
+    &Settings::ParsePGXPDepthNormalizationModeName, &Settings::GetPGXPDepthNormalizationModeName,
+    &Settings::GetPGXPDepthNormalizationModeDisplayName, GPUPGXPDepthNormalizationMode::Automatic,
+    GPUPGXPDepthNormalizationMode::Count);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -544,7 +544,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // PGXP Tab
 
   dialog->registerWidgetHelp(
-    m_ui.pgxpGeometryTolerance, tr("Geometry Tolerance"), tr("-1.00px (Disabled)"),
+    m_ui.pgxpGeometryTolerance, tr("Geometry Tolerance"), tr("Disabled"),
     tr("Discards precise geometry when it is found to be offset past the specified threshold. This can help with games "
        "that have vertices significantly moved by PGXP, but is still a hack/workaround."));
   dialog->registerWidgetHelp(m_ui.pgxpDepthClearThreshold, tr("Depth Clear Threshold"),
