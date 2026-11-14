@@ -41,6 +41,7 @@ struct ImageInfo
   const char* description;
   const char* version;
   const char* expected_filename;
+  char region_code;
   ConsoleRegion region;
   bool region_check;
   FastBootPatch fastboot_patch;

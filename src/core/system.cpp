@@ -164,6 +164,7 @@ static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
                        std::optional<bool> start_fullscreen, Error* error);
 static bool LoadBIOS(bool* using_auto_select, Error* error);
+static std::string GetBIOSTitle();
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error);
 static void ResetGameStarted();
 static void ClearRunningGame();
@@ -2005,6 +2006,7 @@ System::BootResult System::BootSystem(SystemBootParameters parameters, Error* er
 
   Host::OnSystemStarted(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                         s_state.running_game_hash, s_state.exe_override);
+  DiscordPresence::Update(true);
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
@@ -3034,8 +3036,25 @@ bool System::LoadBIOS(bool* using_auto_select, Error* error)
     WARNING_LOG("Using an unknown BIOS: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash));
   }
 
+  // Running the BIOS without any media, report its version as the title. Serial stays empty, so it's not a "game".
+  if (s_state.running_game_path.empty())
+    s_state.running_game_title = GetBIOSTitle();
+
   std::memcpy(g_bus.bios, bios_image->data.data(), Bus::BIOS_SIZE);
   return true;
+}
+
+std::string System::GetBIOSTitle()
+{
+  const BIOS::ImageInfo* const info = s_state.bios_image_info;
+  if (!info)
+    return TRANSLATE_STR("System", "Unknown BIOS");
+  else if (!info->version)
+    return info->description;
+  else if (info->region_code == 0)
+    return fmt::format("BIOS v{}", info->version);
+  else
+    return fmt::format("BIOS v{} {}", info->version, info->region_code);
 }
 
 bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* missing_bios, Error* error)
@@ -4577,17 +4596,32 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
             s_state.running_game_serial = std::move(id);
 
           // Don't display device names for unknown physical discs.
-          if (s_state.running_game_title.empty() && !CDImage::IsDeviceName(path.c_str()))
-            s_state.running_game_title = Path::GetFileTitle(path);
+          if (s_state.running_game_title.empty())
+          {
+            if (CDImage::IsDeviceName(path.c_str()))
+              s_state.running_game_title = TRANSLATE_STR("System", "Physical Disc");
+            else
+              s_state.running_game_title = Path::GetFileTitle(path);
+          }
         }
       }
       else
       {
-        // Audio CDs can get the path from the filename, assuming it's not a physical disc.
-        if (!CDImage::IsDeviceName(path.c_str()))
-          s_state.running_game_title = Path::GetFileTitle(path);
+        // Audio CDs can get the title from the filename, unless it's a physical disc.
+        if (s_state.running_game_title.empty())
+        {
+          if (CDImage::IsDeviceName(path.c_str()))
+            s_state.running_game_title = TRANSLATE_STR("System", "Physical Disc");
+          else
+            s_state.running_game_title = Path::GetFileTitle(path);
+        }
       }
     }
+  }
+  else if (!booting)
+  {
+    // Media removed, back to the BIOS. When booting, the title is set in LoadBIOS() instead.
+    s_state.running_game_title = GetBIOSTitle();
   }
 
   // Re-arm the entry point check if the disc was changed before the game started, e.g. in the shell.
@@ -4618,7 +4652,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   if (s_state.running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
 
-  DiscordPresence::Update(booting);
+  // BIOS title isn't known yet when booting, updated in BootSystem() instead.
+  if (!booting)
+    DiscordPresence::Update(false);
 
   if (!s_state.running_game_title.empty())
   {
@@ -6401,7 +6437,11 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
 
     case MemoryCardType::PerGameTitle:
     {
-      if (s_state.running_game_title.empty())
+      // Title is the BIOS version when there's no media, or a placeholder for unknown physical discs, which shouldn't
+      // get their own card.
+      if (s_state.running_game_title.empty() ||
+          (!s_state.running_game_entry && !s_state.running_game_custom_title &&
+           (s_state.running_game_path.empty() || CDImage::IsDeviceName(s_state.running_game_path.c_str()))))
       {
         Host::AddIconOSDMessage(OSDMessageType::Info, std::move(message_key), ICON_PF_MEMORY_CARD,
                                 get_message_title(slot), get_shared_card_message());
