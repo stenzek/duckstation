@@ -102,7 +102,7 @@ static void GenerateRelativeMouseEvents();
 [[maybe_unused]] static void ReloadDevices();
 
 static bool ShouldMaskBackgroundInput(InputBindingKey key);
-static bool DoBindingCaptureEvent(InputBindingKey key, float value);
+static bool DoBindingCaptureEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static void InvokeBindingCaptureCallback(bool completed);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
@@ -156,7 +156,7 @@ struct BindingCaptureInput
 {
   InputBindingKey key;
   float initial_value;
-  float min_value;
+  float extreme_value;
   float last_value;
   bool armed;
 };
@@ -1141,7 +1141,7 @@ void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
 {
   // Threading: Only called on core thread.
   DebugAssert(Host::IsOnCoreThread());
-  if (DoBindingCaptureEvent(key, value))
+  if (DoBindingCaptureEvent(key, value, generic_key))
     return;
 
   // Background input test
@@ -2296,8 +2296,8 @@ void InputManager::StartBindingCapture(BindingCaptureCallback callback, bool con
     // join this one until they're released.
     for (BindingCaptureInput& input : s_state.binding_capture_inputs)
     {
-      input.min_value = input.initial_value;
-      input.armed = (std::abs(std::abs(input.initial_value) - std::abs(input.last_value)) <= 0.25f);
+      input.extreme_value = input.initial_value;
+      input.armed = (std::abs(input.initial_value - input.last_value) <= 0.25f);
     }
   }
   else
@@ -2407,7 +2407,7 @@ void InputManager::UpdateSensorPolling()
   s_state.sensor_polling_enabled = !devices.empty();
 }
 
-bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
+bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
   // Threading: Only called on core thread in InvokeEvents().
   if (!s_state.binding_capture_running ||
@@ -2432,46 +2432,60 @@ bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
 
   if (seen)
   {
-    it->min_value = std::min(it->min_value, value);
+    // Only count travel from this capture, after a held input has returned to rest.
+    if (it->armed)
+    {
+      it->extreme_value =
+        (it->initial_value < 0.0f) ? std::max(it->extreme_value, value) : std::min(it->extreme_value, value);
+    }
     it->last_value = value;
   }
   else
   {
-    // Inputs other than buttons are taken to be at rest when first seen. Buttons rest at zero, since there's no event
-    // for their initial state.
-    const float initial_value = (key.source_subtype == InputSubclass::ControllerButton) ? 0.0f : value;
+    // Generic axes are normalized to rest at zero; their first event may already be a press. Raw axes and sensors
+    // have unknown resting values, so assume they are at rest when first seen. Buttons, hats, and pointers rest at
+    // zero.
+    const float initial_value =
+      (key.source_type == InputSourceType::Pointer || key.source_subtype == InputSubclass::ControllerButton ||
+       key.source_subtype == InputSubclass::ControllerHat || generic_key != GenericInputBinding::Unknown) ?
+        0.0f :
+        value;
     it = s_state.binding_capture_inputs.insert(s_state.binding_capture_inputs.end(),
                                                BindingCaptureInput{key, initial_value, initial_value, value, true});
   }
 
   const float initial_value = it->initial_value;
-  const float min_value = it->min_value;
-  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}",
-          ConvertInputBindingKeyToString(InputBindingInfo::Type::Unknown, key), value, initial_value, min_value);
+  const float extreme_value = it->extreme_value;
+  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} extreme_value={:.2f}",
+          ConvertInputBindingKeyToString(InputBindingInfo::Type::Unknown, key), value, initial_value, extreme_value);
 
   // Once the binding is complete, events only update the state of the inputs, so releases between the steps of a
   // sequence are still seen.
   if (s_state.binding_capture_completed)
     return consumed;
 
-  // Sensors can rest away from zero, e.g. a pad held tilted towards the player, so use the movement from rest.
+  // Distance from the resting value, so an axis moved to its opposite endpoint is still held.
   const bool is_sensor = (key.source_subtype == InputSubclass::ControllerSensor);
-  const float delta_from_initial =
-    is_sensor ? std::abs(value - initial_value) : std::abs(std::abs(initial_value) - std::abs(value));
-  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
-                                  std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
+  const float delta_from_initial = std::abs(value - initial_value);
+  const bool reverse_threshold =
+    (key.source_subtype == InputSubclass::ControllerAxis && std::abs(initial_value) > 0.5f);
+  const bool full_axis = (reverse_threshold && ((initial_value > 0.5f && extreme_value <= -0.5f) ||
+                                                (initial_value < -0.5f && extreme_value >= 0.5f)));
 
   for (InputBindingKey& other_key : s_state.binding_capture_keys)
   {
     if (other_key.MaskDirection() == key.MaskDirection())
     {
+      // Update the range while held, since another key in the chord may be released first.
+      if (full_axis)
+      {
+        other_key.modifier = InputModifier::FullAxis;
+        other_key.invert = (initial_value > 0.0f);
+      }
+
       // if this key is in our new binding list, it's a "release", and we're done
       if (delta_from_initial > 0.25f)
         return consumed;
-
-      // did we go the full range?
-      if (reverse_threshold && initial_value > 0.5f && min_value <= -0.5f)
-        other_key.modifier = InputModifier::FullAxis;
 
       s_state.binding_capture_completed = true;
       InvokeBindingCaptureCallback(true);
@@ -2490,10 +2504,12 @@ bool InputManager::DoBindingCaptureEvent(InputBindingKey key, float value)
   if (delta_from_initial < 0.5f)
     return consumed;
 
+  // Endpoint-rest axes use the side containing rest, inverted, even if this event has already crossed zero.
   InputBindingKey key_to_add = key;
+  const float direction = is_sensor ? (value - initial_value) : (reverse_threshold ? initial_value : value);
   key_to_add.modifier =
-    ((is_sensor ? (value - initial_value) : value) < 0.0f) ? InputModifier::Negate : InputModifier::None;
-  key_to_add.invert = reverse_threshold;
+    full_axis ? InputModifier::FullAxis : ((direction < 0.0f) ? InputModifier::Negate : InputModifier::None);
+  key_to_add.invert = full_axis ? (initial_value > 0.0f) : reverse_threshold;
   s_state.binding_capture_keys.push_back(key_to_add);
   InvokeBindingCaptureCallback(false);
   return consumed;
