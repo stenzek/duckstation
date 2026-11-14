@@ -892,8 +892,8 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.DoBytes(&s_locals.texture_palette_reg, sizeof(s_locals.texture_palette_reg));
   sw.DoBytes(&s_locals.texture_window_reg, sizeof(s_locals.texture_window_reg));
   sw.DoBytes(&s_locals.texture_window, sizeof(s_locals.texture_window));
-  // sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
-  // sw.DoBytes(&s_locals.texture_y_flip, sizeof(s_locals.texture_y_flip));
+  sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
+  sw.DoBytes(&s_locals.texture_y_flip, sizeof(s_locals.texture_y_flip));
   sw.DoBytes(&s_locals.drawing_area, sizeof(s_locals.drawing_area));
   sw.DoBytes(&s_locals.drawing_offset, sizeof(s_locals.drawing_offset));
 
