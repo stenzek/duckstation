@@ -120,6 +120,9 @@ public:
 
   void FlushPipelineCache() override;
 
+  void UnbindFromCurrentThread() override;
+  bool BindToCurrentThread(Error* error) override;
+
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 

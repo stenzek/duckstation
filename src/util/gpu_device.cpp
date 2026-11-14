@@ -1389,6 +1389,15 @@ float GPUDevice::GetAndResetAccumulatedGPUTime()
   return 0.0f;
 }
 
+void GPUDevice::UnbindFromCurrentThread()
+{
+}
+
+bool GPUDevice::BindToCurrentThread(Error* error)
+{
+  return true;
+}
+
 void GPUDevice::ResetStatistics()
 {
   s_stats = {};

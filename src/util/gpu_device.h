@@ -899,6 +899,10 @@ public:
 
   virtual bool SupportsTextureFormat(GPUTextureFormat format) const = 0;
 
+  /// Changing thread ownership.
+  virtual void UnbindFromCurrentThread();
+  virtual bool BindToCurrentThread(Error* error);
+
   /// Enables/disables GPU frame timing.
   virtual bool SetGPUTimingEnabled(bool enabled);
 

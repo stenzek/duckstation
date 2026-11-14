@@ -321,7 +321,7 @@ bool OpenGLContextEGL::IsCurrent() const
 bool OpenGLContextEGL::MakeCurrent(SurfaceHandle surface, Error* error /* = nullptr */)
 {
   EGLSurface esurface = surface ? (EGLSurface)surface : GetSurfacelessSurface();
-  if (esurface == m_current_surface)
+  if (esurface == m_current_surface && eglGetCurrentContext() == m_context)
     return true;
 
   if (!eglMakeCurrent(m_display, esurface, esurface, m_context)) [[unlikely]]

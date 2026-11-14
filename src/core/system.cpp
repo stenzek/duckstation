@@ -5092,7 +5092,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       }
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
-             device_settings_changed || g_settings.display_show_messages != old_settings.display_show_messages ||
+             device_settings_changed || g_settings.gpu_use_thread != old_settings.gpu_use_thread ||
+             g_settings.display_show_messages != old_settings.display_show_messages ||
              g_settings.display_animate_messages != old_settings.display_animate_messages ||
              g_settings.display_blur_message_backgrounds != old_settings.display_blur_message_backgrounds ||
              g_settings.display_show_fps != old_settings.display_show_fps ||
@@ -5121,12 +5122,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.achievements_notification_scale != old_settings.achievements_notification_scale ||
              g_settings.achievements_indicator_scale != old_settings.achievements_indicator_scale)
     {
+      const bool thread_changed = (g_settings.gpu_use_thread != old_settings.gpu_use_thread);
       if (device_settings_changed)
       {
         // device changes are super icky, we need to purge and recreate any rewind states
         FreeMemoryStateStorage(false, true, false);
         StopMediaCapture();
-        VideoThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+        VideoThread::UpdateSettings(true, true, thread_changed);
 
         if (g_settings.rewind_enable == old_settings.rewind_enable &&
             g_settings.rewind_save_frequency == old_settings.rewind_save_frequency &&
@@ -5147,7 +5149,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       else
       {
         // don't need to represent here, because the OSD isn't visible while paused anyway
-        VideoThread::UpdateSettings(true, false, false);
+        VideoThread::UpdateSettings(true, false, thread_changed);
       }
     }
 
@@ -5252,8 +5254,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (VideoThread::IsFullscreenUIRequested() || thread_changed)
     {
       // handle device setting updates as well
-      if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
-        VideoThread::UpdateSettings(false, true, thread_changed);
+      const bool device_changed =
+        (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings));
+      if (device_changed || thread_changed)
+        VideoThread::UpdateSettings(false, device_changed, thread_changed);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)

@@ -601,6 +601,18 @@ void OpenGLDevice::DestroyDevice()
   m_gl_context.reset();
 }
 
+void OpenGLDevice::UnbindFromCurrentThread()
+{
+  m_gl_context->DoneCurrent();
+}
+
+bool OpenGLDevice::BindToCurrentThread(Error* error)
+{
+  OpenGLContext::SurfaceHandle surface =
+    m_main_swap_chain ? static_cast<OpenGLSwapChain*>(m_main_swap_chain.get())->GetSurfaceHandle() : nullptr;
+  return m_gl_context->MakeCurrent(surface, error);
+}
+
 OpenGLSwapChain::OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                  OpenGLContext::SurfaceHandle surface_handle)
   : GPUSwapChain(wi, vsync_mode), m_surface_handle(surface_handle)

@@ -33,6 +33,7 @@ enum class VideoThreadCommandType : u8
   UpdateSettings,
   UpdateGameInfo,
   Shutdown,
+  EnableThread,
   ClearVRAM,
   ClearDisplay,
   UpdateDisplay,
@@ -127,6 +128,11 @@ struct VideoThreadAsyncBufferCallCommand : public VideoThreadCommand
   void (*func)(void*);
 };
 static_assert(std::is_trivially_destructible_v<VideoThreadAsyncBufferCallCommand>);
+
+struct VideoThreadEnableThreadCommand : public VideoThreadCommand
+{
+  bool thread_enabled;
+};
 
 struct GPUBackendLoadStateCommand : public VideoThreadCommand
 {
