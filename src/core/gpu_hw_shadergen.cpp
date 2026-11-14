@@ -1732,6 +1732,7 @@ float mixGate(float4 col1, float4 col2) {
 #define not_eq2(a, b1, b2)  (ne(a,b1) && ne(a,b2))
 #define not_eq3(a, b1, b2, b3)  (ne(a,b1) && ne(a,b2) && ne(a,b3))
 #define not_eq4(a, b1, b2, b3, b4) (ne(a,b1) && ne(a,b2) && ne(a,b3) && ne(a,b4))
+#define not_eq5(a, b1, b2, b3, b4, b5) (ne(a,b1) && ne(a,b2) && ne(a,b3) && ne(a,b4) && ne(a,b5))
 
 
 #if GLSL
@@ -2126,7 +2127,7 @@ int scoreZ = 0;
 		return mixXE +float(badC)*8.0;
 	}
 
-	if (E==0u) return theEXIT;		// xxx.alpha
+	mixFactor = E==0u ? 1.0 : mixFactor;		// xxx.alpha // better than Exit
 
 //* =======================================================
 //*                  F - H / B+ D+ Extended Rules
@@ -2427,16 +2428,31 @@ if (ne(B,H) && ne(D,F)) {
 	uint II = src(+2.0, +2.0); //*             GG   SG   [S]  SI   II
 
 
-    bool slope1 = false;    bool slope2 = false;    bool slope3 = false;    bool slope4 = false;
-    bool slope1end = false;  bool slope2end = false;  bool slope3end = false;  bool slope4end = false;
-
 
 //*	B - D
+	bool slope1 = ( ne(D,H) && ne(B,F) &&
+					(eq(E,A)&&El<min(Bl,Dl)||El>max(Bl,Dl)) && (not_eq2(A,B,D) || ne(E,P) || ne(E,Q)) &&
+					( eq(B,D) &&(eq(E,A)||any_eq3(B,P,C,PC)||any_eq3(D,Q,G,QG)||simEC||simEG) || simb(vB,vD)&&(eq(F,H)||any_eq2(E,C,G)) )
+				);
+//*	B - F
+	bool slope2 = ( ne(B,D) && ne(F,H) &&
+					(eq(E,C)&&El<min(Bl,Fl)||El>max(Bl,Fl)) && (not_eq2(C,B,F) || ne(E,P) || ne(E,R)) &&
+					( eq(B,F)&&(eq(E,C)||any_eq3(B,P,A,PA)||any_eq3(F,R,I,RI)||simEI||simEA) || simb(vB,vF)&&(eq(D,H)||any_eq2(E,A,I)) )
+				);
+//*	D - H
+	bool slope3 = ( ne(F,H) && ne(B,D) &&
+					(eq(E,G)&&El<min(Dl,Hl)||El>max(Dl,Hl))  &&  (not_eq2(G,D,H) || ne(E,S) || ne(E,Q)) &&
+					( eq(D,H) &&(eq(E,G)||any_eq3(D,A,Q,QA)||any_eq3(H,S,I,SI)||simEA||simEI) || simb(vD,vH)&&(eq(B,F)||any_eq2(E,A,I)) )
+				);
+//*	F - H
+	bool slope4 = ( ne(B,F) && ne(D,H) &&
+					(eq(E,I)&&El<min(Fl,Hl)||El>max(Fl,Hl))  &&  (not_eq2(I,F,H) || ne(E,R) || ne(E,S)) &&
+					( eq(F,H) &&(eq(E,I)||any_eq3(F,R,C,RC)||any_eq3(H,S,G,SG)||simEG||simEC) || simb(vF,vH)&&(eq(B,D)||any_eq2(E,C,G)) )
+				);
 
-	if ((ne(D,H) && ne(B,F))
-	 && (eq(E,A)&&El<min(Bl,Dl)||El>max(Bl,Dl)) && ( not_eq2(A,B,D) || ne(E,P) || ne(E,Q) )
-	 && ( eq(B,D) &&(eq(E,A)||any_eq3(B,P,C,PC)||any_eq3(D,Q,G,QG)||simEC||simEG) || simb(vB,vD)&&(eq(F,H)||any_eq2(E,C,G)) )
-		) {
+    bool slope1end = false;  bool slope2end = false;  bool slope3end = false;  bool slope4end = false;
+
+	if (slope1) {
 		J=admixX(A,B,C,D,E,F,G,H,I
 				,P,PA,PC,Q,QA,QG,R,RC,RI,S,SG,SI,AA,CC,GG
 				,El,Bl,Dl,Fl,Hl, simEC,simEG,simEI
@@ -2445,24 +2461,18 @@ if (ne(B,H) && ne(D,F)) {
 		bool slope1ok = (J.b < 1.01) && max(sign(El-Dl)*(Fl-El),sign(El-Dl)*(Hl-El))>-0.1;
 		bool isCopy=checkeq(J,vD);
 		float4 mixL2 = mix(J,vE,0.145898);
-		if (slope1ok && all_eq2(D,C,Q) && ne(D,QG) && (ne(C,R)||eq(R, RI)) && (ne(D,QA)||eq(D,A)) ) {K=isCopy ? J : mixL2;}
-		if (slope1ok && all_eq2(D,G,P) && ne(D,PC) && (ne(G,S)||eq(S, SI)) && (ne(D,PA)||eq(D,A)) ) {L=isCopy ? J : mixL2;}
-
+		bool longH = slope1ok && all_eq2(D,C,Q) && ne(D,QG) && (ne(D,R)||eq(D,RI)) && (ne(D,QA)||eq(D,A));
+		bool longV = slope1ok && all_eq2(D,G,P) && ne(D,PC) && (ne(D,S)||eq(D,SI)) && (ne(D,PA)||eq(D,A));
+		K= longH ? isCopy ? J : mixL2 : K;
+		L= longV ? isCopy ? J : mixL2 : L;
 		slope1end = (J.b < 3.99);
 
 		J = (J.b > 3.99) ? vE :
 			(J.b > 1.01) ? (J - 2.0) :
 			J;
-
-		slope1 = true;
 	}
 
-//*	B - F
-
-	if ( (ne(B,D) && ne(F,H))
-	 && (eq(E,C)&&El<min(Bl,Fl)||El>max(Bl,Fl)) && ( not_eq2(C,B,F) || ne(E,P) || ne(E,R) )
-	 && ( eq(B,F) &&(eq(E,C)||any_eq3(B,P,A,PA)||any_eq3(F,R,I,RI)||simEI||simEA) || simb(vB,vF)&&(eq(D,H)||any_eq2(E,A,I)) )
-	 ) {
+	if (slope2) {
 		K=admixX(C,F,I,B,E,H,A,D,G
 				,R,RC,RI,P,PC,PA,S,SI,SG,Q,QA,QG,CC,II,AA
 				,El,Fl,Bl,Hl,Dl, simEI,simEA,simEG
@@ -2472,24 +2482,18 @@ if (ne(B,H) && ne(D,F)) {
 		bool slope2ok = K.b<1.01 && max(sign(El-Fl)*(Dl-El),sign(El-Fl)*(Hl-El))>-0.1;
 		bool isCopy=checkeq(K,vF);
 		float4 mixL2 = mix(K,vE,0.145898);
-		if ( slope2ok && all_eq2(F,A,R) && ne(F,RI) && (ne(F,RC)||eq(F,C)) && (ne(A,Q)||eq(Q, QG)) ) {J=isCopy ? K : mixL2;}
-		if ( slope2ok && all_eq2(F,I,P) && ne(F,PA) && (ne(F,PC)||eq(F,C)) && (ne(I,S)||eq(S, SG)) ) {M=isCopy ? K : mixL2;}
-
+		bool longH = slope2ok && all_eq2(F,A,R) && ne(F,RI) && (ne(F,RC)||eq(F,C)) && (ne(F,Q)||eq(F,QG));
+		bool longV = slope2ok && all_eq2(F,I,P) && ne(F,PA) && (ne(F,PC)||eq(F,C)) && (ne(F,S)||eq(F,SG));
+		J= longH ? isCopy ? K : mixL2 : J;
+		M= longV ? isCopy ? K : mixL2 : M;
 		slope2end = (K.b < 3.99);
 
 		K = (K.b > 3.99) ? vE :
 			(K.b > 1.01) ? (K - 2.0) :
 			K;
-
-		slope2 = true;
 	}
 
-//*	D - H
-
-	if ( (ne(F,H) && ne(B,D))
-	 && (eq(E,G)&&El<min(Dl,Hl)||El>max(Dl,Hl))  &&  (not_eq2(G,D,H) || ne(E,S) || ne(E,Q))
-	 &&	( eq(D,H) &&(eq(E,G)||any_eq3(D,A,Q,QA)||any_eq3(H,S,I,SI)||simEA||simEI) || simb(vD,vH)&&(eq(B,F)||any_eq2(E,A,I)) )
-	 ) {
+	if (slope3) {
 		L=admixX(G,D,A,H,E,B,I,F,C
 				,Q,QG,QA,S,SG,SI,P,PA,PC,R,RI,RC,GG,AA,II
 				,El,Dl,Hl,Bl,Fl, simEA,simEI,simEC
@@ -2499,23 +2503,18 @@ if (ne(B,H) && ne(D,F)) {
 		bool slope3ok = (L.b < 1.01) && max(sign(El-Dl)*(Bl-El),sign(El-Dl)*(Fl-El))>-0.1;
 		bool isCopy=checkeq(L,vD);
 		float4 mixL2 = mix(L,vE,0.145898);
-		if (slope3ok && all_eq2(D,I,Q) && ne(D,QA) && (ne(D,QG)||eq(D,G)) && (ne(R,I)||eq(R, RC)) ) {M=isCopy ? L : mixL2;}
-		if (slope3ok && all_eq2(D,A,S) && ne(D,SI) && (ne(D,SG)||eq(D,G)) && (ne(A,P)||eq(P, PC)) ) {J=isCopy ? L : mixL2;}
+		bool longH = slope3ok && all_eq2(D,I,Q) && ne(D,QA) && (ne(D,QG)||eq(D,G)) && (ne(D,R)||eq(D,RC));
+		bool longV = slope3ok && all_eq2(D,A,S) && ne(D,SI) && (ne(D,SG)||eq(D,G)) && (ne(D,P)||eq(D,PC));
+		M= longH ? isCopy ? L : mixL2 : M;
+		J= longV ? isCopy ? L : mixL2 : J;
 
 		slope3end = (L.b < 3.99);
 		L = (L.b > 3.99) ? vE :
 			(L.b > 1.01) ? (L - 2.0) :
 			L;
-
-		slope3 = true;
 	}
 
-//*	F - H
-
-	if ( (ne(B,F) && ne(D,H))
-	 && (eq(E,I)&&El<min(Fl,Hl)||El>max(Fl,Hl))  &&  (not_eq2(I,F,H) || ne(E,R) || ne(E,S))
-	 && ( eq(F,H) &&(eq(E,I)||any_eq3(F,R,C,RC)||any_eq3(H,S,G,SG)||simEG||simEC) || simb(vF,vH)&&(eq(B,D)||any_eq2(E,C,G)) )
-	  ) {
+	if (slope4) {
 		M=admixX(I,H,G,F,E,D,C,B,A
 				,S,SI,SG,R,RI,RC,Q,QG,QA,P,PC,PA,II,GG,CC
 				,El,Hl,Fl,Dl,Bl, simEG,simEC,simEA
@@ -2525,34 +2524,35 @@ if (ne(B,H) && ne(D,F)) {
 		bool slope4ok = (M.b < 1.01) && max(sign(El-Fl)*(Bl-El), sign(El-Fl)*(Dl-El))>-0.1;
 		bool isCopy=checkeq(M,vF);
 		float4 mixL2 = mix(M,vE,0.145898);
-		if ( slope4ok && all_eq2(F,G,R) && ne(F,RC) && (ne(F,RI)||eq(F,I)) && (ne(Q,G)||eq(Q, QA)) ) {L=isCopy ? M : mixL2;}
-		if ( slope4ok && all_eq2(F,C,S) && ne(F,SG) && (ne(F,SI)||eq(F,I)) && (ne(P,C)||eq(P, PA)) ) {K=isCopy ? M : mixL2;}
+		bool longH = slope4ok && all_eq2(F,G,R) && ne(F,RC) && (ne(F,RI)||eq(F,I)) && (ne(F,Q)||eq(F,QA));
+		bool longV = slope4ok && all_eq2(F,C,S) && ne(F,SG) && (ne(F,SI)||eq(F,I)) && (ne(F,P)||eq(F,PA));
+		L= longH ? isCopy ? M : mixL2 : L;
+		K= longV ? isCopy ? M : mixL2 : K;
 
 		slope4end = (M.b < 3.99);
 		M = (M.b > 3.99) ? vE :
 			(M.b > 1.01) ? (M - 2.0) :
 			M;
-
-		slope4 = true;
 	}
 
 skiprest = slope1||slope2||slope3||slope4;
 
 
+
 //* =========================  2:1 staggered slope  (new rule)  ===========================
 
-    bool bottonH = not_eq3(H,E,A,C);
+    bool bottonH = not_eq5(H,E,A,C,D,F);
 
-        if ( bottonH &&(!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope4end && ne(F,H)) &&
-            ne(E,F) && eq(R,H) && eq(F,G) ) {
+		if (bottonH && !slope4end && !slope2 && !slope3 && ne(B,F) &&
+            ne(E,F) && eq(H,R) && eq(F,G) ) {
             M = admixS( A, B, C, D, E, F, G, H, I
                       , Q, R, RC, RI, S, SG, SI, CC, simEC
                       , vE, vF
                       );
             skiprest = true;}
 
-        if ( bottonH && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope3end && ne(D,H)) &&
-             ne(E,D) && eq(Q,H) && eq(D,I) ) {
+        if (bottonH && !slope3end && !slope1 && !slope4 && ne(B,D) &&
+             ne(E,D) && eq(H,Q) && eq(D,I) ) {
             L = admixS( C, B, A, F, E, D, I, H, G
                       , R, Q, QA, QG, S, SI, SG, AA, simEA
                       , vE, vD
@@ -2560,9 +2560,9 @@ skiprest = slope1||slope2||slope3||slope4;
             skiprest = true;}
 
 
-    bool topH = not_eq3(B,E,G,I);
+    bool topH = not_eq5(B,E,G,I,D,F);
 
-        if ( topH &&(!slope1 && ne(B,D))  && (!slope4 && ne(F,H)) && (!slope2end && ne(B,F)) &&
+        if (topH && !slope2end && !slope1 && !slope4 && ne(F,H) &&
               ne(E,F) && eq(B,R) && eq(A,F) ) {
             K = admixS( G, H, I, D, E, F, A, B, C
                       , Q, R, RI, RC, P, PA, PC, II, simEI
@@ -2570,7 +2570,7 @@ skiprest = slope1||slope2||slope3||slope4;
                       );
             skiprest = true;}
 
-        if ( topH && (!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope1end && ne(B,D)) &&
+        if (topH && !slope1end && !slope2 && !slope3 && ne(D,H) &&
              ne(E,D) && eq(B,Q) && eq(C,D) ) {
             J = admixS( I, H, G, F, E, D, C, B, A
                       , R, Q, QG, QA, P, PC, PA, GG, simEG
@@ -2579,10 +2579,9 @@ skiprest = slope1||slope2||slope3||slope4;
             skiprest = true;}
 
 
+    bool leftV = not_eq5(D,E,C,I,B,H);
 
-    bool leftV = not_eq3(D,E,C,I);
-
-        if ( leftV && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope3end && ne(D,H)) &&
+        if (leftV && !slope3end && !slope1 && !slope4 && ne(F,H) &&
               ne(E,H) && eq(D,S) && eq(A,H) ) {
             L = admixS( C, F, I, B, E, H, A, D, G
                       , P, S, SI, SG, Q, QA, QG, II, simEI
@@ -2590,8 +2589,8 @@ skiprest = slope1||slope2||slope3||slope4;
                       );
             skiprest = true;}
 
-        if ( leftV && (!slope3 && ne(D,H)) && (!slope2 && ne(B,F)) && (!slope1end && ne(B,D)) &&
-              ne(E,B) && eq(P,D) && eq(B,G) ) {
+        if (leftV && !slope1end && !slope2 && !slope3 && ne(B,F) &&
+              ne(E,B) && eq(D,P) && eq(B,G) ) {
             J = admixS( I, F, C, H, E, B, G, D, A
                       , S, P, PC, PA, Q, QG, QA, CC, simEC
                       , vE, vB
@@ -2600,18 +2599,18 @@ skiprest = slope1||slope2||slope3||slope4;
 
 
 
-    bool rightV = not_eq3(F,E,A,G);
+    bool rightV = not_eq5(F,E,A,G,B,H);
 
-        if ( rightV && (!slope2 && ne(B,F)) && (!slope3 && ne(D,H)) && (!slope4end && ne(F,H)) &&
-              ne(E,H) && eq(S,F) && eq(H,C) ) {
+        if (rightV && !slope4end && !slope2 && !slope3 && ne(D,H) &&
+              ne(E,H) && eq(F,S) && eq(H,C) ) {
             M = admixS( A, D, G, B, E, H, C, F, I
                       , P, S, SG, SI, R, RC, RI, GG, simEG
                       , vE, vH
                       );
             skiprest = true;}
 
-        if ( rightV && (!slope1 && ne(B,D)) && (!slope4 && ne(F,H)) && (!slope2end && ne(B,F)) &&
-             ne(E,B) && eq(P,F) && eq(B,I) ) {
+        if (rightV && !slope2end && !slope1 && !slope4 && ne(B,D) &&
+             ne(E,B) && eq(F,P) && eq(B,I) ) {
             K = admixS( G, D, A, H, E, B, I, F, C
                       , S, P, PA, PC, R, RI, RC, AA, simEA
                       , vE, vB
