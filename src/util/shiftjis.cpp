@@ -829,20 +829,21 @@ std::string ShiftJIS::ConvertFullWidthToASCII(std::string_view str)
   {
     char32_t cp;
     offset += StringUtil::DecodeUTF8(str, offset, &cp);
-
-    // IDEOGRAPHIC SPACE -> ASCII space.
-    if (cp == 0x3000)
-    {
-      cp = ' ';
-    }
-    // FULLWIDTH ! through ~ -> ASCII ! through ~.
-    else if (cp >= 0xFF01 && cp <= 0xFF5E)
-    {
-      cp -= 0xFEE0;
-    }
-
-    StringUtil::EncodeAndAppendUTF8(out, cp);
+    StringUtil::EncodeAndAppendUTF8(out, ConvertFullWidthToASCII(cp));
   }
 
   return out;
+}
+
+char32_t ShiftJIS::ConvertFullWidthToASCII(char32_t cp)
+{
+  // IDEOGRAPHIC SPACE -> ASCII space.
+  if (cp == 0x3000)
+    return ' ';
+
+  // FULLWIDTH ! through ~ -> ASCII ! through ~.
+  if (cp >= 0xFF01 && cp <= 0xFF5E)
+    return cp - 0xFEE0;
+
+  return cp;
 }

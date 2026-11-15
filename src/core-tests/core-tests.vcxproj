@@ -12,6 +12,7 @@
     <ClCompile Include="cpu_pgxp_tests.cpp" />
     <ClCompile Include="cpu_test_harness.cpp" />
     <ClCompile Include="dma_tests.cpp" />
+    <ClCompile Include="game_list_tests.cpp" />
     <ClCompile Include="gpu_sw_rasterizer_tests.cpp" />
     <ClCompile Include="gpu_tests.cpp" />
     <ClCompile Include="gte_tests.cpp" />

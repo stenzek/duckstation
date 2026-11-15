@@ -391,4 +391,7 @@ TEST(ConvertShiftJISToUTF8Test, ConvertFullWidthToASCII)
 
   // Mixed text.
   EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII("ＳＡＶＥ　データ　０１"), "SAVE データ 01");
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII(U'Ａ'), U'A');
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII(U'　'), U' ');
+  EXPECT_EQ(ShiftJIS::ConvertFullWidthToASCII(U'テ'), U'テ');
 }

@@ -18,6 +18,7 @@
 #include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
+#include "util/shiftjis.h"
 #include "util/translation.h"
 
 #include "common/assert.h"
@@ -41,6 +42,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <cmath>
 #include <ctime>
 #include <string_view>
 #include <type_traits>
@@ -2567,4 +2569,248 @@ bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& ent
 
   // append it.
   return (std::fwrite(&entry, sizeof(entry), 1, fp.get()) == 1);
+}
+
+namespace GameList::GeneratedArtwork {
+
+// Word characters are letters, digits and apostrophes. Titles have been converted from fullwidth forms, so ASCII is
+// exact. Elsewhere, the punctuation and symbols that turn up in titles separate words, and everything else is a letter.
+static bool IsWordCharacter(char32_t ch)
+{
+  if (ch < 0x80)
+    return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '\'');
+
+  if (ch == 0x2019) // right single quotation mark, used as an apostrophe
+    return true;
+
+  // Latin-1 punctuation except superscript digits and fractions, ×, ÷, general punctuation, arrows/maths/shapes/
+  // symbols (but not enclosed numbers like ①), CJK punctuation except 々, 〆 and 〇, and the katakana middle dot.
+  return !((ch <= 0xBF && ch != 0xB2 && ch != 0xB3 && ch != 0xB9 && !(ch >= 0xBC && ch <= 0xBE)) || ch == 0xD7 ||
+           ch == 0xF7 || (ch >= 0x2000 && ch <= 0x206F) || (ch >= 0x2190 && ch <= 0x245F) ||
+           (ch >= 0x2500 && ch <= 0x2BFF) || (ch >= 0x3000 && ch <= 0x3004) || (ch >= 0x3008 && ch <= 0x303F) ||
+           ch == 0x30FB);
+}
+
+// Case mapping for the letters that turn up in titles, ASCII and Latin-1.
+static char32_t ToLower(char32_t ch)
+{
+  return ((ch >= 'A' && ch <= 'Z') || (ch >= 0xC0 && ch <= 0xDE && ch != 0xD7)) ? (ch + 0x20) : ch;
+}
+
+static char32_t ToUpper(char32_t ch)
+{
+  return ((ch >= 'a' && ch <= 'z') || (ch >= 0xE0 && ch <= 0xFE && ch != 0xF7)) ? (ch - 0x20) : ch;
+}
+
+// Removes leading and trailing whitespace and control characters.
+static std::string_view TrimTitle(std::string_view str)
+{
+  while (!str.empty() && static_cast<u8>(str.front()) <= ' ')
+    str.remove_prefix(1);
+  while (!str.empty() && static_cast<u8>(str.back()) <= ' ')
+    str.remove_suffix(1);
+  return str;
+}
+
+// Returns a title with fullwidth forms converted to ASCII and without bracketed qualifiers such as "(Disc 1)" or
+// "[USA]", or the whole converted title if nothing else is left. Removes matches of \s*[(\[][^)\]]*[)\]].
+static std::string_view GetBaseTitle(std::string_view title, SmallStringBase& buffer)
+{
+  SmallString converted;
+  for (size_t pos = 0; pos < title.size();)
+  {
+    char32_t ch;
+    pos += StringUtil::DecodeUTF8(title, pos, &ch);
+
+    char utf8[4];
+    const size_t length = StringUtil::EncodeAndAppendUTF8(utf8, 0, sizeof(utf8), ShiftJIS::ConvertFullWidthToASCII(ch));
+    converted.append(utf8, static_cast<u32>(length));
+  }
+
+  buffer.clear();
+  for (size_t i = 0; i < converted.length(); i++)
+  {
+    if (converted[i] == '(' || converted[i] == '[')
+    {
+      if (const size_t close = converted.view().find_first_of(")]", i + 1); close != std::string_view::npos)
+      {
+        // The qualifier takes the whitespace before it with it.
+        while (!buffer.empty() && (buffer.back() == ' ' || (buffer.back() >= '\t' && buffer.back() <= '\r')))
+          buffer.pop_back();
+
+        i = close;
+        continue;
+      }
+    }
+
+    buffer.append(converted[i]);
+  }
+
+  if (TrimTitle(buffer).empty())
+    buffer.assign(converted);
+
+  return TrimTitle(buffer);
+}
+
+// Converts a hue in degrees, and saturation and lightness from 0 to 1, to RGBA8, rounding each component.
+static u32 HSLToColor(float h, float s, float l)
+{
+  const float c = (1.0f - std::abs(2.0f * l - 1.0f)) * s;
+  const float m = l - 0.5f * c;
+  const float x = c * (1.0f - std::abs(std::fmod(h / 60.0f, 2.0f) - 1.0f));
+  static constexpr auto component = [](float value) {
+    return static_cast<u32>(std::clamp(static_cast<s32>(std::floor(255.0f * value + 0.5f)), 0, 255));
+  };
+
+  u32 r, g, b;
+  switch (static_cast<s32>(h) / 60)
+  {
+    case 0:
+      r = component(c + m), g = component(x + m), b = component(m);
+      break;
+    case 1:
+      r = component(x + m), g = component(c + m), b = component(m);
+      break;
+    case 2:
+      r = component(m), g = component(c + m), b = component(x + m);
+      break;
+    case 3:
+      r = component(m), g = component(x + m), b = component(c + m);
+      break;
+    case 4:
+      r = component(x + m), g = component(m), b = component(c + m);
+      break;
+    case 5:
+    case 6:
+      r = component(c + m), g = component(m), b = component(x + m);
+      break;
+    default:
+      r = g = b = 0;
+      break;
+  }
+
+  return r | (g << 8) | (b << 16) | 0xFF000000u;
+}
+
+} // namespace GameList::GeneratedArtwork
+
+TinyString GameList::GeneratedArtwork::GetMonogram(std::string_view title)
+{
+  static constexpr std::array<std::string_view, 8> skipped_words = {"the", "a", "an", "of", "and", "to", "in", "on"};
+  static constexpr std::array<std::pair<std::string_view, char>, 7> roman_numerals = {{
+    {"II", '2'},
+    {"III", '3'},
+    {"IV", '4'},
+    {"VI", '6'},
+    {"VII", '7'},
+    {"VIII", '8'},
+    {"IX", '9'},
+  }};
+
+  SmallString buffer;
+  const std::string_view base = GetBaseTitle(title, buffer);
+
+  // Find the first two words that aren't minor words, falling back to the first two words if they all are.
+  std::array<std::string_view, 2> significant_words, words;
+  size_t num_significant_words = 0, num_words = 0;
+  for (size_t pos = 0; pos < base.size() && num_significant_words < significant_words.size();)
+  {
+    char32_t ch;
+    size_t length = StringUtil::DecodeUTF8(base, pos, &ch);
+    if (!IsWordCharacter(ch))
+    {
+      pos += length;
+      continue;
+    }
+
+    const size_t start = pos;
+    while (pos < base.size() && IsWordCharacter(ch))
+    {
+      pos += length;
+      if (pos < base.size())
+        length = StringUtil::DecodeUTF8(base, pos, &ch);
+    }
+
+    const std::string_view word = base.substr(start, pos - start);
+    if (num_words < words.size())
+      words[num_words++] = word;
+    if (std::none_of(skipped_words.begin(), skipped_words.end(),
+                     [&word](std::string_view skipped) { return StringUtil::EqualNoCase(word, skipped); }))
+    {
+      significant_words[num_significant_words++] = word;
+    }
+  }
+  if (num_significant_words == 0)
+  {
+    significant_words = words;
+    num_significant_words = num_words;
+  }
+
+  TinyString ret;
+  const auto append_upper = [&ret](char32_t ch) {
+    char utf8[4];
+    const size_t length = StringUtil::EncodeAndAppendUTF8(utf8, 0, sizeof(utf8), ToUpper(ch));
+    ret.append(utf8, static_cast<u32>(length));
+  };
+  const auto append_first_character = [&append_upper](std::string_view word) {
+    // Combining marks separate words, so the first code point is the first grapheme.
+    char32_t ch;
+    StringUtil::DecodeUTF8(word, 0, &ch);
+    append_upper(ch);
+  };
+
+  if (num_significant_words == 0)
+    return ret;
+
+  append_first_character(significant_words[0]);
+  if (num_significant_words > 1)
+  {
+    const std::string_view second = significant_words[1];
+    if (std::all_of(second.begin(), second.end(), [](char ch) { return (ch >= '0' && ch <= '9'); }))
+    {
+      ret.append(second.substr(0, 2));
+    }
+    else if (const auto it = std::find_if(roman_numerals.begin(), roman_numerals.end(),
+                                          [&second](const auto& numeral) { return numeral.first == second; });
+             it != roman_numerals.end())
+    {
+      ret.append(it->second);
+    }
+    else
+    {
+      append_first_character(second);
+    }
+  }
+
+  return ret;
+}
+
+std::pair<u32, u32> GameList::GeneratedArtwork::GetColors(std::string_view title)
+{
+  SmallString buffer;
+  const std::string_view base = GetBaseTitle(title, buffer);
+
+  // 31-multiplier string hash of the lowercase title, over UTF-16 code units. The hash is mixed, because similar
+  // titles have similar hash codes.
+  u32 hash = 0;
+  for (size_t pos = 0; pos < base.size();)
+  {
+    char32_t ch;
+    pos += StringUtil::DecodeUTF8(base, pos, &ch);
+    ch = ToLower(ch);
+    if (ch >= 0x10000)
+    {
+      hash = hash * 31 + (0xD800 + ((ch - 0x10000) >> 10));
+      hash = hash * 31 + (0xDC00 + ((ch - 0x10000) & 0x3FF));
+    }
+    else
+    {
+      hash = hash * 31 + ch;
+    }
+  }
+
+  // Saturation and lightness are fixed, so white text is readable on every hue.
+  const u32 hue = ((hash * 0x9E3779B9u) >> 8) % 360;
+  return std::make_pair(HSLToColor(static_cast<float>(hue), 0.55f, 0.42f),
+                        HSLToColor(static_cast<float>((hue + 25) % 360), 0.60f, 0.28f));
 }

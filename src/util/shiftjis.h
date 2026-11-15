@@ -13,5 +13,6 @@ std::string ConvertShiftJISToUTF8(std::string_view str);
 
 // Replaces full-width characters with their ASCII equivalents.
 std::string ConvertFullWidthToASCII(std::string_view str);
+char32_t ConvertFullWidthToASCII(char32_t cp);
 
 } // namespace ShiftJIS

@@ -12,6 +12,7 @@ add_executable(core-tests
   cpu_test_harness.cpp
   cpu_test_harness.h
   dma_tests.cpp
+  game_list_tests.cpp
   gpu_sw_rasterizer_tests.cpp
   gpu_tests.cpp
   gte_tests.cpp
