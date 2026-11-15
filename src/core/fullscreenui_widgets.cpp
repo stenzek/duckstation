@@ -8829,4 +8829,13 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = true;
   }
+
+  // Semantic colours, derived so every theme gets them.
+  UIStyle.SurfaceColor = UIStyle.BackgroundColor;
+  // DarkerColor() inverts the factor for light themes, so this is x1.4 for dark and x0.92 for light
+  UIStyle.SurfaceRaisedColor = DarkerColor(UIStyle.BackgroundColor, UIStyle.IsDarkTheme ? 1.4f : (1.0f / 0.92f));
+  UIStyle.BorderColor = ModAlpha(UIStyle.BackgroundLineColor, 0.15f);
+  UIStyle.MutedTextColor = ModAlpha(UIStyle.BackgroundTextColor, 0.6f);
+  UIStyle.AccentColor = UIStyle.SecondaryStrongColor;
+  UIStyle.AccentTextColor = UIStyle.SecondaryTextColor;
 }

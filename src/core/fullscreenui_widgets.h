@@ -102,6 +102,14 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   ImVec4 ToastBackgroundColor;
   ImVec4 ToastTextColor;
 
+  // Semantic colours, derived from the theme colours above.
+  ImVec4 SurfaceColor;
+  ImVec4 SurfaceRaisedColor;
+  ImVec4 BorderColor;
+  ImVec4 MutedTextColor;
+  ImVec4 AccentColor;
+  ImVec4 AccentTextColor;
+
   ImFont* Font;
 
   u32 ShadowColor;
