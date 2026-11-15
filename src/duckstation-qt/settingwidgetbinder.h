@@ -142,9 +142,17 @@ struct SettingAccessor<QComboBox>
   static void setBoolValue(QComboBox* widget, bool value) { widget->setCurrentIndex(value ? 1 : 0); }
   static void makeNullableBool(QComboBox* widget, bool globalValue)
   {
-    widget->insertItem(0, globalValue ?
-                            QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [Enabled]") :
-                            QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [Disabled]"));
+    widget->insertItem(0, QCoreApplication::translate("SettingWidgetBinder", "Use Global Setting [%1]")
+                            .arg(widget->itemText(static_cast<int>(globalValue))));
+  }
+  static std::optional<bool> getNullableBoolValue(const QComboBox* widget)
+  {
+    const int index = widget->currentIndex();
+    return (index == 0) ? std::nullopt : std::optional<bool>(index > 1);
+  }
+  static void setNullableBoolValue(QComboBox* widget, std::optional<bool> value)
+  {
+    widget->setCurrentIndex(value.has_value() ? (value.value() ? 1 : 2) : 0);
   }
 
   static int getIntValue(const QComboBox* widget) { return widget->currentIndex(); }
