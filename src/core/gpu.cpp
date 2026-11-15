@@ -185,8 +185,8 @@ static void Set2MBVRAM(bool enabled);
 /// Sets/decodes GP0(E1h) (set draw mode).
 static void SetDrawMode(u16 bits);
 
-/// Sets/decodes polygon/rectangle texture palette value.
-static void SetTexturePalette(u16 bits);
+/// Decodes a polygon/rectangle texture palette value, masking the upper VRAM bit if it is not addressable.
+static GPUTexturePaletteReg DecodeTexturePalette(u16 bits);
 
 /// Sets/decodes texture window bits.
 static void SetTextureWindow(u32 value);
@@ -362,7 +362,6 @@ struct Locals
   bool texture_y_flip = false;
 
   GPUDrawModeReg draw_mode_reg = {};
-  GPUTexturePaletteReg texture_palette_reg = {}; // from vertex
   u32 texture_window_reg = 0;
   GPUTextureWindow texture_window = {};
 
@@ -708,7 +707,6 @@ void GPU::SoftReset()
   s_locals.blit_remaining_words = 0;
   s_locals.texture_window_reg = 0xFFFFFFFFu;
   SetDrawMode(0);
-  SetTexturePalette(0);
   SetTextureWindow(0);
   InvalidateCLUT();
   UpdateDMARequest();
@@ -759,7 +757,12 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&s_locals.GPUSTAT.bits);
 
   sw.Do(&s_locals.draw_mode_reg.bits);
-  sw.Do(&s_locals.texture_palette_reg.bits);
+  if (sw.GetVersion() < 102) [[unlikely]]
+  {
+    // texture_palette_reg
+    DebugAssert(sw.IsReading());
+    sw.SkipBytes(sizeof(u16));
+  }
   sw.Do(&s_locals.texture_window_reg);
 
   if (sw.GetVersion() < 62) [[unlikely]]
@@ -936,7 +939,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   sw.Do(&s_locals.GPUSTAT.bits);
 
   sw.DoBytes(&s_locals.draw_mode_reg, sizeof(s_locals.draw_mode_reg));
-  sw.DoBytes(&s_locals.texture_palette_reg, sizeof(s_locals.texture_palette_reg));
   sw.DoBytes(&s_locals.texture_window_reg, sizeof(s_locals.texture_window_reg));
   sw.DoBytes(&s_locals.texture_window, sizeof(s_locals.texture_window));
   sw.DoBytes(&s_locals.texture_x_flip, sizeof(s_locals.texture_x_flip));
@@ -2539,9 +2541,6 @@ void GPU::UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut)
   if (texmode >= GPUTextureMode::Direct16Bit)
     return;
 
-  if (!IsUpperVRAMAddressable())
-    clut.bits &= ~GPUTexturePaletteReg::UPPER_VRAM_BIT;
-
   const bool needs_8bit = (texmode == GPUTextureMode::Palette8Bit);
   if ((clut.bits != s_locals.current_clut_reg_bits) ||
       BoolToUInt8(needs_8bit) > BoolToUInt8(s_locals.current_clut_is_8bit))
@@ -2593,11 +2592,10 @@ void GPU::SetDrawMode(u16 value)
   s_locals.GPUSTAT.texture_page_y_base_2 = s_locals.draw_mode_reg.texture_page_y_base_2;
 }
 
-void GPU::SetTexturePalette(u16 value)
+GPUTexturePaletteReg GPU::DecodeTexturePalette(u16 value)
 {
-  // The upper Y bit is only stored with 2MB VRAM.
-  s_locals.texture_palette_reg.bits =
-    s_locals.enable_2mb_vram ? value : (value & ~GPUTexturePaletteReg::UPPER_VRAM_BIT);
+  return GPUTexturePaletteReg{
+    IsUpperVRAMAddressable() ? value : static_cast<u16>(value & ~GPUTexturePaletteReg::UPPER_VRAM_BIT)};
 }
 
 void GPU::SetTextureWindow(u32 value)
@@ -3395,11 +3393,9 @@ ALWAYS_INLINE_RELEASE void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT 
   else
     cmd->dither_enable = (dither_enable && (shading_enable || (texture_enable && !raw_texture_enable)));
 
-  // The upper bank bits of the texture page and CLUT are ignored unless 2MB VRAM is present and enabled.
-  const bool upper_vram = IsUpperVRAMAddressable();
-  cmd->draw_mode.bits = upper_vram ? s_locals.draw_mode_reg.bits : (s_locals.draw_mode_reg.bits & ~(1u << 11));
-  cmd->palette.bits = upper_vram ? s_locals.texture_palette_reg.bits :
-                                   (s_locals.texture_palette_reg.bits & ~GPUTexturePaletteReg::UPPER_VRAM_BIT);
+  // The upper bank bit of the texture page is ignored unless 2MB VRAM is present and enabled.
+  cmd->draw_mode.bits =
+    IsUpperVRAMAddressable() ? s_locals.draw_mode_reg.bits : (s_locals.draw_mode_reg.bits & ~(1u << 11));
   cmd->window = s_locals.texture_window;
 }
 
@@ -3552,14 +3548,14 @@ void GPU::HandleRenderPolygonCommand()
             rc.shading_enable ? "shaded" : "monochrome", num_vertices, setup_ticks);
 
   // set draw state up
-  // TODO: Get rid of SetTexturePalette() and just fill it as needed
+  GPUTexturePaletteReg palette = {};
   if (rc.texture_enable)
   {
     const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
     SetDrawMode((texpage_attribute & GPUDrawModeReg::POLYGON_TEXPAGE_MASK) |
                 (s_locals.draw_mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
-    SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
-    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, s_locals.texture_palette_reg);
+    palette = DecodeTexturePalette(Truncate16(FifoPeek(2) >> 16));
+    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, palette);
   }
 
   s_locals.render_command.bits = rc.bits;
@@ -3571,6 +3567,7 @@ void GPU::HandleRenderPolygonCommand()
   {
     GPUBackendDrawPrecisePolygonCommand* RESTRICT cmd = GPUBackend::NewDrawPrecisePolygonCommand(num_vertices);
     FillDrawCommand<GPUPrimitive::Polygon>(cmd, rc);
+    cmd->palette = palette;
     cmd->num_vertices = Truncate16(num_vertices);
 
     const u32 first_color = rc.color_for_first_vertex;
@@ -3699,6 +3696,7 @@ void GPU::HandleRenderPolygonCommand()
   {
     GPUBackendDrawPolygonCommand* RESTRICT cmd = GPUBackend::NewDrawPolygonCommand(num_vertices);
     FillDrawCommand<GPUPrimitive::Polygon>(cmd, rc);
+    cmd->palette = palette;
     cmd->num_vertices = Truncate16(num_vertices);
 
     const u32 first_color = rc.color_for_first_vertex;
@@ -3801,10 +3799,11 @@ void GPU::HandleRenderRectangleCommand()
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
 
+  GPUTexturePaletteReg palette = {};
   if (rc.texture_enable)
   {
-    SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
-    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, s_locals.texture_palette_reg);
+    palette = DecodeTexturePalette(Truncate16(FifoPeek(2) >> 16));
+    UpdateCLUTIfNeeded(s_locals.draw_mode_reg.texture_mode, palette);
   }
 
   const TickCount setup_ticks = 50;
@@ -3819,22 +3818,14 @@ void GPU::HandleRenderRectangleCommand()
   PrepareForDraw();
   GPUBackendDrawRectangleCommand* cmd = GPUBackend::NewDrawRectangleCommand();
   FillDrawCommand<GPUPrimitive::Rectangle>(cmd, rc);
+  cmd->palette = palette;
   cmd->color = rc.color_for_first_vertex;
 
   const GPUVertexPosition vp{FifoPop()};
   cmd->x = TruncateGPUVertexPosition(s_locals.drawing_offset.x + vp.x);
   cmd->y = TruncateGPUVertexPosition(s_locals.drawing_offset.y + vp.y);
 
-  if (rc.texture_enable)
-  {
-    // The palette was already set by FillDrawCommand(), with the upper VRAM bit masked if needed.
-    cmd->texcoord = Truncate16(FifoPop());
-  }
-  else
-  {
-    cmd->palette.bits = 0;
-    cmd->texcoord = 0;
-  }
+  cmd->texcoord = rc.texture_enable ? Truncate16(FifoPop()) : 0;
 
   switch (rc.rectangle_size)
   {
@@ -4444,7 +4435,15 @@ void GPU::DrawDebugStateWindow(float scale)
       {"4-bit indexed", "8-bit indexed", "16-bit direct", "Reserved (16-bit)"}};
     ImGui::TextUnformatted(texture_modes[static_cast<u8>(s_locals.draw_mode_reg.texture_mode.GetValue())]);
     label("CLUT");
-    ImGui::Text("(%u, %u)", s_locals.texture_palette_reg.GetXBase(), s_locals.texture_palette_reg.GetYBase());
+    if (s_locals.current_clut_reg_bits != std::numeric_limits<u32>::max())
+    {
+      const GPUTexturePaletteReg palette = DecodeTexturePalette(Truncate16(s_locals.current_clut_reg_bits));
+      ImGui::Text("(%u, %u) %u-bit", palette.GetXBase(), palette.GetYBase(), s_locals.current_clut_is_8bit ? 8 : 4);
+    }
+    else
+    {
+      ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Invalid");
+    }
     label("Window AND (X / Y)");
     ImGui::Text("0x%02X / 0x%02X", s_locals.texture_window.and_x, s_locals.texture_window.and_y);
     label("Window OR (X / Y)");
