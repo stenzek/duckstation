@@ -1751,14 +1751,12 @@ void FullscreenUI::DrawPauseMenu()
     const std::string& game_title = VideoThread::GetGameTitle();
     const std::string& game_serial = VideoThread::GetGameSerial();
     const std::string& game_path = VideoThread::GetGamePath();
-    GPUTexture* const cover = GetCoverForCurrentGame(game_path);
     const float image_padding = LayoutScale(5.0f); // compensate for font baseline
     const float image_size = scaled_top_bar_height - scaled_top_bar_padding - scaled_top_bar_padding - image_padding;
-    const ImRect image_rect(
-      CenterImage(ImRect(scaled_top_bar_padding + image_padding, scaled_top_bar_padding + image_padding,
-                         scaled_top_bar_padding + image_size, scaled_top_bar_padding + image_size),
-                  ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
-    dl->AddImage(cover, image_rect.Min, image_rect.Max);
+    DrawCoverForCurrentGame(dl,
+                            ImRect(scaled_top_bar_padding + image_padding, scaled_top_bar_padding + image_padding,
+                                   scaled_top_bar_padding + image_size, scaled_top_bar_padding + image_size),
+                            game_path, game_title);
 
     if (!game_serial.empty())
       buffer.format("{} - {}", game_serial, Path::GetFileName(game_path));

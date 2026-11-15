@@ -243,6 +243,7 @@ inline constexpr float TITLE_SIZE = 1.0f / 9.0f;
 inline constexpr float MIN_TITLE_SIZE = 1.0f / 16.0f;
 inline constexpr float TITLE_SHRINK_FACTOR = 0.9f;
 inline constexpr float MAX_TITLE_HEIGHT = 0.5f;
+inline constexpr u32 MAX_TITLE_LINES = 4;
 inline constexpr float COVER_MONOGRAM_CENTER_Y = 0.4f;
 inline constexpr float COVER_MONOGRAM_SIZE = 0.7f;
 inline constexpr float COVER_MONOGRAM_MAX_WIDTH = 1.0f - MARGIN * 2.0f; // stays inside the tile

@@ -104,7 +104,8 @@ void DrawGameListWindow();
 
 void DoStartPath(std::string path, std::string state = std::string(), std::optional<bool> fast_boot = std::nullopt);
 
-GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
+void DrawCoverForCurrentGame(ImDrawList* dl, const ImRect& rect, const std::string& game_path,
+                             std::string_view game_title);
 void SetCoverCacheEntry(std::string path, std::string cover_path);
 void RemoveCoverCacheEntry(const std::string& path);
 

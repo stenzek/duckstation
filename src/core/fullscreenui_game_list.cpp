@@ -31,14 +31,15 @@ static void HandleGameListOptions(const GameList::Entry* entry);
 static void HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* dsentry);
 static void PopulateGameListEntryList();
 static std::string_view GetKeyForGameListEntry(const GameList::Entry* entry);
-static GPUTexture* GetCoverPlaceholderTexture();
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
                                     bool fallback_to_icon, bool return_default_image);
 static GPUTexture* GetGameListIcon(const GameList::Entry* entry);
 static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
 static void DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon, bool fallback_to_icon,
-                              bool draw_on_placeholder, bool show_localized_titles, ImDrawList* dl, const ImRect& rect);
+                              bool icon_style, bool show_localized_titles, ImDrawList* dl, const ImRect& rect);
+static void DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title, GameList::EntryType type,
+                                 bool icon_style);
 static void DoSetCoverImage(std::string entry_path);
 static void DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path);
 
@@ -401,16 +402,24 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
                                 ImVec2(mbb.title_bb.Min.x - row_image_padding, mbb.title_bb.Min.y + image_size));
         if (icon_source == GameList::IconSource::Cover)
         {
-          DrawGameListCover(entry, false, false, false, s_game_list_locals.localized_titles,
-                            ImGui::GetWindowDrawList(), image_rect);
+          DrawGameListCover(entry, false, false, true, s_game_list_locals.localized_titles, ImGui::GetWindowDrawList(),
+                            image_rect);
         }
         else
         {
           GPUTexture* const icon_texture = GetGameListIcon(entry);
-          const ImRect icon_rect = CenterImage(image_rect, ImVec2(static_cast<float>(icon_texture->GetWidth()),
-                                                                  static_cast<float>(icon_texture->GetHeight())));
-          ImGui::GetWindowDrawList()->AddImage(icon_texture, icon_rect.Min, icon_rect.Max, ImVec2(0.0f, 0.0f),
-                                               ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+          if (icon_texture)
+          {
+            const ImRect icon_rect = CenterImage(image_rect, ImVec2(static_cast<float>(icon_texture->GetWidth()),
+                                                                    static_cast<float>(icon_texture->GetHeight())));
+            ImGui::GetWindowDrawList()->AddImage(icon_texture, icon_rect.Min, icon_rect.Max, ImVec2(0.0f, 0.0f),
+                                                 ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+          }
+          else
+          {
+            DrawGeneratedArtwork(ImGui::GetWindowDrawList(), image_rect,
+                                 entry->GetDisplayTitle(s_game_list_locals.localized_titles), entry->type, true);
+          }
         }
       }
 
@@ -493,16 +502,20 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
 
-    GPUTexture* const cover_texture = selected_entry ? GetGameListCover(selected_entry, false, false, true) :
-                                                       GetTextureForGameListEntryType(GameList::EntryType::MaxCount);
-    if (cover_texture)
+    ImGui::SetCursorPos(LayoutScale((info_window_width - cover_size) / 2.0f, info_top_margin));
+    const ImRect cover_rect(ImGui::GetCursorScreenPos(),
+                            ImGui::GetCursorScreenPos() + LayoutScale(ImVec2(cover_size, cover_size)));
+    if (selected_entry)
     {
-      const ImRect image_rect(CenterImage(
-        LayoutScale(ImVec2(cover_size, cover_size)),
-        ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
-
-      ImGui::SetCursorPos(LayoutScale((info_window_width - cover_size) / 2.0f, info_top_margin) + image_rect.Min);
-      ImGui::Image(cover_texture, image_rect.GetSize());
+      DrawGameListCover(selected_entry, false, false, false, s_game_list_locals.localized_titles,
+                        ImGui::GetWindowDrawList(), cover_rect);
+    }
+    else
+    {
+      GPUTexture* const cover_texture = GetTextureForGameListEntryType(GameList::EntryType::MaxCount);
+      const ImRect image_rect(CenterImage(cover_rect, ImVec2(static_cast<float>(cover_texture->GetWidth()),
+                                                             static_cast<float>(cover_texture->GetHeight()))));
+      ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max);
     }
 
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
@@ -811,7 +824,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       bb.Min += style.FramePadding;
       bb.Max -= style.FramePadding;
 
-      DrawGameListCover(entry, false, false, true, s_game_list_locals.localized_titles, dl,
+      DrawGameListCover(entry, false, false, false, s_game_list_locals.localized_titles, dl,
                         ImRect(bb.Min, bb.Min + image_size));
 
       if (s_game_list_locals.show_trophy_icons)
@@ -1155,13 +1168,11 @@ GPUTexture* FullscreenUI::GetGameListIcon(const GameList::Entry* entry)
     }
 
     if (!icon_it->second.empty())
-    {
-      if (GPUTexture* const tex = GetCachedTextureAsync(icon_it->second))
-        return tex;
-    }
+      return GetCachedTextureAsync(icon_it->second);
   }
 
-  return GetTextureForGameListEntryType(entry->type);
+  // No icon, so the caller draws generated artwork instead.
+  return nullptr;
 }
 
 GPUTexture* FullscreenUI::GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size)
@@ -1185,11 +1196,6 @@ std::string_view FullscreenUI::GetKeyForGameListEntry(const GameList::Entry* ent
   return entry->IsDiscSet() ? entry->GetDiscSetEntry()->GetSaveTitle() : std::string_view(entry->path);
 }
 
-GPUTexture* FullscreenUI::GetCoverPlaceholderTexture()
-{
-  return GetCachedTexture("images/cover-placeholder.png");
-}
-
 GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type)
 {
   switch (type)
@@ -1210,15 +1216,30 @@ GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType typ
   }
 }
 
-GPUTexture* FullscreenUI::GetCoverForCurrentGame(const std::string& game_path)
+void FullscreenUI::DrawCoverForCurrentGame(ImDrawList* dl, const ImRect& rect, const std::string& game_path,
+                                           std::string_view game_title)
 {
-  auto lock = GameList::GetLock();
+  GPUTexture* cover_texture = nullptr;
+  GameList::EntryType type = GameList::EntryType::Disc;
+  {
+    const auto lock = GameList::GetLock();
+    if (const GameList::Entry* entry = GameList::GetEntryForPath(game_path))
+    {
+      cover_texture = GetGameListCover(entry, true, true, false);
+      type = entry->type;
+    }
+  }
 
-  const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
-  if (!entry)
-    return GetTextureForGameListEntryType(GameList::EntryType::Disc);
+  if (!cover_texture)
+  {
+    // Use the running game's title, so the monogram matches the title shown next to it.
+    DrawGeneratedArtwork(dl, rect, game_title, type, true);
+    return;
+  }
 
-  return GetGameListCover(entry, true, true, true);
+  const ImRect image_rect = CenterImage(
+    rect, ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight())));
+  dl->AddImage(cover_texture, image_rect.Min, image_rect.Max);
 }
 
 void FullscreenUI::SetCoverCacheEntry(std::string path, std::string cover_path)
@@ -1243,36 +1264,105 @@ void FullscreenUI::InvalidateCoverCache(std::string path)
 }
 
 void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
-                                     bool fallback_to_icon, bool draw_on_placeholder, bool show_localized_titles,
-                                     ImDrawList* dl, const ImRect& rect)
+                                     bool fallback_to_icon, bool icon_style, bool show_localized_titles, ImDrawList* dl,
+                                     const ImRect& rect)
 {
-  GPUTexture* const cover_texture =
-    GetGameListCover(entry, fallback_to_achievements_icon, fallback_to_icon, !draw_on_placeholder);
-  if (cover_texture)
+  GPUTexture* const cover_texture = GetGameListCover(entry, fallback_to_achievements_icon, fallback_to_icon, false);
+  if (!cover_texture)
   {
-    // simple case, has cover
-    const ImRect image_rect = CenterImage(
-      rect, ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight())));
-    dl->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                 IM_COL32(255, 255, 255, 255));
+    DrawGeneratedArtwork(dl, rect, entry->GetDisplayTitle(show_localized_titles), entry->type, icon_style);
     return;
   }
 
-  // draw placeholder
-  GPUTexture* const placeholder_texture = GetCoverPlaceholderTexture();
-  const ImRect image_rect = CenterImage(rect, ImVec2(static_cast<float>(placeholder_texture->GetWidth()),
-                                                     static_cast<float>(placeholder_texture->GetHeight())));
-  dl->AddImage(placeholder_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+  const ImRect image_rect = CenterImage(
+    rect, ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight())));
+  dl->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                IM_COL32(255, 255, 255, 255));
+}
 
-  // and the text
-  const float& font_size = UIStyle.LargeFontSize;
-  const float& font_weight = UIStyle.BoldFontWeight;
-  const std::string_view title = entry->GetDisplayTitle(show_localized_titles);
-  const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, image_rect.GetWidth(),
-                                                        image_rect.GetWidth(), IMSTR_START_END(title));
-  const ImVec2 title_offset = ImVec2(0.0f, std::max((image_rect.GetHeight() - title_size.y) * 0.5f, 0.0f));
-  RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, image_rect.Min + title_offset,
-                                     image_rect.Max, IM_COL32(255, 255, 255, 255), title, LAYOUT_CENTER_ALIGN_TEXT,
-                                     image_rect.GetWidth(), &image_rect);
+void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title,
+                                        GameList::EntryType type, bool icon_style)
+{
+  using namespace GameList::GeneratedArtwork;
+
+  // Diagonal gradient, filled in white and then shaded, so it keeps the rounded corners.
+  const float size = rect.GetWidth();
+  const auto [start_color, end_color] = GetColors(title);
+  const int vtx_start = dl->VtxBuffer.Size;
+  dl->AddRectFilled(rect.Min, rect.Max, IM_COL32(255, 255, 255, 255),
+                    size * (icon_style ? ICON_CORNER_RADIUS : COVER_CORNER_RADIUS));
+  ImGui::ShadeVertsLinearColorGradientKeepAlpha(dl, vtx_start, dl->VtxBuffer.Size, rect.Min, rect.Max, start_color,
+                                                end_color);
+
+  // Font sizes are kept to whole pixels, so the font atlas doesn't bake a size for every cover scale.
+  ImFont* const font = UIStyle.Font;
+  const float font_weight = UIStyle.BoldFontWeight;
+  dl->PushClipRect(rect.Min, rect.Max, true);
+
+  // Covers have a large faint monogram behind the title, which gives covers of different games distinct shapes.
+  TinyString monogram = GetMonogram(title);
+  if (!monogram.empty())
+  {
+    const float max_width = size * (icon_style ? ICON_MONOGRAM_MAX_WIDTH : COVER_MONOGRAM_MAX_WIDTH);
+    float font_size = std::max(std::floor(size * (icon_style ? ICON_MONOGRAM_SIZE : COVER_MONOGRAM_SIZE)), 1.0f);
+    ImVec2 text_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(monogram));
+    if (text_size.x > max_width)
+    {
+      font_size = std::max(std::floor(font_size * max_width / text_size.x), 1.0f);
+      text_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(monogram));
+    }
+
+    const float center_y = rect.Min.y + size * (icon_style ? 0.5f : COVER_MONOGRAM_CENTER_Y);
+    dl->AddText(font, font_size, font_weight,
+                ImVec2(rect.Min.x + (size - text_size.x) * 0.5f, center_y - text_size.y * 0.5f),
+                IM_COL32(255, 255, 255, icon_style ? 255 : COVER_MONOGRAM_ALPHA), IMSTR_START_END(monogram));
+  }
+
+  if (!icon_style)
+  {
+    // Long titles shrink until they fit in the lower half, and are cut off after a few lines.
+    const float margin = size * MARGIN;
+    const float wrap_width = size - margin * 2.0f;
+    const float min_font_size = size * MIN_TITLE_SIZE;
+    float font_size = std::max(std::floor(size * TITLE_SIZE), 1.0f);
+    ImVec2 title_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, wrap_width, IMSTR_START_END(title));
+    while (title_size.y > size * MAX_TITLE_HEIGHT && font_size > min_font_size && font_size > 1.0f)
+    {
+      font_size = std::max(std::floor(font_size * TITLE_SHRINK_FACTOR), 1.0f);
+      title_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, wrap_width, IMSTR_START_END(title));
+    }
+
+    const float title_height = std::min(title_size.y, font_size * static_cast<float>(MAX_TITLE_LINES));
+    const ImVec2 title_pos(rect.Min.x + margin, rect.Max.y - margin - title_height);
+    const ImVec4 title_clip(title_pos.x, title_pos.y, rect.Max.x - margin, title_pos.y + title_height);
+    dl->AddText(font, font_size, font_weight, title_pos, IM_COL32(255, 255, 255, 255), IMSTR_START_END(title),
+                wrap_width, &title_clip);
+
+    // Content that isn't a plain disc gets a badge with its type.
+    const char* badge_icon;
+    switch (type)
+    {
+        // clang-format off
+      case GameList::EntryType::DiscSet: badge_icon = ICON_FA_LAYER_GROUP; break;
+      case GameList::EntryType::AudioCD: badge_icon = ICON_FA_MUSIC; break;
+      case GameList::EntryType::PSF: badge_icon = ICON_FA_MUSIC; break;
+      case GameList::EntryType::PSExe: badge_icon = ICON_FA_GEAR; break;
+      case GameList::EntryType::Playlist: badge_icon = ICON_FA_LIST; break;
+      default: badge_icon = nullptr; break;
+        // clang-format on
+    }
+    if (badge_icon)
+    {
+      const float radius = size * BADGE_RADIUS;
+      const ImVec2 center(rect.Max.x - margin - radius, rect.Min.y + margin + radius);
+      dl->AddCircleFilled(center, radius, IM_COL32(0, 0, 0, BADGE_ALPHA));
+
+      const float icon_size = std::max(std::floor(radius * BADGE_ICON_SIZE), 1.0f);
+      const ImVec2 icon_text_size = font->CalcTextSizeA(icon_size, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, badge_icon);
+      dl->AddText(font, icon_size, UIStyle.NormalFontWeight, center - icon_text_size * 0.5f,
+                  IM_COL32(255, 255, 255, 255), badge_icon);
+    }
+  }
+
+  dl->PopClipRect();
 }
