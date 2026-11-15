@@ -9,7 +9,7 @@
 #include "core/system.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
-#include "core/video_thread.h"
+#include "core/video_thread_private.h"
 
 #include <gtest/gtest.h>
 

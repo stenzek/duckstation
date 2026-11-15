@@ -11,6 +11,10 @@ bool ProcessStartup(Error* error);
 void ProcessShutdown();
 void DoRunIdle();
 
+/// For unit tests: runs commands inline on the calling thread with a null backend, without starting the thread.
+void CreateNullBackendForTests();
+void DestroyNullBackendForTests();
+
 } // namespace VideoThread
 
 namespace Host {
