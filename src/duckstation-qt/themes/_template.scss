@@ -19,6 +19,8 @@
 //     // ... other overrides
 //   );
 
+@use 'sass:color';
+
 // ============================================================================
 // QPalette Colors
 // ============================================================================
@@ -77,6 +79,23 @@ $accent-color: #1464a0 !default;          // progress bar chunk
 $slider-handle: #808080 !default;
 $slider-handle-hover: #909090 !default;
 $slider-handle-pressed: #a0a0a0 !default;
+
+// Slider track: groove behind the handle, and the filled part up to the handle
+$slider-groove: color.mix($text-color, $bg-control, 15%) !default;
+$slider-fill: $slider-handle !default;
+
+// Scrollbar handle
+$scrollbar-handle: $bg-active !default;
+$scrollbar-handle-hover: $bg-pressed !default;
+
+// Progress bar chunk; the percentage text is drawn in $text-color over it
+$progress-color: $accent-color !default;
+
+// Keyboard focus ring on inputs
+$focus-color: color.mix($text-color, $bg-control, 50%) !default;
+
+// Line on the page-facing edge of the selected tab, or null for none
+$tab-indicator: null !default;
 
 // Control icon style — "white" or "black" icon set for checkboxes and arrows
 $checkbox-icon-style: "white" !default;
@@ -142,6 +161,11 @@ QMenu::icon:checked {
   border-radius: 4px;
 }
 
+QMenu::separator {
+  height: 1px;
+  background: $border-color;
+  margin: 4px 8px;
+}
 QMenuBar::item {
   padding: 4px 6px;
   border-radius: 6px;
@@ -174,9 +198,11 @@ QToolButton:checked {
 }
 QToolButton:hover {
   background-color: $bg-active;
+  color: $text-active;
 }
 QToolButton:pressed {
   background-color: $bg-pressed;
+  color: $text-active;
 }
 
 QPushButton {
@@ -195,6 +221,7 @@ QPushButton:hover {
 }
 QPushButton:pressed {
   background-color: $bg-pressed;
+  color: $text-active;
 }
 QPushButton:disabled {
   background-color: $bg-control;
@@ -213,18 +240,18 @@ QDialog QPushButton {
 }
 
 QLineEdit {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  padding: 4px 8px;
+  padding: 3px 7px;
   background-color: $bg-control;
   selection-background-color: $bg-active;
   selection-color: $text-active;
   color: $text-color;
 }
 QPlainTextEdit {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  padding: 3px 6px;
+  padding: 2px 5px;
   background-color: $bg-control;
   selection-background-color: $bg-active;
   selection-color: $text-active;
@@ -287,9 +314,9 @@ QCheckBox::indicator::indeterminate:disabled {
 }
 
 QAbstractSpinBox {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   background-color: $bg-control;
   selection-background-color: $bg-active;
   selection-color: $text-active;
@@ -333,9 +360,9 @@ QAbstractSpinBox::down-arrow:disabled {
 }
 
 QComboBox {
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  padding: 4px 10px 4px 8px; /* leave space for drop-down */
+  padding: 3px 9px 3px 7px; /* leave space for drop-down */
   background-color: $bg-control;
   color: $text-color;
   selection-background-color: $bg-active;
@@ -343,6 +370,19 @@ QComboBox {
 }
 QComboBox:hover {
   background-color: $bg-hover;
+}
+QLineEdit:focus,
+QPlainTextEdit:focus,
+QAbstractSpinBox:focus,
+QComboBox:focus {
+  border-color: $focus-color;
+}
+// Buttons keep Fusion's focus rectangle, which only appears after keyboard navigation rather than on every click.
+// It is drawn from the highlight colour, so point that at the focus colour.
+QCheckBox,
+QRadioButton,
+QPushButton {
+  selection-background-color: $focus-color;
 }
 QComboBox:disabled {
   background-color: $bg-disabled;
@@ -371,12 +411,12 @@ QScrollBar {
   border-radius: 6px;
 }
 QScrollBar::handle {
-  background-color: $bg-active;
+  background-color: $scrollbar-handle;
   min-height: 20px;
   border-radius: 6px;
 }
 QScrollBar::handle:hover {
-  background: $bg-pressed;
+  background: $scrollbar-handle-hover;
 }
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical,
@@ -429,6 +469,23 @@ QTabBar::tab:hover {
   background: $bg-hover;
   color: $text-color;
 }
+@if $tab-indicator {
+  // Reserve the line on every tab so the selected one isn't taller.
+  QTabBar::tab:top {
+    border-bottom: 2px solid transparent;
+    padding-bottom: 4px;
+  }
+  QTabBar::tab:bottom {
+    border-top: 2px solid transparent;
+    padding-top: 4px;
+  }
+  QTabBar::tab:top:selected {
+    border-bottom: 2px solid $tab-indicator;
+  }
+  QTabBar::tab:bottom:selected {
+    border-top: 2px solid $tab-indicator;
+  }
+}
 
 QProgressBar {
   border: none;
@@ -438,7 +495,7 @@ QProgressBar {
   text-align: center;
 }
 QProgressBar::chunk {
-  background-color: $accent-color;
+  background-color: $progress-color;
   border-radius: 8px;
 }
 
@@ -448,8 +505,15 @@ QSlider {
 QSlider::groove {
   border: none;
   height: 8px;
-  background-color: $bg-control;
+  background-color: $slider-groove;
   border-radius: 4px;
+}
+QSlider::sub-page:horizontal {
+  background-color: $slider-fill;
+  border-radius: 4px;
+}
+QSlider::sub-page:horizontal:disabled {
+  background-color: $bg-disabled;
 }
 QSlider::handle {
   background-color: $slider-handle;

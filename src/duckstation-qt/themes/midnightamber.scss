@@ -52,14 +52,11 @@
   $slider-handle-hover:   #ffd27a,
   $slider-handle-pressed: #d99a28,
 
+  // Progress, focus and selected tab
+  $progress-color:    #a37829,
+  $focus-color:       #f2b33d,
+  $tab-indicator:     #f2b33d,
+
   // Checkbox icons
   $checkbox-icon-style: "white",
 );
-
-// Amber line on the selected tab, on the edge facing the page.
-QTabBar::tab:top:selected {
-  border-bottom: 2px solid #f2b33d;
-}
-QTabBar::tab:bottom:selected {
-  border-top: 2px solid #f2b33d;
-}

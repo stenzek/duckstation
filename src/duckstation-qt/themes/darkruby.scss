@@ -40,7 +40,7 @@
 
   // Text
   $text-color:        #ffffff,
-  $text-disabled:     #555555,
+  $text-disabled:     #666666,
 
   // Accent (ruby)
   $accent-color:      #ac151f,
@@ -49,6 +49,10 @@
   $slider-handle:         #ac151f,
   $slider-handle-hover:   #c41925,
   $slider-handle-pressed: #dc1d2b,
+
+  // Scrollbar handle, neutral rather than ruby
+  $scrollbar-handle:       #3a3a3a,
+  $scrollbar-handle-hover: #4a4a4a,
 
   // Checkbox icons
   $checkbox-icon-style: "white",

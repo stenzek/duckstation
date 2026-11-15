@@ -12,9 +12,9 @@
   $palette-base:                #351d57,
   $palette-button:              #351d57,
   $palette-text:                #ffffff,
-  $palette-highlight:           #facf00,
-  $palette-highlight-text:      #000000,
-  $palette-disabled-text:       #6e3db5,
+  $palette-highlight:           #6a42a8,
+  $palette-highlight-text:      #ffffff,
+  $palette-disabled-text:       #8a70b8,
   $palette-placeholder-text:    #808080,
   $palette-link:                #facf00,
   $palette-alternate-base:      #492979,
@@ -31,9 +31,9 @@
   $bg-control:        #3a2360,
   $bg-surface:        #402868,
   $bg-hover:          #503278,
-  $bg-active:         #facf00,
+  $bg-active:         #6a42a8,
   $bg-button-hover:   #583a80,
-  $bg-pressed:        #d4b000,
+  $bg-pressed:        #7a52bc,
 
   // Borders
   $border-color:      #4a3070,
@@ -41,8 +41,8 @@
 
   // Text
   $text-color:        #ffffff,
-  $text-active:       #000000,
-  $text-disabled:     #6e3db5,
+  $text-active:       #ffffff,
+  $text-disabled:     #8a70b8,
 
   // Accent
   $accent-color:      #facf00,
@@ -51,6 +51,11 @@
   $slider-handle:         #facf00,
   $slider-handle-hover:   #ffe030,
   $slider-handle-pressed: #d4b000,
+
+  // Progress, focus and selected tab
+  $progress-color:    #a86f00,
+  $focus-color:       #facf00,
+  $tab-indicator:     #facf00,
 
   // Checkbox icons
   $checkbox-icon-style: "white",
