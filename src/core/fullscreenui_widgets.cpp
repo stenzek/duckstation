@@ -561,6 +561,7 @@ struct WidgetsState
   bool had_hovered_menu_item = false;
   bool has_hovered_menu_item = false;
   bool rendered_menu_item_border = false;
+  u32 scroll_fade_vtx_start = 0;
   bool had_focus_reset = false;
   bool had_sound_effect = false;
   FooterBackground fullscreen_footer_background = FooterBackground::Blurred;
@@ -2949,6 +2950,41 @@ void FullscreenUI::EndMenuButtons()
   EndMenuButtonDrawSplit();
 
   ImGui::PopStyleVar(4);
+}
+
+void FullscreenUI::BeginScrollFade()
+{
+  s_state.scroll_fade_vtx_start = static_cast<u32>(ImGui::GetWindowDrawList()->VtxBuffer.Size);
+}
+
+void FullscreenUI::EndScrollFade()
+{
+  const ImGuiWindow* const window = ImGui::GetCurrentWindowRead();
+  const float band = LayoutScale(LAYOUT_SCROLL_FADE_HEIGHT);
+
+  // Ramp each edge in with the remaining scroll distance so the fade doesn't pop.
+  const float top_strength = std::min(window->Scroll.y, band) / band;
+  const float bottom_strength = std::min(std::max(window->ScrollMax.y - window->Scroll.y, 0.0f), band) / band;
+  if (top_strength <= 0.0f && bottom_strength <= 0.0f)
+    return;
+
+  const float top = window->InnerRect.Min.y;
+  const float bottom = window->InnerRect.Max.y;
+  ImDrawList* const dl = window->DrawList;
+  for (ImDrawVert* vtx = dl->VtxBuffer.Data + s_state.scroll_fade_vtx_start; vtx != dl->VtxBuffer.end(); ++vtx)
+  {
+    const float y = vtx->pos.y;
+    float factor = 1.0f;
+    if (y < top + band)
+      factor = 1.0f - top_strength * (1.0f - std::max(y - top, 0.0f) / band);
+    else if (y > bottom - band)
+      factor = 1.0f - bottom_strength * (1.0f - std::max(bottom - y, 0.0f) / band);
+    else
+      continue;
+
+    const u32 alpha = static_cast<u32>(static_cast<float>((vtx->col >> IM_COL32_A_SHIFT) & 0xFF) * factor);
+    vtx->col = (vtx->col & ~IM_COL32_A_MASK) | (alpha << IM_COL32_A_SHIFT);
+  }
 }
 
 float FullscreenUI::GetMenuButtonAvailableWidth()

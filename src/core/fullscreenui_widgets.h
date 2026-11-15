@@ -68,6 +68,7 @@ inline constexpr float LAYOUT_FOOTER_X_PADDING = 15.0f;
 inline constexpr float LAYOUT_FOOTER_Y_PADDING = 10.0f;
 inline constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_Y_PADDING * 2.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 280.0f;
+inline constexpr float LAYOUT_SCROLL_FADE_HEIGHT = 40.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 24.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 112.0f;
@@ -442,6 +443,11 @@ void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding =
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float x_spacing = 0.0f,
                       float y_spacing = LAYOUT_MENU_BUTTON_SPACING);
 void EndMenuButtons();
+
+/// Fades out the content drawn between Begin/End towards the top/bottom edges of the current window when there is
+/// more to scroll in that direction. Works per-vertex, so large quads fade across their whole height.
+void BeginScrollFade();
+void EndScrollFade();
 float GetMenuButtonAvailableWidth();
 bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible, bool* hovered,
                      ImGuiButtonFlags flags = 0);
