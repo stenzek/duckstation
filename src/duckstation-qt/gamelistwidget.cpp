@@ -1272,21 +1272,6 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
   return {};
 }
 
-const QPixmap& GameListModel::getNoAchievementsPixmap() const
-{
-  return m_no_achievements_pixmap;
-}
-
-const QPixmap& GameListModel::getHasAchievementsPixmap() const
-{
-  return m_has_achievements_pixmap;
-}
-
-const QPixmap& GameListModel::getMasteredAchievementsPixmap() const
-{
-  return m_mastered_achievements_pixmap;
-}
-
 const GameList::Entry* GameListModel::getTakenGameListEntry(u32 index) const
 {
   return (m_taken_entries.has_value() && index < m_taken_entries->size()) ? &m_taken_entries.value()[index] : nullptr;
@@ -1368,13 +1353,6 @@ void GameListModel::loadCommonImages()
     m_compatibility_pixmaps[i] = QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i))
                                    .pixmap(COMPATIBILITY_PIXMAP_SIZE, m_device_pixel_ratio);
   }
-
-  m_no_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon-gray.svg", true))
-                               .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
-  m_has_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon.svg", true))
-                                .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
-  m_mastered_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon-star.svg", true))
-                                     .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
 }
 
 class GameListSortModel final : public QSortFilterProxyModel
@@ -1537,52 +1515,74 @@ public:
 
     QRect r = option.rect;
 
-    const QPixmap& icon = (num_achievements > 0) ? (mastered ? m_model->getMasteredAchievementsPixmap() :
-                                                               m_model->getHasAchievementsPixmap()) :
-                                                   m_model->getNoAchievementsPixmap();
-    const QSize icon_size = QtUtils::GetDeviceIndependentSize(icon.size(), icon.devicePixelRatio());
-    painter->drawPixmap(r.topLeft() + QPoint(5, (r.height() - icon_size.height() + 2) / 2), icon);
-    r.setLeft(r.left() + 12 + icon_size.width());
-
     const QPalette& palette = static_cast<QWidget*>(parent())->palette();
-    const QColor& text_color =
-      palette.color((option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::Text);
+    const bool selected = (option.state & QStyle::State_Selected);
+    const QColor& text_color = palette.color(selected ? QPalette::HighlightedText : QPalette::Text);
 
     painter->save();
 
-    if (num_achievements > 0)
+    // Left column is a progress ring, or a filled ring with a tick when mastered. The count follows it, and games
+    // without achievements have a dashed ring and N/A.
+    const QSize icon_size = ACHIEVEMENT_PIXMAP_SIZE;
+    const QRect icon_rect(r.topLeft() + QPoint(5, (r.height() - icon_size.height() + 2) / 2), icon_size);
+    r.setLeft(r.left() + 12 + icon_size.width());
+
+    constexpr qreal ring_width = 2.5;
+    const qreal radius = static_cast<qreal>(icon_size.width() - 2) * 0.5;
+    const QPointF center = QRectF(icon_rect).center();
+    const QRectF ring_rect(center.x() - radius + ring_width * 0.5, center.y() - radius + ring_width * 0.5,
+                           radius * 2.0 - ring_width, radius * 2.0 - ring_width);
+    QColor track_color = text_color;
+    track_color.setAlpha(60);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    if (num_achievements == 0)
     {
-      const QFontMetrics fm(painter->fontMetrics());
-
-      // display hardcore in parenthesis only if there are actually hc unlocks
-      const bool display_hardcore = (num_unlocked_hardcore > 0);
-      const bool display_hardcore_only =
-        (display_hardcore && (num_unlocked == 0 || num_unlocked == num_unlocked_hardcore));
-      const QString first = QStringLiteral("%1").arg(display_hardcore_only ? num_unlocked_hardcore : num_unlocked);
-      const QString total = QStringLiteral("/%3").arg(num_achievements);
-
-      const QColor hc_color = QColor(44, 151, 250);
-
-      painter->setPen(display_hardcore_only ? hc_color : text_color);
-      painter->drawText(r, Qt::AlignVCenter, first);
-      r.setLeft(r.left() + fm.size(Qt::TextSingleLine, first).width());
-
-      if (display_hardcore && !display_hardcore_only)
-      {
-        const QString hc = QStringLiteral("(%2)").arg(num_unlocked_hardcore);
-        painter->setPen(hc_color);
-        painter->drawText(r, Qt::AlignVCenter, hc);
-        r.setLeft(r.left() + fm.size(Qt::TextSingleLine, hc).width());
-      }
+      QPen dashed_pen(track_color, 1.5, Qt::CustomDashLine, Qt::FlatCap);
+      dashed_pen.setDashPattern({2.0, 1.6});
+      painter->setPen(dashed_pen);
+      painter->drawEllipse(ring_rect);
 
       painter->setPen(text_color);
-      painter->drawText(r, Qt::AlignVCenter, total);
+      painter->drawText(r, Qt::AlignVCenter, QStringLiteral("N/A"));
+      painter->restore();
+      return;
+    }
+
+    const QColor hc_color = QColor(44, 151, 250);
+    const u32 total_unlocked = std::max(num_unlocked, num_unlocked_hardcore);
+    if (mastered)
+    {
+      // Filled ring with a tick.
+      painter->setPen(Qt::NoPen);
+      painter->setBrush(QColor(248, 183, 5));
+      painter->drawEllipse(center, radius, radius);
+      painter->setPen(QPen(QColor(0, 0, 0, 170), 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      painter->setBrush(Qt::NoBrush);
+      const QPointF tick[] = {center + QPointF(-radius * 0.45, 0.0), center + QPointF(-radius * 0.1, radius * 0.35),
+                              center + QPointF(radius * 0.45, -radius * 0.35)};
+      painter->drawPolyline(tick, std::size(tick));
     }
     else
     {
-      painter->setPen(text_color);
-      painter->drawText(r, Qt::AlignVCenter, QStringLiteral("N/A"));
+      // Hardcore unlocks are the first part of the ring, clockwise from the top.
+      const auto draw_arc = [painter, &ring_rect, num_achievements](u32 start, u32 end, const QColor& color) {
+        if (end <= start)
+          return;
+        painter->setPen(QPen(color, ring_width, Qt::SolidLine, Qt::FlatCap));
+        painter->drawArc(ring_rect, 90 * 16 - static_cast<int>(start * 360 * 16 / num_achievements),
+                         -static_cast<int>((end - start) * 360 * 16 / num_achievements));
+      };
+
+      painter->setPen(QPen(track_color, ring_width));
+      painter->drawEllipse(ring_rect);
+      draw_arc(0, num_unlocked_hardcore, hc_color);
+      draw_arc(num_unlocked_hardcore, total_unlocked, QColor(248, 183, 5));
     }
+
+    // The tooltip has the hardcore breakdown, the count is only blue if everything was unlocked in hardcore.
+    painter->setPen((total_unlocked > 0 && num_unlocked_hardcore == total_unlocked) ? hc_color : text_color);
+    painter->drawText(r, Qt::AlignVCenter, QStringLiteral("%1/%2").arg(total_unlocked).arg(num_achievements));
 
     painter->restore();
   }
