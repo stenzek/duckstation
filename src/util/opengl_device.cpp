@@ -1366,7 +1366,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
   }
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
-  m_num_current_render_targets = num_rts;
+  m_num_current_render_targets = Truncate8(num_rts);
   if (changed)
   {
     GLuint fbo = 0;
