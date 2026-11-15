@@ -2243,14 +2243,19 @@ void FullscreenUI::DrawSaveStateSelector()
         bb.Min += style.FramePadding;
         bb.Max -= style.FramePadding;
 
-        GPUTexture* const screenshot =
-          entry.preview_texture ? entry.preview_texture.get() : GetCachedTextureAsync("no-save.png");
-        const ImRect image_rect(
-          CenterImage(ImRect(bb.Min, bb.Min + image_size),
-                      ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
+        if (GPUTexture* const screenshot = entry.preview_texture.get())
+        {
+          const ImRect image_rect(
+            CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(screenshot->GetWidth()),
+                                                                    static_cast<float>(screenshot->GetHeight()))));
 
-        ImGui::GetWindowDrawList()->AddImage(screenshot, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-                                             ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+          ImGui::GetWindowDrawList()->AddImage(screenshot, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
+                                               ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+        }
+        else
+        {
+          DrawEmptySlotTile(ImGui::GetWindowDrawList(), ImRect(bb.Min, bb.Min + image_size), LayoutScale(8.0f));
+        }
 
         const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
         const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + UIStyle.LargeFontSize));
