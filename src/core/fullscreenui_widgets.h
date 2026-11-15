@@ -257,6 +257,9 @@ ImRect CenterImage(const ImVec2& fit_rect, const GPUTexture* texture);
 ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
 ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 
+/// Placeholder for an empty save slot: dimmed fill, dashed border and a centred plus.
+void DrawEmptySlotTile(ImDrawList* dl, const ImRect& bb, float rounding, float alpha = 1.0f);
+
 /// Fits an image to the specified bounds, cropping if needed. Returns UV coordinates.
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 

@@ -1907,6 +1907,48 @@ ImRect FullscreenUI::CenterImage(const ImRect& fit_rect, const GPUTexture* textu
   return CenterImage(fit_rect, ImVec2(texture_size.x, texture_size.y));
 }
 
+void FullscreenUI::DrawEmptySlotTile(ImDrawList* dl, const ImRect& bb, float rounding, float alpha)
+{
+  dl->AddRectFilled(bb.Min, bb.Max, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.5f * alpha)), rounding);
+
+  // ImGui has no dashed lines, so the straight edges are dashed and the corners are left solid.
+  const u32 color = ImGui::GetColorU32(MulAlpha(UIStyle.BorderColor, alpha));
+  const float thickness = LayoutScale(1.0f);
+  const float dash = LayoutScale(5.0f);
+  const float gap = LayoutScale(4.0f);
+  const ImRect r(bb.Min + ImVec2(thickness * 0.5f, thickness * 0.5f),
+                 bb.Max - ImVec2(thickness * 0.5f, thickness * 0.5f));
+
+  const auto dashed_line = [&](const ImVec2& from, const ImVec2& to) {
+    const ImVec2 delta = to - from;
+    const float length = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+    const ImVec2 dir = delta / length;
+    for (float pos = 0.0f; pos < length; pos += dash + gap)
+      dl->AddLine(from + dir * pos, from + dir * std::min(pos + dash, length), color, thickness);
+  };
+  dashed_line(ImVec2(r.Min.x + rounding, r.Min.y), ImVec2(r.Max.x - rounding, r.Min.y));
+  dashed_line(ImVec2(r.Min.x + rounding, r.Max.y), ImVec2(r.Max.x - rounding, r.Max.y));
+  dashed_line(ImVec2(r.Min.x, r.Min.y + rounding), ImVec2(r.Min.x, r.Max.y - rounding));
+  dashed_line(ImVec2(r.Max.x, r.Min.y + rounding), ImVec2(r.Max.x, r.Max.y - rounding));
+
+  static constexpr float PI = 3.14159265358979f;
+  const std::array<std::pair<ImVec2, float>, 4> corners = {{
+    {ImVec2(r.Min.x + rounding, r.Min.y + rounding), PI},
+    {ImVec2(r.Max.x - rounding, r.Min.y + rounding), PI * 1.5f},
+    {ImVec2(r.Max.x - rounding, r.Max.y - rounding), 0.0f},
+    {ImVec2(r.Min.x + rounding, r.Max.y - rounding), PI * 0.5f},
+  }};
+  for (const auto& [center, start] : corners)
+  {
+    dl->PathArcTo(center, rounding, start, start + PI * 0.5f, 6);
+    dl->PathStroke(color, thickness);
+  }
+
+  RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.Min, bb.Max,
+                            ImGui::GetColorU32(MulAlpha(UIStyle.MutedTextColor, alpha)), ICON_FA_PLUS, nullptr,
+                            ImVec2(0.5f, 0.5f));
+}
+
 ImRect FullscreenUI::FitImage(const ImVec2& fit_size, const ImVec2& image_size)
 {
   ImRect rect;
