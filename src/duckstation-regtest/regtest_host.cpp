@@ -736,6 +736,17 @@ void RegTestHost::DumpSystemStateHashes()
              SHA256Digest::DigestToString(SHA256Digest::GetDigest(std::span<const u8>(g_bus.ram, g_bus.ram_size))));
     INFO_LOG("SPU RAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(SPU::GetRAM())));
   }
+  else
+  {
+    // Saving state reads back VRAM, but GPU dumps skip that above. Download it from the hardware renderers, and wait
+    // for the software renderer to finish drawing.
+    GPUBackendReadVRAMCommand* cmd = GPUBackend::NewReadVRAMCommand();
+    cmd->x = 0;
+    cmd->y = 0;
+    cmd->width = VRAM_WIDTH;
+    cmd->height = Truncate16(GPU::GetVRAMHeight());
+    GPUBackend::PushCommandAndSync(cmd, false);
+  }
 
   INFO_LOG("VRAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(
                               std::span<const u8>(reinterpret_cast<const u8*>(g_vram), VRAM_SIZE))));
