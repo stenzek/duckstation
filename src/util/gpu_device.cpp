@@ -1445,6 +1445,11 @@ GPUDriverType GPUDevice::GuessDriverType(u32 pci_vendor_id, std::string_view ven
     INFO_LOG("Broadcom GPU detected.");
     return MESA_CHECK ? GPUDriverType::BroadcomMesa : GPUDriverType::BroadcomProprietary;
   }
+  else if (ACHECK("SVGA3D"))
+  {
+    INFO_LOG("VMware SVGA3D GPU detected.");
+    return GPUDriverType::VMwareMesa;
+  }
   else
   {
     WARNING_LOG("Unknown GPU vendor with PCI ID 0x{:04X}, adapter='{}', vendor='{}'", pci_vendor_id, adapter_name,
@@ -1476,6 +1481,7 @@ void GPUDevice::SetDriverType(GPUDriverType type)
     NTENTRY(AppleProprietary),
     NTENTRY(AppleMesa),
     NTENTRY(DozenMesa),
+    NTENTRY(VMwareMesa),
 
     NTENTRY(ImaginationProprietary),
     NTENTRY(ImaginationMesa),

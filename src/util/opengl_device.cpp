@@ -490,6 +490,15 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   m_features.compute_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders) &&
                                (GLAD_GL_VERSION_4_3 || GLAD_GL_ES_VERSION_3_1) &&
                                (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage);
+
+  // Mesa's svga (VMware) driver loses writes to a render target after it has been sampled in a compute shader:
+  // later copies/draws/sampling see different backing surfaces. Fixed by SVGA_NO_SURFACE_VIEW=1, so it's a driver bug.
+  if (m_features.compute_shaders && m_driver_type == GPUDriverType::VMwareMesa)
+  {
+    WARNING_LOG("Disabling compute shaders due to broken SVGA3D driver.");
+    m_features.compute_shaders = false;
+  }
+
   if (m_features.compute_shaders)
   {
     GLint images = 0;

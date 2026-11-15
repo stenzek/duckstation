@@ -97,6 +97,7 @@ enum class GPUDriverType : u16
   AppleProprietary = 7,
   AppleMesa = 8,
   DozenMesa = 9,
+  VMwareMesa = 10,
 
   ImaginationProprietary = MobileFlag | 1,
   ImaginationMesa = MobileFlag | 2,
