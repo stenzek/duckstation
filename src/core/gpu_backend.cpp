@@ -52,7 +52,7 @@ GPUBackend::Stats GPUBackend::s_stats = {};
 
 ALIGN_TO_CACHE_LINE static CoreThreadState s_core_thread_state = {};
 
-GPUBackend::GPUBackend(bool enable_2mb_vram) : m_vram_height(enable_2mb_vram ? VRAM_MAX_HEIGHT : VRAM_HEIGHT)
+GPUBackend::GPUBackend(bool enable_2mb_vram) : m_vram_height(enable_2mb_vram ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT)
 {
   GPU_SW_Rasterizer::SelectImplementation();
   ResetStatistics();

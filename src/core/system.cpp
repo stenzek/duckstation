@@ -3122,8 +3122,8 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
 
 size_t System::GetMaxSaveStateSize(CPURAMSize ram_size, bool vram_2mb, bool enable_texture_cache)
 {
-  // Allow roughly 3MB of emulator overhead plus serialized RAM, and the upper half of VRAM if present.
-  return ((3 * 1024 * 1024) + Settings::GetCPURAMSizeBytes(ram_size) + (vram_2mb ? VRAM_SIZE : 0) +
+  // Allow roughly 2MB of emulator overhead plus serialized RAM and VRAM. Former includes SPU memory.
+  return ((2 * 1024 * 1024) + Settings::GetCPURAMSizeBytes(ram_size) + (vram_2mb ? VRAM_2MB_SIZE : VRAM_1MB_SIZE) +
           (enable_texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0));
 }
 
@@ -5562,7 +5562,7 @@ void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32
                                         bool gpu_texture_cache, u64* ram_usage, u64* vram_usage)
 {
   const u32 real_resolution_scale = std::max<u32>(resolution_scale, 1u);
-  const u32 vram_height = vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  const u32 vram_height = vram_2mb ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT;
   *ram_usage = GetMaxMemorySaveStateSize(ram_size, vram_2mb, false, gpu_texture_cache) * static_cast<u64>(num_saves);
   *vram_usage = use_software_renderer ? 0 :
                                         ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *

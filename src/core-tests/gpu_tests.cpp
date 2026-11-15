@@ -830,10 +830,10 @@ TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
 {
   std::fill_n(g_vram, std::size(g_vram), 0);
   g_vram[(1000 * VRAM_WIDTH) + 5] = 0x1234;
-  g_vram[((1000 - VRAM_HEIGHT) * VRAM_WIDTH) + 5] = 0x5678;
+  g_vram[((1000 - VRAM_1MB_HEIGHT) * VRAM_WIDTH) + 5] = 0x5678;
 
   // 1MB console: Y aliases the lower bank, with or without GP1(09h).
-  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_HEIGHT);
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_1MB_HEIGHT);
   EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
   GPU::WriteRegister(4, 0x09000001);
   EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
@@ -843,7 +843,7 @@ TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
   g_settings.gpu_enable_2mb_vram = true;
   GPU::Initialize();
   GPU::Reset(false);
-  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_MAX_HEIGHT);
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_2MB_HEIGHT);
   EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
   GPU::WriteRegister(4, 0x09000001);
   EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
@@ -921,7 +921,7 @@ TEST(GPURasterizer, V2RectangleFlipsWrapBeforeApplyingTextureWindow)
   for (u32 i = 0; i < 8; i++)
   {
     const u16 flip_bits = static_cast<u16>((i & 3u) << 12);
-    std::fill_n(g_vram, VRAM_WIDTH * VRAM_HEIGHT, 0);
+    std::fill_n(g_vram, VRAM_WIDTH * VRAM_1MB_HEIGHT, 0);
     for (u32 y = 0; y < 256; y++)
     {
       for (u32 x = 0; x < 256; x++)

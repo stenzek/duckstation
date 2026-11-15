@@ -838,7 +838,7 @@ static constexpr std::array<std::tuple<PhysicalMemoryAddress, PhysicalMemoryAddr
     {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE, false},
     {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, true},
     {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE, false},
-    {0, VRAM_SIZE, true},
+    {0, VRAM_2MB_SIZE, true},
     {0, SPU::RAM_SIZE, true},
   }};
 

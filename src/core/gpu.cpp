@@ -117,7 +117,7 @@ enum : u16
   PAL_OVERSCAN_VERTICAL_ACTIVE_END = 298,
 };
 
-static constexpr size_t MAX_BLIT_BUFFER_SIZE = ((VRAM_WIDTH * VRAM_HEIGHT) / 2); // blit buffer is in words
+static constexpr size_t MAX_BLIT_BUFFER_SIZE = ((VRAM_WIDTH * VRAM_1MB_HEIGHT) / 2); // blit buffer is in words
 static constexpr size_t MAX_POLYLINE_BUFFER_SIZE = 0x200000; // this is more of just a sanity check...
 
 } // namespace
@@ -428,13 +428,13 @@ ALWAYS_INLINE static bool IsUpperVRAMAddressable()
 /// Returns the number of VRAM lines that commands can currently address. Coordinates wrap at this height.
 ALWAYS_INLINE static u32 GetAddressableVRAMHeight()
 {
-  return IsUpperVRAMAddressable() ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  return IsUpperVRAMAddressable() ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT;
 }
 
 /// Returns the mask for wrapping Y coordinates at the addressable height.
 ALWAYS_INLINE static u32 GetAddressableVRAMHeightMask()
 {
-  return IsUpperVRAMAddressable() ? VRAM_MAX_HEIGHT_MASK : VRAM_HEIGHT_MASK;
+  return IsUpperVRAMAddressable() ? VRAM_2MB_HEIGHT_MASK : VRAM_1MB_HEIGHT_MASK;
 }
 
 } // namespace GPU
@@ -525,7 +525,7 @@ static_assert(s_GP0_command_table[0x02].num_words == 3 && s_GP0_command_table[0x
 #else
 #define VRAM_STORAGE_ALIGNMENT HOST_PAGE_SIZE
 #endif
-alignas(VRAM_STORAGE_ALIGNMENT) u16 g_vram[VRAM_MAX_SIZE / sizeof(u16)];
+alignas(VRAM_STORAGE_ALIGNMENT) u16 g_vram[VRAM_WIDTH * VRAM_2MB_HEIGHT];
 u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 void GPU::Initialize()
@@ -882,8 +882,8 @@ bool GPU::DoState(StateWrapper& sw)
 
   // Like the RAM size, the VRAM size of the state takes priority over the setting.
   u16 vram_height = Truncate16(GetVRAMHeight());
-  sw.DoEx(&vram_height, 101, static_cast<u16>(VRAM_HEIGHT));
-  if (vram_height != VRAM_HEIGHT && vram_height != VRAM_MAX_HEIGHT) [[unlikely]]
+  sw.DoEx(&vram_height, 101, static_cast<u16>(VRAM_1MB_HEIGHT));
+  if (vram_height != VRAM_1MB_HEIGHT && vram_height != VRAM_2MB_HEIGHT) [[unlikely]]
   {
     ERROR_LOG("Invalid VRAM height in save state: {}", vram_height);
     return false;
@@ -894,9 +894,9 @@ bool GPU::DoState(StateWrapper& sw)
   {
     if (vram_height != GetVRAMHeight())
     {
-      WARNING_LOG("Save state has {} MB VRAM, switching from {} MB.", vram_height / VRAM_HEIGHT,
-                  GetVRAMHeight() / VRAM_HEIGHT);
-      Set2MBVRAM(vram_height == VRAM_MAX_HEIGHT);
+      WARNING_LOG("Save state has {} MB VRAM, switching from {} MB.", vram_height / VRAM_1MB_HEIGHT,
+                  GetVRAMHeight() / VRAM_1MB_HEIGHT);
+      Set2MBVRAM(vram_height == VRAM_2MB_HEIGHT);
     }
 
     // Need to calculate the TC data size. But skip over VRAM first, we'll grab it later.
@@ -2796,7 +2796,7 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
 
 u32 GPU::GetVRAMHeight()
 {
-  return s_locals.enable_2mb_vram ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  return s_locals.enable_2mb_vram ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT;
 }
 
 bool GPU::Is2MBVRAMEnabled()
@@ -3845,7 +3845,7 @@ void GPU::HandleRenderRectangleCommand()
     {
       const u32 width_and_height = FifoPop();
       cmd->width = static_cast<u16>(width_and_height & VRAM_WIDTH_MASK);
-      cmd->height = static_cast<u16>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
+      cmd->height = static_cast<u16>((width_and_height >> 16) & VRAM_1MB_HEIGHT_MASK);
     }
     break;
   }

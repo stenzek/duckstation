@@ -115,7 +115,7 @@ private:
   static constexpr u32 INVALID_DRAW_MODE_TEXTURE_BITS = 0xFFFFu;
   static constexpr u32 INVALID_DRAW_MODE_BITS = 0xFFFFFFFFu;
 
-  static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_MAX_HEIGHT));
+  static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_2MB_HEIGHT));
 
   struct alignas(16) BatchVertex
   {

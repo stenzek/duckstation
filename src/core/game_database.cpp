@@ -1819,7 +1819,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
           entry->gpu_filter_framebuffer_uploads_minimum_width.set(
             entry->override_mask, std::clamp<u16>(width.value(), 1, static_cast<u16>(VRAM_WIDTH)));
           entry->gpu_filter_framebuffer_uploads_minimum_height.set(
-            entry->override_mask, std::clamp<u16>(height.value(), 1, static_cast<u16>(VRAM_HEIGHT)));
+            entry->override_mask, std::clamp<u16>(height.value(), 1, static_cast<u16>(VRAM_1MB_HEIGHT)));
           entry->traits[static_cast<size_t>(Trait::FilterFramebufferUploads)] = true;
         }
       }

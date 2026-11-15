@@ -39,7 +39,7 @@ protected:
   void SetUp() override
   {
     GPU_SW_Rasterizer::SelectImplementation();
-    GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_HEIGHT - 1};
+    GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_1MB_HEIGHT - 1};
 
     // Fill VRAM with noise, so that the mask bit shows up everywhere, with some transparent texels mixed in.
     XorShift128PlusPlus rng(0x1234);
@@ -55,7 +55,7 @@ protected:
     m_expected_vram = m_initial_vram;
   }
 
-  void TearDown() override { SetAddressableVRAMHeight(VRAM_HEIGHT); }
+  void TearDown() override { SetAddressableVRAMHeight(VRAM_1MB_HEIGHT); }
 
   static void SetAddressableVRAMHeight(u32 height)
   {
@@ -380,7 +380,7 @@ TEST_F(GPUSWRasterizer, DrawRectangle)
 
       GPU_SW_Rasterizer::g_drawing_area =
         tc.clip ? GPUDrawingArea{258, static_cast<u32>(y) + 2, 505, static_cast<u32>(y) + tc.height - 3} :
-                  GPUDrawingArea{DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_HEIGHT - 1};
+                  GPUDrawingArea{DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_1MB_HEIGHT - 1};
       DrawRectangle(cmd, modulation_mode);
       y = (y + tc.height + 1) % 500;
     }
@@ -443,7 +443,7 @@ TEST_F(GPUSWRasterizer, DrawQuad)
       GPU_SW_Rasterizer::g_drawing_area =
         tc.clip ? GPUDrawingArea{static_cast<u32>(tc.x) + 5, static_cast<u32>(y) + 2,
                                  static_cast<u32>(tc.x) + tc.width - 7, static_cast<u32>(y) + tc.height - 3} :
-                  GPUDrawingArea{DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_HEIGHT - 1};
+                  GPUDrawingArea{DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_1MB_HEIGHT - 1};
       DrawQuad(cmd, modulation_mode, tc.x, y, tc.width, tc.height,
                (0x80C040u + (static_cast<u32>(y) * 0x030507u)) & 0xFFFFFFu, tc.u, tc.v);
       y = (y + tc.height + 1) % 500;
@@ -507,7 +507,7 @@ TEST_F(GPUSWRasterizer, DrawTriangleClipping)
       std::min(static_cast<u32>(origin_x) + random(0, size), DRAW_AREA_RIGHT), origin_y + random(0, size)};
 
     std::memcpy(g_vram, m_initial_vram.data(), sizeof(g_vram));
-    GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_HEIGHT - 1};
+    GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 0, DRAW_AREA_RIGHT, VRAM_1MB_HEIGHT - 1};
     DrawTriangle(cmd, modulation_mode, vertices[0], vertices[1], vertices[2]);
     std::memcpy(unclipped_vram.data(), g_vram, sizeof(g_vram));
 
@@ -515,7 +515,7 @@ TEST_F(GPUSWRasterizer, DrawTriangleClipping)
     GPU_SW_Rasterizer::g_drawing_area = clipped_area;
     DrawTriangle(cmd, modulation_mode, vertices[0], vertices[1], vertices[2]);
 
-    for (u32 py = 0; py < VRAM_HEIGHT; py++)
+    for (u32 py = 0; py < VRAM_1MB_HEIGHT; py++)
     {
       for (u32 px = 0; px < VRAM_WIDTH; px++)
       {
@@ -538,7 +538,7 @@ TEST_F(GPUSWRasterizer, DrawTriangleClipping)
 TEST_F(GPUSWRasterizer, TransfersWrapAtAddressableHeight)
 {
   // With the upper bank enabled, fills, writes and copies cross Y=512 and wrap at 1024 instead.
-  SetAddressableVRAMHeight(VRAM_MAX_HEIGHT);
+  SetAddressableVRAMHeight(VRAM_2MB_HEIGHT);
 
   const u16 fill_color = VRAMRGBA8888ToRGBA5551(0x00406080u);
   for (u32 row = 0; row < 16; row++)
@@ -582,7 +582,7 @@ TEST_F(GPUSWRasterizer, TransfersWrapAtAddressableHeight)
 TEST_F(GPUSWRasterizer, DrawRectangleUpperBank)
 {
   // Texture pages and CLUTs in the upper bank, drawn to the upper bank.
-  SetAddressableVRAMHeight(VRAM_MAX_HEIGHT);
+  SetAddressableVRAMHeight(VRAM_2MB_HEIGHT);
   GPU_SW_Rasterizer::g_drawing_area = {DRAW_AREA_LEFT, 600, DRAW_AREA_RIGHT, 1000};
 
   s32 y = 590;

@@ -77,7 +77,7 @@ public:
 
   /// Returns the physical VRAM height, 1024 lines with 2MB VRAM. Fixed for the lifetime of the backend.
   ALWAYS_INLINE u32 GetVRAMHeight() const { return m_vram_height; }
-  ALWAYS_INLINE bool Is2MBVRAMEnabled() const { return (m_vram_height == VRAM_MAX_HEIGHT); }
+  ALWAYS_INLINE bool Is2MBVRAMEnabled() const { return (m_vram_height == VRAM_2MB_HEIGHT); }
   ALWAYS_INLINE u32 GetVRAMSizeInBytes() const { return VRAM_WIDTH * m_vram_height * sizeof(u16); }
 
   virtual bool Initialize(bool upload_vram, Error* error);

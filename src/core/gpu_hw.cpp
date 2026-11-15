@@ -1449,7 +1449,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   vssel.pgxp_depth = m_pgxp_depth_buffer;
   vssel.disable_color_perspective = disable_color_perspective;
   vssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
-  vssel.vram_2mb = (m_vram_height == VRAM_MAX_HEIGHT);
+  vssel.vram_2mb = (m_vram_height == VRAM_2MB_HEIGHT);
   for (u8 textured = 0; textured < 2; textured++)
   {
     vssel.textured = (textured != 0);
@@ -1501,7 +1501,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   fssel.disable_color_perspective = disable_color_perspective;
   fssel.write_mask_as_depth = m_write_mask_as_depth;
   fssel.disable_upscaled_direct_textures = disable_upscaled_direct_textures;
-  fssel.vram_2mb = (m_vram_height == VRAM_MAX_HEIGHT);
+  fssel.vram_2mb = (m_vram_height == VRAM_2MB_HEIGHT);
 
   for (u8 depth_test = 0; depth_test < 2; depth_test++)
   {

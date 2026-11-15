@@ -133,7 +133,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(const BatchVertexShaderS
   DefineMacro(ss, "DISABLE_UPSCALED_DIRECT_TEXTURES", sel.disable_upscaled_direct_textures);
   DefineMacro(ss, "PGXP_DEPTH", sel.pgxp_depth);
   DefineMacro(ss, "UPSCALED", sel.upscaled);
-  DefineMacro(ss, "VRAM_HEIGHT", static_cast<s32>(sel.vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT));
+  DefineMacro(ss, "VRAM_HEIGHT", static_cast<s32>(sel.vram_2mb ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT));
 
   WriteBatchUniformBuffer(ss);
 
@@ -2915,7 +2915,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(const BatchFragmentSha
   DefineMacro(ss, "UPSCALED", sel.upscaled);
 
   // Used for converting to normalized coordinates for sampling.
-  const u32 vram_height = sel.vram_2mb ? VRAM_MAX_HEIGHT : VRAM_HEIGHT;
+  const u32 vram_height = sel.vram_2mb ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT;
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << vram_height
      << "));\n";
   ss << "CONSTANT uint2 VRAM_COORD_MASK = uint2(" << (VRAM_WIDTH - 1) << "u, " << (vram_height - 1) << "u);\n";

@@ -148,5 +148,5 @@ void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_si
                        GSVector4i* out_display_rect, GSVector4i* out_draw_rect, GSVector4* out_crop_amount = nullptr);
 }; // namespace GPU
 
-extern u16 g_vram[VRAM_MAX_SIZE / sizeof(u16)];
+extern u16 g_vram[VRAM_WIDTH * VRAM_2MB_HEIGHT];
 extern u16 g_gpu_clut[GPU_CLUT_SIZE];

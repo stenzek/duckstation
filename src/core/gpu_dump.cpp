@@ -299,22 +299,24 @@ void GPUDump::Recorder::WriteHeaders(std::string_view serial)
 
 void GPUDump::Recorder::WriteCurrentVRAM()
 {
+  static_assert((VRAM_1MB_SIZE * 2) == VRAM_2MB_SIZE);
+
   // The upper half has to be enabled to upload it with 2MB VRAM. The actual GP1(09h) value is written afterwards.
-  const u32 num_banks = GPU::GetVRAMHeight() / VRAM_HEIGHT;
+  const u32 num_banks = GPU::GetVRAMHeight() / VRAM_1MB_HEIGHT;
   if (num_banks > 1)
     WriteGP1Command(GP1Command::SetVRAMSize, 1);
 
   for (u32 bank = 0; bank < num_banks; bank++)
   {
-    BeginPacket(PacketType::GPUPort0Data, sizeof(u32) * 2 + (VRAM_SIZE / sizeof(u32)));
+    BeginPacket(PacketType::GPUPort0Data, sizeof(u32) * 2 + (VRAM_1MB_SIZE / sizeof(u32)));
 
     // command, coords, size. size is written as zero, for 1024x512
     WriteWord(0xA0u << 24);
-    WriteWord((bank * VRAM_HEIGHT) << 16);
+    WriteWord((bank * VRAM_1MB_HEIGHT) << 16);
     WriteWord(0);
 
     // actual vram data
-    WriteBytes(&g_vram[bank * VRAM_HEIGHT * VRAM_WIDTH], VRAM_SIZE);
+    WriteBytes(&g_vram[bank * VRAM_1MB_HEIGHT * VRAM_WIDTH], VRAM_1MB_SIZE);
 
     EndPacket();
   }

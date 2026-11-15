@@ -355,7 +355,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
                     static_cast<u16>(VRAM_WIDTH));
   gpu_filter_framebuffer_uploads_minimum_height =
     std::clamp<u16>(si.GetSaturatedIntValue<u16>(GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1), 1,
-                    static_cast<u16>(VRAM_HEIGHT));
+                    static_cast<u16>(VRAM_1MB_HEIGHT));
   gpu_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "TextureFilter"))
                          .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_sprite_texture_filter = ParseTextureFilterName(si.GetStringViewValue(GPU_SECTION_NAME, "SpriteTextureFilter"))

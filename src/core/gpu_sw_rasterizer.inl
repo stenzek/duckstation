@@ -24,8 +24,8 @@ namespace GPU_SW_Rasterizer {
 #ifdef USE_VECTOR
 // #define CHECK_VECTOR
 #ifdef CHECK_VECTOR
-static u16 s_vram_backup[VRAM_WIDTH * VRAM_MAX_HEIGHT];
-static u16 s_new_vram[VRAM_WIDTH * VRAM_MAX_HEIGHT];
+static u16 s_vram_backup[VRAM_WIDTH * VRAM_2MB_HEIGHT];
+static u16 s_new_vram[VRAM_WIDTH * VRAM_2MB_HEIGHT];
 static u32 s_bad_counter = 0;
 #define BACKUP_VRAM()                                                                                                  \
   do                                                                                                                   \
@@ -98,7 +98,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       {
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 4)) % VRAM_WIDTH,
-                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
+                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_2MB_HEIGHT);
         const size_t palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
         texture_color = g_gpu_clut[palette_index];
       }
@@ -108,7 +108,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       {
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 2)) % VRAM_WIDTH,
-                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
+                   (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_2MB_HEIGHT);
         const size_t palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
         texture_color = g_gpu_clut[palette_index];
       }
@@ -117,7 +117,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
       default:
       {
         texture_color = GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x)) % VRAM_WIDTH,
-                                 (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_MAX_HEIGHT);
+                                 (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_2MB_HEIGHT);
       }
       break;
     }
@@ -235,7 +235,7 @@ template<TextureModulationMode modulation_mode, bool transparency_enable>
   if ((bg_color & mask_and) != 0)
     return;
 
-  DebugAssert(static_cast<u32>(x) < VRAM_WIDTH && static_cast<u32>(y) < VRAM_MAX_HEIGHT);
+  DebugAssert(static_cast<u32>(x) < VRAM_WIDTH && static_cast<u32>(y) < VRAM_2MB_HEIGHT);
   SetPixel(static_cast<u32>(x), static_cast<u32>(y), color | cmd->GetMaskOR());
 }
 

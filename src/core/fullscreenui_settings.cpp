@@ -5080,7 +5080,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         bsi, FSUI_ICONVSTR(ICON_FA_RULER_VERTICAL, "Minimum Framebuffer Upload Height"),
         FSUI_VSTR("Only filters framebuffer uploads at least this tall. Increase this value to avoid filtering texture "
                   "data."),
-        Settings::GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1, 1, VRAM_HEIGHT, 1, "%dpx",
+        Settings::GPU_SECTION_NAME, "FilterFramebufferUploadsMinimumHeight", 1, 1, VRAM_1MB_HEIGHT, 1, "%dpx",
         filter_framebuffer_upload_sizes_enabled);
     }
 
