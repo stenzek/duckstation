@@ -879,16 +879,17 @@ D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTextureForm
 
 D3D12DownloadTexture::~D3D12DownloadTexture()
 {
+  if (IsMapped())
+    D3D12DownloadTexture::Unmap();
+
   D3D12Device& dev = D3D12Device::GetInstance();
   if (dev.m_compute_output_buffer == this)
     dev.SetComputeOutputBuffer(nullptr);
   if (m_uav_descriptor)
     dev.DeferDescriptorDestruction(dev.GetDescriptorHeapManager(), &m_uav_descriptor);
-  if (IsMapped())
-    D3D12DownloadTexture::Unmap();
 
   if (m_allocation)
-    D3D12Device::GetInstance().DeferResourceDestruction(std::move(m_allocation), std::move(m_buffer));
+    dev.DeferResourceDestruction(std::move(m_allocation), std::move(m_buffer));
   else if (m_buffer)
     dev.DeferObjectDestruction(std::move(m_buffer));
 }
