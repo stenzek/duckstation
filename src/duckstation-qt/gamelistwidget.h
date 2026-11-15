@@ -169,7 +169,7 @@ private:
   std::array<QPixmap, static_cast<int>(GameList::EntryType::MaxCount)> m_type_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
 
-  QImage m_placeholder_image;
+  std::array<QImage, static_cast<int>(GameList::EntryType::MaxCount)> m_cover_badge_images;
   QPixmap m_loading_pixmap;
 
   QPixmap m_no_achievements_pixmap;
