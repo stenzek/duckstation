@@ -34,6 +34,7 @@
 #include "common/log.h"
 #include "common/threading.h"
 
+#include <QtGui/QTextDocument>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QScrollBar>
 
@@ -262,6 +263,8 @@ void SettingsWindow::connectUi()
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);
   m_ui.helpText->setOpenExternalLinks(true);
+  m_ui.helpText->document()->setDefaultStyleSheet(
+    QStringLiteral("hr { background-color: rgba(128, 128, 128, 40%); }")); // faint rule in light and dark themes
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsWindow::onCategoryCurrentRowChanged);
   connect(m_ui.close, &QPushButton::clicked, this, &SettingsWindow::close);
