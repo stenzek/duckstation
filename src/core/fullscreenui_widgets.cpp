@@ -155,12 +155,12 @@ static bool IsOnScreenKeyboardKeyEnabled(const OnScreenKeyboardKey& key);
 static constexpr std::array s_theme_display_names = {
   FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
   FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"),
-  FSUI_NSTR("Dark Ocean"), FSUI_NSTR("Dark Ruby"),   FSUI_NSTR("Purple Rain"),
+  FSUI_NSTR("Dark Ocean"), FSUI_NSTR("Dark Ruby"),   FSUI_NSTR("Purple Rain"), FSUI_NSTR("Midnight Amber"),
 };
 
 static constexpr std::array s_theme_names = {
   "",           "Dark",      "Light",     "AMOLED",   "CobaltSky",  "GreyMatter",
-  "GreenGiant", "PinkyPals", "DarkOcean", "DarkRuby", "PurpleRain",
+  "GreenGiant", "PinkyPals", "DarkOcean", "DarkRuby", "PurpleRain", "MidnightAmber",
 };
 
 // [0] = Mapping from Xbox button icons to PlayStation button icons.
@@ -8802,6 +8802,32 @@ void FullscreenUI::UpdateTheme()
     UIStyle.BlurBackgroundWeight = 0.25f;
     UIStyle.IsDarkTheme = false;
   }
+  else if (theme == "MidnightAmber")
+  {
+    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x212121, 0xff);
+    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0xeef1f7, 0xff);
+    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0x2a3452, 0xff);
+    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x27314e, 0xff);
+    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x111829, 0xf2);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x141b2d, 0xf2);
+    UIStyle.PopupHighlight = HEX_TO_IMVEC4(0x27314e, 0xff);
+    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x10172a, 0xff);
+    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x2a3452, 0xff);
+    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x05080f, 0xff);
+    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xeef1f7, 0xff);
+    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x6f7891, 0xff);
+    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0xffd27a, 0xff);
+    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xeef1f7, 0xff);
+    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x141b2d, 0xff);
+    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0xf2b33d, 0xff);
+    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x1c2540, 0xff);
+    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xeef1f7, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x141b2d, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xeef1f7, 0xff);
+    UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.BlurBackgroundWeight = 0.25f;
+    UIStyle.IsDarkTheme = true;
+  }
   else
   {
     // dark
@@ -8838,4 +8864,6 @@ void FullscreenUI::UpdateTheme()
   UIStyle.MutedTextColor = ModAlpha(UIStyle.BackgroundTextColor, 0.6f);
   UIStyle.AccentColor = UIStyle.SecondaryStrongColor;
   UIStyle.AccentTextColor = UIStyle.SecondaryTextColor;
+  if (theme == "MidnightAmber")
+    UIStyle.AccentTextColor = HEX_TO_IMVEC4(0x1a1305, 0xff);
 }

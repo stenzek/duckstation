@@ -358,7 +358,7 @@ const char* Host::GetDefaultFullscreenUITheme()
   static constexpr const std::pair<const char*, const char*> theme_mapping[] = {
     {"cobaltsky", "CobaltSky"}, {"greymatter", "GreyMatter"}, {"greengiant", "GreenGiant"},
     {"pinkypals", "PinkyPals"}, {"purplerain", "PurpleRain"}, {"darkocean", "DarkOcean"},
-    {"darkruby", "DarkRuby"},   {"AMOLED", "AMOLED"},
+    {"darkruby", "DarkRuby"},   {"AMOLED", "AMOLED"},         {"midnightamber", "MidnightAmber"},
   };
 
   const TinyString theme =

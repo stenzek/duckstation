@@ -536,6 +536,7 @@ TRANSLATE_NOOP("FullscreenUI", "Merge Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Merges multi-disc games into one item in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Message Location");
 TRANSLATE_NOOP("FullscreenUI", "Mid-Frame Scanout");
+TRANSLATE_NOOP("FullscreenUI", "Midnight Amber");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Minimum Framebuffer Upload Height");
 TRANSLATE_NOOP("FullscreenUI", "Minimum Framebuffer Upload Width");

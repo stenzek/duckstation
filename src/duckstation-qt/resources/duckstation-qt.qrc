@@ -477,6 +477,7 @@
 		<file>themes/darkruby.qss</file>
 		<file>themes/greengiant.qss</file>
 		<file>themes/greymatter.qss</file>
+		<file>themes/midnightamber.qss</file>
 		<file>themes/pinkypals.qss</file>
 		<file>themes/purplerain.qss</file>
 	</qresource>

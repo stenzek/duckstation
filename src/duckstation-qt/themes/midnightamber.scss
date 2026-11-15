@@ -1,0 +1,65 @@
+/*! SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> */
+/*! SPDX-License-Identifier: CC-BY-NC-ND-4.0 */
+//
+// midnightamber.scss - Deep navy theme with amber accents
+//
+
+@use 'template' with (
+  // --------------------------------------------------------------------------
+  // QPalette colors
+  // --------------------------------------------------------------------------
+  $palette-window:              #111829,
+  $palette-base:                #0a0f1c,
+  $palette-button:              #141b2d,
+  $palette-text:                #eef1f7,
+  $palette-highlight:           #34406a,
+  $palette-highlight-text:      #eef1f7,
+  $palette-disabled-text:       #6f7891,
+  $palette-placeholder-text:    #6f7891,
+  $palette-link:                #ffd27a,
+  $palette-alternate-base:      #10172a,
+  $palette-active-button:       #141b2d,
+  $palette-disabled-light:      #111829,
+
+  // --------------------------------------------------------------------------
+  // Stylesheet colors
+  // --------------------------------------------------------------------------
+
+  // Background hierarchy
+  $bg-disabled:       #0c1220,
+  $bg-menu:           #0e1424,
+  $bg-control:        #141b2d,
+  $bg-surface:        #1a2238,
+  $bg-hover:          #27314e,
+  $bg-active:         #34406a,
+  $bg-button-hover:   #2a3452,
+  $bg-pressed:        #3d4b7a,
+
+  // Borders
+  $border-color:      #2a3452,
+  $border-subtle:     #1c2540,
+
+  // Text
+  $text-color:        #eef1f7,
+  $text-active:       #eef1f7,
+  $text-disabled:     #6f7891,
+
+  // Accent
+  $accent-color:      #f2b33d,
+
+  // Slider handle
+  $slider-handle:         #f2b33d,
+  $slider-handle-hover:   #ffd27a,
+  $slider-handle-pressed: #d99a28,
+
+  // Checkbox icons
+  $checkbox-icon-style: "white",
+);
+
+// Amber line on the selected tab, on the edge facing the page.
+QTabBar::tab:top:selected {
+  border-bottom: 2px solid #f2b33d;
+}
+QTabBar::tab:bottom:selected {
+  border-top: 2px solid #f2b33d;
+}
