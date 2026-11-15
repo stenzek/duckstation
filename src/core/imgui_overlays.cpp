@@ -34,7 +34,6 @@
 #include "common/file_system.h"
 #include "common/gsvector.h"
 #include "common/log.h"
-#include "common/path.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
 #include "common/time_helpers.h"
@@ -933,7 +932,7 @@ struct ListEntry
 {
   std::string summary;
   std::string game_details; // only in global slots
-  std::string filename;
+  std::string date;         // empty for empty slots
   std::unique_ptr<GPUTexture> preview_texture;
   s32 slot;
   bool global;
@@ -958,8 +957,6 @@ namespace {
 
 struct State
 {
-  std::shared_ptr<GPUTexture> placeholder_texture;
-
   std::string load_legend;
   std::string save_legend;
   std::string prev_legend;
@@ -976,6 +973,9 @@ struct State
 
   ImAnimatedFloat scroll_animated;
   ImAnimatedFloat background_animated;
+  float preview_fade = 1.0f;
+  size_t preview_index = std::numeric_limits<size_t>::max();
+  size_t preview_prev_index = std::numeric_limits<size_t>::max();
 
   bool is_open = false;
   bool is_closing = false;
@@ -1009,9 +1009,6 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
     return;
   }
 
-  if (!s_state.placeholder_texture)
-    s_state.placeholder_texture = FullscreenUI::LoadTexture("no-save.png");
-
   s_state.is_open = true;
   s_state.is_closing = false;
   s_state.animation_time_remaining = FullscreenUI::UIStyle.Animations ? OPEN_ANIMATION_TIME : 0.0f;
@@ -1044,6 +1041,7 @@ void SaveStateSelectorUI::CloseImmediately()
   s_state.is_open = false;
   s_state.is_closing = false;
   s_state.animation_time_remaining = 0.0f;
+  s_state.preview_index = std::numeric_limits<size_t>::max();
   s_state.load_legend = {};
   s_state.save_legend = {};
   s_state.prev_legend = {};
@@ -1133,14 +1131,13 @@ void SaveStateSelectorUI::DestroyTextures()
 {
   // We don't cache the screenshots in memory, so just close completely and let it repopulate on open.
   CloseImmediately();
-  s_state.placeholder_texture.reset();
 }
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
-  auto format_legend_entry = [](SmallString binding, std::string_view caption) {
+  static constexpr auto format_legend_entry = [](SmallString binding, std::string_view caption) {
     InputManager::PrettifyInputBinding(binding, true, &FullscreenUI::GetControllerIconMapping);
-    return fmt::format("{} {}", binding, caption);
+    return fmt::format("{}  {}", binding, caption);
   };
 
   s_state.load_legend =
@@ -1226,9 +1223,8 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   if (global)
     li->game_details = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "{} ({})"), ssi->title, ssi->serial);
 
-  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Saved {}"),
-                            Host::FormatRelativeDateTime(ssi->timestamp, false, false));
-  li->filename = Path::GetFileName(path);
+  li->summary = Host::FormatRelativeDateTime(ssi->timestamp, false, true);
+  li->date = Host::FormatDateTime(ssi->timestamp, false);
   li->slot = slot;
   li->global = global;
 
@@ -1252,7 +1248,7 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const st
                                                          bool exists, Error&& error)
 {
   if (!exists)
-    li->summary = TRANSLATE_STR("SaveStateSelectorUI", "No save present in this slot.");
+    li->summary = TRANSLATE_STR("SaveStateSelectorUI", "Empty");
   else if (error.IsValid())
     li->summary = error.TakeDescription();
   else
@@ -1265,14 +1261,17 @@ void SaveStateSelectorUI::Draw()
 {
   using FullscreenUI::DarkerColor;
   using FullscreenUI::LayoutScale;
+  using FullscreenUI::ModAlpha;
+  using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
 
   static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
   static constexpr float BG_ANIMATION_TIME = 0.15f;
+  static constexpr float PREVIEW_FADE_TIME = 0.25f;
 
   const auto& io = ImGui::GetIO();
-  const float width = LayoutScale(640.0f);
-  const float height = LayoutScale(480.0f);
+  const float width = LayoutScale(880.0f);
+  const float height = LayoutScale(500.0f);
 
   float alpha = 1.0f;
   float position_offset = 0.0f;
@@ -1302,18 +1301,13 @@ void SaveStateSelectorUI::Draw()
     }
   }
 
-  const float padding_and_rounding = LayoutScale(18.0f);
+  const float padding = LayoutScale(20.0f);
+  const float window_rounding = LayoutScale(18.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, LayoutScale(14.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(8.0f, 4.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, LayoutScale(4.0f, 2.0f));
-  ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIStyle.PrimaryColor);
-  ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, window_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding, padding));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f + position_offset), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
@@ -1323,147 +1317,239 @@ void SaveStateSelectorUI::Draw()
                                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar,
                                     UIStyle.BlurMenuBackground))
   {
-    // Leave 2 lines for the legend
-    const ImGuiStyle& style = ImGui::GetStyle();
-    const float padding = LayoutScale(12.0f);
-    const float legend_margin =
-      UIStyle.MediumFontSize * 2.0f + padding + style.ItemSpacing.y * 2.0f + style.CellPadding.y * 2.0f;
+    ImFont* const font = UIStyle.Font;
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    const ImVec2 content_min = ImGui::GetCursorScreenPos();
+    const ImRect content(content_min, content_min + ImGui::GetContentRegionAvail());
+    const float spacing = LayoutScale(4.0f);
+    const u32 text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor);
+    const u32 muted_color = ImGui::GetColorU32(UIStyle.MutedTextColor);
+    const u32 accent_color = ImGui::GetColorU32(UIStyle.AccentColor);
 
-    ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
-                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
-                        ImGuiWindowFlags_NoBackground);
+    const s32 current_slot = GetCurrentSlot();
+    const bool current_slot_global = IsCurrentSlotGlobal();
+    size_t selected_index = 0;
+    u32 slots_in_use = 0;
+    for (size_t i = 0; i < s_state.slots.size(); i++)
     {
-      const s32 current_slot = GetCurrentSlot();
-      const bool current_slot_global = IsCurrentSlotGlobal();
-      const ImVec2 image_size = LayoutScale(128.0f, (128.0f / (4.0f / 3.0f)));
-      const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - style.ScrollbarSize);
-      const float item_height = std::floor(image_size.y + padding * 2.0f);
-      const float text_indent = image_size.x + padding + padding;
+      const ListEntry& entry = s_state.slots[i];
+      slots_in_use += BoolToUInt32(!entry.date.empty());
+      if (entry.slot == current_slot && entry.global == current_slot_global)
+        selected_index = i;
+    }
 
-      ImDrawList* const dl = ImGui::GetWindowDrawList();
-      dl->ChannelsSplit(2);
-      dl->ChannelsSetCurrent(1);
-
-      for (size_t i = 0; i < s_state.slots.size(); i++)
+    static constexpr auto slot_title = [](const ListEntry& entry) {
+      return TinyString::from_format(entry.global ? TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
+                                                    TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
+                                     entry.slot);
+    };
+    static constexpr auto draw_thumbnail = [](ImDrawList* dl, const ListEntry& entry, const ImRect& bb, float rounding,
+                                              bool backing, float alpha) {
+      if (!entry.preview_texture)
       {
-        const ListEntry& entry = s_state.slots[i];
-        const float y_start = item_height * static_cast<float>(i);
-
-        if (entry.slot == current_slot && entry.global == current_slot_global)
-        {
-          ImGui::SetCursorPosY(y_start);
-          ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-
-          const ImVec2 p_start(ImGui::GetCursorScreenPos());
-          const ImVec2 p_end(p_start.x + item_width, p_start.y + item_height);
-          const ImRect item_rect(p_start, p_end);
-          const ImRect& window_rect = ImGui::GetCurrentWindow()->ClipRect;
-          if (!window_rect.Contains(item_rect))
-          {
-            float scroll_target = ImGui::GetScrollY();
-            if (item_rect.Min.y < window_rect.Min.y)
-              scroll_target = (ImGui::GetScrollY() - (window_rect.Min.y - item_rect.Min.y));
-            else if (item_rect.Max.y > window_rect.Max.y)
-              scroll_target = (ImGui::GetScrollY() + (item_rect.Max.y - window_rect.Max.y));
-
-            if (scroll_target != s_state.scroll_animated.GetEndValue())
-              s_state.scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
-          }
-
-          if (s_state.scroll_animated.IsActive())
-            ImGui::SetScrollY(s_state.scroll_animated.UpdateAndGetValue());
-
-          if (s_state.background_animated.GetEndValue() != p_start.y)
-            s_state.background_animated.Start(s_state.background_animated.UpdateAndGetValue(), p_start.y,
-                                              BG_ANIMATION_TIME);
-
-          ImVec2 highlight_pos;
-          if (s_state.background_animated.IsActive())
-            highlight_pos = ImVec2(p_start.x, s_state.background_animated.UpdateAndGetValue());
-          else
-            highlight_pos = p_start;
-
-          dl->ChannelsSetCurrent(0);
-          dl->AddRectFilled(highlight_pos, ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
-                            ImGui::GetColorU32(UIStyle.PopupHighlight), padding_and_rounding);
-          dl->ChannelsSetCurrent(1);
-        }
-
-        if (GPUTexture* preview_texture =
-              entry.preview_texture ? entry.preview_texture.get() : s_state.placeholder_texture.get())
-        {
-          ImGui::SetCursorPosY(y_start + padding);
-          ImGui::SetCursorPosX(padding);
-          ImGui::Image(preview_texture, image_size);
-        }
-
-        ImGui::SetCursorPosY(y_start + padding);
-
-        ImGui::Indent(text_indent);
-
-        ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
-
-        ImGui::TextUnformatted(TinyString::from_format(entry.global ?
-                                                         TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
-                                                         TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
-                                                       entry.slot)
-                                 .c_str());
-        ImGui::PopFont();
-
-        ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.NormalFontWeight);
-        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
-
-        if (entry.global)
-          ImGui::TextUnformatted(IMSTR_START_END(entry.game_details));
-
-        ImGui::TextUnformatted(IMSTR_START_END(entry.summary));
-
-        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
-        ImGui::TextUnformatted(IMSTR_START_END(entry.filename));
-        ImGui::PopFont();
-        ImGui::PopStyleColor(2);
-
-        ImGui::Unindent(text_indent);
-        ImGui::SetCursorPosY(y_start);
-        ImGui::ItemSize(ImVec2(item_width, item_height));
-
-        if (entry.slot == current_slot && entry.global == current_slot_global)
-          ImGui::PopStyleColor();
+        FullscreenUI::DrawEmptySlotTile(dl, bb, rounding, alpha);
+        return;
       }
 
-      dl->ChannelsMerge();
+      if (backing)
+        dl->AddRectFilled(bb.Min, bb.Max, ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, alpha)), rounding);
+
+      const ImRect image_bb = FullscreenUI::CenterImage(bb, entry.preview_texture.get());
+      dl->AddImageRounded(entry.preview_texture.get(), image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f),
+                          ImVec2(1.0f, 1.0f), ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, alpha)), rounding);
+    };
+
+    // Header: title and slot usage.
+    const std::string_view title = TRANSLATE_SV("SaveStateSelectorUI", "Save States");
+    const ImRect header_bb(content.Min, ImVec2(content.Max.x, content.Min.y + UIStyle.MediumLargeFontSize));
+    const ImVec2 title_size =
+      font->CalcTextSizeA(UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f, IMSTR_START_END(title));
+    RenderShadowedTextClipped(dl, font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, header_bb.Min,
+                              header_bb.Max, text_color, title, &title_size);
+    RenderShadowedTextClipped(dl, font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
+                              ImVec2(header_bb.Min.x + title_size.x + padding, header_bb.Min.y), header_bb.Max,
+                              muted_color,
+                              SmallString::from_format(TRANSLATE_FS("SaveStateSelectorUI", "{} of {} slots in use"),
+                                                       slots_in_use, s_state.slots.size()),
+                              nullptr, ImVec2(1.0f, 0.5f));
+
+    // Footer: hotkey legend, with the auto-close countdown above it.
+    const ImRect footer_bb(ImVec2(content.Min.x, content.Max.y - UIStyle.MediumFontSize), content.Max);
+    const std::array<const std::string*, 4> legends = {&s_state.load_legend, &s_state.save_legend, &s_state.prev_legend,
+                                                       &s_state.next_legend};
+    std::array<ImVec2, 4> legend_sizes;
+    float legend_gap = footer_bb.GetWidth();
+    for (size_t i = 0; i < legends.size(); i++)
+    {
+      legend_sizes[i] = font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
+                                            IMSTR_START_END(*legends[i]));
+      legend_gap -= legend_sizes[i].x;
     }
-    ImGui::EndChild();
+    legend_gap = std::max(legend_gap / static_cast<float>(legends.size() - 1), padding);
+    float legend_x = footer_bb.Min.x;
+    for (size_t i = 0; i < legends.size(); i++)
+    {
+      RenderShadowedTextClipped(dl, font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight,
+                                ImVec2(legend_x, footer_bb.Min.y), footer_bb.Max, muted_color, *legends[i],
+                                &legend_sizes[i]);
+      legend_x += legend_sizes[i].x + legend_gap;
+    }
 
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding);
+    const float bar_height = LayoutScale(3.0f);
+    const ImRect bar_bb(ImVec2(content.Min.x, footer_bb.Min.y - padding - bar_height),
+                        ImVec2(content.Max.x, footer_bb.Min.y - padding));
+    const float remaining =
+      s_state.is_closing ? 0.0f : std::clamp(1.0f - (s_state.open_time / s_state.close_time), 0.0f, 1.0f);
+    dl->AddRectFilled(bar_bb.Min, bar_bb.Max, ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundLineColor, 0.1f)),
+                      bar_height);
+    dl->AddRectFilled(bar_bb.Min, ImVec2(bar_bb.Min.x + bar_bb.GetWidth() * remaining, bar_bb.Max.y),
+                      ImGui::GetColorU32(ModAlpha(UIStyle.AccentColor, 0.8f)), bar_height);
 
-    ImGui::BeginChild("##legend", ImVec2(0, 0), false,
+    // Body: large preview of the selected slot on the left, slot list on the right.
+    const ImRect body_bb(ImVec2(content.Min.x, header_bb.Max.y + padding),
+                         ImVec2(content.Max.x, bar_bb.Min.y - padding));
+    const float preview_width = LayoutScale(420.0f);
+    if (!s_state.slots.empty())
+    {
+      const ListEntry& entry = s_state.slots[selected_index];
+      const bool show_game = (entry.global && !entry.game_details.empty());
+      const float details_height = UIStyle.MediumLargeFontSize + spacing + UIStyle.MediumFontSize +
+                                   (show_game ? (spacing + UIStyle.MediumFontSize) : 0.0f);
+      const float image_height =
+        std::min(std::floor(preview_width * 0.75f), body_bb.GetHeight() - details_height - padding * 0.5f);
+      const ImRect image_bb(body_bb.Min, ImVec2(body_bb.Min.x + preview_width, body_bb.Min.y + image_height));
+
+      // Crossfade from the previously selected slot's preview.
+      if (selected_index != s_state.preview_index)
+      {
+        s_state.preview_prev_index = s_state.preview_index;
+        s_state.preview_index = selected_index;
+        s_state.preview_fade = (UIStyle.Animations && s_state.preview_prev_index < s_state.slots.size()) ? 0.0f : 1.0f;
+      }
+      s_state.preview_fade = std::min(s_state.preview_fade + io.DeltaTime / PREVIEW_FADE_TIME, 1.0f);
+
+      const float fade = s_state.preview_fade;
+      const float rounding = LayoutScale(10.0f);
+      const ListEntry* const prev_entry = (fade < 1.0f && s_state.preview_prev_index < s_state.slots.size()) ?
+                                            &s_state.slots[s_state.preview_prev_index] :
+                                            nullptr;
+      const bool new_has_image = static_cast<bool>(entry.preview_texture);
+      const bool old_has_image = (prev_entry && prev_entry->preview_texture);
+
+      // The letterbox backing is drawn once under both, and the old screenshot stays opaque under the new one, so
+      // two screenshots blend linearly. The empty tile is translucent, so fading to or from one fades both sides.
+      const float backing =
+        (new_has_image ? (prev_entry ? fade : 1.0f) : 0.0f) + (old_has_image ? (1.0f - fade) : 0.0f);
+      if (backing > 0.0f)
+        dl->AddRectFilled(image_bb.Min, image_bb.Max, ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, backing)), rounding);
+      if (prev_entry)
+      {
+        draw_thumbnail(dl, *prev_entry, image_bb, rounding, false,
+                       (old_has_image && new_has_image) ? 1.0f : (1.0f - fade));
+      }
+      draw_thumbnail(dl, entry, image_bb, rounding, false, prev_entry ? fade : 1.0f);
+
+      float text_y = image_bb.Max.y + padding * 0.5f;
+      RenderShadowedTextClipped(dl, font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight,
+                                ImVec2(image_bb.Min.x, text_y), ImVec2(image_bb.Max.x, body_bb.Max.y), text_color,
+                                slot_title(entry));
+      text_y += UIStyle.MediumLargeFontSize + spacing;
+      if (show_game)
+      {
+        RenderShadowedTextClipped(dl, font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
+                                  ImVec2(image_bb.Min.x, text_y), ImVec2(image_bb.Max.x, body_bb.Max.y), text_color,
+                                  entry.game_details);
+        text_y += UIStyle.MediumFontSize + spacing;
+      }
+      RenderShadowedTextClipped(
+        dl, font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, ImVec2(image_bb.Min.x, text_y),
+        ImVec2(image_bb.Max.x, body_bb.Max.y), muted_color,
+        (entry.date.empty() || entry.date == entry.summary) ?
+          SmallString(entry.summary) :
+          SmallString::from_format("{} " ICON_EMOJI_MIDDLE_DOT " {}", entry.summary, entry.date));
+    }
+
+    const ImRect list_bb(ImVec2(body_bb.Min.x + preview_width + padding, body_bb.Min.y), body_bb.Max);
+    ImGui::SetCursorScreenPos(list_bb.Min);
+    ImGui::BeginChild("##item_list", list_bb.GetSize(), false,
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
     {
-      ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGui::SetCursorPosX(padding);
-      if (ImGui::BeginTable("table", 2))
-      {
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_state.load_legend.c_str());
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_state.prev_legend.c_str());
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_state.save_legend.c_str());
-        ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_state.next_legend.c_str());
+      ImGuiWindow* const window = ImGui::GetCurrentWindow();
+      ImDrawList* const list_dl = window->DrawList;
+      const float row_padding = LayoutScale(8.0f);
+      const float row_rounding = LayoutScale(10.0f);
+      const ImVec2 thumb_size = LayoutScale(64.0f, 48.0f);
+      const float row_width = list_bb.GetWidth();
+      const float row_height = thumb_size.y + row_padding * 2.0f;
+      const ImVec2 origin = window->DC.CursorPos;
 
-        ImGui::EndTable();
+      // Keep the selected row in view and clear of the edge fade. Positions are relative to the list origin so
+      // scrolling doesn't restart the highlight animation.
+      const float selected_y = row_height * static_cast<float>(selected_index);
+      const float fade_margin = LayoutScale(FullscreenUI::LAYOUT_SCROLL_FADE_HEIGHT);
+      const ImRect selected_bb(ImVec2(origin.x, origin.y + selected_y - fade_margin),
+                               ImVec2(origin.x + row_width, origin.y + selected_y + row_height + fade_margin));
+      const ImRect& clip_rect = window->ClipRect;
+      if (!clip_rect.Contains(selected_bb))
+      {
+        float scroll_target = ImGui::GetScrollY();
+        if (selected_bb.Min.y < clip_rect.Min.y)
+          scroll_target = (ImGui::GetScrollY() - (clip_rect.Min.y - selected_bb.Min.y));
+        else if (selected_bb.Max.y > clip_rect.Max.y)
+          scroll_target = (ImGui::GetScrollY() + (selected_bb.Max.y - clip_rect.Max.y));
+        scroll_target = std::clamp(scroll_target, 0.0f, window->ScrollMax.y);
+
+        if (scroll_target != s_state.scroll_animated.GetEndValue())
+          s_state.scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
       }
-      ImGui::PopFont();
+      if (s_state.scroll_animated.IsActive())
+        ImGui::SetScrollY(s_state.scroll_animated.UpdateAndGetValue());
+
+      if (s_state.background_animated.GetEndValue() != selected_y)
+        s_state.background_animated.Start(s_state.background_animated.UpdateAndGetValue(), selected_y,
+                                          BG_ANIMATION_TIME);
+      FullscreenUI::BeginScrollFade();
+      const float highlight_y =
+        origin.y +
+        (s_state.background_animated.IsActive() ? s_state.background_animated.UpdateAndGetValue() : selected_y);
+      list_dl->AddRectFilled(ImVec2(origin.x, highlight_y), ImVec2(origin.x + row_width, highlight_y + row_height),
+                             ImGui::GetColorU32(UIStyle.PopupHighlight), row_rounding);
+      list_dl->AddRect(ImVec2(origin.x, highlight_y), ImVec2(origin.x + row_width, highlight_y + row_height),
+                       accent_color, row_rounding, LayoutScale(2.0f));
+
+      const float text_height = UIStyle.MediumFontSize + spacing + UIStyle.MediumSmallFontSize;
+      for (size_t i = 0; i < s_state.slots.size(); i++)
+      {
+        const ListEntry& entry = s_state.slots[i];
+        const ImVec2 row_min(origin.x, origin.y + row_height * static_cast<float>(i));
+        if (row_min.y > clip_rect.Max.y || (row_min.y + row_height) < clip_rect.Min.y)
+          continue;
+
+        const ImRect thumb_bb(row_min + ImVec2(row_padding, row_padding),
+                              row_min + ImVec2(row_padding, row_padding) + thumb_size);
+        draw_thumbnail(list_dl, entry, thumb_bb, LayoutScale(6.0f), true, 1.0f);
+
+        const bool selected = (i == selected_index);
+        const ImVec2 text_min(thumb_bb.Max.x + row_padding * 1.5f, row_min.y + (row_height - text_height) * 0.5f);
+        const ImVec2 text_max(row_min.x + row_width - row_padding, row_min.y + row_height);
+        RenderShadowedTextClipped(list_dl, font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_min, text_max,
+                                  selected ? ImGui::GetColorU32(UIStyle.PrimaryTextColor) : text_color,
+                                  slot_title(entry));
+        RenderShadowedTextClipped(list_dl, font, UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight,
+                                  ImVec2(text_min.x, text_min.y + UIStyle.MediumFontSize + spacing), text_max,
+                                  muted_color, entry.summary);
+      }
+
+      FullscreenUI::EndScrollFade();
+      ImGui::ItemSize(ImVec2(row_width, row_height * static_cast<float>(s_state.slots.size())));
     }
     ImGui::EndChild();
   }
   ImGui::End();
 
-  ImGui::PopStyleVar(7);
-  ImGui::PopStyleColor(4);
+  ImGui::PopStyleVar(4);
+  ImGui::PopStyleColor(1);
 
   // auto-close
   if (!s_state.is_closing)
