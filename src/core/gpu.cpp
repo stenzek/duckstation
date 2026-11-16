@@ -1043,7 +1043,10 @@ void GPU::UpdateDMARequest()
     {
       if (s_locals.blitter_state != BlitterState::Idle)
       {
-        dma_request = (s_locals.blitter_state != BlitterState::ReadingVRAM && s_locals.fifo.GetSize() < FIFO_SIZE);
+        // A pending VRAM read takes one slot.
+        dma_request = (s_locals.blitter_state == BlitterState::ReadingVRAM) ?
+                        ((s_locals.fifo.GetSize() + 1) < FIFO_MODE_FULL_WORDS) :
+                        (s_locals.fifo.GetSize() < FIFO_SIZE);
         break;
       }
 
