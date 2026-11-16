@@ -1011,8 +1011,9 @@ void GPU::UpdateDMARequest()
       break;
 
     case BlitterState::ReadingVRAM:
+      // Queued words wait for the read to finish, and the next block is only requested while none are queued.
       s_locals.GPUSTAT.ready_to_send_vram = true;
-      s_locals.GPUSTAT.ready_to_receive_dma = false;
+      s_locals.GPUSTAT.ready_to_receive_dma = s_locals.fifo.IsEmpty();
       break;
 
     case BlitterState::DrawingPolyLine:
@@ -1042,9 +1043,7 @@ void GPU::UpdateDMARequest()
     {
       if (s_locals.blitter_state != BlitterState::Idle)
       {
-        dma_request = (s_locals.blitter_state == BlitterState::DrawingPolyLine) ?
-                        (s_locals.fifo.GetSize() < FIFO_SIZE) :
-                        s_locals.GPUSTAT.ready_to_receive_dma;
+        dma_request = (s_locals.blitter_state != BlitterState::ReadingVRAM && s_locals.fifo.GetSize() < FIFO_SIZE);
         break;
       }
 
