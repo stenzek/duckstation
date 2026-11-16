@@ -990,12 +990,20 @@ void GPU::UpdateDMARequest()
   switch (s_locals.blitter_state)
   {
     case BlitterState::Idle:
+    {
       s_locals.GPUSTAT.ready_to_send_vram = false;
-      // In GP0 DMA mode, the next block is requested while at most one word is queued.
+
+      // In GP0 DMA mode, the next block is requested while at most one word is queued. Polygons and lines drop the
+      // request from their command word until all parameters are in, so a DMA block ending inside one hangs.
+      const u32 queued = s_locals.fifo.GetSize();
+      const u32 waiting_type =
+        (queued > 0 && queued < s_GP0_command_table[FifoPeek(0) >> 24].num_words) ? (FifoPeek(0) >> 29) : 0;
       s_locals.GPUSTAT.ready_to_receive_dma =
-        (s_locals.fifo.GetSize() <= BoolToUInt32(s_locals.GPUSTAT.dma_direction == GPUDMADirection::CPUtoGP0) ||
-         s_locals.fifo.GetSize() < s_locals.command_total_words);
-      break;
+        (waiting_type != 1 && waiting_type != 2) &&
+        (queued <= BoolToUInt32(s_locals.GPUSTAT.dma_direction == GPUDMADirection::CPUtoGP0) ||
+         queued < s_locals.command_total_words);
+    }
+    break;
 
     case BlitterState::WritingVRAM:
       s_locals.GPUSTAT.ready_to_send_vram = false;
