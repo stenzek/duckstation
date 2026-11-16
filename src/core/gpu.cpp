@@ -1016,8 +1016,9 @@ void GPU::UpdateDMARequest()
       break;
 
     case BlitterState::DrawingPolyLine:
+      // Held until the terminator, so a DMA block ending inside a poly-line hangs.
       s_locals.GPUSTAT.ready_to_send_vram = false;
-      s_locals.GPUSTAT.ready_to_receive_dma = (s_locals.fifo.GetSize() < FIFO_SIZE);
+      s_locals.GPUSTAT.ready_to_receive_dma = false;
       break;
 
     default:
@@ -1041,7 +1042,9 @@ void GPU::UpdateDMARequest()
     {
       if (s_locals.blitter_state != BlitterState::Idle)
       {
-        dma_request = s_locals.GPUSTAT.ready_to_receive_dma;
+        dma_request = (s_locals.blitter_state == BlitterState::DrawingPolyLine) ?
+                        (s_locals.fifo.GetSize() < FIFO_SIZE) :
+                        s_locals.GPUSTAT.ready_to_receive_dma;
         break;
       }
 
