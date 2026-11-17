@@ -177005,6 +177005,9 @@ SLPS-00712:
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - ForceFullBoot # Required for below.
+  settings:
+    cpuOverclockPercent: 95 # Avoids CD buffer overruns during GPU timeout recovery on boot.
   metadata:
     publisher: "Imagineer"
     developer: "Ron"

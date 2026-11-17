@@ -4184,16 +4184,6 @@ void GPU::HandleCopyRectangleCPUToVRAMCommand()
   const u32 coords = FifoPop();
   const u32 size = FifoPop();
 
-  // Tenga Seiha does a bunch of completely-invalid VRAM writes on boot, then expects GPU idle to be set.
-  // It's unclear what actually happens, I need to write another test, but for now, just skip these uploads.
-  // Not setting GPU idle during the write command breaks Doom, so that's not an option.
-  if (size == 0xFFFFFFFFu) [[unlikely]]
-  {
-    ERROR_LOG("Ignoring likely-invalid VRAM write to ({},{})", (coords & VRAM_WIDTH_MASK),
-              ((coords >> 16) & GetAddressableVRAMHeightMask()));
-    return;
-  }
-
   const u32 dst_x = coords & VRAM_WIDTH_MASK;
   const u32 dst_y = (coords >> 16) & GetAddressableVRAMHeightMask();
   const u32 copy_width = ReplaceZero(size & VRAM_WIDTH_MASK, 0x400);
