@@ -8213,7 +8213,7 @@ Los juegos de varias pistas en formato bin requieren una hoja de pistas (.cue) p
     </message>
     <message>
         <source>Fast Forward Volume:</source>
-        <translation>Volumen durante avance rápido:</translation>
+        <translation>Volumen en avance rápido:</translation>
     </message>
     <message>
         <source>Reset Fast Forward Volume</source>
@@ -9279,7 +9279,47 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     </message>
     <message>
         <source>Installed RAM:</source>
-        <translation>RAM instalada:</translation>
+        <translation>Memoria instalada:</translation>
+    </message>
+    <message>
+        <source>2MB RAM (Standard)</source>
+        <translation>2 MB de RAM (estándar)</translation>
+    </message>
+    <message>
+        <source>4MB RAM</source>
+        <translation>4 MB de RAM</translation>
+    </message>
+    <message>
+        <source>4MB RAM (Forced)</source>
+        <translation>4 MB de RAM (forzar)</translation>
+    </message>
+    <message>
+        <source>8MB RAM</source>
+        <translation>8 MB de RAM</translation>
+    </message>
+    <message>
+        <source>8MB RAM (Forced)</source>
+        <translation>8 MB de RAM (forzar)</translation>
+    </message>
+    <message>
+        <source>16MB RAM</source>
+        <translation>16 MB de RAM</translation>
+    </message>
+    <message>
+        <source>16MB RAM (Forced)</source>
+        <translation>16 MB de RAM (forzar)</translation>
+    </message>
+    <message>
+        <source>1MB VRAM (Standard)</source>
+        <translation>1 MB de VRAM (estándar)</translation>
+    </message>
+    <message>
+        <source>2MB VRAM</source>
+        <translation>2 MB de VRAM</translation>
+    </message>
+    <message>
+        <source>2MB VRAM (Forced)</source>
+        <translation>2 MB de VRAM (forzar)</translation>
     </message>
     <message>
         <source>Fast Boot</source>
@@ -9288,30 +9328,6 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <source>Fast Forward Boot</source>
         <translation>Acelerar arranque rápido</translation>
-    </message>
-    <message>
-        <source>2MB RAM (Retail Console)</source>
-        <translation>2 MB RAM (consola comercial)</translation>
-    </message>
-    <message>
-        <source>4MB RAM (Arcade Boards)</source>
-        <translation>4 MB RAM (placas arcade)</translation>
-    </message>
-    <message>
-        <source>8MB RAM (Dev Console)</source>
-        <translation>8 MB RAM (consola de desarrollo)</translation>
-    </message>
-    <message>
-        <source>16MB RAM (Mods/Arcade Boards)</source>
-        <translation>16 MB RAM (mods/placas arcade)</translation>
-    </message>
-    <message>
-        <source>1MB VRAM (Retail Console)</source>
-        <translation>1 MB VRAM (consola comercial)</translation>
-    </message>
-    <message>
-        <source>2MB VRAM (Arcade Boards)</source>
-        <translation>2 MB VRAM (placas arcade)</translation>
     </message>
     <message>
         <source>Fast Forward Memory Card Access</source>
@@ -9438,6 +9454,14 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <translation>Desactivado</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>Modifica la cantidad de RAM instalada en la consola emulada. Los juegos comerciales no utilizan memoria RAM adicional. Forzar la cantidad elegida asigna toda la RAM instalada independientemente de la configuración del juego. Es necesario para disponer de 16 MB al utilizar BIOS comerciales.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>Modifica la cantidad de VRAM instalada en la consola emulada. Los juegos comerciales no utilizan VRAM adicional. Forzar la cantidad elegida hace que el segundo banco de VRAM sea accesible, independientemente de si el juego lo habilita o no.</translation>
+    </message>
+    <message>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation>Al activar esta opción, se utilizará la velocidad de reloj seleccionada.</translation>
     </message>
@@ -9480,14 +9504,6 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <source>Installed VRAM</source>
         <translation>VRAM instalada</translation>
-    </message>
-    <message>
-        <source>1MB (Retail Console)</source>
-        <translation>1 MB (consola comercial)</translation>
-    </message>
-    <message>
-        <source>Installs a second 1MB bank of video RAM, as present on some arcade boards and development hardware. Retail games do not use it.</source>
-        <translation>Instala un segundo banco de 1 MB de memoria RAM de video, tal como aparece en algunas placas arcade y hardware de desarrollo. Los juegos comerciales no lo utilizan.</translation>
     </message>
     <message>
         <source>100%</source>
@@ -9535,15 +9551,7 @@ Esta advertencia se mostrará solo una vez.</translation>
     </message>
     <message>
         <source>Installed RAM</source>
-        <translation>RAM instalada:</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Modifica la cantidad de RAM instalada en la consola emulada. Para que la RAM ampliada sea utilizable, los juegos deben emplear un tamaño del área de memoria dinámica mayor (heap). Los títulos que dependen de la duplicación de memoria pueden fallar, por lo que solo debe usarse con mods compatibles.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>Mapea toda la RAM instalada, independientemente del tamaño configurado por la BIOS o el juego. Las BIOS comerciales solo mapean 8 MB, por lo que esto es necesario para que se puedan usar 16 MB sin una BIOS parcheada. Solo tiene efecto cuando hay RAM expandida instalada.</translation>
+        <translation>RAM instalada</translation>
     </message>
     <message>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
@@ -9568,10 +9576,6 @@ Esta advertencia se mostrará solo una vez.</translation>
     <message>
         <source>Frame Rate:</source>
         <translation>Vel. de fotogramas:</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Forzar mapeo completo de la RAM</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -12418,6 +12422,14 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
         <translation>Acerca a la cámara los polígonos que aparecen más tarde, en millonésimas de unidad de profundidad. Reduce el parpadeo de texturas superpuestas.</translation>
     </message>
     <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>Modifica la cantidad de RAM instalada en la consola emulada. Los juegos comerciales no utilizan memoria RAM adicional.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>Cambia la cantidad de memoria de video (VRAM) instalada en la consola emulada. Los juegos comerciales no utilizan VRAM adicional.</translation>
+    </message>
+    <message>
         <source>Clean Boot</source>
         <translation>Inicio limpio</translation>
     </message>
@@ -12978,6 +12990,10 @@ Error:</translation>
     <message>
         <source>Input Sources</source>
         <translation>Fuentes de entrada</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>VRAM instalada</translation>
     </message>
     <message>
         <source>Interface Settings</source>
@@ -13724,24 +13740,12 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>¿Desea continuar desde el guardado automático creado {}?</translation>
     </message>
     <message>
-        <source>Enable 2MB VRAM</source>
-        <translation>Habilitar 2 MB de VRAM</translation>
-    </message>
-    <message>
         <source>Filter Framebuffer Uploads</source>
         <translation>Filtrar subidas al búfer de pantalla</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Forzar mapeo completo de la RAM</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <translation>RAM instalada</translation>
-    </message>
-    <message>
-        <source>Installs a second 1MB bank of video RAM, as present on some arcade boards and development hardware. Retail games do not use it.</source>
-        <translation>Instala un segundo banco de 1 MB de memoria RAM de vídeo, tal como aparece en algunas placas arcade y hardware de desarrollo. Los juegos comerciales no lo utilizan.</translation>
     </message>
     <message>
         <source>Length: {}</source>
@@ -13758,10 +13762,6 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Login token generated {}</source>
         <translation>Token de inicio de sesión generado {}</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>Mapea toda la memoria RAM instalada, independientemente del tamaño configurado por la BIOS o el juego. Es necesario para disponer de 16 MB al utilizar BIOS originales.</translation>
     </message>
     <message>
         <source>Maximum: {}</source>
@@ -14906,10 +14906,6 @@ Esta acción no puede deshacerse.</translation>
     <message>
         <source>Change Title</source>
         <translation>Cambiar título</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>Modifica la cantidad de RAM instalada en la consola emulada.</translation>
     </message>
     <message>
         <source>Clear Web Cache</source>
@@ -16325,16 +16321,12 @@ con la mezcla de shaders.</translation>
         <translation>Tamaño de la RAM:</translation>
     </message>
     <message>
+        <source>VRAM Size:</source>
+        <translation>Tamaño de la VRAM:</translation>
+    </message>
+    <message>
         <source>Disable Widescreen Rendering</source>
         <translation>Desactivar el renderizado en pantalla panorámica</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Forzar mapeo completo de la RAM</translation>
-    </message>
-    <message>
-        <source>Enable 2MB VRAM</source>
-        <translation>Habilitar 2 MB de VRAM</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -24267,24 +24259,54 @@ Do you want to create this directory?</source>
         <translation>Ajena a PS1</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB (consola comercial)</translation>
+        <translation>2 MB (estándar)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB (placas arcade)</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB (consola de desarrollo)</translation>
+        <translation>4 MB (forzado)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB (mods/placas arcade)</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (forzado)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (forzado)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB (estándar)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB (forzado)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -25914,14 +25936,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Arranque rápido desactivado.</translation>
     </message>
     <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>La RAM ampliada está activada; esto podría ser incompatible con algunos juegos.</translation>
-    </message>
-    <message>
-        <source>2MB VRAM is enabled, this may be incompatible with some games.</source>
-        <translation>Se han habilitado 2 MB de VRAM, esto podría ser incompatible con algunos juegos.</translation>
-    </message>
-    <message>
         <source>capturing audio and video</source>
         <translation>capturando audio y video</translation>
     </message>
@@ -26170,6 +26184,14 @@ El nombre del archivo SBI debe coincidir con el nombre de la imagen del disco.</
     <message>
         <source>Reset SPU on game start disabled.</source>
         <translation>Restablecer la GPU en el inicio del juego está desactivado.</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>El tamaño de la RAM está establecido en {}; esto puede ser incompatible con algunos juegos.</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>El tamaño de la VRAM está establecido en {}; esto puede ser incompatible con algunos juegos.</translation>
     </message>
     <message>
         <source>Undo load state</source>
