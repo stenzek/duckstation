@@ -2061,7 +2061,7 @@ bool GPUTextureCache::TryMergeVRAMWrite(VRAMWrite* entry, const GSVector4i writt
   // Don't want to merge textures that are already completely uploaded...
   if (!LoopRectPagesWithEarlyExit(entry->active_rect, [entry](const u32 pn) {
         return ListIterateWithEarlyExit(s_state.pages[pn].sources, [entry](const Source* src) {
-          return (!src->active_uv_rect.eq(INVALID_RECT) || !src->active_uv_rect.rintersects(entry->active_rect));
+          return (src->active_uv_rect.eq(INVALID_RECT) || !src->active_uv_rect.rintersects(entry->active_rect));
         });
       }))
   {
