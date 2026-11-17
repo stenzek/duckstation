@@ -3269,7 +3269,7 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
     std::string replacement_path = Path::Combine(source_dir, replacement_filename);
     if (!FileSystem::FileExists(replacement_path.c_str()))
     {
-      ERROR_LOG("File '{}' for alias '{}' does not exist.", key, replacement_filename);
+      ERROR_LOG("File '{}' for alias '{}' does not exist.", replacement_filename, key);
       continue;
     }
 
