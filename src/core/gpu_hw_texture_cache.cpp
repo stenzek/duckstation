@@ -729,9 +729,6 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
       else
       {
         VRAMWrite* vrw = new VRAMWrite();
-        if (i == last_vram_write_index)
-          s_state.last_vram_write = vrw;
-
         DoStateVector(sw, &vrw->active_rect);
         DoStateVector(sw, &vrw->write_rect);
         sw.Do(&vrw->hash);
@@ -765,6 +762,9 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
           Invalidate();
           return false;
         }
+
+        if (i == last_vram_write_index)
+          s_state.last_vram_write = vrw;
 
         vrw->num_page_refs = 0;
         LoopRectPages(vrw->active_rect, [vrw](u32 pn) {
@@ -1988,10 +1988,10 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
       GSVector4i(entry->active_rect.left, entry->active_rect.top, written_rect.left, entry->active_rect.bottom);
     rects[1] =
       GSVector4i(written_rect.right, entry->active_rect.top, entry->active_rect.right, entry->active_rect.bottom);
-    rects[2] = GSVector4i(entry->active_rect.left + to_left, entry->active_rect.top + to_top,
-                          written_rect.right - to_right, entry->active_rect.top - to_top);
+    rects[2] = GSVector4i(entry->active_rect.left + to_left, entry->active_rect.top,
+                          entry->active_rect.right - to_right, entry->active_rect.top + to_top);
     rects[3] = GSVector4i(entry->active_rect.left + to_left, entry->active_rect.bottom - to_bottom,
-                          written_rect.right - to_right, entry->active_rect.bottom);
+                          entry->active_rect.right - to_right, entry->active_rect.bottom);
   }
 
   for (size_t i = 0; i < std::size(rects); i++)
@@ -2009,9 +2009,9 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
 
     // TODO: We probably want to share this...
     it->palette_records.reserve(entry->palette_records.size());
-    for (const VRAMWrite::PaletteRecord& prec : it->palette_records)
+    for (const VRAMWrite::PaletteRecord& prec : entry->palette_records)
     {
-      if (prec.rect.rintersects(splitr))
+      if (splitr.rcontains(prec.rect))
         it->palette_records.push_back(prec);
     }
 
@@ -2027,6 +2027,13 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
   for (u32 i = 0; i < entry->num_page_refs; i++)
     ListUnlink(entry->page_refs[i]);
 
+  // Records that span multiple fragments would be dumped with the new data later, so dump them before the overwrite.
+  std::erase_if(entry->palette_records, [&rects](const VRAMWrite::PaletteRecord& prec) {
+    return std::ranges::any_of(rects, [&prec](const GSVector4i& splitr) { return splitr.rcontains(prec.rect); });
+  });
+  DumpTexturesFromVRAMWrite(entry);
+
+  s_state.last_vram_write = (s_state.last_vram_write == entry) ? nullptr : s_state.last_vram_write;
   delete entry;
 }
 
@@ -2089,38 +2096,6 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
 
   SyncVRAMWritePaletteRecords(entry);
   MergeAdjacentVRAMWritePaletteRecords(entry);
-
-  if (entry->num_splits > 0 && !entry->palette_records.empty())
-  {
-    // Combine palette records with another write.
-    VRAMWrite* other_write = nullptr;
-    LoopRectPagesWithEarlyExit(entry->write_rect, [&entry, &other_write](u32 pn) {
-      PageEntry& pg = s_state.pages[pn];
-      ListIterateWithEarlyExit(pg.writes, [&entry, &other_write](VRAMWrite* cur) {
-        if (cur == entry || cur->hash != entry->hash)
-          return true;
-
-        other_write = cur;
-        return false;
-      });
-      return (other_write == nullptr);
-    });
-    if (other_write)
-    {
-      for (const VRAMWrite::PaletteRecord& prec : entry->palette_records)
-      {
-        const auto iter = std::find_if(other_write->palette_records.begin(), other_write->palette_records.end(),
-                                       [&prec](const VRAMWrite::PaletteRecord& it) { return it.key == prec.key; });
-        if (iter != other_write->palette_records.end())
-          iter->rect = iter->rect.runion(prec.rect);
-        else
-          other_write->palette_records.push_back(prec);
-      }
-
-      // No dumping from here!
-      entry->palette_records.clear();
-    }
-  }
 
   for (u32 i = 0; i < entry->num_page_refs; i++)
     ListUnlink(entry->page_refs[i]);
