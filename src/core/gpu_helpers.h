@@ -199,9 +199,10 @@ ALWAYS_INLINE constexpr bool TexturePageIsWrapping(GPUTextureMode mode, u32 pn)
   return ((VRAMPageStartX(pn) + TexturePageWidthForMode(mode)) > VRAM_WIDTH);
 }
 
-ALWAYS_INLINE constexpr u32 PalettePageCountForMode(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u32 PalettePageCount(GPUTexturePaletteReg reg, GPUTextureMode mode)
 {
-  return (mode == GPUTextureMode::Palette4Bit) ? 1 : 4;
+  // 8-bit palettes not aligned to a page boundary span 5 pages.
+  return (mode == GPUTextureMode::Palette4Bit) ? 1 : (((reg.GetXBase() % VRAM_PAGE_WIDTH) == 0) ? 4 : 5);
 }
 
 ALWAYS_INLINE constexpr u32 PalettePageNumber(GPUTexturePaletteReg reg)

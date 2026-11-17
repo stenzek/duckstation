@@ -1772,7 +1772,7 @@ GPUTextureCache::Source* GPUTextureCache::CreateSource(SourceKey key)
   if (key.mode < GPUTextureMode::Direct16Bit)
   {
     src->palette_rect = GetPaletteRect(key.palette, key.mode, true);
-    LoopXWrappedPages(PalettePageNumber(key.palette), PalettePageCountForMode(key.mode), add_page_ref_back);
+    LoopXWrappedPages(PalettePageNumber(key.palette), PalettePageCount(key.palette, key.mode), add_page_ref_back);
   }
 
   GL_INS_FMT("Appended new source {} to {} pages", SourceToString(src), src->num_page_refs);
