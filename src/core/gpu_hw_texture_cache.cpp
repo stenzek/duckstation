@@ -348,7 +348,8 @@ static void DumpTexture(TextureReplacementType type, u32 offset_x, u32 offset_y,
 static bool HasVRAMWriteTextureReplacements();
 static void GetVRAMWriteTextureReplacements(std::vector<TextureReplacementSubImage>& replacements,
                                             HashType vram_write_hash, HashType palette_hash, GPUTextureMode mode,
-                                            GPUTexturePaletteReg palette, const GSVector2i& offset_to_page);
+                                            GPUTexturePaletteReg palette, const GSVector2i& offset_to_page,
+                                            const GSVector4i& clip_rect);
 
 static bool HasTexturePageTextureReplacements();
 static void GetTexturePageTextureReplacements(std::vector<TextureReplacementSubImage>& replacements,
@@ -2968,7 +2969,7 @@ bool GPUTextureCache::HasVRAMWriteTextureReplacements()
 void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplacementSubImage>& replacements,
                                                       HashType vram_write_hash, HashType palette_hash,
                                                       GPUTextureMode mode, GPUTexturePaletteReg palette,
-                                                      const GSVector2i& offset_to_page)
+                                                      const GSVector2i& offset_to_page, const GSVector4i& clip_rect)
 {
   const TextureReplacementIndex index = {vram_write_hash, mode};
   const auto& [begin, end] = s_state.vram_write_texture_replacements.equal_range(index);
@@ -2986,29 +2987,17 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
     const GSVector4i rect_in_write_space = name.GetDestRect();
     const GSVector4i rect_in_page_space = rect_in_write_space.sub32(offset_to_page_v);
 
-    // zw <= 0 or zw >= TEXTURE_PAGE_SIZE
-    if (!(rect_in_page_space.le32(
-            GSVector4i::cxpr(std::numeric_limits<s32>::min(), std::numeric_limits<s32>::min(), 0, 0)) |
-          rect_in_page_space.ge32(GSVector4i::cxpr(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT,
-                                                   std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max())))
-           .allfalse())
-    {
-      // Rect is out of bounds.
+    // Only replace the part of the write that hasn't been overwritten. Especially for C16 textures, the write may span
+    // multiple pages. In this case, we need to offset the start of the page into the replacement texture.
+    const GSVector4i clamped_rect_in_page_space = rect_in_page_space.rintersect(clip_rect);
+    if (clamped_rect_in_page_space.rempty())
       continue;
-    }
 
     GPUTexture* texture = GetTextureReplacementGPUImage(it->second.second);
     if (!texture)
       continue;
 
-    // Especially for C16 textures, the write may span multiple pages. In this case, we need to offset
-    // the start of the page into the replacement texture.
-    const GSVector2i rect_in_page_space_start = rect_in_page_space.xy();
-    const GSVector2i src_offset =
-      GSVector2i::zero().sub32(rect_in_page_space_start) & rect_in_page_space_start.lt32(GSVector2i::zero());
-    const GSVector4i clamped_rect_in_page_space =
-      rect_in_page_space.add32(GSVector4i::xyxy(src_offset, GSVector2i::zero()))
-        .rintersect(GSVector4i::cxpr(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT));
+    const GSVector2i src_offset = clamped_rect_in_page_space.xy().sub32(rect_in_page_space.xy());
 
     // TODO: This fails in Wild Arms 2, writes that are wider than a page.
     DebugAssert(rect_in_page_space.width() == name.width && rect_in_page_space.height() == name.height);
@@ -3815,9 +3804,14 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     const GSVector4i page_rect = GetTextureRectWithoutWrap(key.page, key.mode);
     LoopRectPages(page_rect, [&key, &pal_hash, &subimages, &page_rect](u32 pn) {
       const PageEntry& page = s_state.pages[pn];
-      ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect](const VRAMWrite* vrw) {
+      ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect, pn](const VRAMWrite* vrw) {
         // TODO: Is this needed?
         if (!vrw->write_rect.rintersects(page_rect))
+          return;
+
+        // Writes spanning multiple pages are in each page's list, only apply them from the first.
+        const GSVector4i first_rect = vrw->active_rect.rintersect(page_rect);
+        if (VRAMCoordinateToPage(first_rect.left, first_rect.top) != pn)
           return;
 
         // Map VRAM write to the start of the page.
@@ -3826,7 +3820,11 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
         // Need to apply the texture shift on the X dimension, not Y. No SLLV on SSE4.. :(
         offset_to_page.x = ApplyTextureModeShift(key.mode, offset_to_page.x);
 
-        GetVRAMWriteTextureReplacements(subimages, vrw->hash, pal_hash, key.mode, key.palette, offset_to_page);
+        // Clip to the active part of the write, an older replacement shouldn't paint over a newer upload.
+        GSVector4i clip_rect = first_rect.sub32(page_rect.xyxy());
+        clip_rect = clip_rect.blend32<0x5>(ApplyTextureModeShift(key.mode, clip_rect));
+        GetVRAMWriteTextureReplacements(subimages, vrw->hash, pal_hash, key.mode, key.palette, offset_to_page,
+                                        clip_rect);
       });
     });
   }
