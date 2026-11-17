@@ -1085,6 +1085,10 @@ Esta sesión se iniciará en modo sin conexión.</translation>
         <translation>Muestra un menú de depuración con estadísticas adicionales y opciones rápidas.</translation>
     </message>
     <message>
+        <source>Current Cache Size: %1 (%2 in %3 objects)</source>
+        <translation>Tamaño actual de la caché: %1 (%2 en %3 objetos)</translation>
+    </message>
+    <message>
         <source>Log Timestamps</source>
         <translation>Registrar marcas de tiempo</translation>
     </message>
@@ -1183,10 +1187,6 @@ Esta sesión se iniciará en modo sin conexión.</translation>
     <message>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
         <translation>Al activar esta opción, DuckStation cargará la DLL de RAIntegration, la cual permite desarrollar logros.&lt;br&gt;Es necesario poner el archivo RA_Integration.dll en el mismo directorio donde esté el ejecutable de DuckStation.</translation>
-    </message>
-    <message>
-        <source>Current Cache Size: %1 MB (%2 MB in %3 objects)</source>
-        <translation>Tamaño actual de la caché: %1 MB (%2 MB en %3 objetos)</translation>
     </message>
     <message>
         <source>Test Achievements Offline Mode</source>
@@ -1421,7 +1421,7 @@ Esta sesión se iniciará en modo sin conexión.</translation>
     </message>
     <message>
         <source>Use Left Analog for D-Pad in Digital Mode</source>
-        <translation>Asociar el stick izquierdo a la cruceta en el modo digital</translation>
+        <translation>Asociar la palanca izquierda a la cruceta en el modo digital</translation>
     </message>
     <message>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
@@ -2171,11 +2171,6 @@ Asignación actual: %s</translation>
         <translation>Permite pulsar varios botones frontales del mando arrastrando el dedo por la pantalla.</translation>
     </message>
     <message>
-        <source>Other File…</source>
-        <comment>emulation_menu_change_media_other_file</comment>
-        <translation>Otro archivo…</translation>
-    </message>
-    <message>
         <source>Current</source>
         <comment>emulation_menu_change_media_current</comment>
         <translation>Actual</translation>
@@ -2204,11 +2199,6 @@ Asignación actual: %s</translation>
         <source>Safety Check Failed</source>
         <comment>emulation_menu_safety_check_title</comment>
         <translation>Fallo de comprobación de seguridad</translation>
-    </message>
-    <message>
-        <source>Token Generation Time</source>
-        <comment>settings_achievements_token_generation_time</comment>
-        <translation>Fecha de generación del token</translation>
     </message>
     <message>
         <source>Not Logged In.</source>
@@ -3323,16 +3313,6 @@ Asignación actual: %s</translation>
         <translation>Oculta los controles táctiles tras el tiempo especificado. Un retardo de cero no ocultará los controles.</translation>
     </message>
     <message>
-        <source>Bind To Right Stick</source>
-        <comment>settings_bind_to_right_stick</comment>
-        <translation>Asignar a la palanca derecha</translation>
-    </message>
-    <message>
-        <source>Binds touchscreen swipe gestures to the right stick, if any.</source>
-        <comment>settings_summary_bind_to_right_stick</comment>
-        <translation>Asigna los gestos de deslizamiento táctil a la palanca derecha, si la hay.</translation>
-    </message>
-    <message>
         <source>Advanced Settings</source>
         <comment>settings_advanced</comment>
         <translation>Configuración avanzada</translation>
@@ -3671,6 +3651,16 @@ Asignación actual: %s</translation>
         <source>Automatically saves the current state when closing a game or leaving the app.</source>
         <comment>settings_summary_save_state_on_exit</comment>
         <translation>Guarda automáticamente el estado actual al cerrar un juego o salir de la aplicación.</translation>
+    </message>
+    <message>
+        <source>Remember Pause Menu Page</source>
+        <comment>settings_remember_pause_menu_page</comment>
+        <translation>Recordar página del menú de pausa</translation>
+    </message>
+    <message>
+        <source>Reopens the pause menu on the page it was closed from, unless an action such as loading a state closed it.</source>
+        <comment>settings_summary_remember_pause_menu_page</comment>
+        <translation>Vuelve a abrir el menú de pausa en la página desde la que se cerró, a menos que una acción como la carga de un estado lo haya cerrado.</translation>
     </message>
     <message>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
@@ -4118,6 +4108,11 @@ Asignación actual: %s</translation>
         <translation>Superposiciones en pantalla</translation>
     </message>
     <message>
+        <source>Pause Menu</source>
+        <comment>settings_category_pause_menu</comment>
+        <translation>Menú de pausa</translation>
+    </message>
+    <message>
         <source>Game Display</source>
         <comment>settings_category_game_display</comment>
         <translation>Visualización del juego</translation>
@@ -4133,14 +4128,34 @@ Asignación actual: %s</translation>
         <translation>Renderizado avanzado</translation>
     </message>
     <message>
+        <source>From Game List</source>
+        <comment>emulation_menu_change_media_game_list</comment>
+        <translation>Desde la lista de juegos</translation>
+    </message>
+    <message>
+        <source>No discs were found in your game folders.</source>
+        <comment>emulation_menu_change_media_game_list_empty</comment>
+        <translation>No se encontraron discos en las carpetas de tus juegos.</translation>
+    </message>
+    <message>
+        <source>From File</source>
+        <comment>emulation_menu_change_media_other_file</comment>
+        <translation>Desde un archivo</translation>
+    </message>
+    <message>
         <source>Remove Disc</source>
         <comment>emulation_menu_change_media_remove_disc</comment>
         <translation>Extraer disco</translation>
     </message>
     <message>
+        <source>Discs</source>
+        <comment>emulation_menu_change_media_discs</comment>
+        <translation>Discos</translation>
+    </message>
+    <message>
         <source>WARNING: Your game is still saving to a memory card. Continuing now may result in data corruption. We recommend resuming your game and waiting 5 seconds, then trying again.</source>
         <comment>emulation_menu_safety_check_message</comment>
-        <translation>ADVERTENCIA: Tu partida se está guardando todavía en una tarjeta de memoria. Continuar en este momento podría provocar la corrupción de los datos. Te recomendamos reanudar la partida, esperar 5 segundos y volver a intentarlo.</translation>
+        <translation>ADVERTENCIA: Tu partida se está guardando todavía en una tarjeta de memoria. Continuar en este momento puede provocar la corrupción de los datos. Te recomendamos reanudar la partida, esperar 5 segundos y volver a intentarlo.</translation>
     </message>
     <message>
         <source>Do you want to close the game anyway?</source>
@@ -4397,6 +4412,11 @@ Asignación actual: %s</translation>
         <comment>settings_summary_rich_presence_monitor</comment>
         <translation>Siempre muestra la cadena de presencia enriquecida de RetroAchievements actual en el área de indicadores.</translation>
     </message>
+    <message>
+        <source>Logged in since %s</source>
+        <comment>settings_achievements_logged_in_since</comment>
+        <translation>Sesión iniciada desde %s</translation>
+    </message>
     <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
@@ -4457,6 +4477,26 @@ Asignación actual: %s</translation>
         <translation>Muestra el estado actual del mando del sistema en la esquina inferior izquierda de la imagen.</translation>
     </message>
     <message>
+        <source>Move Left</source>
+        <comment>touchscreen_controller_nudge_left</comment>
+        <translation>Mover a la izquierda</translation>
+    </message>
+    <message>
+        <source>Move Right</source>
+        <comment>touchscreen_controller_nudge_right</comment>
+        <translation>Mover a la derecha</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <comment>touchscreen_controller_nudge_up</comment>
+        <translation>Mover arriba</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>touchscreen_controller_nudge_down</comment>
+        <translation>Mover abajo</translation>
+    </message>
+    <message>
         <source>This will reset the position, size and visibility of every button in this view and orientation. Do you want to continue?</source>
         <comment>touchscreen_controller_reset_layout_confirm</comment>
         <translation>Esto restablecerá la posición, el tamaño y la visibilidad de todos los botones de esta vista y orientación. ¿Deseas continuar?</translation>
@@ -4470,6 +4510,41 @@ Asignación actual: %s</translation>
         <source>Change Multitap Mode</source>
         <comment>settings_change_multitap_mode</comment>
         <translation>Cambiar el modo Multitap</translation>
+    </message>
+    <message>
+        <source>Multitap: %1$s</source>
+        <comment>settings_multitap_mode_format</comment>
+        <translation>Multitap: %1$s</translation>
+    </message>
+    <message>
+        <source>Show Touchscreen Controller</source>
+        <comment>settings_show_touchscreen_controller</comment>
+        <translation>Mostrar mando con pantalla táctil</translation>
+    </message>
+    <message>
+        <source>Chooses when the touchscreen controller is shown.</source>
+        <comment>settings_summary_show_touchscreen_controller</comment>
+        <translation>Permite elegir cuándo se muestra el mando táctil.</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <comment>touchscreen_controller_show_never</comment>
+        <translation>Nunca</translation>
+    </message>
+    <message>
+        <source>Without a Controller</source>
+        <comment>touchscreen_controller_show_no_controller</comment>
+        <translation>Sin un mando</translation>
+    </message>
+    <message>
+        <source>Outside Big Picture</source>
+        <comment>touchscreen_controller_show_outside_big_picture</comment>
+        <translation>Fuera de Big Picture</translation>
+    </message>
+    <message>
+        <source>Always</source>
+        <comment>touchscreen_controller_show_always</comment>
+        <translation>Siempre</translation>
     </message>
     <message>
         <source>Game Specific Settings</source>
@@ -4950,6 +5025,26 @@ Asignación actual: %s</translation>
         <source>Selects where the screen will be rendered in portrait mode.</source>
         <comment>settings_summary_display_alignment_portrait</comment>
         <translation>Selecciona dónde se dibuja la pantalla en modo vertical.</translation>
+    </message>
+    <message>
+        <source>Swipe for Right Stick</source>
+        <comment>settings_bind_to_right_stick</comment>
+        <translation>Desliza para la palanca derecha</translation>
+    </message>
+    <message>
+        <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
+        <comment>settings_summary_bind_to_right_stick</comment>
+        <translation>Al deslizar el dedo fuera de los controles se mueve la palanca derecha. Con la palanca izquierda flotante activada, solo lo hace la mitad derecha de la pantalla.</translation>
+    </message>
+    <message>
+        <source>Floating Left Stick</source>
+        <comment>settings_floating_left_stick</comment>
+        <translation>Palanca izquierda flotante</translation>
+    </message>
+    <message>
+        <source>Touching the left half of the screen places the left stick under your finger, instead of at a fixed position.</source>
+        <comment>settings_summary_floating_left_stick</comment>
+        <translation>Al tocar la mitad izquierda de la pantalla, la palanca izquierda se sitúa bajo tu dedo, en lugar de permanecer en una posición fija.</translation>
     </message>
     <message>
         <source>Use Debug GPU Device</source>
@@ -5821,45 +5916,9 @@ Los trucos de la base de datos seguirán cargándose y estando presentes salvo q
         <translation>¿Seguro que deseas borrar la imagen de carátula de este juego? No se podrá recuperar.</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <comment>game_list_download_covers_description</comment>
-        <translation>DuckStation puede descargar automáticamente las carátulas de aquellos juegos que no tengan una asociada. No alojamos ninguna imagen de carátulas; el usuario debe proporcionar su propia fuente de imágenes.</translation>
-    </message>
-    <message>
-        <source>Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images.</source>
-        <comment>game_list_download_covers_copyright</comment>
-        <translation>Las carátulas de los juegos podrían estar sujetas a derechos de autor según la jurisdicción en la que te encuentres. Solo se te autoriza a utilizar esta herramienta con tus servidores e imágenes propias.</translation>
-    </message>
-    <message>
-        <source>In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:
-
-${title}: Title of the game.
-${savetitle}: Save title for the game, including the region suffix.
-${localizedtitle}: Localized title for the game in its native language.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.
-
-Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <comment>game_list_download_covers_hint</comment>
-        <translation>En el cuadro de abajo, especifica las URL desde las que se descargarán las carátulas, con una plantilla de URL por línea. Están disponibles las siguientes variables:
-
-${title}: Título del juego.
-${savetitle}: Título de guardado del juego, incluido el sufijo de región.
-${localizedtitle}: Título localizado del juego en su idioma original.
-${filetitle}: Nombre del archivo del juego, sin la extensión.
-${serial}: Número de serie del juego.
-
-Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
-    </message>
-    <message>
         <source>URL does not contain ${title}, ${savetitle}, ${localizedtitle}, ${filetitle}, or ${serial}.</source>
         <comment>game_list_download_covers_invalid_url</comment>
         <translation>La URL no contiene ${title}, ${savetitle}, ${localizedtitle}, ${filetitle} ni ${serial}.</translation>
-    </message>
-    <message>
-        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can enable &quot;Use Serial File Names&quot; below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
-        <comment>game_list_download_covers_use_serial_description</comment>
-        <translation>Por defecto, las carátulas descargadas se guardarán con el título del juego. Si no deseas este comportamiento, puedes activar «Usar números de serie como nombres de archivo» abajo. Usar números de serie en lugar de los títulos de los juegos evitará conflictos cuando se utilicen varias regiones del mismo juego.</translation>
     </message>
     <message>
         <source>Use Serial File Names</source>
@@ -6265,6 +6324,44 @@ Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
         <translation>Logros</translation>
     </message>
     <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
+        <comment>game_list_download_covers_description</comment>
+        <translation>DuckStation puede descargar automáticamente las carátulas de los juegos que actualmente no tienen un conjunto de carátulas. Dependiendo de tu jurisdicción, las portadas de los juegos podrían estar protegidas por derechos de autor. Solo tienes autorización para utilizar esta herramienta con tus propios servidores e imágenes; nosotros no proporcionamos nada.</translation>
+    </message>
+    <message>
+        <source>Cover URLs</source>
+        <comment>game_list_download_covers_urls_category</comment>
+        <translation>URL de carátulas</translation>
+    </message>
+    <message>
+        <source>Specify the URLs to download covers from, with one template URL per line. Tap a variable below to insert it at the cursor.</source>
+        <comment>game_list_download_covers_instructions</comment>
+        <translation>Indica las URL desde las que descargar las portadas, colocando una URL de plantilla por línea. Toca una variable a continuación para insertarla en la posición del cursor.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <comment>game_list_download_covers_example</comment>
+        <translation>Ejemplo: https://www.ejemplo-de-un-dominio-ficticio.com/caratulas/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${savetitle}: Save title for the game, including the region suffix.
+${localizedtitle}: Localized title for the game in its native language.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <comment>game_list_download_covers_variables</comment>
+        <translation>${title}: Título del juego.
+${savetitle}: Título de guardado del juego, incluyendo el sufijo de región.
+${localizedtitle}: Título localizado del juego en su idioma original.
+${filetitle}: Componente de nombre del archivo del juego.
+${serial}: Número de serie del juego.</translation>
+    </message>
+    <message>
+        <source>Save covers using the game&apos;s serial instead of its title, which prevents conflicts when multiple regions of the same game are used.</source>
+        <comment>game_list_download_covers_use_serial_description</comment>
+        <translation>Guardar carátulas usando el número de serie del juego en lugar de su título, lo que evita conflictos cuando se utilizan varias regiones del mismo juego.</translation>
+    </message>
+    <message>
         <source>Determines the emulated hardware type.</source>
         <comment>settings_summary_region</comment>
         <translation>Determina el tipo de hardware emulado.</translation>
@@ -6328,6 +6425,26 @@ Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <comment>settings_summary_enable_8mb_ram</comment>
         <translation>Habilita 6 MB adicionales de RAM para dar 2+6=8 MB, habituales en consolas de desarrollo.</translation>
+    </message>
+    <message>
+        <source>Installed RAM</source>
+        <comment>settings_ram_size</comment>
+        <translation>RAM instalada</translation>
+    </message>
+    <message>
+        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Ampliar la memoria RAM puede causar problemas en los juegos, así que utilízalo solo con mods compatibles.</translation>
+    </message>
+    <message>
+        <source>Force Full RAM Mapping</source>
+        <comment>settings_force_full_ram_mapping</comment>
+        <translation>Forzar mapeo completo de la RAM</translation>
+    </message>
+    <message>
+        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
+        <comment>settings_summary_force_full_ram_mapping</comment>
+        <translation>Mapea toda la memoria RAM instalada, independientemente de la configuración de la BIOS o del juego.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -6417,6 +6534,116 @@ Ejemplo: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</transla
         <source>Folders</source>
         <comment>settings_tab_folders</comment>
         <translation>Carpetas</translation>
+    </message>
+    <message>
+        <source>Language, theme, game list and behavior</source>
+        <comment>settings_tab_interface_summary</comment>
+        <translation>Idioma, tema, lista de juegos y comportamiento</translation>
+    </message>
+    <message>
+        <source>On-Screen Display</source>
+        <comment>settings_tab_osd</comment>
+        <translation>Mensajes en pantalla</translation>
+    </message>
+    <message>
+        <source>Theme, fonts, messages and statistics overlays</source>
+        <comment>settings_tab_osd_summary</comment>
+        <translation>Superposiciones de temas, fuentes, mensajes y estadísticas</translation>
+    </message>
+    <message>
+        <source>Region, CPU and CD-ROM</source>
+        <comment>settings_tab_console_summary</comment>
+        <translation>Región, CPU y CD-ROM</translation>
+    </message>
+    <message>
+        <source>Speed, latency, rewind and save states</source>
+        <comment>settings_tab_emulation_summary</comment>
+        <translation>Velocidad, latencia, rebobinado y estados de guardado</translation>
+    </message>
+    <message>
+        <source>Renderer, resolution, display and screenshots</source>
+        <comment>settings_tab_video_summary</comment>
+        <translation>Motor de renderizado, resolución, pantalla y capturas de pantalla</translation>
+    </message>
+    <message>
+        <source>Volume and sound output configuration</source>
+        <comment>settings_tab_audio_summary</comment>
+        <translation>Configuración del volumen y de la salida de sonido</translation>
+    </message>
+    <message>
+        <source>Shader chains and border overlays</source>
+        <comment>settings_tab_post_processing_summary</comment>
+        <translation>Cadenas de sombreadores y superposiciones de bordes</translation>
+    </message>
+    <message>
+        <source>RetroAchievements account and notifications</source>
+        <comment>settings_tab_achievements_summary</comment>
+        <translation>Cuenta y notificaciones de RetroAchievements</translation>
+    </message>
+    <message>
+        <source>Memory card types and locations</source>
+        <comment>settings_tab_memory_cards_summary</comment>
+        <translation>Tipos y ubicaciones de Memory card</translation>
+    </message>
+    <message>
+        <source>BIOS image selection and installation</source>
+        <comment>settings_tab_bios_summary</comment>
+        <translation>Selección e instalación de la imagen de la BIOS</translation>
+    </message>
+    <message>
+        <source>Locations for data storage</source>
+        <comment>settings_tab_folders_summary</comment>
+        <translation>Ubicaciones para el almacenamiento de datos</translation>
+    </message>
+    <message>
+        <source>Logging, debugging and low-level options</source>
+        <comment>settings_tab_advanced_summary</comment>
+        <translation>Registro, depuración y opciones de bajo nivel</translation>
+    </message>
+    <message>
+        <source>Game details and verification</source>
+        <comment>settings_tab_information_summary</comment>
+        <translation>Detalles del juego y verificación</translation>
+    </message>
+    <message>
+        <source>Fixes and enhancements for this game</source>
+        <comment>settings_tab_patches_summary</comment>
+        <translation>Correcciones y mejoras para este juego</translation>
+    </message>
+    <message>
+        <source>Cheat codes for this game</source>
+        <comment>settings_tab_cheats_summary</comment>
+        <translation>Códigos de trucos para este juego</translation>
+    </message>
+    <message>
+        <source>On-screen controller layout and appearance</source>
+        <comment>controller_settings_tab_touchscreen_summary</comment>
+        <translation>Disposición y aspecto de los controles en pantalla</translation>
+    </message>
+    <message>
+        <source>Controller type and bindings</source>
+        <comment>controller_settings_tab_port_summary</comment>
+        <translation>Tipo de mando y asignación de botones</translation>
+    </message>
+    <message>
+        <source>Shortcuts for emulator actions</source>
+        <comment>controller_settings_tab_hotkeys_summary</comment>
+        <translation>Atajos para acciones del emulador</translation>
+    </message>
+    <message>
+        <source>Folders which are scanned for games</source>
+        <comment>game_folders_tab_folders_summary</comment>
+        <translation>Carpetas que se escanean en busca de juegos</translation>
+    </message>
+    <message>
+        <source>Paths left out of the game list</source>
+        <comment>game_folders_tab_excluded_summary</comment>
+        <translation>Rutas excluidas de la lista de juegos</translation>
+    </message>
+    <message>
+        <source>Games stored in the app&apos;s own storage</source>
+        <comment>game_folders_tab_local_storage_summary</comment>
+        <translation>Juegos almacenados en el propio almacenamiento de la aplicación</translation>
     </message>
     <message>
         <source>Install BIOS</source>
@@ -6624,7 +6851,7 @@ Would you like to import one now?</source>
     <message>
         <source>PGXP Depth Buffer</source>
         <comment>settings_pgxp_depth_buffer</comment>
-        <translation>Búfer de profundidad (PGXP)</translation>
+        <translation>Búfer de profundidad de PGXP</translation>
     </message>
     <message>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
@@ -6828,7 +7055,7 @@ Would you like to import one now?</source>
     <message>
         <source>CPU Mode</source>
         <comment>settings_pgxp_cpu</comment>
-        <translation>Modo de CPU</translation>
+        <translation>Modo CPU</translation>
     </message>
     <message>
         <source>Culling Correction</source>
@@ -8325,10 +8552,6 @@ Puedes actualizar DuckStation de forma manual redescargando la última versión.
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>%1 MB</source>
-        <translation>%1 MB</translation>
-    </message>
-    <message>
         <source>Updater Warning</source>
         <translation>Advertencia del actualizador</translation>
     </message>
@@ -9067,6 +9290,30 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <translation>Acelerar arranque rápido</translation>
     </message>
     <message>
+        <source>2MB RAM (Retail Console)</source>
+        <translation>2 MB RAM (consola comercial)</translation>
+    </message>
+    <message>
+        <source>4MB RAM (Arcade Boards)</source>
+        <translation>4 MB RAM (placas arcade)</translation>
+    </message>
+    <message>
+        <source>8MB RAM (Dev Console)</source>
+        <translation>8 MB RAM (consola de desarrollo)</translation>
+    </message>
+    <message>
+        <source>16MB RAM (Mods/Arcade Boards)</source>
+        <translation>16 MB RAM (mods/placas arcade)</translation>
+    </message>
+    <message>
+        <source>1MB VRAM (Retail Console)</source>
+        <translation>1 MB VRAM (consola comercial)</translation>
+    </message>
+    <message>
+        <source>2MB VRAM (Arcade Boards)</source>
+        <translation>2 MB VRAM (placas arcade)</translation>
+    </message>
+    <message>
         <source>Fast Forward Memory Card Access</source>
         <translation>Acelerar acceso a Memory Card</translation>
     </message>
@@ -9151,12 +9398,24 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <translation>6x</translation>
     </message>
     <message>
-        <source>Apply Image Patches</source>
-        <translation>Aplicar parches de imagen</translation>
+        <source>Physical Drive Speed:</source>
+        <translation>Velocidad de la unidad física:</translation>
     </message>
     <message>
-        <source>Ignore Drive Subcode</source>
-        <translation>Ignorar subcódigo de la unidad de disco</translation>
+        <source>Don&apos;t Change</source>
+        <translation>No cambiar</translation>
+    </message>
+    <message>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <source>Ignore Physical Drive Subcode</source>
+        <translation>Ignorar el subcódigo de la unidad física</translation>
+    </message>
+    <message>
+        <source>Apply Image Patches</source>
+        <translation>Aplicar parches de imagen</translation>
     </message>
     <message>
         <source>Region</source>
@@ -9219,6 +9478,18 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
         <translation>Avanza rápidamente a través del acceso de Memory Cards, tanto cargas como guardados. Puede reducir tiempos de espera en juegos que requieran acceso frecuentemente.</translation>
     </message>
     <message>
+        <source>Installed VRAM</source>
+        <translation>VRAM instalada</translation>
+    </message>
+    <message>
+        <source>1MB (Retail Console)</source>
+        <translation>1 MB (consola comercial)</translation>
+    </message>
+    <message>
+        <source>Installs a second 1MB bank of video RAM, as present on some arcade boards and development hardware. Retail games do not use it.</source>
+        <translation>Instala un segundo banco de 1 MB de memoria RAM de video, tal como aparece en algunas placas arcade y hardware de desarrollo. Los juegos comerciales no lo utilizan.</translation>
+    </message>
+    <message>
         <source>100%</source>
         <translation>100 %</translation>
     </message>
@@ -9233,6 +9504,18 @@ Si intentas utilizarlo, no funcionará tal y como se espera. ¿Quieres continuar
     <message>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
         <translation>Reduce el tiempo simulado para que el motor del CD-ROM se mueva a distintas partes del disco. Puede mejorar los tiempos de carga, pero también puede producir fallos en juegos que no esperen que el CD-ROM funcione más rápido de lo normal.</translation>
+    </message>
+    <message>
+        <source>Physical Drive Speed</source>
+        <translation>Velocidad de la unidad física</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Establece la velocidad de la unidad del equipo cuando se usan discos físicos. Las velocidades más altas pueden reducir los tirones, pero hacen que la unidad sea más ruidosa. Establece &quot;No cambiar&quot; para dejar que la unidad mantenga su propia velocidad. No todas las unidades admiten esto.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -10664,11 +10947,11 @@ Do you want to %1 anyway?</source>
     </message>
     <message>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
-        <translation>Establece la zona de inactividad del joystick analógico, es decir, cuánto movimiento del joystick se ignorará.</translation>
+        <translation>Establece la zona muerta de las palancas analógicas, es decir, el rango de movimiento de la palanca que será ignorado.</translation>
     </message>
     <message>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation>Establece el factor de escalado para los ejes de los joysticks analógicos. Se recomienda entre 130 % y 140 % para mandos modernos, como el DualShock 4 o el mando de Xbox One.</translation>
+        <translation>Establece el factor de escalado para los ejes de las palancas analógicas. Se recomienda un valor entre 130% y 140% cuando se usen mandos modernos, como DualShock 4 o el mando de Xbox One.</translation>
     </message>
 </context>
 <context>
@@ -11250,28 +11533,20 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
         <translation>Compensación de la última línea de imagen</translation>
     </message>
     <message>
-        <source>DMA Max Slice Ticks</source>
-        <translation>Duración máxima de los cortes de la DMA</translation>
-    </message>
-    <message>
         <source> cycles</source>
         <translation> ciclos</translation>
     </message>
     <message>
-        <source>DMA Halt Ticks</source>
-        <translation>Duración de las paradas de la DMA</translation>
+        <source>DMA Max Slice Cycles</source>
+        <translation>Ciclos máximos por segmento del DMA</translation>
     </message>
     <message>
-        <source>GPU FIFO Size</source>
-        <translation>Tamaño del FIFO de la GPU</translation>
+        <source>DMA Halt Cycles</source>
+        <translation>Ciclos de parada del DMA</translation>
     </message>
     <message>
-        <source> words</source>
-        <translation> palabras</translation>
-    </message>
-    <message>
-        <source>GPU Max Runahead</source>
-        <translation>Predicción máxima de la GPU</translation>
+        <source>GPU Max Runahead Cycles</source>
+        <translation>Ciclos máximos de predicción de latencia de la GPU</translation>
     </message>
     <message>
         <source>Enable Recompiler Memory Exceptions</source>
@@ -11654,17 +11929,17 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
         <translation>&lt;b&gt;Activar rebobinado:&lt;/b&gt;Guarda el estado periódicamente para que puedas rebobinar cualquier error que cometas durante el juego.&lt;br&gt; &lt;b&gt;Frecuencia de guardado:&lt;/b&gt; Determina con qué frecuencia se crean los estados. Una frecuencia muy alta aumentará los requisitos del sistema.&lt;br&gt; &lt;b&gt;Tamaño del búfer:&lt;/b&gt; Determina la cantidad de estados de guardado para rebobinar. Valores más altos aumentan los requisitos de memoria.</translation>
     </message>
     <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM and %3 of VRAM.</source>
         <translation>
-            <numerusform>%n fotograma y %1 segundos de rebobinado requerirán %2 MB de RAM y %3 MB de VRAM.</numerusform>
-            <numerusform>%n fotogramas y %1 segundos de rebobinado requerirán %2 MB de RAM y %3 MB de VRAM.</numerusform>
+            <numerusform>El rebobinado de %n fotograma, con una duración de %1 segundo, requerirá %2 de RAM y %3 de VRAM.</numerusform>
+            <numerusform>El rebobinado de %n fotogramas, con una duración de %1 segundos, requerirá %2 de RAM y %3 de VRAM.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM.</source>
         <translation>
-            <numerusform>%n fotograma y %1 segundos de rebobinado requerirán %2 MB de RAM.</numerusform>
-            <numerusform>%n fotogramas y %1 segundos de rebobinado requerirán %2 MB de RAM.</numerusform>
+            <numerusform>El rebobinado de %n fotograma, con una duración de %1 segundo, requerirá %2 de RAM.</numerusform>
+            <numerusform>El rebobinado de %n fotogramas, con una duración de %1 segundos, requerirá %2 de RAM.</numerusform>
         </translation>
     </message>
     <message>
@@ -12112,7 +12387,7 @@ Haz clic en Reiniciar para restablecer el número de serie al que se ha encontra
     </message>
     <message>
         <source>CPU Mode</source>
-        <translation>Modo de CPU</translation>
+        <translation>Modo CPU</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -12842,7 +13117,7 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
-        <translation>Búfer de profundidad (PGXP)</translation>
+        <translation>Búfer de profundidad PGXP</translation>
     </message>
     <message>
         <source>Parent Directory</source>
@@ -13449,6 +13724,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
         <translation>¿Desea continuar desde el guardado automático creado {}?</translation>
     </message>
     <message>
+        <source>Enable 2MB VRAM</source>
+        <translation>Habilitar 2 MB de VRAM</translation>
+    </message>
+    <message>
         <source>Filter Framebuffer Uploads</source>
         <translation>Filtrar subidas al búfer de pantalla</translation>
     </message>
@@ -13459,6 +13738,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Installed RAM</source>
         <translation>RAM instalada</translation>
+    </message>
+    <message>
+        <source>Installs a second 1MB bank of video RAM, as present on some arcade boards and development hardware. Retail games do not use it.</source>
+        <translation>Instala un segundo banco de 1 MB de memoria RAM de vídeo, tal como aparece en algunas placas arcade y hardware de desarrollo. Los juegos comerciales no lo utilizan.</translation>
     </message>
     <message>
         <source>Length: {}</source>
@@ -13487,6 +13770,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Mid-Frame Scanout</source>
         <translation>Escaneo de fotogramas intermedios</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Ámbar de medianoche</translation>
     </message>
     <message>
         <source>Minimum Framebuffer Upload Height</source>
@@ -13875,6 +14162,14 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Rewind Save Slots</source>
         <translation>Ranuras de guardado del rebobinado</translation>
+    </message>
+    <message>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} of RAM and {3} of VRAM.</source>
+        <translation>Rebobinar durante {0} fotogramas, con una duración de {1:.2f} segundos, requerirá {2} de RAM y {3} de VRAM.</translation>
+    </message>
+    <message>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} of RAM.</source>
+        <translation>Rebobinar durante {0} fotogramas, con una duración de {1:.2f} segundos, requerirá {2} de RAM.</translation>
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
@@ -14419,6 +14714,10 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     <message>
         <source>Vertical Sync (VSync)</source>
         <translation>Sincronización vertical (VSync)</translation>
+    </message>
+    <message>
+        <source>Web Cache Size: {0} ({1} in {2} objects)</source>
+        <translation>Tamaño de la caché web: {0} ({1} en {2} objetos)</translation>
     </message>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
@@ -15453,14 +15752,6 @@ Do you want to {1} anyway?</source>
         <translation>Restablecer valores predeterminados</translation>
     </message>
     <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{0} fotogramas y {1:.2f} segundos de rebobinado requerirán {2} MB de RAM y {3} MB de VRAM.</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>{0} fotogramas y {1:.2f} segundos de rebobinado requerirán {2} MB de RAM.</translation>
-    </message>
-    <message>
         <source>Scaled Interlacing</source>
         <translation>Entrelazado escalado</translation>
     </message>
@@ -15689,10 +15980,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Selecciona la posición donde se mostrarán los mensajes en pantalla.</translation>
     </message>
     <message>
-        <source>Web Cache Size: {0} MB ({1} MB in {2} objects)</source>
-        <translation>Tamaño actual de la caché: {0} MB ({1} MB en {2} objetos)</translation>
-    </message>
-    <message>
         <source>Web cache cleared.</source>
         <translation>Caché web borrada.</translation>
     </message>
@@ -15898,7 +16185,7 @@ Do you want to delete the save state and boot the game anyway?</source>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
-        <translation>Tu GPU o renderizador actuales no son compatibles con el búfer de profundidad de la PGXP.</translation>
+        <translation>Tu GPU o renderizador actuales no son compatibles con el búfer de profundidad de PGXP.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
@@ -16046,12 +16333,16 @@ con la mezcla de shaders.</translation>
         <translation>Forzar mapeo completo de la RAM</translation>
     </message>
     <message>
+        <source>Enable 2MB VRAM</source>
+        <translation>Habilitar 2 MB de VRAM</translation>
+    </message>
+    <message>
         <source>Disallow in Hardcore Mode</source>
         <translation>No permitir en el modo Hardcore</translation>
     </message>
     <message>
         <source>Force PGXP Preserve Projection Precision</source>
-        <translation>Forzar PGXP para preservar la precisión de la proyección</translation>
+        <translation>Forzar PGXP para preservar la precisión de proyección</translation>
     </message>
 </context>
 <context>
@@ -16259,7 +16550,7 @@ Do you want to enable game settings now?</source>
     </message>
     <message>
         <source>PGXP culling correction disabled.</source>
-        <translation>Corrección de culling (PGXP) deshabilitada.</translation>
+        <translation>Corrección de culling de PGXP desactivada.</translation>
     </message>
     <message>
         <source>PGXP perspective correct textures disabled.</source>
@@ -16271,23 +16562,23 @@ Do you want to enable game settings now?</source>
     </message>
     <message>
         <source>PGXP vertex cache enabled.</source>
-        <translation>Caché de vértices (PGXP) activado.</translation>
+        <translation>Caché de vértices PGXP activado.</translation>
     </message>
     <message>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation>El caché de vértices (PGXP) está activado, pero no es necesario para este juego. Podría provocar errores de renderizado.</translation>
+        <translation>El caché de vértices PGXP está activado, pero no es necesario para este juego. Puede provocar errores de renderizado.</translation>
     </message>
     <message>
         <source>PGXP CPU mode enabled.</source>
-        <translation>Modo CPU (PGXP) activado.</translation>
+        <translation>Modo CPU de PGXP activado.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation>El modo CPU (PGXP) está activado, pero no es necesario para este juego. Podría provocar errores de renderizado.</translation>
+        <translation>El modo CPU de PGXP está activado, pero no es necesario para este juego. Puede provocar errores de renderizado.</translation>
     </message>
     <message>
         <source>PGXP depth buffer disabled.</source>
-        <translation>Búfer de profundidad (PGXP) desactivado.</translation>
+        <translation>Búfer de profundidad PGXP desactivado.</translation>
     </message>
     <message>
         <source>PGXP disabled on 2D polygons.</source>
@@ -16462,22 +16753,22 @@ Do you want to enable game settings now?</source>
     <message>
         <source>Disable PGXP Culling</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Desactivar culling (PGXP)</translation>
+        <translation>Desactivar culling de PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Texture Correction</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Desactivar corrección de texturas (PGXP)</translation>
+        <translation>Desactivar corrección de texturas de PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Color Correction</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Desactivar corrección de colores (PGXP)</translation>
+        <translation>Desactivar corrección de color de PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP Depth Buffer</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Desactivar búfer de profundidad (PGXP)</translation>
+        <translation>Desactivar búfer de profundidad de PGXP</translation>
     </message>
     <message>
         <source>Disable PGXP on 2D Polygons</source>
@@ -16487,12 +16778,12 @@ Do you want to enable game settings now?</source>
     <message>
         <source>Force PGXP Vertex Cache</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Forzar caché de vértices (PGXP)</translation>
+        <translation>Forzar caché de vértices de PGXP</translation>
     </message>
     <message>
         <source>Force PGXP CPU Mode</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Forzar modo CPU (PGXP)</translation>
+        <translation>Forzar el modo CPU de PGXP</translation>
     </message>
     <message>
         <source>Force Recompiler ICache</source>
@@ -16535,7 +16826,7 @@ Do you want to enable game settings now?</source>
     </message>
     <message>
         <source>PGXP CPU mode is required for this game, but it is disabled. This may cause rendering errors.</source>
-        <translation>Para este juego es necesario el modo CPU de PGXP, pero está desactivado. Esto puede provocar errores de renderizado.</translation>
+        <translation>Para este juego es necesario el modo CPU de PGXP, pero está desactivado. Puede provocar errores de renderizado.</translation>
     </message>
     <message>
         <source>PGXP preserve projection precision differs from the game database setting. This may cause rendering errors.</source>
@@ -16600,10 +16891,6 @@ Do you want to enable game settings now?</source>
     <message>
         <source>DMA Halt Ticks</source>
         <translation>Duración de las paradas de la DMA</translation>
-    </message>
-    <message>
-        <source>GPU FIFO Size</source>
-        <translation>Tamaño del FIFO de la GPU</translation>
     </message>
     <message>
         <source>GPU Max Runahead</source>
@@ -16691,7 +16978,7 @@ Do you want to enable game settings now?</source>
     </message>
     <message>
         <source>This may result in dropped controller inputs.</source>
-        <translation>Podrían dejar de reconocerse las pulsaciones de los mandos.</translation>
+        <translation>Puede provocar la pérdida de entradas del mando.</translation>
     </message>
     <message>
         <source>Sort Title</source>
@@ -16719,15 +17006,15 @@ Do you want to enable game settings now?</source>
     </message>
     <message>
         <source>PGXP Tolerance</source>
-        <translation>Tolerancia de la PGXP</translation>
+        <translation>Tolerancia de PGXP</translation>
     </message>
     <message>
         <source>PGXP Depth Clear Threshold</source>
-        <translation>Umbral de limpieza de profundidad de la PGXP</translation>
+        <translation>Umbral de limpieza de profundidad de PGXP</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision</source>
-        <translation>Conservar precisión de proyección en la PGXP</translation>
+        <translation>Preservar la precisión de proyección de PGXP</translation>
     </message>
 </context>
 <context>
@@ -16881,6 +17168,11 @@ Do you want to enable game settings now?</source>
         <source>Compatibility</source>
         <comment>Column</comment>
         <translation>Compatibilidad</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <comment>IconSource</comment>
+        <translation>Automático</translation>
     </message>
 </context>
 <context>
@@ -17474,7 +17766,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>CPU Mode</source>
-        <translation>Modo de CPU</translation>
+        <translation>Modo CPU</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -17594,7 +17886,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Preserve Projection Precision:</source>
-        <translation>Preservar la precisión de la proyección:</translation>
+        <translation>Preservar la precisión de proyección:</translation>
     </message>
     <message>
         <source>Normalize Depth Scale:</source>
@@ -17742,7 +18034,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
-        <translation>Búfer de profundidad (PGXP)</translation>
+        <translation>Búfer de profundidad de PGXP</translation>
     </message>
     <message>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
@@ -17839,10 +18131,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Geometry Tolerance</source>
         <translation>Tolerancia geométrica</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00 px (Desactivada)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -18230,7 +18518,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
-        <translation>Utiliza OpenGL ES aunque haya soporte para OpenGL de escritorio. Podría mejorar el rendimiento con ciertos controladores de SBC.</translation>
+        <translation>Utiliza OpenGL ES aunque haya soporte para OpenGL de escritorio. Puede mejorar el rendimiento con ciertos controladores de SBC.</translation>
     </message>
     <message>
         <source>Custom</source>
@@ -18463,6 +18751,30 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <source>None</source>
         <translation>Ninguno</translation>
     </message>
+    <message>
+        <source>{:.1f} GB</source>
+        <translation>{:.1f} GB</translation>
+    </message>
+    <message>
+        <source>{:.1f} MB</source>
+        <translation>{:.1f} MB</translation>
+    </message>
+    <message>
+        <source>{} MB</source>
+        <translation>{} MB</translation>
+    </message>
+    <message>
+        <source>{:.1f} KB</source>
+        <translation>{:.1f} KB</translation>
+    </message>
+    <message>
+        <source>{} KB</source>
+        <translation>{} KB</translation>
+    </message>
+    <message>
+        <source>{} B</source>
+        <translation>{} B</translation>
+    </message>
 </context>
 <context>
     <name>Hotkeys</name>
@@ -18572,11 +18884,11 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Toggle PGXP Depth Buffer</source>
-        <translation>Alternar búfer de profundidad (PGXP)</translation>
+        <translation>Alternar búfer de profundidad de PGXP</translation>
     </message>
     <message>
         <source>Toggle PGXP CPU Mode</source>
-        <translation>Alternar modo CPU (PGXP)</translation>
+        <translation>Alternar modo CPU de PGXP</translation>
     </message>
     <message>
         <source>Toggle On-Screen Display</source>
@@ -18928,7 +19240,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     </message>
     <message>
         <source>Toggle PGXP Preserve Projection Precision</source>
-        <translation>Alternar conservado de precisión de proyección de la PGXP</translation>
+        <translation>Alternar Preservar la precisión de proyección de PGXP</translation>
     </message>
     <message>
         <source>Toggle VRAM View</source>
@@ -19000,10 +19312,6 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Extract File</source>
         <translation>Extraer archivo</translation>
-    </message>
-    <message>
-        <source>%1 KB</source>
-        <translation>%1KB</translation>
     </message>
     <message>
         <source>&lt;Parent Directory&gt;</source>
@@ -19163,6 +19471,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Ninguno</translation>
     </message>
     <message>
+        <source>System paused by controller.</source>
+        <translation>Sistema pausado por el mando.</translation>
+    </message>
+    <message>
         <source>Keyboard</source>
         <translation>Teclado</translation>
     </message>
@@ -19207,12 +19519,16 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
         <translation>Puntero-{0}/{1}</translation>
     </message>
     <message>
-        <source>Controller {} connected.</source>
-        <translation>Mando {} conectado.</translation>
+        <source>System resumed by controller.</source>
+        <translation>Sistema reanudado por el mando.</translation>
     </message>
     <message>
-        <source>System paused because controller {} was disconnected.</source>
-        <translation>Se ha pausado el sistema porque el mando {} se ha desconectado.</translation>
+        <source>{} was reconnected.</source>
+        <translation>{} se ha vuelto a conectar.</translation>
+    </message>
+    <message>
+        <source>Controller {} connected.</source>
+        <translation>Mando {} conectado.</translation>
     </message>
     <message>
         <source>No mappings were added. {} may not support automatic binding, or no matches were found for your controller.</source>
@@ -19435,7 +19751,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content.</source>
-        <translation>Desactiva el redondeado de las esquinas de las ventanas que aplica Windows 11 automáticamente y que podrían ocultar partes del contenido.</translation>
+        <translation>Desactiva el redondeo de las ventanas que se aplica automáticamente en Windows 11, el cual puede ocultar partes del contenido.</translation>
     </message>
     <message>
         <source>Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS.</source>
@@ -19467,7 +19783,7 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     </message>
     <message>
         <source>Selects the channel that will be checked for updates to the application. The &lt;strong&gt;preview&lt;/strong&gt; channel contains the latest changes, and may be unstable. The &lt;strong&gt;latest&lt;/strong&gt; channel tracks the latest release.</source>
-        <translation>Selecciona el canal que se utilizará para buscar actualizaciones de la aplicación. El canal &lt;strong&gt;versiones preliminares&lt;/strong&gt; tiene los últimos cambios, pero la aplicación podría ser inestable. El canal &lt;strong&gt;versiones estables&lt;/strong&gt; tiene la última versión.</translation>
+        <translation>Selecciona el canal en el que se buscarán actualizaciones de la aplicación. El canal &lt;strong&gt;versiones preliminares&lt;/strong&gt; contiene los cambios más recientes y puede ser inestable. El canal &lt;strong&gt;versiones estables&lt;/strong&gt; contiene la última versión.</translation>
     </message>
 </context>
 <context>
@@ -20403,6 +20719,10 @@ Mayús + Clic izquierdo para asignaciones adicionales.</translation>
     <message>
         <source>Purple Rain</source>
         <translation>Lluvia púrpura</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Ámbar de medianoche</translation>
     </message>
     <message>
         <source>QDarkStyle</source>
@@ -22479,19 +22799,19 @@ Error: {1}</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation>Búfer de profundidad (PGXP) activado.</translation>
+        <translation>Búfer de profundidad de PGXP activado.</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation>Búfer de profundidad (PGXP) desactivado.</translation>
+        <translation>Búfer de profundidad de PGXP desactivado.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is now enabled.</source>
-        <translation>Modo CPU (PGXP) activado.</translation>
+        <translation>Modo CPU de PGXP activado.</translation>
     </message>
     <message>
         <source>PGXP CPU mode is now disabled.</source>
-        <translation>Modo CPU (PGXP) desactivado.</translation>
+        <translation>Modo CPU de PGXP desactivado.</translation>
     </message>
     <message>
         <source>Volume: Muted</source>
@@ -22529,11 +22849,11 @@ Error: {1}</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
-        <translation>Conservado de precisión de proyección de la PGXP activado.</translation>
+        <translation>Preservar la precisión de proyección de PGXP activado.</translation>
     </message>
     <message>
         <source>PGXP Preserve Projection Precision is now disabled.</source>
-        <translation>Conservado de precisión de proyección de la PGXP desactivado.</translation>
+        <translation>Preservar la precisión de proyección de PGXP desactivado.</translation>
     </message>
     <message>
         <source>Now showing VRAM.</source>
@@ -23257,6 +23577,10 @@ Error: {1}</translation>
         <translation>No</translation>
     </message>
     <message>
+        <source>{} was disconnected.</source>
+        <translation>{} se ha vuelto a desconectar.</translation>
+    </message>
+    <message>
         <source>Controller {} disconnected.</source>
         <translation>Control {} desconectado.</translation>
     </message>
@@ -23726,12 +24050,20 @@ Ubicación del acceso directo: %2
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>Guardado {}</translation>
+        <source>Empty</source>
+        <translation>Vacío</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>No hay guardado en esta ranura.</translation>
+        <source>Save States</source>
+        <translation>Estados de guardado</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>{} de {} ranuras en uso</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Guardado {}</translation>
     </message>
     <message>
         <source>Global Slot {}</source>
@@ -23817,14 +24149,6 @@ Ubicación del acceso directo: %2
     <message>
         <source>Use Global Setting [%1]</source>
         <translation>Usar configuración global [%1]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>Usar configuración global [opción activada]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>Usar configuración global [opción desactivada]</translation>
     </message>
     <message>
         <source>Global: </source>
@@ -25272,7 +25596,7 @@ Token generado %2</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta página incluye algunas de las opciones gráficas más comunes de DuckStation.&lt;/p&gt;&lt;p&gt;Son opciones por lo general seguras de usar y compatibles con la mayoría de juegos. Si cambias la resolución interna y activas la corrección de geometría de la PGXP, se mejorará significativamente la fidelidad gráfica de la mayoría de juegos.&lt;/p&gt;&lt;p&gt;Podrás cambiar estas opciones y muchas más en la &lt;span style=&quot; font-weight:700;&quot;&gt;configuración de gráficos&lt;/span&gt; cuando termines con el asistente.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta página incluye algunas de las opciones gráficas más comunes de DuckStation.&lt;/p&gt;&lt;p&gt;Son opciones por lo general seguras de usar y compatibles con la mayoría de juegos. Si cambias la resolución interna y activas la corrección de geometría de PGXP, se mejorará significativamente la fidelidad gráfica de la mayoría de juegos.&lt;/p&gt;&lt;p&gt;Podrás cambiar estas opciones y muchas más en la &lt;span style=&quot; font-weight:700;&quot;&gt;configuración de gráficos&lt;/span&gt; cuando termines con el asistente.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
@@ -25497,12 +25821,29 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <translation>Fallo de coincidencia de Memory Card</translation>
     </message>
     <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>VRAM ampliada</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>BIOS desconocida</translation>
+    </message>
+    <message>
+        <source>Physical Disc</source>
+        <translation>Disco físico</translation>
+    </message>
+    <message>
         <source>Overclock disabled.</source>
         <translation>Overclock desactivado.</translation>
     </message>
     <message>
         <source>RAM size set to default.</source>
         <translation>Tamaño de la RAM establecido en el valor predeterminado.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>VRAM de 2 MB desactivada.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25575,6 +25916,10 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
         <translation>La RAM ampliada está activada; esto podría ser incompatible con algunos juegos.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM is enabled, this may be incompatible with some games.</source>
+        <translation>Se han habilitado 2 MB de VRAM, esto podría ser incompatible con algunos juegos.</translation>
     </message>
     <message>
         <source>capturing audio and video</source>
