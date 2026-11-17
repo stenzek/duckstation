@@ -120860,7 +120860,6 @@ SCES-00582:
     - DigitalController
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
     - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
@@ -120884,7 +120883,6 @@ SCES-00684:
     - DigitalController
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
     - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
@@ -120909,7 +120907,6 @@ SIPS-60027:
     - DigitalController
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
     - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Sony"
@@ -120933,7 +120930,6 @@ PCPX-96101:
     genre: "** DEMO **"
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
 SLUS-00582:
   name: "Nightmare Creatures"
   saveName: "Nightmare Creatures (USA)"
@@ -120945,7 +120941,6 @@ SLUS-00582:
     - DigitalController
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
     - ResetSPUOnGameStart # Doesn't initialize SPU, shell reverb loops.
   metadata:
     publisher: "Activision"
@@ -120968,7 +120963,6 @@ SLUS-90011:
     genre: "** DEMO **"
   traits:
     - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
-    - ForceFullBoot # Full boot improves reliability.
 SLES-02751:
   name: "Nightmare Creatures II"
   saveName: "Nightmare Creatures II (Europe) (En,Fr,De)"
