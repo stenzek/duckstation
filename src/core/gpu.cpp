@@ -192,7 +192,7 @@ static GPUTexturePaletteReg DecodeTexturePalette(u16 bits);
 static void SetTextureWindow(u32 value);
 
 static u32 ReadGPUREAD();
-static void FinishVRAMWrite();
+static void FinishVRAMWrite(bool write_partial_row = true);
 
 /// Returns the number of vertices in the buffered poly-line.
 static u32 GetPolyLineVertexCount();
@@ -666,7 +666,7 @@ void GPU::Reset(bool clear_vram)
 void GPU::SoftReset()
 {
   if (s_locals.blitter_state == BlitterState::WritingVRAM)
-    FinishVRAMWrite();
+    FinishVRAMWrite(false);
 
   s_locals.GPUSTAT.interrupt_request = false;
   InterruptController::SetLineState(InterruptController::IRQ::GPU, false);
@@ -2236,7 +2236,7 @@ u32 GPU::ReadGPUREAD()
   if (s_locals.blitter_state != BlitterState::ReadingVRAM)
     return s_locals.GPUREAD_latch;
 
-  // Read two pixels out of VRAM and combine them. Zero fill odd pixel counts.
+  // Read two pixels out of VRAM and combine them.
   u32 value = 0;
   for (u32 i = 0; i < 2; i++)
   {
@@ -2251,6 +2251,10 @@ u32 GPU::ReadGPUREAD()
 
       if (++s_locals.vram_transfer.row == s_locals.vram_transfer.height)
       {
+        // An odd pixel count pads the last word with the next pixel on the same VRAM row.
+        if (i == 0)
+          value |= ZeroExtend32(g_vram[read_y * VRAM_WIDTH + ((read_x + 1) % VRAM_WIDTH)]) << 16;
+
         DEBUG_LOG("End of VRAM->CPU transfer");
         s_locals.vram_transfer = {};
         s_locals.blitter_state = BlitterState::Idle;
@@ -3167,6 +3171,7 @@ void GPU::TryExecuteCommands()
 
       case BlitterState::WritingVRAM:
       {
+        // TODO: Write complete rows as they arrive, keeping only the unfinished row buffered on v2 GPUs.
         DebugAssert(s_locals.blit_remaining_words > 0);
         const u32 words_to_copy = std::min(s_locals.blit_remaining_words, s_locals.fifo.GetSize());
         s_locals.blit_buffer.reserve(s_locals.blit_buffer.size() + words_to_copy);
@@ -4204,7 +4209,7 @@ void GPU::HandleCopyRectangleCPUToVRAMCommand()
   s_locals.vram_transfer.height = Truncate16(copy_height);
 }
 
-void GPU::FinishVRAMWrite()
+void GPU::FinishVRAMWrite(bool write_partial_row)
 {
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
@@ -4228,7 +4233,10 @@ void GPU::FinishVRAMWrite()
     const u32 num_pixels = ZeroExtend32(s_locals.vram_transfer.width) * ZeroExtend32(s_locals.vram_transfer.height);
     const u32 num_words = (num_pixels + 1) / 2;
     const u32 transferred_words = num_words - s_locals.blit_remaining_words;
-    const u32 transferred_pixels = transferred_words * 2;
+    u32 transferred_pixels = transferred_words * 2;
+    // The upper halfword starting a new row is held until another word arrives, even across GP1 resets.
+    if (transferred_pixels > 0 && ((transferred_pixels - 1) % s_locals.vram_transfer.width) == 0)
+      transferred_pixels--;
     const u32 transferred_full_rows = transferred_pixels / s_locals.vram_transfer.width;
     const u32 transferred_width_last_row = transferred_pixels % s_locals.vram_transfer.width;
 
@@ -4243,7 +4251,8 @@ void GPU::FinishVRAMWrite()
                  s_locals.GPUSTAT.check_mask_before_draw);
       blit_ptr += (ZeroExtend32(s_locals.vram_transfer.width) * transferred_full_rows) * sizeof(u16);
     }
-    if (transferred_width_last_row > 0)
+    // GP1(00h) discards the unfinished row on v2 GPUs; GP1(01h) writes its held words.
+    if (write_partial_row && transferred_width_last_row > 0)
     {
       UpdateVRAM(s_locals.vram_transfer.x, static_cast<u16>(s_locals.vram_transfer.y + transferred_full_rows),
                  static_cast<u16>(transferred_width_last_row), 1, blit_ptr, s_locals.GPUSTAT.set_mask_while_drawing,
@@ -4271,9 +4280,11 @@ void GPU::HandleCopyRectangleVRAMToCPUCommand()
             s_locals.vram_transfer.y, s_locals.vram_transfer.width, s_locals.vram_transfer.height);
   DebugAssert(s_locals.vram_transfer.col == 0 && s_locals.vram_transfer.row == 0);
 
-  // ensure VRAM shadow is up to date, syncing the whole addressable height if the read wraps around the bottom
+  // Include the padding pixel for odd pixel counts, and sync the whole addressable height on Y wrap-around.
+  const u16 read_width =
+    s_locals.vram_transfer.width + (s_locals.vram_transfer.width & s_locals.vram_transfer.height & 1u);
   const bool wraps_y = (static_cast<u32>(s_locals.vram_transfer.y) + s_locals.vram_transfer.height) > vram_height;
-  ReadVRAM(s_locals.vram_transfer.x, wraps_y ? 0 : s_locals.vram_transfer.y, s_locals.vram_transfer.width,
+  ReadVRAM(s_locals.vram_transfer.x, wraps_y ? 0 : s_locals.vram_transfer.y, read_width,
            wraps_y ? Truncate16(vram_height) : s_locals.vram_transfer.height);
 
   if (g_settings.gpu_dump_vram_to_cpu_copies) [[unlikely]]
