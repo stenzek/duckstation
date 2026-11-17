@@ -2665,6 +2665,11 @@ bool GPUTextureCache::TextureReplacementName::Parse(const std::string_view file_
   }
   else
   {
+    // Not present in C16 names, match what dumping uses.
+    pal_hash = 0;
+    pal_min = 0;
+    pal_max = 0;
+
     start_pos = end_pos + 1;
     end_pos = file_title.find("x", start_pos + 1);
     if (end_pos == std::string_view::npos)
