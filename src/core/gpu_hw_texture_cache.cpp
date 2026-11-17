@@ -525,13 +525,15 @@ ALWAYS_INLINE void DoStateVector(StateWrapper& sw, GSVector4i* vec)
   sw.DoBytes(vec->S32, sizeof(vec->S32));
 }
 
+/// Returns the squared distance between the centres of two rectangles.
 ALWAYS_INLINE float RectDistance(const GSVector4i& lhs, const GSVector4i& rhs)
 {
   const GSVector4 flhs(lhs);
   const GSVector4 frhs(rhs);
   const GSVector2 clhs = flhs.xy() + ((flhs.zw() - flhs.xy()) * 0.5f);
-  const GSVector2 crhs = frhs.xy() + ((frhs.zw() - flhs.xy()) * 0.5f);
-  return clhs.dot(crhs);
+  const GSVector2 crhs = frhs.xy() + ((frhs.zw() - frhs.xy()) * 0.5f);
+  const GSVector2 diff = clhs - crhs;
+  return diff.dot(diff);
 }
 
 namespace {
