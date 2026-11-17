@@ -3669,7 +3669,7 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
   s_state.config.convert_copies_to_writes = GetOptionalTFromObject<bool>(root, "ConvertCopiesToWrites")
                                               .value_or(static_cast<bool>(s_state.config.convert_copies_to_writes));
   s_state.config.max_vram_write_splits =
-    GetOptionalTFromObject<bool>(root, "MaxVRAMWriteSplits").value_or(s_state.config.max_vram_write_splits);
+    GetOptionalTFromObject<u16>(root, "MaxVRAMWriteSplits").value_or(s_state.config.max_vram_write_splits);
   s_state.config.max_vram_write_coalesce_width = GetOptionalTFromObject<u16>(root, "MaxVRAMWriteCoalesceWidth")
                                                    .value_or(s_state.config.max_vram_write_coalesce_width);
   s_state.config.max_vram_write_coalesce_height = GetOptionalTFromObject<u16>(root, "MaxVRAMWriteCoalesceHeight")
