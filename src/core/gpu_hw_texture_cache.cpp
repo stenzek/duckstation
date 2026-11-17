@@ -2282,7 +2282,7 @@ GPUTextureCache::HashType GPUTextureCache::HashPartialPalette(GPUTexturePaletteR
 GPUTextureCache::HashType GPUTextureCache::HashPartialPalette(const u16* palette, u32 min, u32 max)
 {
   const u32 size = max - min + 1;
-  return XXH3_64bits(palette, sizeof(u16) * size);
+  return XXH3_64bits(palette + min, sizeof(u16) * size);
 }
 
 GPUTextureCache::HashType GPUTextureCache::HashRect(const GSVector4i rc)
@@ -2967,7 +2967,13 @@ bool GPUTextureCache::IsMatchingReplacementPalette(HashType full_palette_hash, G
   // This needs to re-hash every lookup, which is a bit of a bummer.
   // But at least there's the hash cache, so it shouldn't be too painful...
   const HashType partial_hash = GPUTextureCache::HashPartialPalette(palette, mode, name.pal_min, name.pal_max);
-  return (partial_hash == name.pal_hash);
+  if (partial_hash == name.pal_hash)
+    return true;
+
+  // Older versions hashed (pal_max - pal_min + 1) entries from the start of the palette instead of from pal_min.
+  // Keep accepting those hashes so existing replacement packs still match.
+  return (name.pal_min > 0 &&
+          GPUTextureCache::HashPartialPalette(palette, mode, 0, name.pal_max - name.pal_min) == name.pal_hash);
 }
 
 bool GPUTextureCache::HasVRAMWriteTextureReplacements()
