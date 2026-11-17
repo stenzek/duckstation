@@ -174,7 +174,7 @@ struct TextureReplacementIndex
 
   bool operator<(const TextureReplacementIndex& rhs) const
   {
-    return std::tie(src_hash, mode) < std::tie(src_hash, mode);
+    return std::tie(src_hash, mode) < std::tie(rhs.src_hash, rhs.mode);
   }
   bool operator==(const TextureReplacementIndex& rhs) const { return src_hash == rhs.src_hash && mode == rhs.mode; }
   bool operator!=(const TextureReplacementIndex& rhs) const { return src_hash != rhs.src_hash || mode != rhs.mode; }
