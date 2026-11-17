@@ -285,7 +285,9 @@ void EmulationSettingsWidget::updateRewind()
     const CPURAMSize ram_size =
       Settings::ParseCPURAMSize(m_dialog->getEffectiveStringValue(Settings::CPU_SECTION_NAME, "RAMSize"))
         .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
-    const bool vram_2mb = m_dialog->getEffectiveBoolValue(Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
+    const bool vram_2mb =
+      Settings::ParseGPUVRAMSize(m_dialog->getEffectiveStringValue(Settings::CONSOLE_SECTION_NAME, "VRAMSize"))
+        .value_or(Settings::DEFAULT_GPU_VRAM_SIZE) != GPUVRAMSize::Default;
     const bool enable_texture_cache =
       m_dialog->getEffectiveBoolValue(Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());

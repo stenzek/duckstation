@@ -3495,6 +3495,16 @@ void FullscreenUI::DrawConsoleSettingsPage()
                   Settings::GPU_SECTION_NAME, "ForceVideoTiming", Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE,
                   &Settings::ParseForceVideoTimingName, &Settings::GetForceVideoTimingName,
                   &Settings::GetForceVideoTimingDisplayName, ForceVideoTimingMode::Count);
+  DrawEnumSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_MEMORY, "Installed RAM"),
+    FSUI_VSTR("Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM."),
+    Settings::CPU_SECTION_NAME, "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, &Settings::ParseCPURAMSize,
+    &Settings::GetCPURAMSizeName, &Settings::GetCPURAMSizeDisplayName, CPURAMSize::Count);
+  DrawEnumSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_IMAGE, "Installed VRAM"),
+    FSUI_VSTR("Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM."),
+    Settings::CONSOLE_SECTION_NAME, "VRAMSize", Settings::DEFAULT_GPU_VRAM_SIZE, &Settings::ParseGPUVRAMSize,
+    &Settings::GetGPUVRAMSizeName, &Settings::GetGPUVRAMSizeDisplayName, GPUVRAMSize::Count);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHIELD_HALVED, "Safe Mode"),
                     FSUI_VSTR("Temporarily disables all enhancements, useful when testing."),
                     Settings::INTERFACE_SECTION_NAME, "DisableAllEnhancements", false);
@@ -3511,21 +3521,6 @@ void FullscreenUI::DrawConsoleSettingsPage()
                     FSUI_VSTR("Fast forwards through memory card access, both loading and saving. Can reduce waiting "
                               "times in games that frequently access memory cards."),
                     Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
-  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_MEMORY, "Installed RAM"),
-                  FSUI_VSTR("Changes the amount of RAM installed in the emulated console."), Settings::CPU_SECTION_NAME,
-                  "RAMSize", Settings::DEFAULT_CPU_RAM_SIZE, &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
-                  &Settings::GetCPURAMSizeDisplayName, CPURAMSize::Count);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_IMAGE, "Enable 2MB VRAM"),
-                    FSUI_VSTR("Installs a second 1MB bank of video RAM, as present on some arcade boards and "
-                              "development hardware. Retail games do not use it."),
-                    Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_MAXIMIZE, "Force Full RAM Mapping"),
-    FSUI_VSTR("Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with "
-              "retail BIOSes."),
-    Settings::CPU_SECTION_NAME, "ForceFullRAMMapping", false,
-    Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
-        .value_or(Settings::DEFAULT_CPU_RAM_SIZE) != Settings::DEFAULT_CPU_RAM_SIZE);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 
@@ -3860,7 +3855,9 @@ void FullscreenUI::DrawEmulationSettingsPage()
     const CPURAMSize ram_size =
       Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
         .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
-    const bool vram_2mb = GetEffectiveBoolSetting(bsi, Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
+    const bool vram_2mb =
+      Settings::ParseGPUVRAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CONSOLE_SECTION_NAME, "VRAMSize"))
+        .value_or(Settings::DEFAULT_GPU_VRAM_SIZE) != GPUVRAMSize::Default;
     const bool enable_texture_cache =
       GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "EnableTextureCache", false);
     const float rewind_frequency =

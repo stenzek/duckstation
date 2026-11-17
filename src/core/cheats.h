@@ -54,10 +54,9 @@ struct CodeMetadata
   std::optional<u32> override_cpu_overclock;
   std::optional<DisplayAspectRatio> override_aspect_ratio;
   std::optional<CPURAMSize> override_ram_size;
+  std::optional<GPUVRAMSize> override_vram_size;
   bool disable_widescreen_rendering = false;
   bool force_pgxp_preserve_projection_precision = false;
-  bool force_full_ram_mapping = false;
-  bool enable_2mb_vram = false;
   bool disallow_for_achievements = false;
   bool has_options = false; // unused in CodeInfo
 };

@@ -265,7 +265,6 @@ TEST_F(BusMemory, ForceFullRAMMapping)
     SCOPED_TRACE(Settings::GetCPUFastmemModeName(mode));
 
     // The retail BIOS window only covers 8MB of 16MB.
-    g_settings.cpu_force_full_ram_mapping = false;
     CPUTestHarness::ResetMemory(CPURAMSize::Expanded16MB, mode);
     ASSERT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
     CPU::g_state.bus_error = false;
@@ -273,7 +272,7 @@ TEST_F(BusMemory, ForceFullRAMMapping)
     EXPECT_TRUE(CPU::g_state.bus_error);
 
     // Enabling maps the remainder without changing the register.
-    g_settings.cpu_force_full_ram_mapping = true;
+    g_settings.cpu_ram_size = CPURAMSize::Expanded16MBForced;
     Bus::UpdateMappedRAMSize();
     EXPECT_EQ(g_bus.ram_mapped_size, 16 * one_mb);
     EXPECT_EQ(ReadWord(0xBF801060), 0xB88u);
@@ -294,12 +293,12 @@ TEST_F(BusMemory, ForceFullRAMMapping)
     EXPECT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
     SetWindow(0x888);
     EXPECT_EQ(g_bus.ram_mapped_size, 2 * one_mb);
-    CPUTestHarness::ResetMemory(CPURAMSize::Expanded8MB, mode);
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded8MBForced, mode);
     SetWindow(0x888);
     EXPECT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
 
     // Disabling restores the game's window.
-    g_settings.cpu_force_full_ram_mapping = false;
+    g_settings.cpu_ram_size = CPURAMSize::Expanded8MB;
     Bus::UpdateMappedRAMSize();
     EXPECT_EQ(g_bus.ram_mapped_size, 2 * one_mb);
     CPU::g_state.bus_error = false;
@@ -307,11 +306,10 @@ TEST_F(BusMemory, ForceFullRAMMapping)
     EXPECT_TRUE(CPU::g_state.bus_error);
 
     // Loading a state with a different RAM size must recompute the mapping, even if the register is unchanged.
-    g_settings.cpu_force_full_ram_mapping = true;
-    CPUTestHarness::ResetMemory(CPURAMSize::Expanded16MB, mode);
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded16MBForced, mode);
     std::vector<u8> data;
     ASSERT_TRUE(SaveBus(&data));
-    CPUTestHarness::ResetMemory(CPURAMSize::Default, mode);
+    CPUTestHarness::ResetMemory(CPURAMSize::Expanded8MBForced, mode);
     ASSERT_EQ(g_bus.ram_mapped_size, 8 * one_mb);
     StateWrapper sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
     ASSERT_TRUE(Bus::DoState(sw));
@@ -320,8 +318,6 @@ TEST_F(BusMemory, ForceFullRAMMapping)
     WriteWord(0x80900000, 0xCAFEF00D);
     EXPECT_EQ(ReadWord(0x80900000), 0xCAFEF00Du);
     EXPECT_FALSE(CPU::g_state.bus_error);
-
-    g_settings.cpu_force_full_ram_mapping = false;
   }
 }
 

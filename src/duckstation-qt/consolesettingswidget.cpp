@@ -45,16 +45,13 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize",
                                                &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
                                                Settings::DEFAULT_CPU_RAM_SIZE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceFullRAMMapping, Settings::CPU_SECTION_NAME,
-                                               "ForceFullRAMMapping", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vramSize, Settings::CONSOLE_SECTION_NAME, "Enable2MBVRAM",
-                                               false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.vramSize, Settings::CONSOLE_SECTION_NAME, "VRAMSize",
+                                               &Settings::ParseGPUVRAMSize, &Settings::GetGPUVRAMSizeName,
+                                               Settings::DEFAULT_GPU_VRAM_SIZE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
   onFastBootChanged();
-  connect(m_ui.ramSize, &QComboBox::currentIndexChanged, this, &ConsoleSettingsWidget::onRAMSizeChanged);
-  onRAMSizeChanged();
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, Settings::CPU_SECTION_NAME, "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
@@ -118,18 +115,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
                                tr("Fast forwards through memory card access, both loading and saving. Can reduce "
                                   "waiting times in games that frequently access memory cards."));
-  dialog->registerWidgetHelp(m_ui.ramSize, tr("Installed RAM"),
-                             QString::fromUtf8(Settings::GetCPURAMSizeDisplayName(Settings::DEFAULT_CPU_RAM_SIZE)),
-                             tr("Changes the amount of RAM installed in the emulated console. Games have to use a "
-                                "larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors "
-                                "may break, so it should only be used with compatible mods."));
-  dialog->registerWidgetHelp(m_ui.forceFullRAMMapping, tr("Force Full RAM Mapping"), tr("Unchecked"),
-                             tr("Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail "
-                                "BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. "
-                                "Only has an effect when expanded RAM is installed."));
-  dialog->registerWidgetHelp(m_ui.vramSize, tr("Installed VRAM"), tr("1MB (Retail Console)"),
-                             tr("Installs a second 1MB bank of video RAM, as present on some arcade boards and "
-                                "development hardware. Retail games do not use it."));
+  dialog->registerWidgetHelp(
+    m_ui.ramSize, tr("Installed RAM"), tr("2MB RAM (Standard)"),
+    tr("Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps "
+       "all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes."));
+  dialog->registerWidgetHelp(
+    m_ui.vramSize, tr("Installed VRAM"), tr("1MB VRAM (Standard)"),
+    tr("Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes "
+       "the second VRAM bank accessible regardless of the game enabling it or not."));
 
   dialog->registerWidgetHelp(
     m_ui.cpuExecutionMode, tr("Execution Mode"),
@@ -205,15 +198,6 @@ void ConsoleSettingsWidget::onFastBootChanged()
   const bool fast_boot_enabled =
     m_dialog->getEffectiveBoolValue(Settings::BIOS_SECTION_NAME, "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
   m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
-}
-
-void ConsoleSettingsWidget::onRAMSizeChanged()
-{
-  const CPURAMSize ram_size = Settings::ParseCPURAMSize(m_dialog->getEffectiveStringValue(
-                                                          Settings::CPU_SECTION_NAME, "RAMSize",
-                                                          Settings::GetCPURAMSizeName(Settings::DEFAULT_CPU_RAM_SIZE)))
-                                .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
-  m_ui.forceFullRAMMapping->setEnabled(ram_size != Settings::DEFAULT_CPU_RAM_SIZE);
 }
 
 void ConsoleSettingsWidget::updateRecompilerICacheEnabled()

@@ -60,7 +60,7 @@
        <widget class="QComboBox" name="ramSize">
         <item>
          <property name="text">
-          <string>2MB RAM (Retail Console)</string>
+          <string>2MB RAM (Standard)</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -69,7 +69,7 @@
         </item>
         <item>
          <property name="text">
-          <string>4MB RAM (Arcade Boards)</string>
+          <string>4MB RAM</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -78,7 +78,16 @@
         </item>
         <item>
          <property name="text">
-          <string>8MB RAM (Dev Console)</string>
+          <string>4MB RAM (Forced)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8MB RAM</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -87,7 +96,25 @@
         </item>
         <item>
          <property name="text">
-          <string>16MB RAM (Mods/Arcade Boards)</string>
+          <string>8MB RAM (Forced)</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/code-box-line.svg</normaloff>:/icons/monochrome/svg/code-box-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16MB RAM</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/tools-line.svg</normaloff>:/icons/monochrome/svg/tools-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16MB RAM (Forced)</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -100,7 +127,7 @@
        <widget class="QComboBox" name="vramSize">
         <item>
          <property name="text">
-          <string>1MB VRAM (Retail Console)</string>
+          <string>1MB VRAM (Standard)</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -109,7 +136,16 @@
         </item>
         <item>
          <property name="text">
-          <string>2MB VRAM (Arcade Boards)</string>
+          <string>2MB VRAM</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources/duckstation-qt.qrc">
+           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2MB VRAM (Forced)</string>
          </property>
          <property name="icon">
           <iconset resource="resources/duckstation-qt.qrc">
@@ -120,13 +156,6 @@
       </item>
       <item row="3" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="forceFullRAMMapping">
-          <property name="text">
-           <string>Force Full RAM Mapping</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QCheckBox" name="fastForwardBoot">
           <property name="text">

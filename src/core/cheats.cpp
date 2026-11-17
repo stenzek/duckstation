@@ -203,6 +203,7 @@ static void EnumerateChtFiles(const std::string_view serial, std::optional<GameH
                               bool load_from_disk, bool load_from_database, const F& f);
 
 /// Parses a setting override key into the metadata. Returns false if the key is not a setting override.
+static CPURAMSize MergeRAMSize(std::optional<CPURAMSize> a, CPURAMSize b);
 static bool ParseSettingOverride(CodeMetadata* metadata, const std::string_view key, const std::string_view value,
                                  u32 line_number);
 static std::optional<CodeOption> ParseOption(const std::string_view value);
@@ -261,7 +262,7 @@ Cheats::CheatCode::~CheatCode() = default;
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
   return (m_metadata.disable_widescreen_rendering || m_metadata.force_pgxp_preserve_projection_precision ||
-          m_metadata.override_ram_size.has_value() || m_metadata.force_full_ram_mapping || m_metadata.enable_2mb_vram ||
+          m_metadata.override_ram_size.has_value() || m_metadata.override_vram_size.has_value() ||
           m_metadata.override_aspect_ratio.has_value() || m_metadata.override_cpu_overclock.has_value());
 }
 
@@ -278,21 +279,20 @@ void Cheats::CheatCode::ApplySettingOverrides()
     g_settings.gpu_pgxp_preserve_proj_fp = true;
   }
   // Only ever increase the RAM size, so the largest size is used when multiple patches are enabled.
-  if (m_metadata.override_ram_size.has_value() && g_settings.cpu_ram_size < m_metadata.override_ram_size.value())
+  if (m_metadata.override_ram_size.has_value())
   {
-    DEV_LOG("Setting RAM size to {} from {} patch.", Settings::GetCPURAMSizeName(m_metadata.override_ram_size.value()),
-            GetName());
-    g_settings.cpu_ram_size = m_metadata.override_ram_size.value();
+    const CPURAMSize new_size = MergeRAMSize(g_settings.cpu_ram_size, m_metadata.override_ram_size.value());
+    if (new_size != g_settings.cpu_ram_size)
+    {
+      DEV_LOG("Setting RAM size to {} from {} patch.", Settings::GetCPURAMSizeName(new_size), GetName());
+      g_settings.cpu_ram_size = new_size;
+    }
   }
-  if (m_metadata.force_full_ram_mapping && !g_settings.cpu_force_full_ram_mapping)
+  if (m_metadata.override_vram_size.has_value() && g_settings.gpu_vram_size < m_metadata.override_vram_size.value())
   {
-    DEV_LOG("Forcing full RAM mapping from {} patch.", GetName());
-    g_settings.cpu_force_full_ram_mapping = true;
-  }
-  if (m_metadata.enable_2mb_vram && !g_settings.gpu_enable_2mb_vram)
-  {
-    DEV_LOG("Enabling 2MB VRAM from {} patch.", GetName());
-    g_settings.gpu_enable_2mb_vram = true;
+    DEV_LOG("Setting VRAM size to {} from {} patch.",
+            Settings::GetGPUVRAMSizeName(m_metadata.override_vram_size.value()), GetName());
+    g_settings.gpu_vram_size = m_metadata.override_vram_size.value();
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
@@ -669,10 +669,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "ForcePGXPPreserveProjectionPrecision = true\n");
   if (code.override_ram_size.has_value())
     fmt::format_to(appender, "OverrideRAMSize = {}\n", Settings::GetCPURAMSizeName(code.override_ram_size.value()));
-  if (code.force_full_ram_mapping)
-    fmt::format_to(appender, "ForceFullRAMMapping = true\n");
-  if (code.enable_2mb_vram)
-    fmt::format_to(appender, "Enable2MBVRAM = true\n");
+  if (code.override_vram_size.has_value())
+    fmt::format_to(appender, "OverrideVRAMSize = {}\n", Settings::GetGPUVRAMSizeName(code.override_vram_size.value()));
   if (code.disallow_for_achievements)
     fmt::format_to(appender, "DisallowForAchievements = true\n");
 
@@ -1773,6 +1771,16 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
   finish_code();
 }
 
+CPURAMSize Cheats::MergeRAMSize(std::optional<CPURAMSize> a, CPURAMSize b)
+{
+  // Largest size takes precedence, and the full mapping is forced if either side forces it.
+  // nullopt compares less than any size.
+  const CPURAMSize larger = (a.has_value() && a.value() > b) ? a.value() : b;
+  return (Settings::IsCPURAMSizeForced(a.value_or(CPURAMSize::Default)) || Settings::IsCPURAMSizeForced(b)) ?
+           Settings::GetForcedCPURAMSize(larger) :
+           larger;
+}
+
 bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view key, const std::string_view value,
                                   u32 line_number)
 {
@@ -1806,22 +1814,29 @@ bool Cheats::ParseSettingOverride(CodeMetadata* metadata, const std::string_view
     const std::optional<CPURAMSize> size = Settings::ParseCPURAMSize(value);
     if (!size.has_value())
       WARNING_LOG("Invalid RAM size at line {}: {}", line_number, value);
-    else if (metadata->override_ram_size < size)
-      metadata->override_ram_size = size.value();
+    else
+      metadata->override_ram_size = MergeRAMSize(metadata->override_ram_size, size.value());
   }
   else if (key == "Enable8MBRAM" || key == "Enable16MBRAM")
   {
     const CPURAMSize size = (key == "Enable16MBRAM") ? CPURAMSize::Expanded16MB : CPURAMSize::Expanded8MB;
-    if (StringUtil::FromChars<bool>(value).value_or(false) && metadata->override_ram_size < size)
-      metadata->override_ram_size = size;
+    if (StringUtil::FromChars<bool>(value).value_or(false))
+      metadata->override_ram_size = MergeRAMSize(metadata->override_ram_size, size);
   }
   else if (key == "ForceFullRAMMapping")
   {
-    metadata->force_full_ram_mapping = StringUtil::FromChars<bool>(value).value_or(false);
+    // Old files wrote this after OverrideRAMSize, so it upgrades the size that has already been parsed.
+    if (StringUtil::FromChars<bool>(value).value_or(false) && metadata->override_ram_size.has_value())
+      metadata->override_ram_size = Settings::GetForcedCPURAMSize(metadata->override_ram_size.value());
   }
-  else if (key == "Enable2MBVRAM")
+  else if (key == "OverrideVRAMSize")
   {
-    metadata->enable_2mb_vram = StringUtil::FromChars<bool>(value).value_or(false);
+    // Largest size wins if multiple keys are present. nullopt compares less than any size.
+    const std::optional<GPUVRAMSize> size = Settings::ParseGPUVRAMSize(value);
+    if (!size.has_value())
+      WARNING_LOG("Invalid VRAM size at line {}: {}", line_number, value);
+    else if (metadata->override_vram_size < size)
+      metadata->override_vram_size = size.value();
   }
   else if (key == "DisallowForAchievements")
   {

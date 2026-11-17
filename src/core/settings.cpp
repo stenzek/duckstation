@@ -282,7 +282,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   region =
     ParseConsoleRegionName(si.GetStringViewValue(CONSOLE_SECTION_NAME, "Region")).value_or(DEFAULT_CONSOLE_REGION);
-  gpu_enable_2mb_vram = si.GetBoolValue(CONSOLE_SECTION_NAME, "Enable2MBVRAM", false);
+  gpu_vram_size =
+    ParseGPUVRAMSize(si.GetStringViewValue(CONSOLE_SECTION_NAME, "VRAMSize")).value_or(DEFAULT_GPU_VRAM_SIZE);
 
   emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
@@ -320,7 +321,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cpu_fastmem_mode =
     ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode")).value_or(DEFAULT_CPU_FASTMEM_MODE);
   cpu_ram_size = ParseCPURAMSize(si.GetStringViewValue(CPU_SECTION_NAME, "RAMSize")).value_or(DEFAULT_CPU_RAM_SIZE);
-  cpu_force_full_ram_mapping = si.GetBoolValue(CPU_SECTION_NAME, "ForceFullRAMMapping", false);
 
   gpu_renderer = ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer")).value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringViewValue(GPU_SECTION_NAME, "Adapter", "");
@@ -683,7 +683,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   TinyString skey;
 
   si.SetStringValue(CONSOLE_SECTION_NAME, "Region", GetConsoleRegionName(region));
-  si.SetBoolValue(CONSOLE_SECTION_NAME, "Enable2MBVRAM", gpu_enable_2mb_vram);
+  si.SetStringValue(CONSOLE_SECTION_NAME, "VRAMSize", GetGPUVRAMSizeName(gpu_vram_size));
 
   si.SetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", emulation_speed);
   si.SetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", fast_forward_speed);
@@ -720,7 +720,6 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetIntValue(CPU_SECTION_NAME, "OverclockNumerator", cpu_overclock_numerator);
   si.SetIntValue(CPU_SECTION_NAME, "OverclockDenominator", cpu_overclock_denominator);
   si.SetStringValue(CPU_SECTION_NAME, "RAMSize", GetCPURAMSizeName(cpu_ram_size));
-  si.SetBoolValue(CPU_SECTION_NAME, "ForceFullRAMMapping", cpu_force_full_ram_mapping);
   if (!for_copy)
   {
     si.SetBoolValue(CPU_SECTION_NAME, "RecompilerMemoryExceptions", cpu_recompiler_memory_exceptions);
@@ -1190,8 +1189,7 @@ void Settings::ApplySettingRestrictions()
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
     cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
-    cpu_force_full_ram_mapping = false;
-    gpu_enable_2mb_vram = false;
+    gpu_vram_size = DEFAULT_GPU_VRAM_SIZE;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
     gpu_automatic_resolution_scale = false;
@@ -1557,17 +1555,22 @@ const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 }
 
 static constexpr const std::array s_cpu_ram_size_names = {
-  "Default",
-  "4MB",
-  "8MB",
-  "16MB",
+  "2MB", "4MB", "4MBForced", "8MB", "8MBForced", "16MB", "16MBForced",
 };
 static constexpr const std::array s_cpu_ram_size_display_names = {
-  TRANSLATE_DISAMBIG_NOOP("Settings", "2 MB (Retail Console)", "CPURAMSize"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "4 MB (Arcade Boards)", "CPURAMSize"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "8 MB (Dev Console)", "CPURAMSize"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "16 MB (Mods/Arcade Boards)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "2MB (Standard)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "4MB", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "4MB (Forced)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "8MB", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "8MB (Forced)", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "16MB", "CPURAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "16MB (Forced)", "CPURAMSize"),
 };
+static constexpr const std::array<u8, static_cast<size_t>(CPURAMSize::Count)> s_cpu_ram_size_megabytes = {
+  2, 4, 4, 8, 8, 16, 16,
+};
+static_assert(s_cpu_ram_size_names.size() == static_cast<size_t>(CPURAMSize::Count));
+static_assert(s_cpu_ram_size_display_names.size() == static_cast<size_t>(CPURAMSize::Count));
 
 std::optional<CPURAMSize> Settings::ParseCPURAMSize(std::string_view str)
 {
@@ -1595,16 +1598,7 @@ const char* Settings::GetCPURAMSizeDisplayName(CPURAMSize size)
 
 u32 Settings::GetCPURAMSizeBytes(CPURAMSize size)
 {
-  static constexpr u32 one_mb = 1048576;
-  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Default)) == (2 * one_mb));
-  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Default)));
-  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded4MB)) == (4 * one_mb));
-  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded4MB)));
-  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded8MB)) == (8 * one_mb));
-  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded8MB)));
-  static_assert((0x200000u << static_cast<u8>(CPURAMSize::Expanded16MB)) == (16 * one_mb));
-  static_assert(Common::IsPow2(0x200000u << static_cast<u8>(CPURAMSize::Expanded16MB)));
-  return (0x200000u << static_cast<u8>(size));
+  return static_cast<u32>(s_cpu_ram_size_megabytes[static_cast<u8>(size)]) * 1048576u;
 }
 
 std::optional<CPURAMSize> Settings::GetCPURAMSizeForBytes(u32 bytes)
@@ -1619,6 +1613,58 @@ std::optional<CPURAMSize> Settings::GetCPURAMSizeForBytes(u32 bytes)
     return CPURAMSize::Expanded16MB;
   else
     return std::nullopt;
+}
+
+bool Settings::IsCPURAMSizeForced(CPURAMSize size)
+{
+  return (size == CPURAMSize::Expanded4MBForced || size == CPURAMSize::Expanded8MBForced ||
+          size == CPURAMSize::Expanded16MBForced);
+}
+
+CPURAMSize Settings::GetForcedCPURAMSize(CPURAMSize size)
+{
+  // 2MB is always fully mapped, so it has no forced variant.
+  if (size == CPURAMSize::Expanded4MB || size == CPURAMSize::Expanded8MB || size == CPURAMSize::Expanded16MB)
+    return static_cast<CPURAMSize>(static_cast<u8>(size) + 1);
+  else
+    return size;
+}
+
+static constexpr const std::array s_gpu_vram_size_names = {
+  "1MB",
+  "2MB",
+  "2MBForced",
+};
+static constexpr const std::array s_gpu_vram_size_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "1MB (Standard)", "GPUVRAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "2MB", "GPUVRAMSize"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "2MB (Forced)", "GPUVRAMSize"),
+};
+static_assert(s_gpu_vram_size_names.size() == static_cast<size_t>(GPUVRAMSize::Count));
+static_assert(s_gpu_vram_size_display_names.size() == static_cast<size_t>(GPUVRAMSize::Count));
+
+std::optional<GPUVRAMSize> Settings::ParseGPUVRAMSize(std::string_view str)
+{
+  int index = 0;
+  for (const char* name : s_gpu_vram_size_names)
+  {
+    if (str == name)
+      return static_cast<GPUVRAMSize>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetGPUVRAMSizeName(GPUVRAMSize size)
+{
+  return s_gpu_vram_size_names[static_cast<u8>(size)];
+}
+
+const char* Settings::GetGPUVRAMSizeDisplayName(GPUVRAMSize size)
+{
+  return Host::TranslateToCString("Settings", s_gpu_vram_size_display_names[static_cast<size_t>(size)], "GPUVRAMSize");
 }
 
 static constexpr const std::array s_cpu_execution_mode_names = {

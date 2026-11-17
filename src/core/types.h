@@ -334,10 +334,21 @@ enum : u32
 
 enum class CPURAMSize : u8
 {
-  Default,      // 2MB
-  Expanded4MB,  // 4MB
-  Expanded8MB,  // 8MB
-  Expanded16MB, // 16MB
+  Default,            // 2MB
+  Expanded4MB,        // 4MB
+  Expanded4MBForced,  // 4MB, all RAM mapped regardless of RAM_SIZE
+  Expanded8MB,        // 8MB
+  Expanded8MBForced,  // 8MB, all RAM mapped regardless of RAM_SIZE
+  Expanded16MB,       // 16MB
+  Expanded16MBForced, // 16MB, all RAM mapped regardless of RAM_SIZE
+  Count,
+};
+
+enum class GPUVRAMSize : u8
+{
+  Default,           // 1MB
+  Expanded2MB,       // 2MB
+  Expanded2MBForced, // 2MB, upper bank addressable regardless of GP1(09h)
   Count,
 };
 

@@ -1149,8 +1149,11 @@ void System::LoadSettings(bool display_osd_messages)
   Cheats::ApplySettingOverrides();
 
   // GPU dumps recorded with 2MB VRAM need it to replay.
-  if (s_state.gpu_dump_player && s_state.gpu_dump_player->Is2MBVRAM())
-    g_settings.gpu_enable_2mb_vram = true;
+  if (s_state.gpu_dump_player && s_state.gpu_dump_player->Is2MBVRAM() &&
+      g_settings.gpu_vram_size == GPUVRAMSize::Default)
+  {
+    g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MB;
+  }
 
   g_settings.FixIncompatibleSettings(si, display_osd_messages);
 }
@@ -2067,7 +2070,8 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   // The backend is created first, so that components can send commands to it when they reset.
   // This can fail due to the application being closed during startup.
   if (!VideoThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer,
-                                     static_cast<bool>(g_settings.gpu_enable_2mb_vram), false, start_fullscreen, error))
+                                     (g_settings.gpu_vram_size != GPUVRAMSize::Default), false, start_fullscreen,
+                                     error))
   {
     // Game info has to be manually cleared since the backend won't shutdown naturally.
     VideoThread::ClearGameInfo();
@@ -4980,8 +4984,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       InterruptExecution();
     }
 
-    if (g_settings.cpu_force_full_ram_mapping != old_settings.cpu_force_full_ram_mapping)
+    if (Settings::IsCPURAMSizeForced(g_settings.cpu_ram_size) !=
+        Settings::IsCPURAMSizeForced(old_settings.cpu_ram_size))
+    {
       Bus::UpdateMappedRAMSize();
+    }
 
     SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 
@@ -5333,7 +5340,7 @@ void System::SetTaintsFromSettings()
     SetTaint(Taint::ForceFrameTimings);
   if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
     SetTaint(Taint::ExpandedRAM);
-  if (g_settings.gpu_enable_2mb_vram)
+  if (g_settings.gpu_vram_size != GPUVRAMSize::Default)
     SetTaint(Taint::ExpandedVRAM);
   if (Cheats::GetActivePatchCount() > 0)
     SetTaint(Taint::Patches);
@@ -5394,7 +5401,7 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "Overclock disabled."));
     if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
       append(TRANSLATE_SV("System", "RAM size set to default."));
-    if (g_settings.gpu_enable_2mb_vram)
+    if (g_settings.gpu_vram_size != GPUVRAMSize::Default)
       append(TRANSLATE_SV("System", "2MB VRAM disabled."));
     if (g_settings.gpu_resolution_scale != 1)
       append(TRANSLATE_SV("System", "Resolution scale set to 1x."));
@@ -5492,9 +5499,15 @@ void System::WarnAboutUnsafeSettings()
       }
     }
     if (g_settings.cpu_ram_size != Settings::DEFAULT_CPU_RAM_SIZE)
-      append(TRANSLATE_SV("System", "Expanded RAM is enabled, this may be incompatible with some games."));
-    if (g_settings.gpu_enable_2mb_vram)
-      append(TRANSLATE_SV("System", "2MB VRAM is enabled, this may be incompatible with some games."));
+    {
+      append_format(TRANSLATE_FS("System", "RAM size is set to {}, this may be incompatible with some games."),
+                    Settings::GetCPURAMSizeDisplayName(g_settings.cpu_ram_size));
+    }
+    if (g_settings.gpu_vram_size != Settings::DEFAULT_GPU_VRAM_SIZE)
+    {
+      append_format(TRANSLATE_FS("System", "VRAM size is set to {}, this may be incompatible with some games."),
+                    Settings::GetGPUVRAMSizeDisplayName(g_settings.gpu_vram_size));
+    }
     if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
       append(TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
 
@@ -6744,7 +6757,7 @@ bool System::ChangeGPUDump(std::string new_path)
   {
     WARNING_LOG("Forcing 2MB VRAM to {} due to GPU dump",
                 s_state.gpu_dump_player->Is2MBVRAM() ? "enabled" : "disabled");
-    g_settings.gpu_enable_2mb_vram = s_state.gpu_dump_player->Is2MBVRAM();
+    g_settings.gpu_vram_size = s_state.gpu_dump_player->Is2MBVRAM() ? GPUVRAMSize::Expanded2MB : GPUVRAMSize::Default;
     GPU::Reset(true);
   }
 

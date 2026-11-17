@@ -5,11 +5,14 @@
 #include "core/gpu.h"
 #include "core/gpu_sw_rasterizer.h"
 #include "core/interrupt_controller.h"
+#include "core/save_state_version.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "core/timers.h"
 #include "core/timing_event.h"
 #include "core/video_thread_private.h"
+
+#include "util/state_wrapper.h"
 
 #include <gtest/gtest.h>
 
@@ -840,7 +843,7 @@ TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
 
   // 2MB console: still aliased until GP1(09h).0 is set.
   GPU::Shutdown();
-  g_settings.gpu_enable_2mb_vram = true;
+  g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MB;
   GPU::Initialize();
   GPU::Reset(false);
   EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_2MB_HEIGHT);
@@ -870,6 +873,39 @@ TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
 
   GPU::WriteRegister(4, 0x09000000);
   EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x5678u);
+
+  // Forced 2MB: the upper bank is addressable from reset, and clearing GP1(09h).0 does not disable it.
+  GPU::Shutdown();
+  g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MBForced;
+  GPU::Initialize();
+  GPU::Reset(false);
+  EXPECT_EQ(GPU::GetVRAMHeight(), VRAM_2MB_HEIGHT);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
+  GPU::WriteRegister(4, 0x09000000);
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
+
+  // Loading a state saved without GP1(09h).0 must not disable the forced upper bank.
+  GPU::Shutdown();
+  g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MB;
+  GPU::Initialize();
+  GPU::Reset(false);
+  std::vector<u8> data(System::GetMaxSaveStateSize(CPURAMSize::Default, true, false));
+  {
+    StateWrapper sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+    ASSERT_TRUE(GPU::DoState(sw));
+    data.resize(sw.GetPosition());
+  }
+  GPU::Shutdown();
+  g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MBForced;
+  GPU::Initialize();
+  GPU::Reset(false);
+  {
+    StateWrapper sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+    ASSERT_TRUE(GPU::DoState(sw));
+  }
+  g_vram[(1000 * VRAM_WIDTH) + 5] = 0x1234;
+  g_vram[((1000 - VRAM_1MB_HEIGHT) * VRAM_WIDTH) + 5] = 0x5678;
+  EXPECT_EQ(ReadVRAMPixelThroughGPUREAD(5, 1000), 0x1234u);
 }
 
 TEST(GPUDisplay, FineCropUsesOriginalSourceScale)

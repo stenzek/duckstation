@@ -534,7 +534,7 @@ void GPU::Initialize()
   s_locals.max_run_ahead = g_settings.gpu_max_run_ahead_cycles;
   s_locals.console_is_pal = System::IsPALRegion();
   // The backend was created with this VRAM size, so set it before Reset() to avoid recreating the backend.
-  s_locals.enable_2mb_vram = g_settings.gpu_enable_2mb_vram;
+  s_locals.enable_2mb_vram = (g_settings.gpu_vram_size != GPUVRAMSize::Default);
   s_locals.texture_enable_mask = !g_settings.gpu_disable_textures;
   s_locals.force_raw_texture = g_settings.gpu_disable_vertex_lighting;
 
@@ -625,10 +625,10 @@ std::pair<u32, u32> GPU::GetFullDisplayResolution()
 void GPU::Reset(bool clear_vram)
 {
   // Changes to the VRAM size setting take effect on reset.
-  Set2MBVRAM(g_settings.gpu_enable_2mb_vram);
+  Set2MBVRAM(g_settings.gpu_vram_size != GPUVRAMSize::Default);
 
   s_locals.GPUSTAT.bits = 0x14802000;
-  s_locals.upper_vram_active = false;
+  s_locals.upper_vram_active = (g_settings.gpu_vram_size == GPUVRAMSize::Expanded2MBForced);
   s_locals.GPUREAD_latch = 0;
   s_locals.crtc_state.fractional_ticks = 0;
   s_locals.crtc_state.current_tick_in_scanline = 0;
@@ -791,6 +791,7 @@ bool GPU::DoState(StateWrapper& sw)
     sw.SkipBytes(1); // console_is_pal
 
   sw.Do(&s_locals.upper_vram_active);
+  s_locals.upper_vram_active |= (sw.IsReading() && g_settings.gpu_vram_size == GPUVRAMSize::Expanded2MBForced);
 
   sw.Do(&s_locals.crtc_state.regs.display_address_start);
   sw.Do(&s_locals.crtc_state.regs.horizontal_display_range);
@@ -2460,7 +2461,9 @@ void GPU::WriteGP1(u32 value)
     {
       // TODO: On 1MB consoles, enabling the upper bank should drop VRAM writes to Y>=512, read FFFFh from there, and
       // make textures from E1h.11 pages disappear, since the second chip select is not connected. We alias instead.
-      const bool upper_vram_active = ConvertToBoolUnchecked(param & 0x01);
+      // The forced 2MB mode keeps the upper bank addressable for software that never sets GP1(09h).0.
+      const bool upper_vram_active =
+        (ConvertToBoolUnchecked(param & 0x01) || g_settings.gpu_vram_size == GPUVRAMSize::Expanded2MBForced);
       DEBUG_LOG("Upper VRAM addressing <- {}", upper_vram_active ? "allowed" : "ignored");
       if (s_locals.upper_vram_active != upper_vram_active)
       {

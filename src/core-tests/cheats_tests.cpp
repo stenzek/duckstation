@@ -112,9 +112,8 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
                                             "OverrideCPUOverclock = 200\n"
                                             "DisableWidescreenRendering = true\n"
                                             "ForcePGXPPreserveProjectionPrecision = true\n"
-                                            "OverrideRAMSize = 8MB\n"
-                                            "ForceFullRAMMapping = true\n"
-                                            "Enable2MBVRAM = true\n"
+                                            "OverrideRAMSize = 8MBForced\n"
+                                            "OverrideVRAMSize = 2MBForced\n"
                                             "DisallowForAchievements = true\n"
                                             "80010000 0001\n";
 
@@ -130,9 +129,8 @@ TEST(Cheats, ParseAndFormatCodeInfoOverrides)
   EXPECT_EQ(code.override_cpu_overclock, 200u);
   EXPECT_TRUE(code.disable_widescreen_rendering);
   EXPECT_TRUE(code.force_pgxp_preserve_projection_precision);
-  EXPECT_EQ(code.override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
-  EXPECT_TRUE(code.force_full_ram_mapping);
-  EXPECT_TRUE(code.enable_2mb_vram);
+  EXPECT_EQ(code.override_ram_size, std::make_optional(CPURAMSize::Expanded8MBForced));
+  EXPECT_EQ(code.override_vram_size, std::make_optional(GPUVRAMSize::Expanded2MBForced));
   EXPECT_TRUE(code.disallow_for_achievements);
 
   // writing the code back out should preserve the overrides
@@ -180,13 +178,17 @@ TEST(Cheats, ParseAndFormatRAMSizeOverrides)
                                             "80010000 0001\n"
                                             "[NoSuffix]\n"
                                             "OverrideRAMSize = 4\n"
+                                            "80010000 0001\n"
+                                            "[ForceMapping]\n"
+                                            "OverrideRAMSize = 16MB\n"
+                                            "ForceFullRAMMapping = true\n"
                                             "80010000 0001\n";
 
   Cheats::CodeInfoList codes;
   Error error;
   ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
     << error.GetDescription();
-  ASSERT_EQ(codes.size(), 7u);
+  ASSERT_EQ(codes.size(), 8u);
   EXPECT_EQ(codes[0].override_ram_size, std::make_optional(CPURAMSize::Expanded4MB));
   EXPECT_EQ(codes[1].override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
   EXPECT_EQ(codes[2].override_ram_size, std::make_optional(CPURAMSize::Expanded16MB));
@@ -194,6 +196,7 @@ TEST(Cheats, ParseAndFormatRAMSizeOverrides)
   EXPECT_FALSE(codes[4].override_ram_size.has_value());
   EXPECT_FALSE(codes[5].override_ram_size.has_value());
   EXPECT_FALSE(codes[6].override_ram_size.has_value());
+  EXPECT_EQ(codes[7].override_ram_size, std::make_optional(CPURAMSize::Expanded16MBForced));
 
   // The aliases are written back out as OverrideRAMSize.
   EXPECT_NE(Cheats::FormatCodeForFile(codes[0]).find("OverrideRAMSize = 4MB\n"), std::string::npos);
@@ -201,6 +204,8 @@ TEST(Cheats, ParseAndFormatRAMSizeOverrides)
   EXPECT_NE(Cheats::FormatCodeForFile(codes[2]).find("OverrideRAMSize = 16MB\n"), std::string::npos);
   EXPECT_EQ(Cheats::FormatCodeForFile(codes[1]).find("Enable8MBRAM"), std::string::npos);
   EXPECT_EQ(Cheats::FormatCodeForFile(codes[2]).find("Enable16MBRAM"), std::string::npos);
+  EXPECT_NE(Cheats::FormatCodeForFile(codes[7]).find("OverrideRAMSize = 16MBForced\n"), std::string::npos);
+  EXPECT_EQ(Cheats::FormatCodeForFile(codes[7]).find("ForceFullRAMMapping"), std::string::npos);
 }
 
 TEST(Cheats, RAMSizeOverrideUsesLargestSize)
@@ -230,11 +235,26 @@ TEST(Cheats, RAMSizeOverrideUsesLargestSize)
   g_settings.cpu_ram_size = CPURAMSize::Expanded8MB;
   codes[0]->ApplySettingOverrides();
   EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded8MB);
+
+  // Forcing the full mapping is kept from either side.
+  g_settings.cpu_ram_size = CPURAMSize::Expanded8MBForced;
+  codes[2]->ApplySettingOverrides();
+  EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded16MBForced);
+  Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
+  metadata.override_ram_size = CPURAMSize::Expanded4MBForced;
+  Error error;
+  std::unique_ptr<Cheats::CheatCode> forced_code = Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error);
+  ASSERT_NE(forced_code, nullptr) << error.GetDescription();
+  g_settings.cpu_ram_size = CPURAMSize::Expanded16MB;
+  forced_code->ApplySettingOverrides();
+  EXPECT_EQ(g_settings.cpu_ram_size, CPURAMSize::Expanded16MBForced);
 }
 
 TEST(Cheats, RAMSizeOverrideNamesRoundTrip)
 {
-  for (const CPURAMSize size : {CPURAMSize::Expanded4MB, CPURAMSize::Expanded8MB, CPURAMSize::Expanded16MB})
+  for (const CPURAMSize size :
+       {CPURAMSize::Expanded4MB, CPURAMSize::Expanded4MBForced, CPURAMSize::Expanded8MB, CPURAMSize::Expanded8MBForced,
+        CPURAMSize::Expanded16MB, CPURAMSize::Expanded16MBForced})
   {
     SCOPED_TRACE(Settings::GetCPURAMSizeName(size));
     const std::string input =
@@ -301,50 +321,63 @@ TEST(Cheats, PGXPPreserveProjectionPrecisionOverride)
   }
 }
 
-TEST(Cheats, ForceFullRAMMappingOverride)
+TEST(Cheats, ForceFullRAMMappingAlias)
 {
-  const Settings old_settings = g_settings;
-  const ScopedGuard restore_settings([&old_settings]() { g_settings = old_settings; });
+  // Old files have the mapping as a separate key after the size. Without a size there is nothing to force.
+  static constexpr std::string_view input = "[Sixteen]\n"
+                                            "OverrideRAMSize = 16MB\n"
+                                            "ForceFullRAMMapping = true\n"
+                                            "80010000 0001\n"
+                                            "[Alias]\n"
+                                            "Enable8MBRAM = true\n"
+                                            "ForceFullRAMMapping = true\n"
+                                            "80010000 0001\n"
+                                            "[Larger]\n"
+                                            "OverrideRAMSize = 4MB\n"
+                                            "ForceFullRAMMapping = true\n"
+                                            "Enable8MBRAM = true\n"
+                                            "80010000 0001\n"
+                                            "[Disabled]\n"
+                                            "OverrideRAMSize = 8MB\n"
+                                            "ForceFullRAMMapping = false\n"
+                                            "80010000 0001\n"
+                                            "[NoSize]\n"
+                                            "ForceFullRAMMapping = true\n"
+                                            "80010000 0001\n";
 
-  for (const bool force_mapping : {false, true})
-  {
-    Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
-    metadata.force_full_ram_mapping = force_mapping;
-    Error error;
-    std::unique_ptr<Cheats::CheatCode> code = Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error);
-    ASSERT_NE(code, nullptr) << error.GetDescription();
-    EXPECT_EQ(code->HasAnySettingOverrides(), force_mapping);
-
-    // Only ever enables the option.
-    for (const bool setting : {false, true})
-    {
-      g_settings.cpu_force_full_ram_mapping = setting;
-      code->ApplySettingOverrides();
-      EXPECT_EQ(g_settings.cpu_force_full_ram_mapping, force_mapping || setting);
-    }
-  }
+  Cheats::CodeInfoList codes;
+  Error error;
+  ASSERT_TRUE(Cheats::ImportCodesFromString(&codes, input, Cheats::FileFormat::DuckStation, true, &error))
+    << error.GetDescription();
+  ASSERT_EQ(codes.size(), 5u);
+  EXPECT_EQ(codes[0].override_ram_size, std::make_optional(CPURAMSize::Expanded16MBForced));
+  EXPECT_EQ(codes[1].override_ram_size, std::make_optional(CPURAMSize::Expanded8MBForced));
+  EXPECT_EQ(codes[2].override_ram_size, std::make_optional(CPURAMSize::Expanded8MBForced));
+  EXPECT_EQ(codes[3].override_ram_size, std::make_optional(CPURAMSize::Expanded8MB));
+  EXPECT_FALSE(codes[4].override_ram_size.has_value());
 }
 
-TEST(Cheats, Enable2MBVRAMOverride)
+TEST(Cheats, VRAMSizeOverride)
 {
   const Settings old_settings = g_settings;
   const ScopedGuard restore_settings([&old_settings]() { g_settings = old_settings; });
 
-  for (const bool enable : {false, true})
+  for (const GPUVRAMSize size : {GPUVRAMSize::Expanded2MB, GPUVRAMSize::Expanded2MBForced})
   {
+    SCOPED_TRACE(Settings::GetGPUVRAMSizeName(size));
     Cheats::CodeMetadata metadata = MakeMetadata(Cheats::CodeType::Gameshark);
-    metadata.enable_2mb_vram = enable;
+    metadata.override_vram_size = size;
     Error error;
     std::unique_ptr<Cheats::CheatCode> code = Cheats::ParseCode(std::move(metadata), "80010000 0001\n", &error);
     ASSERT_NE(code, nullptr) << error.GetDescription();
-    EXPECT_EQ(code->HasAnySettingOverrides(), enable);
+    EXPECT_TRUE(code->HasAnySettingOverrides());
 
-    // Only ever enables the option.
-    for (const bool setting : {false, true})
+    // Only ever increases the size.
+    for (const GPUVRAMSize setting : {GPUVRAMSize::Default, GPUVRAMSize::Expanded2MB, GPUVRAMSize::Expanded2MBForced})
     {
-      g_settings.gpu_enable_2mb_vram = setting;
+      g_settings.gpu_vram_size = setting;
       code->ApplySettingOverrides();
-      EXPECT_EQ(g_settings.gpu_enable_2mb_vram, enable || setting);
+      EXPECT_EQ(g_settings.gpu_vram_size, std::max(size, setting));
     }
   }
 }
