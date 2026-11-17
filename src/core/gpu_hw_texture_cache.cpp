@@ -569,6 +569,7 @@ struct GPUTextureCacheState
   GPUReplacementImageCache gpu_replacement_image_cache;
   size_t gpu_replacement_image_cache_vram_usage = 0;
   std::vector<std::pair<GPUReplacementImageCache::iterator, s32>> gpu_replacement_image_cache_purge_list;
+  UnorderedStringSet failed_replacement_images;
 
   std::unordered_set<VRAMReplacementName, VRAMReplacementNameHash> dumped_vram_writes;
   std::unordered_set<DumpedTextureKey, DumpedTextureKeyHash> dumped_textures;
@@ -864,6 +865,7 @@ void GPUTextureCache::Shutdown(bool keep_vram_write_replacements)
   s_state.gpu_replacement_image_cache_vram_usage = 0;
 
   s_state.replacement_image_cache.clear();
+  s_state.failed_replacement_images.clear();
   if (!keep_vram_write_replacements)
     s_state.vram_replacements.clear();
   s_state.vram_write_texture_replacements.clear();
@@ -3353,12 +3355,15 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureRepla
   auto it = s_state.replacement_image_cache.find(path);
   if (it != s_state.replacement_image_cache.end())
     return &it->second;
+  if (s_state.failed_replacement_images.contains(path))
+    return nullptr;
 
   Image image;
   Error error;
   if (!image.LoadFromFile(path.c_str(), &error))
   {
     ERROR_LOG("Failed to load '{}': {}", Path::GetFileName(path), error.GetDescription());
+    s_state.failed_replacement_images.emplace(path);
     return nullptr;
   }
 
@@ -3377,6 +3382,8 @@ GPUTexture* GPUTextureCache::GetTextureReplacementGPUImage(const std::string& pa
     git->second.second = System::GetFrameNumber();
     return git->second.first.get();
   }
+  if (s_state.failed_replacement_images.contains(path))
+    return nullptr;
 
   // Need to upload it.
   Error error;
@@ -3394,6 +3401,8 @@ GPUTexture* GPUTextureCache::GetTextureReplacementGPUImage(const std::string& pa
     Image cpu_image;
     if (cpu_image.LoadFromFile(path.c_str(), &error))
       tex = g_gpu_device->FetchAndUploadTextureImage(cpu_image, GPUTexture::Flags::None, &error);
+    else
+      s_state.failed_replacement_images.emplace(path);
   }
 
   if (!tex)
@@ -3709,6 +3718,7 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info, bool show_info_i
 {
   s_state.dumped_textures.clear();
   s_state.dumped_vram_writes.clear();
+  s_state.failed_replacement_images.clear();
   s_state.vram_replacements.clear();
   s_state.vram_write_texture_replacements.clear();
   s_state.texture_page_texture_replacements.clear();
