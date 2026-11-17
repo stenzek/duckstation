@@ -3790,8 +3790,6 @@ SCUS-94906:
     versionTested: "0.1-887-g1eecd50"
   controllers:
     - DigitalController
-  traits:
-    - ForceFullBoot # Stops crashing after FMV.
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -97756,8 +97754,6 @@ SLES-00451:
     versionTested: "0.1-1645-g42d49426"
   controllers:
     - DigitalController
-  traits:
-    - ForceFullBoot # Stops crashing after FMV.
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -97781,8 +97777,6 @@ SLED-00516:
   saveName: "Lomax (Europe) (En,Fr,De,Es,It) (Demo)"
   controllers:
     - DigitalController
-  traits:
-    - ForceFullBoot # Stops crashing after FMV.
   metadata:
     genre: "** DEMO **"
 SLPS-00987:
@@ -97794,8 +97788,6 @@ SLPS-00987:
     versionTested: "0.1-1645-g42d49426"
   controllers:
     - DigitalController
-  traits:
-    - ForceFullBoot # Stops crashing after FMV.
   metadata:
     publisher: "Tomy"
     developer: "Psygnosis"
