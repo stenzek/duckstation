@@ -282,6 +282,17 @@ bool QtHost::VeryEarlyProcessStartup()
 #endif
 
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
+  // Set application details.
+  // This is critical for Linux to show the correct application name in the task switcher, since it appears
+  // to use the application name to search for desktop files with the corresponding StartupWMClass.
+  // These must be set before QApplication is constructed, so that the desktop file name can be registered
+  // with the xdg-desktop-portal before the platform theme makes any portal calls.
+  QApplication::setApplicationName(u"duckstation-qt"_s);
+  QApplication::setApplicationVersion(QString::fromUtf8(g_scm_version_str));
+  QApplication::setOrganizationName(u"Stenzek"_s);
+  QApplication::setOrganizationDomain(u"duckstation.org"_s);
+  QApplication::setDesktopFileName(u"org.duckstation.DuckStation"_s);
   return true;
 }
 
@@ -289,15 +300,6 @@ bool QtHost::EarlyProcessStartup()
 {
   // Redirect Qt errors.
   qInstallMessageHandler(MessageOutputHandler);
-
-  // Set application details.
-  // This is critical for Linux to show the correct application name in the task switcher, since it appears
-  // to uses the application name to search for desktop files with the corresponding StartupWMClass.
-  QApplication::setApplicationName(u"duckstation-qt"_s);
-  QApplication::setApplicationVersion(QString::fromUtf8(g_scm_version_str));
-  QApplication::setOrganizationName(u"Stenzek"_s);
-  QApplication::setOrganizationDomain(u"duckstation.org"_s);
-  QApplication::setDesktopFileName(u"org.duckstation.DuckStation"_s);
 
   Error error;
   if (!Core::ProcessStartup(&error)) [[unlikely]]
