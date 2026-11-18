@@ -300,9 +300,9 @@ static void InitializeVRAMWritePaletteRecord(VRAMWrite::PaletteRecord* record, S
                                              const GSVector4i rect, PaletteRecordFlags flags);
 static void UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_key, const GSVector4i global_uv_rect,
                                    PaletteRecordFlags flags);
-static void SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect);
+static void SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect, bool dump_old_pixels);
 static bool TryMergeVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect);
-static void RemoveVRAMWrite(VRAMWrite* entry);
+static void RemoveVRAMWrite(VRAMWrite* entry, bool dump_old_pixels = true);
 static void DumpTexturesFromVRAMWrite(VRAMWrite* entry);
 static void DumpTextureFromPage(const Source* src);
 
@@ -1055,10 +1055,15 @@ void GPUTextureCache::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 w
       }
     });
   }
+  else
+  {
+    // invalidate before copying, so removed writes are dumped with the old data
+    AddWrittenRectangle(dst_bounds, false, true);
+  }
 
-  // copy and invalidate
   GPU_SW_Rasterizer::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, check_mask, set_mask);
-  AddWrittenRectangle(dst_bounds, convert_copies_to_writes, true);
+  if (convert_copies_to_writes)
+    AddWrittenRectangle(dst_bounds, true, true);
 }
 
 void GPUTextureCache::WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask,
@@ -1151,11 +1156,11 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vra
         }
         else if (it->num_splits < s_state.config.max_vram_write_splits && !it->active_rect.eq(intersection))
         {
-          SplitVRAMWrite(it, intersection);
+          SplitVRAMWrite(it, intersection, !update_vram_writes);
         }
         else
         {
-          RemoveVRAMWrite(it);
+          RemoveVRAMWrite(it, !update_vram_writes);
         }
       }
     }
@@ -1960,7 +1965,7 @@ void GPUTextureCache::UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_
   }
 }
 
-void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect)
+void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect, bool dump_old_pixels)
 {
   SyncVRAMWritePaletteRecords(entry);
 
@@ -2033,10 +2038,14 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
     ListUnlink(entry->page_refs[i]);
 
   // Records that span multiple fragments would be dumped with the new data later, so dump them before the overwrite.
-  std::erase_if(entry->palette_records, [&rects](const VRAMWrite::PaletteRecord& prec) {
-    return std::ranges::any_of(rects, [&prec](const GSVector4i& splitr) { return splitr.rcontains(prec.rect); });
-  });
-  DumpTexturesFromVRAMWrite(entry);
+  // Converted copies have already dumped the old pixels, VRAM now contains the copied data.
+  if (dump_old_pixels)
+  {
+    std::erase_if(entry->palette_records, [&rects](const VRAMWrite::PaletteRecord& prec) {
+      return std::ranges::any_of(rects, [&prec](const GSVector4i& splitr) { return splitr.rcontains(prec.rect); });
+    });
+    DumpTexturesFromVRAMWrite(entry);
+  }
 
   s_state.last_vram_write = (s_state.last_vram_write == entry) ? nullptr : s_state.last_vram_write;
   delete entry;
@@ -2095,7 +2104,7 @@ bool GPUTextureCache::TryMergeVRAMWrite(VRAMWrite* entry, const GSVector4i writt
   return true;
 }
 
-void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
+void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry, bool dump_old_pixels)
 {
   DEV_LOG("Remove VRAM write {:016X} at {}", entry->hash, entry->write_rect);
 
@@ -2105,7 +2114,9 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
   for (u32 i = 0; i < entry->num_page_refs; i++)
     ListUnlink(entry->page_refs[i]);
 
-  DumpTexturesFromVRAMWrite(entry);
+  // Converted copies have already dumped the old pixels, VRAM now contains the copied data.
+  if (dump_old_pixels)
+    DumpTexturesFromVRAMWrite(entry);
 
   s_state.last_vram_write = (s_state.last_vram_write == entry) ? nullptr : s_state.last_vram_write;
   delete entry;
