@@ -208,11 +208,11 @@ float3 FxaaPixelShader(float2 pos, sampler2D tex, float2 rcpFrame)
     for(int i = 0; i < FXAA_SEARCH_STEPS; i++) {
         if(!doneN)
         {
-            lumaEndN = FxaaLuma(tex2D(tex, posN.xy).xyz);
+            lumaEndN = FxaaLuma(tex2Dlod(tex, float4(posN.xy, 0.0, 0.0)).xyz);
         }
         if(!doneP)
         {
-            lumaEndP = FxaaLuma(tex2D(tex, posP.xy).xyz);
+            lumaEndP = FxaaLuma(tex2Dlod(tex, float4(posP.xy, 0.0, 0.0)).xyz);
         }
         
         doneN = doneN || (abs(lumaEndN - lumaN) >= gradientN);
