@@ -95,12 +95,20 @@
        <property name="text">
         <string>Restore Defaults</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/reset-left-line.svg</normaloff>:/icons/monochrome/svg/reset-left-line.svg</iconset>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="copyGlobalSettings">
        <property name="text">
         <string>Copy Global Settings</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/file-copy-line.svg</normaloff>:/icons/monochrome/svg/file-copy-line.svg</iconset>
        </property>
       </widget>
      </item>
@@ -109,12 +117,20 @@
        <property name="text">
         <string>Clear Settings</string>
        </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/eraser-line.svg</normaloff>:/icons/monochrome/svg/eraser-line.svg</iconset>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="close">
        <property name="text">
         <string>Close</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/close-line.svg</normaloff>:/icons/monochrome/svg/close-line.svg</iconset>
        </property>
        <property name="default">
         <bool>true</bool>
