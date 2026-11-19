@@ -2122,10 +2122,10 @@ std::vector<std::string> VideoPresenter::EnumerateBorderOverlayPresets()
   std::vector<std::string> ret;
 
   FileSystem::FindResultsArray files;
-  FileSystem::FindFiles(EmuFolders::Overlays.c_str(), pattern,
-                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
+  FileSystem::FindFiles(EmuFolders::Overlays.c_str(), pattern, FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES,
+                        &files);
   FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "overlays").c_str(), pattern,
-                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES, &files);
+                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
 
   ret.reserve(files.size());
   for (FILESYSTEM_FIND_DATA& fd : files)
