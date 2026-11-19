@@ -125091,6 +125091,8 @@ SLPS-01144:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Fixes GPU DMA bus error and Load Game hang after the title screen.
   metadata:
     publisher: "Whoopee Camp"
     developer: "Whoopee Camp"
@@ -183479,6 +183481,8 @@ SCUS-94236:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Fixes GPU DMA bus error and Load Game hang after the title screen.
   metadata:
     publisher: "Sony"
     developer: "Whoopee Camp"
@@ -183562,6 +183566,8 @@ SCES-01331:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Fixes GPU DMA bus error and Load Game hang after the title screen.
   metadata:
     publisher: "Sony"
     developer: "Whoopee Camp"
@@ -183586,6 +183592,8 @@ SCES-01330:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Fixes GPU DMA bus error and Load Game hang after the title screen.
   metadata:
     publisher: "Sony"
     developer: "Whoopee Camp"
