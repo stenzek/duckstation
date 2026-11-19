@@ -89,6 +89,9 @@ public:
 
   void addSearchDirectory(QWidget* parent_widget);
 
+protected:
+  bool eventFilter(QObject* object, QEvent* event) override;
+
 private:
   void refreshDirectoryList();
   void addSearchDirectory(const QString& path, bool recursive);

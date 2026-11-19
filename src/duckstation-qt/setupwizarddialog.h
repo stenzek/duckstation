@@ -22,6 +22,9 @@ public:
   SetupWizardDialog();
   ~SetupWizardDialog();
 
+protected:
+  bool eventFilter(QObject* object, QEvent* event) override;
+
 private:
   enum Page : u32
   {

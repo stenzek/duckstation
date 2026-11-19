@@ -26,6 +26,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
@@ -187,6 +188,18 @@ void QtUtils::SetColumnWidthsForTableView(QTableView* view, const std::initializ
 void QtUtils::SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 {
   SetColumnWidthForView(view, view->header(), widths);
+}
+
+bool QtUtils::DrawItemViewPlaceholderText(QAbstractItemView* view, const QString& text)
+{
+  if (!view->model() || view->model()->rowCount(view->rootIndex()) > 0)
+    return false;
+
+  QWidget* const viewport = view->viewport();
+  QPainter painter(viewport);
+  painter.setPen(viewport->palette().color(QPalette::PlaceholderText));
+  painter.drawText(viewport->rect().adjusted(16, 16, -16, -16), Qt::AlignCenter | Qt::TextWordWrap, text);
+  return true;
 }
 
 void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)

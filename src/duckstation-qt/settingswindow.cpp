@@ -110,9 +110,8 @@ void SettingsWindow::addPages()
     addWidget(
       new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
       u":/icons/monochrome/svg/folder-open-line.svg"_s,
-      tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by "
-         "DuckStation to populate the game list. Search directories can be added, removed, and switched to "
-         "recursive/non-recursive."));
+      tr("<strong>Game List Settings</strong><hr>These options control which directories are scanned to populate "
+         "the game list.<br><br>Mouse over an option for additional information."));
   }
 
   addWidget(new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), u":/icons/monochrome/svg/chip-line.svg"_s,

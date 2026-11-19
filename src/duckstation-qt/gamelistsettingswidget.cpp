@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "settingswindow.h"
 
 #include "core/core.h"
 #include "core/game_list.h"
@@ -351,6 +352,27 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
     },
     Qt::QueuedConnection);
 
+  // used to draw placeholder text when the lists are empty
+  m_ui.searchDirectoryList->viewport()->installEventFilter(this);
+  m_ui.excludedPaths->viewport()->installEventFilter(this);
+
+  dialog->registerWidgetHelp(
+    m_ui.searchDirectoryList, tr("Search Directories"), QString(),
+    tr("Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which "
+       "takes longer but finds games stored in nested folders. Folders can also be dragged here from your file "
+       "manager."));
+  dialog->registerWidgetHelp(
+    m_ui.excludedPaths, tr("Excluded Paths"), QString(),
+    tr("Files and directories which will be skipped when scanning for games, for example images you do not want to "
+       "appear in the game list. Files and folders can also be dragged here from your file manager."));
+  dialog->registerWidgetHelp(m_ui.scanForNewGames, tr("Scan For New Games"), QString(),
+                             tr("Scans the search directories for files which are not already in the game list. "
+                                "Previously-scanned games are loaded from the cache, so this is usually quick."));
+  dialog->registerWidgetHelp(
+    m_ui.rescanAllGames, tr("Rescan All Games"), QString(),
+    tr("Discards the game list cache and scans every file in the search directories again. Use this if game details "
+       "such as titles or serials are incorrect. May take a while for large collections."));
+
   refreshDirectoryList();
   refreshExclusionList();
 }
@@ -414,6 +436,32 @@ void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& p
   menu->addAction(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Open Directory..."),
                   [this, path]() { QtUtils::OpenURL(this, QUrl::fromLocalFile(path)); });
   menu->popup(m_ui.searchDirectoryList->mapToGlobal(point));
+}
+
+bool GameListSettingsWidget::eventFilter(QObject* object, QEvent* event)
+{
+  if (event->type() == QEvent::Paint)
+  {
+    if (object == m_ui.searchDirectoryList->viewport())
+    {
+      if (QtUtils::DrawItemViewPlaceholderText(
+            m_ui.searchDirectoryList,
+            tr("No search directories. Add a folder, or drag one here, to choose where your games are stored.")))
+      {
+        return true;
+      }
+    }
+    else if (object == m_ui.excludedPaths->viewport())
+    {
+      if (QtUtils::DrawItemViewPlaceholderText(
+            m_ui.excludedPaths, tr("No excluded paths. Files or folders added here will be skipped when scanning.")))
+      {
+        return true;
+      }
+    }
+  }
+
+  return QWidget::eventFilter(object, event);
 }
 
 void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)

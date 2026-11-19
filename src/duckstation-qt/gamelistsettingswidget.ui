@@ -146,7 +146,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>File...</string>
+        <string>Add File...</string>
        </property>
        <property name="icon">
         <iconset resource="resources/duckstation-qt.qrc">
@@ -163,7 +163,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Folder...</string>
+        <string>Add Folder...</string>
        </property>
        <property name="icon">
         <iconset resource="resources/duckstation-qt.qrc">

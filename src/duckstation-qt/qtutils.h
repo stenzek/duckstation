@@ -21,6 +21,7 @@
 
 class Error;
 
+class QAbstractItemView;
 class QComboBox;
 class QFrame;
 class QGridLayout;
@@ -96,6 +97,10 @@ inline void SafeDeleteWidget(T*& widget)
 /// Any values of -1 will stretch the column to use the remaining space.
 void SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<int>& widths);
 void SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
+
+/// Draws placeholder text in place of an item view's contents, if it has no rows.
+/// Call from a paint event filter on the view's viewport, returning true from the filter if this returns true.
+bool DrawItemViewPlaceholderText(QAbstractItemView* view, const QString& text);
 
 /// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
 std::optional<u32> KeyEventToCode(const QKeyEvent* ev);

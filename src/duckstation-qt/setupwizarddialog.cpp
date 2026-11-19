@@ -298,6 +298,9 @@ void SetupWizardDialog::setupGameListPage(bool initial)
   connect(m_ui.searchDirectoryList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
           &SetupWizardDialog::onSearchDirectoryListSelectionChanged);
 
+  // used to draw placeholder text when the list is empty
+  m_ui.searchDirectoryList->viewport()->installEventFilter(this);
+
   // queued, so we're not showing message boxes from inside the drop handler
   connect(
     m_directory_model, &GameListSearchDirectoriesModel::pathsDropped, this,
@@ -308,6 +311,19 @@ void SetupWizardDialog::setupGameListPage(bool initial)
     Qt::QueuedConnection);
 
   refreshDirectoryList();
+}
+
+bool SetupWizardDialog::eventFilter(QObject* object, QEvent* event)
+{
+  if (event->type() == QEvent::Paint && object == m_ui.searchDirectoryList->viewport() &&
+      QtUtils::DrawItemViewPlaceholderText(
+        m_ui.searchDirectoryList,
+        tr("No search directories. Add a folder, or drag one here, to choose where your games are stored.")))
+  {
+    return true;
+  }
+
+  return QDialog::eventFilter(object, event);
 }
 
 void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
