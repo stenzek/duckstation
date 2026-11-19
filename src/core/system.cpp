@@ -1418,6 +1418,7 @@ void System::UpdateFolderPaths()
   }
 
   const std::string old_cheats = EmuFolders::Cheats;
+  const std::string old_patches = EmuFolders::Patches;
   const std::string old_gamesettings = EmuFolders::GameSettings;
   const std::string old_inputprofiles = EmuFolders::InputProfiles;
   const std::string old_memorycards = EmuFolders::MemoryCards;
@@ -1434,11 +1435,14 @@ void System::UpdateFolderPaths()
     if (old_gamesettings != EmuFolders::GameSettings && UpdateGameSettingsLayer(Core::GetSettingsLock()))
     {
       if (!IsReplayingGPUDump())
-        Cheats::ReloadCheats(old_cheats != EmuFolders::Cheats, true, false, true, false);
+      {
+        Cheats::ReloadCheats(old_cheats != EmuFolders::Cheats || old_patches != EmuFolders::Patches, true, false, true,
+                             false);
+      }
 
       ApplySettings(false);
     }
-    else if (old_cheats != EmuFolders::Cheats)
+    else if (old_cheats != EmuFolders::Cheats || old_patches != EmuFolders::Patches)
     {
       if (!IsReplayingGPUDump())
         Cheats::ReloadCheats(true, false, false, true, false);
