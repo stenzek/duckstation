@@ -462,9 +462,9 @@ protected:
 
   static u16 Envelope() { return SPU::ReadRegister(0x1C); }
 
-  // Keys on voices 1 and 2 on the silent looping block, which has a loop start flag, then writes their repeat
-  // addresses on the last sample that hardware overwrites and the first sample that latches.
-  static void CheckRepeatAddressLatch(u32 samples_before_cutoff)
+  // Keys on voices 1 and 2 at 1000h, then writes their repeat addresses on the last sample that hardware overwrites and
+  // the first sample that latches. The unlatched write is overwritten by the first loop start flag in the sample.
+  static void CheckRepeatAddressLatch(u32 samples_before_cutoff, u16 loop_start_address = 0x200)
   {
     for (u32 voice = 1; voice <= 2; voice++)
     {
@@ -477,8 +477,8 @@ protected:
     SPU::WriteRegister(0x1E, 0x300);
     RunSamples(1);
     SPU::WriteRegister(0x2E, 0x300);
-    RunSamples(8);
-    EXPECT_EQ(SPU::ReadRegister(0x1E), 0x200u);
+    RunSamples(64);
+    EXPECT_EQ(SPU::ReadRegister(0x1E), loop_start_address);
     EXPECT_EQ(SPU::ReadRegister(0x2E), 0x300u);
   }
 
@@ -600,6 +600,16 @@ TEST_F(SPUHardwareTest, RepeatAddressLatchCutoffOnOddSample)
 {
   RunSamples(1);
   CheckRepeatAddressLatch(3);
+}
+
+TEST_F(SPUHardwareTest, RepeatAddressLatchCutoffWithoutFirstLoopStart)
+{
+  // A write before the last header fetch doesn't latch even if the first block has no loop start flag, so the next
+  // loop start flag in the sample still overwrites it.
+  auto& ram = SPU::GetWritableRAM();
+  ram[0x1001] = 0;
+  ram[0x1011] = 7;
+  CheckRepeatAddressLatch(4, 0x202);
 }
 
 TEST_F(SPUHardwareTest, UnityPitchCaptureMatchesHardware)
@@ -754,6 +764,31 @@ TEST_F(SPUHardwareTest, DMAWriteDrainTimingAndBusyFlag)
   EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x280u, 0x280u);
   EXPECT_EQ(std::memcmp(&SPU::GetWritableRAM()[0x2000], words.data(), sizeof(words)), 0);
   DMA::Reset();
+}
+
+TEST_F(SPUHardwareTest, KeyOnHeaderFetchUpdatesRepeatAddress)
+{
+  // The first header fetch after KON is serviced copies the first block's Loop-Start address to LSAX, four samples
+  // before the attack starts.
+  SPU::WriteRegister(0x14, 0x1000);
+  SPU::WriteRegister(0x16, 0x200);
+  SPU::WriteRegister(0x18, 0x000F);
+  SPU::WriteRegister(0x1A, 0x1FC0);
+  SPU::WriteRegister(0x1E, 0x300);
+  SPU::WriteRegister(0x188, 2);
+
+  u32 repeat_address = 0;
+  u32 attack = 0;
+  for (u32 sample = 1; sample <= 16 && attack == 0; sample++)
+  {
+    RunSamples(1);
+    if (repeat_address == 0 && SPU::ReadRegister(0x1E) == 0x200)
+      repeat_address = sample;
+    if (Envelope() != 0)
+      attack = sample;
+  }
+  ASSERT_NE(repeat_address, 0u);
+  EXPECT_EQ(attack, repeat_address + 4);
 }
 
 } // namespace

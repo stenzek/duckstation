@@ -1326,24 +1326,17 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     {
       // Writing the repeat address stops loop start flags from overwriting it until the next key on. The exception is
       // the start of the key on delay, where the voice fetches the first block's header on each of three samples to
-      // prime interpolation. A write before the last fetch is overwritten by its loop start flag and does not latch.
-      // Voices that are off have no delay, so writes to them always latch.
+      // prime interpolation. Each fetch clears the latch, so a write before the last fetch is overwritten by its loop
+      // start flag, or by the next loop start flag in the sample.
       //
       // Games sensitive to this are:
       //  - The Misadventures of Tron Bonne
       //  - Re-Loaded - The Hardcore Sequel (repeated sound effects)
       //  - Valkyrie Profile
 
-      const bool ignore_loop_address = (voice.key_on_delay <= 1);
       DEBUG_LOG("SPU voice {} ADPCM repeat address <- 0x{:04X}", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
-      voice.ignore_loop_address |= ignore_loop_address;
-
-      if (!ignore_loop_address)
-      {
-        DEV_LOG("Not ignoring loop address, the ADPCM repeat address of 0x{:04X} for voice {} will be overwritten",
-                value, voice_index);
-      }
+      voice.ignore_loop_address = true;
     }
     break;
 
@@ -2196,6 +2189,14 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32, s32> SPU::SampleVoice(Voice& voice, u
       if (voice.key_on_delay == 4)
         s_state.endx_register &= ~(u32(1) << voice_index);
 
+      // Each of the three header fetches clears the repeat address latch and applies the first block's Loop-Start-Bit.
+      if (voice.key_on_delay >= 2)
+      {
+        voice.ignore_loop_address = false;
+        if (ADPCMFlags{s_ram[(ZeroExtend32(voice.current_address) * 8 + 1) & RAM_MASK]}.loop_start)
+          voice.regs.adpcm_repeat_address = voice.current_address;
+      }
+
       voice.key_on_delay--;
       return {};
     }
@@ -2242,9 +2243,8 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32, s32> SPU::SampleVoice(Voice& voice, u
   }
   step = std::min<u16>(step, 0x3FFF);
 
-  // Shouldn't ever overflow because if sample_index == 27, step == 0x4000 there won't be a carry out from the
-  // interpolation index. If there is a carry out, bit 12 will never be 1, so it'll never add more than 4 to
-  // sample_index, which should never be >27.
+  // Shouldn't ever overflow because the step is at most 0x3FFF, which adds at most 3 to sample_index, plus 1 for a
+  // carry out of the interpolation index. sample_index is never >27 here, and 27 + 4 still fits in its 5 bits.
   DebugAssert(voice.counter.sample_index < NUM_SAMPLES_PER_ADPCM_BLOCK);
   voice.counter.bits += step;
 
