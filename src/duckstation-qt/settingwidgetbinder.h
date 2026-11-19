@@ -1335,9 +1335,8 @@ inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string 
 }
 
 inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
-                                      QString browse_title, QAbstractButton* open_button, QAbstractButton* reset_button,
-                                      std::string section, std::string key, std::string default_value,
-                                      bool use_relative = true)
+                                      QString browse_title, QAbstractButton* menu_button, std::string section,
+                                      std::string key, std::string default_value, bool use_relative = true)
 {
   using Accessor = SettingAccessor<QLineEdit>;
 
@@ -1349,12 +1348,21 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
   const QString value(QString::fromStdString(current_path));
   Accessor::setStringValue(widget, value);
 
-  if (open_button)
+  // menu button pops up a menu with the less common actions
+  QAction* reset_action = nullptr;
+  if (menu_button)
   {
-    QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
-      QString path(Accessor::getStringValue(widget));
-      if (!path.isEmpty())
-        QtUtils::OpenURL(widget, QUrl::fromLocalFile(path));
+    QMenu* const menu = QtUtils::NewPopupMenu(menu_button, false);
+    menu->addAction(QIcon(u":/icons/monochrome/svg/open-folder-line.svg"_s),
+                    QCoreApplication::translate("SettingWidgetBinder", "Open Folder"), widget, [widget]() {
+                      QString path(Accessor::getStringValue(widget));
+                      if (!path.isEmpty())
+                        QtUtils::OpenURL(widget, QUrl::fromLocalFile(path));
+                    });
+    reset_action = menu->addAction(QIcon(u":/icons/monochrome/svg/delete-back-2-line.svg"_s),
+                                   QCoreApplication::translate("SettingWidgetBinder", "Reset to Default"));
+    QObject::connect(menu_button, &QAbstractButton::clicked, menu, [menu_button, menu]() {
+      menu->popup(menu_button->mapToGlobal(QPoint(0, menu_button->height())));
     });
   }
 
@@ -1364,8 +1372,8 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     widget->setReadOnly(true);
     if (browse_button)
       browse_button->setEnabled(false);
-    if (reset_button)
-      reset_button->setEnabled(false);
+    if (reset_action)
+      reset_action->setEnabled(false);
     return;
   }
 
@@ -1426,9 +1434,9 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
                        value_changed();
                      });
   }
-  if (reset_button)
+  if (reset_action)
   {
-    QObject::connect(reset_button, &QAbstractButton::clicked, reset_button,
+    QObject::connect(reset_action, &QAction::triggered, widget,
                      [widget, default_value = std::move(default_value), value_changed]() {
                        widget->setText(QString::fromStdString(default_value));
                        value_changed();

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "folderssettingswidget.h"
-#include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
@@ -12,7 +11,6 @@
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QMenu>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QVBoxLayout>
@@ -82,7 +80,6 @@ FoldersSettingsWidget::FoldersSettingsWidget(SettingsWindow* dialog, QWidget* pa
   {
     const QString title = tr(title_str);
     const QString description_text = tr(description_str);
-    std::string default_path = EmuFolders::GetDefaultPath(folder);
 
     QGroupBox* const group = new QGroupBox(title, contents);
     QGridLayout* const grid = new QGridLayout(group);
@@ -99,24 +96,14 @@ FoldersSettingsWidget::FoldersSettingsWidget(SettingsWindow* dialog, QWidget* pa
       new QPushButton(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s), tr("Browse..."), group);
     QPushButton* const more = new QPushButton(QIcon(u":/icons/monochrome/svg/more-fill.svg"_s), {}, group);
     more->setToolTip(tr("More Options"));
-    QMenu* const more_menu = QtUtils::NewPopupMenu(more, false);
-    more_menu->addAction(QIcon(u":/icons/monochrome/svg/open-folder-line.svg"_s), tr("Open Folder"), directory,
-                         [directory]() { QtUtils::OpenURL(directory, QUrl::fromLocalFile(directory->text())); });
-    more_menu->addAction(QIcon(u":/icons/monochrome/svg/delete-back-2-line.svg"_s), tr("Reset to Default"), directory,
-                         [directory, default_path = QString::fromStdString(default_path)]() {
-                           directory->setText(default_path);
-                           emit directory->editingFinished();
-                         });
-    connect(more, &QPushButton::clicked, more_menu,
-            [more, more_menu]() { more_menu->popup(more->mapToGlobal(QPoint(0, more->height()))); });
 
     grid->addWidget(more, 0, 2, Qt::AlignRight | Qt::AlignTop);
     grid->addWidget(directory, 1, 0);
     grid->addWidget(browse, 1, 1, 1, 2);
 
-    SettingWidgetBinder::BindWidgetToFolderSetting(nullptr, directory, browse, tr("Select %1").arg(title), nullptr,
-                                                   nullptr, EmuFolders::CONFIG_SECTION_NAME, key,
-                                                   std::move(default_path));
+    SettingWidgetBinder::BindWidgetToFolderSetting(nullptr, directory, browse, tr("Select %1").arg(title), more,
+                                                   EmuFolders::CONFIG_SECTION_NAME, key,
+                                                   EmuFolders::GetDefaultPath(folder));
     dialog->registerWidgetHelp(directory, title, tr("Default"), description_text);
   }
 

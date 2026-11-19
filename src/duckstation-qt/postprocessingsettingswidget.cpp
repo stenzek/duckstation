@@ -626,9 +626,9 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   QtUtils::FixSpinBoxTextMargins(this);
 
   SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.overlaysDirectory, m_ui.overlaysDirectoryBrowse,
-                                                 tr("Select Overlays Directory"), m_ui.overlaysDirectoryOpen,
-                                                 m_ui.overlaysDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
-                                                 "Overlays", EmuFolders::GetDefaultPath(&EmuFolders::Overlays));
+                                                 tr("Select Overlays Directory"), m_ui.overlaysDirectoryMore,
+                                                 EmuFolders::CONFIG_SECTION_NAME, "Overlays",
+                                                 EmuFolders::GetDefaultPath(&EmuFolders::Overlays));
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, Settings::BORDER_OVERLAY_SECTION_NAME,
                                                  "ImagePath");
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, Settings::BORDER_OVERLAY_SECTION_NAME,

@@ -83,20 +83,16 @@ void MemoryCardSettingsWidget::createUi()
       QPushButton* const browse = new QPushButton(box);
       browse->setToolTip(tr("Browse..."));
       browse->setIcon(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s));
-      QPushButton* const open = new QPushButton(box);
-      open->setToolTip(tr("Open..."));
-      open->setIcon(QIcon(u":/icons/monochrome/svg/open-folder-line.svg"_s));
-      QPushButton* const reset = new QPushButton(box);
-      reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
-      reset->setIcon(QIcon(u":/icons/monochrome/svg/delete-back-2-line.svg"_s));
+      QPushButton* const more = new QPushButton(box);
+      more->setToolTip(tr("More Options"));
+      more->setIcon(QIcon(u":/icons/monochrome/svg/more-fill.svg"_s));
       hbox->addWidget(directory);
       hbox->addWidget(browse);
-      hbox->addWidget(open);
-      hbox->addWidget(reset);
+      hbox->addWidget(more);
       box_layout->addLayout(hbox, 0, 1);
 
       SettingWidgetBinder::BindWidgetToFolderSetting(
-        m_dialog->getSettingsInterface(), directory, browse, tr("Select Memory Card Directory"), open, reset,
+        m_dialog->getSettingsInterface(), directory, browse, tr("Select Memory Card Directory"), more,
         Settings::MEMORY_CARDS_SECTION_NAME, "Directory", Path::Combine(EmuFolders::DataRoot, "memcards"));
 
       m_dialog->registerWidgetHelp(directory, tr("Memory Cards Location"), tr("Default"),
@@ -111,20 +107,16 @@ void MemoryCardSettingsWidget::createUi()
       QPushButton* const browse = new QPushButton(box);
       browse->setToolTip(tr("Browse..."));
       browse->setIcon(QIcon(u":/icons/monochrome/svg/folder-open-line.svg"_s));
-      QPushButton* const open = new QPushButton(box);
-      open->setToolTip(tr("Open..."));
-      open->setIcon(QIcon(u":/icons/monochrome/svg/open-folder-line.svg"_s));
-      QPushButton* const reset = new QPushButton(box);
-      reset->setToolTip(qApp->translate("QPlatformTheme", "Reset"));
-      reset->setIcon(QIcon(u":/icons/monochrome/svg/delete-back-2-line.svg"_s));
+      QPushButton* const more = new QPushButton(box);
+      more->setToolTip(tr("More Options"));
+      more->setIcon(QIcon(u":/icons/monochrome/svg/more-fill.svg"_s));
       hbox->addWidget(directory);
       hbox->addWidget(browse);
-      hbox->addWidget(open);
-      hbox->addWidget(reset);
+      hbox->addWidget(more);
       box_layout->addLayout(hbox, 1, 1);
 
       SettingWidgetBinder::BindWidgetToFolderSetting(
-        m_dialog->getSettingsInterface(), directory, browse, tr("Select Save States Directory"), open, reset,
+        m_dialog->getSettingsInterface(), directory, browse, tr("Select Save States Directory"), more,
         EmuFolders::CONFIG_SECTION_NAME, "SaveStates", Path::Combine(EmuFolders::DataRoot, "savestates"));
 
       m_dialog->registerWidgetHelp(directory, tr("Save States Location"), tr("Default"),

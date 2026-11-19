@@ -305,9 +305,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesDirectoryBrowse,
-                                                   tr("Select Textures Directory"), m_ui.texturesDirectoryOpen,
-                                                   m_ui.texturesDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
-                                                   "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
+                                                   tr("Select Textures Directory"), m_ui.texturesDirectoryMore,
+                                                   EmuFolders::CONFIG_SECTION_NAME, "Textures",
+                                                   Path::Combine(EmuFolders::DataRoot, "textures"));
   }
   else
   {
@@ -315,8 +315,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     delete m_ui.texturesDirectoryGroup;
     m_ui.texturesDirectoryGroup = nullptr;
     m_ui.texturesDirectoryBrowse = nullptr;
-    m_ui.texturesDirectoryOpen = nullptr;
-    m_ui.texturesDirectoryReset = nullptr;
+    m_ui.texturesDirectoryMore = nullptr;
     m_ui.texturesDirectoryLabel = nullptr;
     m_ui.texturesDirectory = nullptr;
   }

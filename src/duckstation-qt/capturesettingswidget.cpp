@@ -68,12 +68,12 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.screenshotsDirectory, m_ui.screenshotsDirectoryBrowse,
-                                                   tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryOpen,
-                                                   m_ui.screenshotsDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
-                                                   "Screenshots", Path::Combine(EmuFolders::DataRoot, "screenshots"));
+                                                   tr("Select Screenshots Directory"), m_ui.screenshotsDirectoryMore,
+                                                   EmuFolders::CONFIG_SECTION_NAME, "Screenshots",
+                                                   Path::Combine(EmuFolders::DataRoot, "screenshots"));
     SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videosDirectory, m_ui.videosDirectoryBrowse,
-                                                   tr("Select Media Capture Directory"), m_ui.videosDirectoryOpen,
-                                                   m_ui.videosDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Videos",
+                                                   tr("Select Media Capture Directory"), m_ui.videosDirectoryMore,
+                                                   EmuFolders::CONFIG_SECTION_NAME, "Videos",
                                                    Path::Combine(EmuFolders::DataRoot, "videos"));
   }
   else
@@ -81,26 +81,22 @@ CaptureSettingsWidget::CaptureSettingsWidget(SettingsWindow* dialog, QWidget* pa
     m_ui.screenshotsLayout->removeWidget(m_ui.screenshotsDirectoryLabel);
     m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectory);
     m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryBrowse);
-    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryOpen);
-    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryReset);
+    m_ui.screenshotsDirectoryLayout->removeWidget(m_ui.screenshotsDirectoryMore);
     QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryLabel);
     QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryLayout);
     QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectory);
     QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryBrowse);
-    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryOpen);
-    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryReset);
+    QtUtils::SafeDeleteWidget(m_ui.screenshotsDirectoryMore);
 
     m_ui.captureLayout->removeWidget(m_ui.videosDirectoryLabel);
     m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectory);
     m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryBrowse);
-    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryOpen);
-    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryReset);
+    m_ui.videosDirectoryLayout->removeWidget(m_ui.videosDirectoryMore);
     QtUtils::SafeDeleteWidget(m_ui.videosDirectoryLabel);
     QtUtils::SafeDeleteWidget(m_ui.videosDirectoryLayout);
     QtUtils::SafeDeleteWidget(m_ui.videosDirectory);
     QtUtils::SafeDeleteWidget(m_ui.videosDirectoryBrowse);
-    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryOpen);
-    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryReset);
+    QtUtils::SafeDeleteWidget(m_ui.videosDirectoryMore);
   }
 
   connect(m_ui.mediaCaptureBackend, &QComboBox::currentIndexChanged, this,

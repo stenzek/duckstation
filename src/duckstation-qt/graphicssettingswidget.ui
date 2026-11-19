@@ -1041,46 +1041,38 @@
           <string>Textures Directory</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="0" column="0" colspan="4">
+          <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="texturesDirectoryLabel">
             <property name="text">
              <string>Directory to load replacement textures from, and save dumps to.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop">
+           <widget class="QPushButton" name="texturesDirectoryMore">
+            <property name="toolTip">
+             <string>More Options</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/more-fill.svg</normaloff>:/icons/monochrome/svg/more-fill.svg</iconset>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLineEdit" name="texturesDirectory"/>
           </item>
-          <item row="1" column="1">
+          <item row="1" column="1" colspan="2">
            <widget class="QPushButton" name="texturesDirectoryBrowse">
-            <property name="toolTip">
+            <property name="text">
              <string>Browse...</string>
             </property>
             <property name="icon">
              <iconset resource="resources/duckstation-qt.qrc">
               <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="texturesDirectoryOpen">
-            <property name="toolTip">
-             <string>Open...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="resources/duckstation-qt.qrc">
-              <normaloff>:/icons/monochrome/svg/open-folder-line.svg</normaloff>:/icons/monochrome/svg/open-folder-line.svg</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="texturesDirectoryReset">
-            <property name="toolTip">
-             <string>Reset</string>
-            </property>
-            <property name="icon">
-             <iconset resource="resources/duckstation-qt.qrc">
-              <normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</normaloff>:/icons/monochrome/svg/delete-back-2-line.svg</iconset>
             </property>
            </widget>
           </item>

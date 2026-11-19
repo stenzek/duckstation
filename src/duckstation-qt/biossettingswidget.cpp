@@ -89,20 +89,18 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   if (!m_dialog->isPerGameSettings())
   {
-    SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory,
-                                                   tr("Select BIOS Directory"), m_ui.searchDirectoryOpen,
-                                                   m_ui.searchDirectoryReset, Settings::BIOS_SECTION_NAME,
-                                                   "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
+    SettingWidgetBinder::BindWidgetToFolderSetting(
+      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.searchDirectoryMore,
+      Settings::BIOS_SECTION_NAME, "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
     connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
   }
   else
   {
     m_ui.mainLayout->removeWidget(m_ui.directoryGroupBox);
     delete m_ui.directoryGroupBox;
-    m_ui.rescan = nullptr;
-    m_ui.install = nullptr;
     m_ui.directoryGroupBox = nullptr;
     m_ui.directoryGroupBoxLabel = nullptr;
+    m_ui.searchDirectoryMore = nullptr;
     m_ui.directoryGroupBoxLayout = nullptr;
     m_ui.directoryGroupBoxHorizontalLayout = nullptr;
     m_ui.searchDirectory = nullptr;
