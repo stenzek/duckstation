@@ -257,21 +257,24 @@ protected:
 private:
   enum DIRTY_FLAG : u32
   {
-    DIRTY_FLAG_INITIAL = (1 << 0),
+    DIRTY_FLAG_PIPELINE = (1 << 0),
     DIRTY_FLAG_PIPELINE_LAYOUT = (1 << 1),
     DIRTY_FLAG_DYNAMIC_OFFSETS = (1 << 2),
     DIRTY_FLAG_TEXTURES_OR_SAMPLERS = (1 << 3),
     DIRTY_FLAG_TEXTURE_BUFFER = (1 << 4),
     DIRTY_FLAG_RENDER_TARGETS = (1 << 5),
     DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER = (1 << 6),
+    DIRTY_FLAG_VERTEX_INDEX_BUFFERS = (1 << 7),
+    DIRTY_FLAG_VIEWPORT = (1 << 8),
+    DIRTY_FLAG_SCISSOR = (1 << 9),
 
     PIPELINE_LAYOUT_DEPENDENT_STATE = DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS |
                                       DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_TEXTURE_BUFFER |
                                       DIRTY_FLAG_RENDER_TARGETS | DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER,
 
-    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS |
-                      DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_RENDER_TARGETS | DIRTY_FLAG_TEXTURE_BUFFER |
-                      DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER,
+    GRAPHICS_ONLY_STATE = DIRTY_FLAG_VERTEX_INDEX_BUFFERS | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR,
+
+    ALL_DIRTY_STATE = DIRTY_FLAG_PIPELINE | PIPELINE_LAYOUT_DEPENDENT_STATE | GRAPHICS_ONLY_STATE,
   };
 
   struct RenderPassCacheKey
@@ -357,7 +360,6 @@ private:
   s32 IsRenderTargetBoundIndex(const GPUTexture* tex) const;
 
   /// Applies any changed state.
-  void SetInitialPipelineState();
   void PreDrawCheck();
   void PreDispatchCheck();
   void PushUniformBuffer(bool is_compute, const void* data, u32 data_size);

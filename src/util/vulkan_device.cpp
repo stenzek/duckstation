@@ -3234,10 +3234,6 @@ void VulkanDevice::BeginRenderPass()
   }
 
   s_stats.num_render_passes++;
-
-  // If this is a new command buffer, bind the pipeline and such.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    SetInitialPipelineState();
 }
 
 void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 clear_color)
@@ -3335,27 +3331,14 @@ void VulkanDevice::EndRenderPass()
 
 void VulkanDevice::SetPipeline(GPUPipeline* pipeline)
 {
-  // First draw? Bind everything.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-  {
-    m_current_pipeline = static_cast<VulkanPipeline*>(pipeline);
-    if (!m_current_pipeline)
-      return;
-
-    SetInitialPipelineState();
+  if (m_current_pipeline == pipeline)
     return;
-  }
-  else if (m_current_pipeline == pipeline)
-  {
-    return;
-  }
 
   m_current_pipeline = static_cast<VulkanPipeline*>(pipeline);
+  if (!m_current_pipeline)
+    return;
 
-  vkCmdBindPipeline(m_current_command_buffer,
-                    IsComputeLayout(m_current_pipeline->GetLayout()) ? VK_PIPELINE_BIND_POINT_COMPUTE :
-                                                                       VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    m_current_pipeline->GetPipeline());
+  m_dirty_flags |= DIRTY_FLAG_PIPELINE;
 
   if (m_current_pipeline_layout != m_current_pipeline->GetLayout())
   {
@@ -3391,47 +3374,6 @@ s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const
   }
 
   return -1;
-}
-
-void VulkanDevice::SetInitialPipelineState()
-{
-  DebugAssert(m_current_pipeline);
-
-  // A compute pipeline may have been bound earlier in this command buffer, consuming the layout-dependent state.
-  if (m_current_pipeline_layout != m_current_pipeline->GetLayout())
-  {
-    m_current_pipeline_layout = m_current_pipeline->GetLayout();
-    m_dirty_flags |= PIPELINE_LAYOUT_DEPENDENT_STATE;
-  }
-
-  const bool is_compute = IsComputeLayout(m_current_pipeline_layout);
-  vkCmdBindPipeline(m_current_command_buffer,
-                    is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    m_current_pipeline->GetPipeline());
-
-  // Leave the graphics state pending until the first graphics pipeline is bound. Some drivers (Adreno 6xx) try to
-  // apply dynamic viewport/scissor state on dispatch, and crash if no graphics pipeline has been bound.
-  if (is_compute)
-    return;
-
-  m_dirty_flags &= ~DIRTY_FLAG_INITIAL;
-
-  const VkDeviceSize offset = 0;
-  vkCmdBindVertexBuffers(m_current_command_buffer, 0, 1, m_vertex_buffer.GetBufferPtr(), &offset);
-  vkCmdBindIndexBuffer(m_current_command_buffer, m_index_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-  const VkViewport vp = {static_cast<float>(m_current_viewport.left),
-                         static_cast<float>(m_current_viewport.top),
-                         static_cast<float>(m_current_viewport.width()),
-                         static_cast<float>(m_current_viewport.height()),
-                         0.0f,
-                         1.0f};
-  vkCmdSetViewport(m_current_command_buffer, 0, 1, &vp);
-
-  const GSVector4i clamped_rc = m_current_scissor.max_s32(GSVector4i::zero());
-  const VkRect2D vrc = {{clamped_rc.x, clamped_rc.y},
-                        {static_cast<u32>(clamped_rc.width()), static_cast<u32>(clamped_rc.height())}};
-  vkCmdSetScissor(m_current_command_buffer, 0, 1, &vrc);
 }
 
 void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -3532,17 +3474,7 @@ void VulkanDevice::SetViewport(const GSVector4i rc)
     return;
 
   m_current_viewport = rc;
-
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    return;
-
-  const VkViewport vp = {static_cast<float>(rc.x),
-                         static_cast<float>(rc.y),
-                         static_cast<float>(rc.width()),
-                         static_cast<float>(rc.height()),
-                         0.0f,
-                         1.0f};
-  vkCmdSetViewport(m_current_command_buffer, 0, 1, &vp);
+  m_dirty_flags |= DIRTY_FLAG_VIEWPORT;
 }
 
 void VulkanDevice::SetScissor(const GSVector4i rc)
@@ -3551,14 +3483,7 @@ void VulkanDevice::SetScissor(const GSVector4i rc)
     return;
 
   m_current_scissor = rc;
-
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    return;
-
-  const GSVector4i clamped_rc = rc.max_s32(GSVector4i::zero());
-  const VkRect2D vrc = {{clamped_rc.x, clamped_rc.y},
-                        {static_cast<u32>(clamped_rc.width()), static_cast<u32>(clamped_rc.height())}};
-  vkCmdSetScissor(m_current_command_buffer, 0, 1, &vrc);
+  m_dirty_flags |= DIRTY_FLAG_SCISSOR;
 }
 
 void VulkanDevice::PreDrawCheck()
@@ -3566,14 +3491,45 @@ void VulkanDevice::PreDrawCheck()
   if (!InRenderPass())
     BeginRenderPass();
 
-  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
   const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
 
   if (dirty != 0)
   {
-    if (!UpdateDescriptorSets(dirty))
+    if (dirty & DIRTY_FLAG_PIPELINE)
+    {
+      DebugAssert(m_current_pipeline && !IsComputeLayout(m_current_pipeline_layout));
+      vkCmdBindPipeline(m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline->GetPipeline());
+    }
+
+    if (dirty & DIRTY_FLAG_VERTEX_INDEX_BUFFERS)
+    {
+      const VkDeviceSize offset = 0;
+      vkCmdBindVertexBuffers(m_current_command_buffer, 0, 1, m_vertex_buffer.GetBufferPtr(), &offset);
+      vkCmdBindIndexBuffer(m_current_command_buffer, m_index_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+    }
+
+    if (dirty & DIRTY_FLAG_VIEWPORT)
+    {
+      const VkViewport vp = {static_cast<float>(m_current_viewport.left),
+                             static_cast<float>(m_current_viewport.top),
+                             static_cast<float>(m_current_viewport.width()),
+                             static_cast<float>(m_current_viewport.height()),
+                             0.0f,
+                             1.0f};
+      vkCmdSetViewport(m_current_command_buffer, 0, 1, &vp);
+    }
+
+    if (dirty & DIRTY_FLAG_SCISSOR)
+    {
+      const GSVector4i clamped_rc = m_current_scissor.max_s32(GSVector4i::zero());
+      const VkRect2D vrc = {{clamped_rc.x, clamped_rc.y},
+                            {static_cast<u32>(clamped_rc.width()), static_cast<u32>(clamped_rc.height())}};
+      vkCmdSetScissor(m_current_command_buffer, 0, 1, &vrc);
+    }
+
+    if ((dirty & PIPELINE_LAYOUT_DEPENDENT_STATE) && !UpdateDescriptorSets(dirty))
     {
       SubmitCommandBufferAndRestartRenderPass("out of descriptor sets");
       PreDrawCheck();
@@ -3611,19 +3567,20 @@ void VulkanDevice::PreDispatchCheck()
     rt->SetUseFenceCounter(GetCurrentFenceCounter());
   }
 
-  // If this is a new command buffer, bind the pipeline and such.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    SetInitialPipelineState();
-
-  // Graphics state stays pending (DIRTY_FLAG_INITIAL) until the first graphics pipeline bind.
   const u32 update_mask =
-    (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS) & ~static_cast<u32>(DIRTY_FLAG_INITIAL);
+    (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS) & ~static_cast<u32>(GRAPHICS_ONLY_STATE);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
 
   if (dirty != 0)
   {
-    if (!UpdateDescriptorSets(dirty))
+    if (dirty & DIRTY_FLAG_PIPELINE)
+    {
+      DebugAssert(m_current_pipeline && IsComputeLayout(m_current_pipeline_layout));
+      vkCmdBindPipeline(m_current_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_current_pipeline->GetPipeline());
+    }
+
+    if ((dirty & PIPELINE_LAYOUT_DEPENDENT_STATE) && !UpdateDescriptorSets(dirty))
     {
       SubmitCommandBuffer(false, "out of descriptor sets");
       PreDispatchCheck();
