@@ -2291,27 +2291,28 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32, s32> SPU::SampleVoice(Voice& voice, u
 
 void SPU::UpdateNoise()
 {
-  // Dr Hell's noise waveform, implementation borrowed from pcsx-r.
-  static constexpr std::array<u8, 64> noise_wave_add = {
-    {1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0,
-     0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1}};
-  static constexpr std::array<u8, 5> noise_freq_add = {{0, 84, 140, 180, 210}};
+  // The noise period is (20000h SHR Shift) samples. The LFSR is clocked at the start of each quarter, plus halfway into
+  // quarter 0 (Step >= 1), 2 (Step >= 2) and 1 (Step == 3), so the gaps are always 1/4 or 1/8 of the period. It is
+  // clocked at most once per sample, so at Shift 0Fh it clocks on every sample. noise_count is a free-running sample
+  // counter, and its low bits give the position in the period.
+  static constexpr std::array<u8, 4> eighth_masks = {{0x55, 0x57, 0x77, 0x7F}};
 
   const u32 noise_clock = s_state.SPUCNT.noise_clock;
-  const u32 level = (0x8000u >> (noise_clock >> 2)) << 16;
-
-  s_state.noise_count += 0x10000u + noise_freq_add[noise_clock & 3u];
-  if ((s_state.noise_count & 0xFFFFu) >= noise_freq_add[4])
+  const u32 shift = noise_clock >> 2;
+  const u32 position = s_state.noise_count++;
+  if (shift < 15)
   {
-    s_state.noise_count += 0x10000;
-    s_state.noise_count -= noise_freq_add[noise_clock & 3u];
+    // An eighth of the period is (4000h SHR Shift) samples.
+    const u32 eighth_shift = 14 - shift;
+    if ((position & ((1u << eighth_shift) - 1u)) != 0 ||
+        !(eighth_masks[noise_clock & 3u] & (1u << ((position >> eighth_shift) & 7u))))
+    {
+      return;
+    }
   }
 
-  if (s_state.noise_count < level)
-    return;
-
-  s_state.noise_count %= level;
-  s_state.noise_level = (s_state.noise_level << 1) | noise_wave_add[(s_state.noise_level >> 10) & 63u];
+  const u32 level = s_state.noise_level;
+  s_state.noise_level = (level << 1) | (((level >> 15) ^ (level >> 12) ^ (level >> 11) ^ (level >> 10) ^ 1u) & 1u);
 }
 
 u32 SPU::ReverbMemoryAddress(u32 address)

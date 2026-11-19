@@ -657,4 +657,32 @@ TEST_F(SPUHardwareTest, PrimedInterpolationAtFractionalPitchMatchesHardware)
   CheckCapture(adpcm, 0x1500, golden);
 }
 
+TEST_F(SPUHardwareTest, NoiseClocksPerPeriod)
+{
+  // psx-spx: the LFSR is clocked 4+Step times per period of (20000h SHR Shift) samples, at most once per sample.
+  // Voice 1's capture buffer holds (NoiseLevel * ENVX) SAR 15, so each clock changes the captured value.
+  const auto count_changes = []() {
+    std::array<s16, 512> capture;
+    std::memcpy(capture.data(), &SPU::GetWritableRAM()[0x800], sizeof(capture));
+    u32 changes = 0;
+    for (u32 i = 0; i < capture.size(); i++)
+      changes += (capture[i] != capture[(i + 1) % capture.size()]);
+    return changes;
+  };
+
+  SPU::WriteRegister(0x194, 2); // Voice 1 noise
+  KeyOn(0x000F, 0x1FC0);
+  for (u32 step = 0; step < 4; step++)
+  {
+    // Shift 10 gives a 128 sample period, so the capture buffer spans four periods.
+    SPU::WriteRegister(0x1AA, static_cast<u16>(0xC000 | (10 << 10) | (step << 8)));
+    RunSamples(1024);
+    EXPECT_NEAR(count_changes(), 4 * (4 + step), 1) << step;
+  }
+
+  SPU::WriteRegister(0x1AA, 0xC000 | (15 << 10));
+  RunSamples(1024);
+  EXPECT_GE(count_changes(), 511u);
+}
+
 } // namespace
