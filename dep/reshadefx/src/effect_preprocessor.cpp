@@ -9,11 +9,25 @@
 #include <cassert>
 #include <algorithm> // std::find_if
 
+// std::filesystem::u8path() is deprecated in C++20, and path::u8string() returns std::u8string instead of std::string.
+static std::filesystem::path path_from_utf8(const std::string &s)
+{
 #ifndef _WIN32
 	// On Linux systems the native path encoding is UTF-8 already, so no conversion necessary
-	#define u8path(p) path(p)
-	#define u8string() string()
+	return std::filesystem::path(s);
+#else
+	return std::filesystem::path(std::u8string_view(reinterpret_cast<const char8_t *>(s.data()), s.size()));
 #endif
+}
+static std::string path_to_utf8(const std::filesystem::path &p)
+{
+#ifndef _WIN32
+	return p.string();
+#else
+	const std::u8string s = p.u8string();
+	return std::string(reinterpret_cast<const char *>(s.data()), s.size());
+#endif
+}
 
 enum op_type
 {
@@ -176,7 +190,7 @@ std::vector<std::filesystem::path> reshadefx::preprocessor::included_files() con
 	std::vector<std::filesystem::path> files;
 	files.reserve(_file_cache.size());
 	for (const std::pair<std::string, std::string> &cache_entry : _file_cache)
-		files.push_back(std::filesystem::u8path(cache_entry.first));
+		files.push_back(path_from_utf8(cache_entry.first));
 	return files;
 }
 std::vector<std::pair<std::string, std::string>> reshadefx::preprocessor::used_macro_definitions() const
@@ -736,16 +750,16 @@ void reshadefx::preprocessor::parse_include()
 		return;
 	}
 
-	std::filesystem::path file_name = std::filesystem::u8path(_token.literal_as_string);
-	std::filesystem::path file_path = std::filesystem::u8path(_output_location.source);
+	std::filesystem::path file_name = path_from_utf8(_token.literal_as_string);
+	std::filesystem::path file_path = path_from_utf8(_output_location.source);
 	file_path.replace_filename(file_name);
 
-	if (!_file_exists_cb(file_path.u8string()))
+	if (!_file_exists_cb(path_to_utf8(file_path)))
 		for (const std::filesystem::path &include_path : _include_paths)
-			if (_file_exists_cb((file_path = include_path / file_name).u8string()))
+			if (_file_exists_cb(path_to_utf8(file_path = include_path / file_name)))
 				break;
 
-	const std::string file_path_string = file_path.u8string();
+	const std::string file_path_string = path_to_utf8(file_path);
 
 	// Detect recursive include and abort to avoid infinite loop
 	if (std::find_if(_input_stack.begin(), _input_stack.end(),
@@ -760,7 +774,7 @@ void reshadefx::preprocessor::parse_include()
 	else
 	{
 		if (!read_file(file_path_string, input, _read_file_cb))
-			return error(keyword_location, "could not open included file '" + file_name.u8string() + '\'');
+			return error(keyword_location, "could not open included file '" + path_to_utf8(file_name) + '\'');
 
 		_file_cache.emplace(file_path_string, input);
 	}
@@ -928,19 +942,19 @@ bool reshadefx::preprocessor::evaluate_expression()
 				if (!expect(tokenid::string_literal))
 					return false;
 
-				std::filesystem::path file_name = std::filesystem::u8path(_token.literal_as_string);
-				std::filesystem::path file_path = std::filesystem::u8path(_output_location.source);
+				std::filesystem::path file_name = path_from_utf8(_token.literal_as_string);
+				std::filesystem::path file_path = path_from_utf8(_output_location.source);
 				file_path.replace_filename(file_name);
 
 				if (has_parentheses && !expect(tokenid::parenthesis_close))
 					return false;
 
-				if (!_file_exists_cb(file_path.u8string()))
+				if (!_file_exists_cb(path_to_utf8(file_path)))
 					for (const std::filesystem::path &include_path : _include_paths)
-						if (_file_exists_cb((file_path = include_path / file_name).u8string()))
+						if (_file_exists_cb(path_to_utf8(file_path = include_path / file_name)))
 							break;
 
-				rpn[rpn_index++] = { _file_exists_cb(file_path.u8string()) ? 1 : 0, false };
+				rpn[rpn_index++] = { _file_exists_cb(path_to_utf8(file_path)) ? 1 : 0, false };
 				continue;
 			}
 			if (_token.literal_as_string == "defined")
@@ -1118,26 +1132,26 @@ bool reshadefx::preprocessor::evaluate_identifier_as_macro()
 	}
 	if (_token.literal_as_string == "__FILE_STEM__")
 	{
-		const std::filesystem::path file_stem = std::filesystem::u8path(_token.location.source).stem();
-		push(escape_string(file_stem.u8string()));
+		const std::filesystem::path file_stem = path_from_utf8(_token.location.source).stem();
+		push(escape_string(path_to_utf8(file_stem)));
 		return true;
 	}
 	if (_token.literal_as_string == "__FILE_STEM_HASH__")
 	{
-		const std::filesystem::path file_stem = std::filesystem::u8path(_token.location.source).stem();
-		push(std::to_string(std::hash<std::string>()(file_stem.u8string()) & 0xFFFFFFFF));
+		const std::filesystem::path file_stem = path_from_utf8(_token.location.source).stem();
+		push(std::to_string(std::hash<std::string>()(path_to_utf8(file_stem)) & 0xFFFFFFFF));
 		return true;
 	}
 	if (_token.literal_as_string == "__FILE_NAME__")
 	{
-		const std::filesystem::path file_name = std::filesystem::u8path(_token.location.source).filename();
-		push(escape_string(file_name.u8string()));
+		const std::filesystem::path file_name = path_from_utf8(_token.location.source).filename();
+		push(escape_string(path_to_utf8(file_name)));
 		return true;
 	}
 	if (_token.literal_as_string == "__FILE_NAME_HASH__")
 	{
-		const std::filesystem::path file_name = std::filesystem::u8path(_token.location.source).filename();
-		push(std::to_string(std::hash<std::string>()(file_name.u8string()) & 0xFFFFFFFF));
+		const std::filesystem::path file_name = path_from_utf8(_token.location.source).filename();
+		push(std::to_string(std::hash<std::string>()(path_to_utf8(file_name)) & 0xFFFFFFFF));
 		return true;
 	}
 
