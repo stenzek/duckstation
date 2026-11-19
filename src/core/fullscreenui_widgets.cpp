@@ -1186,18 +1186,24 @@ void FullscreenUI::BeginTransition(TransitionEffect effect, float time, Transiti
     s_state.transition_remaining_time = real_time;
   }
 
-  // run any callback if we queue another transition in the middle of one already active
+  // chain any callback if we queue another transition in the middle of one already active. don't run it inline,
+  // since we're likely being called from a window draw that is holding locks the callback may need.
   if (s_state.transition_start_callback)
   {
     if (s_state.transition_state == TransitionState::Starting)
       WARNING_LOG("More than one transition started");
 
-    TransitionStartCallback callback = std::move(s_state.transition_start_callback);
-    s_state.transition_start_callback = {};
-    callback();
+    s_state.transition_start_callback = [prev = std::move(s_state.transition_start_callback),
+                                         func = std::move(func)]() mutable {
+      prev();
+      if (func)
+        func();
+    };
   }
-
-  s_state.transition_start_callback = std::move(func);
+  else
+  {
+    s_state.transition_start_callback = std::move(func);
+  }
 
   UpdateRunIdleState();
 }
