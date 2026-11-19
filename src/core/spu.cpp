@@ -79,10 +79,14 @@ enum : u32
 };
 enum : TickCount
 {
-  // psx-spx measured DMA writes draining at roughly 40-70 cycles per halfword. A slower rate would make a full FIFO
-  // span more than one sample, and the transfer event only interleaves with sample generation when it runs, so this
-  // keeps it shorter than a sample without needing more events.
-  TRANSFER_TICKS_PER_HALFWORD = 16
+  TRANSFER_TICKS_PER_HALFWORD = 16,
+
+  // Rate the FIFO is written to RAM in DMA write mode. psx-spx measured STATX bits 7/9 rising 1150-2000 cycles after
+  // CHCR goes idle, with the last 25-30 halfwords still in the FIFO, which is roughly 40-70 cycles per halfword. Its
+  // SPU RAM timing section (from a logic analyser) shows 24 transfer slots per 768-cycle sample, i.e. 32 cycles per
+  // halfword. The faster figure is used to stay generous: the DMA side doesn't overlap with the drain like it does on
+  // hardware, and other timing inaccuracies make slower uploads riskier for games.
+  TRANSFER_WRITE_TICKS_PER_HALFWORD = 32
 };
 
 enum class RAMTransferMode : u8
@@ -1463,12 +1467,12 @@ ALWAYS_INLINE_RELEASE void SPU::ExecuteFIFOReadFromRAM(TickCount& ticks)
 
 ALWAYS_INLINE_RELEASE void SPU::ExecuteFIFOWriteToRAM(TickCount& ticks)
 {
-  while (ticks >= TRANSFER_TICKS_PER_HALFWORD && !s_state.transfer_fifo.IsEmpty())
+  while (ticks >= TRANSFER_WRITE_TICKS_PER_HALFWORD && !s_state.transfer_fifo.IsEmpty())
   {
     u16 value = s_state.transfer_fifo.Pop();
     std::memcpy(&s_ram[s_state.transfer_address], &value, sizeof(u16));
     s_state.transfer_address = (s_state.transfer_address + sizeof(u16)) & RAM_MASK;
-    ticks -= TRANSFER_TICKS_PER_HALFWORD;
+    ticks -= TRANSFER_WRITE_TICKS_PER_HALFWORD;
 
     if (IsRAMIRQTriggerable() && CheckRAMIRQ(s_state.transfer_address))
     {
@@ -1519,7 +1523,7 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks)
   else
   {
     // write the fifo to ram, request dma again when empty
-    while (ticks >= TRANSFER_TICKS_PER_HALFWORD && !s_state.transfer_fifo.IsEmpty())
+    while (ticks >= TRANSFER_WRITE_TICKS_PER_HALFWORD && !s_state.transfer_fifo.IsEmpty())
     {
       ExecuteFIFOWriteToRAM(ticks);
 
@@ -1535,7 +1539,7 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks)
       return;
     }
 
-    ticks_until_complete = TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD));
+    ticks_until_complete = TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_WRITE_TICKS_PER_HALFWORD));
   }
 
   // Only whole halfwords are transferred. Carry the leftover ticks into the next invocation, so that STATX reads, which
@@ -1598,7 +1602,8 @@ void SPU::UpdateTransferEvent()
     if (s_state.transfer_fifo.IsEmpty())
       s_state.transfer_event.Deactivate();
     else if (!s_state.transfer_event.IsActive())
-      s_state.transfer_event.Schedule(TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)));
+      s_state.transfer_event.Schedule(
+        TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_WRITE_TICKS_PER_HALFWORD)));
   }
 
   // Bit 10 doesn't change at any point of a DMA write.
@@ -2597,7 +2602,8 @@ u32 SPU::RunTransferUntilFrame(u32 remaining_frames)
     UpdateDMARequest();
   }
 
-  const GlobalTicks next_halfword_time = transfer_time + TRANSFER_TICKS_PER_HALFWORD;
+  const GlobalTicks next_halfword_time =
+    transfer_time + (reading ? TRANSFER_TICKS_PER_HALFWORD : TRANSFER_WRITE_TICKS_PER_HALFWORD);
   if ((reading ? s_state.transfer_fifo.IsFull() : s_state.transfer_fifo.IsEmpty()) || next_halfword_time > now)
     return remaining_frames;
 

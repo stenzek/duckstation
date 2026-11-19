@@ -518,7 +518,7 @@ protected:
     SPU::WriteRegister(0x1A4, 0x401);
     SPU::WriteRegister(0x1A6, 0x400);
     SPU::WriteRegister(0x1AA, predict_irq ? 0xC060 : 0xC020);
-    CPU::AddPendingTicks(768 - 20);
+    CPU::AddPendingTicks(768 - 36); // Each halfword takes 32 cycles.
     const u32 word = 0x0400;
     SPU::DMAWrite(&word, 1);
     for (u32 i = 0; i < 2; i++)
@@ -810,9 +810,9 @@ TEST_F(SPUHardwareTest, DMAWriteDrainTimingAndBusyFlag)
     ASSERT_EQ(SPU::ReadRegister(0x1AE) & 0x400u, 0u) << ticks;
   }
 
-  // 32 halfwords at 16 cycles each, seen on the first poll after they complete.
-  EXPECT_GE(ticks, 512u);
-  EXPECT_LT(ticks, 512u + POLL_INTERVAL);
+  // 32 halfwords at 32 cycles each, seen on the first poll after they complete.
+  EXPECT_GE(ticks, 1024u);
+  EXPECT_LT(ticks, 1024u + POLL_INTERVAL);
   EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x280u, 0x280u);
   EXPECT_EQ(std::memcmp(&SPU::GetWritableRAM()[0x2000], words.data(), sizeof(words)), 0);
   DMA::Reset();
@@ -857,7 +857,7 @@ TEST_F(SPUHardwareTest, DMAWriteAfterEventAddsTicksInSameSlice)
 {
   // An earlier event in the same slice adds CPU ticks, like a DMA does, so the transfer event runs with samples pending
   // past its own time. Generating them runs the transfer past it too, which mustn't stop the transfer.
-  static constexpr u32 HALFWORD_TICKS = 16;
+  static constexpr u32 HALFWORD_TICKS = 32;
   static TimingEvent stall_event(
     "SPU Test Stall", 1, 1,
     [](void*, TickCount) {
@@ -959,7 +959,7 @@ TEST_F(SPUHardwareTest, BlockFetchDuringDMAWriteAtFractionalClock)
 
   // 32 halfwords span several samples, so the fetch is early in the batch. Write the flag in the first halfword, around
   // the fetch.
-  static constexpr u32 HALFWORD_TICKS = 16;
+  static constexpr u32 HALFWORD_TICKS = 32;
   std::array<u32, 16> words = {};
   words[0] = 0x0400;
   words[4] = 0x0300;
