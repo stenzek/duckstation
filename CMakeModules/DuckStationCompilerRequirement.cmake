@@ -4,9 +4,11 @@
 # NOTE: In addition to the terms of CC-BY-NC-ND-4.0, you may not use this file to create
 # packages or build recipes without explicit permission from the copyright holder.
 
-# Use C++23.
+# Use C++23 and C17.
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # C++ feature checks. Some Linux environments are incomplete.
 check_cpp_feature("__cpp_structured_bindings" 201606)
