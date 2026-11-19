@@ -6,6 +6,7 @@
 #include "common/types.h"
 
 #include "core/cpu_core.h"
+#include "core/dma.h"
 #include "core/interrupt_controller.h"
 #include "core/settings.h"
 #include "core/spu.h"
@@ -719,6 +720,40 @@ TEST_F(SPUHardwareTest, ExponentialDecreaseNegativePhaseStopLevels)
   EXPECT_GT(SPU::ReadRegister(0x1B8), 0x7F00u);
   RunSamples(65536);
   EXPECT_EQ(SPU::ReadRegister(0x1B8), 0u);
+}
+
+TEST_F(SPUHardwareTest, DMAWriteDrainTimingAndBusyFlag)
+{
+  // psx-spx: bit 10 never changes during a DMA write, and bits 7/9 rise once the FIFO has been written to RAM.
+  DMA::Reset();
+  SPU::WriteRegister(0x1A6, 0x400); // Transfer address 2000h
+  SPU::WriteRegister(0x1AA, 0xC020);
+  ASSERT_NE(SPU::ReadRegister(0x1AE) & 0x280u, 0u);
+
+  std::array<u32, 16> words;
+  for (u32 i = 0; i < words.size(); i++)
+    words[i] = 0x10001u * (i * 2) + 0x10000u;
+  SPU::DMAWrite(words.data(), static_cast<u32>(words.size()));
+  EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x680u, 0u);
+
+  // Poll at an interval that doesn't divide the halfword time, polling must not change when the transfer completes.
+  static constexpr u32 POLL_INTERVAL = 17;
+  u32 ticks = 0;
+  while ((SPU::ReadRegister(0x1AE) & 0x80u) == 0 && ticks < 4096)
+  {
+    CPU::AddPendingTicks(POLL_INTERVAL);
+    ticks += POLL_INTERVAL;
+    if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+      TimingEvents::RunEvents();
+    ASSERT_EQ(SPU::ReadRegister(0x1AE) & 0x400u, 0u) << ticks;
+  }
+
+  // 32 halfwords at 16 cycles each, seen on the first poll after they complete.
+  EXPECT_GE(ticks, 512u);
+  EXPECT_LT(ticks, 512u + POLL_INTERVAL);
+  EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x280u, 0x280u);
+  EXPECT_EQ(std::memcmp(&SPU::GetWritableRAM()[0x2000], words.data(), sizeof(words)), 0);
+  DMA::Reset();
 }
 
 } // namespace
