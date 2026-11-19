@@ -298,6 +298,15 @@ void SetupWizardDialog::setupGameListPage(bool initial)
   connect(m_ui.searchDirectoryList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
           &SetupWizardDialog::onSearchDirectoryListSelectionChanged);
 
+  // queued, so we're not showing message boxes from inside the drop handler
+  connect(
+    m_directory_model, &GameListSearchDirectoriesModel::pathsDropped, this,
+    [this](const QStringList& paths) {
+      for (const QString& path : paths)
+        promptAndAddSearchDirectory(path);
+    },
+    Qt::QueuedConnection);
+
   refreshDirectoryList();
 }
 
@@ -326,6 +335,11 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
   if (dir.isEmpty())
     return;
 
+  promptAndAddSearchDirectory(dir);
+}
+
+void SetupWizardDialog::promptAndAddSearchDirectory(const QString& dir)
+{
   QMessageBox::StandardButton selection = QtUtils::MessageBoxQuestion(
     this, tr("Scan Recursively?"),
     tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "

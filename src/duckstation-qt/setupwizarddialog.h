@@ -64,6 +64,7 @@ private:
 
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
+  void promptAndAddSearchDirectory(const QString& dir);
   void onRemoveSearchDirectoryButtonClicked();
   void onSearchDirectoryListSelectionChanged();
   void refreshDirectoryList();

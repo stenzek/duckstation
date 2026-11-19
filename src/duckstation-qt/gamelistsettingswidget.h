@@ -3,6 +3,7 @@
 
 #pragma once
 #include <QtCore/QAbstractTableModel>
+#include <QtCore/QStringListModel>
 #include <QtWidgets/QWidget>
 #include <string>
 #include <vector>
@@ -25,6 +26,12 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
   Qt::ItemFlags flags(const QModelIndex& index) const override;
   bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+  Qt::DropActions supportedDropActions() const override;
+  QStringList mimeTypes() const override;
+  bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column,
+                       const QModelIndex& parent) const override;
+  bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column,
+                    const QModelIndex& parent) override;
 
   void reload();
   void addPath(std::string path, bool recursive);
@@ -34,6 +41,7 @@ public:
 
 Q_SIGNALS:
   void settingsChanged();
+  void pathsDropped(const QStringList& paths);
 
 private:
   struct Row
@@ -45,6 +53,27 @@ private:
   void save();
 
   std::vector<Row> m_rows;
+};
+
+class GameListExcludedPathsModel final : public QStringListModel
+{
+  Q_OBJECT
+
+public:
+  explicit GameListExcludedPathsModel(QObject* parent = nullptr);
+  ~GameListExcludedPathsModel() override;
+
+  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+  Qt::ItemFlags flags(const QModelIndex& index) const override;
+  Qt::DropActions supportedDropActions() const override;
+  QStringList mimeTypes() const override;
+  bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column,
+                       const QModelIndex& parent) const override;
+  bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column,
+                    const QModelIndex& parent) override;
+
+Q_SIGNALS:
+  void pathsDropped(const QStringList& paths);
 };
 
 class GameListSettingsWidget : public QWidget
@@ -63,6 +92,7 @@ public:
 private:
   void refreshDirectoryList();
   void addSearchDirectory(const QString& path, bool recursive);
+  void promptAndAddSearchDirectory(const QString& path);
 
   void onDirectoryListSelectionChanged();
   void onDirectoryListContextMenuRequested(const QPoint& point);
@@ -78,4 +108,5 @@ private:
 
   Ui::GameListSettingsWidget m_ui;
   GameListSearchDirectoriesModel* m_directory_model;
+  GameListExcludedPathsModel* m_excluded_paths_model;
 };
