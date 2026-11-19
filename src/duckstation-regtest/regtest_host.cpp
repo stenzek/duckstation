@@ -792,7 +792,7 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -pgxp-cpu: Forces PGXP CPU mode.\n");
   std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Default to software.\n");
   std::fprintf(stderr, "  -upscale <multiplier>: Enables upscaled rendering at the specified multiplier.\n");
-  std::fprintf(stderr, "  -setting <section>/<key>:<value>: Sets a setting, e.g. GPU/ResolutionScale:2.\n");
+  std::fprintf(stderr, "  -setting <section>/<key>=<value>: Sets a setting, e.g. GPU/ResolutionScale=2.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
