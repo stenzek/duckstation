@@ -42,12 +42,30 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                Settings::DEFAULT_FAST_BOOT_VALUE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, Settings::BIOS_SECTION_NAME,
                                                "FastForwardBoot", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize",
-                                               &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
-                                               Settings::DEFAULT_CPU_RAM_SIZE);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.vramSize, Settings::CONSOLE_SECTION_NAME, "VRAMSize",
-                                               &Settings::ParseGPUVRAMSize, &Settings::GetGPUVRAMSizeName,
-                                               Settings::DEFAULT_GPU_VRAM_SIZE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.ramSize, Settings::CPU_SECTION_NAME, "RAMSize", &Settings::ParseCPURAMSize, &Settings::GetCPURAMSizeName,
+    &Settings::GetCPURAMSizeDisplayName, Settings::DEFAULT_CPU_RAM_SIZE, CPURAMSize::Count, +[](CPURAMSize size) {
+      switch (size)
+      {
+        case CPURAMSize::Default:
+          return QIcon(QStringLiteral(":/icons/monochrome/svg/emulation-line.svg"));
+        case CPURAMSize::Expanded4MB:
+        case CPURAMSize::Expanded4MBForced:
+          return QIcon(QStringLiteral(":/icons/monochrome/svg/arcade-line.svg"));
+        case CPURAMSize::Expanded8MB:
+        case CPURAMSize::Expanded8MBForced:
+          return QIcon(QStringLiteral(":/icons/monochrome/svg/code-box-line.svg"));
+        default:
+          return QIcon(QStringLiteral(":/icons/monochrome/svg/tools-line.svg"));
+      }
+    });
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.vramSize, Settings::CONSOLE_SECTION_NAME, "VRAMSize", &Settings::ParseGPUVRAMSize,
+    &Settings::GetGPUVRAMSizeName, &Settings::GetGPUVRAMSizeDisplayName, Settings::DEFAULT_GPU_VRAM_SIZE,
+    GPUVRAMSize::Count, +[](GPUVRAMSize size) {
+      return QIcon((size == GPUVRAMSize::Default) ? QStringLiteral(":/icons/monochrome/svg/emulation-line.svg") :
+                                                    QStringLiteral(":/icons/monochrome/svg/arcade-line.svg"));
+    });
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardLoading, Settings::INTERFACE_SECTION_NAME,
@@ -107,11 +125,13 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                tr("Fast forwards when the game stops updating the screen while reading from the disc. "
                                   "Does not apply to animated loading screens."));
   dialog->registerWidgetHelp(
-    m_ui.ramSize, tr("Installed RAM"), tr("2MB RAM (Standard)"),
+    m_ui.ramSize, tr("Installed RAM"),
+    QString::fromUtf8(Settings::GetCPURAMSizeDisplayName(Settings::DEFAULT_CPU_RAM_SIZE)),
     tr("Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps "
        "all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes."));
   dialog->registerWidgetHelp(
-    m_ui.vramSize, tr("Installed VRAM"), tr("1MB VRAM (Standard)"),
+    m_ui.vramSize, tr("Installed VRAM"),
+    QString::fromUtf8(Settings::GetGPUVRAMSizeDisplayName(Settings::DEFAULT_GPU_VRAM_SIZE)),
     tr("Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes "
        "the second VRAM bank accessible regardless of the game enabling it or not."));
 

@@ -56,105 +56,20 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="ramSize">
-        <item>
-         <property name="text">
-          <string>2MB RAM (Standard)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/emulation-line.svg</normaloff>:/icons/monochrome/svg/emulation-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4MB RAM</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4MB RAM (Forced)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8MB RAM</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/code-box-line.svg</normaloff>:/icons/monochrome/svg/code-box-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8MB RAM (Forced)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/code-box-line.svg</normaloff>:/icons/monochrome/svg/code-box-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>16MB RAM</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/tools-line.svg</normaloff>:/icons/monochrome/svg/tools-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>16MB RAM (Forced)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/tools-line.svg</normaloff>:/icons/monochrome/svg/tools-line.svg</iconset>
-         </property>
-        </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QComboBox" name="ramSize"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="vramSizeLabel">
+        <property name="text">
+         <string>Installed VRAM:</string>
+        </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QComboBox" name="vramSize">
-        <item>
-         <property name="text">
-          <string>1MB VRAM (Standard)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/emulation-line.svg</normaloff>:/icons/monochrome/svg/emulation-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2MB VRAM</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2MB VRAM (Forced)</string>
-         </property>
-         <property name="icon">
-          <iconset resource="resources/duckstation-qt.qrc">
-           <normaloff>:/icons/monochrome/svg/arcade-line.svg</normaloff>:/icons/monochrome/svg/arcade-line.svg</iconset>
-         </property>
-        </item>
-       </widget>
+      <item row="3" column="1" colspan="2">
+       <widget class="QComboBox" name="vramSize"/>
       </item>
-      <item row="3" column="0" colspan="3">
+      <item row="4" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="1" column="0">
          <widget class="QCheckBox" name="fastForwardBoot">
