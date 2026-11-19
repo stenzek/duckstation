@@ -59,6 +59,9 @@ void RecreateGPU(GPURenderer renderer, std::optional<bool> enable_2mb_vram = std
 /// Called on card read/write, handles fast forwarding.
 void OnMemoryCardAccessed();
 
+/// Called when a data sector is delivered to the CPU, used for fast forward while loading.
+void OnCDROMDataSectorRead();
+
 /// Immediately terminates the virtual machine, no state is saved.
 void AbnormalShutdown(const std::string_view reason);
 

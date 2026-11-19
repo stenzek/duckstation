@@ -288,6 +288,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   emulation_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", 1.0f);
   fast_forward_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", 0.0f);
   turbo_speed = si.GetFloatValue(INTERFACE_SECTION_NAME, "TurboSpeed", 0.0f);
+  fast_forward_loading = si.GetBoolValue(INTERFACE_SECTION_NAME, "FastForwardLoading", false);
   sync_to_host_refresh_rate = si.GetBoolValue(INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", false);
   inhibit_screensaver = si.GetBoolValue(INTERFACE_SECTION_NAME, "InhibitScreensaver", true);
   pause_on_focus_loss = si.GetBoolValue(INTERFACE_SECTION_NAME, "PauseOnFocusLoss", false);
@@ -688,6 +689,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetFloatValue(INTERFACE_SECTION_NAME, "EmulationSpeed", emulation_speed);
   si.SetFloatValue(INTERFACE_SECTION_NAME, "FastForwardSpeed", fast_forward_speed);
   si.SetFloatValue(INTERFACE_SECTION_NAME, "TurboSpeed", turbo_speed);
+  si.SetBoolValue(INTERFACE_SECTION_NAME, "FastForwardLoading", fast_forward_loading);
 
   if (!for_copy)
   {

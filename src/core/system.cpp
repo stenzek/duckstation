@@ -112,6 +112,8 @@ static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
 static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
 static constexpr u8 MEMORY_CARD_FAST_FORWARD_FRAMES = 30;
+static constexpr u8 LOADING_FAST_FORWARD_ENTER_FRAMES = 15; // Frames without a flip before fast forwarding.
+static constexpr u8 LOADING_FAST_FORWARD_IDLE_FRAMES = 120; // Frames without CD data before giving up.
 static constexpr u32 INVALID_GAME_ENTRY_PC = 0xFFFFFFFFu;
 
 namespace {
@@ -268,6 +270,9 @@ struct StateVars
 
   bool runahead_replay_pending = false;
   u8 memory_card_fast_forward_frames = 0;
+  bool loading_fast_forward = false;
+  u8 frames_since_flip = 0;
+  u8 frames_since_cd_data_read = 0;
 
   u32 skipped_frame_count = 0;
   u32 last_presented_internal_frame_number = 0;
@@ -2056,6 +2061,9 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_state.next_frame_time = 0;
   s_state.turbo_enabled = false;
   s_state.fast_forward_enabled = false;
+  s_state.loading_fast_forward = false;
+  s_state.frames_since_flip = 0;
+  s_state.frames_since_cd_data_read = LOADING_FAST_FORWARD_IDLE_FRAMES;
 
   s_state.rewind_load_frequency = -1;
   s_state.rewind_load_counter = -1;
@@ -2321,6 +2329,28 @@ void System::FrameDone()
     s_state.memory_card_fast_forward_frames--;
     if (s_state.memory_card_fast_forward_frames == 0)
       UpdateSpeedLimiterState();
+  }
+
+  // fast forward while loading: no flips for a while, but the CD is still delivering data
+  s_state.frames_since_flip += (s_state.frames_since_flip != 0xFF);
+  s_state.frames_since_cd_data_read += (s_state.frames_since_cd_data_read != 0xFF);
+  if (!s_state.loading_fast_forward)
+  {
+    if (g_settings.fast_forward_loading && s_state.frames_since_flip >= LOADING_FAST_FORWARD_ENTER_FRAMES &&
+        s_state.frames_since_cd_data_read < s_state.frames_since_flip &&
+        s_state.frames_since_cd_data_read < LOADING_FAST_FORWARD_IDLE_FRAMES) [[unlikely]]
+    {
+      DEV_LOG("Loading fast forward started at frame {} after {} frames without flip.", s_state.frame_number,
+              s_state.frames_since_flip);
+      s_state.loading_fast_forward = true;
+      UpdateSpeedLimiterState();
+    }
+  }
+  else if (!g_settings.fast_forward_loading || s_state.frames_since_cd_data_read >= LOADING_FAST_FORWARD_IDLE_FRAMES)
+  {
+    DEV_LOG("Loading fast forward ended by CD idle at frame {}.", s_state.frame_number);
+    s_state.loading_fast_forward = false;
+    UpdateSpeedLimiterState();
   }
 
   // Frame step after runahead, otherwise the pause takes precedence and the replay never happens.
@@ -2649,6 +2679,13 @@ void System::IncrementInternalFrameNumber()
   }
 
   s_state.internal_frame_number++;
+  s_state.frames_since_flip = 0;
+  if (s_state.loading_fast_forward) [[unlikely]]
+  {
+    DEV_LOG("Loading fast forward ended by flip at frame {}.", s_state.frame_number);
+    s_state.loading_fast_forward = false;
+    UpdateSpeedLimiterState();
+  }
 }
 
 bool System::DoState(StateWrapper& sw, bool update_display)
@@ -3984,11 +4021,12 @@ void System::UpdateSpeedLimiterState()
   DebugAssert(IsValid());
 
   const float prev_speed = s_state.target_speed;
-  s_state.target_speed = (IsFastForwardingBoot() || s_state.memory_card_fast_forward_frames > 0) ?
-                           0.0f :
-                           (s_state.turbo_enabled ? g_settings.turbo_speed :
-                                                    (s_state.fast_forward_enabled ? g_settings.fast_forward_speed :
-                                                                                    g_settings.emulation_speed));
+  s_state.target_speed =
+    (IsFastForwardingBoot() || s_state.memory_card_fast_forward_frames > 0 || s_state.loading_fast_forward) ?
+      0.0f :
+      (s_state.turbo_enabled ?
+         g_settings.turbo_speed :
+         (s_state.fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed));
   s_state.throttler_enabled = (s_state.target_speed != 0.0f);
   s_state.optimal_frame_pacing = (s_state.throttler_enabled && g_settings.display_optimal_frame_pacing);
   // Duplicate frames still have to be presented with subframes, otherwise the last subframe is held.
@@ -4038,14 +4076,22 @@ void System::UpdateSpeedLimiterState()
   VERBOSE_LOG("Target speed: {}%", s_state.target_speed * 100.0f);
   VERBOSE_LOG("Preset timing: {}", s_state.optimal_frame_pacing ? "consistent" : "immediate");
 
-  // Update audio output.
+  // Update audio output. Loading fast forward doesn't write audio, so what's buffered plays out and fades.
+  // Runahead restores the mute after replaying.
   CoreAudioStream& stream = SPU::GetOutputStream();
+  const bool was_muted = SPU::IsAudioOutputMuted();
+  if (s_state.runahead_replay_frames == 0)
+    SPU::SetAudioOutputMuted(s_state.loading_fast_forward);
   stream.SetOutputVolume(GetAudioOutputVolume());
   stream.SetNominalRate(GetAudioNominalRate());
 
-  // Only empty stretch buffers when we're decreasing speed.
-  if (s_state.target_speed != prev_speed && (prev_speed > s_state.target_speed || prev_speed == 0.0f))
+  // Only empty stretch buffers when we're decreasing speed. Nothing is written while muted, so there's no input from
+  // the other speed to drop, and resetting would lose the tempo state.
+  if (s_state.target_speed != prev_speed && (prev_speed > s_state.target_speed || prev_speed == 0.0f) && !was_muted &&
+      !s_state.loading_fast_forward)
+  {
     stream.EmptyStretchBuffers();
+  }
 
   UpdateThrottlePeriod();
   ResetThrottler();
@@ -4331,6 +4377,11 @@ void System::OnMemoryCardAccessed()
 
   if (std::exchange(s_state.memory_card_fast_forward_frames, MEMORY_CARD_FAST_FORWARD_FRAMES) == 0)
     UpdateSpeedLimiterState();
+}
+
+void System::OnCDROMDataSectorRead()
+{
+  s_state.frames_since_cd_data_read = 0;
 }
 
 void System::SwapMemoryCards()
@@ -5829,7 +5880,7 @@ bool System::DoRunahead()
 #endif
 
   // we're all caught up. this frame gets saved in DoMemoryStates().
-  SPU::SetAudioOutputMuted(false);
+  SPU::SetAudioOutputMuted(s_state.loading_fast_forward);
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
   DEV_LOG("runahead ending at frame {}, took {:.2f} ms", s_state.frame_number, replay_timer.GetTimeMilliseconds());

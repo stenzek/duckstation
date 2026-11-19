@@ -3535,6 +3535,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
                     FSUI_VSTR("Fast forwards through memory card access, both loading and saving. Can reduce waiting "
                               "times in games that frequently access memory cards."),
                     Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Fast Forward While Loading"),
+                    FSUI_VSTR("Fast forwards when the game stops updating the screen while reading from the disc. "
+                              "Does not apply to animated loading screens."),
+                    Settings::INTERFACE_SECTION_NAME, "FastForwardLoading", false);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 

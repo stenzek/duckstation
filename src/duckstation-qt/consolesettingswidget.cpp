@@ -50,6 +50,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                Settings::DEFAULT_GPU_VRAM_SIZE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess,
                                                Settings::MEMORY_CARDS_SECTION_NAME, "FastForwardAccess", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardLoading, Settings::INTERFACE_SECTION_NAME,
+                                               "FastForwardLoading", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
   onFastBootChanged();
 
@@ -115,6 +117,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
                                tr("Fast forwards through memory card access, both loading and saving. Can reduce "
                                   "waiting times in games that frequently access memory cards."));
+  m_dialog->registerWidgetHelp(m_ui.fastForwardLoading, tr("Fast Forward While Loading"), tr("Unchecked"),
+                               tr("Fast forwards when the game stops updating the screen while reading from the disc. "
+                                  "Does not apply to animated loading screens."));
   dialog->registerWidgetHelp(
     m_ui.ramSize, tr("Installed RAM"), tr("2MB RAM (Standard)"),
     tr("Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps "
@@ -177,6 +182,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
   SettingWidgetBinder::SetAvailability(
     m_ui.fastForwardMemoryCardAccess, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableFastForwardMemoryCardAccess));
+  SettingWidgetBinder::SetAvailability(m_ui.fastForwardLoading,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableFastForwardLoading));
   SettingWidgetBinder::SetAvailability(
     m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
   SettingWidgetBinder::SetAvailability(m_ui.cdromReadSpeedup,

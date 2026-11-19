@@ -312,6 +312,7 @@ struct Settings : public GPUSettings
 
   bool memory_card_use_playlist_title : 1 = true;
   bool memory_card_fast_forward_access : 1 = false;
+  bool fast_forward_loading : 1 = false;
 
   bool cdrom_region_check : 1 = false;
   bool cdrom_subq_skew : 1 = false;

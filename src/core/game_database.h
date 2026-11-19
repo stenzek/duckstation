@@ -46,6 +46,7 @@ enum class Trait : u32
   DisableAutoAnalogMode,
   DisableMultitap,
   DisableFastForwardMemoryCardAccess,
+  DisableFastForwardLoading,
   DisableCDROMReadSpeedup,
   DisableCDROMSeekSpeedup,
   DisableCDROMSpeedupOnMDEC,

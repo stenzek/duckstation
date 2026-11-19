@@ -14,6 +14,7 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "system_private.h"
 #include "timing_event.h"
 
 #include "util/cd_image.h"
@@ -3725,6 +3726,8 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
       return;
     }
   }
+
+  System::OnCDROMDataSectorRead();
 
   // TODO: How does XA relate to this buffering?
   SectorBuffer* sb = &s_state.sector_buffers[sb_num];
