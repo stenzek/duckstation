@@ -230,8 +230,6 @@ void DebuggingSettingsWidget::addTweakOptions()
                        "MechaconVersion", Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), Settings::CDROM_SECTION_NAME,
-                         "ReadaheadSectors", 0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Read Speedup Cycles"),
                          Settings::CDROM_SECTION_NAME, "MaxReadSpeedupCycles", 1, 1000000,
                          Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES, tr(" cycles"));
@@ -290,8 +288,6 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_CDROM_READAHEAD_SECTORS); // CD-ROM Readahead Sectors
-    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read Cycles
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES); // CD-ROM Max Speedup Seek Cycles
@@ -329,7 +325,6 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue(Settings::CPU_SECTION_NAME, "RecompilerBlockLinking");
   sif->DeleteValue(Settings::CPU_SECTION_NAME, "FastmemMode");
   sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MechaconVersion");
-  sif->DeleteValue(Settings::CDROM_SECTION_NAME, "ReadaheadSectors");
   sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MaxReadSpeedupCycles");
   sif->DeleteValue(Settings::CDROM_SECTION_NAME, "MaxSeekSpeedupCycles");
   sif->DeleteValue(Settings::CDROM_SECTION_NAME, "DisableSpeedupOnMDEC");

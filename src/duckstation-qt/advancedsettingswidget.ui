@@ -144,6 +144,59 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="cdromGroup">
+     <property name="title">
+      <string>CD-ROM Emulation</string>
+     </property>
+     <layout class="QGridLayout" name="cdromLayout" columnstretch="0,1">
+      <item row="0" column="0">
+       <widget class="QLabel" name="cdromReadaheadSectorsLabel">
+        <property name="text">
+         <string>Readahead Sectors:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="cdromReadaheadSectors">
+        <property name="suffix">
+         <string> sectors</string>
+        </property>
+        <property name="maximum">
+         <number>32</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="cdromHostReadSpeedLabel">
+        <property name="text">
+         <string>Physical Disc Drive Speed:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="cdromHostReadSpeed">
+        <property name="specialValueText">
+         <string>Don't Change</string>
+        </property>
+        <property name="suffix">
+         <string>x</string>
+        </property>
+        <property name="maximum">
+         <number>72</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="cdromIgnoreHostSubcode">
+        <property name="text">
+         <string>Ignore Physical Disc Drive Subcode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="webCacheGroup">
      <property name="title">
       <string>Web Cache</string>

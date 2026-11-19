@@ -66,6 +66,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "RichPresenceMonitor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameNumber, Settings::DISPLAY_SECTION_NAME,
                                                "ShowFrameNumber", false);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromReadaheadSectors, Settings::CDROM_SECTION_NAME,
+                                              "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS);
+  QtUtils::FixSpinBoxTextMargins(m_ui.cdromReadaheadSectors);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.cdromHostReadSpeed, Settings::CDROM_SECTION_NAME,
+                                              "HostReadSpeed", 8);
+  QtUtils::FixSpinBoxTextMargins(m_ui.cdromHostReadSpeed);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromIgnoreHostSubcode, Settings::CDROM_SECTION_NAME,
+                                               "IgnoreHostSubcode", false);
 
   connect(m_ui.refreshWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::refreshWebCacheSize);
   connect(m_ui.clearWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onClearWebCacheClicked);
@@ -93,6 +101,18 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Always displays the current RetroAchievements rich presence string in the indicator area."));
   dialog->registerWidgetHelp(m_ui.showFrameNumber, tr("Show Frame Number"), tr("Unchecked"),
                              tr("Shows the number of the current frame in the top-right corner of the display."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromReadaheadSectors, tr("Readahead Sectors"),
+    tr("%n sectors", nullptr, Settings::DEFAULT_CDROM_READAHEAD_SECTORS),
+    tr("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromHostReadSpeed, tr("Physical Disc Drive Speed"), tr("8x"),
+    tr("Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the "
+       "drive louder. Set to \"Don't Change\" to leave the drive at its own speed. Not all drives support this."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromIgnoreHostSubcode, tr("Ignore Physical Disc Drive Subcode"), tr("Unchecked"),
+    tr("Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel "
+       "data. Won't work with libcrypt games, but can improve read reliability on some drives."));
 
   // RAIntegration is not available on non-win32/x64.
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
