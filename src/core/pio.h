@@ -43,6 +43,9 @@ extern void Shutdown();
 extern void Reset();
 extern bool DoState(StateWrapper& sw);
 
+/// Returns the maximum size of the configured device's state.
+extern size_t GetMaxStateSize();
+
 } // namespace PIO
 
 extern std::unique_ptr<PIO::Device> g_pio_device;

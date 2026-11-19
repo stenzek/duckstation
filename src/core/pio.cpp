@@ -832,6 +832,15 @@ void PIO::Reset()
   g_pio_device->Reset();
 }
 
+size_t PIO::GetMaxStateSize()
+{
+  // Device type and size header, plus device registers.
+  static constexpr size_t HEADER_SIZE = 64;
+  return (g_settings.pio_device_type == PIODeviceType::XplorerCart) ?
+           (HEADER_SIZE + Flash::TOTAL_SIZE + XplorerCart::SRAM_SIZE) :
+           HEADER_SIZE;
+}
+
 bool PIO::DoState(StateWrapper& sw)
 {
   PIODeviceType device_type = g_settings.pio_device_type;

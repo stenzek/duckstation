@@ -256,6 +256,7 @@ struct SettingsLocals
   std::vector<const HotkeyInfo*> hotkey_list_cache;
   std::vector<ImageTrackInfo> image_track_list;
   std::string image_track_summary;
+  size_t rewind_state_size = 0;
   s8 selected_controller_port = -1;
   bool settings_changed = false;
   bool game_settings_changed = false;
@@ -1872,6 +1873,12 @@ void FullscreenUI::SwitchToSettings(SettingsPage page /* = SettingsPage::Interfa
   PopulateGameListDirectoryCache(*Core::GetBaseSettingsLayer());
   PopulatePostProcessingChain(*sif, PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME);
 
+  // Memory state size depends on the running system, so has to be queried on the core thread.
+  Host::RunOnCoreThread([]() {
+    VideoThread::RunOnThread(
+      [size = System::GetMaxSaveStateSize(true)]() { s_settings_locals.rewind_state_size = size; });
+  });
+
   SwitchToMainWindow(MainWindowType::Settings);
   s_settings_locals.settings_page = page;
 }
@@ -1924,6 +1931,11 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
   PopulatePatchesAndCheatsList();
   PopulatePostProcessingChain(*s_settings_locals.game_settings_interface,
                               PostProcessing::Config::DISPLAY_CHAIN_SECTION_NAME);
+  // Memory state size depends on the running system, so has to be queried on the core thread.
+  Host::RunOnCoreThread([]() {
+    VideoThread::RunOnThread(
+      [size = System::GetMaxSaveStateSize(true)]() { s_settings_locals.rewind_state_size = size; });
+  });
   s_settings_locals.settings_page = page;
   s_settings_locals.selected_controller_port = -1;
   SwitchToMainWindow(MainWindowType::Settings);
@@ -3987,11 +3999,16 @@ void FullscreenUI::DrawEmulationSettingsPage()
   {
     const u32 resolution_scale = GetEffectiveUIntSetting(bsi, Settings::GPU_SECTION_NAME, "ResolutionScale", 1);
     const u32 multisamples = GetEffectiveUIntSetting(bsi, Settings::GPU_SECTION_NAME, "Multisamples", 1);
-    const bool use_software_renderer =
+    const GPURenderer renderer =
+      Settings::ParseRendererName(
+        GetEffectiveTinyStringSetting(bsi, Settings::GPU_SECTION_NAME, "Renderer",
+                                      Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
+          .c_str())
+        .value_or(Settings::DEFAULT_GPU_RENDERER);
+    const bool use_software_renderer_for_memory_states =
       GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "UseSoftwareRendererForMemoryStates", false);
-    const CPURAMSize ram_size =
-      Settings::ParseCPURAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "RAMSize"))
-        .value_or(Settings::DEFAULT_CPU_RAM_SIZE);
+    const bool use_software_renderer_for_readbacks =
+      GetEffectiveBoolSetting(bsi, Settings::GPU_SECTION_NAME, "UseSoftwareRendererForReadbacks", false);
     const bool vram_2mb =
       Settings::ParseGPUVRAMSize(GetEffectiveTinyStringSetting(bsi, Settings::CONSOLE_SECTION_NAME, "VRAMSize"))
         .value_or(Settings::DEFAULT_GPU_VRAM_SIZE) != GPUVRAMSize::Default;
@@ -4005,8 +4022,10 @@ void FullscreenUI::DrawEmulationSettingsPage()
       static_cast<float>(rewind_save_slots);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, multisamples, use_software_renderer,
-                                       ram_size, vram_2mb, enable_texture_cache, &ram_usage, &vram_usage);
+    System::CalculateRewindMemoryUsage(rewind_save_slots, s_settings_locals.rewind_state_size, renderer,
+                                       resolution_scale, multisamples, use_software_renderer_for_memory_states,
+                                       use_software_renderer_for_readbacks, vram_2mb, enable_texture_cache, &ram_usage,
+                                       &vram_usage);
     if (vram_usage > 0)
     {
       rewind_summary.format(

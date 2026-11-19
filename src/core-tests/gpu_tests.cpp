@@ -889,7 +889,7 @@ TEST_F(GPUFrontend, UpperVRAMIsGatedBySettingAndGP1_09)
   g_settings.gpu_vram_size = GPUVRAMSize::Expanded2MB;
   GPU::Initialize();
   GPU::Reset(false);
-  std::vector<u8> data(System::GetMaxSaveStateSize(CPURAMSize::Default, true, false));
+  std::vector<u8> data(System::GetMaxSaveStateSize(false));
   {
     StateWrapper sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     ASSERT_TRUE(GPU::DoState(sw));

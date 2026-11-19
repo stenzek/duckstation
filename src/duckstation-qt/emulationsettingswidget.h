@@ -26,4 +26,5 @@ private:
   Ui::EmulationSettingsWidget m_ui;
 
   SettingsWindow* m_dialog;
+  size_t m_rewind_state_size = 0;
 };

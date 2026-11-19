@@ -2846,10 +2846,7 @@ bool System::AllocateMemoryStates(size_t state_count, bool recycle_old_textures)
 
   // Allocate CPU buffers.
   // TODO: Maybe look at host memory limits here...
-  // Loaded states can change the RAM size, so use the active size instead of the setting.
-  const size_t size =
-    GetMaxMemorySaveStateSize(Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE),
-                              GPU::Is2MBVRAMEnabled(), CPU::PGXP::ShouldSavePGXPState(), g_settings.gpu_texture_cache);
+  const size_t size = GetMaxSaveStateSize(true);
   for (MemorySaveState& mss : s_state.memory_save_states)
   {
     mss.state_size = 0;
@@ -3124,16 +3121,39 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, bool* m
   return true;
 }
 
-size_t System::GetMaxSaveStateSize(CPURAMSize ram_size, bool vram_2mb, bool enable_texture_cache)
+size_t System::GetMaxSaveStateSize(bool memory_state)
 {
-  // Allow roughly 2MB of emulator overhead plus serialized RAM and VRAM. Former includes SPU memory.
-  return ((2 * 1024 * 1024) + Settings::GetCPURAMSizeBytes(ram_size) + (vram_2mb ? VRAM_2MB_SIZE : VRAM_1MB_SIZE) +
-          (enable_texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0));
-}
+  // Loaded states can change the RAM/VRAM size and insert memory cards, so use the active hardware while running.
+  const bool valid = IsValid();
+  const u32 ram_size = valid ? g_bus.ram_size : Settings::GetCPURAMSizeBytes(g_settings.cpu_ram_size);
+  u32 num_memory_cards = 0;
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    num_memory_cards += BoolToUInt32(valid ? (Pad::GetMemoryCard(i) != nullptr) :
+                                             (g_settings.memory_card_types[i] != MemoryCardType::None));
+  }
 
-size_t System::GetMaxMemorySaveStateSize(CPURAMSize ram_size, bool vram_2mb, bool pgxp, bool enable_texture_cache)
-{
-  return GetMaxSaveStateSize(ram_size, vram_2mb, enable_texture_cache) + (pgxp ? CPU::PGXP::GetStateSize(ram_size) : 0);
+  // 128KB covers registers (~18KB), FIFOs, CD sector buffers and XA audio. Achievement progress depends on the set.
+  // A CPU->VRAM transfer or polyline can be in progress at any time, each is limited to 1MB.
+  size_t size = (128 * 1024) + (g_settings.achievements_enabled ? (512 * 1024) : 0) + ram_size + SPU::RAM_SIZE +
+                (num_memory_cards * MemoryCard::STATE_SIZE) + VRAM_1MB_SIZE;
+
+  if (memory_state)
+  {
+    // VRAM and texture cache are stored by the GPU backend, and PIO is not saved.
+    if (CPU::PGXP::ShouldSavePGXPState())
+      size +=
+        CPU::PGXP::GetStateSize(Settings::GetCPURAMSizeForBytes(ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE));
+  }
+  else
+  {
+    // Texture cache state is owned by the video thread, so reserve a fixed amount. It won't be saved if it's larger.
+    const bool vram_2mb = valid ? GPU::Is2MBVRAMEnabled() : (g_settings.gpu_vram_size != GPUVRAMSize::Default);
+    size += (vram_2mb ? VRAM_2MB_SIZE : VRAM_1MB_SIZE) + PIO::GetMaxStateSize() +
+            (g_settings.gpu_texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0);
+  }
+
+  return size;
 }
 
 std::string System::GetBootPathFromSaveState(const char* path)
@@ -3279,6 +3299,12 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
       Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     }
 
+    ClearMemorySaveStates(true, false);
+  }
+  else if (!s_state.memory_save_states.empty() &&
+           s_state.memory_save_states.front().state_data.size() < GetMaxSaveStateSize(true)) [[unlikely]]
+  {
+    // States can insert memory cards.
     ClearMemorySaveStates(true, false);
   }
 
@@ -3701,13 +3727,9 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
   }
 
   // write data
-  if (buffer->state_data.empty())
-  {
-    // Loaded states can change the RAM size, so use the active size instead of the setting.
-    buffer->state_data.resize(
-      GetMaxSaveStateSize(Settings::GetCPURAMSizeForBytes(g_bus.ram_size).value_or(Settings::DEFAULT_CPU_RAM_SIZE),
-                          GPU::Is2MBVRAMEnabled(), g_settings.gpu_texture_cache));
-  }
+  // Buffers can be reused (undo state), and the maximum size can change with memory cards/PIO.
+  if (const size_t max_size = GetMaxSaveStateSize(false); buffer->state_data.size() < max_size)
+    buffer->state_data.resize(max_size);
 
   return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
 }
@@ -5261,6 +5283,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.enable_gdb_server)
         GDBServer::Initialize(g_settings.gdb_server_port);
     }
+
+    // Memory cards and achievements change the maximum memory state size.
+    if (!s_state.memory_save_states.empty() &&
+        s_state.memory_save_states.front().state_data.size() < GetMaxSaveStateSize(true))
+    {
+      ClearMemorySaveStates(true, true);
+    }
   }
   else
   {
@@ -5570,17 +5599,30 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
   WARNING_LOG(console_messages);
 }
 
-void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples,
-                                        bool use_software_renderer, CPURAMSize ram_size, bool vram_2mb,
-                                        bool gpu_texture_cache, u64* ram_usage, u64* vram_usage)
+void System::CalculateRewindMemoryUsage(u32 num_saves, size_t state_size, GPURenderer renderer, u32 resolution_scale,
+                                        u32 multisamples, bool use_software_renderer_for_memory_states,
+                                        bool use_software_renderer_for_readbacks, bool vram_2mb, bool gpu_texture_cache,
+                                        u64* ram_usage, u64* vram_usage)
 {
   const u32 real_resolution_scale = std::max<u32>(resolution_scale, 1u);
   const u32 vram_height = vram_2mb ? VRAM_2MB_HEIGHT : VRAM_1MB_HEIGHT;
-  *ram_usage = GetMaxMemorySaveStateSize(ram_size, vram_2mb, false, gpu_texture_cache) * static_cast<u64>(num_saves);
-  *vram_usage = use_software_renderer ? 0 :
-                                        ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *
-                                          static_cast<u64>(vram_height * real_resolution_scale) * 4) *
-                                         static_cast<u64>(multisamples) * static_cast<u64>(num_saves));
+
+  // GPU backends keep a CPU-side copy of VRAM when drawing with the software renderer, and for the texture cache.
+  // The texture cache is not available with the software renderer, and GPU textures are only used by hardware.
+  const bool software_renderer = (renderer == GPURenderer::Software);
+  const bool draw_with_software_renderer =
+    software_renderer || use_software_renderer_for_memory_states || use_software_renderer_for_readbacks;
+  const bool texture_cache = !software_renderer && gpu_texture_cache;
+  const size_t gpu_state_size =
+    ((draw_with_software_renderer || texture_cache) ? (vram_2mb ? VRAM_2MB_SIZE : VRAM_1MB_SIZE) : 0) +
+    (draw_with_software_renderer ? sizeof(g_gpu_clut) : 0) +
+    (texture_cache ? GPUTextureCache::MAX_SAVE_STATE_DATA_SIZE : 0);
+  *ram_usage = static_cast<u64>(state_size + gpu_state_size) * static_cast<u64>(num_saves);
+  *vram_usage = (software_renderer || use_software_renderer_for_memory_states) ?
+                  0 :
+                  ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *
+                    static_cast<u64>(vram_height * real_resolution_scale) * 4) *
+                   static_cast<u64>(multisamples) * static_cast<u64>(num_saves));
 }
 
 void System::UpdateMemorySaveStateSettings()
@@ -5604,10 +5646,11 @@ void System::UpdateMemorySaveStateSettings()
     num_slots = g_settings.rewind_save_slots;
 
     u64 ram_usage, vram_usage;
-    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale,
-                               g_settings.gpu_multisamples, g_settings.gpu_use_software_renderer_for_memory_states,
-                               g_settings.cpu_ram_size, GPU::Is2MBVRAMEnabled(), g_settings.gpu_texture_cache,
-                               &ram_usage, &vram_usage);
+    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, GetMaxSaveStateSize(true), g_settings.gpu_renderer,
+                               g_settings.gpu_resolution_scale, g_settings.gpu_multisamples,
+                               g_settings.gpu_use_software_renderer_for_memory_states,
+                               g_settings.gpu_use_software_renderer_for_readbacks, GPU::Is2MBVRAMEnabled(),
+                               g_settings.gpu_texture_cache, &ram_usage, &vram_usage);
     INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
              std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
              vram_usage / 1048576);
