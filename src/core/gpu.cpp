@@ -118,7 +118,9 @@ enum : u16
 };
 
 static constexpr size_t MAX_BLIT_BUFFER_SIZE = ((VRAM_WIDTH * VRAM_1MB_HEIGHT) / 2); // blit buffer is in words
-static constexpr size_t MAX_POLYLINE_BUFFER_SIZE = 0x200000; // this is more of just a sanity check...
+
+// Sanity check for unterminated polylines, sized to share the save state reservation with the blit buffer.
+static constexpr size_t MAX_POLYLINE_BUFFER_SIZE = VRAM_1MB_SIZE / sizeof(u64);
 
 } // namespace
 
