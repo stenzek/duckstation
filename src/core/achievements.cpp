@@ -392,7 +392,7 @@ void Achievements::PrefetchNextAchievementBadge()
 
   // Find most recent unlock.
   rc_client_achievement_list_t* const achievements =
-    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED_AND_UNPROMOTED,
                                       RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS);
   const rc_client_achievement_t* most_recent_unlock = nullptr;
   for (u32 i = 0; i < achievements->num_buckets; i++)
@@ -439,7 +439,7 @@ void Achievements::PrefetchAllAchievementBadges()
     return;
 
   rc_client_achievement_list_t* const achievements =
-    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+    rc_client_create_achievement_list(Achievements::GetClient(), RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED_AND_UNPROMOTED,
                                       RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE);
   if (!achievements)
     return;
@@ -619,7 +619,7 @@ bool Achievements::CreateClient(std::unique_lock<Threading::Mutex>& lock, bool i
 
   // Hardcore starts off. We enable it on first boot.
   rc_client_set_hardcore_enabled(s_state.client, false);
-  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_track_unofficial);
+  rc_client_set_unpromoted_enabled(s_state.client, g_settings.achievements_track_unofficial);
   rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
   rc_client_set_encore_mode_enabled(s_state.client,
                                     !g_settings.achievements_spectator_mode && g_settings.achievements_encore_mode);
@@ -818,7 +818,7 @@ void Achievements::UpdateModeSettings(const Settings& old_config)
     rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
   }
   if (g_settings.achievements_track_unofficial != old_config.achievements_track_unofficial)
-    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_track_unofficial);
+    rc_client_set_unpromoted_enabled(s_state.client, g_settings.achievements_track_unofficial);
 }
 
 void Achievements::Shutdown()
@@ -1366,15 +1366,16 @@ void Achievements::DisplayAchievementSummary()
     const bool hardcore_enabled = rc_client_get_hardcore_enabled(s_state.client);
 
     SmallString summary;
-    if (s_state.game_summary.num_core_achievements > 0)
+    if (s_state.game_summary.num_promoted_achievements > 0)
     {
       summary.format(
         TRANSLATE_FS("Achievements", "{0}, {1}."),
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "You have unlocked {} of %n achievements",
-                                                     "Achievement popup", s_state.game_summary.num_core_achievements),
+                                                     "Achievement popup",
+                                                     s_state.game_summary.num_promoted_achievements),
                                  s_state.game_summary.num_unlocked_achievements),
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "and earned {} of %n points", "Achievement popup",
-                                                     s_state.game_summary.points_core),
+                                                     s_state.game_summary.points_available),
                                  s_state.game_summary.points_unlocked));
 
       summary.append('\n');
@@ -1476,7 +1477,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
   INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title,
            s_state.game_id.load(std::memory_order_relaxed));
-  if (cheevo->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL && !IsUsingRAIntegration())
+  if (cheevo->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED && !IsUsingRAIntegration())
     StoreUnofficialAchievementUnlockInDatabase(cheevo);
 
   UpdateGameSummary();
@@ -2278,13 +2279,13 @@ void Achievements::FinishLogin()
   FetchGameListIfOutdated();
   FetchAllProgressIfMissing();
 
-  Host::OnAchievementsLoginSuccess(user->username, user->score, user->score_softcore, user->num_unread_messages);
+  Host::OnAchievementsLoginSuccess(user->username, user->score, user->score_casual, user->num_unread_messages);
 
   if (g_settings.achievements_notifications)
   {
     //: Summary for login notification.
     std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} casual)\nUnread messages: {}"),
-                                      user->score, user->score_softcore, user->num_unread_messages);
+                                      user->score, user->score_casual, user->num_unread_messages);
 
     FullscreenUI::AddAchievementNotification("achievements_login", LOGIN_NOTIFICATION_TIME,
                                              s_state.logged_in_user_icon_url, user->display_name, std::move(summary),
@@ -2308,7 +2309,7 @@ std::pair<u32, u32> Achievements::GetLoggedInUserPoints()
   if (!user) [[unlikely]]
     return {};
 
-  return {user->score, user->score_softcore};
+  return {user->score, user->score_casual};
 }
 
 std::string Achievements::GetProfileURL(std::string_view username)
@@ -3086,9 +3087,9 @@ void Achievements::UpdateGameDatabaseFromCurrentGame()
     ginfo->badge_url ? std::string_view(ginfo->badge_url) : s_state.game_badge_url;
   if (step != SQLITE_ROW || (!ginfo_title.empty() && stmt.ColumnText(0) != ginfo_title) ||
       (!ginfo_badge_url.empty() && stmt.ColumnText(1) != ginfo_badge_url) ||
-      stmt.ColumnInt(2) != static_cast<int>(gsummary.num_core_achievements) ||
+      stmt.ColumnInt(2) != static_cast<int>(gsummary.num_promoted_achievements) ||
       stmt.ColumnInt(3) != static_cast<int>(num_leaderbords) ||
-      stmt.ColumnInt(4) != static_cast<int>(gsummary.points_core))
+      stmt.ColumnInt(4) != static_cast<int>(gsummary.points_available))
   {
 #if 0
     // For debugging
@@ -3116,9 +3117,9 @@ void Achievements::UpdateGameDatabaseFromCurrentGame()
     stmt.BindInt(1, static_cast<int>(game_id));
     stmt.BindText(2, ginfo_title);
     stmt.BindText(3, ginfo_badge_url);
-    stmt.BindInt(4, static_cast<int>(gsummary.num_core_achievements));
+    stmt.BindInt(4, static_cast<int>(gsummary.num_promoted_achievements));
     stmt.BindInt(5, static_cast<int>(num_leaderbords));
-    stmt.BindInt(6, static_cast<int>(gsummary.points_core));
+    stmt.BindInt(6, static_cast<int>(gsummary.points_available));
     if (!stmt.Execute(s_state.achievements_db, &error))
     {
       ERROR_LOG("Failed to execute game update statement: {}", error.GetDescription());
@@ -3328,7 +3329,7 @@ void Achievements::UpdateProgressDatabaseFromCurrentGame()
 
   // query list to get both hardcore and softcore counts
   rc_client_achievement_list_t* const achievements =
-    rc_client_create_achievement_list(s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE, 0);
+    rc_client_create_achievement_list(s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED, 0);
   u32 num_achievements = 0;
   u32 achievements_unlocked = 0;
   u32 achievements_unlocked_hardcore = 0;
@@ -3340,7 +3341,7 @@ void Achievements::UpdateProgressDatabaseFromCurrentGame()
       for (const rc_client_achievement_t* achievement :
            std::span<const rc_client_achievement_t*>(bucket.achievements, bucket.num_achievements))
       {
-        achievements_unlocked += BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE) != 0);
+        achievements_unlocked += BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_CASUAL) != 0);
         achievements_unlocked_hardcore +=
           BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE) != 0);
       }
@@ -3437,7 +3438,7 @@ void Achievements::LoadUnofficialAchievementUnlocks()
     const u8 unlock_state = static_cast<u8>(stored_unlock_state);
     const time_t unlock_time_softcore = static_cast<time_t>(query_stmt.ColumnInt64(2));
     const time_t unlock_time_hardcore = static_cast<time_t>(query_stmt.ColumnInt64(3));
-    const int result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id, unlock_state,
+    const int result = rc_client_set_unpromoted_achievement_unlock_state(s_state.client, achievement_id, unlock_state,
                                                                          unlock_time_softcore, unlock_time_hardcore);
     if (result == RC_NOT_FOUND)
     {
@@ -3477,7 +3478,7 @@ bool Achievements::StoreUnofficialAchievementUnlockInDatabase(const rc_client_ac
 {
   // Really shouldn't be here without a game ID...
   const u32 game_id = s_state.game_id.load(std::memory_order_relaxed);
-  DebugAssert(achievement && achievement->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL);
+  DebugAssert(achievement && achievement->category == RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED);
   if (game_id == 0 || !EnsureAchievementsDatabaseOpen())
     return false;
 
@@ -3513,7 +3514,7 @@ bool Achievements::StoreUnofficialAchievementUnlockInDatabase(const rc_client_ac
   if (rc_client_get_hardcore_enabled(s_state.client))
   {
     unlock_time_hardcore = achievement->unlock_time;
-    if (!unlock_time_softcore && (achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE))
+    if (!unlock_time_softcore && (achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_CASUAL))
       unlock_time_softcore = achievement->unlock_time;
   }
   else
@@ -3570,7 +3571,7 @@ void Achievements::ResetUnofficialAchievementUnlock(u32 achievement_id)
     return;
 
   const rc_client_achievement_t* achievement = rc_client_get_achievement_info(s_state.client, achievement_id);
-  if (!achievement || achievement->category != RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL ||
+  if (!achievement || achievement->category != RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED ||
       achievement->unlocked == RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE)
   {
     return;
@@ -3593,7 +3594,7 @@ void Achievements::ResetUnofficialAchievementUnlock(u32 achievement_id)
     return;
   }
 
-  const int result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id,
+  const int result = rc_client_set_unpromoted_achievement_unlock_state(s_state.client, achievement_id,
                                                                        RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE, 0, 0);
   if (result != RC_OK)
   {
@@ -3629,7 +3630,7 @@ void Achievements::ResetAllUnofficialAchievementUnlocks()
 
   std::vector<u32> achievement_ids;
   rc_client_achievement_list_t* list = rc_client_create_achievement_list(
-    s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS);
+    s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED, RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE);
   if (list)
   {
     for (const rc_client_achievement_bucket_t& bucket :
@@ -3647,7 +3648,7 @@ void Achievements::ResetAllUnofficialAchievementUnlocks()
 
   for (const u32 achievement_id : achievement_ids)
   {
-    const int rc_result = rc_client_set_unofficial_achievement_unlock_state(s_state.client, achievement_id,
+    const int rc_result = rc_client_set_unpromoted_achievement_unlock_state(s_state.client, achievement_id,
                                                                             RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE, 0, 0);
     if (rc_result != RC_OK)
       ERROR_LOG("Failed to reset unofficial achievement {}: {}", achievement_id, rc_error_str(rc_result));

@@ -2,36 +2,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\vsprops\Configurations.props" />
   <ItemGroup>
-    <ClCompile Include="src\rapi\rc_api_common.c" />
-    <ClCompile Include="src\rapi\rc_api_editor.c" />
-    <ClCompile Include="src\rapi\rc_api_info.c" />
-    <ClCompile Include="src\rapi\rc_api_runtime.c" />
-    <ClCompile Include="src\rapi\rc_api_user.c" />
-    <ClCompile Include="src\rcheevos\alloc.c" />
-    <ClCompile Include="src\rcheevos\condition.c" />
-    <ClCompile Include="src\rcheevos\condset.c" />
-    <ClCompile Include="src\rcheevos\consoleinfo.c" />
-    <ClCompile Include="src\rcheevos\format.c" />
-    <ClCompile Include="src\rcheevos\lboard.c" />
-    <ClCompile Include="src\rcheevos\memref.c" />
-    <ClCompile Include="src\rcheevos\operand.c" />
-    <ClCompile Include="src\rcheevos\richpresence.c" />
-    <ClCompile Include="src\rcheevos\runtime.c" />
-    <ClCompile Include="src\rcheevos\runtime_progress.c" />
-    <ClCompile Include="src\rcheevos\trigger.c" />
-    <ClCompile Include="src\rcheevos\value.c" />
-    <ClCompile Include="src\rc_client.c" />
-    <ClCompile Include="src\rc_client_external.c">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\rc_client_raintegration.c">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\rc_compat.c" />
-    <ClCompile Include="src\rc_util.c" />
-    <ClCompile Include="src\rhash\md5.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="include\rcheevos.h" />
     <ClInclude Include="include\rc_api_editor.h" />
     <ClInclude Include="include\rc_api_info.h" />
@@ -43,27 +13,76 @@
     <ClInclude Include="include\rc_error.h" />
     <ClInclude Include="include\rc_hash.h" />
     <ClInclude Include="include\rc_runtime.h" />
-    <ClInclude Include="include\rc_runtime_types.h" />
     <ClInclude Include="include\rc_util.h" />
-    <ClInclude Include="src\rapi\rc_api_common.h" />
-    <ClInclude Include="src\rcheevos\rc_internal.h" />
-    <ClInclude Include="src\rc_client_external.h">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="src\rc_client_external_versions.h">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="src\rc_client_internal.h" />
-    <ClInclude Include="src\rc_client_raintegration_internal.h">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="src\rc_compat.h" />
-    <ClInclude Include="src\rc_version.h" />
-    <ClInclude Include="src\rhash\md5.h" />
+    <ClInclude Include="src\api\rc_api_common.h" />
+    <ClInclude Include="src\client\rc_client_async.h" />
+    <ClInclude Include="src\client\rc_client_do_frame.h" />
+    <ClInclude Include="src\client\rc_client_external.h" />
+    <ClInclude Include="src\client\rc_client_external_versions.h" />
+    <ClInclude Include="src\client\rc_client_game.h" />
+    <ClInclude Include="src\client\rc_client_internal.h" />
+    <ClInclude Include="src\client\rc_client_load.h" />
+    <ClInclude Include="src\client\rc_client_raintegration_internal.h" />
+    <ClInclude Include="src\client\rc_client_server.h" />
+    <ClInclude Include="src\runtime\rc_alloc.h" />
+    <ClInclude Include="src\runtime\rc_condition.h" />
+    <ClInclude Include="src\runtime\rc_condset.h" />
+    <ClInclude Include="src\runtime\rc_eval_state.h" />
+    <ClInclude Include="src\runtime\rc_format.h" />
+    <ClInclude Include="src\runtime\rc_lboard.h" />
+    <ClInclude Include="src\runtime\rc_memref.h" />
+    <ClInclude Include="src\runtime\rc_modified_memref.h" />
+    <ClInclude Include="src\runtime\rc_operand.h" />
+    <ClInclude Include="src\runtime\rc_operator.h" />
+    <ClInclude Include="src\runtime\rc_parse_state.h" />
+    <ClInclude Include="src\runtime\rc_richpresence.h" />
+    <ClInclude Include="src\runtime\rc_trigger.h" />
+    <ClInclude Include="src\runtime\rc_typed_value.h" />
+    <ClInclude Include="src\runtime\rc_validate.h" />
+    <ClInclude Include="src\runtime\rc_value.h" />
+    <ClInclude Include="src\util\md5.h" />
+    <ClInclude Include="src\util\rc_compat.h" />
+    <ClInclude Include="src\util\rc_version.h" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="src\rcheevos\rc_runtime_types.natvis" />
-    <Natvis Include="src\rc_client_types.natvis" />
+    <ClCompile Include="src\api\rc_api_common.c" />
+    <ClCompile Include="src\api\rc_api_editor.c" />
+    <ClCompile Include="src\api\rc_api_info.c" />
+    <ClCompile Include="src\api\rc_api_runtime.c" />
+    <ClCompile Include="src\api\rc_api_user.c" />
+    <ClCompile Include="src\client\rc_client.c" />
+    <ClCompile Include="src\client\rc_client_async.c" />
+    <ClCompile Include="src\client\rc_client_do_frame.c" />
+    <ClCompile Include="src\client\rc_client_external.c" />
+    <ClCompile Include="src\client\rc_client_game.c" />
+    <ClCompile Include="src\client\rc_client_info.c" />
+    <ClCompile Include="src\client\rc_client_load.c" />
+    <ClCompile Include="src\client\rc_client_raintegration.c" />
+    <ClCompile Include="src\client\rc_client_server.c" />
+    <ClCompile Include="src\client\rc_client_user.c" />
+    <ClCompile Include="src\runtime\rc_alloc.c" />
+    <ClCompile Include="src\runtime\rc_condition.c" />
+    <ClCompile Include="src\runtime\rc_condset.c" />
+    <ClCompile Include="src\runtime\rc_consoleinfo.c" />
+    <ClCompile Include="src\runtime\rc_format.c" />
+    <ClCompile Include="src\runtime\rc_lboard.c" />
+    <ClCompile Include="src\runtime\rc_memref.c" />
+    <ClCompile Include="src\runtime\rc_operand.c" />
+    <ClCompile Include="src\runtime\rc_richpresence.c" />
+    <ClCompile Include="src\runtime\rc_runtime.c" />
+    <ClCompile Include="src\runtime\rc_runtime_progress.c" />
+    <ClCompile Include="src\runtime\rc_trigger.c" />
+    <ClCompile Include="src\runtime\rc_typed_value.c" />
+    <ClCompile Include="src\runtime\rc_validate.c" />
+    <ClCompile Include="src\runtime\rc_value.c" />
+    <ClCompile Include="src\util\md5.c" />
+    <ClCompile Include="src\util\rc_compat.c" />
+    <ClCompile Include="src\util\rc_util.c" />
+    <ClCompile Include="src\util\rc_version.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\client\rc_client_types.natvis" />
+    <Natvis Include="src\runtime\rc_runtime_types.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BA0A6D4-3AE1-42B2-9347-096FD023FF64}</ProjectGuid>

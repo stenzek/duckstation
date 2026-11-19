@@ -93,6 +93,8 @@ typedef struct rc_api_leaderboard_definition_t {
   const char* description;
   /* The definition of the leaderboard to be passed to rc_runtime_activate_lboard */
   const char* definition;
+  /* The leaderboard state (promoted, unpromoted) */
+  uint8_t state;
   /* Non-zero if lower values are better for this leaderboard */
   uint8_t lower_is_better;
   /* Non-zero if the leaderboard should not be displayed in a list of leaderboards */
@@ -100,13 +102,16 @@ typedef struct rc_api_leaderboard_definition_t {
 }
 rc_api_leaderboard_definition_t;
 
+#define RC_LEADERBOARD_STATE_ACTIVE 1
+#define RC_LEADERBOARD_STATE_UNPROMOTED 2
+
 /* An achievement definition */
 typedef struct rc_api_achievement_definition_t {
   /* The unique identifier of the achievement */
   uint32_t id;
   /* The number of points the achievement is worth */
   uint32_t points;
-  /* The achievement category (core, unofficial) */
+  /* The achievement category (promoted, unpromoted) */
   uint32_t category;
   /* The title of the achievement */
   const char* title;
@@ -135,8 +140,8 @@ typedef struct rc_api_achievement_definition_t {
 }
 rc_api_achievement_definition_t;
 
-#define RC_ACHIEVEMENT_CATEGORY_CORE 3
-#define RC_ACHIEVEMENT_CATEGORY_UNOFFICIAL 5
+#define RC_ACHIEVEMENT_CATEGORY_PROMOTED 3
+#define RC_ACHIEVEMENT_CATEGORY_UNPROMOTED 5
 
 #define RC_ACHIEVEMENT_TYPE_STANDARD 0
 #define RC_ACHIEVEMENT_TYPE_MISSABLE 1
@@ -203,6 +208,7 @@ rc_api_fetch_game_sets_request_t;
 #define RC_ACHIEVEMENT_SET_TYPE_BONUS 1
 #define RC_ACHIEVEMENT_SET_TYPE_SPECIALTY 2
 #define RC_ACHIEVEMENT_SET_TYPE_EXCLUSIVE 3
+#define RC_ACHIEVEMENT_SET_TYPE_CHALLENGE 4
 
 /* A game subset definition */
 typedef struct rc_api_achievement_set_definition_t {
@@ -330,10 +336,10 @@ rc_api_award_achievement_request_t;
 typedef struct rc_api_award_achievement_response_t {
   /* The unique identifier of the achievement that was awarded */
   uint32_t awarded_achievement_id;
-  /* The updated player score */
+  /* The updated player hardcore score */
   uint32_t new_player_score;
-  /* The updated player softcore score */
-  uint32_t new_player_score_softcore;
+  /* The updated player casual score */
+  uint32_t new_player_score_casual;
   /* The number of achievements the user has not yet unlocked for this game
    * (in hardcore/non-hardcore per hardcore flag in request) */
   uint32_t achievements_remaining;

@@ -213,6 +213,8 @@ typedef struct rc_api_update_leaderboard_request_t {
   const char* format;
   /* Whether or not lower scores are better for the leaderboard */
   uint32_t lower_is_better;
+  /* The leaderboard state (promoted, unpromoted) */
+  uint32_t state;
 }
 rc_api_update_leaderboard_request_t;
 

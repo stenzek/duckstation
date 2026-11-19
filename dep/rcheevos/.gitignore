@@ -52,17 +52,16 @@ Mkfile.old
 dkms.conf
 
 # Visual Studio files
-Debug/
-Release/
-*.user
+obj/
+bin/
 .vs/
+.vscode/*
+*.user
 
 # Repository specific
-test/test
-test/galaga_nes.h
-test/smw_snes.h
+test/client/rc_client-test
+test/hash/rc_hash-test
 validator/validator
-.vscode/*
 
 # Swift Package Manager
 .swiftpm/

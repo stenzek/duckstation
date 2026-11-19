@@ -11,7 +11,7 @@
 
 RC_BEGIN_C_DECLS
 
-typedef struct rc_client_t rc_client_t; /* forward reference; in rc_client.h */
+struct rc_client_t; /* rc_client_internal.h */
 
 /* types needed to implement raintegration */
 
@@ -32,7 +32,7 @@ enum {
   RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_PUBLISHED = 1,
   RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_LOCAL = 2,
   RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_MODIFIED = 3,
-  RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_INSECURE = 4,
+  RC_CLIENT_RAINTEGRATION_ACHIEVEMENT_STATE_INSECURE = 4
 };
 
 enum {
@@ -50,12 +50,12 @@ typedef struct rc_client_raintegration_event_t {
 } rc_client_raintegration_event_t;
 
 typedef void (RC_CCONV *rc_client_raintegration_event_handler_t)(const rc_client_raintegration_event_t* event,
-                                                                 rc_client_t* client);
+                                                                 struct rc_client_t* client);
 
 typedef void (RC_CCONV *rc_client_raintegration_write_memory_func_t)(uint32_t address, uint8_t* buffer,
-                                                                     uint32_t num_bytes, rc_client_t* client);
+                                                                     uint32_t num_bytes, struct rc_client_t* client);
 
-typedef void (RC_CCONV* rc_client_raintegration_get_game_name_func_t)(char* buffer, uint32_t buffer_size, rc_client_t* client);
+typedef void (RC_CCONV* rc_client_raintegration_get_game_name_func_t)(char* buffer, uint32_t buffer_size, struct rc_client_t* client);
 
 /* types needed to integrate raintegration */
 
@@ -67,38 +67,40 @@ typedef void (RC_CCONV* rc_client_raintegration_get_game_name_func_t)(char* buff
 
 #include <wtypes.h> /* HWND */
 
-#include "rc_client.h"
+struct rc_client_async_handle_t; /* rc_client_async.h */
 
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration(rc_client_t* client,
+#include "rc_client_callbacks.h"
+
+RC_EXPORT struct rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration(struct rc_client_t* client,
     const wchar_t* search_directory, HWND main_window_handle,
     const char* client_name, const char* client_version,
     rc_client_callback_t callback, void* callback_userdata);
 
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration_deferred(rc_client_t* client,
+RC_EXPORT struct rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration_deferred(struct rc_client_t* client,
     const wchar_t* search_directory, rc_client_callback_t callback, void* callback_userdata);
 
-RC_EXPORT int RC_CCONV rc_client_finish_load_raintegration(rc_client_t* client,
+RC_EXPORT int RC_CCONV rc_client_finish_load_raintegration(struct rc_client_t* client,
     HWND main_window_handle, const char* client_name, const char* client_version, const char** error_message);
 
-RC_EXPORT void RC_CCONV rc_client_unload_raintegration(rc_client_t* client);
+RC_EXPORT void RC_CCONV rc_client_unload_raintegration(struct rc_client_t* client);
 
-RC_EXPORT void RC_CCONV rc_client_raintegration_update_main_window_handle(rc_client_t* client, HWND main_window_handle);
+RC_EXPORT void RC_CCONV rc_client_raintegration_update_main_window_handle(struct rc_client_t* client, HWND main_window_handle);
 
-RC_EXPORT const rc_client_raintegration_menu_t* RC_CCONV rc_client_raintegration_get_menu(const rc_client_t* client);
+RC_EXPORT const rc_client_raintegration_menu_t* RC_CCONV rc_client_raintegration_get_menu(const struct rc_client_t* client);
 
-RC_EXPORT void RC_CCONV rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu);
-RC_EXPORT void RC_CCONV rc_client_raintegration_update_menu_item(const rc_client_t* client, const rc_client_raintegration_menu_item_t* menu_item);
-RC_EXPORT int RC_CCONV rc_client_raintegration_activate_menu_item(const rc_client_t* client, uint32_t menu_item_id);
+RC_EXPORT void RC_CCONV rc_client_raintegration_rebuild_submenu(struct rc_client_t* client, HMENU hMenu);
+RC_EXPORT void RC_CCONV rc_client_raintegration_update_menu_item(const struct rc_client_t* client, const rc_client_raintegration_menu_item_t* menu_item);
+RC_EXPORT int RC_CCONV rc_client_raintegration_activate_menu_item(const struct rc_client_t* client, uint32_t menu_item_id);
 
-RC_EXPORT void RC_CCONV rc_client_raintegration_set_write_memory_function(rc_client_t* client, rc_client_raintegration_write_memory_func_t handler);
-RC_EXPORT void RC_CCONV rc_client_raintegration_set_get_game_name_function(rc_client_t* client, rc_client_raintegration_get_game_name_func_t handler);
-RC_EXPORT void RC_CCONV rc_client_raintegration_set_console_id(rc_client_t* client, uint32_t console_id);
-RC_EXPORT int RC_CCONV rc_client_raintegration_has_modifications(const rc_client_t* client);
+RC_EXPORT void RC_CCONV rc_client_raintegration_set_write_memory_function(struct rc_client_t* client, rc_client_raintegration_write_memory_func_t handler);
+RC_EXPORT void RC_CCONV rc_client_raintegration_set_get_game_name_function(struct rc_client_t* client, rc_client_raintegration_get_game_name_func_t handler);
+RC_EXPORT void RC_CCONV rc_client_raintegration_set_console_id(struct rc_client_t* client, uint32_t console_id);
+RC_EXPORT int RC_CCONV rc_client_raintegration_has_modifications(const struct rc_client_t* client);
 
-RC_EXPORT void RC_CCONV rc_client_raintegration_set_event_handler(rc_client_t* client,
+RC_EXPORT void RC_CCONV rc_client_raintegration_set_event_handler(struct rc_client_t* client,
     rc_client_raintegration_event_handler_t handler);
 
-RC_EXPORT int RC_CCONV rc_client_raintegration_get_achievement_state(const rc_client_t* client, uint32_t achievement_id);
+RC_EXPORT int RC_CCONV rc_client_raintegration_get_achievement_state(const struct rc_client_t* client, uint32_t achievement_id);
 
 #endif /* RC_CLIENT_SUPPORTS_RAINTEGRATION */
 

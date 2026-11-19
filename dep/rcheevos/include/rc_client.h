@@ -1,48 +1,20 @@
 #ifndef RC_CLIENT_H
 #define RC_CLIENT_H
 
-#include "rc_api_request.h"
-#include "rc_error.h"
+#include "rc_client_callbacks.h"
+#include "rc_api_request.h" /* VCIC-Excluded: Eliminates the need for consumers to manually include this to resolve the forward references in rc_client_callbacks.h */
+#include "rc_error.h"       /* VCIC-Excluded: Eliminates the need for consumers to manually include this file to check the return values of functions. */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <time.h>
+#include <stddef.h> /* VCIC-Excluded: size_t */
+#include <stdint.h> /* uintXX_t */
+#include <time.h>   /* VCIC-Excluded: time_t */
 
 RC_BEGIN_C_DECLS
 
-/* implementation abstracted in rc_client_internal.h */
-typedef struct rc_client_t rc_client_t;
-typedef struct rc_client_async_handle_t rc_client_async_handle_t;
-
-/*****************************************************************************\
-| Callbacks                                                                   |
-\*****************************************************************************/
-
-/**
- * Callback used to read num_bytes bytes from memory starting at address into buffer.
- * Returns the number of bytes read. A return value of 0 indicates the address was invalid.
- */
-typedef uint32_t (RC_CCONV *rc_client_read_memory_func_t)(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
-
-/**
- * Internal method passed to rc_client_server_call_t to process the server response.
- */
-typedef void (RC_CCONV *rc_client_server_callback_t)(const rc_api_server_response_t* server_response, void* callback_data);
-
-/**
- * Callback used to issue a request to the server.
- */
-typedef void (RC_CCONV *rc_client_server_call_t)(const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client);
-
-/**
- * Generic callback for asynchronous eventing.
- */
-typedef void (RC_CCONV *rc_client_callback_t)(int result, const char* error_message, rc_client_t* client, void* userdata);
-
-/**
- * Callback for logging or displaying a message.
- */
-typedef void (RC_CCONV *rc_client_message_callback_t)(const char* message, const rc_client_t* client);
+typedef struct rc_client_t rc_client_t;                           /* rc_client_internal.h */
+#ifndef RC_CLIENT_ASYNC_H
+typedef struct rc_client_async_handle_t rc_client_async_handle_t; /* rc_client_async.h */
+#endif
 
 /*****************************************************************************\
 | Runtime                                                                     |
@@ -84,15 +56,15 @@ RC_EXPORT void RC_CCONV rc_client_set_encore_mode_enabled(rc_client_t* client, i
 RC_EXPORT int RC_CCONV rc_client_get_encore_mode_enabled(const rc_client_t* client);
 
 /**
- * Sets whether unofficial achievements should be loaded.
+ * Sets whether unpromoted achievements should be loaded.
  * Evaluated when loading a game. Has no effect while a game is loaded.
  */
-RC_EXPORT void RC_CCONV rc_client_set_unofficial_enabled(rc_client_t* client, int enabled);
+RC_EXPORT void RC_CCONV rc_client_set_unpromoted_enabled(rc_client_t* client, int enabled);
 
 /**
- * Gets whether unofficial achievements should be loaded.
+ * Gets whether unpromoted achievements should be loaded.
  */
-RC_EXPORT int RC_CCONV rc_client_get_unofficial_enabled(const rc_client_t* client);
+RC_EXPORT int RC_CCONV rc_client_get_unpromoted_enabled(const rc_client_t* client);
 
 /**
  * Sets whether spectator mode is enabled (off by default).
@@ -122,9 +94,6 @@ RC_EXPORT void* RC_CCONV rc_client_get_userdata(const rc_client_t* client);
  * Sets the name of the server to use.
  */
 RC_EXPORT void RC_CCONV rc_client_set_host(rc_client_t* client, const char* hostname);
-
-typedef uint64_t rc_clock_t;
-typedef rc_clock_t (RC_CCONV *rc_get_time_millisecs_func_t)(const rc_client_t* client);
 
 /**
  * Specifies a function that returns a value that increases once per millisecond.
@@ -191,7 +160,7 @@ typedef struct rc_client_user_t {
   const char* username;
   const char* token;
   uint32_t score;
-  uint32_t score_softcore;
+  uint32_t score_casual;
   uint32_t num_unread_messages;
   /* minimum version: 12.0 */
   const char* avatar_url;
@@ -211,21 +180,21 @@ RC_EXPORT const rc_client_user_t* RC_CCONV rc_client_get_user_info(const rc_clie
 RC_EXPORT int RC_CCONV rc_client_user_get_image_url(const rc_client_user_t* user, char buffer[], size_t buffer_size);
 
 typedef struct rc_client_user_game_summary_t {
-  uint32_t num_core_achievements;
-  uint32_t num_unofficial_achievements;
+  uint32_t num_promoted_achievements;
+  uint32_t num_unpromoted_achievements;
   uint32_t num_unlocked_achievements;
   uint32_t num_unsupported_achievements;
 
-  uint32_t points_core;
+  uint32_t points_available;
   uint32_t points_unlocked;
 
   /* minimum version: 12.1 */
   time_t beaten_time;
   time_t completed_time;
 
-  uint32_t num_unlocked_unofficial_achievements;
-  uint32_t points_unofficial;
-  uint32_t points_unlocked_unofficial;
+  uint32_t num_unlocked_unpromoted_achievements;
+  uint32_t points_unpromoted;
+  uint32_t points_unlocked_unpromoted;
 } rc_client_user_game_summary_t;
 
 /**
@@ -256,7 +225,7 @@ typedef void(RC_CCONV* rc_client_fetch_all_user_progress_callback_t)(int result,
 /**
  * Starts an asynchronous request for all progress for the given console.
  * This query returns the total number of achievements for all games tracked by this console, as well as
- * the user's achievement unlock count for both softcore and hardcore modes.
+ * the user's achievement unlock count for both casual and hardcore modes.
  */
 RC_EXPORT rc_client_async_handle_t* RC_CCONV
 rc_client_begin_fetch_all_user_progress(rc_client_t* client, uint32_t console_id,
@@ -530,9 +499,9 @@ enum {
 
 enum {
   RC_CLIENT_ACHIEVEMENT_CATEGORY_NONE = 0,
-  RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE = (1 << 0),
-  RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL = (1 << 1),
-  RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL = RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE | RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL
+  RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED = (1 << 0),
+  RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED = (1 << 1),
+  RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED_AND_UNPROMOTED = RC_CLIENT_ACHIEVEMENT_CATEGORY_PROMOTED | RC_CLIENT_ACHIEVEMENT_CATEGORY_UNPROMOTED
 };
 
 enum {
@@ -547,7 +516,7 @@ enum {
   RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED = 1,
   RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED = 2,
   RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED = 3,
-  RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL = 4,
+  RC_CLIENT_ACHIEVEMENT_BUCKET_UNPROMOTED = 4,
   RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED = 5,
   RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE = 6,
   RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE = 7,
@@ -558,9 +527,9 @@ enum {
 
 enum {
   RC_CLIENT_ACHIEVEMENT_UNLOCKED_NONE = 0,
-  RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE = (1 << 0),
+  RC_CLIENT_ACHIEVEMENT_UNLOCKED_CASUAL = (1 << 0),
   RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE = (1 << 1),
-  RC_CLIENT_ACHIEVEMENT_UNLOCKED_BOTH = RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE | RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE
+  RC_CLIENT_ACHIEVEMENT_UNLOCKED_BOTH = RC_CLIENT_ACHIEVEMENT_UNLOCKED_CASUAL | RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE
 };
 
 typedef struct rc_client_achievement_t {
@@ -591,14 +560,6 @@ typedef struct rc_client_achievement_t {
 RC_EXPORT const rc_client_achievement_t* RC_CCONV rc_client_get_achievement_info(rc_client_t* client, uint32_t id);
 
 /**
- * Sets the locally tracked unlock state for an unofficial achievement.
- * Returns RC_OK on success, RC_NOT_FOUND if the achievement does not exist or is not unofficial,
- * or another rc_error.h error code if the operation could not be performed.
- */
-RC_EXPORT int RC_CCONV rc_client_set_unofficial_achievement_unlock_state(rc_client_t* client, uint32_t id,
-    uint8_t unlock_state, time_t unlock_time_softcore, time_t unlock_time_hardcore);
-
-/**
  * Gets the next achievement after a provided achievement that fits in the specified bucket. Returns NULL if none found.
  */
 RC_EXPORT const rc_client_achievement_t * RC_CCONV rc_client_get_next_achievement_info(rc_client_t * client, const rc_client_achievement_t * achievement, int bucket);
@@ -608,6 +569,14 @@ RC_EXPORT const rc_client_achievement_t * RC_CCONV rc_client_get_next_achievemen
  * Returns RC_OK on success.
  */
 RC_EXPORT int RC_CCONV rc_client_achievement_get_image_url(const rc_client_achievement_t* achievement, int state, char buffer[], size_t buffer_size);
+
+/**
+ * Sets the locally tracked unlock state for an unpromoted achievement.
+ * Returns RC_OK on success, RC_NOT_FOUND if the achievement does not exist or is not unpromoted,
+ * or another rc_error.h error code if the operation could not be performed.
+ */
+RC_EXPORT int RC_CCONV rc_client_set_unpromoted_achievement_unlock_state(rc_client_t* client, uint32_t id,
+    uint8_t unlock_state, time_t unlock_time_casual, time_t unlock_time_hardcore);
 
 typedef struct rc_client_achievement_bucket_t {
   const rc_client_achievement_t** achievements;
@@ -625,8 +594,7 @@ typedef struct rc_client_achievement_list_t {
 
 enum {
   RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE = 0,
-  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS = 1,
-  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_SUBSET_BUCKETS = 2, /* Same as progress, but does not share any subset buckets */
+  RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS = 1
 };
 
 /**
@@ -634,6 +602,18 @@ enum {
  * Returns an allocated list that must be free'd by calling rc_client_destroy_achievement_list.
  */
 RC_EXPORT rc_client_achievement_list_t* RC_CCONV rc_client_create_achievement_list(rc_client_t* client, int category, int grouping);
+
+typedef struct rc_client_achievement_list_params_t {
+  uint32_t subset_id;
+  uint32_t grouping;
+  uint32_t category;
+} rc_client_achievement_list_params_t;
+
+/**
+ * Creates a list of achievements matching the specified category and grouping.
+ * Returns an allocated list that must be free'd by calling rc_client_destroy_achievement_list.
+ */
+RC_EXPORT rc_client_achievement_list_t* RC_CCONV rc_client_create_subset_achievement_list(rc_client_t* client, const rc_client_achievement_list_params_t* params);
 
 /**
  * Destroys a list allocated by rc_client_create_achievement_list.
@@ -669,6 +649,13 @@ enum {
   NUM_RC_CLIENT_LEADERBOARD_FORMATS = 3
 };
 
+enum {
+  RC_CLIENT_LEADERBOARD_CATEGORY_NONE = 0,
+  RC_CLIENT_LEADERBOARD_CATEGORY_PROMOTED = (1 << 0),
+  RC_CLIENT_LEADERBOARD_CATEGORY_UNPROMOTED = (1 << 1),
+  RC_CLIENT_LEADERBOARD_CATEGORY_PROMOTED_AND_UNPROMOTED = RC_CLIENT_LEADERBOARD_CATEGORY_PROMOTED | RC_CLIENT_LEADERBOARD_CATEGORY_UNPROMOTED
+};
+
 #define RC_CLIENT_LEADERBOARD_DISPLAY_SIZE 24
 
 typedef struct rc_client_leaderboard_t {
@@ -679,6 +666,7 @@ typedef struct rc_client_leaderboard_t {
   uint8_t state;
   uint8_t format;
   uint8_t lower_is_better;
+  uint8_t category;
 } rc_client_leaderboard_t;
 
 /**
@@ -711,7 +699,8 @@ enum {
   RC_CLIENT_LEADERBOARD_BUCKET_ACTIVE = 2,
   RC_CLIENT_LEADERBOARD_BUCKET_UNSUPPORTED = 3,
   RC_CLIENT_LEADERBOARD_BUCKET_ALL = 4,
-  NUM_RC_CLIENT_LEADERBOARD_BUCKETS = 5
+  RC_CLIENT_LEADERBOARD_BUCKET_UNPROMOTED = 5,
+  NUM_RC_CLIENT_LEADERBOARD_BUCKETS = 6
 };
 
 enum {
@@ -724,6 +713,18 @@ enum {
  * Returns an allocated list that must be free'd by calling rc_client_destroy_leaderboard_list.
  */
 RC_EXPORT rc_client_leaderboard_list_t* RC_CCONV rc_client_create_leaderboard_list(rc_client_t* client, int grouping);
+
+typedef struct rc_client_leaderboard_list_params_t {
+  uint32_t subset_id;
+  uint32_t grouping;
+  uint32_t category;
+} rc_client_leaderboard_list_params_t;
+
+/**
+ * Creates a list of leaderboards matching the specified parameters.
+ * Returns an allocated list that must be free'd by calling rc_client_destroy_leaderboard_list.
+ */
+RC_EXPORT rc_client_leaderboard_list_t* RC_CCONV rc_client_create_subset_leaderboard_list(rc_client_t* client, const rc_client_leaderboard_list_params_t* params);
 
 /**
  * Destroys a list allocated by rc_client_create_leaderboard_list.
@@ -849,7 +850,7 @@ enum {
   RC_CLIENT_EVENT_SERVER_ERROR = 16, /* an API response returned a [server_error] and will not be retried */
   RC_CLIENT_EVENT_DISCONNECTED = 17, /* an unlock request could not be completed and is pending */
   RC_CLIENT_EVENT_RECONNECTED = 18, /* all pending unlocks have been completed */
-  RC_CLIENT_EVENT_SUBSET_COMPLETED = 19 /* all achievements for the subset have been earned */
+  RC_CLIENT_EVENT_SUBSET_COMPLETED = 19 /* all achievements for a [subset] have been earned */
 };
 
 typedef struct rc_client_server_error_t {
@@ -862,12 +863,12 @@ typedef struct rc_client_server_error_t {
 typedef struct rc_client_event_t {
   uint32_t type;
 
-  rc_client_achievement_t* achievement;
-  rc_client_leaderboard_t* leaderboard;
-  rc_client_leaderboard_tracker_t* leaderboard_tracker;
-  rc_client_leaderboard_scoreboard_t* leaderboard_scoreboard;
-  rc_client_server_error_t* server_error;
-  rc_client_subset_t* subset;
+  const rc_client_achievement_t* achievement;
+  const rc_client_leaderboard_t* leaderboard;
+  const rc_client_leaderboard_tracker_t* leaderboard_tracker;
+  const rc_client_leaderboard_scoreboard_t* leaderboard_scoreboard;
+  const rc_client_server_error_t* server_error;
+  const rc_client_subset_t* subset;
 
 } rc_client_event_t;
 
@@ -955,4 +956,4 @@ RC_EXPORT int RC_CCONV rc_client_deserialize_progress_sized(rc_client_t* client,
 
 RC_END_C_DECLS
 
-#endif /* RC_RUNTIME_H */
+#endif /* RC_CLIENT_H */

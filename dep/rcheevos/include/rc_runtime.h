@@ -9,29 +9,24 @@
 RC_BEGIN_C_DECLS
 
 /*****************************************************************************\
-| Forward Declarations (defined in rc_runtime_types.h)                        |
+| Forward Declarations (internal types)                                       |
 \*****************************************************************************/
 
-#ifndef RC_RUNTIME_TYPES_H /* prevents pedantic redefinition error */
-
-typedef struct rc_trigger_t rc_trigger_t;
-typedef struct rc_lboard_t rc_lboard_t;
-typedef struct rc_richpresence_t rc_richpresence_t;
-typedef struct rc_memref_t rc_memref_t;
-typedef struct rc_value_t rc_value_t;
-
-#endif
+struct rc_trigger_t;
+struct rc_lboard_t;
+struct rc_richpresence_t;
+struct rc_memref_t;
+struct rc_memrefs_t;
+struct rc_value_t;
 
 /*****************************************************************************\
 | Callbacks                                                                   |
 \*****************************************************************************/
 
 /**
- * Callback used to read num_bytes bytes from memory starting at address. If
- * num_bytes is greater than 1, the value is read in little-endian from
- * memory.
+ * Callback used to read num_bytes bytes from memory into buffer starting at address.
  */
-typedef uint32_t(RC_CCONV *rc_runtime_peek_t)(uint32_t address, uint32_t num_bytes, void* ud);
+typedef uint32_t(RC_CCONV *rc_runtime_read_memory_func_t)(uint32_t address, uint8_t* buffer, uint32_t num_bytes, void* ud);
 
 /*****************************************************************************\
 | Runtime                                                                     |
@@ -39,9 +34,9 @@ typedef uint32_t(RC_CCONV *rc_runtime_peek_t)(uint32_t address, uint32_t num_byt
 
 typedef struct rc_runtime_trigger_t {
   uint32_t id;
-  rc_trigger_t* trigger;
+  struct rc_trigger_t* trigger;
   void* buffer;
-  rc_memref_t* invalid_memref;
+  struct rc_memref_t* invalid_memref;
   uint8_t md5[16];
   int32_t serialized_size;
 }
@@ -50,16 +45,16 @@ rc_runtime_trigger_t;
 typedef struct rc_runtime_lboard_t {
   uint32_t id;
   int32_t value;
-  rc_lboard_t* lboard;
+  struct rc_lboard_t* lboard;
   void* buffer;
-  rc_memref_t* invalid_memref;
+  struct rc_memref_t* invalid_memref;
   uint8_t md5[16];
   uint32_t serialized_size;
 }
 rc_runtime_lboard_t;
 
 typedef struct rc_runtime_richpresence_t {
-  rc_richpresence_t* richpresence;
+  struct rc_richpresence_t* richpresence;
   void* buffer;
   uint8_t md5[16];
 }
@@ -88,18 +83,18 @@ RC_EXPORT void RC_CCONV rc_runtime_destroy(rc_runtime_t* runtime);
 
 RC_EXPORT int RC_CCONV rc_runtime_activate_achievement(rc_runtime_t* runtime, uint32_t id, const char* memaddr, void* unused_L, int unused_funcs_idx);
 RC_EXPORT void RC_CCONV rc_runtime_deactivate_achievement(rc_runtime_t* runtime, uint32_t id);
-RC_EXPORT rc_trigger_t* RC_CCONV rc_runtime_get_achievement(const rc_runtime_t* runtime, uint32_t id);
+RC_EXPORT struct rc_trigger_t* RC_CCONV rc_runtime_get_achievement(const rc_runtime_t* runtime, uint32_t id);
 RC_EXPORT int RC_CCONV rc_runtime_get_achievement_measured(const rc_runtime_t* runtime, uint32_t id, unsigned* measured_value, unsigned* measured_target);
 RC_EXPORT int RC_CCONV rc_runtime_format_achievement_measured(const rc_runtime_t* runtime, uint32_t id, char *buffer, size_t buffer_size);
 
 RC_EXPORT int RC_CCONV rc_runtime_activate_lboard(rc_runtime_t* runtime, uint32_t id, const char* memaddr, void* unused_L, int unused_funcs_idx);
 RC_EXPORT void RC_CCONV rc_runtime_deactivate_lboard(rc_runtime_t* runtime, uint32_t id);
-RC_EXPORT rc_lboard_t* RC_CCONV rc_runtime_get_lboard(const rc_runtime_t* runtime, uint32_t id);
+RC_EXPORT struct rc_lboard_t* RC_CCONV rc_runtime_get_lboard(const rc_runtime_t* runtime, uint32_t id);
 RC_EXPORT int RC_CCONV rc_runtime_format_lboard_value(char* buffer, int size, int32_t value, int format);
 
 
 RC_EXPORT int RC_CCONV rc_runtime_activate_richpresence(rc_runtime_t* runtime, const char* script, void* unused_L, int unused_funcs_idx);
-RC_EXPORT int RC_CCONV rc_runtime_get_richpresence(const rc_runtime_t* runtime, char* buffer, size_t buffersize, rc_runtime_peek_t peek, void* peek_ud, void* unused_L);
+RC_EXPORT int RC_CCONV rc_runtime_get_richpresence(const rc_runtime_t* runtime, char* buffer, size_t buffersize, rc_runtime_read_memory_func_t read_memory, void* read_memory_ud, void* unused_L);
 
 enum {
   RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED, /* from WAITING, PAUSED, or PRIMED to ACTIVE */
@@ -126,7 +121,7 @@ rc_runtime_event_t;
 
 typedef void (RC_CCONV *rc_runtime_event_handler_t)(const rc_runtime_event_t* runtime_event);
 
-RC_EXPORT void RC_CCONV rc_runtime_do_frame(rc_runtime_t* runtime, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, void* unused_L);
+RC_EXPORT void RC_CCONV rc_runtime_do_frame(rc_runtime_t* runtime, rc_runtime_event_handler_t event_handler, rc_runtime_read_memory_func_t read_memory, void* ud, void* unused_L);
 RC_EXPORT void RC_CCONV rc_runtime_reset(rc_runtime_t* runtime);
 
 typedef int (RC_CCONV *rc_runtime_validate_address_t)(uint32_t address);
@@ -134,6 +129,7 @@ RC_EXPORT void RC_CCONV rc_runtime_validate_addresses(rc_runtime_t* runtime, rc_
 RC_EXPORT void RC_CCONV rc_runtime_invalidate_address(rc_runtime_t* runtime, uint32_t address);
 
 RC_EXPORT uint32_t RC_CCONV rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L);
+RC_EXPORT void RC_CCONV rc_runtime_checksum(const char* memaddr, uint8_t* md5);
 
 /* [deprecated] use rc_runtime_serialize_progress_sized instead */
 RC_EXPORT int RC_CCONV rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, void* unused_L);

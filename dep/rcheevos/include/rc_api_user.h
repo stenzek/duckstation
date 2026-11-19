@@ -32,10 +32,10 @@ typedef struct rc_api_login_response_t {
   const char* username;
   /* The API token to use for all future requests */
   const char* api_token;
-  /* The current score of the player */
+  /* The current hardcore score of the player */
   uint32_t score;
-  /* The current softcore score of the player */
-  uint32_t score_softcore;
+  /* The current casual score of the player */
+  uint32_t score_casual;
   /* The number of unread messages waiting for the player on the web site */
   uint32_t num_unread_messages;
   /* The preferred name to display for the player */
@@ -237,7 +237,7 @@ typedef struct rc_api_all_user_progress_entry_t {
   uint32_t game_id;
   /* The total number of achievements for this game */
   uint32_t num_achievements;
-  /* The total number of unlocked achievements for this game in softcore mode */
+  /* The total number of unlocked achievements for this game in casual mode */
   uint32_t num_unlocked_achievements;
   /* The total number of unlocked achievements for this game in hardcore mode */
   uint32_t num_unlocked_achievements_hardcore;

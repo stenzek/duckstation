@@ -1,0 +1,161 @@
+#ifndef RC_RUNTIME_RICHPRESENCE_H
+#define RC_RUNTIME_RICHPRESENCE_H
+
+#include "rc_operand.h"
+#include "rc_trigger.h"
+
+#include <stddef.h>
+
+RC_BEGIN_C_DECLS
+
+/*****************************************************************************\
+| Enums                                                                       |
+\*****************************************************************************/
+
+/*****************************************************************************\
+| Structures                                                                  |
+\*****************************************************************************/
+
+struct rc_eval_state_t;  /* rc_eval_state.h */
+struct rc_memrefs_t;     /* rc_modified_memref.h */
+struct rc_parse_state_t; /* rc_parse_state.h */
+struct rc_value_t;       /* rc_value.h */
+
+typedef struct rc_richpresence_lookup_item_t {
+  /* The lower bound of values assigned to this label. */
+  uint32_t first;
+
+  /* The upper bound of values assigned to this label. */
+  uint32_t last;
+
+  /* The label to display */
+  const char* label;
+
+  /* The tree node for values lower than the lower bound. */
+  struct rc_richpresence_lookup_item_t* left;
+
+  /* The tree node for values higher than the upper bound. */
+  struct rc_richpresence_lookup_item_t* right;
+} rc_richpresence_lookup_item_t;
+
+typedef struct rc_richpresence_lookup_t {
+  /* The name of the lookup. */
+  const char* name;
+
+  /* The root node of the value tree. */
+  struct rc_richpresence_lookup_item_t* root;
+
+  /* The next node of the lookup list. */
+  struct rc_richpresence_lookup_t* next;
+
+  /* The default label to display if no match is found in the value tree. */
+  const char* default_label;
+
+  /* The format to apply for formatting macros. (RC_FORMAT_*) */
+  uint8_t format;
+} rc_richpresence_lookup_t;
+
+typedef struct rc_richpresence_display_part_t {
+  /* The text associated to this display segment. */
+  const char* text;
+
+  /* The next node of the display list. */
+  struct rc_richpresence_display_part_t* next;
+
+  /* The macro associated to this display segment. */
+  struct rc_richpresence_lookup_t* lookup;
+
+  /* A reference to a measured value from script's values list. */
+  struct rc_operand_t value;
+
+  /* The format of the segment. (RC_FORMAT_* for built-in macros, RC_FORMAT_RP_* extensions for other segments) */
+  uint8_t display_type;
+} rc_richpresence_display_part_t;
+
+typedef struct rc_richpresence_display_t {
+  /* The trigger that makes this conditional display string active. */
+  struct rc_trigger_t trigger;
+
+  /* The next display string in the display string list. */
+  struct rc_richpresence_display_t* next;
+
+  /* The first segment of the display string. */
+  struct rc_richpresence_display_part_t* display;
+
+  /* True if at least one condition of the trigger has a non-zero hit target */
+  uint8_t has_required_hits;
+} rc_richpresence_display_t;
+
+typedef struct rc_richpresence_t {
+  /* The first display string in the display string list. */
+  struct rc_richpresence_display_t* first_display;
+
+  /* The first lookup in the lookup list. */
+  struct rc_richpresence_lookup_t* first_lookup;
+
+  /* The list of values passed to the macros. */
+  struct rc_value_t* values;
+
+  /* True if the rich presence has its own rc_memrefs_t */
+  uint8_t has_memrefs;
+} rc_richpresence_t;
+
+/*****************************************************************************\
+| Functions                                                                   |
+\*****************************************************************************/
+
+/**
+ * Gets the memrefs owned by the rich presence.
+ *
+ * Not valid if the rich presence was parsed using `rc_parse_richpresence_internal`.
+ */
+struct rc_memrefs_t* rc_richpresence_get_memrefs(struct rc_richpresence_t* self);
+
+/**
+ * Allocates space for a rich presence script that owns its own memrefs.
+ */
+struct rc_richpresence_t* rc_alloc_richpresence_with_memrefs(struct rc_parse_state_t* parse);
+
+/**
+ * Determines how much memory is needed to store the compiled rich presence.
+ *
+ * `lines_read` indicates the number of lines in the file on success, or the line that
+ * caused processing to fail. May be NULL.
+ */
+int rc_richpresence_size_lines(const char* script, int* lines_read);
+
+/**
+ * Compiles a rich presence script using a preallocated `buffer`.
+ */
+struct rc_richpresence_t* rc_parse_richpresence(void* buffer, const char* script, void* unused_L, int unused_funcs_idx);
+
+/**
+ * Extracts an `rc_richpresence_t` from a rich presence script.
+ */
+void rc_parse_richpresence_internal(struct rc_richpresence_t* self, const char* script, struct rc_parse_state_t* parse);
+
+/**
+ * Updates the rich presence state.
+ */
+void rc_update_richpresence(struct rc_richpresence_t* richpresence, struct rc_eval_state_t* eval_state);
+
+/**
+ * Populates `buffer` with the current display string generated by the rich presence script.
+ *
+ * Returns the number of characters written to the buffer. If the buffer is not large enough, returns the number of characters that would have been written.
+ */
+int rc_get_richpresence_display_string(const struct rc_richpresence_t* richpresence, char buffer[], size_t buffer_size, struct rc_eval_state_t* eval_state);
+
+/**
+ * Resets the captured hit count for every condition in the rich presence script.
+ */
+void rc_reset_richpresence(struct rc_richpresence_t* self);
+
+/**
+ * Resets the captured hit count for every condition in the rich presence script conditional display triggers.
+ */
+void rc_reset_richpresence_triggers(struct rc_richpresence_t* self);
+
+RC_END_C_DECLS
+
+#endif /* RC_RUNTIME_TYPES_H */
