@@ -3396,13 +3396,25 @@ s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const
 void VulkanDevice::SetInitialPipelineState()
 {
   DebugAssert(m_current_pipeline);
-  m_dirty_flags &= ~DIRTY_FLAG_INITIAL;
 
-  m_current_pipeline_layout = m_current_pipeline->GetLayout();
+  // A compute pipeline may have been bound earlier in this command buffer, consuming the layout-dependent state.
+  if (m_current_pipeline_layout != m_current_pipeline->GetLayout())
+  {
+    m_current_pipeline_layout = m_current_pipeline->GetLayout();
+    m_dirty_flags |= PIPELINE_LAYOUT_DEPENDENT_STATE;
+  }
+
   const bool is_compute = IsComputeLayout(m_current_pipeline_layout);
   vkCmdBindPipeline(m_current_command_buffer,
                     is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
                     m_current_pipeline->GetPipeline());
+
+  // Leave the graphics state pending until the first graphics pipeline is bound. Some drivers (Adreno 6xx) try to
+  // apply dynamic viewport/scissor state on dispatch, and crash if no graphics pipeline has been bound.
+  if (is_compute)
+    return;
+
+  m_dirty_flags &= ~DIRTY_FLAG_INITIAL;
 
   const VkDeviceSize offset = 0;
   vkCmdBindVertexBuffers(m_current_command_buffer, 0, 1, m_vertex_buffer.GetBufferPtr(), &offset);
@@ -3603,8 +3615,9 @@ void VulkanDevice::PreDispatchCheck()
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     SetInitialPipelineState();
 
-  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
-  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS);
+  // Graphics state stays pending (DIRTY_FLAG_INITIAL) until the first graphics pipeline bind.
+  const u32 update_mask =
+    (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_RENDER_TARGETS) & ~static_cast<u32>(DIRTY_FLAG_INITIAL);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
 
