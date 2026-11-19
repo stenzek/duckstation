@@ -1820,9 +1820,9 @@ void SPU::VolumeEnvelope::Reset(u8 rate_, u8 rate_mask_, bool decreasing_, bool 
   decreasing = decreasing_;
   exponential = exponential_;
 
-  // psx-spx says "The Phase bit seems to have no effect in Exponential Decrease mode."
-  // TODO: This needs to be tested on hardware.
-  phase_invert = phase_invert_ && !(decreasing_ && exponential_);
+  // In Exponential Decrease mode from a negative volume, Phase=0 goes to zero on the first step, while Phase=1 moves
+  // towards zero and stops where the scaled step rounds to zero (e.g. F001h for step -8 at shift 11 and above).
+  phase_invert = phase_invert_;
 
   counter = 0;
   counter_increment = 0x8000;
@@ -1890,7 +1890,8 @@ ALWAYS_INLINE_RELEASE bool SPU::VolumeEnvelope::Tick(s16& current_level)
   // Phase invert acts very strange. If the volume is positive, it will decrease to zero, then increase back to maximum
   // negative (inverted) volume. Except when decrementing, then it snaps straight to zero. Simply clamping to int16
   // range will be fine for incrementing, because the volume never decreases past zero. If the volume _was_ negative,
-  // and is incrementing, hardware tests show that it only clamps to max, not 0.
+  // and is incrementing, hardware tests show that it only clamps to max, not 0. Exponential decrease with phase invert
+  // only clamps to zero from a negative volume, a positive volume decreases gradually like without phase invert.
   const s32 new_level = current_level + this_step;
   if (!decreasing)
   {
@@ -1899,10 +1900,10 @@ ALWAYS_INLINE_RELEASE bool SPU::VolumeEnvelope::Tick(s16& current_level)
   }
   else
   {
-    if (phase_invert)
+    if (phase_invert && (!exponential || current_level < 0))
     {
       current_level = Truncate16(std::clamp(new_level, MIN_VOLUME, 0));
-      return (current_level < 0);
+      return (current_level < 0 && this_step != 0);
     }
     else
     {

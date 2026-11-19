@@ -685,4 +685,40 @@ TEST_F(SPUHardwareTest, NoiseClocksPerPeriod)
   EXPECT_GE(count_changes(), 511u);
 }
 
+TEST_F(SPUHardwareTest, ExponentialDecreaseNegativePhaseStopLevels)
+{
+  // psx-spx: from a negative volume, Phase=1 exponential decrease stops at a level set by the rate.
+  static constexpr std::array<std::pair<u16, u16>, 10> stops = {{{0x00, 0xFFFF},
+                                                                 {0x10, 0xFFE1},
+                                                                 {0x20, 0xFE01},
+                                                                 {0x28, 0xF801},
+                                                                 {0x2C, 0xF001},
+                                                                 {0x2D, 0xEDB7},
+                                                                 {0x2E, 0xEAAB},
+                                                                 {0x2F, 0xE667},
+                                                                 {0x30, 0xF001},
+                                                                 {0x34, 0xF001}}};
+  for (const auto& [rate, stop] : stops)
+  {
+    SPU::WriteRegister(0x1B8, 0x8000);
+    SPU::WriteRegister(0x180, static_cast<u16>(0xF000 | rate)); // Sweep, exponential, decrease, negative phase
+    RunSamples(65536);
+    EXPECT_EQ(SPU::ReadRegister(0x1B8), stop) << rate;
+  }
+
+  // With Phase=0, a negative volume goes to zero on the first step.
+  SPU::WriteRegister(0x1B8, 0x8000);
+  SPU::WriteRegister(0x180, 0xE02C);
+  RunSamples(1);
+  EXPECT_EQ(SPU::ReadRegister(0x1B8), 0u);
+
+  // A positive volume decreases gradually to zero with Phase=1.
+  SPU::WriteRegister(0x1B8, 0x7FFF);
+  SPU::WriteRegister(0x180, 0xF02C);
+  RunSamples(1);
+  EXPECT_GT(SPU::ReadRegister(0x1B8), 0x7F00u);
+  RunSamples(65536);
+  EXPECT_EQ(SPU::ReadRegister(0x1B8), 0u);
+}
+
 } // namespace
