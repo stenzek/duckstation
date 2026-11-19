@@ -502,10 +502,6 @@ bool FloatingButton(std::string_view text, float x, float y, float anchor_x = 0.
 bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true);
 bool ThreeWayToggleButton(std::string_view title, std::string_view summary, std::optional<bool>* v,
                           bool enabled = true);
-bool RangeButton(std::string_view title, std::string_view summary, s32* value, s32 min, s32 max, s32 increment,
-                 const char* format = "%d", bool enabled = true, std::string_view ok_text = FSUI_VSTR("OK"));
-bool RangeButton(std::string_view title, std::string_view summary, float* value, float min, float max, float increment,
-                 const char* format = "%f", bool enabled = true, std::string_view ok_text = FSUI_VSTR("OK"));
 bool EnumChoiceButtonImpl(std::string_view title, std::string_view summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled);

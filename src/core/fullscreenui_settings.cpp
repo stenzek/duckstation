@@ -218,6 +218,8 @@ static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std:
                             bool enabled = true, bool use_dropdown = true, void (*changed_callback)() = nullptr);
 static void DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                      const char* section, const char* key, float default_value, bool enabled = true);
+static void DrawCPUOverclockSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                    bool enabled = true);
 static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section, const char* key,
                               const std::string& runtime_var);
 
@@ -3534,22 +3536,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
                     FSUI_VSTR("When this option is chosen, the clock speed set below will be used."),
                     Settings::CPU_SECTION_NAME, "OverclockEnable", false);
 
-  const bool oc_enable = GetEffectiveBoolSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockEnable", false);
-  if (oc_enable)
-  {
-    u32 oc_numerator = GetEffectiveUIntSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockNumerator", 1);
-    u32 oc_denominator = GetEffectiveUIntSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockDenominator", 1);
-    s32 oc_percent = static_cast<s32>(Settings::CPUOverclockFractionToPercent(oc_numerator, oc_denominator));
-    if (RangeButton(FSUI_ICONVSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Overclocking Percentage"),
-                    FSUI_VSTR("Selects the percentage of the normal clock speed the emulated hardware will run at."),
-                    &oc_percent, 10, 1000, 10, "%d%%"))
-    {
-      Settings::CPUOverclockPercentToFraction(oc_percent, &oc_numerator, &oc_denominator);
-      bsi->SetUIntValue(Settings::CPU_SECTION_NAME, "OverclockNumerator", oc_numerator);
-      bsi->SetUIntValue(Settings::CPU_SECTION_NAME, "OverclockDenominator", oc_denominator);
-      SetSettingsChanged(bsi);
-    }
-  }
+  DrawCPUOverclockSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Overclocking Percentage"),
+    FSUI_VSTR("Selects the percentage of the normal clock speed the emulated hardware will run at."),
+    GetEffectiveBoolSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockEnable", false));
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Enable Recompiler ICache"),
                     FSUI_VSTR("Makes games run closer to their console framerate, at a small cost to performance."),
@@ -3732,6 +3722,153 @@ void FullscreenUI::DrawSpeedSelectorSetting(SettingsInterface* bsi, std::string_
   if (HorizontalMenuButton(FSUI_VSTR("OK")))
     CloseFixedPopupDialog();
   EndHorizontalMenuButtons();
+
+  EndFixedPopupDialog();
+}
+
+void FullscreenUI::DrawCPUOverclockSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
+                                           bool enabled /* = true */)
+{
+  // I hate having a function for this, but thankfully it'll disappear with the FullscreenUI rewrite.
+  static constexpr int MIN_VALUE = 10;
+  static constexpr int MAX_VALUE = 1000;
+  static constexpr int STEP_VALUE = 1;
+  static constexpr int DEFAULT_VALUE = 100;
+
+  const bool game_settings = IsEditingGameSettings(bsi);
+  const bool has_value = !game_settings || bsi->ContainsValue(Settings::CPU_SECTION_NAME, "OverclockNumerator") ||
+                         bsi->ContainsValue(Settings::CPU_SECTION_NAME, "OverclockDenominator");
+  const int effective_value = static_cast<int>(Settings::CPUOverclockFractionToPercent(
+    GetEffectiveUIntSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockNumerator", 1),
+    GetEffectiveUIntSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockDenominator", 1)));
+
+  TinyString sstr;
+  if (has_value)
+    sstr.format("{}%", effective_value);
+  else
+    sstr = FSUI_VSTR("Use Global Setting");
+
+  static bool manual_input = false;
+  static bool activate_manual_input = false;
+
+  const bool pressed = MenuActionButton(title, summary, sstr, false, enabled);
+
+  sstr.format("{}##cpu-overclock", title);
+  if (pressed)
+  {
+    OpenFixedPopupDialog(sstr);
+    manual_input = false;
+    activate_manual_input = false;
+  }
+
+  if (!IsFixedPopupDialogOpen(sstr) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(650.0f, 0.0f), LayoutScale(0.0, 250.0f)))
+  {
+    return;
+  }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
+  ImGui::PopFont();
+  ImGui::SameLine();
+  ImGui::Text("%d%% - %d%%", MIN_VALUE, MAX_VALUE);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFont();
+  ImGui::SameLine();
+  ImGui::Text("%d%%", DEFAULT_VALUE);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+  ResetFocusHere();
+
+  int dlg_value = effective_value;
+  bool dlg_value_changed = false;
+
+  char str_value[32];
+  *fmt::format_to_n(str_value, std::size(str_value) - 1, "{}{}", dlg_value, manual_input ? "" : "%").out = '\0';
+
+  if (manual_input)
+  {
+    BeginMenuButtons();
+
+    ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+    if (InputTextWithSuffix("##value", "%", str_value, std::size(str_value),
+                            ImGuiInputTextFlags_CharsDecimal |
+                              (std::exchange(activate_manual_input, false) ? ImGuiInputTextFlags_AlwaysActivate :
+                                                                             ImGuiInputTextFlags_None)))
+    {
+      dlg_value = StringUtil::FromChars<int>(str_value).value_or(dlg_value);
+      dlg_value_changed = true;
+    }
+    HandleOnScreenKeyboard(OnScreenKeyboardMode::Numeric, false, false);
+    ImGui::PopStyleVar(2);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  }
+  else
+  {
+    BeginHorizontalMenuButtons(5);
+    HorizontalMenuButton(str_value, false);
+
+    int step = 0;
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_UP))
+      step = STEP_VALUE;
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_DOWN))
+      step = -STEP_VALUE;
+    ImGui::PopItemFlag();
+    if (HorizontalMenuButton(ICON_FA_KEYBOARD))
+    {
+      manual_input = true;
+      activate_manual_input = true;
+      QueueResetFocus(FocusResetType::Other);
+    }
+    if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
+    {
+      dlg_value = DEFAULT_VALUE;
+      dlg_value_changed = true;
+    }
+
+    EndHorizontalMenuButtons(10.0f);
+
+    if (step != 0)
+    {
+      dlg_value += step;
+      dlg_value_changed = true;
+    }
+
+    BeginMenuButtons();
+  }
+
+  if (dlg_value_changed)
+  {
+    dlg_value = std::clamp(dlg_value, MIN_VALUE, MAX_VALUE);
+    if (game_settings && dlg_value == DEFAULT_VALUE)
+    {
+      bsi->DeleteValue(Settings::CPU_SECTION_NAME, "OverclockNumerator");
+      bsi->DeleteValue(Settings::CPU_SECTION_NAME, "OverclockDenominator");
+    }
+    else
+    {
+      u32 new_numerator, new_denominator;
+      Settings::CPUOverclockPercentToFraction(static_cast<u32>(dlg_value), &new_numerator, &new_denominator);
+      bsi->SetUIntValue(Settings::CPU_SECTION_NAME, "OverclockNumerator", new_numerator);
+      bsi->SetUIntValue(Settings::CPU_SECTION_NAME, "OverclockDenominator", new_denominator);
+    }
+
+    SetSettingsChanged(bsi);
+  }
+
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
+    CloseFixedPopupDialog();
+  EndMenuButtons();
 
   EndFixedPopupDialog();
 }
