@@ -625,6 +625,10 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   m_ui.setupUi(this);
   QtUtils::FixSpinBoxTextMargins(this);
 
+  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.overlaysDirectory, m_ui.overlaysDirectoryBrowse,
+                                                 tr("Select Overlays Directory"), m_ui.overlaysDirectoryOpen,
+                                                 m_ui.overlaysDirectoryReset, EmuFolders::CONFIG_SECTION_NAME,
+                                                 "Overlays", EmuFolders::GetDefaultPath(&EmuFolders::Overlays));
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, Settings::BORDER_OVERLAY_SECTION_NAME,
                                                  "ImagePath");
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, Settings::BORDER_OVERLAY_SECTION_NAME,
@@ -667,6 +671,9 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 
   refreshOverlayList();
 
+  dialog->registerWidgetHelp(m_ui.overlaysDirectory, tr("Overlays Directory"), tr("Default"),
+                             tr("Stores additional border overlay presets. Use Refresh Overlay List to find presets "
+                                "after changing this directory."));
   dialog->registerWidgetHelp(m_ui.imagePath, tr("Image Path"), tr("Unspecified"),
                              tr("Defines the path of the custom overlay image that will be loaded."));
   const QString display_rect_title = tr("Display Rectangle");

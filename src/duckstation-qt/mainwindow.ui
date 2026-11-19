@@ -96,6 +96,7 @@
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAchievementSettings"/>
     <addaction name="actionCaptureSettings"/>
+    <addaction name="actionFoldersSettings"/>
     <addaction name="actionAdvancedSettings"/>
     <addaction name="actionDebuggingSettings"/>
     <addaction name="separator"/>
@@ -773,6 +774,16 @@
    </property>
    <property name="toolTip">
     <string>Configures options related to the apperance and behavior of the application.</string>
+   </property>
+  </action>
+  <action name="actionFoldersSettings">
+   <property name="icon">
+    <iconset resource="resources/duckstation-qt.qrc">
+     <normaloff>:/icons/monochrome/svg/folder-line.svg</normaloff>:/icons/monochrome/svg/folder-line.svg
+    </iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Folders</string>
    </property>
   </action>
   <action name="actionAdvancedSettings">

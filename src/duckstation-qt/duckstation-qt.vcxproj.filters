@@ -28,6 +28,7 @@
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
+    <ClCompile Include="folderssettingswidget.cpp" />
     <ClCompile Include="achievementsettingswidget.cpp" />
     <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
@@ -100,6 +101,7 @@
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="emulationsettingswidget.h" />
+    <QtMoc Include="folderssettingswidget.h" />
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
     <QtMoc Include="controllerbindingwidgets.h" />

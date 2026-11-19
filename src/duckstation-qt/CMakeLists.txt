@@ -88,6 +88,8 @@ set(SRCS
   emulationsettingswidget.cpp
   emulationsettingswidget.h
   emulationsettingswidget.ui
+  folderssettingswidget.cpp
+  folderssettingswidget.h
   gamecheatcodechoiceeditordialog.ui
   gamecheatcodeeditordialog.ui
   gamecheatsettingswidget.cpp

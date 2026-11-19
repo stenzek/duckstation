@@ -2672,6 +2672,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAudioSettings, &QAction::triggered, [this]() { doSettings("Audio"); });
   connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
   connect(m_ui.actionCaptureSettings, &QAction::triggered, [this]() { doSettings("Capture"); });
+  connect(m_ui.actionFoldersSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered, [this]() { doSettings("Advanced"); });
   connect(m_ui.actionDebuggingSettings, &QAction::triggered, [this]() { doSettings("Debugging"); });
   connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);

@@ -10,6 +10,7 @@
 #include "consolesettingswidget.h"
 #include "debuggingsettingswidget.h"
 #include "emulationsettingswidget.h"
+#include "folderssettingswidget.h"
 #include "gamecheatsettingswidget.h"
 #include "gamelistsettingswidget.h"
 #include "gamepatchsettingswidget.h"
@@ -186,6 +187,11 @@ void SettingsWindow::addPages()
 
   if (!isPerGameSettings())
   {
+    addWidget(
+      new FoldersSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
+      u":/icons/monochrome/svg/folder-line.svg"_s,
+      tr("<strong>Folder Settings</strong><hr>These options control where DuckStation reads and stores its "
+         "files.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
     addWidget(new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
               u":/icons/monochrome/svg/alert-line.svg"_s,
               tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "

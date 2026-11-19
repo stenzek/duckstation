@@ -67,14 +67,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameNumber, Settings::DISPLAY_SECTION_NAME,
                                                "ShowFrameNumber", false);
 
-  SettingWidgetBinder::BindWidgetToFolderSetting(
-    sif, m_ui.cacheDirectory, m_ui.cacheDirectoryBrowse, tr("Select Cache Directory"), m_ui.cacheDirectoryOpen,
-    m_ui.cacheDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
-  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.coversDirectory, m_ui.coversDirectoryBrowse,
-                                                 tr("Select Covers Directory"), m_ui.coversDirectoryOpen,
-                                                 m_ui.coversDirectoryReset, EmuFolders::CONFIG_SECTION_NAME, "Covers",
-                                                 Path::Combine(EmuFolders::DataRoot, "covers"));
-
   connect(m_ui.refreshWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::refreshWebCacheSize);
   connect(m_ui.clearWebCache, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onClearWebCacheClicked);
 
@@ -101,12 +93,6 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Always displays the current RetroAchievements rich presence string in the indicator area."));
   dialog->registerWidgetHelp(m_ui.showFrameNumber, tr("Show Frame Number"), tr("Unchecked"),
                              tr("Shows the number of the current frame in the top-right corner of the display."));
-
-  dialog->registerWidgetHelp(m_ui.cacheDirectory, tr("Cache Directory"), tr("Default"),
-                             tr("Specifies the directory where compiled shaders and game list data will be stored."));
-  dialog->registerWidgetHelp(m_ui.coversDirectory, tr("Covers Directory"), tr("Default"),
-                             tr("Specifies the directory where game cover images that are used in the game grid and "
-                                "Big Picture UI will be stored."));
 
   // RAIntegration is not available on non-win32/x64.
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
