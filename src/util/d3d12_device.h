@@ -222,7 +222,7 @@ protected:
 private:
   enum DIRTY_FLAG : u32
   {
-    DIRTY_FLAG_INITIAL = (1 << 0),
+    DIRTY_FLAG_PIPELINE = (1 << 0),
     DIRTY_FLAG_ROOT_SIGNATURE = (1 << 1),
     DIRTY_FLAG_CONSTANT_BUFFER = (1 << 2),
     DIRTY_FLAG_TEXTURES = (1 << 3),
@@ -230,11 +230,22 @@ private:
     DIRTY_FLAG_TEXTURE_BUFFER = (1 << 5),
     DIRTY_FLAG_RT_UAVS = (1 << 6),
     DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER = (1 << 7),
+    DIRTY_FLAG_VERTEX_BUFFER = (1 << 8),
+    DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
+    DIRTY_FLAG_PRIMITIVE_TOPOLOGY = (1 << 10),
+    DIRTY_FLAG_BLEND_CONSTANTS = (1 << 11),
+    DIRTY_FLAG_VIEWPORT = (1 << 12),
+    DIRTY_FLAG_SCISSOR = (1 << 13),
 
     ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE = DIRTY_FLAG_ROOT_SIGNATURE | DIRTY_FLAG_CONSTANT_BUFFER |
                                            DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_TEXTURE_BUFFER |
                                            DIRTY_FLAG_RT_UAVS | DIRTY_FLAG_COMPUTE_OUTPUT_BUFFER,
-    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE,
+
+    // Only applied by draws.
+    GRAPHICS_ONLY_STATE = DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PRIMITIVE_TOPOLOGY |
+                          DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR,
+
+    ALL_DIRTY_STATE = DIRTY_FLAG_PIPELINE | ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE | GRAPHICS_ONLY_STATE,
   };
 
   struct CommandList
@@ -297,12 +308,8 @@ private:
 
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
-  void SetVertexBuffer(ID3D12GraphicsCommandList4* cmdlist);
-  void SetViewport(ID3D12GraphicsCommandList4* cmdlist);
-  void SetScissor(ID3D12GraphicsCommandList4* cmdlist);
 
   /// Applies any changed state.
-  void SetInitialPipelineState();
   void PreDrawCheck();
   void PreDispatchCheck();
   void PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, bool compute, const void* data, u32 data_size);

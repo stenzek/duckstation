@@ -2026,10 +2026,6 @@ void D3D12Device::BeginRenderPass()
   // TODO: Stats
   m_in_render_pass = true;
   s_stats.num_render_passes++;
-
-  // If this is a new command buffer, bind the pipeline and such.
-  if ((m_dirty_flags & DIRTY_FLAG_INITIAL) && m_current_pipeline)
-    SetInitialPipelineState();
 }
 
 bool D3D12Device::InRenderPass()
@@ -2049,47 +2045,41 @@ void D3D12Device::EndRenderPass()
 
 void D3D12Device::SetPipeline(GPUPipeline* pipeline)
 {
-  // First draw? Bind everything.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-  {
-    m_current_pipeline = static_cast<D3D12Pipeline*>(pipeline);
-    if (!m_current_pipeline)
-      return;
-
-    SetInitialPipelineState();
+  if (m_current_pipeline == pipeline)
     return;
-  }
-  else if (m_current_pipeline == pipeline)
-  {
-    return;
-  }
 
   m_current_pipeline = static_cast<D3D12Pipeline*>(pipeline);
+  if (!m_current_pipeline)
+    return;
 
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-  cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
+  m_dirty_flags |= DIRTY_FLAG_PIPELINE;
 
-  if (D3D12_PRIMITIVE_TOPOLOGY topology = m_current_pipeline->GetTopology(); topology != m_current_topology)
+  const GPUPipeline::Layout layout = m_current_pipeline->GetLayout();
+  if (!IsComputeLayout(layout))
   {
-    m_current_topology = topology;
-    cmdlist->IASetPrimitiveTopology(topology);
+    if (const D3D12_PRIMITIVE_TOPOLOGY topology = m_current_pipeline->GetTopology(); topology != m_current_topology)
+    {
+      m_current_topology = topology;
+      m_dirty_flags |= DIRTY_FLAG_PRIMITIVE_TOPOLOGY;
+    }
+
+    if (const u32 vertex_stride = m_current_pipeline->GetVertexStride();
+        vertex_stride > 0 && m_current_vertex_stride != vertex_stride)
+    {
+      m_current_vertex_stride = vertex_stride;
+      m_dirty_flags |= DIRTY_FLAG_VERTEX_BUFFER;
+    }
+
+    // TODO: we don't need to change the blend constant if blending isn't on.
+    if (const u32 blend_constants = m_current_pipeline->GetBlendConstants();
+        m_current_blend_constant != blend_constants)
+    {
+      m_current_blend_constant = blend_constants;
+      m_dirty_flags |= DIRTY_FLAG_BLEND_CONSTANTS;
+    }
   }
 
-  if (u32 vertex_stride = m_current_pipeline->GetVertexStride();
-      vertex_stride > 0 && m_current_vertex_stride != vertex_stride)
-  {
-    m_current_vertex_stride = vertex_stride;
-    SetVertexBuffer(cmdlist);
-  }
-
-  // TODO: we don't need to change the blend constant if blending isn't on.
-  if (u32 blend_constants = m_current_pipeline->GetBlendConstants(); m_current_blend_constant != blend_constants)
-  {
-    m_current_blend_constant = blend_constants;
-    cmdlist->OMSetBlendFactor(m_current_pipeline->GetBlendConstantsF().data());
-  }
-
-  if (GPUPipeline::Layout layout = m_current_pipeline->GetLayout(); m_current_pipeline_layout != layout)
+  if (m_current_pipeline_layout != layout)
   {
     m_current_pipeline_layout = layout;
     m_dirty_flags |=
@@ -2122,56 +2112,6 @@ void D3D12Device::InvalidateCachedState()
   DebugAssert(!m_in_render_pass);
   m_dirty_flags = ALL_DIRTY_STATE &
                   ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
-}
-
-void D3D12Device::SetInitialPipelineState()
-{
-  DebugAssert(m_current_pipeline);
-  m_dirty_flags &= ~DIRTY_FLAG_INITIAL;
-
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-
-  m_current_vertex_stride = m_current_pipeline->GetVertexStride();
-  SetVertexBuffer(cmdlist);
-  const D3D12_INDEX_BUFFER_VIEW ib_view = {m_index_buffer.GetGPUPointer(), m_index_buffer.GetSize(),
-                                           DXGI_FORMAT_R16_UINT};
-  cmdlist->IASetIndexBuffer(&ib_view);
-
-  cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
-  m_current_pipeline_layout = m_current_pipeline->GetLayout();
-
-  m_current_topology = m_current_pipeline->GetTopology();
-  cmdlist->IASetPrimitiveTopology(m_current_topology);
-
-  m_current_blend_constant = m_current_pipeline->GetBlendConstants();
-  cmdlist->OMSetBlendFactor(m_current_pipeline->GetBlendConstantsF().data());
-
-  SetViewport(cmdlist);
-  SetScissor(cmdlist);
-}
-
-void D3D12Device::SetVertexBuffer(ID3D12GraphicsCommandList4* cmdlist)
-{
-  const D3D12_VERTEX_BUFFER_VIEW vb_view = {m_vertex_buffer.GetGPUPointer(), m_vertex_buffer.GetSize(),
-                                            m_current_vertex_stride};
-  cmdlist->IASetVertexBuffers(0, 1, &vb_view);
-}
-
-void D3D12Device::SetViewport(ID3D12GraphicsCommandList4* cmdlist)
-{
-  const D3D12_VIEWPORT vp = {static_cast<float>(m_current_viewport.left),
-                             static_cast<float>(m_current_viewport.top),
-                             static_cast<float>(m_current_viewport.width()),
-                             static_cast<float>(m_current_viewport.height()),
-                             0.0f,
-                             1.0f};
-  cmdlist->RSSetViewports(1, &vp);
-}
-
-void D3D12Device::SetScissor(ID3D12GraphicsCommandList4* cmdlist)
-{
-  static_assert(sizeof(GSVector4i) == sizeof(D3D12_RECT));
-  cmdlist->RSSetScissorRects(1, reinterpret_cast<const D3D12_RECT*>(&m_current_scissor));
 }
 
 void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -2439,20 +2379,8 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 layer, u32 dst_
   }
 
   // Restore for next normal draw.
-  SetViewport(cmdlist);
-  SetScissor(cmdlist);
-  if (m_current_pipeline)
-  {
-    cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
-    if (m_current_pipeline->GetTopology() != D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
-      cmdlist->IASetPrimitiveTopology(m_current_pipeline->GetTopology());
-  }
-  else
-  {
-    m_current_topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-  }
-
-  m_dirty_flags |= ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE;
+  m_dirty_flags |= DIRTY_FLAG_PIPELINE | DIRTY_FLAG_PRIMITIVE_TOPOLOGY | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
+                   ROOT_SIGNATURE_DEPENDENT_DIRTY_STATE;
 }
 
 void D3D12Device::SetViewport(const GSVector4i rc)
@@ -2461,11 +2389,7 @@ void D3D12Device::SetViewport(const GSVector4i rc)
     return;
 
   m_current_viewport = rc;
-
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    return;
-
-  SetViewport(GetCommandList());
+  m_dirty_flags |= DIRTY_FLAG_VIEWPORT;
 }
 
 void D3D12Device::SetScissor(const GSVector4i rc)
@@ -2474,11 +2398,7 @@ void D3D12Device::SetScissor(const GSVector4i rc)
     return;
 
   m_current_scissor = rc;
-
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    return;
-
-  SetScissor(GetCommandList());
+  m_dirty_flags |= DIRTY_FLAG_SCISSOR;
 }
 
 void D3D12Device::PreDrawCheck()
@@ -2488,10 +2408,54 @@ void D3D12Device::PreDrawCheck()
 
   // TODO: Flushing cmdbuffer because of descriptor OOM will lose push constants.
 
-  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
   const u32 dirty = std::exchange(m_dirty_flags, 0);
   if (dirty != 0)
   {
+    ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+
+    if (dirty & DIRTY_FLAG_PIPELINE)
+    {
+      DebugAssert(m_current_pipeline && !IsComputeLayout(m_current_pipeline_layout));
+      cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
+    }
+
+    if (dirty & DIRTY_FLAG_VERTEX_BUFFER)
+    {
+      const D3D12_VERTEX_BUFFER_VIEW vb_view = {m_vertex_buffer.GetGPUPointer(), m_vertex_buffer.GetSize(),
+                                                m_current_vertex_stride};
+      cmdlist->IASetVertexBuffers(0, 1, &vb_view);
+    }
+
+    if (dirty & DIRTY_FLAG_INDEX_BUFFER)
+    {
+      const D3D12_INDEX_BUFFER_VIEW ib_view = {m_index_buffer.GetGPUPointer(), m_index_buffer.GetSize(),
+                                               DXGI_FORMAT_R16_UINT};
+      cmdlist->IASetIndexBuffer(&ib_view);
+    }
+
+    if (dirty & DIRTY_FLAG_PRIMITIVE_TOPOLOGY)
+      cmdlist->IASetPrimitiveTopology(m_current_topology);
+
+    if (dirty & DIRTY_FLAG_BLEND_CONSTANTS)
+      cmdlist->OMSetBlendFactor(m_current_pipeline->GetBlendConstantsF().data());
+
+    if (dirty & DIRTY_FLAG_VIEWPORT)
+    {
+      const D3D12_VIEWPORT vp = {static_cast<float>(m_current_viewport.left),
+                                 static_cast<float>(m_current_viewport.top),
+                                 static_cast<float>(m_current_viewport.width()),
+                                 static_cast<float>(m_current_viewport.height()),
+                                 0.0f,
+                                 1.0f};
+      cmdlist->RSSetViewports(1, &vp);
+    }
+
+    if (dirty & DIRTY_FLAG_SCISSOR)
+    {
+      static_assert(sizeof(GSVector4i) == sizeof(D3D12_RECT));
+      cmdlist->RSSetScissorRects(1, reinterpret_cast<const D3D12_RECT*>(&m_current_scissor));
+    }
+
     if (dirty & DIRTY_FLAG_ROOT_SIGNATURE)
     {
       UpdateRootSignature();
@@ -2556,15 +2520,17 @@ void D3D12Device::PreDispatchCheck()
     cmdlist->ResourceBarrier(m_num_current_render_targets, barriers.data());
   }
 
-  // If this is a new command buffer, bind the pipeline and such.
-  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
-    SetInitialPipelineState();
-
   // TODO: Flushing cmdbuffer because of descriptor OOM will lose push constants.
-  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
-  const u32 dirty = std::exchange(m_dirty_flags, 0);
+  const u32 dirty = m_dirty_flags & ~static_cast<u32>(GRAPHICS_ONLY_STATE);
+  m_dirty_flags &= GRAPHICS_ONLY_STATE;
   if (dirty != 0)
   {
+    if (dirty & DIRTY_FLAG_PIPELINE)
+    {
+      DebugAssert(m_current_pipeline && IsComputeLayout(m_current_pipeline_layout));
+      cmdlist->SetPipelineState(m_current_pipeline->GetPipeline());
+    }
+
     if (dirty & DIRTY_FLAG_ROOT_SIGNATURE)
     {
       UpdateRootSignature();
