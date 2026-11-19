@@ -1596,10 +1596,10 @@ bool CDROM::HasPendingDiscEvent()
 
 bool CDROM::CanUseReadSpeedup()
 {
-  // Only use read speedup in 2X mode and when we're not playing/filtering XA.
+  // Only use read speedup in 2X mode and when we're not playing CD-DA/filtering XA.
   // Use MDEC as a heuristic for games that don't use XA audio in FMVs. But this is opt-in for now.
-  return (!s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed &&
-          (!g_settings.mdec_disable_cdrom_speedup || !MDEC::IsActive()));
+  return (s_state.drive_state != DriveState::Playing && !s_state.mode.cdda && !s_state.mode.xa_enable &&
+          s_state.mode.double_speed && (!g_settings.mdec_disable_cdrom_speedup || !MDEC::IsActive()));
 }
 
 void CDROM::DisableReadSpeedup()
@@ -3080,8 +3080,7 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
     return;
   }
 
-  const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba, true));
+  const TickCount seek_ticks = after_seek ? 0 : GetTicksForSeek(s_state.current_lba, true);
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
@@ -3091,9 +3090,11 @@ void CDROM::BeginPlaying(u8 track, bool after_seek)
   s_state.cdda_report_start_delay = CDDA_REPORT_START_DELAY;
   s_state.last_cdda_report_frame_nibble = 0xFF;
 
+  // Read speedup depends on the drive state, so it has to be set first.
   s_state.drive_state = DriveState::Playing;
+  const TickCount ticks = GetTicksForRead();
   s_state.drive_event.SetInterval(ticks);
-  s_state.drive_event.Schedule(first_sector_ticks);
+  s_state.drive_event.Schedule(ticks + seek_ticks);
 
   s_state.requested_lba = s_state.current_lba;
   CDROMAsyncReader::QueueReadSector(s_state.requested_lba);
