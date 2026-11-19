@@ -405,8 +405,8 @@ protected:
   {
     m_old_settings = g_settings;
     g_settings.audio_backend = AudioBackend::Null;
-    g_settings.cpu_overclock_enable = false;
-    g_settings.SetCPUOverclockPercent(100);
+    g_settings.cpu_overclock_enable = (m_cpu_percent != 100);
+    g_settings.SetCPUOverclockPercent(m_cpu_percent);
     g_settings.UpdateOverclockActive();
     CPU::g_state.cop0_regs.sr.bits = 0;
     CPU::g_state.pending_ticks = 0;
@@ -482,6 +482,57 @@ protected:
     EXPECT_EQ(SPU::ReadRegister(0x2E), 0x300u);
   }
 
+  // Voice 1 plays 1FF0h, 2000h and 2010h, which loops to LSAX. Giving 2000h a Loop-Start-Bit makes it loop there
+  // instead of 1000h, so LSAX shows whether the 2000h fetch saw the flag. The second time, the flag is DMAed in with
+  // its halfword written just before the sample that fetches the block, and the next halfword just after. With the IRQ
+  // address on the block, IRQ prediction runs the sample event at that sample, otherwise the transfer event runs it.
+  static void CheckBlockFetchDuringDMAWrite(bool predict_irq)
+  {
+    auto& ram = SPU::GetWritableRAM();
+    ram[0x2011] = 3;
+    const auto key_on = [&ram](u8 flags) {
+      ram[0x2001] = flags;
+      SPU::WriteRegister(0x14, 0x3FFF);
+      SPU::WriteRegister(0x16, 0x3FE);
+      SPU::WriteRegister(0x18, 0x000F);
+      SPU::WriteRegister(0x1A, 0x1FC0);
+      SPU::WriteRegister(0x1E, 0x200);
+      SPU::WriteRegister(0x188, 2);
+    };
+
+    key_on(4);
+    u32 fetch_sample = 0;
+    for (u32 sample = 1; sample <= 64 && fetch_sample == 0; sample++)
+    {
+      RunSamples(1);
+      if (SPU::ReadRegister(0x1E) == 0x400)
+        fetch_sample = sample;
+    }
+    ASSERT_GT(fetch_sample, 1u);
+    RunSamples(fetch_sample & 1u); // Key On is serviced every second sample.
+
+    // SPU registers aren't accessed again until the transfer completes.
+    key_on(0);
+    RunSamples(fetch_sample - 1);
+    DMA::Reset();
+    SPU::WriteRegister(0x1A4, 0x401);
+    SPU::WriteRegister(0x1A6, 0x400);
+    SPU::WriteRegister(0x1AA, predict_irq ? 0xC060 : 0xC020);
+    CPU::AddPendingTicks(768 - 20);
+    const u32 word = 0x0400;
+    SPU::DMAWrite(&word, 1);
+    for (u32 i = 0; i < 2; i++)
+    {
+      CPU::AddPendingTicks(384);
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+    }
+
+    RunSamples(64);
+    EXPECT_EQ(SPU::ReadRegister(0x1E), 0x400u);
+    DMA::Reset();
+  }
+
   template<size_t N>
   static void CheckCapture(const std::array<u8, 14>& adpcm, u16 pitch, const std::array<s16, N>& golden)
   {
@@ -504,6 +555,7 @@ protected:
   }
 
   Settings m_old_settings;
+  u32 m_cpu_percent = 100;
 };
 
 TEST_F(SPUHardwareTest, DecayCrossesSustainThreshold)
@@ -789,6 +841,150 @@ TEST_F(SPUHardwareTest, KeyOnHeaderFetchUpdatesRepeatAddress)
   }
   ASSERT_NE(repeat_address, 0u);
   EXPECT_EQ(attack, repeat_address + 4);
+}
+
+TEST_F(SPUHardwareTest, BlockFetchDuringDMAWriteFromTransferEvent)
+{
+  CheckBlockFetchDuringDMAWrite(false);
+}
+
+TEST_F(SPUHardwareTest, BlockFetchDuringDMAWriteFromSampleEvent)
+{
+  CheckBlockFetchDuringDMAWrite(true);
+}
+
+TEST_F(SPUHardwareTest, DMAWriteAfterEventAddsTicksInSameSlice)
+{
+  // An earlier event in the same slice adds CPU ticks, like a DMA does, so the transfer event runs with samples pending
+  // past its own time. Generating them runs the transfer past it too, which mustn't stop the transfer.
+  static constexpr u32 HALFWORD_TICKS = 16;
+  static TimingEvent stall_event(
+    "SPU Test Stall", 1, 1,
+    [](void*, TickCount) {
+      CPU::AddPendingTicks(800);
+      stall_event.Deactivate();
+    },
+    nullptr);
+
+  DMA::Reset();
+  SPU::WriteRegister(0x1A6, 0x400);
+  SPU::WriteRegister(0x1AA, 0xC020);
+  std::array<u32, 16> words;
+  for (u32 i = 0; i < words.size(); i++)
+    words[i] = 0x10001u * (i * 2) + 0x10000u;
+
+  // The event runs when the first 16 halfwords are done, but the FIFO is refilled before then. The sample generated in
+  // the event is due after 24 of the 32 halfwords.
+  CPU::AddPendingTicks(768 - (24 * HALFWORD_TICKS) % 768);
+  SPU::GeneratePendingSamples();
+  const GlobalTicks start = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+  stall_event.Schedule(16 * HALFWORD_TICKS - 12);
+  SPU::DMAWrite(words.data(), 8);
+  CPU::AddPendingTicks(100);
+  SPU::DMAWrite(words.data() + 8, 8);
+  CPU::AddPendingTicks(16 * HALFWORD_TICKS - 12);
+  TimingEvents::RunEvents();
+  ASSERT_GE(TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks() - start, 32 * HALFWORD_TICKS);
+
+  // Check RAM first, since reading STATX runs the transfer.
+  EXPECT_EQ(std::memcmp(&SPU::GetWritableRAM()[0x2000], words.data(), sizeof(words)), 0);
+  EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x280u, 0x280u);
+  stall_event.Deactivate();
+  DMA::Reset();
+}
+
+TEST_F(SPUHardwareTest, ManualWriteDrainsQueuedDMAWrite)
+{
+  // A data port write with DMA data still in the FIFO writes the FIFO out first, in DMA write mode and after switching
+  // to manual write mode.
+  for (const u16 attr : {0xC020, 0xC010})
+  {
+    DMA::Reset();
+    SPU::WriteRegister(0x1AA, 0xC000);
+    SPU::WriteRegister(0x1A6, 0x400);
+    SPU::WriteRegister(0x1AA, 0xC020);
+    std::array<u32, 8> words;
+    for (u32 i = 0; i < words.size(); i++)
+      words[i] = 0x10001u * (i * 2) + 0x10000u;
+    SPU::DMAWrite(words.data(), static_cast<u32>(words.size()));
+    SPU::WriteRegister(0x1AA, attr);
+    SPU::WriteRegister(0x1A8, 0xABCD);
+
+    auto& ram = SPU::GetWritableRAM();
+    EXPECT_EQ(std::memcmp(&ram[0x2000], words.data(), sizeof(words)), 0) << attr;
+    EXPECT_EQ(ram[0x2020] | (ram[0x2021] << 8), 0xABCD) << attr;
+    EXPECT_EQ(SPU::ReadRegister(0x1AE) & 0x400u, 0u) << attr;
+  }
+  DMA::Reset();
+}
+
+TEST_F(SPUHardwareTest, BlockFetchDuringDMAWriteAtFractionalClock)
+{
+  // At 11% CPU speed a sample isn't a whole number of cycles. Samples generated in a batch when the transfer completes
+  // must see the same halfwords as when STATX polling generates each one as soon as it's due. Voice 1 plays 1FF0h,
+  // 2000h and 2010h, and a Loop-Start-Bit DMAed into 2000h is seen in LSAX if it was written before 2000h was fetched.
+  m_cpu_percent = 11;
+  static constexpr auto now = []() { return TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks(); };
+  static constexpr auto run_ticks = [](u32 ticks, bool poll) {
+    for (u32 i = 0; i < ticks; i++)
+    {
+      CPU::AddPendingTicks(1);
+      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
+        TimingEvents::RunEvents();
+      if (poll)
+        SPU::ReadRegister(0x1AE);
+    }
+  };
+  const auto key_on = [this](u8 flags) {
+    TearDown();
+    SetUp();
+    auto& ram = SPU::GetWritableRAM();
+    ram[0x2001] = flags;
+    ram[0x2011] = 3;
+    SPU::WriteRegister(0x14, 0x3FFF);
+    SPU::WriteRegister(0x16, 0x3FE);
+    SPU::WriteRegister(0x18, 0x000F);
+    SPU::WriteRegister(0x1A, 0x1FC0);
+    SPU::WriteRegister(0x1E, 0x200);
+    SPU::WriteRegister(0x188, 2);
+    return now();
+  };
+
+  // Find the cycle of the 2000h fetch with the flag already there.
+  const GlobalTicks start = key_on(4);
+  while (SPU::ReadRegister(0x1E) != 0x400 && now() - start < 65536)
+    run_ticks(1, false);
+  const u32 fetch_ticks = static_cast<u32>(now() - start);
+  ASSERT_LT(fetch_ticks, 65536u);
+
+  // 32 halfwords span several samples, so the fetch is early in the batch. Write the flag in the first halfword, around
+  // the fetch.
+  static constexpr u32 HALFWORD_TICKS = 16;
+  std::array<u32, 16> words = {};
+  words[0] = 0x0400;
+  words[4] = 0x0300;
+  for (u32 dma_ticks = fetch_ticks - HALFWORD_TICKS - 16; dma_ticks < fetch_ticks - HALFWORD_TICKS + 16; dma_ticks++)
+  {
+    u16 lsax[2];
+    for (u32 poll = 0; poll < 2; poll++)
+    {
+      key_on(0);
+      run_ticks(dma_ticks, false);
+      DMA::Reset();
+      SPU::WriteRegister(0x1A6, 0x400);
+      SPU::WriteRegister(0x1AA, 0xC020);
+      SPU::DMAWrite(words.data(), static_cast<u32>(words.size()));
+      run_ticks(2048, poll != 0);
+      RunSamples(64);
+      lsax[poll] = SPU::ReadRegister(0x1E);
+      DMA::Reset();
+    }
+    const u16 expected = (dma_ticks + HALFWORD_TICKS <= fetch_ticks) ? 0x400 : 0x200;
+    EXPECT_EQ(lsax[0], expected) << "halfword written " << (dma_ticks + HALFWORD_TICKS)
+                                 << " cycles after KON, fetch at " << fetch_ticks;
+    EXPECT_EQ(lsax[1], expected) << "polled, halfword written " << (dma_ticks + HALFWORD_TICKS)
+                                 << " cycles after KON, fetch at " << fetch_ticks;
+  }
 }
 
 } // namespace

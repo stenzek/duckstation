@@ -374,6 +374,7 @@ static void UpdateEventInterval();
 
 static void ExecuteFIFOWriteToRAM(TickCount& ticks);
 static void ExecuteFIFOReadFromRAM(TickCount& ticks);
+static u32 RunTransferUntilFrame(u32 remaining_frames);
 static void ExecuteTransfer(void* param, TickCount ticks);
 static void ManualTransferWrite(u16 value);
 static void UpdateTransferEvent();
@@ -1482,7 +1483,16 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks)
 {
   const RAMTransferMode mode = s_state.SPUCNT.ram_transfer_mode;
   DebugAssert(mode != RAMTransferMode::Stopped);
+
+  // Pending samples run the transfer up to their own time, so rewind to where it last stopped while generating them.
+  const GlobalTicks now = s_state.transfer_event.m_last_run_time;
+  s_state.transfer_event.m_last_run_time = now - static_cast<u32>(ticks);
   InternalGeneratePendingSamples();
+
+  // When an earlier event in this slice added CPU ticks, samples and the transfer can already be past now.
+  GlobalTicks& transfer_time = s_state.transfer_event.m_last_run_time;
+  ticks = (now > transfer_time) ? static_cast<TickCount>(now - transfer_time) : 0;
+  transfer_time = std::max(transfer_time, now);
 
   TickCount ticks_until_complete;
   if (mode == RAMTransferMode::DMARead)
@@ -1529,22 +1539,32 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks)
   }
 
   // Only whole halfwords are transferred. Carry the leftover ticks into the next invocation, so that STATX reads, which
-  // invoke the event early, don't change when the transfer completes.
-  s_state.transfer_event.Schedule(ticks_until_complete - ticks);
-  s_state.transfer_event.m_last_run_time -= static_cast<u32>(ticks);
+  // invoke the event early, don't change when the transfer completes. Schedule from the transfer's time, since the
+  // CPU's includes ticks added by earlier events in this slice.
+  transfer_time -= static_cast<u32>(ticks);
+  s_state.transfer_event.Schedule(
+    std::max<TickCount>(ticks_until_complete - s_state.transfer_event.GetTicksSinceLastExecution(), 0));
 }
 
 void SPU::ManualTransferWrite(u16 value)
 {
+  // Pending samples need to read the old data.
+  InternalGeneratePendingSamples();
+
   if (!s_state.transfer_fifo.IsEmpty() && s_state.SPUCNT.ram_transfer_mode != RAMTransferMode::DMARead)
   {
     WARNING_LOG("FIFO not empty on manual SPU write, draining to hopefully avoid corruption. Game is silly.");
     if (s_state.SPUCNT.ram_transfer_mode != RAMTransferMode::Stopped)
-      ExecuteTransfer(nullptr, std::numeric_limits<s32>::max());
+    {
+      TickCount ticks = std::numeric_limits<TickCount>::max();
+      while (!s_state.transfer_fifo.IsEmpty())
+      {
+        ExecuteFIFOWriteToRAM(ticks);
+        UpdateDMARequest();
+      }
+      UpdateTransferEvent();
+    }
   }
-
-  // Pending samples need to read the old data.
-  InternalGeneratePendingSamples();
 
   std::memcpy(&s_ram[s_state.transfer_address], &value, sizeof(u16));
   s_state.transfer_address = (s_state.transfer_address + sizeof(u16)) & RAM_MASK;
@@ -2551,6 +2571,43 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
 #endif
 }
 
+u32 SPU::RunTransferUntilFrame(u32 remaining_frames)
+{
+  // Runs the RAM transfer up to the next frame, and returns how many frames can be generated before it moves again.
+  // The transfer event still runs when the transfer was due to complete, so it isn't rescheduled.
+  // A frame is due when the accumulated ticks reach a multiple of the divider. The last pending one was carry ago, and
+  // with a fractional CPU clock that's (carry + frames before it * divider) / denominator cycles before now.
+  const bool overclock = g_settings.cpu_overclock_active;
+  const u64 divider = overclock ? static_cast<u32>(s_state.cpu_tick_divider) : SYSCLK_TICKS_PER_SPU_TICK;
+  const u64 denominator = overclock ? g_settings.cpu_overclock_denominator : 1;
+  const u64 carry = static_cast<u32>(s_state.ticks_carry);
+  const u32 frames_before_last = remaining_frames - 1;
+  const GlobalTicks now = s_state.tick_event.m_last_run_time;
+  const GlobalTicks frame_time = now - (carry + frames_before_last * divider) / denominator;
+  GlobalTicks& transfer_time = s_state.transfer_event.m_last_run_time;
+  const bool reading = (s_state.SPUCNT.ram_transfer_mode == RAMTransferMode::DMARead);
+  if (frame_time > transfer_time)
+  {
+    TickCount ticks = static_cast<TickCount>(frame_time - transfer_time);
+    if (reading)
+      ExecuteFIFOReadFromRAM(ticks);
+    else
+      ExecuteFIFOWriteToRAM(ticks);
+    transfer_time = frame_time - static_cast<u32>(ticks);
+    UpdateDMARequest();
+  }
+
+  const GlobalTicks next_halfword_time = transfer_time + TRANSFER_TICKS_PER_HALFWORD;
+  if ((reading ? s_state.transfer_fifo.IsFull() : s_state.transfer_fifo.IsEmpty()) || next_halfword_time > now)
+    return remaining_frames;
+
+  // Frames before the next halfword are the ones at least now - next_halfword_time + 1 cycles before now.
+  const u64 accumulated_ticks = (now - next_halfword_time + 1) * denominator;
+  const u64 min_frames_before_last =
+    (accumulated_ticks > carry) ? ((accumulated_ticks - carry + divider - 1) / divider) : 0;
+  return frames_before_last - static_cast<u32>(min_frames_before_last) + 1;
+}
+
 void SPU::Execute(void* param, TickCount ticks)
 {
   u32 remaining_frames;
@@ -2581,7 +2638,9 @@ void SPU::Execute(void* param, TickCount ticks)
     }
 
     s16* output_frame = output_frame_start;
-    const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
+    u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
+    if (s_state.transfer_event.IsActive()) [[unlikely]]
+      frames_in_this_batch = std::min(frames_in_this_batch, RunTransferUntilFrame(remaining_frames));
     for (u32 i = 0; i < frames_in_this_batch; i++)
     {
 #ifdef SPU_VERIFY_IRQ_PREDICTION
