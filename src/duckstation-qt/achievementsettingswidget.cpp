@@ -38,7 +38,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, Settings::ACHIEVEMENTS_SECTION_NAME,
                                                "SpectatorMode", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, Settings::ACHIEVEMENTS_SECTION_NAME,
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unpromotedAchievements, Settings::ACHIEVEMENTS_SECTION_NAME,
                                                "UnofficialTestMode", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.achievementNotifications, Settings::ACHIEVEMENTS_SECTION_NAME,
                                                "Notifications", true);
@@ -94,8 +94,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"),
                              tr("When enabled, DuckStation will assume all achievements are locked and not send any "
                                 "unlock notifications to the server."));
-  dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"),
-                             tr("When enabled, DuckStation will track unofficial achievements. Unlocks will be saved "
+  dialog->registerWidgetHelp(m_ui.unpromotedAchievements, tr("Test Unpromoted Achievements"), tr("Unchecked"),
+                             tr("When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved "
                                 "locally and not sent to RetroAchievements."));
   dialog->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"),
                              tr("Displays popup messages on events such as achievement unlocks and game completion."));
@@ -255,7 +255,7 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.hardcoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.encoreMode->setEnabled(enabled && !spectator_enabled);
-  m_ui.unofficialAchievements->setEnabled(enabled);
+  m_ui.unpromotedAchievements->setEnabled(enabled);
   m_ui.prefetchBadges->setEnabled(enabled);
   m_ui.notificationsGroup->setEnabled(enabled);
   m_ui.progressTrackingGroup->setEnabled(enabled);

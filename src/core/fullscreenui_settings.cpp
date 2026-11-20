@@ -6124,8 +6124,8 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<Threading::Mute
                     Settings::ACHIEVEMENTS_SECTION_NAME, "EncoreMode", false,
                     enabled &&
                       !GetEffectiveBoolSetting(bsi, Settings::ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", false));
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FLASK_VIAL, "Track Unofficial Achievements"),
-                    FSUI_VSTR("When enabled, DuckStation will track unofficial achievements. Unlocks will be saved "
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FLASK_VIAL, "Track Unpromoted Achievements"),
+                    FSUI_VSTR("When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved "
                               "locally and not sent to RetroAchievements."),
                     Settings::ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", false, enabled);
 

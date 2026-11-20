@@ -143,9 +143,9 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QCheckBox" name="unofficialAchievements">
+       <widget class="QCheckBox" name="unpromotedAchievements">
         <property name="text">
-         <string>Track Unofficial Achievements</string>
+         <string>Track Unpromoted Achievements</string>
         </property>
        </widget>
       </item>
