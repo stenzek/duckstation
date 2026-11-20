@@ -88,10 +88,10 @@ bool IsAchievementPinned(u32 achievement_id);
 void SetAchievementPinned(u32 achievement_id, bool pinned);
 
 /// Resets a locally tracked unofficial achievement unlock.
-void ResetUnofficialAchievementUnlock(u32 achievement_id);
+void ResetUnpromotedAchievementUnlock(u32 achievement_id);
 
 /// Resets all locally tracked unofficial achievement unlocks for the current game.
-void ResetAllUnofficialAchievementUnlocks();
+void ResetAllUnpromotedAchievementUnlocks();
 
 /// Returns the URL for the badge of the specified achievement, using the locked or unlocked version as appropriate.
 std::string_view GetAchievementBadgeURL(const rc_client_achievement_t* achievement, bool locked);
@@ -128,7 +128,7 @@ enum class AchievementNotificationCategory : u8
   Progression = 2,
   Win = 3,
   TypeMask = 0x0F,
-  Unofficial = (1 << 4),
+  Unpromoted = (1 << 4),
 };
 
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(AchievementNotificationCategory);

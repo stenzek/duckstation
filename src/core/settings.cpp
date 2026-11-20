@@ -538,7 +538,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_hardcore_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", false);
   achievements_encore_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "EncoreMode", false);
   achievements_spectator_mode = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", false);
-  achievements_track_unofficial = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", false);
+  achievements_track_unpromoted = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", false);
   achievements_use_raintegration = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UseRAIntegration", false);
   achievements_notifications = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Notifications", true);
   achievements_leaderboard_notifications = si.GetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardNotifications", true);
@@ -926,7 +926,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "ChallengeMode", achievements_hardcore_mode);
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "EncoreMode", achievements_encore_mode);
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "SpectatorMode", achievements_spectator_mode);
-  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", achievements_track_unofficial);
+  si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UnofficialTestMode", achievements_track_unpromoted);
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "UseRAIntegration", achievements_use_raintegration);
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "Notifications", achievements_notifications);
   si.SetBoolValue(ACHIEVEMENTS_SECTION_NAME, "LeaderboardNotifications", achievements_leaderboard_notifications);
