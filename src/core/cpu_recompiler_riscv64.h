@@ -35,6 +35,7 @@ protected:
   void GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size) override;
   void GenerateICacheCheckAndUpdate() override;
   void GenerateCall(const void* func, s32 arg1reg = -1, s32 arg2reg = -1, s32 arg3reg = -1) override;
+  void LoadArgRegWithConstant(u32 arg, const void* ptr) override;
   void EndBlock(const std::optional<u32>& newpc, bool do_event_test) override;
   void EndBlockWithException(Exception excode) override;
   void EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test, bool force_run_events);

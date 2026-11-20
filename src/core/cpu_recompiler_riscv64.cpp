@@ -640,6 +640,13 @@ void CPU::RISCV64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/
   EmitCall(func);
 }
 
+void CPU::RISCV64Recompiler::LoadArgRegWithConstant(u32 arg, const void* ptr)
+{
+  DebugAssert(arg >= 1 && arg <= 3);
+  const biscuit::GPR reg = (arg == 1) ? RARG1 : ((arg == 2) ? RARG2 : RARG3);
+  rvEmitMov64(rvAsm, reg, RSCRATCH, static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)));
+}
+
 void CPU::RISCV64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())

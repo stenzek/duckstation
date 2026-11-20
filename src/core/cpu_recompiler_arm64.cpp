@@ -877,6 +877,13 @@ void CPU::ARM64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, 
   EmitCall(func);
 }
 
+void CPU::ARM64Recompiler::LoadArgRegWithConstant(u32 arg, const void* ptr)
+{
+  DebugAssert(arg >= 1 && arg <= 3);
+  const vixl::aarch64::Register reg = (arg == 1) ? RXARG1 : ((arg == 2) ? RXARG2 : RXARG3);
+  armMoveAddressToReg(armAsm, reg, ptr);
+}
+
 void CPU::ARM64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())

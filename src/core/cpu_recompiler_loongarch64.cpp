@@ -637,6 +637,13 @@ void CPU::LoongArch64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= 
   EmitCall(func);
 }
 
+void CPU::LoongArch64Recompiler::LoadArgRegWithConstant(u32 arg, const void* ptr)
+{
+  DebugAssert(arg >= 1 && arg <= 3);
+  const la_gpr_t reg = (arg == 1) ? RARG1 : ((arg == 2) ? RARG2 : RARG3);
+  laEmitMov64(laAsm, reg, static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)));
+}
+
 void CPU::LoongArch64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())

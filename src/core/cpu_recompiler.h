@@ -280,6 +280,7 @@ protected:
   virtual void GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size) = 0;
   virtual void GenerateICacheCheckAndUpdate() = 0;
   virtual void GenerateCall(const void* func, s32 arg1reg = -1, s32 arg2reg = -1, s32 arg3reg = -1) = 0;
+  virtual void LoadArgRegWithConstant(u32 arg, const void* ptr) = 0; // arg is 1-3, as in GenerateCall().
   virtual void EndBlock(const std::optional<u32>& newpc, bool do_event_test) = 0;
   virtual void EndBlockWithException(Exception excode) = 0;
   void EndBlockWithBranchTargetException();
