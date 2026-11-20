@@ -178,8 +178,8 @@ Bạn có muốn bật chế độ Hardcore không?</translation>
         <translation>Bật chế độ Encore</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Theo dõi thành tích không chính thức</translation>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Theo dõi thành tích chưa được nâng hạng</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -278,12 +278,12 @@ Bạn có muốn bật chế độ Hardcore không?</translation>
         <translation>Khi được bật, DuckStation sẽ coi tất cả thành tích là chưa mở khóa và không gửi thông báo mở khóa nào đến máy chủ.</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Thử nghiệm thành tích không chính thức</translation>
+        <source>Test Unpromoted Achievements</source>
+        <translation>Kiểm tra thành tích chưa được nâng hạng</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Khi được bật, DuckStation sẽ theo dõi thành tích không chính thức. Kết quả mở khóa sẽ được lưu cục bộ và không được gửi đến RetroAchievements.</translation>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Khi bật, DuckStation sẽ theo dõi các thành tích chưa được nâng hạng. Thành tích mở khóa sẽ được lưu cục bộ và không gửi lên RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -631,8 +631,8 @@ Chúng tôi sẽ tiếp tục thử gửi yêu cầu này.</translation>
         <translation>Không được hỗ trợ</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <translation>Không chính thức</translation>
+        <source>Unpromoted</source>
+        <translation>Chưa được nâng hạng</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
@@ -839,10 +839,6 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
         <source>This subset has no achievements.</source>
         <translation>Bộ con này không có thành tích.</translation>
     </message>
-    <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>Bạn đã mở khóa {0} trong số {1} thành tích không chính thức, đạt {2} trong số {3} điểm có thể nhận.</translation>
-    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -887,8 +883,12 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
         <translation>Ghim thành tích</translation>
     </message>
     <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>Đặt lại kết quả mở khóa không chính thức</translation>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>Bạn đã mở khóa {0}/{1} thành tích chưa được nâng hạng, nhận được {2}/{3} điểm có thể đạt.</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>Đặt lại trạng thái mở khóa thành tích chưa được nâng hạng</translation>
     </message>
     <message>
         <source>View Details</source>
@@ -1060,32 +1060,32 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
         <translation>Bật RAIntegration</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>Thư mục bộ nhớ đệm</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>Mô phỏng CD-ROM</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>Dùng để lưu bộ đổ bóng đã biên dịch và dữ liệu danh sách trò chơi.</translation>
+        <source>Readahead Sectors:</source>
+        <translation>Số sector đọc trước:</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>Duyệt...</translation>
+        <source> sectors</source>
+        <translation> sector</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Mở...</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>Tốc độ ổ đĩa vật lý:</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Đặt lại</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Không thay đổi</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>Thư mục ảnh bìa</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>Dùng để lưu ảnh bìa trong giao diện lưới trò chơi/Big Picture.</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>Bỏ qua mã kênh phụ của ổ đĩa vật lý</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1098,14 +1098,6 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
     <message>
         <source>Clear</source>
         <translation>Xóa</translation>
-    </message>
-    <message>
-        <source>Select Cache Directory</source>
-        <translation>Chọn thư mục bộ nhớ đệm</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>Chọn thư mục ảnh bìa</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -1164,16 +1156,34 @@ Phiên này sẽ bắt đầu ở chế độ ngoại tuyến.</translation>
         <translation>Hiện số thứ tự khung hình hiện tại ở góc trên cùng bên phải màn hình.</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>Mặc định</translation>
+        <source>Readahead Sectors</source>
+        <translation>Số sector đọc trước</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n sector</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>Chỉ định thư mục lưu bộ đổ bóng đã biên dịch và dữ liệu danh sách trò chơi.</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>Giảm hiện tượng khựng khi mô phỏng bằng cách đọc/giải nén dữ liệu CD không đồng bộ trên luồng nền.</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>Chỉ định thư mục lưu ảnh bìa trò chơi dùng trong giao diện lưới trò chơi và Big Picture.</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>Tốc độ ổ đĩa vật lý</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Đặt tốc độ ổ đĩa trên máy tính chạy DuckStation khi sử dụng đĩa vật lý. Tốc độ cao hơn có thể giảm hiện tượng giật hình nhưng khiến ổ đĩa ồn hơn. Chọn &quot;Không thay đổi&quot; để giữ nguyên tốc độ riêng của ổ đĩa. Không phải ổ đĩa nào cũng hỗ trợ tính năng này.</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>Bỏ qua dữ liệu kênh phụ do ổ đĩa cung cấp khi dùng đĩa vật lý và luôn tạo dữ liệu kênh phụ. Tính năng này không hoạt động với game được LibCrypt bảo vệ nhưng có thể tăng độ tin cậy khi đọc trên một số ổ đĩa.</translation>
     </message>
     <message>
         <source>Enable RAIntegration (Development Only)</source>
@@ -2877,16 +2887,6 @@ Nút gán hiện tại: %s</translation>
         <translation>Tải tất cả huy hiệu thành tích chưa mở khóa khi bắt đầu trò chơi, giảm độ trễ khi hiển thị hình ảnh mở khóa.</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>Theo dõi thành tích không chính thức</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>Khi bật, DuckStation sẽ theo dõi thành tích không chính thức. Kết quả mở khóa được lưu cục bộ và không gửi đến RetroAchievements.</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>Thử chế độ ngoại tuyến RetroAchievements</translation>
@@ -3012,14 +3012,6 @@ Nút gán hiện tại: %s</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>Bạn đã mở khóa %1$d trên %2$d thành tích không chính thức, đạt %3$d trên %4$d điểm có thể đạt.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
@@ -3088,11 +3080,6 @@ Nút gán hiện tại: %s</translation>
         <translation>Điều kiện chiến thắng</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>Không chính thức</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>Mở trên RetroAchievements</translation>
@@ -3111,21 +3098,6 @@ Nút gán hiện tại: %s</translation>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>Đặt lại trạng thái mở khóa</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>Đặt lại thành tích không chính thức</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>Trạng thái mở khóa của &apos;%1$s&apos; sẽ bị xóa. Không thể hoàn tác thao tác này.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>Đã đặt lại trạng thái mở khóa thành tích không chính thức.</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3579,9 +3551,47 @@ Nút gán hiện tại: %s</translation>
         <translation>Bạn vẫn muốn đổi đĩa?</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>Theo dõi thành tích chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>Khi bật, DuckStation sẽ theo dõi các thành tích chưa được nâng hạng. Thành tích mở khóa sẽ được lưu cục bộ và không gửi lên RetroAchievements.</translation>
+    </message>
+    <message>
         <source>Logged in since %s</source>
         <comment>settings_achievements_logged_in_since</comment>
         <translation>Đăng nhập từ %s</translation>
+    </message>
+    <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Bạn đã mở khóa %1$d/%2$d thành tích chưa được nâng hạng, nhận %3$d/%4$d điểm có thể đạt.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>Chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>Đặt lại trạng thái mở khóa thành tích chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>Trạng thái mở khóa của &apos;%1$s&apos; sẽ bị xóa. Không thể hoàn tác thao tác này.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>Đã đặt lại trạng thái mở khóa thành tích chưa được nâng hạng.</translation>
     </message>
     <message>
         <source>Skip</source>
@@ -4809,6 +4819,16 @@ Bạn có thể thay đổi sau bằng tùy chọn &quot;Khởi động ở ch�
         <translation>Bật gỡ lỗi khi API kết xuất của thiết bị chủ hỗ trợ. Chỉ dành cho nhà phát triển.</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>Dùng xác thực bằng GPU</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>Bật xác thực bằng GPU nếu API kết xuất trên máy tính đang chạy DuckStation hỗ trợ tính năng này. Chỉ dành cho nhà phát triển.</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>Ưu tiên ngữ cảnh OpenGL ES</translation>
@@ -5236,9 +5256,39 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Tác giả: %1$s</translation>
     </message>
     <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>Không khả dụng khi chế độ Hardcore của RetroAchievements đang bật.</translation>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Thay đổi dung lượng RAM được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm RAM.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>VRAM đã lắp</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>Thay đổi dung lượng VRAM được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm VRAM.</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>Tua nhanh khi tải</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>Tua nhanh khi game ngừng cập nhật màn hình trong lúc đọc đĩa. Không áp dụng cho màn hình tải có hoạt ảnh.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>Điều chỉnh thời gian chờ khi nhàn rỗi</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>Ngăn game hết thời gian chờ khi đợi khoảng trống quét dọc trong lúc ép xung.</translation>
     </message>
     <message>
         <source>Add</source>
@@ -6193,6 +6243,11 @@ Trò chơi nhiều rãnh ở định dạng bin cần có tệp mô tả rãnh (
         <translation>Chạm vào nửa bên trái màn hình sẽ đặt cần trái dưới ngón tay thay vì ở một vị trí cố định.</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>Không khả dụng khi chế độ Hardcore của RetroAchievements đang bật.</translation>
+    </message>
+    <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
         <comment>game_list_download_covers_description</comment>
         <translation>DuckStation có thể tự động tải ảnh bìa cho những trò chơi chưa được đặt ảnh bìa. Tùy theo pháp luật tại nơi bạn sống, ảnh bìa trò chơi có thể được bảo hộ bản quyền. Bạn chỉ được phép sử dụng công cụ này với máy chủ và hình ảnh của riêng mình; chúng tôi không cung cấp máy chủ hay hình ảnh.</translation>
@@ -6754,34 +6809,9 @@ ${serial}: Mã sê-ri của trò chơi.</translation>
         <translation>Chọn phần trăm tốc độ xung nhịp bình thường mà phần cứng giả lập sẽ chạy.</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>Bật RAM 8MB</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>Bật thêm 6MB RAM để đạt tổng cộng 2+6 = 8MB, thường có trên máy chơi game dành cho nhà phát triển.</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>RAM đã lắp</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>RAM mở rộng có thể khiến trò chơi không hoạt động, vì vậy chỉ sử dụng với các bản mod tương thích.</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>Buộc ánh xạ toàn bộ RAM</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>Ánh xạ toàn bộ RAM đã lắp bất kể cấu hình BIOS hoặc trò chơi.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -7359,6 +7389,16 @@ Bạn có muốn nhập ngay không?</translation>
         <translation>Truy cập bộ nhớ nhanh cho bộ biên dịch lại</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>Bật tua nhanh vòng lặp nhàn rỗi của trình biên dịch lại</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>Bỏ qua vòng lặp chờ bận mà game dùng để đợi khoảng trống quét dọc.</translation>
+    </message>
+    <message>
         <source>Enable Recompiler ICache</source>
         <comment>settings_recompiler_icache</comment>
         <translation>Bật ICache cho bộ biên dịch lại</translation>
@@ -7887,6 +7927,11 @@ Bạn có muốn nhập ngay không?</translation>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>Những người bạn hồng</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>Touchscreen Press</source>
@@ -8587,16 +8632,12 @@ Bạn có thể cập nhật DuckStation thủ công bằng cách tải lại b�
         <translation>Làm mới danh sách</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Duyệt...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Mở...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Đặt lại</translation>
     </message>
     <message>
         <source>Parallel Port</source>
@@ -8872,12 +8913,8 @@ Bản trích xuất của bạn có thể bị hỏng hoặc đĩa vật lý b�
         <translation>Duyệt...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Mở...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Đặt lại</translation>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9255,6 +9292,10 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>RAM được cài đặt:</translation>
     </message>
     <message>
+        <source>Installed VRAM:</source>
+        <translation>VRAM đã lắp:</translation>
+    </message>
+    <message>
         <source>Fast Boot</source>
         <translation>Khởi động nhanh</translation>
     </message>
@@ -9267,8 +9308,8 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Tua nhanh khi khởi động</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Buộc ánh xạ toàn bộ RAM</translation>
+        <source>Fast Forward While Loading</source>
+        <translation>Tua nhanh khi tải</translation>
     </message>
     <message>
         <source>CPU Emulation</source>
@@ -9289,6 +9330,10 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
     <message>
         <source>Enable Recompiler ICache</source>
         <translation>Bật bộ nhớ đệm lệnh của bộ biên dịch lại</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Điều chỉnh thời gian chờ khi nhàn rỗi</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -9355,24 +9400,8 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>6x</translation>
     </message>
     <message>
-        <source>Physical Drive Speed:</source>
-        <translation>Tốc độ ổ đĩa vật lý:</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>Không thay đổi</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
         <source>Preload Image to RAM</source>
         <translation>Nạp trước ảnh đĩa vào RAM</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>Bỏ qua mã phụ của ổ đĩa vật lý</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9415,20 +9444,28 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
         <translation>Tua nhanh khi truy cập thẻ nhớ, cả nạp và lưu. Có thể giảm thời gian chờ ở những trò chơi thường xuyên truy cập thẻ nhớ.</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Tua nhanh khi game ngừng cập nhật màn hình trong lúc đọc đĩa. Không áp dụng cho màn hình tải có hoạt ảnh.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>Thay đổi dung lượng RAM được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm RAM. Chế độ bắt buộc ánh xạ toàn bộ RAM đã lắp bất kể cấu hình game; cần thiết để dùng 16 MB với BIOS của các máy chơi game bán ra thị trường.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>VRAM đã lắp</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>Thay đổi dung lượng VRAM được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm VRAM. Chế độ bắt buộc cho phép truy cập ngân hàng VRAM thứ hai dù game có bật hay không.</translation>
+    </message>
+    <message>
         <source>Execution Mode</source>
         <translation>Chế độ thực thi</translation>
     </message>
     <message>
         <source>Installed RAM</source>
         <translation>RAM được cài đặt</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Thay đổi dung lượng RAM được cài đặt trong máy chơi game giả lập. Trò chơi phải dùng vùng nhớ heap lớn hơn mới có thể sử dụng RAM mở rộng. Những trò chơi phụ thuộc vào các vùng địa chỉ ánh xạ đến cùng một bộ nhớ có thể bị lỗi, vì vậy chỉ nên dùng tùy chọn này với các bản mod tương thích.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>Ánh xạ toàn bộ RAM được cài đặt, bất kể dung lượng do BIOS hoặc trò chơi cấu hình. BIOS của máy bán lẻ chỉ ánh xạ 8MB, nên cần bật tùy chọn này để sử dụng được 16MB mà không cần bản vá BIOS. Chỉ có tác dụng khi cài đặt RAM mở rộng.</translation>
     </message>
     <message>
         <source>Determines how the emulated CPU executes instructions.</source>
@@ -9453,6 +9490,14 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
     <message>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
         <translation>Mô phỏng thời gian chờ trong bộ biên dịch lại khi CPU được giả lập phải nạp lệnh vào bộ nhớ đệm. Giúp tốc độ khung hình của trò chơi gần với máy thật hơn, đổi lại hiệu năng giảm nhẹ. Chế độ thông dịch luôn mô phỏng bộ nhớ đệm lệnh.</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Đã chọn</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>Game ngừng chờ khoảng trống quét dọc sau một số vòng lặp cố định; khi ép xung, các vòng lặp này chạy nhanh hơn. Điều chỉnh thời gian chờ này để đồng bộ game với khoảng trống quét dọc.</translation>
     </message>
     <message>
         <source>CD-ROM Read Speedup</source>
@@ -9481,22 +9526,6 @@ Mã này sẽ không hoạt động như mong đợi. Bạn có muốn tiếp t�
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Tự động chuyển sang đĩa tiếp theo của trò chơi khi trò chơi dừng động cơ CD-ROM. Không chuyển nếu đã chọn đĩa cuối cùng. &lt;strong&gt;Không hoạt động với mọi trò chơi.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>Tốc độ ổ đĩa vật lý</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>Đặt tốc độ của ổ đĩa trên máy tính khi sử dụng đĩa vật lý. Tốc độ cao hơn có thể giảm giật, nhưng khiến ổ đĩa ồn hơn. Chọn “Không thay đổi” để giữ nguyên tốc độ của ổ đĩa. Không phải ổ đĩa nào cũng hỗ trợ tính năng này.</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Bỏ qua dữ liệu kênh phụ do ổ đĩa cung cấp khi dùng đĩa vật lý, thay vào đó luôn tự tạo dữ liệu kênh phụ. Không hoạt động với trò chơi libcrypt nhưng có thể cải thiện độ tin cậy khi đọc trên một số ổ đĩa.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -11504,16 +11533,12 @@ Tệp này có thể lên đến vài gigabyte, hãy lưu ý đến độ hao m�
         <translation>Bật truy cập bộ nhớ nhanh của trình biên dịch lại</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Bật tua nhanh vòng lặp nhàn rỗi của trình biên dịch lại</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>Phiên bản Mechacon CD-ROM</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>Số sector đọc trước của CD-ROM</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> sector</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -11967,6 +11992,105 @@ Nhấn Đặt lại sẽ khôi phục mã về giá trị quét được từ �
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>Thư mục bộ nhớ đệm</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>Dùng để lưu shader đã biên dịch, dữ liệu danh sách game và ảnh thành tích đã tải.</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>Thư mục mã gian lận</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>Lưu các tệp mã gian lận (.cht) bạn tạo hoặc nhập. Các tệp này được dùng cùng cơ sở dữ liệu mã gian lận tích hợp.</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>Thư mục ảnh bìa</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>Dùng để lưu ảnh bìa trong lưới game và giao diện Big Picture.</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>Thư mục biểu tượng game</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>Lưu biểu tượng danh sách game được trích xuất từ dữ liệu lưu trên thẻ nhớ. Có thể đặt tệp PNG mang số sê-ri của game tại đây để dùng biểu tượng tùy chỉnh.</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>Thư mục cài đặt game</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>Lưu tệp cài đặt riêng cho từng game, đặt tên theo số sê-ri game.</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>Thư mục hồ sơ đầu vào</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>Lưu hồ sơ đầu vào của tay cầm.</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>Thư mục bản vá</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>Lưu các tệp bản vá (.cht) bạn tạo hoặc nhập. Các tệp này được dùng cùng cơ sở dữ liệu bản vá tích hợp.</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>Thư mục shader</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>Tìm shader hậu xử lý: shader GLSL trong thư mục này, shader ReShade trong reshade/Shaders và preset Slang trong thư mục slang.</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>Thư mục kênh phụ</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>Tìm các tệp kênh phụ SBI/LSD cần thiết cho game được LibCrypt bảo vệ khi không thấy chúng cạnh ảnh đĩa.</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>Thư mục tài nguyên người dùng</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>Tệp đặt tại đây sẽ thay thế tài nguyên đi kèm. Thư mục này cũng dùng cho giao diện tùy chỉnh và hình nền Big Picture.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Duyệt...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>Chọn %1</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Mặc định</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>Change State</source>
@@ -12287,10 +12411,6 @@ Bạn có muốn xóa trạng thái lưu và vẫn khởi động trò chơi kh�
     <message>
         <source>All Time: {}</source>
         <translation>Tổng thời gian: {}</translation>
-    </message>
-    <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>Mọi tiến độ thành tích không chính thức của trò chơi hiện tại sẽ bị xóa. Không thể hoàn tác thao tác này.</translation>
     </message>
     <message>
         <source>Allow Booting Without SBI File</source>
@@ -12615,6 +12735,14 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Changes settings for the application.</source>
         <translation>Thay đổi cài đặt ứng dụng.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>Thay đổi dung lượng RAM được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm RAM.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>Thay đổi dung lượng bộ nhớ video được lắp trong máy chơi game mô phỏng. Game thương mại không dùng thêm VRAM.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
@@ -13273,6 +13401,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Bật bộ nhớ đệm lệnh của bộ biên dịch lại</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Bật tua nhanh vòng lặp nhàn rỗi của trình biên dịch lại</translation>
+    </message>
+    <message>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Bật ngoại lệ bộ nhớ của bộ biên dịch lại</translation>
     </message>
@@ -13337,12 +13469,68 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Bật ngoại lệ căn chỉnh và bus. Không cần thiết cho bất kỳ trò chơi nào đã biết.</translation>
     </message>
     <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Tua nhanh khi tải</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Tua nhanh khi game ngừng cập nhật màn hình trong lúc đọc đĩa. Không áp dụng cho màn hình tải có hoạt ảnh.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>VRAM đã lắp</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>Đặt lại trạng thái mở khóa thành tích chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>Đặt lại trạng thái mở khóa thành tích chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Điều chỉnh thời gian chờ khi nhàn rỗi</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>Bỏ qua vòng lặp chờ bận mà game dùng để đợi khoảng trống quét dọc.</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>Ngăn game hết thời gian chờ khi đợi khoảng trống quét dọc trong lúc ép xung.</translation>
+    </message>
+    <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Theo dõi thành tích chưa được nâng hạng</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>Đã đặt lại trạng thái mở khóa thành tích chưa được nâng hạng.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>Đã đặt lại trạng thái mở khóa các thành tích chưa được nâng hạng.</translation>
+    </message>
+    <message>
         <source>Web Cache Size: {0} ({1} in {2} objects)</source>
         <translation>Kích thước bộ nhớ đệm web: {0} ({1} trong {2} đối tượng)</translation>
     </message>
     <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Khi bật, DuckStation sẽ theo dõi các thành tích chưa được nâng hạng. Thành tích mở khóa sẽ được lưu cục bộ và không gửi lên RetroAchievements.</translation>
+    </message>
+    <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>Tăng độ chính xác của dữ liệu PGXP sau phép chiếu. Có thể cải thiện hình ảnh trong một số trò chơi. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi.</translation>
+    </message>
+    <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Toàn bộ tiến trình của các thành tích chưa được nâng hạng trong trò chơi hiện tại sẽ bị xóa. Không thể hoàn tác thao tác này.</translation>
     </message>
     <message>
         <source>Asks for each button and axis of this controller in turn.</source>
@@ -13351,10 +13539,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Bind All Buttons</source>
         <translation>Gán tất cả nút</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>Thay đổi dung lượng RAM được cài đặt trong máy chơi game giả lập.</translation>
     </message>
     <message>
         <source>Clear</source>
@@ -13561,10 +13745,6 @@ Lỗi:</translation>
     <message>
         <source>Force 4:3 For FMVs</source>
         <translation>Buộc 4:3 cho FMV</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Buộc ánh xạ toàn bộ RAM</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -14041,10 +14221,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Giúp trò chơi chạy gần tốc độ khung hình trên máy chơi game hơn, với một chút tổn thất hiệu suất.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>Ánh xạ toàn bộ RAM được cài đặt, bất kể dung lượng do BIOS hoặc trò chơi cấu hình. Cần bật để sử dụng 16MB với BIOS của máy bán lẻ.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -14673,14 +14849,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Reset Unlock</source>
         <translation>Đặt lại lượt mở khóa</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>Đặt lại thành tích không chính thức</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>Đặt lại lượt mở khóa thành tích không chính thức</translation>
     </message>
     <message>
         <source>Resets all configuration to defaults (including bindings).</source>
@@ -15555,10 +15723,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Rãnh</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Theo dõi thành tích không chính thức</translation>
-    </message>
-    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Đã sao chép mã băm rãnh vào bộ nhớ tạm.</translation>
     </message>
@@ -15597,14 +15761,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Unlimited</source>
         <translation>Không giới hạn</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>Đã đặt lại trạng thái mở khóa thành tích không chính thức.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>Đã đặt lại các trạng thái mở khóa thành tích không chính thức.</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -15793,10 +15949,6 @@ Bạn vẫn muốn {0} chứ?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Khi bật, DuckStation sẽ coi mọi thành tích là chưa mở khóa và không gửi thông báo mở khóa nào đến máy chủ.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Khi bật, DuckStation sẽ theo dõi thành tích không chính thức. Kết quả mở khóa được lưu cục bộ và không gửi đến RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -16183,12 +16335,12 @@ Bạn vẫn muốn {1} chứ?</translation>
         <translation>Dung lượng RAM:</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>Tắt kết xuất màn hình rộng</translation>
+        <source>VRAM Size:</source>
+        <translation>Dung lượng VRAM:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Buộc ánh xạ toàn bộ RAM</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Tắt kết xuất màn hình rộng</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16436,6 +16588,11 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Tắt tua nhanh khi truy cập thẻ nhớ</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Tắt tua nhanh khi tải</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Tắt tăng tốc đọc CD-ROM</translation>
@@ -16589,6 +16746,10 @@ Bạn có chắc muốn tiếp tục không?</translation>
     <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Đã tắt tua nhanh khi truy cập thẻ nhớ.</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>Đã tắt tua nhanh khi tải.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -17078,14 +17239,6 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Đường dẫn loại trừ (sẽ không được quét)</translation>
     </message>
     <message>
-        <source>File...</source>
-        <translation>Tệp...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>Thư mục...</translation>
-    </message>
-    <message>
         <source>Scan For New Games</source>
         <translation>Quét tìm trò chơi mới</translation>
     </message>
@@ -17094,8 +17247,40 @@ Bạn có chắc muốn tiếp tục không?</translation>
         <translation>Quét lại tất cả trò chơi</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>Thư mục tìm kiếm</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>Các thư mục sẽ được quét để tìm game. Bật Quét đệ quy để tìm cả thư mục con; thao tác lâu hơn nhưng tìm được game trong thư mục lồng nhau. Bạn cũng có thể kéo thư mục từ trình quản lý tệp vào đây.</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>Đường dẫn bị loại trừ</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>Các tệp và thư mục sẽ bị bỏ qua khi quét game, chẳng hạn ảnh bạn không muốn xuất hiện trong danh sách game. Bạn cũng có thể kéo tệp và thư mục từ trình quản lý tệp vào đây.</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>Quét các thư mục tìm kiếm để tìm tệp chưa có trong danh sách game. Game đã quét trước đó được tải từ bộ nhớ đệm nên thường khá nhanh.</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>Xóa bộ nhớ đệm danh sách game và quét lại mọi tệp trong thư mục tìm kiếm. Dùng tùy chọn này nếu thông tin như tên hoặc số sê-ri game không chính xác. Có thể mất thời gian với bộ sưu tập lớn.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Mở thư mục...</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Chưa có thư mục tìm kiếm. Thêm thư mục hoặc kéo thư mục vào đây để chọn nơi lưu game.</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>Chưa có đường dẫn bị loại trừ. Tệp hoặc thư mục thêm vào đây sẽ bị bỏ qua khi quét.</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -17777,16 +17962,12 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
         <translation>Thư mục để tải họa tiết thay thế và lưu dữ liệu trích xuất.</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Duyệt...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Mở...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Đặt lại</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -18151,10 +18332,6 @@ Quét đệ quy mất nhiều thời gian hơn nhưng sẽ phát hiện tệp tr
     <message>
         <source>Geometry Tolerance</source>
         <translation>Dung sai hình học</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00px (Đã tắt)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20335,6 +20512,10 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
         <translation>Cấu hình tùy chọn liên quan đến giao diện và cách hoạt động của ứng dụng.</translation>
     </message>
     <message>
+        <source>&amp;Folders</source>
+        <translation>&amp;Thư mục</translation>
+    </message>
+    <message>
         <source>Ad&amp;vanced</source>
         <translation>Nâng &amp;cao</translation>
     </message>
@@ -20913,6 +21094,10 @@ Giữ Shift và nhấp để đặt nhiều phép gán.</translation>
     <message>
         <source>Purple Rain</source>
         <translation>Mưa tím</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>QDarkStyle</source>
@@ -21812,8 +21997,8 @@ Lỗi: {1}</translation>
         <translation>Duyệt...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Mở...</translation>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
     </message>
     <message>
         <source>Select Memory Card Directory</source>
@@ -23195,10 +23380,6 @@ Lỗi: {1}</translation>
         <translation>Làm mới danh sách lớp phủ</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Có thể thêm viền đặt sẵn vào thư mục &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; bên trong thư mục dữ liệu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>Cấu hình tùy chỉnh</translation>
     </message>
@@ -23209,6 +23390,14 @@ Lỗi: {1}</translation>
     <message>
         <source>Browse...</source>
         <translation>Duyệt...</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>Thư mục lớp phủ:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23241,6 +23430,22 @@ Lỗi: {1}</translation>
     <message>
         <source>Export...</source>
         <translation>Xuất...</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>Chọn thư mục lớp phủ</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>Thư mục lớp phủ</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Mặc định</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>Lưu các preset lớp phủ viền bổ sung. Dùng Làm mới danh sách lớp phủ để tìm preset sau khi đổi thư mục này.</translation>
     </message>
     <message>
         <source>Image Path</source>
@@ -23892,12 +24097,20 @@ Bạn có muốn cập nhật lối tắt để trỏ đến vị trí hiện t�
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>Đã lưu {}</translation>
+        <source>Empty</source>
+        <translation>Trống</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>Không có bản lưu trong ô này.</translation>
+        <source>Save States</source>
+        <translation>Trạng thái lưu</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>Đang dùng {} trên {} ô lưu</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Đã lưu {}</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -23969,16 +24182,16 @@ Bạn có muốn cập nhật lối tắt để trỏ đến vị trí hiện t�
         <translation>Dùng cài đặt chung [%1]</translation>
     </message>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>Dùng cài đặt chung [Bật]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>Dùng cài đặt chung [Tắt]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>Chung: </translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>Mở thư mục</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Đặt lại về mặc định</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24120,24 +24333,54 @@ Bạn có muốn tạo thư mục này không?</translation>
         <translation>Không phải PS1</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB (Máy bán lẻ)</translation>
+        <translation>2 MB (Chuẩn)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB (Bo mạch máy arcade)</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB (Máy dành cho nhà phát triển)</translation>
+        <translation>4 MB (Bắt buộc)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB (Bản mod/Bo mạch máy arcade)</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Bắt buộc)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Bắt buộc)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB (Chuẩn)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB (Bắt buộc)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -24942,8 +25185,8 @@ Bạn có muốn tạo thư mục này không?</translation>
         <translation>Danh sách trò chơi</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Cài đặt danh sách trò chơi&lt;/strong&gt;&lt;hr&gt;Danh sách bên trên hiển thị các thư mục mà DuckStation sẽ tìm kiếm để tạo danh sách trò chơi. Có thể thêm, xóa và chuyển thư mục tìm kiếm sang chế độ đệ quy/không đệ quy.</translation>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;Cài đặt danh sách game&lt;/strong&gt;&lt;hr&gt;Các tùy chọn này kiểm soát thư mục nào được quét để tạo danh sách game.&lt;br&gt;&lt;br&gt;Di chuột lên tùy chọn để xem thông tin bổ sung.</translation>
     </message>
     <message>
         <source>BIOS</source>
@@ -25041,6 +25284,14 @@ Bạn có muốn tạo thư mục này không?</translation>
     <message>
         <source>&lt;strong&gt;Capture Settings&lt;/strong&gt;&lt;hr&gt;These options determine how screenshots and videos are captured by the application.</source>
         <translation>&lt;strong&gt;Cài đặt ghi hình&lt;/strong&gt;&lt;hr&gt;Các tùy chọn này quyết định cách ứng dụng chụp ảnh màn hình và quay video.</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <translation>Thư mục</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;Cài đặt thư mục&lt;/strong&gt;&lt;hr&gt;Các tùy chọn này kiểm soát nơi DuckStation đọc và lưu tệp.&lt;br&gt;&lt;br&gt;Di chuột lên tùy chọn để xem thông tin bổ sung; giữ Shift và lăn con lăn chuột để cuộn bảng này.</translation>
     </message>
     <message>
         <source>Advanced</source>
@@ -25210,10 +25461,6 @@ Bạn có muốn tiếp tục không?</translation>
         <translation>Duyệt...</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Đặt lại</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Nhật Bản):</translation>
     </message>
@@ -25226,8 +25473,8 @@ Bạn có muốn tiếp tục không?</translation>
         <translation>PAL (Châu Âu, Úc):</translation>
     </message>
     <message>
-        <source>Open in Explorer...</source>
-        <translation>Mở trong Explorer...</translation>
+        <source>More Options</source>
+        <translation>Tùy chọn khác</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -25496,6 +25743,10 @@ Mọi thay đổi đã được lưu và trình hướng dẫn sẽ chạy lại
         <translation>
             <numerusform>Tìm thấy %n ảnh BIOS. Bạn có thể cài thêm ảnh BIOS nếu muốn.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Chưa có thư mục tìm kiếm. Thêm thư mục hoặc kéo thư mục vào đây để chọn nơi lưu game.</translation>
     </message>
     <message>
         <source>Open Directory...</source>
@@ -25806,10 +26057,6 @@ Tên tệp SBI phải khớp tên ảnh đĩa.</translation>
         <translation>Đã đặt dung lượng RAM về mặc định.</translation>
     </message>
     <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>RAM mở rộng đang bật, điều này có thể không tương thích với một số trò chơi.</translation>
-    </message>
-    <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Đã chuyển sang ảnh con {} ({}) trong &apos;{}&apos;.</translation>
     </message>
@@ -25831,6 +26078,19 @@ Tên tệp SBI phải khớp tên ảnh đĩa.</translation>
         <translation>RAM mở rộng</translation>
     </message>
     <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>VRAM mở rộng</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>BIOS không xác định</translation>
+    </message>
+    <message>
+        <source>Physical Disc</source>
+        <translation>Đĩa vật lý</translation>
+    </message>
+    <message>
         <source>There is no next disc to switch to.</source>
         <translation>Không có đĩa tiếp theo để chuyển tới.</translation>
     </message>
@@ -25847,6 +26107,10 @@ Bạn phải lưu vào thẻ nhớ và đặt lại trò chơi để xóa mọi 
     <message>
         <source>Overclock disabled.</source>
         <translation>Đã tắt ép xung.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>Đã tắt VRAM 2 MB.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25975,6 +26239,14 @@ Bạn phải lưu vào thẻ nhớ và đặt lại trò chơi để xóa mọi 
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>Dung sai hình học PGXP không ở giá trị mặc định. Điều này có thể gây lỗi kết xuất.</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>Dung lượng RAM được đặt là {}, có thể không tương thích với một số game.</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>Dung lượng VRAM được đặt là {}, có thể không tương thích với một số game.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>

@@ -270,10 +270,6 @@ Do you want to enable hardcore mode?</source>
         <translation>成就的“挑战”模式，包括排行榜跟踪。禁用即时存档，金手指，和减速功能。</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>测试非官方成就</translation>
-    </message>
-    <message>
         <source>Enable Hardcore Mode</source>
         <translation>启用硬核模式</translation>
     </message>
@@ -294,6 +290,10 @@ Do you want to enable hardcore mode?</source>
         <translation>登出</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>追踪未晋级成就</translation>
+    </message>
+    <message>
         <source>Enable Sound Effects</source>
         <translation>启用声音效果</translation>
     </message>
@@ -304,10 +304,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Register</source>
         <translation>注册</translation>
-    </message>
-    <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>跟踪非官方成就</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -374,6 +370,14 @@ Do you want to enable hardcore mode?</source>
         <translation>当启用时，DuckStation将假定全部成就都被锁定，并且不会向服务器发送任何解锁通知。</translation>
     </message>
     <message>
+        <source>Test Unpromoted Achievements</source>
+        <translation>测试未晋级成就</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>启用后，DuckStation 会追踪未晋级成就。解锁记录会保存在本地，不会发送到 RetroAchievements。</translation>
+    </message>
+    <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>在开始，提交，或挑战排行榜失败时，显示弹出消息。</translation>
     </message>
@@ -396,10 +400,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Unchecked</source>
         <translation>未勾选</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>启用后，DuckStation 将跟踪非官方成就。解锁记录将保存在本地，不会发送到 RetroAchievements。</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -516,6 +516,10 @@ Token generated %2</source>
     <message>
         <source>Downloading achievements data...</source>
         <translation>正在下载成就数据...</translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <translation>未晋级</translation>
     </message>
     <message>
         <source>Achievement unlocks will not be submitted for this session.
@@ -674,10 +678,6 @@ We will keep trying to submit this request.</source>
         <translation> (硬核模式)</translation>
     </message>
     <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>您已解锁 {1} 项非官方成就中的 {0} 项，获得了总计 {3} 点中的 {2} 点。</translation>
-    </message>
-    <message>
         <source>Game was beaten {0}, and completed {1}.</source>
         <translation>游戏于 {0} 通关，并于 {1} 完成。</translation>
     </message>
@@ -718,10 +718,6 @@ We will keep trying to submit this request.</source>
         <translation>不支持</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <translation>非官方</translation>
-    </message>
-    <message>
         <source>Recently Unlocked</source>
         <translation>最近解锁</translation>
     </message>
@@ -732,10 +728,6 @@ We will keep trying to submit this request.</source>
     <message>
         <source>Almost There</source>
         <translation>近在咫尺</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>重置非官方解锁记录</translation>
     </message>
     <message>
         <source>XXX points</source>
@@ -887,8 +879,16 @@ Unread messages: {}</source>
         <translation>获胜条件</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>您已解锁 {1} 个未晋级成就中的 {0} 个，获得 {3} 分中的 {2} 分。</translation>
+    </message>
+    <message>
         <source>Change Selection</source>
         <translation>更改选择</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>重置未晋级成就解锁状态</translation>
     </message>
     <message>
         <source>View Details</source>
@@ -1024,14 +1024,6 @@ Unread messages: {}</source>
         <translation>在支持的平台上将消息记录到调试控制台。</translation>
     </message>
     <message>
-        <source>Select Cache Directory</source>
-        <translation>选择缓存目录</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>选择封面目录</translation>
-    </message>
-    <message>
         <source>Includes the elapsed time since the application start in window and console logs.</source>
         <translation>在窗口和控制台日志中包含本应用程序自启动以后经过的时间。</translation>
     </message>
@@ -1048,16 +1040,34 @@ Unread messages: {}</source>
         <translation>在显示区域右上角显示当前帧的编号。</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>默认</translation>
+        <source>Readahead Sectors</source>
+        <translation>预读扇区</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n 个扇区</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>指定用于存储已编译着色器和游戏列表数据的目录。</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>在工作线程中异步读取/解压 CD 数据，以减少模拟卡顿。</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>指定用于存储游戏网格和大视画UI所用游戏封面图像的目录。</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>物理光驱速度</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>使用实体光盘时设置主机光驱速度。提高速度可减少卡顿，但会增加光驱噪声。选择“不更改”可保持光驱自身速度。并非所有光驱都支持此功能。</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>使用实体光盘时忽略光驱提供的子码，改为始终生成子码数据。此功能不适用于 LibCrypt 游戏，但可提高部分光驱的读取可靠性。</translation>
     </message>
     <message>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
@@ -1116,32 +1126,32 @@ Unread messages: {}</source>
         <translation>启用RAIntegration</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>缓存目录</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>CD-ROM 模拟</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>用于存储已编译着色器和游戏列表数据。</translation>
+        <source>Readahead Sectors:</source>
+        <translation>预读扇区：</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>浏览…</translation>
+        <source> sectors</source>
+        <translation> 个扇区</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>打开…</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>物理光驱速度：</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>重置</translation>
+        <source>Don&apos;t Change</source>
+        <translation>不更改</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>封面目录</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>用于存放游戏网格/大视画UI的封面。</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>忽略物理光驱子码</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -2192,6 +2202,16 @@ Current Binding: %s</source>
         <translation>安全检查失败</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>追踪未晋级成就</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>启用后，DuckStation 会追踪未晋级成就。解锁记录会保存在本地，不会发送到 RetroAchievements。</translation>
+    </message>
+    <message>
         <source>Not Logged In.</source>
         <comment>settings_achievements_not_logged_in</comment>
         <translation>未登录。</translation>
@@ -2296,14 +2316,6 @@ Current Binding: %s</source>
             <numerusform>您已解锁此子集的全部成就，并获得了 %1$d 点！</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>您已解锁 %2$d 项非官方成就中的 %1$d 项，获得了 %4$d 点可得分数中的 %3$d 点。</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Game was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_game_beaten_completed_format_string</comment>
@@ -2365,11 +2377,6 @@ Current Binding: %s</source>
         <translation>获胜条件</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>非官方</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>在RetroAchievements上打开</translation>
@@ -2388,21 +2395,6 @@ Current Binding: %s</source>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>重置解锁记录</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>重置非官方成就</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>将移除“%1$s”的解锁状态。此操作无法撤销。</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>非官方成就解锁记录已重置。</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3302,6 +3294,11 @@ Current Binding: %s</source>
         <translation>禁用全部</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>RetroAchievements 硬核模式启用时不可用。</translation>
+    </message>
+    <message>
         <source>Add</source>
         <comment>cheat_codes_add</comment>
         <translation>添加</translation>
@@ -3380,6 +3377,51 @@ Current Binding: %s</source>
         <source>Global Setting</source>
         <comment>preference_reset_global_value</comment>
         <translation>全局设置</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>更改模拟主机中安装的 RAM 容量。零售版游戏不会使用额外 RAM。</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>已安装 VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>更改模拟主机中安装的 VRAM 容量。零售版游戏不会使用额外 VRAM。</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>加载时快进</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>游戏从光盘读取数据且停止更新画面时加速运行。不适用于动画加载画面。</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>缩放空闲超时</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>超频时，防止游戏等待垂直消隐期间超时。</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>启用重编译器空闲循环快进</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>跳过游戏用于等待垂直消隐的忙等循环。</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
@@ -3490,6 +3532,11 @@ Current Binding: %s</source>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>小粉红</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -4417,16 +4464,6 @@ Current Binding: %s</source>
         <translation>启动游戏时下载所有尚未解锁的成就徽章，缩短解锁成就时显示图像的延迟。</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>跟踪非官方成就</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>启用后，DuckStation 将跟踪非官方成就。解锁记录将保存在本地，不会发送到 RetroAchievements。</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>测试 RetroAchievements 离线模式</translation>
@@ -4452,12 +4489,40 @@ Current Binding: %s</source>
         <translation>登录时间：%s</translation>
     </message>
     <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>已解锁 %2$d 项未晋级成就中的 %1$d 项，获得 %3$d 分（满分 %4$d 分）。</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
         <translation>
             <numerusform>DuckStation 不支持 %1$d 项成就，无法解锁这些成就。</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>未晋级</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>重置未晋级成就解锁状态</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>将移除“%1$s”的解锁状态。此操作无法撤销。</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>已重置未晋级成就解锁状态。</translation>
     </message>
     <message>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
@@ -5154,6 +5219,16 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>当本机的渲染器API支持时启用调试。仅供开发人员使用。</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>使用基于 GPU 的验证</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>当主机渲染器 API 支持时启用基于 GPU 的验证。仅供开发者使用。</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>优先选择OpenGL ES上下文</translation>
@@ -5574,11 +5649,6 @@ Are you sure you want to continue?</source>
         <source>Author: %1$s</source>
         <comment>patch_codes_author</comment>
         <translation>作者：%1$s</translation>
-    </message>
-    <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>RetroAchievements 硬核模式启用时不可用。</translation>
     </message>
     <message>
         <source>Search codes</source>
@@ -6570,34 +6640,9 @@ ${serial}：游戏序列号。</translation>
         <translation>选择模拟硬件运行时的主频相对于正常主频的百分比。</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>启用8MB内存</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>已安装的内存</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>扩展内存可能导致游戏无法正常运行，请仅配合兼容的模组使用。</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>强制映射全部内存</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>无论 BIOS 或游戏如何配置，都映射全部已安装的内存。</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8659,14 +8704,6 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>NTSC-U/C (美国/加拿大):</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>打开…</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>重置</translation>
-    </message>
-    <message>
         <source>Parallel Port</source>
         <translation>并行接口</translation>
     </message>
@@ -8705,6 +8742,10 @@ You can manually update DuckStation by re-downloading the latest release. Do you
     <message>
         <source>Refresh List</source>
         <translation>刷新列表</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -8872,12 +8913,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>浏览…</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>打开…</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>重置</translation>
+        <source>More Options</source>
+        <translation>更多选项</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9243,6 +9280,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>100% (33.87MHz)</translation>
     </message>
     <message>
+        <source>Scale Idle Timeout</source>
+        <translation>缩放空闲超时</translation>
+    </message>
+    <message>
         <source>2x</source>
         <translation>2x</translation>
     </message>
@@ -9261,22 +9302,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed:</source>
-        <translation>物理光驱速度：</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>不更改</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>忽略物理光驱子码</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -9315,36 +9340,16 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>以快进方式通过记忆卡访问，包括加载和保存。可以减少频繁访问记忆卡的游戏的等待时间。</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>游戏从光盘读取数据且停止更新画面时加速运行。不适用于动画加载画面。</translation>
+    </message>
+    <message>
         <source>Installed RAM</source>
         <translation>已安装 RAM</translation>
     </message>
     <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>更改模拟主机安装的 RAM 容量。游戏必须使用更大的堆，才能利用扩展 RAM。依赖内存镜像的游戏可能会出错，因此仅应在使用兼容的模组时启用。</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>映射所有已安装的 RAM，忽略 BIOS 或游戏配置的容量。零售版 BIOS 仅映射 8MB，因此在不修改 BIOS 的情况下，要使用 16MB RAM 就需要启用此选项。仅在安装了扩展 RAM 时生效。</translation>
-    </message>
-    <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的下一张光盘。如果已经选择了游戏中的最后一张光盘，则不会进行切换。&lt;strong&gt;并非对所有游戏都有效。&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>物理光驱速度</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>设置使用实体光盘时宿主机光驱的速度。较高的速度可以减少卡顿，但会使光驱噪声增大。选择“不更改”可保持光驱原有速度。并非所有光驱都支持此设置。</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>忽略使用物理光盘时驱动器提供的子通道，而始终生成子通道数据。不可用于libcrypt游戏，但能提高某些驱动器的读取可靠性。</translation>
     </message>
     <message>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
@@ -9365,6 +9370,26 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Frame Rate</source>
         <translation>帧率</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>更改模拟主机中安装的 RAM 容量。零售版游戏不会使用额外 RAM。强制模式会忽略游戏配置并映射所有已安装的 RAM；使用零售版 BIOS 时，启用 16 MB 需要此设置。</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>已安装 VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>更改模拟主机中安装的 VRAM 容量。零售版游戏不会使用额外 VRAM。强制模式会开放第二个 VRAM 区块，无论游戏是否启用该区块。</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>已选中</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>游戏在经过固定次数的循环迭代后会停止等待垂直消隐；超频时循环速度更快。缩放此超时时间可使游戏与垂直消隐保持同步。</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -9471,6 +9496,10 @@ This warning will only be shown once.</source>
         <translation>读取加速:</translation>
     </message>
     <message>
+        <source>Installed VRAM:</source>
+        <translation>已安装 VRAM：</translation>
+    </message>
+    <message>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
@@ -9491,16 +9520,16 @@ This warning will only be shown once.</source>
         <translation>已安装 RAM：</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>强制映射全部 RAM</translation>
-    </message>
-    <message>
         <source>Apply Image Patches</source>
         <translation>应用镜像补丁</translation>
     </message>
     <message>
         <source>Seek Speedup:</source>
         <translation>寻道加速:</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>加载时快进</translation>
     </message>
     <message>
         <source>3x (6x Speed)</source>
@@ -11504,16 +11533,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>启用重新编译器快速内存访问</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>启用重编译器空闲循环快进</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>CD-ROM机械控制器版本</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>CD-ROM预读扇区</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> 扇区</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -11967,6 +11992,105 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>缓存目录</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>用于存储已编译的着色器、游戏列表数据和下载的成就图片。</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>作弊目录</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>存储你创建或导入的作弊文件（.cht）。这些文件会与内置作弊数据库一同使用。</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>封面目录</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>用于存储游戏网格和 Big Picture 界面中的封面。</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>游戏图标目录</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>存储从记忆卡存档中提取的游戏列表图标。也可将以游戏序列号命名的 PNG 放在此处作为自定义图标。</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>游戏设置目录</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>存储按游戏序列号命名的单独游戏设置文件。</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>输入配置目录</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>存储控制器输入配置。</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>补丁目录</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>存储你创建或导入的补丁文件（.cht）。这些文件会与内置补丁数据库一同使用。</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>着色器目录</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>搜索后处理着色器：此目录中的 GLSL 着色器、reshade/Shaders 中的 ReShade 着色器，以及 slang 中的预设。</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>子通道目录</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>光盘映像旁未找到所需文件时，在此搜索 LibCrypt 保护游戏所需的 SBI/LSD 子通道文件。</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>用户资源目录</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>放在此处的文件会覆盖内置资源。此目录也用于自定义主题和 Big Picture 背景。</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>选择 %1</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>默认</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>1x</source>
@@ -12029,6 +12153,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>高级渲染选项</translation>
     </message>
     <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>当前游戏的所有未晋级成就进度都将被移除。此操作无法撤销。</translation>
+    </message>
+    <message>
         <source>Alpha Blending</source>
         <translation>Alpha混合</translation>
     </message>
@@ -12075,6 +12203,14 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Changes settings for the application.</source>
         <translation>更改本应用程序的设置。</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>更改模拟主机中安装的 RAM 容量。零售版游戏不会使用额外 RAM。</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>更改模拟主机中安装的显存容量。零售版游戏不会使用额外 VRAM。</translation>
     </message>
     <message>
         <source>Chooses the language used for UI elements.</source>
@@ -12133,6 +12269,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>启用金手指</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>启用重编译器空闲循环快进</translation>
+    </message>
+    <message>
         <source>Enter Value</source>
         <translation>输入值</translation>
     </message>
@@ -12147,6 +12287,14 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
         <translation>退出大视画模式，回到本软件的桌面界面。</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>加载时快进</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>游戏从光盘读取数据且停止更新画面时加速运行。不适用于动画加载画面。</translation>
     </message>
     <message>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
@@ -12205,6 +12353,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>热键</translation>
     </message>
     <message>
+        <source>Installed VRAM</source>
+        <translation>已安装 VRAM</translation>
+    </message>
+    <message>
         <source>Internal Resolution</source>
         <translation>内部分辨率</translation>
     </message>
@@ -12243,6 +12395,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Merges multi-disc games into one item in the game list.</source>
         <translation>在游戏列表中将多光盘游戏合并为一个项目。</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>Multitap</source>
@@ -12347,10 +12503,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games. Automatic uses the game database setting.</source>
         <translation>提高投影后 PGXP 数据的精度。可能改善某些游戏的画面效果。选择“自动”时使用游戏数据库中的设置。</translation>
-    </message>
-    <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>将删除当前游戏的所有非官方成就进度。此操作无法撤销。</translation>
     </message>
     <message>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
@@ -12491,10 +12643,6 @@ You cannot undo this action.</source>
     <message>
         <source>Change Title</source>
         <translation>更改标题</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>更改模拟主机安装的 RAM 容量。</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -12773,10 +12921,6 @@ You cannot undo this action.</source>
         <translation>退出</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>强制映射全部 RAM</translation>
-    </message>
-    <message>
         <source>Frame Rate</source>
         <translation>帧率</translation>
     </message>
@@ -12787,10 +12931,6 @@ You cannot undo this action.</source>
     <message>
         <source>List Icons</source>
         <translation>列表图标</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>映射所有已安装的 RAM，忽略 BIOS 或游戏配置的容量。使用零售版 BIOS 时，要使用 16MB RAM 就需要启用此选项。</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -12823,6 +12963,14 @@ You cannot undo this action.</source>
     <message>
         <source>Reset SPU On Game Start</source>
         <translation>游戏启动时重置SPU</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>重置未晋级成就解锁状态</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>重置未晋级成就解锁状态</translation>
     </message>
     <message>
         <source>Resets the SPU when the game starts, removing leftover BIOS reverb echoes in games that do not initialize it. Has no effect when fast booting.</source>
@@ -12953,12 +13101,24 @@ You cannot undo this action.</source>
         <translation>顶: </translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>追踪未晋级成就</translation>
+    </message>
+    <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>尝试检测FMV并在不使用XA串流音讯的游戏中停用读取加速功能。</translation>
     </message>
     <message>
         <source>Ungrouped</source>
         <translation>未分组</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>已重置未晋级成就解锁状态。</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>已重置未晋级成就解锁状态。</translation>
     </message>
     <message>
         <source>Update Progress</source>
@@ -13019,6 +13179,10 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>当启动大视画模式时，将会显示游戏列表而非主菜单。</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>启用后，DuckStation 会追踪未晋级成就。解锁记录会保存在本地，不会发送到 RetroAchievements。</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -15059,14 +15223,6 @@ Please check your username and password, and try again.</source>
         <translation>重置解锁记录</translation>
     </message>
     <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>重置非官方成就</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>重置非官方成就解锁记录</translation>
-    </message>
-    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>将所有设置重置为默认值。</translation>
     </message>
@@ -15161,6 +15317,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Saves supported controllers by serial or device identity so bindings survive port and connection-order changes when possible.</source>
         <translation>通过序列号或设备身份信息保存受支持的控制器，以便在端口或连接顺序发生变化时尽可能保留绑定。</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>缩放空闲超时</translation>
     </message>
     <message>
         <source>Scaled Interlacing</source>
@@ -15383,6 +15543,10 @@ Please check your username and password, and try again.</source>
         <translation>跳过重复帧显示</translation>
     </message>
     <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>跳过游戏用于等待垂直消隐的忙等循环。</translation>
+    </message>
+    <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>跳过非唯一的帧呈现/显示。可能导致帧间距变差。</translation>
     </message>
@@ -15445,6 +15609,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Step {} of {}</source>
         <translation>第 {} 步，共 {} 步</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>超频时，防止游戏等待垂直消隐期间超时。</translation>
     </message>
     <message>
         <source>Stores the current settings to a controller preset.</source>
@@ -15523,20 +15691,8 @@ Please check your username and password, and try again.</source>
         <translation>轨道</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>跟踪非官方成就</translation>
-    </message>
-    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>轨道哈希值已复制到剪贴板。</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>非官方成就解锁记录已重置。</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>非官方成就解锁记录已重置。</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -15605,10 +15761,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Web cache cleared.</source>
         <translation>网络缓存已清除。</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>启用后，DuckStation 将跟踪非官方成就。解锁记录将保存在本地，不会发送到 RetroAchievements。</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -16183,12 +16335,12 @@ Do you want to {1} anyway?</source>
         <translation>RAM 容量：</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>禁用宽屏渲染</translation>
+        <source>VRAM Size:</source>
+        <translation>VRAM 大小：</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>强制映射全部 RAM</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>禁用宽屏渲染</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16437,6 +16589,11 @@ Are you sure you want to continue?</source>
         <translation>禁用多接头</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>加载时禁用快进</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用CD-ROM读取加速</translation>
@@ -16573,6 +16730,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Multitap disabled.</source>
         <translation>多接头已禁用。</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>已禁用加载时快进。</translation>
     </message>
     <message>
         <source>Hardware rendering disabled.</source>
@@ -17066,8 +17227,40 @@ Are you sure you want to continue?</source>
         <translation>添加</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>搜索目录</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>扫描这些目录以查找游戏。启用递归扫描还会搜索子目录，耗时更长，但能找到嵌套文件夹中的游戏。也可从文件管理器将文件夹拖到此处。</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>排除路径</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>扫描游戏时跳过的文件和目录，例如不想显示在游戏列表中的图片。也可从文件管理器将文件或文件夹拖到此处。</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>扫描搜索目录中尚未列入游戏列表的文件。以前扫描过的游戏会从缓存加载，因此通常很快。</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>清除游戏列表缓存，并重新扫描搜索目录中的所有文件。如果游戏标题或序列号等信息不正确，请使用此选项。大型游戏库可能需要一些时间。</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>打开目录…</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>没有搜索目录。添加文件夹或将文件夹拖到此处，以选择游戏的存储位置。</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>没有排除路径。添加到此处的文件或文件夹将在扫描时跳过。</translation>
     </message>
     <message>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
@@ -17100,14 +17293,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Remove</source>
         <translation>删除</translation>
-    </message>
-    <message>
-        <source>File...</source>
-        <translation>文件...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>文件夹...</translation>
     </message>
     <message>
         <source>Rescan All Games</source>
@@ -17693,6 +17878,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>FMV缩放:</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <translation>优先选择OpenGL ES上下文</translation>
     </message>
@@ -17769,10 +17958,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>纹理目录</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>打开…</translation>
-    </message>
-    <message>
         <source>Directory to load replacement textures from, and save dumps to.</source>
         <translation>用于加载替换纹理，以及保存转储的目录。</translation>
     </message>
@@ -17839,10 +18024,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Browse...</source>
         <translation>浏览…</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>重置</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -18091,10 +18272,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Geometry Tolerance</source>
         <translation>几何公差</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00px (禁用)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20299,6 +20476,10 @@ This action cannot be undone.</source>
         <translation>小粉红</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>Grey Matter</source>
         <translation>灰质</translation>
     </message>
@@ -20633,6 +20814,10 @@ This action cannot be undone.</source>
     <message>
         <source>Configures options related to RetroAchievements.</source>
         <translation>配置与RetroAchievements相关的选项。</translation>
+    </message>
+    <message>
+        <source>&amp;Folders</source>
+        <translation>文件夹(&amp;F)</translation>
     </message>
     <message>
         <source>TTY Window</source>
@@ -21796,10 +21981,6 @@ Error: {1}</source>
         <translation>选择记忆卡文件的路径</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>打开…</translation>
-    </message>
-    <message>
         <source>Select Memory Card Directory</source>
         <translation>选择记忆卡目录</translation>
     </message>
@@ -21834,6 +22015,10 @@ Error: {1}</source>
     <message>
         <source>Memory Cards:</source>
         <translation>记忆卡:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
     </message>
     <message>
         <source>Memory Cards Location</source>
@@ -23195,10 +23380,6 @@ Error: {1}</source>
         <translation>刷新覆盖层列表</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;可将更多预设边框添加到数据目录中的 &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; 文件夹。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>自定义配置</translation>
     </message>
@@ -23209,6 +23390,14 @@ Error: {1}</source>
     <message>
         <source>Browse...</source>
         <translation>浏览…</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>覆盖层目录：</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23253,6 +23442,22 @@ Error: {1}</source>
     <message>
         <source>Image Path</source>
         <translation>图像路径</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>选择覆盖层目录</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>覆盖层目录</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>默认</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>存储其他边框覆盖层预设。更改此目录后，使用“刷新覆盖层列表”查找预设。</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -23884,12 +24089,20 @@ Would you like to update the shortcut to point to the current location?</source>
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>保存时间：{}</translation>
+        <source>Empty</source>
+        <translation>空</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>此档位中没有存档。</translation>
+        <source>Save States</source>
+        <translation>即时存档</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>已使用 {} / {} 个槽位</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>保存时间：{}</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -23969,16 +24182,16 @@ Would you like to update the shortcut to point to the current location?</source>
         <translation>使用全局设置 [%1]</translation>
     </message>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>使用全局设置 [启用]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>使用全局设置 [禁用]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>全局：</translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>打开文件夹</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>重置为默认值</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24105,24 +24318,54 @@ Do you want to create this directory?</source>
         <translation>非PS1</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB（零售版主机）</translation>
+        <translation>2 MB（标准）</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB（街机主板）</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB（开发版主机）</translation>
+        <translation>4 MB（强制）</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB（模组/街机主板）</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB（强制）</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB（强制）</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB（标准）</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB（强制）</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -24934,10 +25177,6 @@ Do you want to create this directory?</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;游戏列表设置&lt;/strong&gt;&lt;hr&gt;上面的列表显示了DuckStation即将搜索的目录，用于其构成游戏列表。搜索目录可以添加、删除，并切换为深度搜索/非深度搜索。</translation>
-    </message>
-    <message>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -24960,6 +25199,10 @@ Do you want to create this directory?</source>
     <message>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;界面设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的外观和行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;游戏列表设置&lt;/strong&gt;&lt;hr&gt;这些选项用于控制扫描哪些目录以填充游戏列表。&lt;br&gt;&lt;br&gt;将鼠标悬停在选项上可查看更多信息。</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25021,6 +25264,14 @@ Do you want to create this directory?</source>
     <message>
         <source>&lt;strong&gt;Capture Settings&lt;/strong&gt;&lt;hr&gt;These options determine how screenshots and videos are captured by the application.</source>
         <translation>&lt;strong&gt;捕获设置&lt;/strong&gt;&lt;hr&gt;这些选项确定应用程序捕获屏幕截图和视频的方式。</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <translation>文件夹</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;文件夹设置&lt;/strong&gt;&lt;hr&gt;这些选项用于控制 DuckStation 读取和存储文件的位置。&lt;br&gt;&lt;br&gt;将鼠标悬停在选项上可查看更多信息；按住 Shift 并滚动鼠标滚轮可滚动此面板。</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25134,16 +25385,8 @@ Do you want to continue?</source>
         <translation>自动映射</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>重置</translation>
-    </message>
-    <message>
         <source>Open Directory...</source>
         <translation>打开目录…</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>在文件资源管理器打开…</translation>
     </message>
     <message>
         <source>Are you sure you want to cancel DuckStation setup?
@@ -25216,6 +25459,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Install BIOS...</source>
         <translation>安装 BIOS……</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>更多选项</translation>
     </message>
     <message>
         <source>Default (Keyboard)</source>
@@ -25454,6 +25701,10 @@ Are you sure you wish to continue without selecting a BIOS image?</source>
         </translation>
     </message>
     <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>没有搜索目录。添加文件夹或将文件夹拖到此处，以选择游戏的存储位置。</translation>
+    </message>
+    <message>
         <source>Open Pause Menu</source>
         <translation>打开暂停菜单</translation>
     </message>
@@ -25618,6 +25869,11 @@ Are you sure you want to continue?</source>
         <comment>Taint</comment>
         <translation>游戏补丁</translation>
     </message>
+    <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>扩展 VRAM</translation>
+    </message>
     <message numerus="yes">
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
@@ -25635,6 +25891,10 @@ Configuration: {1}%</source>
         <translation>即时存档与当前配置不匹配。
 即时存档: {0}%
 配置: {1}%</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>未知 BIOS</translation>
     </message>
     <message>
         <source>System is not in correct state.</source>
@@ -25659,6 +25919,14 @@ Using current CD image, this may result in instability.</source>
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP几何公差未设置为默认值。这可能会导致渲染错误。</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>RAM 大小设为 {}，这可能与某些游戏不兼容。</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>VRAM 大小设为 {}，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
         <source>One or more unsafe settings is enabled.</source>
@@ -25851,6 +26119,10 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <translation>记忆卡已切换至{}。</translation>
     </message>
     <message>
+        <source>Physical Disc</source>
+        <translation>实体光盘</translation>
+    </message>
+    <message>
         <source>No valid game is running.</source>
         <translation>没有正在运行的有效游戏。</translation>
     </message>
@@ -25863,6 +26135,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Overclock disabled.</source>
         <translation>超频已禁用。</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>2 MB VRAM 已禁用。</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25959,10 +26235,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Reset SPU on game start disabled.</source>
         <translation>已禁用游戏启动时重置SPU。</translation>
-    </message>
-    <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>已启用扩展 RAM，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>

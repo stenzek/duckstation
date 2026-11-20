@@ -146,6 +146,10 @@ Do you want to enable hardcore mode?</source>
         <translation>Увімкнути досягнення</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Відстежувати неофіційні досягнення</translation>
+    </message>
+    <message>
         <source>Enable Sound Effects</source>
         <translation>Увімкнути звукові ефекти</translation>
     </message>
@@ -160,10 +164,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Enable Spectator Mode</source>
         <translation>Увімкнути режим спостерігача</translation>
-    </message>
-    <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Тестувати неофіційні досягнення</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -226,10 +226,6 @@ Do you want to enable hardcore mode?</source>
         <translation>Увімкнути режим «Encore»</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Відстежувати неофіційні досягнення</translation>
-    </message>
-    <message>
         <source>Notifications</source>
         <translation>Сповіщення</translation>
     </message>
@@ -256,6 +252,14 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>Якщо увімкнено та виконано вхід, DuckStation шукатиме досягнення під час запуску.</translation>
+    </message>
+    <message>
+        <source>Test Unpromoted Achievements</source>
+        <translation>Перевірити неофіційні досягнення</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
@@ -288,10 +292,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source> seconds</source>
         <translation> сек.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -608,6 +608,10 @@ We will keep trying to submit this request.</source>
         <translation>Обмеження більше не діють.</translation>
     </message>
     <message>
+        <source>Unpromoted</source>
+        <translation>Неофіційне</translation>
+    </message>
+    <message>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>Підтвердження вимкнення режиму «Хардкор»</translation>
     </message>
@@ -734,10 +738,6 @@ This session will start in offline mode.</source>
         <source>This subset has no achievements.</source>
         <translation>У цьому піднаборі немає досягнень.</translation>
     </message>
-    <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>Ви розблокували {0} із {1} неофіційних досягнень і заробили {2} із {3} можливих балів.</translation>
-    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -797,6 +797,10 @@ This session will start in offline mode.</source>
         <translation>Змінити вибір</translation>
     </message>
     <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>Скинути розблокування неофіційних досягнень</translation>
+    </message>
+    <message>
         <source>View Details</source>
         <translation>Переглянути деталі</translation>
     </message>
@@ -819,10 +823,6 @@ This session will start in offline mode.</source>
     <message>
         <source>Unsupported</source>
         <translation>Не підтримується</translation>
-    </message>
-    <message>
-        <source>Unofficial</source>
-        <translation>Неофіційний</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
@@ -959,6 +959,10 @@ This session will start in offline mode.</source>
         <translation>Ви розблокували {0} із {1} досягнень і заробили {2} із {3} можливих балів.</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>Ви розблокували {0} із {1} неофіційних досягнень і набрали {2} із {3} можливих балів.</translation>
+    </message>
+    <message>
         <source>Game was beaten {0}, and completed {1}.</source>
         <translation>Гру було пройдено {0} і повністю завершено {1}.</translation>
     </message>
@@ -981,10 +985,6 @@ This session will start in offline mode.</source>
     <message>
         <source>Subset was completed {0}.</source>
         <translation>Піднабір було повністю завершено {0}.</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>Скинути неофіційні розблокування</translation>
     </message>
     <message>
         <source>Unlocked {}</source>
@@ -1070,32 +1070,32 @@ This session will start in offline mode.</source>
         <translation>Увімкнути RAIntegration</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>Каталог кешу</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>Емуляція CD-ROM</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>Використовується для зберігання скомпілованих шейдерів та даних списку ігор.</translation>
+        <source>Readahead Sectors:</source>
+        <translation>Сектори попереднього читання:</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>Оглянути...</translation>
+        <source> sectors</source>
+        <translation> секторів</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Відкрити...</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>Швидкість фізичного дисковода:</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Скидання</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Не змінювати</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>Каталог обкладинок</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>Використовується для зберігання обкладинок у сітці ігор/інтерфейсі Big Picture.</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>Ігнорувати підканал фізичного дисковода</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1132,14 +1132,6 @@ This session will start in offline mode.</source>
     <message>
         <source>Log Level</source>
         <translation>Рівень журналування</translation>
-    </message>
-    <message>
-        <source>Select Cache Directory</source>
-        <translation>Вибрати каталог кешу</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>Вибрати каталог обкладинок</translation>
     </message>
     <message>
         <source>Information</source>
@@ -1194,16 +1186,36 @@ This session will start in offline mode.</source>
         <translation>Відображає номер поточного кадру у верхньому правому кутку екрана.</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>За замовчуванням</translation>
+        <source>Readahead Sectors</source>
+        <translation>Сектори попереднього читання</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n сектор</numerusform>
+            <numerusform>%n сектори</numerusform>
+            <numerusform>%n секторів</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>Вказує каталог, в якому зберігатимуться скомпіловані шейдери та дані списку ігор.</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>Зменшує затримки емуляції, асинхронно читаючи й розпаковуючи дані CD у робочому потоці.</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>Вказує каталог, в якому зберігатимуться зображення обкладинок ігор, що використовуються в ігровій сітці та інтерфейсі Big Picture.</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>Швидкість фізичного дисковода</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Задає швидкість дисковода комп&apos;ютера під час використання фізичних дисків. Вища швидкість може зменшити підгальмовування, але збільшує шум дисковода. Виберіть «Не змінювати», щоб дисковод працював на власній швидкості. Не всі дисководи це підтримують.</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>Під час використання фізичних дисків ігнорує підканал, наданий дисководом, і завжди створює дані підканалу. Не працює з іграми LibCrypt, але може підвищити надійність читання на деяких дисководах.</translation>
     </message>
     <message>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
@@ -2218,6 +2230,16 @@ Current Binding: %s</source>
         <translation>Перевірка безпеки не пройдена</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>Відстежувати неофіційні досягнення</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
+    </message>
+    <message>
         <source>Not Logged In.</source>
         <comment>settings_achievements_not_logged_in</comment>
         <translation>Не авторизовано.</translation>
@@ -2332,16 +2354,6 @@ Current Binding: %s</source>
             <numerusform>Ви розблокували всі досягнення в цьому наборі й отримали %1$d балів!</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень, отримавши %3$d із %4$d можливих балів.</numerusform>
-            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень, отримавши %3$d із %4$d можливих балів.</numerusform>
-            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень, отримавши %3$d із %4$d можливих балів.</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Game was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_game_beaten_completed_format_string</comment>
@@ -2403,11 +2415,6 @@ Current Binding: %s</source>
         <translation>Умова перемоги</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>Неофіційний</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>Відкрити на RetroAchievements</translation>
@@ -2426,21 +2433,6 @@ Current Binding: %s</source>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>Скинути розблокування</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>Скинути неофіційне досягнення</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>Стан розблокування «%1$s» буде видалено. Цю дію неможливо скасувати.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>Розблокування неофіційного досягнення скинуто.</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3352,6 +3344,11 @@ Current Binding: %s</source>
         <translation>Вимкнути всі</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>Недоступно, коли активний хардкорний режим RetroAchievements.</translation>
+    </message>
+    <message>
         <source>Add</source>
         <comment>cheat_codes_add</comment>
         <translation>Додати</translation>
@@ -3430,6 +3427,51 @@ Current Binding: %s</source>
         <source>Global Setting</source>
         <comment>preference_reset_global_value</comment>
         <translation>Глобальне налаштування</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Змінює обсяг RAM, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову RAM.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>Встановлена VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>Змінює обсяг VRAM, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову VRAM.</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>Прискорення під час завантаження</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>Прискорює гру, коли вона припиняє оновлювати екран під час читання з диска. Не діє на анімовані екрани завантаження.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>Масштабувати тайм-аут бездіяльності</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>Запобігає тайм-ауту ігор під час очікування вертикального гасіння при розгоні.</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>Увімкнути прискорення циклу бездіяльності рекомпілятора</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>Пропускає цикл активного очікування, який ігри використовують для очікування вертикального гасіння.</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
@@ -3540,6 +3582,11 @@ Current Binding: %s</source>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>Пінк Палс</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -4467,16 +4514,6 @@ Current Binding: %s</source>
         <translation>Завантажує всі значки заблокованих досягнень під час запуску гри, зменшуючи затримку відображення зображень розблокованих досягнень.</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>Відстежувати неофіційні досягнення</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>Перевірити автономний режим RetroAchievements</translation>
@@ -4502,6 +4539,16 @@ Current Binding: %s</source>
         <translation>Вхід виконано: %s</translation>
     </message>
     <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень і здобули %3$d із %4$d можливих балів.</numerusform>
+            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень і здобули %3$d із %4$d можливих балів.</numerusform>
+            <numerusform>Ви розблокували %1$d із %2$d неофіційних досягнень і здобули %3$d із %4$d можливих балів.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
@@ -4510,6 +4557,26 @@ Current Binding: %s</source>
             <numerusform>%1$d досягнення не підтримуються DuckStation і не можуть бути розблоковані.</numerusform>
             <numerusform>%1$d досягнень не підтримуються DuckStation і не можуть бути розблоковані.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>Неофіційне</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>Скинути розблокування неофіційного досягнення</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>Стан розблокування «%1$s» буде видалено. Цю дію не можна скасувати.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>Розблокування неофіційного досягнення скинуто.</translation>
     </message>
     <message>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
@@ -5206,6 +5273,16 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>Увімкнути налагодження, якщо воно підтримується API-інтерфейсом рендерера хоста. Лише для використання розробниками.</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>Використовувати перевірку на GPU</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>Вмикає перевірку на GPU, якщо її підтримує API засобу візуалізації комп&apos;ютера. Лише для розробників.</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>Віддавати перевагу контексту OpenGL ES</translation>
@@ -5630,11 +5707,6 @@ Are you sure you want to continue?</source>
         <source>Author: %1$s</source>
         <comment>patch_codes_author</comment>
         <translation>Автор: %1$s</translation>
-    </message>
-    <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>Недоступно, поки активний режим «Хардкор» RetroAchievements.</translation>
     </message>
     <message>
         <source>Search codes</source>
@@ -6630,34 +6702,9 @@ ${serial}: Серійний номер гри.</translation>
         <translation>Визначає відсоток від штатної тактової частоти, на якій працюватиме емульоване обладнання.</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>Увімкнути 8 МБ ОЗП</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>Вмикає додаткові 6 МБ ОЗП, щоб отримати загалом 2+6 = 8 МБ, як зазвичай на консолях для розробників.</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>Установлена ОЗП</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>Розширена ОЗП може порушити роботу ігор, тому використовуйте її лише із сумісними модифікаціями.</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>Примусово відображати всю ОЗП</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>Відображає всю встановлену ОЗП незалежно від конфігурації BIOS або гри.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8649,16 +8696,12 @@ DuckStation можна оновити вручну, повторно заван�
         <translation>Оновити список</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Оглянути...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Відкрити...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Скинути</translation>
     </message>
     <message>
         <source>Parallel Port</source>
@@ -8936,12 +8979,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Оглянути...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Відкрити...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Скинути</translation>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9319,12 +9358,24 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Регіон:</translation>
     </message>
     <message>
+        <source>Installed VRAM:</source>
+        <translation>Встановлена VRAM:</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Прискорення під час завантаження</translation>
+    </message>
+    <message>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>Увімкнути керування тактовою частотою (розгін/зниження частоти)</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
         <translation>Увімкнути ICache перекомпілятора</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Масштабувати тайм-аут бездіяльності</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -9355,22 +9406,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>6x (12-кратна швидкість)</translation>
     </message>
     <message>
-        <source>Physical Drive Speed:</source>
-        <translation>Швидкість фізичного приводу:</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>Не змінювати</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>Ігнорувати субкод фізичного приводу</translation>
-    </message>
-    <message>
         <source>Apply Image Patches</source>
         <translation>Застосувати патчі до образів</translation>
     </message>
@@ -9385,10 +9420,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Installed RAM:</source>
         <translation>Встановлена ОЗП:</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Примусове відображення всієї ОЗП</translation>
     </message>
     <message>
         <source>100% (33.87MHz)</source>
@@ -9487,16 +9518,12 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Прискорює доступ до картки пам’яті як під час завантаження, так і під час збереження. Це може скоротити час очікування в іграх, які часто звертаються до карт пам’яті.</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Прискорює гру, коли вона припиняє оновлювати екран під час читання з диска. Не діє на анімовані екрани завантаження.</translation>
+    </message>
+    <message>
         <source>Installed RAM</source>
         <translation>Встановлена ОЗП</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Змінює обсяг ОЗП, встановленої в емульованій консолі. Щоб використовувати розширену ОЗП, ігри мають використовувати більший розмір купи. Ігри, які покладаються на дзеркальні області пам’яті, можуть працювати неправильно, тому цю можливість слід використовувати лише із сумісними модифікаціями.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>Відображає всю встановлену ОЗП в адресний простір незалежно від обсягу, налаштованого BIOS або грою. BIOS серійних консолей відображають лише 8 МБ, тому ця опція потрібна для використання 16 МБ без модифікованого BIOS. Діє лише за наявності розширеної ОЗП.</translation>
     </message>
     <message>
         <source>Execution Mode</source>
@@ -9527,6 +9554,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>Імітує затримки (stalls) у перекомпіляторах, які виникають, коли емульований процесор має завантажувати інструкції у свій кеш. Дозволяє запускати ігри з частотою кадрів, наближеною до оригінальної консольної, ціною невеликого зниження продуктивності. Режим інтерпретатора завжди імітує кеш інструкцій.</translation>
     </message>
     <message>
+        <source>Checked</source>
+        <translation>Позначено</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>Ігри припиняють чекати на вертикальне гасіння після фіксованої кількості ітерацій циклу, які під час розгону минають швидше. Масштабує цей тайм-аут, щоб синхронізувати ігри з вертикальним гасінням.</translation>
+    </message>
+    <message>
         <source>CD-ROM Read Speedup</source>
         <translation>Прискорення читання CD-ROM</translation>
     </message>
@@ -9549,22 +9584,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Автоматично перемикає на наступний диск, коли гра зупиняє двигун приводу CD-ROM. Перемикання не відбудеться, якщо вже вибрано останній диск гри. &lt;strong&gt;Працює не з усіма іграми.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>Швидкість фізичного приводу</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>Установлює швидкість приводу комп’ютера під час використання фізичних дисків. Вища швидкість може зменшити пригальмовування, але збільшує шум приводу. Виберіть «Не змінювати», щоб залишити швидкість приводу без змін. Не всі приводи підтримують цю функцію.</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Ігнорує субкод, що надається приводом під час використання фізичних дисків, натомість завжди генеруючи дані субкоду. Опція не працюватиме з іграми із захистом LibCrypt, але може підвищити надійність читання на деяких приводах.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -9593,6 +9612,18 @@ This warning will only be shown once.</source>
     <message>
         <source>Frame Rate</source>
         <translation>Частота кадрів</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>Змінює обсяг RAM, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову RAM. Примусовий режим надає грі доступ до всієї встановленої RAM незалежно від її конфігурації; він потрібен для 16 МБ зі стандартним BIOS консолей.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>Встановлена VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>Змінює обсяг VRAM, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову VRAM. Примусовий режим відкриває доступ до другого банку VRAM незалежно від того, чи ввімкнула його гра.</translation>
     </message>
     <message>
         <source>%1% (%2MHz)</source>
@@ -11572,16 +11603,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Увімкнути швидкий доступ до пам&apos;яті перекомпілятора</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Увімкнути прискорення циклу бездіяльності рекомпілятора</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>Версія Мехакона дисководу</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>Випереджальне читання секторів дисководу</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> секторів</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -12053,6 +12080,105 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>Каталог кешу</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>Використовується для зберігання скомпільованих шейдерів, даних списку ігор і завантажених зображень досягнень.</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>Каталог читів</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>Зберігає створені або імпортовані файли читів (.cht). Вони використовуються разом із вбудованою базою читів.</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>Каталог обкладинок</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>Використовується для зберігання обкладинок у сітці ігор та інтерфейсах Big Picture.</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>Каталог піктограм ігор</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>Зберігає піктограми списку ігор, отримані зі збережень на картках пам&apos;яті. Щоб використати власну піктограму, розмістіть тут PNG із назвою, що відповідає серійному номеру гри.</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>Каталог параметрів ігор</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>Зберігає файли параметрів для окремих ігор, названі за серійним номером гри.</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>Каталог профілів введення</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>Зберігає профілі введення контролерів.</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>Каталог патчів</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>Зберігає створені або імпортовані файли патчів (.cht). Вони використовуються разом із вбудованою базою патчів.</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>Каталог шейдерів</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>Шукає шейдери постобробки: шейдери GLSL у цьому каталозі, шейдери ReShade у reshade/Shaders і пресети slang у slang.</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>Каталог підканалів</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>Шукає файли підканалів SBI/LSD, потрібні іграм із захистом LibCrypt, якщо їх немає поруч з образом диска.</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>Каталог ресурсів користувача</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>Файли, розміщені тут, замінюють вбудовані ресурси. Каталог також використовується для власних тем і тла Big Picture.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Огляд...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>Вибрати %1</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>За замовчуванням</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>1 Frame</source>
@@ -12343,10 +12469,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Весь час: {}</translation>
     </message>
     <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>Увесь прогрес неофіційних досягнень для поточної гри буде видалено. Це неможливо скасувати.</translation>
-    </message>
-    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Дозволити завантаження без SBI</translation>
     </message>
@@ -12581,10 +12703,6 @@ You cannot undo this action.</source>
     <message>
         <source>Change Title</source>
         <translation>Змінити назву</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>Змінює обсяг ОЗП, встановленої в емульованій консолі.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
@@ -13573,14 +13691,6 @@ Please check your username and password, and try again.</source>
         <translation>Скинути розблокування</translation>
     </message>
     <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>Скинути неофіційне досягнення</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>Скинути розблокування неофіційних досягнень</translation>
-    </message>
-    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Скидання всіх налаштувань до значень за замовчуванням.</translation>
     </message>
@@ -13885,20 +13995,8 @@ Please check your username and password, and try again.</source>
         <translation>Вгорі:</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Відстежувати неофіційні досягнення</translation>
-    </message>
-    <message>
         <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
         <translation>Намагається виявити FMV та вимкнути прискорення читання під час ігор, які не використовують потокове аудіо XA.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>Розблокування неофіційного досягнення скинуто.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>Розблокування неофіційних досягнень скинуто.</translation>
     </message>
     <message>
         <source>Update Progress</source>
@@ -13931,10 +14029,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Web Cache Size: {0} ({1} in {2} objects)</source>
         <translation>Розмір вебкешу: {0} ({1} у {2} об’єктах)</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>Window Animations</source>
@@ -14365,10 +14459,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Примусове відображення всієї ОЗП</translation>
-    </message>
-    <message>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>Примусово виконує повне повторне сканування всіх ідентифікованих ігор.</translation>
     </message>
@@ -14655,10 +14745,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Дозволяє іграм працювати з частотою кадрів, близькою до консольної, з невеликою шкодою для продуктивності.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>Відображає всю встановлену ОЗП в адресний простір незалежно від обсягу, налаштованого BIOS або грою. Потрібно для використання 16 МБ із BIOS серійних консолей.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -15253,8 +15339,20 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Скинути час гри</translation>
     </message>
     <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Увесь прогрес неофіційних досягнень для поточної гри буде видалено. Цю дію неможливо скасувати.</translation>
+    </message>
+    <message>
         <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
         <translation>Наближає пізніше намальовані полігони до камери, у мільйонних частках глибини. Зменшує мерехтіння декалей.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>Змінює обсяг RAM, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову RAM.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>Змінює обсяг відеопам&apos;яті, встановленої в емульованій консолі. Комерційні ігри не використовують додаткову VRAM.</translation>
     </message>
     <message>
         <source>Clear Binding</source>
@@ -15269,8 +15367,28 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Зсув глибини</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Увімкнути прискорення циклу бездіяльності рекомпілятора</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Прискорення під час завантаження</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Прискорює гру, коли вона припиняє оновлювати екран під час читання з диска. Не діє на анімовані екрани завантаження.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>Встановлена VRAM</translation>
+    </message>
+    <message>
         <source>Menu Volume</source>
         <translation>Гучність меню</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>Mute Game Audio</source>
@@ -15287,6 +15405,14 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Reset Settings</source>
         <translation>Скинути налаштування</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>Скинути розблокування неофіційного досягнення</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>Скинути розблокування неофіційних досягнень</translation>
     </message>
     <message>
         <source>Resets all configuration to defaults (including bindings).</source>
@@ -15355,6 +15481,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Періодично зберігає стан, щоб ви могли перемотати гру назад і виправити помилки під час гри.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Масштабувати тайм-аут бездіяльності</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15621,6 +15751,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Пропустити відображення дублікатів кадрів</translation>
     </message>
     <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>Пропускає цикл активного очікування, який ігри використовують для очікування вертикального гасіння.</translation>
+    </message>
+    <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>Пропускає виведення кадрів, які не є унікальними. Може погіршити рівномірність відображення кадрів.</translation>
     </message>
@@ -15687,6 +15821,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Step {} of {}</source>
         <translation>Крок {} з {}</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>Запобігає тайм-ауту ігор під час очікування вертикального гасіння при розгоні.</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15773,6 +15911,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Перемикає макрос при натисканні кнопки, а не під час її утримування.</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Відстежувати неофіційні досягнення</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Тригер</translation>
     </message>
@@ -15803,6 +15945,14 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Unpin from OSD</source>
         <translation>Відкріпити від екранної індикації</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>Розблокування неофіційного досягнення скинуто.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>Розблокування неофіційних досягнень скинуто.</translation>
     </message>
     <message>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
@@ -15927,6 +16077,10 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Якщо цей параметр увімкнено, DuckStation вважатиме, що всі досягнення заблоковані, і не надсилатиме повідомлення про розблокування на сервер.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Якщо ввімкнено, DuckStation відстежуватиме неофіційні досягнення. Розблокування зберігатимуться локально й не надсилатимуться до RetroAchievements.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -16277,12 +16431,12 @@ Do you want to {0} anyway?</source>
         <translation>Обсяг ОЗП:</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>Вимкнути широкоекранну візуалізацію</translation>
+        <source>VRAM Size:</source>
+        <translation>Розмір VRAM:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Примусове відображення всієї ОЗП</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Вимкнути широкоекранну візуалізацію</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16610,6 +16764,11 @@ Are you sure you want to continue?</source>
         <translation>Вимкнути: Прискорення доступу до картки пам&apos;яті</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Вимкнути прискорення під час завантаження</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Вимкнути: Прискорення читання дисководу</translation>
@@ -16747,6 +16906,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Прискорений доступ до картки пам&apos;яті вимкнено.</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>Прискорення під час завантаження вимкнено.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -17172,14 +17335,6 @@ Are you sure you want to continue?</source>
         <translation>Виключені шляхи (не скануватимуться)</translation>
     </message>
     <message>
-        <source>File...</source>
-        <translation>Файл...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>Папка...</translation>
-    </message>
-    <message>
         <source>Scan For New Games</source>
         <translation>Пошук нових ігор</translation>
     </message>
@@ -17188,8 +17343,40 @@ Are you sure you want to continue?</source>
         <translation>Повторне сканування всіх ігор</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>Каталоги пошуку</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>Каталоги, у яких шукатимуться ігри. Увімкніть рекурсивне сканування, щоб шукати також у підкаталогах; це повільніше, але дає змогу знаходити ігри у вкладених папках. Можна також перетягнути сюди папки з файлового менеджера.</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>Виключені шляхи</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>Файли й каталоги, які пропускатимуться під час пошуку ігор, наприклад зображення, які не потрібно показувати у списку ігор. Можна також перетягнути сюди файли й папки з файлового менеджера.</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>Сканує каталоги пошуку на наявність файлів, яких ще немає у списку ігор. Раніше проскановані ігри завантажуються з кешу, тому зазвичай це швидко.</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>Очищає кеш списку ігор і повторно сканує всі файли в каталогах пошуку. Використовуйте, якщо відомості про гру, як-от назва чи серійний номер, неправильні. Для великих колекцій це може тривати довго.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Відкрити каталог...</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Немає каталогів пошуку. Додайте папку або перетягніть її сюди, щоб вибрати місце зберігання ігор.</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>Немає виключених шляхів. Додані сюди файли й папки пропускатимуться під час сканування.</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -17735,20 +17922,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>Каталог текстур</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Відкрити...</translation>
-    </message>
-    <message>
         <source>Directory to load replacement textures from, and save dumps to.</source>
         <translation>Каталог для завантаження текстур, що замінюють, і збереження дампів.</translation>
     </message>
     <message>
         <source>Browse...</source>
         <translation>Оглянути...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Скидання</translation>
     </message>
     <message>
         <source>Threaded Rendering</source>
@@ -17841,6 +18020,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>FMV Scaling:</source>
         <translation>Масштабування FMV:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
     </message>
     <message>
         <source>Prefer OpenGL ES Context</source>
@@ -18341,10 +18524,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Geometry Tolerance</source>
         <translation>Допуск геометрії</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00 пікс (Вимкнено)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20345,6 +20524,10 @@ Shift-click to set multiple bindings.</source>
         <translation>Налаштовує зовнішній вигляд та поведінку програми.</translation>
     </message>
     <message>
+        <source>&amp;Folders</source>
+        <translation>&amp;Папки</translation>
+    </message>
+    <message>
         <source>Ad&amp;vanced</source>
         <translation>Додат&amp;ково</translation>
     </message>
@@ -21401,6 +21584,10 @@ This action cannot be undone.</source>
         <translation>Фіолетовий дощ</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>QDarkStyle</source>
         <translation>QDarkStyle</translation>
     </message>
@@ -21927,10 +22114,6 @@ Error: {1}</source>
         <translation>Картки пам&apos;яті:</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Відкрити...</translation>
-    </message>
-    <message>
         <source>Memory Cards Location</source>
         <translation>Розташування карток пам&apos;яті</translation>
     </message>
@@ -22022,6 +22205,10 @@ Error: {1}</source>
     <message>
         <source>Browse...</source>
         <translation>Оглянути...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
     </message>
     <message>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
@@ -23316,10 +23503,6 @@ Error: {1}</source>
         <translation>Оновити список накладок</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Додаткові готові рамки можна додати до папки &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; у каталозі даних.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>Конфігурація користувача</translation>
     </message>
@@ -23330,6 +23513,14 @@ Error: {1}</source>
     <message>
         <source>Browse...</source>
         <translation>Оглянути...</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>Каталог накладок:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23374,6 +23565,22 @@ Error: {1}</source>
     <message>
         <source>Image Path</source>
         <translation>Шлях зображення</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>Вибрати каталог накладок</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>Каталог накладок</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>За замовчуванням</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>Зберігає додаткові пресети накладок із рамками. Після зміни каталогу скористайтеся пунктом «Оновити список накладок», щоб знайти пресети.</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -24013,12 +24220,20 @@ Would you like to update the shortcut to point to the current location?</source>
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>Збережено {}</translation>
+        <source>Empty</source>
+        <translation>Порожньо</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>У цьому слоті немає збережень.</translation>
+        <source>Save States</source>
+        <translation>Збереження станів</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>Використано {} з {} слотів</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Збережено {}</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -24086,16 +24301,16 @@ Would you like to update the shortcut to point to the current location?</source>
 <context>
     <name>SettingWidgetBinder</name>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>Використовувати глобальне налаштування [Увімкнено]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>Використовувати глобальне налаштування [Вимкнено]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>Глобальне: </translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>Відкрити папку</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Відновити типове значення</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24226,24 +24441,54 @@ Do you want to create this directory?</source>
         <translation>Не-PS1</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 МБ (серійна консоль)</translation>
+        <translation>2 МБ (стандарт)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 МБ (плати аркадних автоматів)</translation>
+        <translation>4 МБ</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 МБ (консоль для розробників)</translation>
+        <translation>4 МБ (примусово)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 МБ (модифікації/плати аркадних автоматів)</translation>
+        <translation>8 МБ</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 МБ (примусово)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 МБ</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 МБ (примусово)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 МБ (стандарт)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 МБ</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 МБ (примусово)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -25055,10 +25300,6 @@ Do you want to create this directory?</source>
         <translation>Список ігор</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Налаштування списку ігор&lt;/strong&gt;&lt;hr&gt;У наведеному вище списку показано каталоги, в яких DuckStation виконуватиме пошук для заповнення списку ігор. Каталоги пошуку можна додавати, видаляти та перемикати на рекурсивні/нерекурсивні.</translation>
-    </message>
-    <message>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -25077,6 +25318,10 @@ Do you want to create this directory?</source>
     <message>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;Налаштування консолі&lt;/strong&gt;&lt;hr&gt;Ці параметри визначають конфігурацію консолі, що моделюється.&lt;br&gt;&lt;br&gt;Наведіть вказівник миші на параметр, щоб отримати додаткову інформацію, а для прокручування цієї панелі прокручуйте коліщатко миші, утримуючи Shift.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;Параметри списку ігор&lt;/strong&gt;&lt;hr&gt;Ці параметри визначають, які каталоги скануються для заповнення списку ігор.&lt;br&gt;&lt;br&gt;Наведіть вказівник на параметр, щоб побачити додаткові відомості.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25130,6 +25375,14 @@ Do you want to create this directory?</source>
     <message>
         <source>&lt;strong&gt;Capture Settings&lt;/strong&gt;&lt;hr&gt;These options determine how screenshots and videos are captured by the application.</source>
         <translation>&lt;strong&gt;Налаштування захоплення&lt;/strong&gt;&lt;hr&gt;Ці параметри визначають, як програма здійснює захоплення знімків екрана та відео.</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <translation>Папки</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;Параметри папок&lt;/strong&gt;&lt;hr&gt;Ці параметри визначають, звідки DuckStation читає файли та де їх зберігає.&lt;br&gt;&lt;br&gt;Наведіть вказівник на параметр, щоб побачити додаткові відомості. Утримуйте Shift і прокручуйте коліщатко миші, щоб прокрутити цю панель.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25271,10 +25524,6 @@ Do you want to continue?</source>
         <translation>Оглянути...</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Скидання</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Японія):</translation>
     </message>
@@ -25285,10 +25534,6 @@ Do you want to continue?</source>
     <message>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Європа, Австралія):</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>Відкрити у Провіднику...</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -25329,6 +25574,10 @@ Do you want to continue?</source>
     <message>
         <source>Advanced Settings</source>
         <translation>Додаткові налаштування</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Інші параметри</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -25615,6 +25864,10 @@ Any changes have been saved, and the wizard will run again next time you start D
             <numerusform>Знайдено %n образи BIOS. За бажанням можна встановити додаткові образи BIOS.</numerusform>
             <numerusform>Знайдено %n образів BIOS. За бажанням можна встановити додаткові образи BIOS.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Немає каталогів пошуку. Додайте папку або перетягніть її сюди, щоб вибрати місце зберігання ігор.</translation>
     </message>
     <message>
         <source>Open Directory...</source>
@@ -26001,8 +26254,16 @@ Using current CD image, this may result in instability.</source>
         <translation>Картку змінено на {}.</translation>
     </message>
     <message>
+        <source>Physical Disc</source>
+        <translation>Фізичний диск</translation>
+    </message>
+    <message>
         <source>RAM size set to default.</source>
         <translation>Встановлено типовий обсяг ОЗП.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>VRAM 2 МБ вимкнено.</translation>
     </message>
     <message>
         <source>Texture filtering disabled.</source>
@@ -26093,10 +26354,6 @@ Using current CD image, this may result in instability.</source>
         <translation>Скидання SPU під час запуску гри вимкнено.</translation>
     </message>
     <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Розширену ОЗП увімкнено; це може бути несумісним із деякими іграми.</translation>
-    </message>
-    <message>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM SubQ Skew увімкнено. Це призведе до збоїв в іграх.</translation>
     </message>
@@ -26146,6 +26403,23 @@ Using current CD image, this may result in instability.</source>
         <source>Expanded RAM</source>
         <comment>Taint</comment>
         <translation>Розширена ОЗП</translation>
+    </message>
+    <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>Розширена VRAM</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>Невідомий BIOS</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>Розмір RAM задано як {}, це може бути несумісним із деякими іграми.</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>Розмір VRAM задано як {}, це може бути несумісним із деякими іграми.</translation>
     </message>
     <message>
         <source>capturing video</source>

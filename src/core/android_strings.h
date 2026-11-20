@@ -277,8 +277,8 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Progress Indicators", "settings_progress_ind
 TRANSLATE_DISAMBIG_NOOP("Android", "Shows a popup in the selected location when progress towards a measured achievement changes.", "settings_summary_progress_indicator_mode");
 TRANSLATE_DISAMBIG_NOOP("Android", "Prefetch Badges", "settings_prefetch_badges");
 TRANSLATE_DISAMBIG_NOOP("Android", "Downloads all locked achievement badges when starting the game, reducing delays when showing unlock images.", "settings_summary_prefetch_badges");
-TRANSLATE_DISAMBIG_NOOP("Android", "Track Unofficial Achievements", "settings_unofficial_test_mode");
-TRANSLATE_DISAMBIG_NOOP("Android", "When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.", "settings_summary_unofficial_test_mode");
+TRANSLATE_DISAMBIG_NOOP("Android", "Track Unpromoted Achievements", "settings_track_unpromoted_achievements");
+TRANSLATE_DISAMBIG_NOOP("Android", "When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.", "settings_summary_track_unpromoted_achievements");
 TRANSLATE_DISAMBIG_NOOP("Android", "Test RetroAchievements Offline Mode", "settings_test_offline_mode");
 TRANSLATE_DISAMBIG_NOOP("Android", "Forces all RetroAchievements server calls to fail, useful for testing offline mode.", "settings_summary_test_offline_mode");
 TRANSLATE_DISAMBIG_NOOP("Android", "Rich Presence Monitor", "settings_rich_presence_monitor");
@@ -307,8 +307,8 @@ QT_TRANSLATE_N_NOOP3("Android", "You have unlocked all achievements and earned %
 QT_TRANSLATE_N_NOOP3("Android", "You have unlocked %1$d of %2$d achievements in this subset, earning %3$d of %4$d possible points.", "achievement_subset_summary_format_string");
 //: Android plural quantities: one="You have unlocked all achievements in this subset and earned %1$d point!"; other="You have unlocked all achievements in this subset and earned %1$d points!"
 QT_TRANSLATE_N_NOOP3("Android", "You have unlocked all achievements in this subset and earned %1$d points!", "achievement_subset_all_unlocked_format_string");
-//: Android plural quantities: one="You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points."; other="You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points."
-QT_TRANSLATE_N_NOOP3("Android", "You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.", "achievement_unofficial_summary_format_string");
+//: Android plural quantities: one="You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points."; other="You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points."
+QT_TRANSLATE_N_NOOP3("Android", "You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.", "achievement_unpromoted_summary_format_string");
 //: Android plural quantities: one="%1$d achievement is not supported by DuckStation and cannot be unlocked."; other="%1$d achievements are not supported by DuckStation and cannot be unlocked."
 QT_TRANSLATE_N_NOOP3("Android", "%1$d achievements are not supported by DuckStation and cannot be unlocked.", "achievement_unsupported_count_format_string");
 TRANSLATE_DISAMBIG_NOOP("Android", "Game was beaten on %1$s, and completed on %2$s.", "achievement_game_beaten_completed_format_string");
@@ -323,14 +323,14 @@ TRANSLATE_DISAMBIG_NOOP("Android", "%s (Hardcore Mode)", "achievement_title_chal
 TRANSLATE_DISAMBIG_NOOP("Android", "Missable", "achievement_type_missable");
 TRANSLATE_DISAMBIG_NOOP("Android", "Progression", "achievement_type_progression");
 TRANSLATE_DISAMBIG_NOOP("Android", "Win Condition", "achievement_type_win_condition");
-TRANSLATE_DISAMBIG_NOOP("Android", "Unofficial", "achievement_unofficial");
+TRANSLATE_DISAMBIG_NOOP("Android", "Unpromoted", "achievement_unpromoted");
 TRANSLATE_DISAMBIG_NOOP("Android", "Open on RetroAchievements", "achievement_open_on_retroachievements");
 TRANSLATE_DISAMBIG_NOOP("Android", "Pin to OSD", "achievement_pin_to_osd");
 TRANSLATE_DISAMBIG_NOOP("Android", "Unpin from OSD", "achievement_unpin_from_osd");
 TRANSLATE_DISAMBIG_NOOP("Android", "Reset Unlock", "achievement_reset_unlock");
-TRANSLATE_DISAMBIG_NOOP("Android", "Reset Unofficial Achievement", "achievement_reset_unofficial_title");
-TRANSLATE_DISAMBIG_NOOP("Android", "The unlock state for '%1$s' will be removed. This cannot be undone.", "achievement_reset_unofficial_message");
-TRANSLATE_DISAMBIG_NOOP("Android", "Unofficial achievement unlock reset.", "achievement_unofficial_unlock_reset");
+TRANSLATE_DISAMBIG_NOOP("Android", "Reset Unpromoted Achievement", "achievement_reset_unpromoted_title");
+TRANSLATE_DISAMBIG_NOOP("Android", "The unlock state for '%1$s' will be removed. This cannot be undone.", "achievement_reset_unpromoted_message");
+TRANSLATE_DISAMBIG_NOOP("Android", "Unpromoted achievement unlock reset.", "achievement_unpromoted_unlock_reset");
 TRANSLATE_DISAMBIG_NOOP("Android", "Pinned to OSD", "achievement_pinned_to_osd_icon");
 TRANSLATE_DISAMBIG_NOOP("Android", "%1$s pinned to OSD.", "achievement_pinned_to_osd");
 TRANSLATE_DISAMBIG_NOOP("Android", "%1$s unpinned from OSD.", "achievement_unpinned_from_osd");
@@ -656,6 +656,8 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Touching the left half of the screen places 
 TRANSLATE_DISAMBIG_NOOP("Android", "Advanced Settings", "settings_advanced");
 TRANSLATE_DISAMBIG_NOOP("Android", "Use Debug GPU Device", "settings_use_debug_device");
 TRANSLATE_DISAMBIG_NOOP("Android", "Enable debugging when supported by the host's renderer API. Only for developer use.", "settings_summary_use_debug_device");
+TRANSLATE_DISAMBIG_NOOP("Android", "Use GPU-Based Validation", "settings_use_gpu_based_validation");
+TRANSLATE_DISAMBIG_NOOP("Android", "Enable GPU-based validation when supported by the host's renderer API. Only for developer use.", "settings_summary_use_gpu_based_validation");
 TRANSLATE_DISAMBIG_NOOP("Android", "Prefer OpenGL ES Context", "settings_prefer_gles_context");
 TRANSLATE_DISAMBIG_NOOP("Android", "Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.", "settings_summary_prefer_gles_context");
 TRANSLATE_DISAMBIG_NOOP("Android", "Disable Shader Caches", "settings_disable_shader_cache");
@@ -739,7 +741,7 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Default (%1$s)", "game_properties_default_va
 TRANSLATE_DISAMBIG_NOOP("Android", "Disable All Patches", "patch_codes_disable_all_patches");
 TRANSLATE_DISAMBIG_NOOP("Android", "Disables every patch currently enabled for this game.", "patch_codes_disable_all_patches_summary");
 TRANSLATE_DISAMBIG_NOOP("Android", "Author: %1$s", "patch_codes_author");
-TRANSLATE_DISAMBIG_NOOP("Android", "Unavailable while RetroAchievements hardcode mode is active.", "patch_codes_hardcore_restricted");
+TRANSLATE_DISAMBIG_NOOP("Android", "Unavailable while RetroAchievements hardcore mode is active.", "patch_codes_hardcore_restricted");
 TRANSLATE_DISAMBIG_NOOP("Android", "Add", "cheat_codes_add");
 TRANSLATE_DISAMBIG_NOOP("Android", "Import", "cheat_codes_import");
 TRANSLATE_DISAMBIG_NOOP("Android", "Export", "cheat_codes_export");
@@ -1033,12 +1035,14 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Fast Forward Memory Card Access", "settings_
 TRANSLATE_DISAMBIG_NOOP("Android", "Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.", "settings_summary_fast_forward_access");
 TRANSLATE_DISAMBIG_NOOP("Android", "Overclocking Percentage", "settings_overclock");
 TRANSLATE_DISAMBIG_NOOP("Android", "Selects the percentage of the normal clock speed the emulated hardware will run at.", "settings_summary_overclock");
-TRANSLATE_DISAMBIG_NOOP("Android", "Enable 8MB RAM", "settings_enable_8mb_ram");
-TRANSLATE_DISAMBIG_NOOP("Android", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.", "settings_summary_enable_8mb_ram");
 TRANSLATE_DISAMBIG_NOOP("Android", "Installed RAM", "settings_ram_size");
-TRANSLATE_DISAMBIG_NOOP("Android", "Expanded RAM may break games, so use it only with compatible mods.", "settings_summary_ram_size");
-TRANSLATE_DISAMBIG_NOOP("Android", "Force Full RAM Mapping", "settings_force_full_ram_mapping");
-TRANSLATE_DISAMBIG_NOOP("Android", "Maps all installed RAM regardless of the BIOS or game configuration.", "settings_summary_force_full_ram_mapping");
+TRANSLATE_DISAMBIG_NOOP("Android", "Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.", "settings_summary_ram_size");
+TRANSLATE_DISAMBIG_NOOP("Android", "Installed VRAM", "settings_vram_size");
+TRANSLATE_DISAMBIG_NOOP("Android", "Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.", "settings_summary_vram_size");
+TRANSLATE_DISAMBIG_NOOP("Android", "Fast Forward While Loading", "settings_fast_forward_loading");
+TRANSLATE_DISAMBIG_NOOP("Android", "Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.", "settings_summary_fast_forward_loading");
+TRANSLATE_DISAMBIG_NOOP("Android", "Scale Idle Timeout", "settings_idle_timeout_scale");
+TRANSLATE_DISAMBIG_NOOP("Android", "Stops games from timing out while waiting for vertical blank when overclocking.", "settings_summary_idle_timeout_scale");
 TRANSLATE_DISAMBIG_NOOP("Android", "Preload Images to RAM", "settings_load_image_to_ram");
 TRANSLATE_DISAMBIG_NOOP("Android", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.", "settings_summary_load_image_to_ram");
 TRANSLATE_DISAMBIG_NOOP("Android", "Apply Image Patches", "settings_load_image_patches");
@@ -1152,6 +1156,8 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Enable Region Check", "settings_region_check
 TRANSLATE_DISAMBIG_NOOP("Android", "Enable TTY Logging", "settings_tty_logging");
 TRANSLATE_DISAMBIG_NOOP("Android", "Enable Recompiler Block Linking", "settings_recompiler_block_linking");
 TRANSLATE_DISAMBIG_NOOP("Android", "Recompiler Fast Memory Access", "settings_fastmem_mode");
+TRANSLATE_DISAMBIG_NOOP("Android", "Enable Recompiler Idle Loop Fast Forward", "settings_idle_fast_forward");
+TRANSLATE_DISAMBIG_NOOP("Android", "Skips over the busy loop that games use to wait for vertical blank.", "settings_summary_idle_fast_forward");
 TRANSLATE_DISAMBIG_NOOP("Android", "Enable Recompiler ICache", "settings_recompiler_icache");
 TRANSLATE_DISAMBIG_NOOP("Android", "Disable Dual-Source Blending", "settings_disable_dual_source_blend");
 TRANSLATE_DISAMBIG_NOOP("Android", "Disable Framebuffer Fetch", "settings_disable_framebuffer_fetch");
@@ -1258,6 +1264,7 @@ TRANSLATE_DISAMBIG_NOOP("Android", "Grey Matter", "settings_theme_entries[7]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Purple Rain", "settings_theme_entries[8]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Green Giant", "settings_theme_entries[9]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Pinky Pals", "settings_theme_entries[10]");
+TRANSLATE_DISAMBIG_NOOP("Android", "Midnight Amber", "settings_theme_entries[11]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Touchscreen Press", "controller_other_binding_entries[0]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Touchscreen Swipe Left", "controller_other_binding_entries[1]");
 TRANSLATE_DISAMBIG_NOOP("Android", "Touchscreen Swipe Right", "controller_other_binding_entries[2]");

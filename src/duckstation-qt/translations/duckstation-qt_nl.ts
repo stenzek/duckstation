@@ -162,10 +162,6 @@ Wilt u de hardcoremodus inschakelen?</translation>
         <translation>Toeschouwermodus inschakelen</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Onofficiële prestaties testen</translation>
-    </message>
-    <message>
         <source>Notification Location:</source>
         <translation>Locatie van meldingen:</translation>
     </message>
@@ -202,10 +198,6 @@ Wilt u de hardcoremodus inschakelen?</translation>
         <translation>Encoremodus inschakelen</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Niet-officiële prestaties bijhouden</translation>
-    </message>
-    <message>
         <source>Prefetch Badges</source>
         <translation>Badges vooraf ophalen</translation>
     </message>
@@ -220,6 +212,10 @@ Wilt u de hardcoremodus inschakelen?</translation>
     <message>
         <source>Show Achievement Notifications</source>
         <translation>Meldingen over prestaties tonen</translation>
+    </message>
+    <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Niet-gepromoveerde prestaties volgen</translation>
     </message>
     <message>
         <source>Reset Achievement Notification Duration</source>
@@ -266,8 +262,12 @@ Wilt u de hardcoremodus inschakelen?</translation>
         <translation>De modus &apos;Uitdaging&apos; voor prestaties, inclusief het bijhouden van klassementen. Schakelt opgeslagen toestanden, cheats en vertragingsfuncties uit.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
+        <source>Test Unpromoted Achievements</source>
+        <translation>Niet-gepromoveerde prestaties testen</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Als dit is ingeschakeld, volgt DuckStation niet-gepromoveerde prestaties. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -621,6 +621,10 @@ We blijven proberen dit verzoek in te dienen.</translation>
         <translation>Prestatiegegevens downloaden...</translation>
     </message>
     <message>
+        <source>Unpromoted</source>
+        <translation>Niet-gepromoveerd</translation>
+    </message>
+    <message>
         <source>RetroAchievements Login Failed</source>
         <translation>Inloggen bij RetroAchievements mislukt</translation>
     </message>
@@ -809,10 +813,6 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <source>This subset has no achievements.</source>
         <translation>Deze subset bevat geen prestaties.</translation>
     </message>
-    <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>U hebt {0} van de {1} niet-officiële prestaties ontgrendeld en {2} van de {3} mogelijke punten verdiend.</translation>
-    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -836,10 +836,6 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     <message>
         <source>Unsupported</source>
         <translation>Niet ondersteund</translation>
-    </message>
-    <message>
-        <source>Unofficial</source>
-        <translation>Onofficieel</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
@@ -872,10 +868,6 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     <message>
         <source>Pin Achievement</source>
         <translation>Prestatie vastzetten</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>Niet-officiële ontgrendelingen resetten</translation>
     </message>
     <message>
         <source>View Details</source>
@@ -934,6 +926,10 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>XXX punten</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>Je hebt {0} van de {1} niet-gepromoveerde prestaties ontgrendeld en {2} van de {3} mogelijke punten verdiend.</translation>
+    </message>
+    <message>
         <source>Game was beaten {0}, and completed {1}.</source>
         <translation>De game is uitgespeeld {0} en voltooid {1}.</translation>
     </message>
@@ -956,6 +952,10 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     <message>
         <source>Subset was completed {0}.</source>
         <translation>De subset is voltooid {0}.</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>Ontgrendelingen van niet-gepromoveerde prestaties resetten</translation>
     </message>
     <message>
         <source>Unlocked {}</source>
@@ -1074,32 +1074,32 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>RAIntegration inschakelen</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>Cachemap</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>CD-ROM-emulatie</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>Wordt gebruikt voor het opslaan van gecompileerde shaders en gamelijstgegevens.</translation>
+        <source>Readahead Sectors:</source>
+        <translation>Vooruitgelezen sectoren:</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>Zoeken...</translation>
+        <source> sectors</source>
+        <translation> sectoren</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Openen...</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>Snelheid van het fysieke schijfstation:</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Resetten</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Niet wijzigen</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>Map voor covers</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>Wordt gebruikt voor het opslaan van covers in de gamegrid/Big Picture-interfaces.</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>Subcode van het fysieke schijfstation negeren</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1120,14 +1120,6 @@ Deze sessie wordt in offlinemodus gestart.</translation>
     <message>
         <source>Log Level</source>
         <translation>Logniveau</translation>
-    </message>
-    <message>
-        <source>Select Cache Directory</source>
-        <translation>Cachemap selecteren</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>Covermap selecteren</translation>
     </message>
     <message>
         <source>Information</source>
@@ -1182,16 +1174,35 @@ Deze sessie wordt in offlinemodus gestart.</translation>
         <translation>Toont het nummer van het huidige frame in de rechterbovenhoek van het scherm.</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>Standaard</translation>
+        <source>Readahead Sectors</source>
+        <translation>Vooruitgelezen sectoren</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n sector</numerusform>
+            <numerusform>%n sectoren</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>Specificeert de map waarin gecompileerde shaders en gamelijstgegevens worden opgeslagen.</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>Vermindert haperingen in de emulatie door CD-gegevens asynchroon in een werkthread te lezen en te decomprimeren.</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>Specificeert de map waarin gamecoverafbeeldingen die in de gamegrid en Big Picture-interface worden gebruikt, worden opgeslagen.</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>Snelheid van het fysieke schijfstation</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Stelt de snelheid van het hoststation in bij gebruik van fysieke schijven. Een hogere snelheid kan haperingen verminderen, maar maakt het station luider. Kies &quot;Niet wijzigen&quot; om de eigen snelheid van het station te behouden. Niet alle stations ondersteunen dit.</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>Negeert de door het station geleverde subcode bij gebruik van fysieke schijven en genereert altijd subcodegegevens. Werkt niet met LibCrypt-games, maar kan de leesbetrouwbaarheid op sommige stations verbeteren.</translation>
     </message>
     <message>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
@@ -2206,6 +2217,16 @@ Huidige toewijzing: %s</translation>
         <translation>Veiligheidscontrole mislukt</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>Niet-gepromoveerde prestaties volgen</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>Als dit is ingeschakeld, volgt DuckStation niet-gepromoveerde prestaties. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
+    </message>
+    <message>
         <source>Not Logged In.</source>
         <comment>settings_achievements_not_logged_in</comment>
         <translation>Niet ingelogd.</translation>
@@ -2315,15 +2336,6 @@ Huidige toewijzing: %s</translation>
             <numerusform>Je hebt alle prestaties in deze subset ontgrendeld en %1$d punten verdiend!</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>Niet-officiële prestaties ontgrendeld: %1$d van %2$d. Punten verdiend: %3$d van %4$d.</numerusform>
-            <numerusform>Niet-officiële prestaties ontgrendeld: %1$d van %2$d. Punten verdiend: %3$d van %4$d.</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Game was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_game_beaten_completed_format_string</comment>
@@ -2385,11 +2397,6 @@ Huidige toewijzing: %s</translation>
         <translation>Voorwaarde voor overwinning</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>Onofficieel</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>Openen op RetroAchievements</translation>
@@ -2408,21 +2415,6 @@ Huidige toewijzing: %s</translation>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>Ontgrendeling resetten</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>Niet-officiële prestatie resetten</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>De ontgrendelingsstatus voor &apos;%1$s&apos; wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>Niet-officiële prestatieontgrendeling gereset.</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3328,6 +3320,11 @@ Huidige toewijzing: %s</translation>
         <translation>Alles uitschakelen</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>Niet beschikbaar zolang de hardcoremodus van RetroAchievements actief is.</translation>
+    </message>
+    <message>
         <source>Add</source>
         <comment>cheat_codes_add</comment>
         <translation>Toevoegen</translation>
@@ -3406,6 +3403,51 @@ Huidige toewijzing: %s</translation>
         <source>Global Setting</source>
         <comment>preference_reset_global_value</comment>
         <translation>Globale instelling</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Wijzigt de hoeveelheid RAM in de geëmuleerde console. Commerciële games gebruiken geen extra RAM.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>Geïnstalleerd VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>Wijzigt de hoeveelheid VRAM in de geëmuleerde console. Commerciële games gebruiken geen extra VRAM.</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>Versnellen tijdens laden</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>Versnelt wanneer de game het scherm niet meer bijwerkt tijdens het lezen van de schijf. Niet van toepassing op geanimeerde laadschermen.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>Time-out bij inactiviteit schalen</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>Voorkomt dat games een time-out krijgen terwijl ze tijdens overklokken op verticale blanking wachten.</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>Versnellen van inactieve recompilercyclus inschakelen</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>Slaat de busy-wait-lus over die games gebruiken om op verticale blanking te wachten.</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
@@ -3516,6 +3558,11 @@ Huidige toewijzing: %s</translation>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -4443,16 +4490,6 @@ Huidige toewijzing: %s</translation>
         <translation>Downloadt alle badges van vergrendelde prestaties bij het starten van de game, zodat afbeeldingen bij het ontgrendelen sneller worden weergegeven.</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>Niet-officiële prestaties bijhouden</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>Offlinemodus van RetroAchievements testen</translation>
@@ -4478,6 +4515,15 @@ Huidige toewijzing: %s</translation>
         <translation>Aangemeld sinds %s</translation>
     </message>
     <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>Je hebt %1$d van de %2$d niet-gepromoveerde prestaties ontgrendeld en daarmee %3$d van de %4$d mogelijke punten behaald.</numerusform>
+            <numerusform>Je hebt %1$d van de %2$d niet-gepromoveerde prestaties ontgrendeld en daarmee %3$d van de %4$d mogelijke punten behaald.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
@@ -4485,6 +4531,26 @@ Huidige toewijzing: %s</translation>
             <numerusform>%1$d prestatie wordt niet ondersteund door DuckStation en kan niet worden ontgrendeld.</numerusform>
             <numerusform>%1$d prestaties worden niet ondersteund door DuckStation en kunnen niet worden ontgrendeld.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>Niet-gepromoveerd</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>Ontgrendeling niet-gepromoveerde prestatie resetten</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>De ontgrendelingsstatus van &apos;%1$s&apos; wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>Ontgrendeling van niet-gepromoveerde prestatie gereset.</translation>
     </message>
     <message>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
@@ -5181,6 +5247,16 @@ U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; 
         <translation>Schakelt foutopsporing in wanneer dit door de renderer-API van de host wordt ondersteund. Alleen voor ontwikkelaars.</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>GPU-gebaseerde validatie gebruiken</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>Schakelt GPU-gebaseerde validatie in als de renderer-API van de host dit ondersteunt. Alleen voor ontwikkelaars.</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>OpenGL ES-context verkiezen</translation>
@@ -5603,11 +5679,6 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <source>Author: %1$s</source>
         <comment>patch_codes_author</comment>
         <translation>Auteur: %1$s</translation>
-    </message>
-    <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>Niet beschikbaar wanneer de hardcoremodus van RetroAchievements actief is.</translation>
     </message>
     <message>
         <source>Search codes</source>
@@ -6601,34 +6672,9 @@ ${serial}: Serienummer van het spel.</translation>
         <translation>Selecteert het percentage van de normale kloksnelheid waarop de geëmuleerde hardware draait.</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>8 MB RAM inschakelen</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>Schakelt 6 MB extra RAM in voor in totaal 2+6 = 8 MB, die doorgaans aanwezig is in ontwikkelconsoles.</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>Geïnstalleerd RAM</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>Uitgebreid RAM kan ervoor zorgen dat spellen niet meer werken. Gebruik het daarom alleen met compatibele mods.</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>Volledige RAM-adressering afdwingen</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de BIOS- of spelconfiguratie.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8620,16 +8666,12 @@ U kunt DuckStation handmatig bijwerken door de nieuwste release opnieuw te downl
         <translation>BIOS installeren</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Zoeken...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Openen...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Herstellen</translation>
     </message>
     <message>
         <source>Parallel Port</source>
@@ -8906,12 +8948,8 @@ Uw dump is mogelijk beschadigd of de fysieke schijf is bekrast.</translation>
         <translation>Zoeken...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Openen...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Herstellen</translation>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9321,12 +9359,24 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Opstarten versnellen</translation>
     </message>
     <message>
+        <source>Installed VRAM:</source>
+        <translation>Geïnstalleerd VRAM:</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Versnellen tijdens laden</translation>
+    </message>
+    <message>
         <source>100% (33.87MHz)</source>
         <translation>100% (33.87MHz)</translation>
     </message>
     <message>
         <source>Enable Recompiler ICache</source>
         <translation>Recompiler-ICache inschakelen</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Time-out bij inactiviteit schalen</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -9369,10 +9419,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Geïnstalleerd RAM:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Volledige RAM-adressering afdwingen</translation>
-    </message>
-    <message>
         <source>None (Normal Speed)</source>
         <translation>Geen (normale snelheid)</translation>
     </message>
@@ -9395,22 +9441,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     <message>
         <source>6x</source>
         <translation>6x</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed:</source>
-        <translation>Snelheid fysiek schijfstation:</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>Niet wijzigen</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>Subcode van fysiek schijfstation negeren</translation>
     </message>
     <message>
         <source>Apply Image Patches</source>
@@ -9453,6 +9483,22 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Versnelt de toegang tot de geheugenkaart, zowel bij het laden als bij het opslaan. Kan wachttijden verkorten in games die vaak geheugenkaarten gebruiken.</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Versnelt wanneer de game het scherm niet meer bijwerkt tijdens het lezen van de schijf. Niet van toepassing op geanimeerde laadschermen.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>Wijzigt de hoeveelheid RAM in de geëmuleerde console. Commerciële games gebruiken geen extra RAM. In de geforceerde modus wordt al het geïnstalleerde RAM in kaart gebracht, ongeacht de gameconfiguratie; dit is nodig om 16 MB te gebruiken met de BIOS-versies van in de winkel verkochte consoles.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>Geïnstalleerd VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>Wijzigt de hoeveelheid VRAM in de geëmuleerde console. Commerciële games gebruiken geen extra VRAM. In de geforceerde modus wordt de tweede VRAM-bank toegankelijk gemaakt, ongeacht of de game deze inschakelt.</translation>
+    </message>
+    <message>
         <source>Execution Mode</source>
         <translation>Uitvoeringsmodus</translation>
     </message>
@@ -9481,6 +9527,14 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
         <translation>Simuleert vertragingen in de recompilers wanneer de geëmuleerde CPU instructies in zijn cache moet laden. Hierdoor draaien games dichter bij de framesnelheid van de console, met een kleine invloed op de prestaties. De interpretermodus simuleert de instructiecache altijd.</translation>
     </message>
     <message>
+        <source>Checked</source>
+        <translation>Aangevinkt</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>Games stoppen na een vast aantal lusiteraties met wachten op verticale blanking. Bij overklokken verlopen die iteraties sneller. Schaalt deze time-out om games gesynchroniseerd te houden met verticale blanking.</translation>
+    </message>
+    <message>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>Laadt de game-image in RAM. Nuttig voor netwerkpaden die tijdens het spelen onbetrouwbaar kunnen worden. Verhelpt in sommige gevallen ook haperingen wanneer games een audiotrack beginnen af te spelen.</translation>
     </message>
@@ -9491,14 +9545,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     <message>
         <source>Installed RAM</source>
         <translation>Geïnstalleerd RAM</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Wijzigt de hoeveelheid RAM die in de geëmuleerde console is geïnstalleerd. Games moeten een grotere heap gebruiken om het extra RAM te kunnen benutten. Games die afhankelijk zijn van geheugenspiegels werken mogelijk niet meer correct. Gebruik dit daarom alleen met compatibele mods.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de grootte die door het BIOS of de game is ingesteld. BIOS-versies van consumentenconsoles maken slechts 8MB adresseerbaar. Dit is dus nodig om 16MB te kunnen gebruiken zonder een aangepast BIOS. Heeft alleen effect als er extra RAM is geïnstalleerd.</translation>
     </message>
     <message>
         <source>CD-ROM Seek Speedup</source>
@@ -9515,22 +9561,6 @@ Deze cheat gebruiken zal niet het verwachte resultaat opleveren. Wilt u doorgaan
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Schakelt automatisch over naar de volgende schijf in de game wanneer de game de CD-ROM-motor stopt. Er wordt niet overgeschakeld als de laatste schijf in de game al is geselecteerd. &lt;strong&gt;Werkt niet voor alle games.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>Snelheid fysiek schijfstation</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>Stelt de snelheid van het schijfstation van de host in bij gebruik van fysieke schijven. Hogere snelheden kunnen haperingen verminderen, maar maken het station luidruchtiger. Kies ‘Niet wijzigen’ om de snelheid van het station ongemoeid te laten. Niet alle stations ondersteunen dit.</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Negeert het subkanaal dat door het station wordt aangeleverd bij gebruik van fysieke schijven en genereert in plaats daarvan altijd subkanaalgegevens. Werkt niet met libcrypt-games, maar kan de leesbetrouwbaarheid van sommige stations verbeteren.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -11548,16 +11578,12 @@ Dit bestand kan meerdere gigabytes groot worden, dus let op SSD-slijtage.</trans
         <translation>Snelle geheugentoegang voor recompiler inschakelen</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Versnellen van inactieve recompilercyclus inschakelen</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>CD-ROM-MechaCon-versie</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>Vooruitgelezen CD-ROM-sectoren</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> sectoren</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -12012,6 +12038,105 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>Cachemap</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>Voor het opslaan van gecompileerde shaders, gamelijstgegevens en gedownloade prestatieafbeeldingen.</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>Cheatmap</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>Slaat zelf gemaakte of geïmporteerde cheatbestanden (.cht) op. Deze worden naast de ingebouwde cheatdatabase gebruikt.</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>Coversmap</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>Voor het opslaan van covers in de gamegrid en Big Picture-interfaces.</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>Map met gamepictogrammen</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>Slaat pictogrammen voor de gamelijst op die zijn geëxtraheerd uit opgeslagen spelgegevens op geheugenkaarten. Plaats hier een PNG-bestand met het serienummer van een game als bestandsnaam om een aangepast pictogram te gebruiken.</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>Map met game-instellingen</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>Slaat instellingenbestanden per game op, met het serienummer van de game als bestandsnaam.</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>Map met invoerprofielen</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>Slaat invoerprofielen voor controllers op.</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>Patchmap</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>Slaat zelf gemaakte of geïmporteerde patchbestanden (.cht) op. Deze worden naast de ingebouwde patchdatabase gebruikt.</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>Shadersmap</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>Zoekt naar post-processingshaders: GLSL-shaders in deze map, ReShade-shaders in reshade/Shaders en slang-presets in slang.</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>Subkanalenmap</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>Zoekt naar SBI/LSD-subkanaalbestanden die nodig zijn voor LibCrypt-beveiligde games wanneer deze bestanden niet naast de schijfkopie staan.</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>Map met gebruikersbronnen</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>Bestanden hierin vervangen de meegeleverde bronnen. Deze map wordt ook gebruikt voor aangepaste thema&apos;s en Big Picture-achtergronden.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Bladeren...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>%1 selecteren</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Standaard</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>-</source>
@@ -12194,10 +12319,6 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Totale tijd: {}</translation>
     </message>
     <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>Alle niet-officiële prestatievoortgang voor de huidige game wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
-    </message>
-    <message>
         <source>Allow Booting Without SBI File</source>
         <translation>Opstarten zonder SBI-bestand toestaan</translation>
     </message>
@@ -12340,6 +12461,14 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Change Disc</source>
         <translation>Schijf wisselen</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>Wijzigt de hoeveelheid RAM in de geëmuleerde console. Commerciële games gebruiken geen extra RAM.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>Wijzigt de hoeveelheid videogeheugen in de geëmuleerde console. Commerciële games gebruiken geen extra VRAM.</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
@@ -12646,6 +12775,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Recompiler-ICache inschakelen</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Versnellen van inactieve recompilercyclus inschakelen</translation>
+    </message>
+    <message>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Geheugenuitzonderingen voor recompiler inschakelen</translation>
     </message>
@@ -12740,8 +12873,8 @@ De fout was:</translation>
         <translation>Volume voor versneld afspelen</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Volledige RAM-adressering afdwingen</translation>
+        <source>Fast Forward While Loading</source>
+        <translation>Versnellen tijdens laden</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -12976,10 +13109,6 @@ De fout was:</translation>
         <translation>Laat games dichter bij de framesnelheid van hun console draaien, met een kleine invloed op de prestaties.</translation>
     </message>
     <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>Maakt al het geïnstalleerde RAM adresseerbaar, ongeacht de grootte die door het BIOS of de game is ingesteld. Nodig voor 16MB bij BIOS-versies van consumentenconsoles.</translation>
-    </message>
-    <message>
         <source>Memory Card Directory</source>
         <translation>Map voor geheugenkaarten</translation>
     </message>
@@ -13142,6 +13271,10 @@ Wilt u de save state verwijderen en de game toch opstarten?</translation>
     <message>
         <source>Advanced Rendering Options</source>
         <translation>Geavanceerde renderopties</translation>
+    </message>
+    <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Alle voortgang van niet-gepromoveerde prestaties voor het huidige spel wordt verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
     </message>
     <message>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
@@ -13334,10 +13467,6 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Changes settings for the application.</source>
         <translation>Wijzigt de instellingen voor de toepassing.</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>Wijzigt de hoeveelheid RAM die in de geëmuleerde console is geïnstalleerd.</translation>
     </message>
     <message>
         <source>Cheats</source>
@@ -13852,6 +13981,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Versnelt het vroege laadproces bij snel opstarten, waardoor tijd wordt bespaard. Resultaten kunnen per game verschillen.</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Versnelt wanneer de game het scherm niet meer bijwerkt tijdens het lezen van de schijf. Niet van toepassing op geanimeerde laadschermen.</translation>
+    </message>
+    <message>
         <source>Filter Framebuffer Uploads</source>
         <translation>Framebufferuploads filteren</translation>
     </message>
@@ -14016,6 +14149,10 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>BIOS installeren</translation>
     </message>
     <message>
+        <source>Installed VRAM</source>
+        <translation>Geïnstalleerd VRAM</translation>
+    </message>
+    <message>
         <source>Internal Resolution</source>
         <translation>Interne resolutie</translation>
     </message>
@@ -14158,6 +14295,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Message Location</source>
         <translation>Locatie van bericht</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>Minimum Framebuffer Upload Height</source>
@@ -14404,14 +14545,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Ontgrendeling resetten</translation>
     </message>
     <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>Niet-officiële prestatie resetten</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>Niet-officiële prestatieontgrendelingen resetten</translation>
-    </message>
-    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Zet alle instellingen terug op de standaardwaarden.</translation>
     </message>
@@ -14632,6 +14765,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Stap {} van {}</translation>
     </message>
     <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>Voorkomt dat games een time-out krijgen terwijl ze tijdens overklokken op verticale blanking wachten.</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Slaat de huidige instellingen op in een controller­voorinstelling.</translation>
     </message>
@@ -14672,10 +14809,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Track</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Niet-officiële prestaties bijhouden</translation>
-    </message>
-    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Trackhash naar klembord gekopieerd.</translation>
     </message>
@@ -14686,14 +14819,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Trigger</source>
         <translation>Trigger</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>Niet-officiële prestatieontgrendeling gereset.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>Niet-officiële prestatieontgrendelingen gereset.</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -14754,10 +14879,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Web Cache Size: {0} ({1} in {2} objects)</source>
         <translation>Webcachegrootte: {0} ({1} in {2} objecten)</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Wanneer ingeschakeld, houdt DuckStation niet-officiële prestaties bij. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
     <message>
         <source>When enabled, the legacy global save state slots will be available. These slots are independent of the current game.</source>
@@ -15092,6 +15213,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Instellingen resetten</translation>
     </message>
     <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>Ontgrendeling niet-gepromoveerde prestatie resetten</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>Ontgrendelingen van niet-gepromoveerde prestaties resetten</translation>
+    </message>
+    <message>
         <source>Resets all configuration to defaults (including bindings).</source>
         <translation>Zet alle configuratie terug naar de standaardwaarden (inclusief bindingen).</translation>
     </message>
@@ -15174,6 +15303,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Slaat periodiek de status op, zodat je tijdens het spelen gemaakte fouten kunt terugspoelen.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Time-out bij inactiviteit schalen</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15512,6 +15645,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Weergave van dubbele frames overslaan</translation>
     </message>
     <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>Slaat de busy-wait-lus over die games gebruiken om op verticale blanking te wachten.</translation>
+    </message>
+    <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>Slaat de presentatie/weergave over van niet-unieke frames. Dit kan leiden tot een slechtere frametiming.</translation>
     </message>
@@ -15724,6 +15861,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Elke %d frames aan/uit</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Niet-gepromoveerde prestaties volgen</translation>
+    </message>
+    <message>
         <source>Turbo Speed</source>
         <translation>Turbosnelheid</translation>
     </message>
@@ -15754,6 +15895,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Unpin from OSD</source>
         <translation>Losmaken van OSD</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>Ontgrendeling van niet-gepromoveerde prestatie gereset.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>Ontgrendelingen van niet-gepromoveerde prestaties zijn gereset.</translation>
     </message>
     <message>
         <source>Update Database</source>
@@ -15882,6 +16031,10 @@ Wil je toch doorgaan met {0}?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Wanneer dit is ingeschakeld, gaat DuckStation ervan uit dat alle prestaties vergrendeld zijn en worden er geen ontgrendelingsmeldingen naar de server gestuurd.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Als dit is ingeschakeld, volgt DuckStation niet-gepromoveerde prestaties. Ontgrendelingen worden lokaal opgeslagen en niet naar RetroAchievements verzonden.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -16232,12 +16385,12 @@ Wil je toch doorgaan met {1}?</translation>
         <translation>RAM-grootte:</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>Breedbeeldweergave uitschakelen</translation>
+        <source>VRAM Size:</source>
+        <translation>VRAM-grootte:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>Volledige RAM-adressering afdwingen</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Breedbeeldweergave uitschakelen</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16485,6 +16638,11 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Versnelde toegang tot geheugenkaart uitschakelen</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Versnellen tijdens laden uitschakelen</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>Versneld lezen van cd-rom uitschakelen</translation>
@@ -16638,6 +16796,10 @@ Weet u zeker dat u wilt doorgaan?</translation>
     <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Versnelde toegang tot geheugenkaart uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>Versnellen tijdens laden uitgeschakeld.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -17127,14 +17289,6 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Uitgesloten paden (worden niet gescand)</translation>
     </message>
     <message>
-        <source>File...</source>
-        <translation>Bestand...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>Map...</translation>
-    </message>
-    <message>
         <source>Scan For New Games</source>
         <translation>Naar nieuwe games scannen</translation>
     </message>
@@ -17143,8 +17297,40 @@ Weet u zeker dat u wilt doorgaan?</translation>
         <translation>Alle games opnieuw scannen</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>Zoekmappen</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>Mappen die op games worden doorzocht. Schakel recursief scannen in om ook submappen te doorzoeken; dit duurt langer, maar vindt games in geneste mappen. Je kunt mappen ook vanuit Bestandsbeheer hierheen slepen.</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>Uitgesloten paden</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>Bestanden en mappen die tijdens het zoeken naar games worden overgeslagen, zoals afbeeldingen die je niet in de gamelijst wilt zien. Je kunt bestanden en mappen ook vanuit Bestandsbeheer hierheen slepen.</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>Doorzoekt de zoekmappen op bestanden die nog niet in de gamelijst staan. Eerder gescande games worden uit de cache geladen, dus dit gaat meestal snel.</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>Verwijdert de cache van de gamelijst en scant alle bestanden in de zoekmappen opnieuw. Gebruik dit als gegevens zoals titels of serienummers onjuist zijn. Kan lang duren bij grote collecties.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Map openen...</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Geen zoekmappen. Voeg een map toe of sleep er een hierheen om te kiezen waar je games zijn opgeslagen.</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>Geen uitgesloten paden. Bestanden of mappen die je hier toevoegt, worden tijdens het scannen overgeslagen.</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -17840,16 +18026,12 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
         <translation>Map waaruit vervangende texturen worden geladen en waarin dumps worden opgeslagen.</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Bladeren...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Openen...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Herstellen</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -18226,10 +18408,6 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     <message>
         <source>Geometry Tolerance</source>
         <translation>Geometrietolerantie</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1,00 px (uitgeschakeld)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20565,6 +20743,10 @@ Shift-klik om meerdere bindingen in te stellen.</translation>
         <translation>Configureert geavanceerde opties voor de applicatie.</translation>
     </message>
     <message>
+        <source>&amp;Folders</source>
+        <translation>&amp;Mappen</translation>
+    </message>
+    <message>
         <source>Configures internal options for the application.</source>
         <translation>Configureert interne opties voor de applicatie.</translation>
     </message>
@@ -21365,6 +21547,10 @@ Deze actie kan niet ongedaan worden gemaakt.</translation>
         <translation>Purple Rain</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>QDarkStyle</source>
         <translation>QDarkStyle</translation>
     </message>
@@ -21859,6 +22045,10 @@ Fout: {1}</translation>
         <translation>Alle Geheugenkaarten (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
+    </message>
+    <message>
         <source>Checked</source>
         <translation>Aan</translation>
     </message>
@@ -21881,10 +22071,6 @@ Fout: {1}</translation>
     <message>
         <source>Memory Cards:</source>
         <translation>Geheugenkaarten:</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Openen...</translation>
     </message>
     <message>
         <source>Select Memory Card Directory</source>
@@ -23259,10 +23445,6 @@ Fout: {1}</translation>
         <translation>Overlaylijst vernieuwen</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Extra vooraf ingestelde randen kunnen worden toegevoegd aan de map &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; in de gegevensmap.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>Aangepaste configuratie</translation>
     </message>
@@ -23273,6 +23455,14 @@ Fout: {1}</translation>
     <message>
         <source>Browse...</source>
         <translation>Bladeren...</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>Overlaymap:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23305,6 +23495,22 @@ Fout: {1}</translation>
     <message>
         <source>Export...</source>
         <translation>Exporteren...</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>Overlaymap selecteren</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>Overlaymap</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Standaard</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>Slaat extra presets voor randoverlays op. Gebruik Overlaylijst vernieuwen om presets te vinden nadat je deze map hebt gewijzigd.</translation>
     </message>
     <message>
         <source>Image Path</source>
@@ -23956,12 +24162,20 @@ Wilt u de snelkoppeling bijwerken zodat deze naar de huidige locatie verwijst?</
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>{} opgeslagen</translation>
+        <source>Empty</source>
+        <translation>Leeg</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>In deze sleuf is geen opslag aanwezig.</translation>
+        <source>Save States</source>
+        <translation>Save states</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>{} van {} slots in gebruik</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>{} opgeslagen</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -24029,16 +24243,16 @@ Wilt u de snelkoppeling bijwerken zodat deze naar de huidige locatie verwijst?</
 <context>
     <name>SettingWidgetBinder</name>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>Globale instelling gebruiken [Ingeschakeld]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>Globale instelling gebruiken [Uitgeschakeld]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>Globaal: </translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>Map openen</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Terugzetten op standaard</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24169,24 +24383,54 @@ Wilt u deze map maken?</translation>
         <translation>Niet-PS1</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB (consumentenconsole)</translation>
+        <translation>2 MB (standaard)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB (arcadeprintplaten)</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB (ontwikkelconsole)</translation>
+        <translation>4 MB (geforceerd)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB (mods/arcadeprintplaten)</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (geforceerd)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (geforceerd)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB (standaard)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB (geforceerd)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -25006,10 +25250,6 @@ Wilt u deze map maken?</translation>
         <translation>Spellenlijst</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Spellenlijstinstellingen&lt;/strong&gt;&lt;hr&gt;In de bovenstaande lijst staan de mappen die DuckStation doorzoekt om de spellenlijst samen te stellen. Zoekmappen kunnen worden toegevoegd, verwijderd en omgeschakeld naar recursief of niet-recursief zoeken.</translation>
-    </message>
-    <message>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -25075,6 +25315,14 @@ Wilt u deze map maken?</translation>
         <translation>&lt;strong&gt;Opname-instellingen&lt;/strong&gt;&lt;hr&gt;Deze opties bepalen hoe schermafbeeldingen en video&apos;s door de toepassing worden opgenomen.</translation>
     </message>
     <message>
+        <source>Folders</source>
+        <translation>Mappen</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;Mapinstellingen&lt;/strong&gt;&lt;hr&gt;Met deze opties bepaal je waar DuckStation bestanden leest en opslaat.&lt;br&gt;&lt;br&gt;Beweeg de muisaanwijzer over een optie voor extra informatie. Houd Shift ingedrukt en draai aan het muiswiel om dit paneel te scrollen.</translation>
+    </message>
+    <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;Geavanceerde instellingen&lt;/strong&gt;&lt;hr&gt;Deze opties bepalen de logboekregistratie en het interne gedrag van de emulator. Beweeg de muis over een optie voor aanvullende informatie en gebruik Shift+Wheel om dit paneel te scrollen.</translation>
     </message>
@@ -25137,6 +25385,10 @@ Wilt u doorgaan?</translation>
     <message>
         <source>Console</source>
         <translation>Console</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;Instellingen gamelijst&lt;/strong&gt;&lt;hr&gt;Met deze opties bepaal je welke mappen worden gescand om de gamelijst te vullen.&lt;br&gt;&lt;br&gt;Beweeg de muisaanwijzer over een optie voor extra informatie.</translation>
     </message>
     <message>
         <source>Emulation</source>
@@ -25214,10 +25466,6 @@ Wilt u doorgaan?</translation>
         <translation>Bladeren...</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Resetten</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japan):</translation>
     </message>
@@ -25228,10 +25476,6 @@ Wilt u doorgaan?</translation>
     <message>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Europa, Australië):</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>Openen in Verkenner...</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -25272,6 +25516,10 @@ Wilt u doorgaan?</translation>
     <message>
         <source>Advanced Settings</source>
         <translation>Geavanceerde instellingen</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Meer opties</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -25563,6 +25811,10 @@ Alle wijzigingen zijn opgeslagen en de wizard wordt opnieuw uitgevoerd wanneer u
         </translation>
     </message>
     <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Geen zoekmappen. Voeg een map toe of sleep er een hierheen om te kiezen waar je games zijn opgeslagen.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Map openen...</translation>
     </message>
@@ -25666,6 +25918,11 @@ Token gegenereerd %2</translation>
         <comment>Taint</comment>
         <translation>Geheugenkaart komt niet overeen</translation>
     </message>
+    <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>Uitgebreid VRAM</translation>
+    </message>
     <message numerus="yes">
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
@@ -25712,6 +25969,10 @@ Configuration: {1}%</source>
         <translation>De savestate komt niet overeen met de huidige configuratie.
 Savestate: {0}%
 Configuratie: {1}%</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>Onbekende BIOS</translation>
     </message>
     <message>
         <source>System is not in correct state.</source>
@@ -25808,6 +26069,10 @@ De huidige CD-image wordt gebruikt; dit kan instabiliteit veroorzaken.</translat
         <translation>Kaart gewijzigd in {}.</translation>
     </message>
     <message>
+        <source>Physical Disc</source>
+        <translation>Fysieke schijf</translation>
+    </message>
+    <message>
         <source>No valid game is running.</source>
         <translation>Er wordt geen geldige game uitgevoerd.</translation>
     </message>
@@ -25826,6 +26091,14 @@ The name of the SBI file must match the name of the disc image.</source>
 Uw dump is onvolledig; u moet het SBI-bestand toevoegen om deze game uit te voeren. 
 
 De naam van het SBI-bestand moet overeenkomen met de naam van de schijfimage.</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>RAM-grootte is ingesteld op {}, dit is mogelijk niet compatibel met sommige games.</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>VRAM-grootte is ingesteld op {}, dit is mogelijk niet compatibel met sommige games.</translation>
     </message>
     <message>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
@@ -25881,6 +26154,10 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
     <message>
         <source>Overclock disabled.</source>
         <translation>Overklokken uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>2 MB VRAM uitgeschakeld.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25997,10 +26274,6 @@ U moet op een geheugenkaart opslaan en de game resetten om alle effecten te wiss
     <message>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
         <translation>De beeldsnelheid staat niet op automatisch. Games kunnen op de verkeerde snelheid draaien.</translation>
-    </message>
-    <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Extra RAM is ingeschakeld; dit is mogelijk incompatibel met sommige games.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>

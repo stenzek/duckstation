@@ -146,10 +146,6 @@ Do you want to enable hardcore mode?</source>
         <translation>実績を有効にする</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>非公式の実績をテストする</translation>
-    </message>
-    <message>
         <source>Show Leaderboard Trackers</source>
         <translation>リーダーボードトラッカーを表示する</translation>
     </message>
@@ -180,10 +176,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>Enable Encore Mode</source>
         <translation>アンコールモードを有効にする</translation>
-    </message>
-    <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>非公式の実績を追跡</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -242,6 +234,10 @@ Do you want to enable hardcore mode?</source>
         <translation>実績通知を表示する</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>未昇格の実績を記録</translation>
+    </message>
+    <message>
         <source>Show Leaderboard Notifications</source>
         <translation>リーダーボード通知を表示する</translation>
     </message>
@@ -256,10 +252,6 @@ Do you want to enable hardcore mode?</source>
     <message>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>有効にしてログインすると、DuckStation は起動時に実績を検索します。</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
@@ -410,6 +402,14 @@ Token generated %2</source>
     <message>
         <source> seconds</source>
         <translation> 秒</translation>
+    </message>
+    <message>
+        <source>Test Unpromoted Achievements</source>
+        <translation>未昇格の実績をテスト</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>有効にすると、DuckStation は未昇格の実績を記録します。解除した実績はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -587,10 +587,6 @@ Error: {}</source>
         <source>This subset has no achievements.</source>
         <translation>このサブセットには実績がありません。</translation>
     </message>
-    <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>非公式実績を {1} 件中 {0} 件解除し、獲得可能な {3} ポイント中 {2} ポイントを獲得しました。</translation>
-    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -613,10 +609,6 @@ Error: {}</source>
     <message>
         <source>Unsupported</source>
         <translation>非対応</translation>
-    </message>
-    <message>
-        <source>Unofficial</source>
-        <translation>非公式</translation>
     </message>
     <message>
         <source>Recently Unlocked</source>
@@ -647,10 +639,6 @@ Error: {}</source>
         <translation>実績をピン留め</translation>
     </message>
     <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>非公式実績の解除をリセット</translation>
-    </message>
-    <message>
         <source>View Details</source>
         <translation>詳細を表示</translation>
     </message>
@@ -669,6 +657,14 @@ Error: {}</source>
     <message>
         <source>Win Condition</source>
         <translation>勝利条件</translation>
+    </message>
+    <message>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>未昇格の実績を{1}件中{0}件解除し、獲得可能な{3}ポイント中{2}ポイントを獲得しました。</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>未昇格の実績の解除状態をリセット</translation>
     </message>
     <message>
         <source>{:.1f}% of players have this achievement</source>
@@ -878,6 +874,10 @@ We will keep trying to submit this request.</source>
 このリクエストの送信を引き続き試行します。</translation>
     </message>
     <message>
+        <source>Unpromoted</source>
+        <translation>未昇格</translation>
+    </message>
+    <message>
         <source>Score: {} ({} casual)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
@@ -1060,32 +1060,32 @@ This session will start in offline mode.</source>
         <translation>RAIntegration を有効にする</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>キャッシュディレクトリ</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>CD-ROM エミュレーション</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>コンパイル済みシェーダーとゲームリストデータの保存に使用します。</translation>
+        <source>Readahead Sectors:</source>
+        <translation>先読みセクター数:</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>参照...</translation>
+        <source> sectors</source>
+        <translation> セクター</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>物理ディスクドライブの速度:</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>リセット</translation>
+        <source>Don&apos;t Change</source>
+        <translation>変更しない</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>カバーディレクトリ</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>ゲームグリッド／ビッグピクチャー UI に表示するカバー画像の保存に使用します。</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>物理ディスクドライブのサブコードを無視</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1098,14 +1098,6 @@ This session will start in offline mode.</source>
     <message>
         <source>Clear</source>
         <translation>クリア</translation>
-    </message>
-    <message>
-        <source>Select Cache Directory</source>
-        <translation>キャッシュディレクトリを選択</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>カバーディレクトリを選択</translation>
     </message>
     <message>
         <source>Log Level</source>
@@ -1160,16 +1152,34 @@ This session will start in offline mode.</source>
         <translation>現在のフレーム番号を画面右上に表示します。</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>デフォルト</translation>
+        <source>Readahead Sectors</source>
+        <translation>先読みセクター数</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n セクター</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>コンパイル済みシェーダーとゲームリストデータを保存するディレクトリを指定します。</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>CD データをワーカースレッドで非同期に読み込み/展開して、エミュレーションの引っかかりを軽減します。</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>ゲームグリッドとビッグピクチャー UI で使用するゲームカバー画像の保存先を指定します。</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>物理ディスクドライブの速度</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>物理ディスク使用時のホストドライブの速度を設定します。速度を上げるとカクつきが減る場合がありますが、ドライブの動作音が大きくなります。ドライブ本来の速度を使うには「変更しない」を選択してください。すべてのドライブが対応しているわけではありません。</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>物理ディスク使用時にドライブが提供するサブチャンネルを無視し、常にサブチャンネルデータを生成します。LibCrypt 保護ゲームでは動作しませんが、一部のドライブでは読み取りの信頼性が向上する場合があります。</translation>
     </message>
     <message>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
@@ -2192,6 +2202,16 @@ Current Binding: %s</source>
         <translation>安全性の確認に失敗しました</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>未昇格の実績を記録</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>有効にすると、DuckStation は未昇格の実績を記録します。解除した実績はローカルに保存され、RetroAchievements には送信されません。</translation>
+    </message>
+    <message>
         <source>Not Logged In.</source>
         <comment>settings_achievements_not_logged_in</comment>
         <translation>ログインしていません。</translation>
@@ -2296,14 +2316,6 @@ Current Binding: %s</source>
             <numerusform>このサブセットのすべての実績を解除し、%1$d ポイントを獲得しました！</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>%2$d 個中 %1$d 個の非公式実績を解除し、獲得可能な %4$d ポイント中 %3$d ポイントを獲得しました。</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Game was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_game_beaten_completed_format_string</comment>
@@ -2365,11 +2377,6 @@ Current Binding: %s</source>
         <translation>勝利条件</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>非公式</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>RetroAchievements で開く</translation>
@@ -2388,21 +2395,6 @@ Current Binding: %s</source>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>解除をリセット</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>非公式実績をリセット</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>「%1$s」の解除状態を削除します。この操作は取り消せません。</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>非公式実績の解除をリセットしました。</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3302,6 +3294,11 @@ Current Binding: %s</source>
         <translation>すべて無効化</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>RetroAchievements のハードコアモード中は利用できません。</translation>
+    </message>
+    <message>
         <source>Add</source>
         <comment>cheat_codes_add</comment>
         <translation>追加</translation>
@@ -3380,6 +3377,51 @@ Current Binding: %s</source>
         <source>Global Setting</source>
         <comment>preference_reset_global_value</comment>
         <translation>グローバル設定</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>エミュレートされた本体に搭載する RAM の容量を変更します。市販ゲームは追加 RAM を使用しません。</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>搭載 VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>エミュレートされた本体に搭載する VRAM の容量を変更します。市販ゲームは追加 VRAM を使用しません。</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>読み込み中に早送り</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>ディスク読み込み中にゲームが画面の更新を停止すると早送りします。アニメーション付きの読み込み画面には適用されません。</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>アイドルタイムアウトを調整</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>オーバークロック時に垂直帰線期間を待っているゲームがタイムアウトするのを防ぎます。</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>リコンパイラーのアイドルループ早送りを有効化</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>ゲームが垂直帰線期間を待つために使用するビジーウェイトループをスキップします。</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
@@ -3490,6 +3532,11 @@ Current Binding: %s</source>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>ピンキー・パルズ</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -4417,16 +4464,6 @@ Current Binding: %s</source>
         <translation>ゲームの起動時に未解除の実績のバッジをすべてダウンロードします。実績解除時の画像表示の遅延を減らします。</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>非公式の実績を追跡</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>RetroAchievements のオフラインモードをテスト</translation>
@@ -4452,12 +4489,40 @@ Current Binding: %s</source>
         <translation>ログイン日時: %s</translation>
     </message>
     <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>未昇格の実績 %2$d 件中 %1$d 件を解除し、獲得可能な %4$d ポイント中 %3$d ポイントを獲得しました。</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
         <translation>
             <numerusform>%1$d 個の実績は DuckStation でサポートされていないため、解除できません。</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>未昇格</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>未昇格の実績の解除状態をリセット</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>「%1$s」の解除状態を削除します。この操作は取り消せません。</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>未昇格の実績の解除状態をリセットしました。</translation>
     </message>
     <message>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
@@ -5154,6 +5219,16 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
         <translation>ホストのレンダラー API でサポートされている場合に、デバッグを有効にします。開発者用です。</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>GPU ベースの検証を使用</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>ホストのレンダラー API が対応している場合に GPU ベースの検証を有効にします。開発者向けの機能です。</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>OpenGL ES コンテキストを優先</translation>
@@ -5574,11 +5649,6 @@ Are you sure you want to continue?</source>
         <source>Author: %1$s</source>
         <comment>patch_codes_author</comment>
         <translation>作者: %1$s</translation>
-    </message>
-    <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>RetroAchievements のハードコアモードが有効な間は利用できません。</translation>
     </message>
     <message>
         <source>Search codes</source>
@@ -6570,34 +6640,9 @@ ${serial}: ゲームのシリアル番号。</translation>
         <translation>エミュレートされたハードウェアが実行される通常のクロック速度のパーセンテージを選択します。</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>8MB RAM を有効化</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>6 MB の RAM を追加し、合計 2+6 = 8 MB にします。通常は開発用コンソールに搭載されています。</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>搭載 RAM</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>RAM を拡張するとゲームが正常に動作しなくなる場合があるため、対応する MOD でのみ使用してください。</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>RAM 全体のマッピングを強制</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>BIOS やゲームの設定にかかわらず、搭載 RAM 全体をマッピングします。</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8587,16 +8632,12 @@ You can manually update DuckStation by re-downloading the latest release. Do you
         <translation>リストを更新</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>参照...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>リセット</translation>
     </message>
     <message>
         <source>Parallel Port</source>
@@ -8872,12 +8913,8 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>参照...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>リセット</translation>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9263,6 +9300,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>起動処理を早送り</translation>
     </message>
     <message>
+        <source>Installed VRAM:</source>
+        <translation>搭載 VRAM:</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>読み込み中に早送り</translation>
+    </message>
+    <message>
         <source>CPU Emulation</source>
         <translation>CPU エミュレーション</translation>
     </message>
@@ -9281,6 +9326,10 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Enable Recompiler ICache</source>
         <translation>リコンパイラの命令キャッシュを有効にする</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>アイドルタイムアウトを調整</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -9319,22 +9368,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>最大 (より安全)</translation>
     </message>
     <message>
-        <source>Physical Drive Speed:</source>
-        <translation>物理ドライブの速度:</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>変更しない</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>物理ドライブのサブコードを無視</translation>
-    </message>
-    <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>停止時に次のディスクへ切り替え</translation>
     </message>
@@ -9345,10 +9378,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Installed RAM:</source>
         <translation>搭載 RAM:</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>全 RAM のマッピングを強制</translation>
     </message>
     <message>
         <source>Seek Speedup:</source>
@@ -9423,16 +9452,12 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>読み込みと保存の両方でメモリーカードアクセスを早送りします。メモリーカードへ頻繁にアクセスするゲームの待ち時間を短縮できます。</translation>
     </message>
     <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>ディスク読み込み中にゲームが画面の更新を停止すると早送りします。アニメーション付きの読み込み画面には適用されません。</translation>
+    </message>
+    <message>
         <source>Installed RAM</source>
         <translation>搭載 RAM</translation>
-    </message>
-    <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>エミュレートする本体に搭載されている RAM の容量を変更します。拡張 RAM を利用するには、ゲーム側でヒープサイズを大きくする必要があります。メモリのミラー領域に依存するゲームでは不具合が生じる可能性があるため、対応する MOD でのみ使用してください。</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>BIOS やゲームで設定された容量にかかわらず、搭載されているすべての RAM をマッピングします。市販機の BIOS は 8MB までしかマッピングしないため、BIOS にパッチを適用せずに 16MB を利用するには、この設定が必要です。拡張 RAM が搭載されている場合にのみ効果があります。</translation>
     </message>
     <message>
         <source>Execution Mode</source>
@@ -9463,6 +9488,14 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <translation>エミュレートされた CPU がキャッシュに命令をフェッチする必要がある場合に、リコンパイラ内でストールをシミュレートします。性能をわずかに犠牲にして、ゲームをコンソールのフレームレートに近付けます。インタープリタモードでは常に命令キャッシュをシミュレートします。</translation>
     </message>
     <message>
+        <source>Checked</source>
+        <translation>チェック済み</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>ゲームは一定回数ループすると垂直帰線期間の待機を終了します。オーバークロック時はループが速く進みます。このタイムアウトを調整して、ゲームを垂直帰線期間に同期させます。</translation>
+    </message>
+    <message>
         <source>CD-ROM Read Speedup</source>
         <translation>CD-ROM 読み込み高速化</translation>
     </message>
@@ -9481,22 +9514,6 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>ゲームが CD-ROM モーターを停止したとき、自動的に次のディスクへ切り替えます。最後のディスクが選択済みの場合は切り替えません。&lt;strong&gt;すべてのゲームで動作するわけではありません。&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>物理ドライブの速度</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>物理ディスクを使用する際のホストドライブの速度を設定します。速度を上げると途切れが減る場合がありますが、ドライブの動作音が大きくなります。「変更しない」に設定すると、ドライブ本来の速度を維持します。この設定に対応していないドライブもあります。</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>物理ディスク使用時にドライブが提供するサブチャネルを無視し、代わりに常にサブチャネルデータを生成します。libcrypt ゲームでは動作しませんが、ドライブによっては読み込みの信頼性を向上させることができます。</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -9521,6 +9538,18 @@ This warning will only be shown once.</source>
     <message>
         <source>CPU Overclocking Warning</source>
         <translation>CPU オーバークロック警告</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>エミュレートされた本体に搭載する RAM の容量を変更します。市販ゲームは追加 RAM を使用しません。強制モードではゲームの設定にかかわらず搭載 RAM 全体をマッピングします。製品版 BIOS で 16 MB を使用するには、この設定が必要です。</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>搭載 VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>エミュレートされた本体に搭載する VRAM の容量を変更します。市販ゲームは追加 VRAM を使用しません。強制モードでは、ゲームが有効にするかどうかにかかわらず 2 つ目の VRAM バンクを利用できます。</translation>
     </message>
     <message>
         <source>%1% (%2MHz)</source>
@@ -11505,16 +11534,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>リコンパイラの高速メモリアクセスを有効にする</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>リコンパイラーのアイドルループ早送りを有効化</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>CD-ROM Mechacon バージョン</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>CD-ROM 先読みセクター</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> セクター</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -11969,6 +11994,105 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>キャッシュディレクトリ</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>コンパイル済みシェーダー、ゲームリストデータ、ダウンロードした実績画像を保存します。</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>チートディレクトリ</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>作成またはインポートしたチートファイル (.cht) を保存します。内蔵チートデータベースと併用されます。</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>カバーディレクトリ</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>ゲームグリッドと Big Picture UI で使用するカバー画像を保存します。</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>ゲームアイコンディレクトリ</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>メモリーカードのセーブデータから抽出したゲームリスト用アイコンを保存します。ゲームのシリアル番号をファイル名にした PNG を置くと、カスタムアイコンとして使用できます。</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>ゲーム設定ディレクトリ</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>ゲームのシリアル番号をファイル名にした、ゲームごとの設定ファイルを保存します。</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>入力プロファイルディレクトリ</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>コントローラーの入力プロファイルを保存します。</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>パッチディレクトリ</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>作成またはインポートしたパッチファイル (.cht) を保存します。内蔵パッチデータベースと併用されます。</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>シェーダーディレクトリ</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>ポストプロセスシェーダーを検索します。このディレクトリの GLSL シェーダー、reshade/Shaders の ReShade シェーダー、slang ディレクトリの Slang プリセットが対象です。</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>サブチャンネルディレクトリ</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>ディスクイメージと同じ場所にない場合、LibCrypt 保護ゲームに必要な SBI/LSD サブチャンネルファイルを検索します。</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>ユーザーリソースディレクトリ</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>ここに配置したファイルは同梱リソースを上書きします。カスタムテーマや Big Picture の背景にも使用されます。</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>参照...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>%1 を選択</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>既定</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>-</source>
@@ -12149,6 +12273,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>All Time: {}</source>
         <translation>総プレイ時間: {}</translation>
+    </message>
+    <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>現在のゲームの未昇格の実績の進行状況がすべて削除されます。この操作は取り消せません。</translation>
     </message>
     <message>
         <source>Allow Booting Without SBI File</source>
@@ -12381,6 +12509,14 @@ You cannot undo this action.</source>
     <message>
         <source>Change Title</source>
         <translation>タイトルを変更</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>エミュレートされた本体に搭載する RAM の容量を変更します。市販ゲームは追加 RAM を使用しません。</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>エミュレートされた本体に搭載するビデオ RAM の容量を変更します。市販ゲームは追加 VRAM を使用しません。</translation>
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
@@ -12775,6 +12911,10 @@ You cannot undo this action.</source>
         <translation>リコンパイラの命令キャッシュを有効にする</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>リコンパイラーのアイドルループ早送りを有効化</translation>
+    </message>
+    <message>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>リコンパイラのメモリ例外を有効にする</translation>
     </message>
@@ -12885,12 +13025,20 @@ Error was:</source>
         <translation>早送り時の音量</translation>
     </message>
     <message>
+        <source>Fast Forward While Loading</source>
+        <translation>読み込み中に早送り</translation>
+    </message>
+    <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>読み込みと保存の両方で、メモリーカードアクセス中を早送りします。メモリーカードに頻繁にアクセスするゲームの待ち時間を短縮できます。</translation>
     </message>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
         <translation>高速起動時の初期読み込みプロセスを早送りし、時間を短縮します。効果はゲームによって異なります。</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>ディスク読み込み中にゲームが画面の更新を停止すると早送りします。アニメーション付きの読み込み画面には適用されません。</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads</source>
@@ -13035,6 +13183,10 @@ Error was:</source>
     <message>
         <source>Install BIOS</source>
         <translation>BIOSをインストール</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>搭載 VRAM</translation>
     </message>
     <message>
         <source>Interface Settings</source>
@@ -13625,6 +13777,10 @@ You cannot undo this action.</source>
         <translation>フレーム途中のスキャンアウト</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>Mute Game Audio</source>
         <translation>ゲーム音声をミュート</translation>
     </message>
@@ -13897,10 +14053,6 @@ You cannot undo this action.</source>
         <translation>トラック</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>非公式の実績を追跡</translation>
-    </message>
-    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>トラックハッシュをクリップボードにコピーしました。</translation>
     </message>
@@ -13911,14 +14063,6 @@ You cannot undo this action.</source>
     <message>
         <source>Trigger</source>
         <translation>トリガー</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>非公式実績の解除をリセットしました。</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>非公式実績の解除をリセットしました。</translation>
     </message>
     <message>
         <source>Use OSD Scale</source>
@@ -13985,10 +14129,6 @@ You cannot undo this action.</source>
         <translation>Web キャッシュサイズ: {0}（{2} 個のオブジェクト、合計 {1}）</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>有効にすると、DuckStation は非公式の実績を追跡します。解除状況はローカルに保存され、RetroAchievements には送信されません。</translation>
-    </message>
-    <message>
         <source>Widescreen Rendering</source>
         <translation>ワイドスクリーンレンダリング</translation>
     </message>
@@ -14035,10 +14175,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>スクリーンショットの保存/圧縮形式を設定します。</translation>
-    </message>
-    <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>現在のゲームの非公式実績の進行状況をすべて削除します。この操作は元に戻せません。</translation>
     </message>
     <message>
         <source>${filetitle}: Name component of the game&apos;s filename.</source>
@@ -14941,14 +15077,6 @@ Do you want to {1} anyway?</source>
         <translation>解除をリセット</translation>
     </message>
     <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>非公式実績をリセット</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>非公式実績の解除をリセット</translation>
-    </message>
-    <message>
         <source>Resets all configuration to defaults (including bindings).</source>
         <translation>すべての設定をデフォルトに戻します (割り当てを含む)。</translation>
     </message>
@@ -15017,24 +15145,12 @@ Do you want to {1} anyway?</source>
         <translation>すべてのボタンを割り当て</translation>
     </message>
     <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>エミュレートする本体に搭載されている RAM の容量を変更します。</translation>
-    </message>
-    <message>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>全 RAM のマッピングを強制</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <translation>搭載 RAM</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>BIOS やゲームで設定された容量にかかわらず、搭載されているすべての RAM をマッピングします。市販機の BIOS で 16MB を利用するには、この設定が必要です。</translation>
     </message>
     <message>
         <source>Move Cursor</source>
@@ -15047,6 +15163,14 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
         <translation>各オブジェクトの変換に含まれる拡大縮小の影響を深度値から取り除きます。一部のゲームでジオメトリの欠落を修正しますが、ほかのゲームでは不具合が生じます。「自動」ではゲームデータベースの設定を使用します。</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>未昇格の実績の解除状態をリセット</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>未昇格の実績の解除状態をリセット</translation>
     </message>
     <message>
         <source>Resume Last Session</source>
@@ -15108,6 +15232,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>定期的にステートセーブすることで、プレー中のミスを巻き戻すことができます。</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>アイドルタイムアウトを調整</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15478,6 +15606,10 @@ Do you want to {1} anyway?</source>
         <translation>重複フレーム表示をスキップする</translation>
     </message>
     <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>ゲームが垂直帰線期間を待つために使用するビジーウェイトループをスキップします。</translation>
+    </message>
+    <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>一意でないフレームの提示/表示をスキップします。フレームペーシングが悪化する場合があります。</translation>
     </message>
@@ -15572,6 +15704,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Step {} of {}</source>
         <translation>ステップ {} / {}</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>オーバークロック時に垂直帰線期間を待っているゲームがタイムアウトするのを防ぎます。</translation>
     </message>
     <message>
         <source>Stretch Mode</source>
@@ -15690,6 +15826,10 @@ Do you want to {1} anyway?</source>
         <translation>%d フレームごとに切り替え</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>未昇格の実績を記録</translation>
+    </message>
+    <message>
         <source>Turbo Speed</source>
         <translation>ターボ速度</translation>
     </message>
@@ -15720,6 +15860,14 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Unpin from OSD</source>
         <translation>OSD のピン留めを解除</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>未昇格の実績の解除状態をリセットしました。</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>未昇格の実績の解除状態をリセットしました。</translation>
     </message>
     <message>
         <source>Update Database</source>
@@ -15844,6 +15992,10 @@ Do you want to {0} anyway?</source>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>有効にすると、DuckStation はすべての実績がロックされていると見なし、サーバーにロック解除通知を送信しません。</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>有効にすると、DuckStation は未昇格の実績を記録します。解除した実績はローカルに保存され、RetroAchievements には送信されません。</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -16186,12 +16338,12 @@ Do you want to {0} anyway?</source>
         <translation>RAM 容量:</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>ワイドスクリーンレンダリングを無効化</translation>
+        <source>VRAM Size:</source>
+        <translation>VRAM サイズ:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>全 RAM のマッピングを強制</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>ワイドスクリーンレンダリングを無効化</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16455,6 +16607,11 @@ Are you sure you want to continue?</source>
         <translation>メモリーカードアクセスの早送りを無効化</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>読み込み中の早送りを無効化</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>CD-ROM読み取り高速化を無効化</translation>
@@ -16604,6 +16761,10 @@ Are you sure you want to continue?</source>
     <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>メモリーカードアクセスの早送りが無効になりました。</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>読み込み中の早送りは無効です。</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -17081,14 +17242,6 @@ Are you sure you want to continue?</source>
         <translation>除外するパス (スキャンされません)</translation>
     </message>
     <message>
-        <source>File...</source>
-        <translation>ファイル...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>フォルダー...</translation>
-    </message>
-    <message>
         <source>Scan For New Games</source>
         <translation>新規ゲームをスキャン</translation>
     </message>
@@ -17097,8 +17250,40 @@ Are you sure you want to continue?</source>
         <translation>全ゲームを再スキャン</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>検索ディレクトリ</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>ゲームを検索するディレクトリです。再帰検索を有効にするとサブディレクトリも検索します。時間はかかりますが、入れ子のフォルダーにあるゲームも見つかります。ファイルマネージャーからフォルダーをここにドラッグすることもできます。</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>除外パス</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>ゲームの検索時に除外するファイルとディレクトリです。ゲームリストに表示したくない画像などを指定します。ファイルマネージャーからファイルやフォルダーをここにドラッグすることもできます。</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>検索ディレクトリをスキャンし、ゲームリストにないファイルを探します。以前にスキャンしたゲームはキャッシュから読み込むため、通常はすぐに完了します。</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>ゲームリストのキャッシュを破棄し、検索ディレクトリ内のすべてのファイルを再スキャンします。タイトルやシリアル番号などのゲーム情報が正しくない場合に使用してください。コレクションが大きいと時間がかかることがあります。</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>ディレクトリを開く...</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>検索ディレクトリがありません。フォルダーを追加するかここにドラッグして、ゲームの保存場所を選択してください。</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>除外パスはありません。ここに追加したファイルやフォルダーはスキャン時に除外されます。</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -17836,16 +18021,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>置換テクスチャの読み込み元およびダンプの保存先ディレクトリです。</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>参照...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>リセット</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -18214,10 +18395,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <source>Geometry Tolerance</source>
         <translation>ジオメトリの許容範囲</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00px (無効)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20350,6 +20527,10 @@ Shift+クリックで複数のバインドを設定します。</translation>
         <translation>インターフェース(&amp;I)</translation>
     </message>
     <message>
+        <source>&amp;Folders</source>
+        <translation>フォルダー(&amp;F)</translation>
+    </message>
+    <message>
         <source>Ad&amp;vanced</source>
         <translation>詳細設定(&amp;V)</translation>
     </message>
@@ -21310,6 +21491,10 @@ This action cannot be undone.</source>
         <translation>パープルレイン</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>QDarkStyle</source>
         <translation>Q ダークスタイル</translation>
     </message>
@@ -21800,10 +21985,6 @@ Error: {1}</source>
         <translation>すべてのメモリーカードタイプ (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>開く...</translation>
-    </message>
-    <message>
         <source>Use Single Card For Multi-Disc Games</source>
         <translation>マルチディスクゲームに対して一つのカードを使用する</translation>
     </message>
@@ -21822,6 +22003,10 @@ Error: {1}</source>
     <message>
         <source>Memory Cards:</source>
         <translation>メモリーカード:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
     </message>
     <message>
         <source>Select Memory Card Directory</source>
@@ -23199,10 +23384,6 @@ Error: {1}</source>
         <translation>オーバーレイリストを更新</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;データディレクトリ内の &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; フォルダに、ボーダーのプリセットを追加できます。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>カスタム設定</translation>
     </message>
@@ -23213,6 +23394,14 @@ Error: {1}</source>
     <message>
         <source>Browse...</source>
         <translation>参照...</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>オーバーレイディレクトリ:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23257,6 +23446,22 @@ Error: {1}</source>
     <message>
         <source>Image Path</source>
         <translation>画像のパス</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>オーバーレイディレクトリを選択</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>オーバーレイディレクトリ</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>既定</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>追加の枠線オーバーレイプリセットを保存します。このディレクトリを変更した後、「オーバーレイリストを更新」を使ってプリセットを検索してください。</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -23896,12 +24101,20 @@ Would you like to update the shortcut to point to the current location?</source>
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>{} を保存しました</translation>
+        <source>Empty</source>
+        <translation>空</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>このスロットにはセーブがありません。</translation>
+        <source>Save States</source>
+        <translation>ステートセーブ</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>使用中のスロット: {} / {}</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>{} を保存しました</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -23973,16 +24186,16 @@ Would you like to update the shortcut to point to the current location?</source>
         <translation>グローバル設定を使用 [%1]</translation>
     </message>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>グローバル設定を使用 [有効]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>グローバル設定を使用 [無効]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>グローバル: </translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>フォルダーを開く</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>既定に戻す</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24109,24 +24322,54 @@ Do you want to create this directory?</source>
         <translation>PS1 以外</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB (市販機)</translation>
+        <translation>2 MB (標準)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB (アーケード基板)</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB (開発機)</translation>
+        <translation>4 MB (強制)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB (MOD/アーケード基板)</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (強制)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (強制)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB (標準)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB (強制)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -24938,10 +25181,6 @@ Do you want to create this directory?</source>
         <translation>ゲームリスト</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;上のリストは、DuckStation がゲームリストに登録するゲームを探すディレクトリの一覧を示しています。&lt;br&gt;検索ディレクトリの追加、削除、およびサブディレクトリ検索の有無を切り替えることができます。</translation>
-    </message>
-    <message>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -25018,6 +25257,10 @@ Do you want to create this directory?</source>
         <translation>&lt;strong&gt;BIOS 設定&lt;/strong&gt;&lt;hr&gt;使用する BIOS と拡張ポートを制御します。&lt;br&gt;&lt;br&gt;追加情報を表示するにはオプションにマウスを合わせ、このパネルをスクロールするには Shift+ホイールを使用します。</translation>
     </message>
     <message>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;ゲームリスト設定&lt;/strong&gt;&lt;hr&gt;これらのオプションでは、ゲームリストに表示するゲームを検索するディレクトリを設定します。&lt;br&gt;&lt;br&gt;オプションにマウスカーソルを合わせると詳細が表示されます。</translation>
+    </message>
+    <message>
         <source>Patches</source>
         <translation>パッチ</translation>
     </message>
@@ -25057,6 +25300,14 @@ Do you want to create this directory?</source>
     <message>
         <source>&lt;strong&gt;Capture Settings&lt;/strong&gt;&lt;hr&gt;These options determine how screenshots and videos are captured by the application.</source>
         <translation>&lt;strong&gt;キャプチャ設定&lt;/strong&gt;&lt;hr&gt;アプリケーションでスクリーンショットと映像をキャプチャする方法を設定します。</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <translation>フォルダー</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;フォルダー設定&lt;/strong&gt;&lt;hr&gt;これらのオプションでは、DuckStation がファイルを読み込む場所と保存する場所を設定します。&lt;br&gt;&lt;br&gt;オプションにマウスカーソルを合わせると詳細が表示されます。Shift キーを押しながらマウスホイールを回すと、このパネルをスクロールできます。</translation>
     </message>
     <message>
         <source>Debugging</source>
@@ -25150,10 +25401,6 @@ Do you want to continue?</source>
         <translation>参照...</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>リセット</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (日本):</translation>
     </message>
@@ -25164,10 +25411,6 @@ Do you want to continue?</source>
     <message>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (ヨーロッパ, オーストラリア):</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>エクスプローラーで開く...</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -25208,6 +25451,10 @@ Do you want to continue?</source>
     <message>
         <source>BIOS Directory:</source>
         <translation>BIOS ディレクトリ:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>その他のオプション</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller. &lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -25498,6 +25745,10 @@ Any changes have been saved, and the wizard will run again next time you start D
         </translation>
     </message>
     <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>検索ディレクトリがありません。フォルダーを追加するかここにドラッグして、ゲームの保存場所を選択してください。</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>ディレクトリを開く...</translation>
     </message>
@@ -25602,6 +25853,14 @@ Token generated %2</source>
         <translation>RAM 容量をデフォルトに設定しました。</translation>
     </message>
     <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>RAM サイズは {} に設定されています。一部のゲームと互換性がない可能性があります。</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>VRAM サイズは {} に設定されています。一部のゲームと互換性がない可能性があります。</translation>
+    </message>
+    <message>
         <source>Loaded undo save state created {}.</source>
         <translation>{} に作成された復元用ステートセーブをロードしました。</translation>
     </message>
@@ -25644,6 +25903,11 @@ Token generated %2</source>
         <comment>Taint</comment>
         <translation>メモリーカードの不一致</translation>
     </message>
+    <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>拡張 VRAM</translation>
+    </message>
     <message numerus="yes">
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
@@ -25685,6 +25949,10 @@ Configuration: {1}%</source>
         <translation>ステートセーブが現在の設定と一致しません。
 ステートセーブ: {0}%
 現在の設定: {1}%</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>不明な BIOS</translation>
     </message>
     <message>
         <source>System is not in correct state.</source>
@@ -25763,6 +26031,10 @@ Using current CD image, this may result in instability.</source>
         <translation>カードを{}に変更しました。</translation>
     </message>
     <message>
+        <source>Physical Disc</source>
+        <translation>物理ディスク</translation>
+    </message>
+    <message>
         <source>No valid game is running.</source>
         <translation>有効なゲームが実行されていません。</translation>
     </message>
@@ -25831,6 +26103,10 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Overclock disabled.</source>
         <translation>オーバークロックが無効になりました。</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>2 MB VRAM は無効です。</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25947,10 +26223,6 @@ You must save to a memory card and reset the game to clear any effects.</source>
     <message>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
         <translation>フレームレートが自動に設定されていません。ゲームが正しくない速度で動作する可能性があります。</translation>
-    </message>
-    <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>拡張 RAM が有効になっています。一部のゲームと互換性がない可能性があります。</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>

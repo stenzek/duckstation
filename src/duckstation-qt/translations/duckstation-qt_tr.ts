@@ -162,12 +162,12 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
         <translation>İzleyici Modunu Aç</translation>
     </message>
     <message>
-        <source>Test Unofficial Achievements</source>
-        <translation>Resmi Olmayan Başarımları Dene</translation>
-    </message>
-    <message>
         <source>Enable Encore Mode</source>
         <translation>Encore Modunu Aç</translation>
+    </message>
+    <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Yükseltilmemiş Başarımları İzle</translation>
     </message>
     <message>
         <source>Notifications</source>
@@ -180,10 +180,6 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
     <message>
         <source>Show Achievement Notifications</source>
         <translation>Başarım Bildirimlerini Göster</translation>
-    </message>
-    <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Resmi Olmayan Başarımları Takip Et</translation>
     </message>
     <message>
         <source>Prefetch Badges</source>
@@ -266,8 +262,12 @@ Zor (Hardcore) modunu açmak ister misiniz?</translation>
         <translation>Başarımlar için &quot;Challenge/Meydan Okuma&quot; modu. Lider tahtası takibini de içerir. Durum kaydı, hile ve yavaşlatma fonksiyonlarını kapatır.</translation>
     </message>
     <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Etkinleştirildiğinde DuckStation resmi olmayan başarımları takip eder. Kilit açmaları yerel olarak kaydedilir ve RetroAchievements&apos;a gönderilmez.</translation>
+        <source>Test Unpromoted Achievements</source>
+        <translation>Yükseltilmemiş Başarımları Test Et</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Etkinleştirildiğinde DuckStation yükseltilmemiş başarımları izler. Başarımların açılma durumları yerel olarak kaydedilir ve RetroAchievements&apos;e gönderilmez.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -607,10 +607,6 @@ Hata: {}</translation>
         <source>This subset has no achievements.</source>
         <translation>Bu alt kümede başarım yok.</translation>
     </message>
-    <message>
-        <source>You have unlocked {0} of {1} unofficial achievements, earning {2} of {3} possible points.</source>
-        <translation>{1} resmi olmayan başarımın {0} tanesinin kilidini açtınız ve mümkün olan {3} puanın {2} tanesini kazandınız.</translation>
-    </message>
     <message numerus="yes">
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
@@ -647,8 +643,16 @@ Hata: {}</translation>
         <translation>Kazanma Gereksinimi</translation>
     </message>
     <message>
+        <source>You have unlocked {0} of {1} unpromoted achievements, earning {2} of {3} possible points.</source>
+        <translation>Yükseltilmemiş {1} başarımın {0} tanesinin kilidini açtınız; mümkün olan {3} puanın {2} puanını kazandınız.</translation>
+    </message>
+    <message>
         <source>Change Selection</source>
         <translation>Seçimi Değiştir</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Unlocks</source>
+        <translation>Yükseltilmemiş başarımların kilitlerini sıfırla</translation>
     </message>
     <message>
         <source>View Details</source>
@@ -754,10 +758,6 @@ Hata: {}</translation>
         <translation>Desteklenmeyen</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <translation>Resmi Olmayan</translation>
-    </message>
-    <message>
         <source>Recently Unlocked</source>
         <translation>Yakın Zamanda Açılan</translation>
     </message>
@@ -768,10 +768,6 @@ Hata: {}</translation>
     <message>
         <source>Almost There</source>
         <translation>Neredeyse</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Unlocks</source>
-        <translation>Resmi Olmayan Kilit Açmaları Sıfırla</translation>
     </message>
     <message>
         <source>XXX points</source>
@@ -908,6 +904,10 @@ Hata: {}</translation>
 We will keep trying to submit this request.</source>
         <translation>Bir kilit açma isteği tamamlanamadı.
 Bu isteği göndermeyi denemeye devam edeceğiz.</translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <translation>Yükseltilmemiş</translation>
     </message>
     <message>
         <source>Score: {} ({} casual)
@@ -1052,32 +1052,32 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <translation>RAIntegration&apos;ı Etkinleştir</translation>
     </message>
     <message>
-        <source>Cache Directory</source>
-        <translation>Önbellek Dizini</translation>
+        <source>CD-ROM Emulation</source>
+        <translation>CD-ROM Emülasyonu</translation>
     </message>
     <message>
-        <source>Used for storing compiled shaders and game list data.</source>
-        <translation>Derlenmiş gölgelendiricileri ve oyun listesi verilerini depolamak için kullanılır.</translation>
+        <source>Readahead Sectors:</source>
+        <translation>Önden Okunacak Sektörler:</translation>
     </message>
     <message>
-        <source>Browse...</source>
-        <translation>Gözat...</translation>
+        <source> sectors</source>
+        <translation> sektör</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Aç...</translation>
+        <source>Physical Disc Drive Speed:</source>
+        <translation>Fiziksel Disk Sürücüsü Hızı:</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Sıfırla</translation>
+        <source>Don&apos;t Change</source>
+        <translation>Değiştirme</translation>
     </message>
     <message>
-        <source>Covers Directory</source>
-        <translation>Kapaklar Dizini</translation>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
-        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
-        <translation>Oyun ızgarası/Big Picture arayüzlerinde kapakları depolamak için kullanılır.</translation>
+        <source>Ignore Physical Disc Drive Subcode</source>
+        <translation>Fiziksel Disk Sürücüsü Alt Kodunu Yoksay</translation>
     </message>
     <message>
         <source>Web Cache</source>
@@ -1106,14 +1106,6 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
     <message>
         <source>Log Level</source>
         <translation>Günlük Düzeyi</translation>
-    </message>
-    <message>
-        <source>Select Cache Directory</source>
-        <translation>Önbellek Dizinini Seç</translation>
-    </message>
-    <message>
-        <source>Select Covers Directory</source>
-        <translation>Kapaklar Dizinini Seç</translation>
     </message>
     <message>
         <source>Information</source>
@@ -1168,16 +1160,34 @@ Bu oturum çevrimdışı modda başlayacak.</translation>
         <translation>Geçerli karenin numarasını ekranın sağ üst köşesinde gösterir.</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation>Varsayılan</translation>
+        <source>Readahead Sectors</source>
+        <translation>Önden Okunacak Sektörler</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n sektör</numerusform>
+        </translation>
     </message>
     <message>
-        <source>Specifies the directory where compiled shaders and game list data will be stored.</source>
-        <translation>Derlenmiş gölgelendiricilerin ve oyun listesi verilerinin depolanacağı dizini belirtir.</translation>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>CD verilerini bir iş parçacığında eşzamansız okuyup açarak emülasyondaki takılmaları azaltır.</translation>
     </message>
     <message>
-        <source>Specifies the directory where game cover images that are used in the game grid and Big Picture UI will be stored.</source>
-        <translation>Oyun ızgarasında ve Big Picture arayüzünde kullanılan oyun kapak görsellerinin depolanacağı dizini belirtir.</translation>
+        <source>Physical Disc Drive Speed</source>
+        <translation>Fiziksel Disk Sürücüsü Hızı</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
+        <translation>Fiziksel disk kullanırken ana bilgisayar sürücüsünün hızını ayarlar. Daha yüksek hız takılmaları azaltabilir ancak sürücüyü daha gürültülü yapar. Sürücüyü kendi hızında bırakmak için &quot;Değiştirme&quot; seçeneğini kullanın. Her sürücü bunu desteklemez.</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
+        <translation>Fiziksel disk kullanılırken sürücünün sağladığı alt kanal verisini yok sayar ve her zaman alt kanal verisi oluşturur. LibCrypt korumalı oyunlarda çalışmaz ancak bazı sürücülerde okuma güvenilirliğini artırabilir.</translation>
     </message>
     <message>
         <source>Forces all server calls to fail, useful for testing offline mode.</source>
@@ -2192,6 +2202,16 @@ Mevcut Atama: %s</translation>
         <translation>Güvenlik Denetimi Başarısız</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <comment>settings_track_unpromoted_achievements</comment>
+        <translation>Yükseltilmemiş Başarımları İzle</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <comment>settings_summary_track_unpromoted_achievements</comment>
+        <translation>Etkinleştirildiğinde DuckStation yükseltilmemiş başarımları izler. Başarımların açılma durumları yerel olarak kaydedilir ve RetroAchievements&apos;e gönderilmez.</translation>
+    </message>
+    <message>
         <source>Not Logged In.</source>
         <comment>settings_achievements_not_logged_in</comment>
         <translation>Giriş Yapılmamış.</translation>
@@ -2296,14 +2316,6 @@ Mevcut Atama: %s</translation>
             <numerusform>Bu alt kümedeki tüm başarımları açtınız ve %1$d puan kazandınız!</numerusform>
         </translation>
     </message>
-    <message numerus="yes">
-        <source>You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.</source>
-        <comment>achievement_unofficial_summary_format_string</comment>
-        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unofficial achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unofficial achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
-        <translation>
-            <numerusform>%2$d resmi olmayan başarımın %1$d tanesini açtınız ve kazanılabilecek %4$d puanın %3$d tanesini kazandınız.</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Game was beaten on %1$s, and completed on %2$s.</source>
         <comment>achievement_game_beaten_completed_format_string</comment>
@@ -2365,11 +2377,6 @@ Mevcut Atama: %s</translation>
         <translation>Kazanma Gereksinimi</translation>
     </message>
     <message>
-        <source>Unofficial</source>
-        <comment>achievement_unofficial</comment>
-        <translation>Resmi Olmayan</translation>
-    </message>
-    <message>
         <source>Open on RetroAchievements</source>
         <comment>achievement_open_on_retroachievements</comment>
         <translation>RetroAchievements&apos;te Aç</translation>
@@ -2388,21 +2395,6 @@ Mevcut Atama: %s</translation>
         <source>Reset Unlock</source>
         <comment>achievement_reset_unlock</comment>
         <translation>Kilidi Açmayı Sıfırla</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <comment>achievement_reset_unofficial_title</comment>
-        <translation>Resmi Olmayan Başarımı Sıfırla</translation>
-    </message>
-    <message>
-        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
-        <comment>achievement_reset_unofficial_message</comment>
-        <translation>&apos;%1$s&apos; için kilit açma durumu kaldırılacak. Bu işlem geri alınamaz.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <comment>achievement_unofficial_unlock_reset</comment>
-        <translation>Resmi olmayan başarım kilit açması sıfırlandı.</translation>
     </message>
     <message>
         <source>Pinned to OSD</source>
@@ -3302,6 +3294,11 @@ Mevcut Atama: %s</translation>
         <translation>Tümünü Devre Dışı Bırak</translation>
     </message>
     <message>
+        <source>Unavailable while RetroAchievements hardcore mode is active.</source>
+        <comment>patch_codes_hardcore_restricted</comment>
+        <translation>RetroAchievements&apos;in Hardcore modu etkin olduğunda kullanılamaz.</translation>
+    </message>
+    <message>
         <source>Add</source>
         <comment>cheat_codes_add</comment>
         <translation>Ekle</translation>
@@ -3380,6 +3377,51 @@ Mevcut Atama: %s</translation>
         <source>Global Setting</source>
         <comment>preference_reset_global_value</comment>
         <translation>Genel Ayar</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <comment>settings_summary_ram_size</comment>
+        <translation>Emüle edilen konsola takılı RAM miktarını değiştirir. Ticari oyunlar ek RAM kullanmaz.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <comment>settings_vram_size</comment>
+        <translation>Takılı VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <comment>settings_summary_vram_size</comment>
+        <translation>Emüle edilen konsola takılı VRAM miktarını değiştirir. Ticari oyunlar ek VRAM kullanmaz.</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <comment>settings_fast_forward_loading</comment>
+        <translation>Yükleme Sırasında Hızlı İleri Sar</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <comment>settings_summary_fast_forward_loading</comment>
+        <translation>Oyun diskten okurken ekranı güncellemeyi durdurduğunda hızlandırır. Animasyonlu yükleme ekranlarında uygulanmaz.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <comment>settings_idle_timeout_scale</comment>
+        <translation>Boşta Kalma Zaman Aşımını Ölçekle</translation>
+    </message>
+    <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <comment>settings_summary_idle_timeout_scale</comment>
+        <translation>Hız aşırtma sırasında dikey boşluğu beklerken oyunların zaman aşımına uğramasını önler.</translation>
+    </message>
+    <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <comment>settings_idle_fast_forward</comment>
+        <translation>Yeniden Derleyici Boş Döngü Hızlandırmasını Etkinleştir</translation>
+    </message>
+    <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <comment>settings_summary_idle_fast_forward</comment>
+        <translation>Oyunların dikey boşluğu beklemek için kullandığı etkin bekleme döngüsünü atlar.</translation>
     </message>
     <message>
         <source>Uses PGXP for all instructions, not just memory operations. Automatic uses the game database setting.</source>
@@ -3490,6 +3532,11 @@ Mevcut Atama: %s</translation>
         <source>Pinky Pals</source>
         <comment>settings_theme_entries[10]</comment>
         <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <comment>settings_theme_entries[11]</comment>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>None (Double Speed)</source>
@@ -4417,16 +4464,6 @@ Mevcut Atama: %s</translation>
         <translation>Oyun başlatılırken tüm kilitli başarım rozetlerini indirerek kilit açma görsellerinin gösterilmesindeki gecikmeyi azaltır.</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <comment>settings_unofficial_test_mode</comment>
-        <translation>Resmi Olmayan Başarımları Takip Et</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <comment>settings_summary_unofficial_test_mode</comment>
-        <translation>Etkinleştirildiğinde DuckStation resmi olmayan başarımları takip eder. Kilit açmaları yerel olarak kaydedilir ve RetroAchievements&apos;a gönderilmez.</translation>
-    </message>
-    <message>
         <source>Test RetroAchievements Offline Mode</source>
         <comment>settings_test_offline_mode</comment>
         <translation>RetroAchievements Çevrimdışı Modunu Test Et</translation>
@@ -4452,12 +4489,40 @@ Mevcut Atama: %s</translation>
         <translation>Giriş zamanı: %s</translation>
     </message>
     <message numerus="yes">
+        <source>You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.</source>
+        <comment>achievement_unpromoted_summary_format_string</comment>
+        <extracomment>Android plural quantities: one=&quot;You have unlocked %1$d of %2$d unpromoted achievement, earning %3$d of %4$d possible points.&quot;; other=&quot;You have unlocked %1$d of %2$d unpromoted achievements, earning %3$d of %4$d possible points.&quot;</extracomment>
+        <translation>
+            <numerusform>%2$d yükseltilmemiş başarımın %1$d tanesini açtınız ve kazanılabilecek %4$d puanın %3$d tanesini kazandınız.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>%1$d achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>achievement_unsupported_count_format_string</comment>
         <extracomment>Android plural quantities: one=&quot;%1$d achievement is not supported by DuckStation and cannot be unlocked.&quot;; other=&quot;%1$d achievements are not supported by DuckStation and cannot be unlocked.&quot;</extracomment>
         <translation>
             <numerusform>%1$d başarım DuckStation tarafından desteklenmiyor ve açılamaz.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Unpromoted</source>
+        <comment>achievement_unpromoted</comment>
+        <translation>Yükseltilmemiş</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement</source>
+        <comment>achievement_reset_unpromoted_title</comment>
+        <translation>Yükseltilmemiş Başarım Kilidini Sıfırla</translation>
+    </message>
+    <message>
+        <source>The unlock state for &apos;%1$s&apos; will be removed. This cannot be undone.</source>
+        <comment>achievement_reset_unpromoted_message</comment>
+        <translation>&apos;%1$s&apos; için kilit açma durumu kaldırılacak. Bu işlem geri alınamaz.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <comment>achievement_unpromoted_unlock_reset</comment>
+        <translation>Yükseltilmemiş başarımın kilidi sıfırlandı.</translation>
     </message>
     <message>
         <source>DuckStation uses RetroAchievements (retroachievements.org) as an achievement database and for tracking progress. A RetroAchievements account is not required to use DuckStation.</source>
@@ -5154,6 +5219,16 @@ Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat
         <translation>Ana sistemin çizim API&apos;si destekliyorsa hata ayıklamayı etkinleştirir. Yalnızca geliştiriciler içindir.</translation>
     </message>
     <message>
+        <source>Use GPU-Based Validation</source>
+        <comment>settings_use_gpu_based_validation</comment>
+        <translation>GPU Tabanlı Doğrulamayı Kullan</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <comment>settings_summary_use_gpu_based_validation</comment>
+        <translation>Ana bilgisayarın görüntü oluşturucu API&apos;si destekliyorsa GPU tabanlı doğrulamayı etkinleştirir. Yalnızca geliştiriciler içindir.</translation>
+    </message>
+    <message>
         <source>Prefer OpenGL ES Context</source>
         <comment>settings_prefer_gles_context</comment>
         <translation>OpenGL ES Bağlamını Tercih Et</translation>
@@ -5574,11 +5649,6 @@ Devam etmek istediğinize emin misiniz?</translation>
         <source>Author: %1$s</source>
         <comment>patch_codes_author</comment>
         <translation>Yazar: %1$s</translation>
-    </message>
-    <message>
-        <source>Unavailable while RetroAchievements hardcode mode is active.</source>
-        <comment>patch_codes_hardcore_restricted</comment>
-        <translation>RetroAchievements hardcore modu etkinken kullanılamaz.</translation>
     </message>
     <message>
         <source>Search codes</source>
@@ -6570,34 +6640,9 @@ ${serial}: Oyunun seri numarası.</translation>
         <translation>Emüle edilen donanımın normal saat hızının yüzde kaçında çalışacağını seçer.</translation>
     </message>
     <message>
-        <source>Enable 8MB RAM</source>
-        <comment>settings_enable_8mb_ram</comment>
-        <translation>8 Megabayt RAM Aç</translation>
-    </message>
-    <message>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <comment>settings_summary_enable_8mb_ram</comment>
-        <translation>Genellikle geliştirici konsollarında bulunan toplam 2+6 = 8MB RAM&apos;e ulaşmak için 6MB ek RAM etkinleştirir.</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <comment>settings_ram_size</comment>
         <translation>Takılı RAM</translation>
-    </message>
-    <message>
-        <source>Expanded RAM may break games, so use it only with compatible mods.</source>
-        <comment>settings_summary_ram_size</comment>
-        <translation>Genişletilmiş RAM oyunların çalışmasını bozabilir; bu nedenle yalnızca uyumlu modlarla kullanın.</translation>
-    </message>
-    <message>
-        <source>Force Full RAM Mapping</source>
-        <comment>settings_force_full_ram_mapping</comment>
-        <translation>Tam RAM Eşlemesini Zorla</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM regardless of the BIOS or game configuration.</source>
-        <comment>settings_summary_force_full_ram_mapping</comment>
-        <translation>BIOS veya oyun yapılandırmasından bağımsız olarak takılı RAM&apos;in tamamını eşler.</translation>
     </message>
     <message>
         <source>Preload Images to RAM</source>
@@ -8587,16 +8632,12 @@ DuckStation&apos;ı en son sürümü yeniden indirerek elle güncelleyebilirsini
         <translation>BIOS&apos;u Kur</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Göz At...</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Aç...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Sıfırla</translation>
     </message>
     <message>
         <source>Parallel Port</source>
@@ -8872,12 +8913,8 @@ Dökümünüz bozulmuş olabilir veya fiziksel disk çizilmiştir.</translation>
         <translation>Gözat...</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Aç...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Sıfırla</translation>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
     </message>
     <message>
         <source>Media Capture</source>
@@ -9283,12 +9320,12 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Takılı RAM:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
-    </message>
-    <message>
         <source>100% (33.87MHz)</source>
         <translation>100% (33.87MHz)</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Boşta Kalma Zaman Aşımını Ölçekle</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -9327,22 +9364,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Maksimum (Daha Güvenli)</translation>
     </message>
     <message>
-        <source>Physical Drive Speed:</source>
-        <translation>Fiziksel Sürücü Hızı:</translation>
-    </message>
-    <message>
-        <source>Don&apos;t Change</source>
-        <translation>Değiştirme</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <source>Ignore Physical Drive Subcode</source>
-        <translation>Fiziksel Sürücü Alt Kodunu Yok Say</translation>
-    </message>
-    <message>
         <source>Apply Image Patches</source>
         <translation>CD Yamalarını Uygula</translation>
     </message>
@@ -9353,6 +9374,14 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Seek Speedup:</source>
         <translation>CD Konumlandırma Hızlandırması:</translation>
+    </message>
+    <message>
+        <source>Installed VRAM:</source>
+        <translation>Takılı VRAM:</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Yükleme Sırasında Hızlı İleri Sar</translation>
     </message>
     <message>
         <source>None (Normal Speed)</source>
@@ -9401,6 +9430,22 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Hafıza kartlarında okuma yazma işlemini ileri sarar. Sık sık hafıza kartına erişen oyunlardaki beklemeleri azaltabilir.</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Oyun diskten okurken ekranı güncellemeyi durdurduğunda hızlandırır. Animasyonlu yükleme ekranlarında uygulanmaz.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM. Forced maps all installed RAM regardless of game configuration, needed for 16MB with retail BIOSes.</source>
+        <translation>Emüle edilen konsola takılı RAM miktarını değiştirir. Ticari oyunlar ek RAM kullanmaz. Zorla seçeneği oyun yapılandırmasından bağımsız olarak takılı RAM&apos;in tamamını eşler; satışa sunulan konsolların BIOS&apos;larıyla 16 MB kullanmak için gereklidir.</translation>
+    </message>
+    <message>
+        <source>Installed VRAM</source>
+        <translation>Takılı VRAM</translation>
+    </message>
+    <message>
+        <source>Changes the amount of VRAM installed in the emulated console. Retail games do not use extra VRAM. Forced makes the second VRAM bank accessible regardless of the game enabling it or not.</source>
+        <translation>Emüle edilen konsola takılı VRAM miktarını değiştirir. Ticari oyunlar ek VRAM kullanmaz. Zorla seçeneği, oyun etkinleştirse de etkinleştirmese de ikinci VRAM bankasını erişilebilir kılar.</translation>
     </message>
     <message>
         <source>Execution Mode</source>
@@ -9455,14 +9500,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
         <translation>Takılı RAM</translation>
     </message>
     <message>
-        <source>Changes the amount of RAM installed in the emulated console. Games have to use a larger heap size for expanded RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>Öykünülen konsolda takılı RAM miktarını değiştirir. Genişletilmiş RAM’in kullanılabilmesi için oyunların daha büyük bir öbek alanı kullanması gerekir. Bellek yansıtmalarına bağımlı oyunlar düzgün çalışmayabilir; bu nedenle yalnızca uyumlu modlarla kullanılmalıdır.</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Retail BIOSes only map 8MB, so this is needed for 16MB to be usable without a patched BIOS. Only has an effect when expanded RAM is installed.</source>
-        <translation>BIOS veya oyun tarafından yapılandırılan boyuttan bağımsız olarak takılı RAM’in tamamını adres alanına eşler. Perakende BIOS’ları yalnızca 8 MB eşlediğinden, yamalı bir BIOS olmadan 16 MB’ın kullanılabilmesi için bu seçenek gereklidir. Yalnızca genişletilmiş RAM takılıyken etkili olur.</translation>
-    </message>
-    <message>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
         <translation>CD-ROM okumalarını belirtilen katsayıyla hızlandırır. Yalnızca çift hızlı okumalar için geçerlidir ve ses çalınırken yok sayılır. Bazı oyunlarda yükleme hızlarını artırabilir, ancak diğer oyunların bozulmasına neden olabilir.</translation>
     </message>
@@ -9481,22 +9518,6 @@ Bu hileyi kullanmaya çalışmak beklenen sonucu vermeyecek. Devam etmek istiyor
     <message>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
         <translation>Oyun CD okuyucunun motorunu durdurduğunda emülatör bir sonraki CD&apos;ye otomatik geçer. Eğer oyunun son CD&apos;si zaten seçiliyse bir şey olmaz. &lt;strong&gt;Tüm oyunlar için çalışmaz.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <source>Physical Drive Speed</source>
-        <translation>Fiziksel Sürücü Hızı</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>Sets the speed of the host drive when using physical discs. Higher speeds can reduce stutter, but make the drive louder. Set to &quot;Don&apos;t Change&quot; to leave the drive at its own speed. Not all drives support this.</source>
-        <translation>Fiziksel diskler kullanılırken ana sistemdeki sürücünün hızını ayarlar. Daha yüksek hızlar takılmaları azaltabilir, ancak sürücüyü daha gürültülü hâle getirir. Sürücünün kendi hızını korumak için "Değiştirme" seçeneğini seçin. Bazı sürücüler bunu desteklemez.</translation>
-    </message>
-    <message>
-        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation>Fiziksel diskler kullanılırken sürücünün sağladığı alt kanal verilerini yok sayar ve bunun yerine alt kanal verilerini her zaman oluşturur. LibCrypt kullanan oyunlarda çalışmaz, ancak bazı sürücülerde okuma güvenilirliğini artırabilir.</translation>
     </message>
     <message>
         <source>Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase system requirements.
@@ -9521,6 +9542,14 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     <message>
         <source>CPU Overclocking Warning</source>
         <translation>İşlemci Hız Aşırtma İkazı</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>İşaretli</translation>
+    </message>
+    <message>
+        <source>Games give up waiting for vertical blank after a fixed number of loop iterations, which pass faster when overclocking. Scales this timeout to keep games synchronized to vertical blank.</source>
+        <translation>Oyunlar, sabit sayıda döngü yinelemesinden sonra dikey boşluğu beklemeyi bırakır; hız aşırtmada bu yinelemeler daha hızlı geçer. Oyunları dikey boşlukla eşzamanlı tutmak için bu zaman aşımını ölçekler.</translation>
     </message>
     <message>
         <source>%1% (%2MHz)</source>
@@ -11504,16 +11533,12 @@ Bu dosyanın boyutu birkaç gigabayta ulaşabilir; bu nedenle SSD aşınmasına 
         <translation>Yeniden Derleyici Hızlı Bellek Erişimini Etkinleştir</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Yeniden Derleyici Boş Döngü Hızlandırmasını Etkinleştir</translation>
+    </message>
+    <message>
         <source>CD-ROM Mechacon Version</source>
         <translation>CD-ROM Mechacon Sürümü</translation>
-    </message>
-    <message>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>CD-ROM Önceden Okuma Sektörleri</translation>
-    </message>
-    <message>
-        <source> sectors</source>
-        <translation> sektör</translation>
     </message>
     <message>
         <source>CD-ROM Max Read Speedup Cycles</source>
@@ -11967,6 +11992,105 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     </message>
 </context>
 <context>
+    <name>FoldersSettingsWidget</name>
+    <message>
+        <source>Cache Directory</source>
+        <translation>Önbellek Dizini</translation>
+    </message>
+    <message>
+        <source>Used for storing compiled shaders, game list data, and downloaded achievement images.</source>
+        <translation>Derlenmiş gölgelendiricileri, oyun listesi verilerini ve indirilen başarım resimlerini saklar.</translation>
+    </message>
+    <message>
+        <source>Cheats Directory</source>
+        <translation>Hile Dizini</translation>
+    </message>
+    <message>
+        <source>Stores cheat files (.cht) that you have created or imported. These are used in addition to the built-in cheat database.</source>
+        <translation>Oluşturduğunuz veya içe aktardığınız hile dosyalarını (.cht) saklar. Bunlar yerleşik hile veritabanına ek olarak kullanılır.</translation>
+    </message>
+    <message>
+        <source>Covers Directory</source>
+        <translation>Kapak Dizini</translation>
+    </message>
+    <message>
+        <source>Used for storing covers in the game grid/Big Picture UIs.</source>
+        <translation>Oyun ızgarasında ve Big Picture arayüzlerinde kullanılan kapakları saklar.</translation>
+    </message>
+    <message>
+        <source>Game Icons Directory</source>
+        <translation>Oyun Simgeleri Dizini</translation>
+    </message>
+    <message>
+        <source>Stores game list icons extracted from memory card saves. A PNG named after a game&apos;s serial can be placed here to use a custom icon.</source>
+        <translation>Bellek kartı kayıtlarından çıkarılan oyun listesi simgelerini saklar. Özel simge kullanmak için oyunun seri numarasıyla adlandırılmış bir PNG dosyasını buraya koyabilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Game Settings Directory</source>
+        <translation>Oyun Ayarları Dizini</translation>
+    </message>
+    <message>
+        <source>Stores per-game settings files, named by game serial.</source>
+        <translation>Oyun seri numarasıyla adlandırılan oyuna özel ayar dosyalarını saklar.</translation>
+    </message>
+    <message>
+        <source>Input Profiles Directory</source>
+        <translation>Giriş Profilleri Dizini</translation>
+    </message>
+    <message>
+        <source>Stores controller input profiles.</source>
+        <translation>Denetleyici giriş profillerini saklar.</translation>
+    </message>
+    <message>
+        <source>Patches Directory</source>
+        <translation>Yama Dizini</translation>
+    </message>
+    <message>
+        <source>Stores patch files (.cht) that you have created or imported. These are used in addition to the built-in patch database.</source>
+        <translation>Oluşturduğunuz veya içe aktardığınız yama dosyalarını (.cht) saklar. Bunlar yerleşik yama veritabanına ek olarak kullanılır.</translation>
+    </message>
+    <message>
+        <source>Shaders Directory</source>
+        <translation>Gölgelendirici Dizini</translation>
+    </message>
+    <message>
+        <source>Searched for post-processing shaders: GLSL shaders in this directory, ReShade shaders in reshade/Shaders, and slang presets in slang.</source>
+        <translation>Son işleme gölgelendiricilerini arar: bu dizindeki GLSL gölgelendiricileri, reshade/Shaders içindeki ReShade gölgelendiricileri ve slang dizinindeki Slang ön ayarları.</translation>
+    </message>
+    <message>
+        <source>Subchannels Directory</source>
+        <translation>Alt Kanal Dizini</translation>
+    </message>
+    <message>
+        <source>Searched for SBI/LSD subchannel files, which are required by LibCrypt-protected games, when they are not found next to the disc image.</source>
+        <translation>Disk görüntüsünün yanında bulunmadığında LibCrypt korumalı oyunların gerektirdiği SBI/LSD alt kanal dosyalarını arar.</translation>
+    </message>
+    <message>
+        <source>User Resources Directory</source>
+        <translation>Kullanıcı Kaynakları Dizini</translation>
+    </message>
+    <message>
+        <source>Files placed here override the bundled resources. Also used for custom themes and Big Picture backgrounds.</source>
+        <translation>Buraya yerleştirilen dosyalar paketle gelen kaynakların yerine kullanılır. Özel temalar ve Big Picture arka planları için de kullanılır.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Gözat...</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
+    </message>
+    <message>
+        <source>Select %1</source>
+        <translation>%1 Seç</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Varsayılan</translation>
+    </message>
+</context>
+<context>
     <name>FullscreenUI</name>
     <message>
         <source>-</source>
@@ -12147,10 +12271,6 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
     <message>
         <source>All Time: {}</source>
         <translation>Tüm Zamanlar: {}</translation>
-    </message>
-    <message>
-        <source>All unofficial achievement progress for the current game will be removed. This cannot be undone.</source>
-        <translation>Geçerli oyun için tüm resmi olmayan başarım ilerlemesi kaldırılacak. Bu işlem geri alınamaz.</translation>
     </message>
     <message>
         <source>Allow Booting Without SBI File</source>
@@ -12785,6 +12905,10 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Yeniden Derleyici Komut Önbelleğini Etkinleştir</translation>
     </message>
     <message>
+        <source>Enable Recompiler Idle Loop Fast Forward</source>
+        <translation>Yeniden Derleyici Boş Döngü Hızlandırmasını Etkinleştir</translation>
+    </message>
+    <message>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Yeniden Derleyici Bellek İstisnalarını Etkinleştir</translation>
     </message>
@@ -12873,6 +12997,14 @@ Hata şuydu:</translation>
     <message>
         <source>Fast Forward Volume</source>
         <translation>İleri Sarma Ses Şiddeti</translation>
+    </message>
+    <message>
+        <source>Fast Forward While Loading</source>
+        <translation>Yükleme Sırasında Hızlı İleri Sar</translation>
+    </message>
+    <message>
+        <source>Fast forwards when the game stops updating the screen while reading from the disc. Does not apply to animated loading screens.</source>
+        <translation>Oyun diskten okurken ekranı güncellemeyi durdurduğunda hızlandırır. Animasyonlu yükleme ekranlarında uygulanmaz.</translation>
     </message>
     <message>
         <source>Filter Framebuffer Uploads</source>
@@ -13011,6 +13143,10 @@ Hata şuydu:</translation>
         <translation>Tuş Girdi Kaynakları</translation>
     </message>
     <message>
+        <source>Installed VRAM</source>
+        <translation>Takılı VRAM</translation>
+    </message>
+    <message>
         <source>Interface Settings</source>
         <translation>Arayüz Ayarları</translation>
     </message>
@@ -13125,6 +13261,10 @@ Hata şuydu:</translation>
     <message>
         <source>Mid-Frame Scanout</source>
         <translation>Kare Ortasında Ekrana Aktarım</translation>
+    </message>
+    <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
     </message>
     <message>
         <source>Minimum Framebuffer Upload Height</source>
@@ -13275,6 +13415,14 @@ Hata şuydu:</translation>
         <translation>Varsayılanlara Döndür</translation>
     </message>
     <message>
+        <source>Reset Unpromoted Achievement</source>
+        <translation>Yükseltilmemiş Başarımın Kilidini Sıfırla</translation>
+    </message>
+    <message>
+        <source>Reset Unpromoted Achievement Unlocks</source>
+        <translation>Yükseltilmemiş başarımların kilitlerini sıfırla</translation>
+    </message>
+    <message>
         <source>Resets all settings to the defaults.</source>
         <translation>Tüm ayarları varsayılanlara çevirir.</translation>
     </message>
@@ -13397,6 +13545,14 @@ Hata şuydu:</translation>
     <message>
         <source>Changes settings for the application.</source>
         <translation>Uygulamanın ayarlarını değiştirir.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
+        <translation>Emüle edilen konsola takılı RAM miktarını değiştirir. Ticari oyunlar ek RAM kullanmaz.</translation>
+    </message>
+    <message>
+        <source>Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.</source>
+        <translation>Emüle edilen konsola takılı video belleği miktarını değiştirir. Ticari oyunlar ek VRAM kullanmaz.</translation>
     </message>
     <message>
         <source>Compatibility</source>
@@ -13605,14 +13761,6 @@ Hata şuydu:</translation>
     <message>
         <source>Reset Unlock</source>
         <translation>Kilidi Açmayı Sıfırla</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement</source>
-        <translation>Resmi Olmayan Başarımı Sıfırla</translation>
-    </message>
-    <message>
-        <source>Reset Unofficial Achievement Unlocks</source>
-        <translation>Resmi Olmayan Başarım Kilit Açmalarını Sıfırla</translation>
     </message>
     <message>
         <source>Right: </source>
@@ -13947,10 +14095,6 @@ Hata şuydu:</translation>
         <translation>Parça</translation>
     </message>
     <message>
-        <source>Track Unofficial Achievements</source>
-        <translation>Resmi Olmayan Başarımları Takip Et</translation>
-    </message>
-    <message>
         <source>Track hash copied to clipboard.</source>
         <translation>Parça karması panoya kopyalandı.</translation>
     </message>
@@ -13965,14 +14109,6 @@ Hata şuydu:</translation>
     <message>
         <source>Ungrouped</source>
         <translation>Grupsuz</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlock reset.</source>
-        <translation>Resmi olmayan başarım kilit açması sıfırlandı.</translation>
-    </message>
-    <message>
-        <source>Unofficial achievement unlocks reset.</source>
-        <translation>Resmi olmayan başarım kilit açmaları sıfırlandı.</translation>
     </message>
     <message>
         <source>Unpin from OSD</source>
@@ -14053,10 +14189,6 @@ Hata şuydu:</translation>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>Büyük Resim Modu başlatıldığında ana menü yerine oyun listesi gösterilir.</translation>
-    </message>
-    <message>
-        <source>When enabled, DuckStation will track unofficial achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
-        <translation>Etkinleştirildiğinde DuckStation resmi olmayan başarımları takip eder. Kilit açmaları yerel olarak kaydedilir ve RetroAchievements&apos;a gönderilmez.</translation>
     </message>
     <message>
         <source>Widescreen Rendering</source>
@@ -15092,6 +15224,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Yansıtma sonrasında PGXP verilerine ek hassasiyet kazandırır. Bazı oyunlarda görüntüyü iyileştirebilir. Otomatik seçeneği oyun veritabanındaki ayarı kullanır.</translation>
     </message>
     <message>
+        <source>All unpromoted achievement progress for the current game will be removed. This cannot be undone.</source>
+        <translation>Geçerli oyundaki tüm yükseltilmemiş başarımların ilerlemesi kaldırılacak. Bu işlem geri alınamaz.</translation>
+    </message>
+    <message>
         <source>Asks for each button and axis of this controller in turn.</source>
         <translation>Bu oyun kolunun her düğmesi ve ekseni için sırayla atama ister.</translation>
     </message>
@@ -15104,24 +15240,12 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Tüm Düğmeleri Ata</translation>
     </message>
     <message>
-        <source>Changes the amount of RAM installed in the emulated console.</source>
-        <translation>Öykünülen konsolda takılı RAM miktarını değiştirir.</translation>
-    </message>
-    <message>
         <source>Clear</source>
         <translation>Temizle</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
-    </message>
-    <message>
         <source>Installed RAM</source>
         <translation>Takılı RAM</translation>
-    </message>
-    <message>
-        <source>Maps all installed RAM, regardless of the size configured by the BIOS or game. Needed for 16MB with retail BIOSes.</source>
-        <translation>BIOS veya oyun tarafından yapılandırılan boyuttan bağımsız olarak takılı RAM’in tamamını adres alanına eşler. Perakende BIOS’larıyla 16 MB kullanmak için gereklidir.</translation>
     </message>
     <message>
         <source>Presents extra frames for effects such as black frame insertion.</source>
@@ -15298,6 +15422,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Periyodik olarak durum kaydı alır böylece hata yaptığınızda geri sarabilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Scale Idle Timeout</source>
+        <translation>Boşta Kalma Zaman Aşımını Ölçekle</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -15564,6 +15692,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Aynı Kareleri Göstermeyi Geç</translation>
     </message>
     <message>
+        <source>Skips over the busy loop that games use to wait for vertical blank.</source>
+        <translation>Oyunların dikey boşluğu beklemek için kullandığı etkin bekleme döngüsünü atlar.</translation>
+    </message>
+    <message>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
         <translation>Bir öncekinden farklı olmayan kareleri göstermeyi es geçer. Kare zamanlama Frame/Pacing kötüleştirebilir.</translation>
     </message>
@@ -15648,6 +15780,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Adım {} / {}</translation>
     </message>
     <message>
+        <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
+        <translation>Hız aşırtma sırasında dikey boşluğu beklerken oyunların zaman aşımına uğramasını önler.</translation>
+    </message>
+    <message>
         <source>Stretch Mode</source>
         <translation>Germe Modu</translation>
     </message>
@@ -15720,6 +15856,10 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
         <translation>Her %d karede aç kapa</translation>
     </message>
     <message>
+        <source>Track Unpromoted Achievements</source>
+        <translation>Yükseltilmemiş Başarımları İzle</translation>
+    </message>
+    <message>
         <source>Turbo Speed</source>
         <translation>Turbo Hız</translation>
     </message>
@@ -15742,6 +15882,14 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Unlimited</source>
         <translation>Sınırsız</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlock reset.</source>
+        <translation>Yükseltilmemiş başarımın kilidi sıfırlandı.</translation>
+    </message>
+    <message>
+        <source>Unpromoted achievement unlocks reset.</source>
+        <translation>Yükseltilmemiş başarımların kilitleri sıfırlandı.</translation>
     </message>
     <message>
         <source>Updates the database for achievements shown in the game list.</source>
@@ -15842,6 +15990,10 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>Etkinleştirildiğinde, Duckstation tüm başarımları kilitli kabul edip sunucuya başarım elde edilme verisi göndermez.</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will track unpromoted achievements. Unlocks will be saved locally and not sent to RetroAchievements.</source>
+        <translation>Etkinleştirildiğinde DuckStation yükseltilmemiş başarımları izler. Başarımların açılma durumları yerel olarak kaydedilir ve RetroAchievements&apos;e gönderilmez.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -16184,12 +16336,12 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
         <translation>RAM Boyutu:</translation>
     </message>
     <message>
-        <source>Disable Widescreen Rendering</source>
-        <translation>Geniş Ekran Çizimini Devre Dışı Bırak</translation>
+        <source>VRAM Size:</source>
+        <translation>VRAM Boyutu:</translation>
     </message>
     <message>
-        <source>Force Full RAM Mapping</source>
-        <translation>RAM’in Tamamını Eşlemeyi Zorla</translation>
+        <source>Disable Widescreen Rendering</source>
+        <translation>Geniş Ekran Çizimini Devre Dışı Bırak</translation>
     </message>
     <message>
         <source>Disallow in Hardcore Mode</source>
@@ -16493,6 +16645,11 @@ Devam etmekten emin misiniz?</translation>
         <translation>Hafıza Kartı Erişiminde İleri Sarmayı Devre Dışı Bırak</translation>
     </message>
     <message>
+        <source>Disable Fast Forward While Loading</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Yükleme Sırasında Hızlı İleri Sarmayı Devre Dışı Bırak</translation>
+    </message>
+    <message>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>CD-ROM Okuma Hızlandırmasını Devre Dışı Bırak</translation>
@@ -16638,6 +16795,10 @@ Devam etmekten emin misiniz?</translation>
     <message>
         <source>Fast forward memory card access disabled.</source>
         <translation>Hafıza kartı erişiminde ileri sarma devre dışı bırakıldı.</translation>
+    </message>
+    <message>
+        <source>Fast forward while loading disabled.</source>
+        <translation>Yükleme sırasında hızlı ileri sarma devre dışı.</translation>
     </message>
     <message>
         <source>CD-ROM read speedup disabled.</source>
@@ -17079,14 +17240,6 @@ Devam etmekten emin misiniz?</translation>
         <translation>Dışlanan Yollar (taranmayacak)</translation>
     </message>
     <message>
-        <source>File...</source>
-        <translation>Dosya...</translation>
-    </message>
-    <message>
-        <source>Folder...</source>
-        <translation>Dizin...</translation>
-    </message>
-    <message>
         <source>Scan For New Games</source>
         <translation>Yeni Oyunlar İçin Tara</translation>
     </message>
@@ -17095,8 +17248,40 @@ Devam etmekten emin misiniz?</translation>
         <translation>Tüm Oyunları Tekrar Tara</translation>
     </message>
     <message>
+        <source>Search Directories</source>
+        <translation>Arama Dizinleri</translation>
+    </message>
+    <message>
+        <source>Directories which will be scanned for games. Enable Scan Recursively to also search subdirectories, which takes longer but finds games stored in nested folders. Folders can also be dragged here from your file manager.</source>
+        <translation>Oyunların aranacağı dizinler. Alt dizinleri de aramak için Özyinelemeli Taramayı etkinleştirin; bu işlem daha uzun sürer ancak iç içe klasörlerdeki oyunları bulur. Dosya yöneticinizden klasörleri buraya sürükleyebilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Excluded Paths</source>
+        <translation>Hariç Tutulan Yollar</translation>
+    </message>
+    <message>
+        <source>Files and directories which will be skipped when scanning for games, for example images you do not want to appear in the game list. Files and folders can also be dragged here from your file manager.</source>
+        <translation>Oyun taramasında atlanacak dosya ve dizinler; örneğin oyun listesinde görünmesini istemediğiniz resimler. Dosya yöneticinizden dosya ve klasörleri buraya sürükleyebilirsiniz.</translation>
+    </message>
+    <message>
+        <source>Scans the search directories for files which are not already in the game list. Previously-scanned games are loaded from the cache, so this is usually quick.</source>
+        <translation>Arama dizinlerinde henüz oyun listesinde olmayan dosyaları tarar. Önceden taranan oyunlar önbellekten yüklendiği için bu işlem genellikle hızlıdır.</translation>
+    </message>
+    <message>
+        <source>Discards the game list cache and scans every file in the search directories again. Use this if game details such as titles or serials are incorrect. May take a while for large collections.</source>
+        <translation>Oyun listesi önbelleğini siler ve arama dizinlerindeki tüm dosyaları yeniden tarar. Oyun adı veya seri numarası gibi bilgiler yanlışsa bunu kullanın. Büyük koleksiyonlarda biraz zaman alabilir.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Dizin Aç...</translation>
+    </message>
+    <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Arama dizini yok. Oyunlarınızın saklandığı yeri seçmek için klasör ekleyin veya buraya sürükleyin.</translation>
+    </message>
+    <message>
+        <source>No excluded paths. Files or folders added here will be skipped when scanning.</source>
+        <translation>Hariç tutulan yol yok. Buraya eklenen dosya veya klasörler tarama sırasında atlanır.</translation>
     </message>
     <message>
         <source>Select Search Directory</source>
@@ -17678,6 +17863,10 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
         <translation>VRAM Yazımlarını Kaydetmeyi Etkinleştir</translation>
     </message>
     <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
+    </message>
+    <message>
         <source>Debugging</source>
         <translation>Hata Ayıklama</translation>
     </message>
@@ -17740,10 +17929,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>Textures Directory</source>
         <translation>Doku Dizini</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation>Aç...</translation>
     </message>
     <message>
         <source>Directory to load replacement textures from, and save dumps to.</source>
@@ -17816,10 +18001,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>Browse...</source>
         <translation>Göz At...</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation>Sıfırla</translation>
     </message>
     <message>
         <source>Disable Textures</source>
@@ -18088,10 +18269,6 @@ Alt klasörlerle birlikte taramak daha uzun sürer, ancak alt dizinlerdeki dosya
     <message>
         <source>Geometry Tolerance</source>
         <translation>Geometri Toleransı</translation>
-    </message>
-    <message>
-        <source>-1.00px (Disabled)</source>
-        <translation>-1.00px (Kapalı)</translation>
     </message>
     <message>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
@@ -20340,6 +20517,10 @@ Birden çok atama yapmak için Shift tuşuna basılı tutarak tıklayın.</trans
         <translation>Uygulama için gelişmiş seçenekleri yapılandırır.</translation>
     </message>
     <message>
+        <source>&amp;Folders</source>
+        <translation>&amp;Klasörler</translation>
+    </message>
+    <message>
         <source>Configures internal options for the application.</source>
         <translation>Uygulamanın dahili seçeneklerini yapılandırır.</translation>
     </message>
@@ -21288,6 +21469,10 @@ Bu işlem geri alınamaz.</translation>
         <translation>Purple Rain</translation>
     </message>
     <message>
+        <source>Midnight Amber</source>
+        <translation>Midnight Amber</translation>
+    </message>
+    <message>
         <source>QDarkStyle</source>
         <translation>QDarkStyle</translation>
     </message>
@@ -21797,10 +21982,6 @@ Hata: {1}</translation>
         <translation>Tüm Hafıza Kartı Tipleri (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <source>Open...</source>
-        <translation>Aç...</translation>
-    </message>
-    <message>
         <source>Browse...</source>
         <translation>Göz At...</translation>
     </message>
@@ -21835,6 +22016,10 @@ Hata: {1}</translation>
     <message>
         <source>Memory Cards:</source>
         <translation>Hafıza Kartları:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
     </message>
     <message>
         <source>Memory Cards Location</source>
@@ -23196,10 +23381,6 @@ Hata: {1}</translation>
         <translation>Kaplama Listesini Tazele</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ek hazır çerçeveler, veri dizininin içindeki &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; klasörüne eklenebilir.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <source>Custom Configuration</source>
         <translation>Özel Ayar</translation>
     </message>
@@ -23210,6 +23391,14 @@ Hata: {1}</translation>
     <message>
         <source>Browse...</source>
         <translation>Göz At...</translation>
+    </message>
+    <message>
+        <source>Overlays Directory:</source>
+        <translation>Bindirme Dizini:</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
     </message>
     <message>
         <source>Display Start:</source>
@@ -23254,6 +23443,22 @@ Hata: {1}</translation>
     <message>
         <source>Image Path</source>
         <translation>Dosya Yolu</translation>
+    </message>
+    <message>
+        <source>Select Overlays Directory</source>
+        <translation>Bindirme Dizinini Seç</translation>
+    </message>
+    <message>
+        <source>Overlays Directory</source>
+        <translation>Bindirme Dizini</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Varsayılan</translation>
+    </message>
+    <message>
+        <source>Stores additional border overlay presets. Use Refresh Overlay List to find presets after changing this directory.</source>
+        <translation>Ek kenarlık bindirme ön ayarlarını saklar. Bu dizini değiştirdikten sonra ön ayarları bulmak için “Kaplama Listesini Tazele” seçeneğini kullanın.</translation>
     </message>
     <message>
         <source>Unspecified</source>
@@ -23893,12 +24098,20 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
         <translation>{} ({})</translation>
     </message>
     <message>
-        <source>Saved {}</source>
-        <translation>Kaydedildi {}</translation>
+        <source>Empty</source>
+        <translation>Boş</translation>
     </message>
     <message>
-        <source>No save present in this slot.</source>
-        <translation>Bu slotta hiçbir kayıt yok.</translation>
+        <source>Save States</source>
+        <translation>Kayıt Durumları</translation>
+    </message>
+    <message>
+        <source>{} of {} slots in use</source>
+        <translation>Kullanılan yuva: {} / {}</translation>
+    </message>
+    <message>
+        <source>Saved {}</source>
+        <translation>Kaydedildi {}</translation>
     </message>
     <message>
         <source>Unknown error.</source>
@@ -23966,16 +24179,16 @@ Kısayol, mevcut konumu gösterecek şekilde güncellensin mi?</translation>
 <context>
     <name>SettingWidgetBinder</name>
     <message>
-        <source>Use Global Setting [Enabled]</source>
-        <translation>Evrensel Ayarı Kullan [Açık]</translation>
-    </message>
-    <message>
-        <source>Use Global Setting [Disabled]</source>
-        <translation>Evrensel Ayarı Kullan [Kapalı]</translation>
-    </message>
-    <message>
         <source>Global: </source>
         <translation>Evrensel: </translation>
+    </message>
+    <message>
+        <source>Open Folder</source>
+        <translation>Klasörü Aç</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Varsayılana Sıfırla</translation>
     </message>
     <message>
         <source>Confirm Folder</source>
@@ -24106,24 +24319,54 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>PS1-Dışı</translation>
     </message>
     <message>
-        <source>2 MB (Retail Console)</source>
+        <source>2MB (Standard)</source>
         <comment>CPURAMSize</comment>
-        <translation>2 MB (Perakende Konsol)</translation>
+        <translation>2 MB (Standart)</translation>
     </message>
     <message>
-        <source>4 MB (Arcade Boards)</source>
+        <source>4MB</source>
         <comment>CPURAMSize</comment>
-        <translation>4 MB (Arcade Kartları)</translation>
+        <translation>4 MB</translation>
     </message>
     <message>
-        <source>8 MB (Dev Console)</source>
+        <source>4MB (Forced)</source>
         <comment>CPURAMSize</comment>
-        <translation>8 MB (Geliştirme Konsolu)</translation>
+        <translation>4 MB (Zorla)</translation>
     </message>
     <message>
-        <source>16 MB (Mods/Arcade Boards)</source>
+        <source>8MB</source>
         <comment>CPURAMSize</comment>
-        <translation>16 MB (Modlar/Arcade Kartları)</translation>
+        <translation>8 MB</translation>
+    </message>
+    <message>
+        <source>8MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>8 MB (Zorla)</translation>
+    </message>
+    <message>
+        <source>16MB</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB</translation>
+    </message>
+    <message>
+        <source>16MB (Forced)</source>
+        <comment>CPURAMSize</comment>
+        <translation>16 MB (Zorla)</translation>
+    </message>
+    <message>
+        <source>1MB (Standard)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>1 MB (Standart)</translation>
+    </message>
+    <message>
+        <source>2MB</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB</translation>
+    </message>
+    <message>
+        <source>2MB (Forced)</source>
+        <comment>GPUVRAMSize</comment>
+        <translation>2 MB (Zorla)</translation>
     </message>
     <message>
         <source>Interpreter (Slowest)</source>
@@ -24935,10 +25178,6 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
         <translation>Oyun Listesi</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation>&lt;strong&gt;Oyun Listesi Ayarları&lt;/strong&gt;&lt;hr&gt;Yukarıdaki liste, oyun listesini doldurmak için DuckStation&apos;ın arayacağı dizinleri gösterir. Arama dizinleri eklenebilir, kaldırılabilir ve alt dizinlerin taranıp taranmayacağı değiştirilebilir.</translation>
-    </message>
-    <message>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -24957,6 +25196,10 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;Konsol Ayarları&lt;/strong&gt;&lt;hr&gt;Bu ayarlar simülasyonu yapılan konsolu ayarlar.&lt;br&gt;&lt;br&gt;Detaylı bilgi için imleci ayarların üstüne getirebilir ve Shift + Fare tekeri ile bu paneli kaydırabilirsiniz.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;These options control which directories are scanned to populate the game list.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
+        <translation>&lt;strong&gt;Oyun Listesi Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler oyun listesini doldurmak için hangi dizinlerin taranacağını belirler.&lt;br&gt;&lt;br&gt;Ek bilgi için bir seçeneğin üzerine gelin.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25010,6 +25253,14 @@ Bu dizini oluşturmak istiyor musunuz?</translation>
     <message>
         <source>&lt;strong&gt;Capture Settings&lt;/strong&gt;&lt;hr&gt;These options determine how screenshots and videos are captured by the application.</source>
         <translation>&lt;strong&gt;Yakalama Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler, ekran görüntülerinin ve videoların uygulama tarafından nasıl yakalanacağını belirler.</translation>
+    </message>
+    <message>
+        <source>Folders</source>
+        <translation>Klasörler</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation reads and stores its files.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;Klasör Ayarları&lt;/strong&gt;&lt;hr&gt;Bu seçenekler DuckStation&apos;ın dosyaları nereden okuyup nereye kaydedeceğini belirler.&lt;br&gt;&lt;br&gt;Ek bilgi için bir seçeneğin üzerine gelin; bu paneli kaydırmak için Shift tuşunu basılı tutup fare tekerleğini çevirin.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
@@ -25151,10 +25402,6 @@ Devam etmek istiyor musunuz?</translation>
         <translation>Göz At...</translation>
     </message>
     <message>
-        <source>Reset</source>
-        <translation>Sıfırla</translation>
-    </message>
-    <message>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japonya):</translation>
     </message>
@@ -25165,10 +25412,6 @@ Devam etmek istiyor musunuz?</translation>
     <message>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Avrupa, Avustralya):</translation>
-    </message>
-    <message>
-        <source>Open in Explorer...</source>
-        <translation>Dosya Gezgininde Aç...</translation>
     </message>
     <message>
         <source>Refresh List</source>
@@ -25209,6 +25452,10 @@ Devam etmek istiyor musunuz?</translation>
     <message>
         <source>Advanced Settings</source>
         <translation>Gelişmiş Ayarlar</translation>
+    </message>
+    <message>
+        <source>More Options</source>
+        <translation>Daha Fazla Seçenek</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -25495,6 +25742,10 @@ Any changes have been saved, and the wizard will run again next time you start D
         </translation>
     </message>
     <message>
+        <source>No search directories. Add a folder, or drag one here, to choose where your games are stored.</source>
+        <translation>Arama dizini yok. Oyunlarınızın saklandığı yeri seçmek için klasör ekleyin veya buraya sürükleyin.</translation>
+    </message>
+    <message>
         <source>Open Directory...</source>
         <translation>Dizin Aç...</translation>
     </message>
@@ -25697,6 +25948,15 @@ SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
         <translation>Genişletilmiş RAM</translation>
     </message>
     <message>
+        <source>Expanded VRAM</source>
+        <comment>Taint</comment>
+        <translation>Genişletilmiş VRAM</translation>
+    </message>
+    <message>
+        <source>Unknown BIOS</source>
+        <translation>Bilinmeyen BIOS</translation>
+    </message>
+    <message>
         <source>There is no next disc to switch to.</source>
         <translation>Bir sonraki CD yok değiştirmeye.</translation>
     </message>
@@ -25715,6 +25975,14 @@ SBI dosyasının adı disk kalıbının adıyla aynı olmalıdır.</translation>
     <message>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
         <translation>Kare hızı otomatik olarak ayarlı değil. Oyunlar yanlış hızlarda çalışabilir.</translation>
+    </message>
+    <message>
+        <source>RAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>RAM boyutu {} olarak ayarlandı; bu, bazı oyunlarla uyumsuz olabilir.</translation>
+    </message>
+    <message>
+        <source>VRAM size is set to {}, this may be incompatible with some games.</source>
+        <translation>VRAM boyutu {} olarak ayarlandı; bu, bazı oyunlarla uyumsuz olabilir.</translation>
     </message>
     <message>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
@@ -25848,6 +26116,10 @@ Mevcut CD görüntüsü kullanılıyor; bu kararsızlığa neden olabilir.</tran
         <translation>Kart {} olarak değiştirildi.</translation>
     </message>
     <message>
+        <source>Physical Disc</source>
+        <translation>Fiziksel Disk</translation>
+    </message>
+    <message>
         <source>No valid game is running.</source>
         <translation>Geçerli bir oyun çalışmıyor.</translation>
     </message>
@@ -25860,6 +26132,10 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     <message>
         <source>Overclock disabled.</source>
         <translation>Hız aşırtma kapatıldı.</translation>
+    </message>
+    <message>
+        <source>2MB VRAM disabled.</source>
+        <translation>2 MB VRAM devre dışı.</translation>
     </message>
     <message>
         <source>Resolution scale set to 1x.</source>
@@ -25964,10 +26240,6 @@ Etkileri temizlemek için bir hafıza kartına kayıt yapmalı ve oyunu sıfırl
     <message>
         <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
         <translation>PGXP Geometri Toleransı varsayılana ayarlanmamış. Bu, çizim hatalarına neden olabilir.</translation>
-    </message>
-    <message>
-        <source>Expanded RAM is enabled, this may be incompatible with some games.</source>
-        <translation>Genişletilmiş RAM etkin. Bu, bazı oyunlarla uyumsuz olabilir.</translation>
     </message>
     <message>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
