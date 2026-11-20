@@ -11,11 +11,11 @@
 #include "rc_api_user.h"
 #include "rc_consoles.h"
 #include "rc_error.h"
-#include "rc_hash.h"
 #include "rc_runtime.h"
 #include "rc_util.h"
 
 #ifdef RC_CLIENT_SUPPORTS_HASH
+#include "rc_hash.h"
 #include "../hash/rc_hash_internal.h"
 #endif
 

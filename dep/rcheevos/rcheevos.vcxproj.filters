@@ -24,9 +24,6 @@
     <ClInclude Include="include\rc_error.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\rc_hash.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\rc_runtime.h">
       <Filter>include</Filter>
     </ClInclude>

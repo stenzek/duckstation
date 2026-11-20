@@ -10,7 +10,6 @@ add_library(rcheevos
   include/rc_consoles.h
   include/rc_error.h
   include/rc_export.h
-  include/rc_hash.h
   include/rc_runtime.h
   include/rc_util.h
   src/api/rc_api_common.c

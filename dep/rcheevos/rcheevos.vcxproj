@@ -11,7 +11,6 @@
     <ClInclude Include="include\rc_client.h" />
     <ClInclude Include="include\rc_consoles.h" />
     <ClInclude Include="include\rc_error.h" />
-    <ClInclude Include="include\rc_hash.h" />
     <ClInclude Include="include\rc_runtime.h" />
     <ClInclude Include="include\rc_util.h" />
     <ClInclude Include="src\api\rc_api_common.h" />

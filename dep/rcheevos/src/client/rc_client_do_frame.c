@@ -8,6 +8,7 @@
 
 #include "rc_api_request.h"
 #include "rc_api_runtime.h"
+#include "rc_consoles.h" /* rc_memory_regions_t */
 
 #include "../runtime/rc_eval_state.h"
 #include "../runtime/rc_format.h"

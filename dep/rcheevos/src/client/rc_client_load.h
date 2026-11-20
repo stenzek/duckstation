@@ -2,7 +2,11 @@
 #define RC_CLIENT_LOAD_H
 
 #include "rc_client_callbacks.h" /* rc_client_callback */
+
+#ifdef RC_CLIENT_SUPPORTS_HASH
 #include "rc_hash.h"             /* rc_hash_iterator_t */
+#endif
+
 #include "rc_export.h"
 
 #include "rc_client_async.h"     /* rc_client_async_handle_t */
