@@ -1195,6 +1195,7 @@ void Settings::ApplySettingRestrictions()
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
     cpu_ram_size = DEFAULT_CPU_RAM_SIZE;
+    cpu_idle_fast_forward = false;
     gpu_vram_size = DEFAULT_GPU_VRAM_SIZE;
     gpu_resolution_scale = 1;
     gpu_multisamples = 1;
