@@ -599,7 +599,9 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
 
     case Layout::General:
     default:
-      srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+      // Unknown usage, e.g. external images, so wait for everything.
+      barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
       break;
   }
 
@@ -675,7 +677,8 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
 
     case Layout::General:
     default:
-      dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+      barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+      dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
       break;
   }
   vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
