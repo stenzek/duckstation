@@ -3557,9 +3557,16 @@ void FullscreenUI::DrawConsoleSettingsPage()
     FSUI_VSTR("Selects the percentage of the normal clock speed the emulated hardware will run at."),
     GetEffectiveBoolSetting(bsi, Settings::CPU_SECTION_NAME, "OverclockEnable", false));
 
+  const bool is_interpreter =
+    (Settings::ParseCPUExecutionMode(GetEffectiveTinyStringSetting(bsi, Settings::CPU_SECTION_NAME, "ExecutionMode"))
+       .value_or(Settings::DEFAULT_CPU_EXECUTION_MODE) == CPUExecutionMode::Interpreter);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Enable Recompiler ICache"),
                     FSUI_VSTR("Makes games run closer to their console framerate, at a small cost to performance."),
-                    Settings::CPU_SECTION_NAME, "RecompilerICache", false);
+                    Settings::CPU_SECTION_NAME, "RecompilerICache", false, !is_interpreter);
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAUGE_SIMPLE_HIGH, "Scale Idle Timeout"),
+                    FSUI_VSTR("Stops games from timing out while waiting for vertical blank when overclocking."),
+                    Settings::CPU_SECTION_NAME, "IdleTimeoutScale", true, !is_interpreter);
 
   MenuHeading(FSUI_VSTR("CD-ROM Emulation"));
 
@@ -6556,6 +6563,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   Settings::CPU_SECTION_NAME, "FastmemMode", Settings::DEFAULT_CPU_FASTMEM_MODE,
                   &Settings::ParseCPUFastmemMode, &Settings::GetCPUFastmemModeName,
                   &Settings::GetCPUFastmemModeDisplayName, CPUFastmemMode::Count);
+  DrawToggleSetting(bsi, FSUI_VSTR("Enable Recompiler Idle Loop Fast Forward"),
+                    FSUI_VSTR("Skips over the busy loop that games use to wait for vertical blank."),
+                    Settings::CPU_SECTION_NAME, "IdleFastForward", true);
 
   MenuHeading(FSUI_VSTR("CD-ROM Emulation"));
 

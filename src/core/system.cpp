@@ -5038,6 +5038,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions ||
          g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
          g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache ||
+         g_settings.cpu_idle_fast_forward != old_settings.cpu_idle_fast_forward ||
          g_settings.bios_tty_logging != old_settings.bios_tty_logging))
     {
       Host::AddIconOSDMessage(OSDMessageType::Info, "CPUFlushAllBlocks", ICON_FA_MICROCHIP,

@@ -136,6 +136,211 @@ TEST_P(CPUExecution, DoubleLoadDelayAcrossBlocks)
   }
 }
 
+TEST_P(CPUExecution, VWaitIdleLoopFastForwardKeepsTiming)
+{
+  // The PSX SDK's v_wait() loop, with Vcount never reaching the target so that the countdown expires.
+  static constexpr u32 TIMEOUT = 5000;
+  static constexpr u32 TIMEOUT_ADDR = RAM_TEST_ADDR + 0x110;
+  Program prog;
+  prog.LoadImmediate(Reg::SP, RAM_TEST_ADDR + 0x100);
+  prog.LoadImmediate(Reg::A1, TIMEOUT);
+  prog.Emit(sw(Reg::A1, 16, Reg::SP));
+  prog.Emit(addiu(Reg::A0, Reg::R0, 1));
+  prog.Emit(sw(Reg::R0, -0x100, Reg::SP));
+  prog.Emit(0x2403ffff);                         // addiu v1, zero, -1
+  prog.Emit(0x8fa20010);                         // loop: lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x2442ffff);                         // addiu v0, v0, -1
+  prog.Emit(0xafa20010);                         // sw v0, 16(sp)
+  prog.Emit(0x8fa20010);                         // lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x14430003);                         // bne v0, v1, compare
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(j(PROGRAM_BASE + (25 * 4)));         // j done
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x3c020000 | (RAM_TEST_ADDR >> 16)); // compare: lui v0, hi(Vcount)
+  prog.Emit(0x8c420000);                         // lw v0, lo(Vcount)(v0)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x0044102a);                         // slt v0, v0, a0
+  prog.Emit(0x1440fff1);                         // bne v0, zero, loop
+  prog.Emit(0x00000000);                         // nop
+
+  // Warm up, so that leftover state from the previous test does not end up in the first measurement.
+  prog.Run();
+
+  const bool old_enable = g_settings.cpu_idle_fast_forward;
+  u64 ticks[2];
+  for (const bool enable : {false, true})
+  {
+    g_settings.cpu_idle_fast_forward = enable;
+    CPU::CodeCache::Reset();
+    const u64 start_ticks = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+    prog.Run();
+    ticks[enable] = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks() - start_ticks;
+    EXPECT_EQ(Program::ReadRAM(TIMEOUT_ADDR), 0xFFFFFFFFu) << enable;
+  }
+  g_settings.cpu_idle_fast_forward = old_enable;
+
+  // Fast forwarding is not observable.
+  EXPECT_GT(ticks[false], TIMEOUT * 32u);
+  EXPECT_EQ(ticks[true], ticks[false]);
+}
+
+TEST_P(CPUExecution, VWaitIdleLoopEnteredWithLoadDelay)
+{
+  // The loop is entered with a load to a0 in the branch delay slot, which completes before the compare. Vcount is
+  // already at the loaded target, so the loop exits after a single iteration.
+  static constexpr u32 TIMEOUT = 5000;
+  static constexpr u32 TIMEOUT_ADDR = RAM_TEST_ADDR + 0x110;
+  Program prog;
+  prog.LoadImmediate(Reg::SP, RAM_TEST_ADDR + 0x100);
+  prog.LoadImmediate(Reg::A1, TIMEOUT);
+  prog.Emit(sw(Reg::A1, 16, Reg::SP));
+  prog.Emit(sw(Reg::R0, -0x100, Reg::SP));
+  prog.Emit(sw(Reg::R0, -0xFC, Reg::SP));
+  prog.Emit(addiu(Reg::A0, Reg::R0, 1));
+  prog.Emit(0x2403ffff);                         // addiu v1, zero, -1
+  prog.Emit(beq(Reg::R0, Reg::R0, 4));           // b loop
+  prog.Emit(lw(Reg::A0, -0xFC, Reg::SP));        // lw a0, <target>
+  prog.Emit(0x8fa20010);                         // loop: lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x2442ffff);                         // addiu v0, v0, -1
+  prog.Emit(0xafa20010);                         // sw v0, 16(sp)
+  prog.Emit(0x8fa20010);                         // lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x14430003);                         // bne v0, v1, compare
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(j(PROGRAM_BASE + (28 * 4)));         // j done
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x3c020000 | (RAM_TEST_ADDR >> 16)); // compare: lui v0, hi(Vcount)
+  prog.Emit(0x8c420000);                         // lw v0, lo(Vcount)(v0)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x0044102a);                         // slt v0, v0, a0
+  prog.Emit(0x1440fff1);                         // bne v0, zero, loop
+  prog.Emit(0x00000000);                         // nop
+  const u32 a0 = prog.StoreResult(Reg::A0);      // done:
+
+  // Warm up, so that leftover state from the previous test does not end up in the first measurement.
+  prog.Run();
+
+  const bool old_enable = g_settings.cpu_idle_fast_forward;
+  u64 ticks[2];
+  for (const bool enable : {false, true})
+  {
+    g_settings.cpu_idle_fast_forward = enable;
+    CPU::CodeCache::Reset();
+    const u64 start_ticks = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+    prog.Run();
+    ticks[enable] = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks() - start_ticks;
+    EXPECT_EQ(Program::ReadRAM(TIMEOUT_ADDR), TIMEOUT - 1) << enable;
+    EXPECT_EQ(prog.Result(a0), 0u) << enable;
+  }
+  g_settings.cpu_idle_fast_forward = old_enable;
+
+  EXPECT_EQ(ticks[true], ticks[false]);
+}
+
+TEST_P(CPUExecution, VWaitIdleLoopEnteredDirectlyUsesLiveV1)
+{
+  // The loop is branched to without its initializer, with v1 set so that the countdown expires after 3 iterations.
+  static constexpr u32 TIMEOUT = 5000;
+  static constexpr u32 TIMEOUT_ADDR = RAM_TEST_ADDR + 0x110;
+  Program prog;
+  prog.LoadImmediate(Reg::SP, RAM_TEST_ADDR + 0x100);
+  prog.LoadImmediate(Reg::A1, TIMEOUT);
+  prog.Emit(sw(Reg::A1, 16, Reg::SP));
+  prog.Emit(sw(Reg::R0, -0x100, Reg::SP));
+  prog.Emit(addiu(Reg::A0, Reg::R0, 1));
+  prog.LoadImmediate(Reg::V1, TIMEOUT - 3);
+  prog.Emit(beq(Reg::R0, Reg::R0, 4));           // b loop
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x8fa20010);                         // loop: lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x2442ffff);                         // addiu v0, v0, -1
+  prog.Emit(0xafa20010);                         // sw v0, 16(sp)
+  prog.Emit(0x8fa20010);                         // lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x14430003);                         // bne v0, v1, compare
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(j(PROGRAM_BASE + (28 * 4)));         // j done
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x3c020000 | (RAM_TEST_ADDR >> 16)); // compare: lui v0, hi(Vcount)
+  prog.Emit(0x8c420000);                         // lw v0, lo(Vcount)(v0)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x0044102a);                         // slt v0, v0, a0
+  prog.Emit(0x1440fff1);                         // bne v0, zero, loop
+  prog.Emit(0x00000000);                         // nop
+
+  // Warm up, so that leftover state from the previous test does not end up in the first measurement.
+  prog.Run();
+
+  const bool old_enable = g_settings.cpu_idle_fast_forward;
+  u64 ticks[2];
+  for (const bool enable : {false, true})
+  {
+    g_settings.cpu_idle_fast_forward = enable;
+    CPU::CodeCache::Reset();
+    const u64 start_ticks = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+    prog.Run();
+    ticks[enable] = TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks() - start_ticks;
+    EXPECT_EQ(Program::ReadRAM(TIMEOUT_ADDR), TIMEOUT - 3) << enable;
+  }
+  g_settings.cpu_idle_fast_forward = old_enable;
+
+  EXPECT_EQ(ticks[true], ticks[false]);
+}
+
+TEST_P(CPUExecution, VWaitIdleLoopTimeoutScalesWithOverclock)
+{
+  // The initializer is branched to, as in games. Vcount is already at the target, so the loop exits after a single
+  // decrement, which is from the scaled timeout when the HLE is used.
+  static constexpr u32 TIMEOUT = 5000;
+  static constexpr u32 TIMEOUT_ADDR = RAM_TEST_ADDR + 0x110;
+  Program prog;
+  prog.LoadImmediate(Reg::SP, RAM_TEST_ADDR + 0x100);
+  prog.LoadImmediate(Reg::A1, TIMEOUT);
+  prog.Emit(sw(Reg::A1, 16, Reg::SP));
+  prog.Emit(addiu(Reg::A0, Reg::R0, 1));
+  prog.Emit(sw(Reg::A0, -0x100, Reg::SP));
+  prog.Emit(beq(Reg::R0, Reg::R0, 4));           // b init
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x2403ffff);                         // init: addiu v1, zero, -1
+  prog.Emit(0x8fa20010);                         // loop: lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x2442ffff);                         // addiu v0, v0, -1
+  prog.Emit(0xafa20010);                         // sw v0, 16(sp)
+  prog.Emit(0x8fa20010);                         // lw v0, 16(sp)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x14430003);                         // bne v0, v1, compare
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(j(PROGRAM_BASE + (27 * 4)));         // j done
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x3c020000 | (RAM_TEST_ADDR >> 16)); // compare: lui v0, hi(Vcount)
+  prog.Emit(0x8c420000);                         // lw v0, lo(Vcount)(v0)
+  prog.Emit(0x00000000);                         // nop
+  prog.Emit(0x0044102a);                         // slt v0, v0, a0
+  prog.Emit(0x1440fff1);                         // bne v0, zero, loop
+  prog.Emit(0x00000000);                         // nop
+
+  const Settings old_settings = g_settings;
+  g_settings.cpu_overclock_active = true;
+  g_settings.cpu_overclock_numerator = 2;
+  g_settings.cpu_overclock_denominator = 1;
+  for (const bool enable : {false, true})
+  {
+    for (const bool scale : {false, true})
+    {
+      g_settings.cpu_idle_fast_forward = enable;
+      g_settings.cpu_idle_timeout_scale = scale;
+      CPU::CodeCache::Reset();
+      prog.Run();
+      const bool scaled = (enable && scale && GetParam() != CPUExecutionMode::Interpreter);
+      EXPECT_EQ(Program::ReadRAM(TIMEOUT_ADDR), (scaled ? (TIMEOUT * 2) : TIMEOUT) - 1) << enable << scale;
+    }
+  }
+  g_settings = old_settings;
+}
+
 TEST_P(CPUExecution, ManualProtectionDetectsChangedCode)
 {
   // A block with its delay slot in the next page always uses manual protection, so changes are only picked up by the

@@ -117,7 +117,15 @@ const void* CPU::Recompiler::Recompiler::CompileBlock(CodeCache::Block* block, u
 
   BeginBlock();
 
-  for (;;)
+  // The instructions are not executed, the HLE sets the PC.
+  if (block->HasFlag(CodeCache::BlockFlags::IsVWaitIdleLoop)) [[unlikely]]
+  {
+    LoadArgRegWithConstant(1, block);
+    GenerateCall(reinterpret_cast<const void*>(&CPU::CodeCache::HLEVWaitIdleLoop));
+    EndBlock(std::nullopt, true);
+  }
+
+  while (!m_block_ended)
   {
     CompileInstruction();
 

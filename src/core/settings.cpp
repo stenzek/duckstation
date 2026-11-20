@@ -321,6 +321,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cpu_recompiler_icache = si.GetBoolValue(CPU_SECTION_NAME, "RecompilerICache", false);
   cpu_fastmem_mode =
     ParseCPUFastmemMode(si.GetStringViewValue(CPU_SECTION_NAME, "FastmemMode")).value_or(DEFAULT_CPU_FASTMEM_MODE);
+  cpu_idle_fast_forward = si.GetBoolValue(CPU_SECTION_NAME, "IdleFastForward", true);
+  cpu_idle_timeout_scale = si.GetBoolValue(CPU_SECTION_NAME, "IdleTimeoutScale", true);
   cpu_ram_size = ParseCPURAMSize(si.GetStringViewValue(CPU_SECTION_NAME, "RAMSize")).value_or(DEFAULT_CPU_RAM_SIZE);
 
   gpu_renderer = ParseRendererName(si.GetStringViewValue(GPU_SECTION_NAME, "Renderer")).value_or(DEFAULT_GPU_RENDERER);
@@ -728,6 +730,8 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue(CPU_SECTION_NAME, "RecompilerBlockLinking", cpu_recompiler_block_linking);
     si.SetBoolValue(CPU_SECTION_NAME, "RecompilerICache", cpu_recompiler_icache);
     si.SetStringValue(CPU_SECTION_NAME, "FastmemMode", GetCPUFastmemModeName(cpu_fastmem_mode));
+    si.SetBoolValue(CPU_SECTION_NAME, "IdleFastForward", cpu_idle_fast_forward);
+    si.SetBoolValue(CPU_SECTION_NAME, "IdleTimeoutScale", cpu_idle_timeout_scale);
   }
 
   si.SetStringValue(GPU_SECTION_NAME, "Renderer", GetRendererName(gpu_renderer));

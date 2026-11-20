@@ -94,6 +94,7 @@ static bool RevalidateBlock(Block* block);
 static PageProtectionMode GetProtectionModeForPC(u32 pc);
 static PageProtectionMode GetProtectionModeForBlock(const Block* block);
 static bool ReadBlockInstructions(u32 start_pc, BlockInstructionList* instructions, BlockMetadata* metadata);
+static void DetectVWaitIdleLoop(u32 start_pc, u32 pc, BlockInstructionList* instructions, BlockMetadata* metadata);
 static void FillBlockRegInfo(Block* block);
 static void CopyRegInfo(InstructionInfo* dst, const InstructionInfo* src);
 static void SetRegAccess(InstructionInfo* inst, Reg reg, bool write);
@@ -965,7 +966,10 @@ template<PGXPMode pgxp_mode>
         AddPendingTicks(block->uncached_fetch_ticks);
       }
 
-      InterpretCachedBlock<pgxp_mode>(block);
+      if (block->HasFlag(BlockFlags::IsVWaitIdleLoop)) [[unlikely]]
+        HLEVWaitIdleLoop(block);
+      else
+        InterpretCachedBlock<pgxp_mode>(block);
 
       CHECK_DOWNCOUNT();
 
@@ -1000,6 +1004,90 @@ template<PGXPMode pgxp_mode>
   }
 }
 
+void CPU::CodeCache::HLEVWaitIdleLoop(const Block* block)
+{
+  // v_wait(count, timeout) in the PSX SDK is what VSync() uses to wait for vertical blank. It spins until the vblank
+  // IRQ handler has incremented Vcount far enough, or a countdown of (timeout << 15) iterations at 16(sp) expires:
+  //
+  //            addiu v1, zero, -1
+  //   loop:    lw v0, 16(sp); nop; addiu v0, v0, -1; sw v0, 16(sp); lw v0, 16(sp); nop; bne v0, v1, compare; nop
+  //            <timeout handling>
+  //   compare: lui v0, hi(Vcount); lw v0, lo(Vcount)(v0); nop; slt v0, v0, a0; bne v0, zero, loop; nop
+  //
+  // The block was extended up to the end of the loop, and this is executed in place of it. It always leaves through
+  // the first half of an iteration, with the second half and anything outside of the loop running as normal blocks.
+
+  // A load in the delay slot of the branch into the loop completes after its first instruction. Neither the initializer
+  // nor the back edge's nop delay slot depend on that, but another branch directly into the loop which loads sp does.
+  if (g_state.load_delay_reg != Reg::count)
+  {
+    g_state.regs.r[static_cast<u8>(g_state.load_delay_reg)] = g_state.load_delay_value;
+    g_state.load_delay_reg = Reg::count;
+  }
+
+  const Instruction* const compare = block->Instructions() + (block->size - 6);
+  const u32 compare_pc = block->pc + ((block->size - 6) * sizeof(Instruction));
+  const u32 timeout_address = g_state.regs.sp + 16;
+  const u32 vcount_address = (compare[0].bits << 16) + SignExtend32(Truncate16(compare[1].bits));
+  const TickCount timeout_ticks = AddressInRAM(timeout_address) ? Bus::RAM_READ_TICKS : 0;
+  u32 loop_pc = block->pc;
+  u32 timeout = 0, vcount = 0;
+  SafeReadMemoryWord(timeout_address, &timeout);
+  SafeReadMemoryWord(vcount_address, &vcount);
+
+  if (block->Instructions()->bits == 0x2403ffff)
+  {
+    g_state.regs.v1 = UINT32_C(0xFFFFFFFF);
+    g_state.pending_ticks++;
+    loop_pc += sizeof(Instruction);
+
+    // The countdown is in loop iterations, keep the same real-time duration when overclocking.
+    // Otherwise it expires before vertical blank, and the game is no longer synchronized to it.
+    if (g_settings.cpu_overclock_active && g_settings.cpu_idle_timeout_scale)
+      timeout = static_cast<u32>(System::ScaleTicksToOverclock(static_cast<TickCount>(timeout)));
+  }
+
+  // Nothing the loop reads can change before the next event runs, so iterations which finish before then only
+  // advance the clock and the countdown. Vcount has to be checked, because the IRQ handler which increments it can
+  // return to the top of the loop. The second half has to be in the instruction cache for the ticks to be correct.
+  static constexpr TickCount COMPARE_TICKS = 6 + Bus::RAM_READ_TICKS;
+  const TickCount iteration_ticks = 8 + (2 * timeout_ticks) + COMPARE_TICKS;
+  const TickCount ticks = g_state.downcount - g_state.pending_ticks - 1;
+  bool can_skip = (ticks >= iteration_ticks && static_cast<s32>(vcount) < static_cast<s32>(g_state.regs.a0));
+  if (can_skip && block->HasFlag(BlockFlags::IsUsingICache) && g_settings.cpu_recompiler_icache)
+  {
+    for (u32 address = compare_pc; address < (compare_pc + (6 * sizeof(Instruction))); address += sizeof(Instruction))
+      can_skip &= (g_state.icache_tags[GetICacheLine(address)] == (address & ICACHE_TAG_ADDRESS_MASK));
+  }
+  if (can_skip)
+  {
+    // The countdown times out when it is decremented to v1 (normally -1), which is left for below.
+    const u32 iterations =
+      std::min(static_cast<u32>(ticks) / static_cast<u32>(iteration_ticks), timeout - g_state.regs.v1 - 1);
+    timeout -= iterations;
+    g_state.pending_ticks += static_cast<TickCount>(iterations) * iteration_ticks;
+  }
+
+  timeout--;
+  SafeWriteMemoryWord(timeout_address, timeout);
+  g_state.regs.v0 = timeout;
+  g_state.pending_ticks += 8 + (2 * timeout_ticks);
+  g_state.pc = (timeout != g_state.regs.v1) ? compare_pc : (loop_pc + (8 * sizeof(Instruction)));
+
+  // Same state as the interpreter leaves behind after the delay slot, the recompiler does not track it.
+  if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
+  {
+    g_state.npc = g_state.pc + sizeof(Instruction);
+    g_state.current_instruction.bits = 0;
+    g_state.current_instruction_pc = loop_pc + (7 * sizeof(Instruction));
+    g_state.current_instruction_in_branch_delay_slot = true;
+    g_state.current_instruction_was_branch_taken = (g_state.pc == compare_pc);
+    g_state.load_delay_value = timeout;
+    g_state.next_load_delay_value = timeout;
+    g_state.regs.r[static_cast<u8>(Reg::count)] = timeout;
+  }
+}
+
 void CPU::CodeCache::LogCurrentState()
 {
 #if 0
@@ -1029,6 +1117,66 @@ void CPU::CodeCache::LogCurrentState()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MARK: - Block Compilation: Shared Code
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CPU::CodeCache::DetectVWaitIdleLoop(u32 start_pc, u32 pc, BlockInstructionList* instructions,
+                                         BlockMetadata* metadata)
+{
+  static constexpr u32 v_wait_loop[] = {
+    0x8fa20010, // lw v0, 16(sp)
+    0x00000000, // nop
+    0x2442ffff, // addiu v0, v0, -1
+    0xafa20010, // sw v0, 16(sp)
+    0x8fa20010, // lw v0, 16(sp)
+    0x00000000, // nop
+    0x14430000, // bne v0, v1, <compare>
+    0x00000000, // nop
+  };
+  const size_t v_wait_offset = instructions->size() - std::size(v_wait_loop);
+  if ((v_wait_offset != 0 &&
+       (v_wait_offset != 1 || instructions->front().first.bits != 0x2403ffff)) || // addiu v1, zero, -1
+      !std::equal(instructions->begin() + v_wait_offset, instructions->end(), std::begin(v_wait_loop),
+                  [](const BlockInstructionInfoPair& lhs, u32 rhs) {
+                    return ((IsBranchInstruction(lhs.first) ? (lhs.first.bits & 0xFFFF0000u) : lhs.first.bits) == rhs);
+                  }))
+  {
+    return;
+  }
+
+  // lui v0, hi(Vcount); lw v0, lo(Vcount)(v0); nop; slt v0, v0, a0; bne v0, zero, <loop>; nop
+  static constexpr u32 MAX_TIMEOUT_INSTRUCTIONS = 32;
+  const u32 compare_offset = (*instructions)[v_wait_offset + 6].first.bits & 0xFFFFu;
+  if (compare_offset < 1 || (compare_offset - 1) > MAX_TIMEOUT_INSTRUCTIONS)
+    return;
+
+  const u32 count = (compare_offset - 1) + 6;
+  u32 extra[MAX_TIMEOUT_INSTRUCTIONS + 6];
+  for (u32 i = 0; i < count; i++)
+  {
+    if (!SafeReadInstruction(pc + (i * sizeof(Instruction)), &extra[i]))
+      return;
+  }
+
+  const u32* compare = &extra[count - 6];
+  if ((compare[0] >> 16) != 0x3c02 || (compare[1] >> 16) != 0x8c42 || compare[2] != 0 || compare[3] != 0x0044102a ||
+      compare[4] != (0x14400000 | ((0u - (compare_offset + 12)) & 0xFFFFu)) || compare[5] != 0 ||
+      !AddressInRAM((compare[0] << 16) + SignExtend32(Truncate16(compare[1]))))
+  {
+    return;
+  }
+
+  INFO_LOG("Detected v_wait() {} at 0x{:08X}", (v_wait_offset == 0) ? "loop" : "entry", start_pc);
+  metadata->flags |= BlockFlags::IsVWaitIdleLoop;
+
+  // Not executed, so no instruction info or fetch ticks.
+  InstructionInfo info;
+  std::memset(&info, 0, sizeof(info));
+  for (u32 i = 0; i < count; i++)
+    instructions->emplace_back(Instruction{extra[i]}, info);
+
+  const u32 end_pc = pc + ((count - 1) * sizeof(Instruction));
+  if (Bus::GetRAMCodePageIndex(start_pc) != Bus::GetRAMCodePageIndex(end_pc))
+    metadata->flags |= BlockFlags::BranchDelaySpansPages;
+}
 
 bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* instructions, BlockMetadata* metadata)
 {
@@ -1181,6 +1329,12 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     WARNING_LOG("Empty block compiled at 0x{:08X}", start_pc);
     return false;
   }
+
+  // Loop in the PSX SDK's v_wait(), or the block which falls into it. The block is extended up to the end of the loop
+  // so that all of it is covered by invalidation, and HLEVWaitIdleLoop() is executed instead of the instructions.
+  // Blocks are only flagged when the option is enabled, since the loop is too hot for a call which does nothing.
+  if (g_settings.cpu_idle_fast_forward && use_icache && AddressInRAM(start_pc))
+    DetectVWaitIdleLoop(start_pc, pc, instructions, metadata);
 
   instructions->back().second.is_last_instruction = true;
 

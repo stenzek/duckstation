@@ -89,6 +89,7 @@ enum class BlockFlags : u8
   BranchDelaySpansPages = (1 << 2),
   IsUsingICache = (1 << 3),
   NeedsDynamicFetchTicks = (1 << 4),
+  IsVWaitIdleLoop = (1 << 5),
 };
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(BlockFlags);
 
@@ -212,6 +213,8 @@ template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock();
 
 void LogCurrentState();
+
+void HLEVWaitIdleLoop(const Block* block);
 
 #if defined(_DEBUG) || defined(_DEVEL) || false
 // Enable disassembly of host assembly code.
