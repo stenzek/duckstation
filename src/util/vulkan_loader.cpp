@@ -383,9 +383,10 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, available_extension_list.data());
   DebugAssert(res == VK_SUCCESS);
 
-  // VK_EXT_layer_settings is provided by the validation layer, so it isn't in the implementation's list.
+  // VK_EXT_layer_settings, and VK_EXT_debug_utils on drivers that do not implement it (e.g. Android), are provided by
+  // the validation layer, so they aren't in the implementation's list.
   u32 layer_extension_count = 0;
-  if (gpu_validation && vkEnumerateInstanceExtensionProperties("VK_LAYER_KHRONOS_validation", &layer_extension_count,
+  if (debug_instance && vkEnumerateInstanceExtensionProperties("VK_LAYER_KHRONOS_validation", &layer_extension_count,
                                                                nullptr) == VK_SUCCESS)
   {
     available_extension_list.resize(extension_count + layer_extension_count);
