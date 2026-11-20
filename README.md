@@ -23,7 +23,7 @@ Other features include:
 
  - CPU Recompiler/JIT (x86-64, armv7/AArch32, AArch64, RISC-V/RV64).
  - Hardware renderer supporting D3D11, D3D12, OpenGL, Vulkan and Metal APIs.
- - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.
+ - Upscaling, true colour (24-bit), and texture filters such as Sharp Bilinear, Monotonic Cubic, Adaptive Diagonal, and DCCI in hardware renderers.
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
  - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - Texture replacement system in hardware renderers.
@@ -31,14 +31,18 @@ Other features include:
  - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
  - Screen rotation for vertical or "TATE" shmup games.
- - Post processing shader chains (GLSL, Reshade FX and Slang Presets).
+ - Post-processing shader chains (GLSL, ReShade FX, and Slang presets), with subframes for effects such as black frame insertion.
  - Border overlays/bezels displayed around game content.
  - "Fast boot" for skipping BIOS splash/intro.
  - Save state support, with runahead and rewind.
+ - Optional refresh rate sync that adjusts emulation speed to match the display, including integer multiples such as 120 Hz for 60 Hz games.
+ - Reduced input latency by starting each frame closer to when it is displayed.
  - Windows, Linux, macOS support.
  - Supports reading directly from CD, bin/cue images, MAME CHD, single-track ECM, MDS/MDF, CCD, and unencrypted PBP formats.
  - Preloading of disc images to RAM to avoid disk sleeping hitches.
+ - Optional fast-forward during disc loads that stop updating the screen.
  - Merging of multi-disc games in game list/grid with memory cards shared between discs.
+ - Optional switching to the next disc when a supported game stops the CD-ROM motor.
  - Automatic loading/applying of PPF patches.
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
@@ -47,19 +51,23 @@ Other features include:
  - GunCon and Justifier lightgun support (simulated with mouse).
  - NeGcon support.
  - Controller presets and per-game configuration.
- - Qt and "Big Picture" UI.
+ - Qt desktop and "Big Picture" interfaces, with a built-in on-screen keyboard in Big Picture mode.
  - Automatic updates with preview and latest channels.
  - Automatic content scanning with English and native game titles.
  - Optional automatic switching of memory cards for each game.
- - Memory card editor and save importer.
- - Emulated CPU overclocking.
- - Cheat database with support for over 4,000 games.
- - Patch database with visual, frame rate and aspect ratio enhancements.
+ - Automatic extraction of save icons from per-game memory cards for the game list and save notifications.
+ - Memory card editor with save importing and static or animated save icon export.
+ - Emulated CPU overclocking with idle timeout scaling to keep games synchronized to vertical blank.
+ - Optional expanded memory configurations with 4, 8, or 16 MB of RAM and up to 2 MB of VRAM.
+ - Cheat database with support for over 4,000 games and custom MIPS assembly cheats.
+ - Patch database with visual, frame rate, and aspect ratio enhancements, plus an editor for custom patches and their settings overrides.
  - Live memory scanning and editing.
  - ISO browsing and file extraction.
- - Integrated and remote debugging.
+ - Integrated debugger with ELF and GNU linker map symbols, call stacks, thread views, and CPU register and instruction editing.
+ - Remote debugging via GDB, including access to GTE registers.
  - Multitap controllers (up to 8 devices).
- - RetroAchievements.
+ - RetroAchievements with on-screen progress for pinned achievements and locally saved unlocks for unpromoted achievements.
+ - RAIntegration tools for developing and testing RetroAchievements on Windows x64.
  - Discord Rich Presence.
  - Video capture with Media Foundation (Windows) and [FFmpeg](https://www.ffmpeg.org/) (All Platforms) backends.
  - Free camera function.
@@ -68,7 +76,7 @@ Other features include:
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
  - A GPU capable of OpenGL 3.1/OpenGL ES 3.1/Direct3D 11 Feature Level 10.0/Vulkan 1.0. So, basically anything made in the last 10 years or so.
- - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
+ - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries/PS4/PS5).
 
 ## Downloading and running
 Binaries of DuckStation for Windows x64/ARM64, Linux x86_64/ARM32/ARM64 (in AppImage format), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push.
@@ -282,24 +290,7 @@ Hotkeys:
 
 ## Contributing and Forks
 
-As per the terms of CC-BY-NC-ND, you may redistribute **unmodified** versions of this repository, and the compiled binaries. This includes GitHub forks without any changes. **You are not permitted to publish modified versions of this repository.**
-
-Please note that "patches", both binary and source are still considered derivative works, since they literally include the original code as part of the patch.
-
-The following exceptions apply:
- - Prior contributors are permitted to push changes to public forks for the purpose of making pull requests.
- - Translators are permitted to push changes to public forks and make pull requests, since you own the copyright on your translation.
-
-If you would like to make a contribution, I accept patches via email or the Discord server. Pull requests are restricted to prior contributors.
-
-Previously this was not something that I enforced, but in 2026 with the flood of vibe-coded slop it is a constant problem.
- - People who have zero understanding of what they have created expect maintainers to fix, clean up, and maintain their garbage code.
- - These people are not even able to answer basic questions about their changes without copy/pasting from an agent.
- - Almost every time I have had this happen, they get abusive when told that if they cannot explain their code, it is slop. There is zero respect for the original developers of software.
-
-I'm not anti-AI. I use coding agents myself, including limited usage within DuckStation. The quality of the code written by agents is dependent on the user prompting and steering it, without constant hand-holding they create unmaintainable mess.
-
-If you couldn't write the code yourself, you shouldn't be using an agent to write it. How else can you review it and know that it is correct?
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Disclaimers
 
