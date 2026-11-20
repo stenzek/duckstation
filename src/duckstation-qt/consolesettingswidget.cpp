@@ -77,6 +77,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                &Settings::GetCPUExecutionModeDisplayName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE, CPUExecutionMode::Count);
+  connect(m_ui.cpuExecutionMode, &QComboBox::currentIndexChanged, this, &ConsoleSettingsWidget::onExecutionModeChanged);
+  onExecutionModeChanged();
+
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, Settings::CPU_SECTION_NAME,
                                                "OverclockEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, Settings::CPU_SECTION_NAME,
@@ -205,14 +208,10 @@ void ConsoleSettingsWidget::onFastBootChanged()
   m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
 }
 
-void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
+void ConsoleSettingsWidget::onExecutionModeChanged()
 {
   const CPUExecutionMode mode =
-    Settings::ParseCPUExecutionMode(
-      m_dialog
-        ->getEffectiveStringValue(Settings::CPU_SECTION_NAME, "ExecutionMode",
-                                  Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE))
-        .c_str())
+    Settings::ParseCPUExecutionMode(m_dialog->getEffectiveStringValue(Settings::CPU_SECTION_NAME, "ExecutionMode"))
       .value_or(Settings::DEFAULT_CPU_EXECUTION_MODE);
   m_ui.recompilerICache->setEnabled(mode != CPUExecutionMode::Interpreter &&
                                     !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRecompilerICache));
