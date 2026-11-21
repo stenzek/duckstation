@@ -38,6 +38,9 @@
 #include "common/timer.h"
 
 #include "scmversion/scmversion.h"
+#if __has_include("scmversion/tag.h")
+#include "scmversion/tag.h"
+#endif
 
 #include "cpuinfo.h"
 #include "fmt/format.h"
@@ -51,6 +54,8 @@
 #include <ShlObj.h>
 #elifdef __APPLE__
 #include "common/cocoa_tools.h"
+#elifdef __linux__
+#include <sys/vfs.h>
 #endif
 
 LOG_CHANNEL(Core);
@@ -696,6 +701,22 @@ bool Core::ProcessStartup(Error* error)
   // Running DuckStation out of /usr is not supported and makes no sense.
   if (std::memcmp(EmuFolders::AppRoot.data(), "/usr/", 5) == 0)
     return false;
+
+#if __has_include("scmversion/tag.h") && UPDATER_RELEASE_IS_OFFICIAL
+  // Official Linux builds are only distributed as AppImages. Repackaging them is not permitted.
+  if (EmuFolders::AppRoot.starts_with("/app/") || EmuFolders::AppRoot.starts_with("/snap/") ||
+      FileSystem::FileExists("/.flatpak-info") || std::getenv("FLATPAK_ID") || std::getenv("SNAP"))
+  {
+    return false;
+  }
+
+  if (const char* appimage_path = std::getenv("APPIMAGE"); !appimage_path || !FileSystem::FileExists(appimage_path))
+    return false;
+
+  // AppRoot should be on the runtime's FUSE mount.
+  if (struct statfs sfs; statfs(EmuFolders::AppRoot.c_str(), &sfs) != 0 || sfs.f_type != 0x65735546)
+    return false;
+#endif
 #endif
 
   return true;
