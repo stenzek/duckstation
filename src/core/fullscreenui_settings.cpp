@@ -90,6 +90,44 @@ private:
   bool m_game_settings = false;
 };
 
+/// Shows a macro's sequence, and records it or sets it up from a single bind.
+class MacroDialog : public PopupDialog
+{
+public:
+  MacroDialog();
+  ~MacroDialog() override;
+
+  void Draw() override;
+  void ClearState();
+
+  void Open(SettingsInterface* bsi, std::string_view section, u32 macro_index, const Controller::ControllerInfo* ci);
+
+private:
+  static constexpr float FIRST_INPUT_TIMEOUT_SECONDS = 10.0f;
+  static constexpr float IDLE_TIMEOUT_SECONDS = 3.0f;
+
+  void DrawSequence(float width);
+  void OpenQuickSetupDialog();
+  void StartRecording();
+  void OnRecordedAction(u32 recording_id, const InputManager::MacroSequenceAction& action);
+  void StopRecording(bool save);
+  void LoadSequence();
+  void SaveSequence();
+
+  std::string m_section;
+  const Controller::ControllerInfo* m_ci = nullptr;
+  std::vector<InputManager::MacroSequenceAction> m_actions;
+  std::vector<InputManager::MacroSequenceAction> m_recorded; // frames are from the start of the recording
+  std::vector<u32> m_held_binds;
+  u32 m_macro_index = 0;
+  u32 m_recording_id = 0;
+  float m_time_remaining = 0.0f;
+  bool m_game_settings = false;
+  bool m_loop = false;
+  bool m_recording = false;
+  bool m_scroll_to_bottom = false;
+};
+
 struct PostProcessingStageInfo
 {
   std::string name;
@@ -234,6 +272,15 @@ static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Typ
                                    bool show_type = true);
 static void StartAutomaticBindingForPort(u32 port);
 static void StartClearBindingsForPort(u32 port);
+static const Controller::ControllerBindingInfo* FindMacroBind(const Controller::ControllerInfo* ci, u32 bind_index);
+static bool MacroSequenceContainsBind(std::string_view sequence, char separator, std::string_view name);
+static std::vector<InputManager::MacroSequenceAction> LoadMacroSequence(const SettingsInterface* bsi,
+                                                                        const char* section, u32 macro_index,
+                                                                        const Controller::ControllerInfo* ci,
+                                                                        bool* loop);
+static void SaveMacroSequence(SettingsInterface* bsi, const char* section, u32 macro_index,
+                              const Controller::ControllerInfo* ci,
+                              std::span<const InputManager::MacroSequenceAction> actions, bool loop);
 
 namespace {
 struct SettingsLocals
@@ -681,6 +728,439 @@ void FullscreenUI::InputBindingDialog::Draw()
       NextStep();
     else if (cancel)
       Finish();
+  }
+
+  EndRender();
+}
+
+const Controller::ControllerBindingInfo* FullscreenUI::FindMacroBind(const Controller::ControllerInfo* ci,
+                                                                     u32 bind_index)
+{
+  for (const Controller::ControllerBindingInfo& bi : ci->bindings)
+  {
+    if (bi.bind_index == bind_index)
+      return &bi;
+  }
+
+  return nullptr;
+}
+
+bool FullscreenUI::MacroSequenceContainsBind(std::string_view sequence, char separator, std::string_view name)
+{
+  // Binds can have a value after a colon, and the legacy settings join them with " & ".
+  for (size_t pos = 0; pos < sequence.size();)
+  {
+    const size_t end = std::min(sequence.find(separator, pos), sequence.size());
+    std::string_view token = StringUtil::StripWhitespace(sequence.substr(pos, end - pos));
+    if (token.substr(0, token.find(':')) == name)
+      return true;
+
+    pos = end + 1;
+  }
+
+  return false;
+}
+
+std::vector<InputManager::MacroSequenceAction> FullscreenUI::LoadMacroSequence(const SettingsInterface* bsi,
+                                                                               const char* section, u32 macro_index,
+                                                                               const Controller::ControllerInfo* ci,
+                                                                               bool* loop)
+{
+  // Macros from before sequences were added are shown converted, and only rewritten when changed.
+  const std::string sequence =
+    bsi->GetStringValue(section, TinyString::from_format("Macro{}Sequence", macro_index + 1).c_str());
+  const bool loop_value = bsi->GetBoolValue(section, TinyString::from_format("Macro{}Loop", macro_index + 1), false);
+  if (!sequence.empty())
+  {
+    *loop = loop_value;
+    return InputManager::ParseMacroSequence(sequence, *ci);
+  }
+
+  std::vector<InputManager::MacroSequenceAction> actions = InputManager::ConvertLegacyMacroToSequence(
+    bsi->GetSmallStringValue(section, TinyString::from_format("Macro{}Binds", macro_index + 1)),
+    bsi->GetFloatValue(section, TinyString::from_format("Macro{}Pressure", macro_index + 1), 1.0f),
+    bsi->GetUIntValue(section, TinyString::from_format("Macro{}Frequency", macro_index + 1), 0u), *ci);
+  *loop = !actions.empty() || loop_value;
+  return actions;
+}
+
+void FullscreenUI::SaveMacroSequence(SettingsInterface* bsi, const char* section, u32 macro_index,
+                                     const Controller::ControllerInfo* ci,
+                                     std::span<const InputManager::MacroSequenceAction> actions, bool loop)
+{
+  const TinyString sequence_key = TinyString::from_format("Macro{}Sequence", macro_index + 1);
+  const TinyString loop_key = TinyString::from_format("Macro{}Loop", macro_index + 1);
+  const std::string sequence = InputManager::FormatMacroSequence(actions, *ci);
+  if (sequence.empty())
+  {
+    bsi->DeleteValue(section, sequence_key);
+    bsi->DeleteValue(section, loop_key);
+  }
+  else
+  {
+    bsi->SetStringValue(section, sequence_key, sequence.c_str());
+    bsi->SetBoolValue(section, loop_key, loop);
+  }
+
+  // The sequence replaces the settings from before sequences were added.
+  bsi->DeleteValue(section, TinyString::from_format("Macro{}Binds", macro_index + 1));
+  bsi->DeleteValue(section, TinyString::from_format("Macro{}Pressure", macro_index + 1));
+  bsi->DeleteValue(section, TinyString::from_format("Macro{}Frequency", macro_index + 1));
+  SetSettingsChanged(bsi);
+}
+
+FullscreenUI::MacroDialog::MacroDialog() = default;
+
+FullscreenUI::MacroDialog::~MacroDialog()
+{
+  // in case the dialog was removed without going through ClearState()
+  if (m_recording)
+    InputManager::StopMacroRecording();
+}
+
+void FullscreenUI::MacroDialog::Open(SettingsInterface* bsi, std::string_view section, u32 macro_index,
+                                     const Controller::ControllerInfo* ci)
+{
+  m_section = section;
+  m_macro_index = macro_index;
+  m_ci = ci;
+  m_game_settings = IsEditingGameSettings(bsi);
+  m_actions = LoadMacroSequence(bsi, m_section.c_str(), m_macro_index, m_ci, &m_loop);
+  SetTitleAndOpen(fmt::format(FSUI_FSTR("Macro {} Sequence"), macro_index + 1));
+}
+
+void FullscreenUI::MacroDialog::ClearState()
+{
+  PopupDialog::ClearState();
+
+  if (m_recording)
+    InputManager::StopMacroRecording();
+
+  m_recording = false;
+  m_section = {};
+  m_ci = nullptr;
+  m_actions = {};
+  m_recorded = {};
+  m_held_binds = {};
+}
+
+void FullscreenUI::MacroDialog::LoadSequence()
+{
+  const auto lock = Core::GetSettingsLock();
+  m_actions =
+    LoadMacroSequence(GetEditingSettingsInterface(m_game_settings), m_section.c_str(), m_macro_index, m_ci, &m_loop);
+}
+
+void FullscreenUI::MacroDialog::SaveSequence()
+{
+  const auto lock = Core::GetSettingsLock();
+  SaveMacroSequence(GetEditingSettingsInterface(m_game_settings), m_section.c_str(), m_macro_index, m_ci, m_actions,
+                    m_loop);
+}
+
+void FullscreenUI::MacroDialog::OpenQuickSetupDialog()
+{
+  // Shared with the button selection dialog's callback.
+  struct QuickSetupState
+  {
+    u32 bind_index = InputManager::MacroSequenceAction::WAIT_BIND_INDEX;
+    s32 interval = 0;
+  };
+
+  OpenCustomDialog(
+    FSUI_STR("Quick Setup"), LAYOUT_SMALL_POPUP_PADDING, LAYOUT_SMALL_POPUP_PADDING, ImVec2(600.0f, 0.0f), ImVec2(),
+    [serial = GetSerial(), ci = m_ci, state = std::make_shared<QuickSetupState>()]() {
+      BeginMenuButtons();
+      ResetFocusHere();
+
+      const Controller::ControllerBindingInfo* bi = FindMacroBind(ci, state->bind_index);
+      if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Button"), FSUI_VSTR("The button to hold or toggle."),
+                              bi ? ci->GetBindingDisplayName(*bi) : FSUI_VSTR("-")))
+      {
+        ChoiceDialogOptions options;
+        std::vector<u32> option_binds;
+        for (const Controller::ControllerBindingInfo& obi : ci->bindings)
+        {
+          if (obi.type == InputBindingInfo::Type::Motor)
+            continue;
+
+          options.emplace_back(ci->GetBindingDisplayName(obi), obi.bind_index == state->bind_index);
+          option_binds.push_back(obi.bind_index);
+        }
+
+        OpenChoiceDialog(FSUI_VSTR("Select Button"), false, std::move(options),
+                         [state, option_binds = std::move(option_binds)](s32 index, const std::string&, bool) {
+                           if (index >= 0 && static_cast<size_t>(index) < option_binds.size())
+                             state->bind_index = option_binds[index];
+                         });
+      }
+
+      ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
+      ImGui::SliderInt("##interval", &state->interval, 0, 60,
+                       (state->interval == 0) ? FSUI_CSTR("Hold") : FSUI_CSTR("Toggle every %d frames"),
+                       ImGuiSliderFlags_NoInput);
+
+      EndMenuButtons();
+
+      ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+      BeginHorizontalMenuButtons(2, 200.0f);
+      const bool apply = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_CHECK, "Apply"), bi != nullptr);
+      const bool cancel = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"));
+      EndHorizontalMenuButtons();
+
+      if (apply)
+      {
+        // Replaces the sequence with one which holds the button, or toggles it (turbo).
+        if (MacroDialog* const dialog = FindDialog<MacroDialog>(serial))
+        {
+          dialog->m_actions =
+            InputManager::ConvertLegacyMacroToSequence(bi->name, 1.0f, static_cast<u32>(state->interval), *ci);
+          dialog->m_loop = true;
+          dialog->SaveSequence();
+        }
+
+        CloseCurrentDialog();
+      }
+      else if (cancel)
+      {
+        CloseCurrentDialog();
+      }
+    });
+}
+
+void FullscreenUI::MacroDialog::StartRecording()
+{
+  m_recording = true;
+  m_recorded = {};
+  m_held_binds = {};
+  m_time_remaining = FIRST_INPUT_TIMEOUT_SECONDS;
+
+  // Updates from an earlier recording can still be queued, so each is tagged with the recording it came from. Serials
+  // are unique, so the dialog with this serial can only be a macro dialog.
+  InputManager::MacroRecordingCallback callback =
+    [serial = GetSerial(), recording_id = ++m_recording_id](const InputManager::MacroSequenceAction& action) {
+      VideoThread::RunOnThread([serial, recording_id, action]() {
+        if (MacroDialog* const dialog = FindDialog<MacroDialog>(serial))
+          dialog->OnRecordedAction(recording_id, action);
+      });
+    };
+
+  const auto lock = Core::GetSettingsLock();
+  InputManager::StartMacroRecording(*GetEditingSettingsInterface(m_game_settings), m_section, *m_ci,
+                                    std::move(callback));
+}
+
+void FullscreenUI::MacroDialog::OnRecordedAction(u32 recording_id, const InputManager::MacroSequenceAction& action)
+{
+  if (recording_id != m_recording_id || !m_recording)
+    return;
+
+  // Recording stops once nothing has been pressed for a while.
+  const auto it = std::ranges::find(m_held_binds, action.bind_index);
+  if (action.value != 0.0f && it == m_held_binds.end())
+    m_held_binds.push_back(action.bind_index);
+  else if (action.value == 0.0f && it != m_held_binds.end())
+    m_held_binds.erase(it);
+  m_time_remaining = IDLE_TIMEOUT_SECONDS;
+
+  m_recorded.push_back(action);
+  m_actions = InputManager::ConvertRecordedMacroActions(m_recorded, false);
+  m_scroll_to_bottom = true;
+}
+
+void FullscreenUI::MacroDialog::StopRecording(bool save)
+{
+  m_recording = false;
+  InputManager::StopMacroRecording();
+  QueueResetFocus(FocusResetType::Other);
+
+  // Nothing recorded leaves the sequence as it was.
+  if (!save || m_recorded.empty())
+  {
+    LoadSequence();
+    return;
+  }
+
+  m_actions = InputManager::ConvertRecordedMacroActions(m_recorded, true);
+  m_recorded = {};
+  m_held_binds = {};
+  m_scroll_to_bottom = true;
+  SaveSequence();
+}
+
+void FullscreenUI::MacroDialog::DrawSequence(float width)
+{
+  // TODO: Edit individual actions.
+  ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg, UIStyle.PopupFrameBackgroundColor);
+  ImGui::PushFont(nullptr, UIStyle.MediumFontSize, UIStyle.NormalFontWeight);
+
+  if (ImGui::BeginChild("##sequence", ImVec2(width, LayoutScale(230.0f)), ImGuiChildFlags_AlwaysUseWindowPadding,
+                        ImGuiWindowFlags_NoNav))
+  {
+    if (m_actions.empty())
+    {
+      ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.MutedTextColor);
+      TextUnformatted(FSUI_VSTR("No inputs."));
+      ImGui::PopStyleColor();
+    }
+
+    // Press/release markers and waits get their own columns, with a line between rows.
+    const float marker_width = LayoutScale(36.0f);
+    const float row_padding = LayoutScale(8.0f);
+    const float row_width = ImGui::GetContentRegionAvail().x;
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    for (const InputManager::MacroSequenceAction& action : m_actions)
+    {
+      const ImVec2 row_pos = ImGui::GetCursorScreenPos();
+      ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.MutedTextColor);
+      if (action.bind_index == InputManager::MacroSequenceAction::WAIT_BIND_INDEX)
+      {
+        // Waits are dimmed.
+        TextUnformatted(TinyString::from_format(ICON_FA_HOURGLASS_HALF "  {}",
+                                                TinyString::from_format(FSUI_FSTR("{} frames"), action.frames)));
+        ImGui::PopStyleColor();
+      }
+      else
+      {
+        const bool released = (action.value == 0.0f);
+        ImGui::PushStyleColor(ImGuiCol_Text, released ? UIStyle.MutedTextColor : UIStyle.AccentColor);
+        TextUnformatted(released ? std::string_view(ICON_FA_ARROW_UP) : std::string_view(ICON_FA_ARROW_DOWN));
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+
+        const Controller::ControllerBindingInfo* bi = FindMacroBind(m_ci, action.bind_index);
+        ImGui::SameLine(marker_width);
+        if (bi && bi->icon_name && bi->icon_name[0] != '\0')
+          TextUnformatted(TinyString::from_format("{} {}", bi->icon_name, m_ci->GetBindingDisplayName(*bi)));
+        else
+          TextUnformatted(bi ? m_ci->GetBindingDisplayName(*bi) : std::string_view());
+
+        // Only partial presses of analog inputs need a value.
+        if (action.value != 0.0f && action.value != 1.0f)
+        {
+          const TinyString value = TinyString::from_format("{}%", static_cast<int>(std::round(action.value * 100.0f)));
+          ImGui::SameLine(row_width - ImGui::CalcTextSize(value.c_str()).x);
+          ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.MutedTextColor);
+          TextUnformatted(value);
+          ImGui::PopStyleColor();
+        }
+      }
+
+      // The same padding above and below the line.
+      const float line_y = row_pos.y + ImGui::GetTextLineHeight() + row_padding;
+      dl->AddLine(ImVec2(row_pos.x, line_y), ImVec2(row_pos.x + row_width, line_y),
+                  ImGui::GetColorU32(UIStyle.BorderColor));
+      ImGui::Dummy(ImVec2(
+        0.0f, std::max(line_y + row_padding - ImGui::GetCursorScreenPos().y - ImGui::GetStyle().ItemSpacing.y, 0.0f)));
+    }
+
+    if (m_scroll_to_bottom)
+    {
+      ImGui::SetScrollHereY(1.0f);
+      m_scroll_to_bottom = false;
+    }
+  }
+  ImGui::EndChild();
+
+  // Summary of the sequence below the list.
+  if (!m_actions.empty())
+  {
+    u32 num_inputs = 0, total_frames = 0;
+    for (const InputManager::MacroSequenceAction& action : m_actions)
+    {
+      if (action.bind_index == InputManager::MacroSequenceAction::WAIT_BIND_INDEX)
+        total_frames += action.frames;
+      else
+        num_inputs++;
+    }
+
+    ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.MutedTextColor);
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + LayoutScale(10.0f));
+    TextUnformatted(TinyString::from_format(FSUI_FSTR("{0} inputs, {1} frames"), num_inputs, total_frames));
+    ImGui::PopStyleColor();
+  }
+
+  ImGui::PopFont();
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar(2);
+}
+
+void FullscreenUI::MacroDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  // Holding an input keeps the recording going.
+  if (m_recording && m_held_binds.empty())
+  {
+    m_time_remaining -= ImGui::GetIO().DeltaTime;
+    if (m_time_remaining <= 0.0f)
+    {
+      m_time_remaining = 0.0f;
+      StopRecording(true);
+    }
+  }
+
+  if (!BeginRender(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                   LayoutScale(800.0f, 0.0f)))
+  {
+    ClearState();
+    return;
+  }
+
+  const float width = ImGui::GetContentRegionAvail().x;
+  DrawSequence(width);
+  ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+  if (m_recording)
+  {
+    const float timeout = m_recorded.empty() ? FIRST_INPUT_TIMEOUT_SECONDS : IDLE_TIMEOUT_SECONDS;
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(3.0f));
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
+    ImGui::ProgressBar(m_time_remaining / timeout, ImVec2(width, LayoutScale(6.0f)), "");
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    ImGui::Dummy(LayoutScale(0.0f, 10.0f));
+
+    // The recording takes the pad and keyboard, so the buttons are for the mouse, which it leaves alone.
+    BeginHorizontalMenuButtons(2, 200.0f);
+    const bool stop = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_STOP, "Stop"));
+    const bool cancel = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"));
+    EndHorizontalMenuButtons();
+
+    if (stop || cancel)
+      StopRecording(stop);
+  }
+  else
+  {
+    BeginHorizontalMenuButtons(4, 200.0f);
+    ResetFocusHere();
+    const bool record = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_CIRCLE, "Record"));
+    const bool clear = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_ERASER, "Clear"), !m_actions.empty());
+    const bool quick_setup = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Quick Setup"));
+    const bool close = HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Close"));
+    EndHorizontalMenuButtons();
+
+    if (record)
+    {
+      StartRecording();
+    }
+    else if (clear)
+    {
+      m_actions = {};
+      SaveSequence();
+    }
+    else if (quick_setup)
+    {
+      OpenQuickSetupDialog();
+    }
+    else if (close)
+    {
+      StartClose();
+    }
   }
 
   EndRender();
@@ -4516,141 +4996,48 @@ void FullscreenUI::DrawControllerSettingsPage()
                              TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"),
                              std::string_view(), true);
 
-      SmallString binds_string =
-        bsi->GetSmallStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", macro_index + 1).c_str());
-      TinyString pretty_binds_string;
-      if (!binds_string.empty())
+      // Summarized without parsing the sequence, since this is drawn every frame. Macros from before sequences were
+      // added are shown converted, and loop.
+      std::string_view sequence =
+        bsi->GetStringViewValue(section.c_str(), TinyString::from_format("Macro{}Sequence", macro_index + 1));
+      const bool legacy = sequence.empty();
+      if (legacy)
+        sequence = bsi->GetStringViewValue(section.c_str(), TinyString::from_format("Macro{}Binds", macro_index + 1));
+
+      const u32 num_binds = static_cast<u32>(std::ranges::count_if(ci->bindings, [sequence, legacy](const auto& bi) {
+        return MacroSequenceContainsBind(sequence, legacy ? '&' : ' ', bi.name);
+      }));
+      bool loop = (legacy && num_binds > 0) ||
+                  bsi->GetBoolValue(section.c_str(), TinyString::from_format("Macro{}Loop", macro_index + 1), false);
+
+      if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Sequence"),
+                              FSUI_VSTR("The inputs this macro plays, recorded or set up from a single button."),
+                              (num_binds > 0) ?
+                                TRANSLATE_PLURAL_SSTR("FullscreenUI", "%n button(s)", "", num_binds).view() :
+                                FSUI_VSTR("Not Configured")))
       {
-        for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
-        {
-          std::string_view dispname;
-          for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-          {
-            if (bind == bi.name)
-            {
-              dispname = bi.icon_name ? std::string_view(bi.icon_name) : ci->GetBindingDisplayName(bi);
-              break;
-            }
-          }
-          pretty_binds_string.append_format("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
-        }
+        PushDialog<MacroDialog>()->Open(bsi, section, macro_index, ci);
       }
-      if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_KEYBOARD, "Buttons"), std::string_view(),
-                              pretty_binds_string.empty() ? FSUI_VSTR("-") : pretty_binds_string.view()))
+
+      if (ToggleButton(FSUI_ICONVSTR(ICON_FA_REPEAT, "Loop While Active"),
+                       FSUI_VSTR("Repeats the sequence while the macro is active, instead of playing it once for each "
+                                 "press. The current repeat is always finished."),
+                       &loop, num_binds > 0))
       {
-        std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
-        ChoiceDialogOptions options;
-        for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-        {
-          if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
-              bi.type != InputBindingInfo::Type::HalfAxis)
-          {
-            continue;
-          }
-          options.emplace_back(ci->GetBindingDisplayName(bi),
-                               std::any_of(buttons_split.begin(), buttons_split.end(),
-                                           [bi](const std::string_view& it) { return (it == bi.name); }));
-        }
-
-        OpenChoiceDialog(
-          TinyString::from_format(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1), true, std::move(options),
-          [game_settings, section, macro_index, ci](s32 index, const std::string& title, bool checked) {
-            // convert display name back to bind name
-            std::string_view to_modify;
-            for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-            {
-              if (title == ci->GetBindingDisplayName(bi))
-              {
-                to_modify = bi.name;
-                break;
-              }
-            }
-            if (to_modify.empty())
-            {
-              // wtf?
-              return;
-            }
-
-            const auto lock = Core::GetSettingsLock();
-            SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-            const TinyString key = TinyString::from_format("Macro{}Binds", macro_index + 1);
-
-            std::string binds_string = bsi->GetStringValue(section.c_str(), key.c_str());
-            std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
-            auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
-            if (checked)
-            {
-              if (it == buttons_split.end())
-                buttons_split.push_back(to_modify);
-            }
-            else
-            {
-              if (it != buttons_split.end())
-                buttons_split.erase(it);
-            }
-
-            binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
-            if (binds_string.empty())
-              bsi->DeleteValue(section.c_str(), key.c_str());
-            else
-              bsi->SetStringValue(section.c_str(), key.c_str(), binds_string.c_str());
-          });
+        bool old_loop;
+        const std::vector<InputManager::MacroSequenceAction> actions =
+          LoadMacroSequence(bsi, section.c_str(), macro_index, ci, &old_loop);
+        SaveMacroSequence(bsi, section.c_str(), macro_index, ci, actions, loop);
       }
 
       DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Press To Toggle"),
                         FSUI_VSTR("Toggles the macro when the button is pressed, instead of held."), section.c_str(),
-                        TinyString::from_format("Macro{}Toggle", macro_index + 1), false, true, false);
-
-      const TinyString freq_key = TinyString::from_format("Macro{}Frequency", macro_index + 1);
-      const TinyString freq_label =
-        TinyString::from_format(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
-      s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
-      const TinyString freq_summary = ((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
-                                                          TinyString::from_format(FSUI_FSTR("{} Frames"), frequency));
-      if (MenuActionButton(
-            freq_label,
-            FSUI_VSTR(
-              "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."),
-            freq_summary))
-      {
-        OpenFixedPopupDialog(freq_label);
-      }
-
-      DrawFloatSpinBoxSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_DOWN, "Pressure"),
-                              FSUI_VSTR("Determines how much pressure is simulated when macro is active."), section,
-                              TinyString::from_format("Macro{}Pressure", macro_index + 1), 1.0f, 0.01f, 1.0f, 0.01f,
-                              100.0f, "%.0f%%");
+                        TinyString::from_format("Macro{}Toggle", macro_index + 1), false, loop, false);
 
       DrawFloatSpinBoxSetting(bsi, FSUI_ICONVSTR(ICON_FA_SKULL, "Deadzone"),
                               FSUI_VSTR("Determines how much button pressure is ignored before activating the macro."),
                               section, TinyString::from_format("Macro{}Deadzone", macro_index + 1).c_str(), 0.0f, 0.00f,
                               1.0f, 0.01f, 100.0f, "%.0f%%");
-
-      if (IsFixedPopupDialogOpen(freq_label) &&
-          BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                LayoutScale(500.0f, 200.0f)))
-      {
-        BeginMenuButtons();
-
-        ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
-        if (ImGui::SliderInt("##value", &frequency, 0, 60,
-                             (frequency == 0) ? FSUI_CSTR("Disabled") : FSUI_CSTR("Toggle every %d frames"),
-                             ImGuiSliderFlags_NoInput))
-        {
-          if (frequency == 0)
-            bsi->DeleteValue(section.c_str(), freq_key.c_str());
-          else
-            bsi->SetIntValue(section.c_str(), freq_key.c_str(), frequency);
-        }
-
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
-          CloseFixedPopupDialog();
-
-        EndMenuButtons();
-
-        EndFixedPopupDialog();
-      }
 
       ImGui::PopID();
     }

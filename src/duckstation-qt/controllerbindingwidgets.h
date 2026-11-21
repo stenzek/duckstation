@@ -7,6 +7,7 @@
 #include "core/settings.h"
 
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QListWidget>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QWidget>
 #include <functional>
@@ -107,17 +108,27 @@ public:
   ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget, u32 index);
   ~ControllerMacroEditWidget();
 
-  QString getSummary() const;
+  /// Returns the number of binds, and the names of the binds for a tooltip.
+  QString getSummary(QString* tooltip) const;
+
+protected:
+  bool eventFilter(QObject* watched, QEvent* event) override;
+  void hideEvent(QHideEvent* event) override;
 
 private:
-  void modFrequency(s32 delta);
-  void updateFrequency();
-  void updateFrequencyText();
-
-  void onPressureChanged();
   void onDeadzoneChanged();
-  void onSetFrequencyClicked();
-  void updateBinds();
+  void onQuickSetupClicked();
+  void onRecordClicked();
+  void onAddActionClicked(bool wait);
+  void onRemoveClicked();
+  void onMoveClicked(s32 delta);
+  void onClearClicked();
+
+  void startRecording();
+  void stopRecording(bool save);
+  bool loadSequence();
+  void populateSequence(s32 selected_row);
+  void saveSequence();
 
   Ui::ControllerMacroEditWidget m_ui;
 
@@ -125,8 +136,12 @@ private:
   ControllerBindingWidget* m_bwidget;
   u32 m_index;
 
-  std::vector<const Controller::ControllerBindingInfo*> m_binds;
-  u32 m_frequency = 0;
+  std::vector<InputManager::MacroSequenceAction> m_actions;
+
+  /// Bind changes while recording, frames are counted from the start of the recording.
+  std::vector<InputManager::MacroSequenceAction> m_recorded_actions;
+
+  bool m_recording = false;
 };
 
 //////////////////////////////////////////////////////////////////////////

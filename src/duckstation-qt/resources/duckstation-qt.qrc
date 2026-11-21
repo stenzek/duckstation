@@ -185,6 +185,7 @@
 		<file>icons/monochrome/svg/price-tag-3-line.svg</file>
 		<file>icons/monochrome/svg/pushpin-line.svg</file>
 		<file>icons/monochrome/svg/ram-2-line.svg</file>
+		<file>icons/monochrome/svg/record-circle-line.svg</file>
 		<file>icons/monochrome/svg/refresh-line.svg</file>
 		<file>icons/monochrome/svg/reset-left-line.svg</file>
 		<file>icons/monochrome/svg/restart-line.svg</file>
@@ -205,6 +206,7 @@
 		<file>icons/monochrome/svg/sparkle-fill.svg</file>
 		<file>icons/monochrome/svg/sparkling-line.svg</file>
 		<file>icons/monochrome/svg/stack-line.svg</file>
+		<file>icons/monochrome/svg/stop-circle-line.svg</file>
 		<file>icons/monochrome/svg/sun-fill.svg</file>
 		<file>icons/monochrome/svg/swap-line.svg</file>
 		<file>icons/monochrome/svg/terminal-box-line.svg</file>

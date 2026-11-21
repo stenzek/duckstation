@@ -109,6 +109,16 @@
     </message>
 </context>
 <context>
+    <name>AdvancedSettingsWidget</name>
+    <message numerus="yes">
+        <source>%n sectors</source>
+        <translation>
+            <numerusform>%n sector</numerusform>
+            <numerusform>%n sectors</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>CDImage</name>
     <message numerus="yes">
         <source>%n tracks covering {0} MB ({1} MB on disk)</source>
@@ -157,10 +167,17 @@
 <context>
     <name>ControllerMacroEditWidget</name>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n button(s)</source>
         <translation>
-            <numerusform>Macro will toggle buttons every %n frame.</numerusform>
-            <numerusform>Macro will toggle buttons every %n frames.</numerusform>
+            <numerusform>%n button</numerusform>
+            <numerusform>%n buttons</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n frame(s)</source>
+        <translation>
+            <numerusform>%n frame</numerusform>
+            <numerusform>%n frames</numerusform>
         </translation>
     </message>
 </context>
@@ -206,10 +223,17 @@
 <context>
     <name>EmulationSettingsWidget</name>
     <message numerus="yes">
-        <source>A %1MB rewind buffer holds %n state(s), allowing you to rewind up to %2 second(s).</source>
-	<translation>
-            <numerusform>A %1MB rewind buffer holds %n state, allowing you to rewind up to %2 second(s).</numerusform>
-            <numerusform>A %1MB rewind buffer holds %n states, allowing you to rewind up to %2 second(s).</numerusform>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM and %3 of VRAM.</source>
+        <translation>
+            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2 of RAM and %3 of VRAM.</numerusform>
+            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2 of RAM and %3 of VRAM.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2 of RAM.</source>
+        <translation>
+            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2 of RAM.</numerusform>
+            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2 of RAM.</numerusform>
         </translation>
     </message>
 </context>
@@ -229,6 +253,13 @@
         <translation>
             <numerusform>%n minute remaining</numerusform>
             <numerusform>%n minutes remaining</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n button</numerusform>
+            <numerusform>%n buttons</numerusform>
         </translation>
     </message>
     <message numerus="yes">
