@@ -331,6 +331,28 @@ void CompleteBindingCapture();
 /// Stops the capture. It can be called from the capture's callback. Core thread only.
 void StopBindingCapture();
 
+struct MacroSequenceAction;
+
+/// Receives changes to pad binds on the core thread while recording a macro. The action's frames are counted from the
+/// start of the recording, in frames of the running game, or 60hz if there isn't one. Tiny analog changes are dropped.
+using MacroRecordingCallback = MoveOnlyFunction<void(const MacroSequenceAction& action)>;
+
+/// Starts recording a macro. All input events except pointers are swallowed before the normal bindings see them, and
+/// those matching the pad's binds are passed to the callback as bind values. Chord bindings are ignored. Replaces any
+/// recording in progress. Can be called from any thread.
+///
+/// The bindings of the pad's binds are read from the settings interface now, and copied, because the recording happens
+/// on the core thread, which can't safely read a settings interface owned by the caller (the editing layer in Qt, or
+/// the base layer, which needs the settings lock). The interface is not used after this returns.
+void StartMacroRecording(const SettingsInterface& si, std::string_view section, const Controller::ControllerInfo& cinfo,
+                         MacroRecordingCallback callback);
+
+/// Adds an input from a UI event, like a keyboard key, to the recording. Core thread only.
+void AddMacroRecordingEvent(InputBindingKey key, float value, u64 timestamp);
+
+/// Stops recording a macro. Can be called from any thread.
+void StopMacroRecording();
+
 /// Internal method used by pads to dispatch LED updates to input sources.
 void SetPadLEDState(u32 pad_index, float intensity);
 
@@ -391,6 +413,11 @@ std::vector<MacroSequenceAction> ParseMacroSequence(std::string_view str, const 
 
 /// Converts a list of macro actions back to a string.
 std::string FormatMacroSequence(std::span<const MacroSequenceAction> actions, const Controller::ControllerInfo& cinfo);
+
+/// Converts bind changes from a recording, with frames counted from its start, to a sequence starting at the first
+/// change. With release_held, binds which are still held at the end are released.
+std::vector<MacroSequenceAction> ConvertRecordedMacroActions(std::span<const MacroSequenceAction> recorded,
+                                                             bool release_held);
 
 /// Converts the pre-sequence macro settings (binds joined with '&', pressure, toggle frequency) to a sequence.
 /// The resulting sequence should be looped while the macro is active.

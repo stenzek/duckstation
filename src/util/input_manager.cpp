@@ -163,6 +163,15 @@ struct BindingCaptureInput
   bool armed;
 };
 
+/// An input which is mapped to a pad bind while recording a macro.
+struct MacroRecordingKey
+{
+  InputBindingKey key;
+  u32 bind_index;
+  float scale;
+  float deadzone;
+};
+
 struct State
 {
   BindingMap binding_map;
@@ -204,6 +213,11 @@ struct State
   std::vector<BindingCaptureInput> binding_capture_inputs;
   std::vector<InputBindingKey> binding_capture_keys;
   InputManager::BindingCaptureCallback binding_capture_callback;
+  std::vector<MacroRecordingKey> macro_recording_keys;
+  std::vector<std::pair<u32, float>> macro_recording_last_values;
+  InputManager::MacroRecordingCallback macro_recording_callback;
+  Timer::Value macro_recording_start_time = 0;
+  double macro_recording_frame_rate = 0.0;
 
 #ifdef _WIN32
   // Only written on the core thread, but read from any thread. It only bounds loops over fixed-size arrays and doesn't
@@ -1145,6 +1159,13 @@ void InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBi
   DebugAssert(Host::IsOnCoreThread());
   if (DoBindingCaptureEvent(key, value, generic_key))
     return;
+
+  // Pointer events pass through, so the UI can still be clicked.
+  if (s_state.macro_recording_callback && key.source_type != InputSourceType::Pointer)
+  {
+    AddMacroRecordingEvent(key, value, Timer::GetCurrentValue());
+    return;
+  }
 
   // Background input test
   if (ShouldMaskBackgroundInput(key))
@@ -2436,6 +2457,71 @@ InputManager::ConvertLegacyMacroToSequence(std::string_view binds, float pressur
   return ret;
 }
 
+std::vector<InputManager::MacroSequenceAction>
+InputManager::ConvertRecordedMacroActions(std::span<const MacroSequenceAction> recorded, bool release_held)
+{
+  // The frame counts are from the start of the recording, convert them to waits starting at the first input.
+  std::vector<MacroSequenceAction> ret;
+  if (recorded.empty())
+    return ret;
+
+  u32 current_frame = recorded.front().frames;
+  size_t frame_start = 0;
+  for (const MacroSequenceAction& action : recorded)
+  {
+    if (action.frames > current_frame)
+    {
+      ret.emplace_back(MacroSequenceAction::WAIT_BIND_INDEX, action.frames - current_frame, 0.0f);
+      current_frame = action.frames;
+      frame_start = ret.size();
+    }
+
+    // Changes to the same bind in a frame are merged, but a release still lets the game see the press.
+    const auto it = std::find_if(ret.begin() + frame_start, ret.end(),
+                                 [&action](const auto& other) { return (other.bind_index == action.bind_index); });
+    if (it == ret.end())
+    {
+      ret.emplace_back(action.bind_index, 0, action.value);
+    }
+    else if (action.value == 0.0f && it->value != 0.0f)
+    {
+      ret.emplace_back(MacroSequenceAction::WAIT_BIND_INDEX, 1, 0.0f);
+      ret.emplace_back(action.bind_index, 0, 0.0f);
+      current_frame++;
+      frame_start = ret.size() - 1;
+    }
+    else
+    {
+      it->value = action.value;
+    }
+  }
+
+  // Release anything still held at the end.
+  if (!release_held)
+    return ret;
+
+  llvm::SmallVector<u32, 16> held_binds;
+  for (const MacroSequenceAction& action : ret)
+  {
+    if (action.bind_index == MacroSequenceAction::WAIT_BIND_INDEX)
+      continue;
+
+    const auto it = std::ranges::find(held_binds, action.bind_index);
+    if (action.value != 0.0f && it == held_binds.end())
+      held_binds.push_back(action.bind_index);
+    else if (action.value == 0.0f && it != held_binds.end())
+      held_binds.erase(it);
+  }
+  if (!held_binds.empty())
+  {
+    ret.emplace_back(MacroSequenceAction::WAIT_BIND_INDEX, 1, 0.0f);
+    for (const u32 bind_index : held_binds)
+      ret.emplace_back(bind_index, 0, 0.0f);
+  }
+
+  return ret;
+}
+
 // ------------------------------------------------------------------------
 // Binding Capture
 // ------------------------------------------------------------------------
@@ -2507,6 +2593,114 @@ void InputManager::StopBindingCapture()
   s_state.binding_capture_running = false;
   s_state.binding_capture_callback = {};
   UpdateSensorPolling();
+}
+
+void InputManager::StartMacroRecording(const SettingsInterface& si, std::string_view section,
+                                       const Controller::ControllerInfo& cinfo, MacroRecordingCallback callback)
+{
+  // The inputs are looked up here, on the caller's thread, so that the core thread doesn't touch the caller's settings.
+  // Same settings as the pad bindings use.
+  std::vector<MacroRecordingKey> keys;
+  const TinyString section_str(section);
+  for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
+  {
+    if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
+        bi.type != InputBindingInfo::Type::HalfAxis)
+    {
+      continue;
+    }
+
+    const float scale = si.GetFloatValue(section_str, TinyString::from_format("{}Scale", bi.name), 1.0f);
+    const float deadzone = si.GetFloatValue(section_str, TinyString::from_format("{}Deadzone", bi.name), 0.0f);
+    for (const std::string& binding : si.GetStringList(section_str, bi.name))
+    {
+      // Chords can't be recorded.
+      if (binding.find('&') != std::string::npos)
+        continue;
+
+      if (const std::optional<InputBindingKey> key = ParseInputBindingKey(binding))
+        keys.emplace_back(key.value(), bi.bind_index, scale, deadzone);
+    }
+  }
+
+  // This is most likely happening off the core thread (UI or video threads), so just queue it.
+  Host::RunOnCoreThread([keys = std::move(keys), callback = std::move(callback)]() mutable {
+    s_state.macro_recording_keys = std::move(keys);
+
+    // Waits are in frames of the running game, otherwise assume 60hz.
+    s_state.macro_recording_last_values.clear();
+    s_state.macro_recording_callback = std::move(callback);
+    s_state.macro_recording_start_time = Timer::GetCurrentValue();
+    s_state.macro_recording_frame_rate = System::IsValid() ? System::GetVideoFrameRate() : 60.0;
+  });
+}
+
+void InputManager::AddMacroRecordingEvent(InputBindingKey key, float value, u64 timestamp)
+{
+  // Threading: Only called on core thread.
+  DebugAssert(Host::IsOnCoreThread());
+  if (!s_state.macro_recording_callback)
+    return;
+
+  // Same mapping as ProcessEvent().
+  const InputBindingKey masked_key = key.MaskDirection();
+  for (const MacroRecordingKey& rkey : s_state.macro_recording_keys)
+  {
+    if (rkey.key.MaskDirection() != masked_key)
+      continue;
+
+    float bind_value = 0.0f;
+    switch (rkey.key.modifier)
+    {
+      case InputModifier::None:
+        bind_value = std::max(value, 0.0f);
+        break;
+      case InputModifier::Negate:
+        bind_value = std::max(-value, 0.0f);
+        break;
+      case InputModifier::FullAxis:
+        bind_value = value * 0.5f + 0.5f;
+        break;
+    }
+
+    bind_value = rkey.key.invert ? (1.0f - bind_value) : bind_value;
+    bind_value = ApplySingleBindingScale(rkey.scale, rkey.deadzone, bind_value);
+
+    // Only pass on changes, ignoring tiny analog movements.
+    auto it = std::ranges::find_if(s_state.macro_recording_last_values,
+                                   [&rkey](const auto& lv) { return (lv.first == rkey.bind_index); });
+    const float last_value = (it != s_state.macro_recording_last_values.end()) ? it->second : 0.0f;
+    if (bind_value == last_value ||
+        (bind_value != 0.0f && bind_value != 1.0f && std::abs(bind_value - last_value) < (1.0f / 64.0f)))
+    {
+      continue;
+    }
+
+    if (it != s_state.macro_recording_last_values.end())
+      it->second = bind_value;
+    else
+      s_state.macro_recording_last_values.emplace_back(rkey.bind_index, bind_value);
+
+    const u32 frame =
+      (timestamp > s_state.macro_recording_start_time) ?
+        static_cast<u32>(std::round(Timer::ConvertValueToSeconds(timestamp - s_state.macro_recording_start_time) *
+                                    s_state.macro_recording_frame_rate)) :
+        0;
+    s_state.macro_recording_callback(MacroSequenceAction{rkey.bind_index, frame, bind_value});
+  }
+}
+
+void InputManager::StopMacroRecording()
+{
+  if (!Host::IsOnCoreThread())
+  {
+    Host::RunOnCoreThread(&InputManager::StopMacroRecording);
+    return;
+  }
+
+  s_state.macro_recording_keys.clear();
+  s_state.macro_recording_last_values.clear();
+  s_state.macro_recording_callback = {};
 }
 
 void InputManager::UpdateSensorPolling()

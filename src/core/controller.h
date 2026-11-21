@@ -23,24 +23,24 @@ class Controller
 public:
   struct ControllerBindingInfo
   {
-    const char* name;
-    const char* display_name;
-    const char* icon_name;
-    const char* image_element; ///< Element ID in the controller image SVG, if any.
-    u32 bind_index;
-    InputBindingInfo::Type type;
-    GenericInputBinding generic_mapping;
+    const char* name;                    ///< Internal name for the binding.
+    const char* display_name;            ///< Localized name for the binding.
+    const char* icon_name;               ///< FA/PromptFont icon glyph name, if any.
+    const char* image_element;           ///< Element ID in the controller image SVG, if any.
+    u32 bind_index;                      ///< Index of the binding in the controller's bind state array.
+    InputBindingInfo::Type type;         ///< Type of input for the binding.
+    GenericInputBinding generic_mapping; /// Generic input mapping for the binding, if any.
   };
 
   struct ControllerInfo
   {
-    ControllerType type;
-    const char* name;
-    const char* display_name;
-    const char* icon_name;
-    const char* image_name;
-    std::span<const ControllerBindingInfo> bindings;
-    std::span<const SettingInfo> settings;
+    ControllerType type;                             ///< Type of controller.
+    const char* name;                                ///< Internal name for the controller type.
+    const char* display_name;                        ///< Localized name for the controller type.
+    const char* icon_name;                           ///< FA/PromptFont icon glyph name, if any.
+    const char* image_name;                          ///< Name of the controller image SVG file, if any.
+    std::span<const ControllerBindingInfo> bindings; ///< List of bindings for the controller type.
+    std::span<const SettingInfo> settings;           ///< List of settings for the controller type.
 
     /// Returns localized controller type name.
     std::string_view GetDisplayName() const;

@@ -87,3 +87,45 @@ TEST(MacroSequence, ConvertLegacyTurbo)
 
   EXPECT_TRUE(InputManager::ConvertLegacyMacroToSequence("Bogus", 1.0f, 3, cinfo).empty());
 }
+
+TEST(MacroSequence, ConvertRecorded)
+{
+  // Waits start from the first input, and changes to a bind within a frame are merged.
+  const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(ControllerType::DigitalController);
+  const u32 cross = GetBindIndex(cinfo, "Cross");
+  const u32 square = GetBindIndex(cinfo, "Square");
+  const MacroSequenceAction recorded[] = {
+    {cross, 10, 1.0f}, {square, 10, 0.5f}, {square, 10, 1.0f}, {cross, 14, 0.0f}, {square, 20, 0.0f},
+  };
+  EXPECT_EQ(InputManager::FormatMacroSequence(InputManager::ConvertRecordedMacroActions(recorded, false), cinfo),
+            "Cross Square 4 Cross:0 6 Square:0");
+  EXPECT_EQ(InputManager::FormatMacroSequence(InputManager::ConvertRecordedMacroActions(recorded, true), cinfo),
+            "Cross Square 4 Cross:0 6 Square:0");
+  EXPECT_TRUE(InputManager::ConvertRecordedMacroActions({}, true).empty());
+}
+
+TEST(MacroSequence, ConvertRecordedSameFrameRelease)
+{
+  // A press and release in the same frame is held for a frame, so the game still sees it.
+  const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(ControllerType::DigitalController);
+  const u32 cross = GetBindIndex(cinfo, "Cross");
+  const u32 square = GetBindIndex(cinfo, "Square");
+  const MacroSequenceAction recorded[] = {
+    {cross, 0, 1.0f}, {cross, 0, 0.0f}, {square, 3, 1.0f}, {square, 3, 0.0f}, {cross, 5, 1.0f},
+  };
+  EXPECT_EQ(InputManager::FormatMacroSequence(InputManager::ConvertRecordedMacroActions(recorded, false), cinfo),
+            "Cross 1 Cross:0 2 Square 1 Square:0 1 Cross");
+}
+
+TEST(MacroSequence, ConvertRecordedReleaseHeld)
+{
+  // Binds still held at the end are released a frame later.
+  const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(ControllerType::DigitalController);
+  const u32 cross = GetBindIndex(cinfo, "Cross");
+  const u32 square = GetBindIndex(cinfo, "Square");
+  const MacroSequenceAction recorded[] = {{cross, 2, 1.0f}, {square, 4, 1.0f}, {cross, 6, 0.0f}};
+  EXPECT_EQ(InputManager::FormatMacroSequence(InputManager::ConvertRecordedMacroActions(recorded, false), cinfo),
+            "Cross 2 Square 2 Cross:0");
+  EXPECT_EQ(InputManager::FormatMacroSequence(InputManager::ConvertRecordedMacroActions(recorded, true), cinfo),
+            "Cross 2 Square 2 Cross:0 1 Square:0");
+}
