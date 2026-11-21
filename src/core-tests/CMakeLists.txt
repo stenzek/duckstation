@@ -18,6 +18,7 @@ add_executable(core-tests
   gte_tests.cpp
   gte_timing_tests.cpp
   lightgun_controller_tests.cpp
+  macro_sequence_tests.cpp
   mdec_tests.cpp
   negcon_base_tests.cpp
   psxdiag_tests.cpp

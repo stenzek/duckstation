@@ -61,15 +61,15 @@ struct PadLEDBinding
 
 struct MacroButton
 {
-  u16 pad_index;                     ///< Pad index this macro button is for.
-  u16 macro_index;                   ///< Index of the macro button.
-  llvm::SmallVector<u32, 2> buttons; ///< Buttons to activate.
-  u16 toggle_frequency;              ///< Interval at which the buttons will be toggled, if not 0.
-  u16 toggle_counter;                ///< When this counter reaches zero, buttons will be toggled.
-  bool toggle_state;                 ///< Current state for turbo.
-  bool trigger_state;                ///< Whether the macro button is active.
-  bool trigger_toggle;               ///< Whether the macro is trigged by holding or press.
-  u8 trigger_pressure;               ///< Pressure to apply when macro is active.
+  u16 pad_index;                            ///< Pad index this macro button is for.
+  u16 macro_index;                          ///< Index of the macro button.
+  u32 action_index;                         ///< Next action to run.
+  u32 wait_counter;                         ///< Frames until the next action runs, zero when not playing.
+  bool trigger_state;                       ///< Whether the macro button is active.
+  bool trigger_toggle;                      ///< Whether the macro is trigged by holding or press.
+  bool loop;                                ///< Whether the sequence repeats while active, or plays once per press.
+  bool finishing;                           ///< Whether the sequence is done, and its last inputs are being held.
+  std::vector<MacroSequenceAction> actions; ///< Sequence to play.
 };
 
 struct PointerAxisState
