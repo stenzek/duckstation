@@ -217,12 +217,12 @@ bool FullscreenUI::HasActiveOrPendingWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (IsInputBindingDialogOpen() || AreAnyWidgetsDialogOpen());
+  return AreAnyWidgetsDialogOpen();
 }
 
 bool FullscreenUI::AreAnyDialogsInteractable()
 {
-  return (IsInputBindingDialogInteractable() || AreAnyWidgetsDialogInteractable());
+  return AreAnyWidgetsDialogInteractable();
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)

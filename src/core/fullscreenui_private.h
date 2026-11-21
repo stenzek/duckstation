@@ -121,8 +121,6 @@ bool SwitchToGameSettingsForPath(const std::string& path, SettingsPage page = Se
 void StartInstallBIOS();
 void DrawSettingsWindow();
 SettingsPage GetCurrentSettingsPage();
-bool IsInputBindingDialogOpen();
-bool IsInputBindingDialogInteractable();
 
 //////////////////////////////////////////////////////////////////////////
 // Achievements
