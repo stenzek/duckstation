@@ -51,7 +51,6 @@ static std::string GetFormatMnemonic(const char* format, u32 cop_n);
 static bool SplitOperands(std::string_view text, std::array<std::string_view, 4>* operands, size_t* count);
 static bool ParseSignedValue(std::string_view text, s64* value);
 static bool ParseUnsignedValue(std::string_view text, u64* value);
-static bool ParseGPR(std::string_view text, u32* index);
 static bool ParseNumericRegister(std::string_view text, u32* index);
 static bool ParseCopRegister(std::string_view text, u32 cop_n, bool control, u32* index);
 static bool SetField(u32* bits, u32 shift, u32 width, u32 value);

@@ -32,6 +32,8 @@ bool ContainsUnresolvedLabels(const AssemblyLabelList& labels);
 void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits);
 void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits);
 
+bool ParseGPR(std::string_view text, u32* index);
+
 const char* GetGTERegisterName(u32 index);
 const char* GetCop0RegisterName(u32 index);
 
