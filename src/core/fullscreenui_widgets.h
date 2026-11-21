@@ -359,11 +359,9 @@ void EnqueueSoundEffect(std::string_view sound_effect);
 
 float GetScreenBottomMargin();
 
-bool IsAnyFixedPopupDialogOpen();
 bool IsFixedPopupDialogOpen(std::string_view name);
 void OpenFixedPopupDialog(std::string_view name);
 void CloseFixedPopupDialog();
-void CloseFixedPopupDialogImmediately();
 bool BeginFixedPopupDialog(float scaled_window_padding = LayoutScale(20.0f),
                            float scaled_window_rounding = LayoutScale(20.0f),
                            const ImVec2& scaled_window_size = ImVec2(), const ImVec2& min_window_size = ImVec2());

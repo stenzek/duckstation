@@ -2301,11 +2301,6 @@ void FullscreenUI::FixedPopupDialog::End()
   EndRender();
 }
 
-bool FullscreenUI::IsAnyFixedPopupDialogOpen()
-{
-  return s_state.fixed_popup_dialog.IsOpen();
-}
-
 bool FullscreenUI::IsFixedPopupDialogOpen(std::string_view name)
 {
   return (s_state.fixed_popup_dialog.GetTitle() == name);
@@ -2320,11 +2315,6 @@ void FullscreenUI::OpenFixedPopupDialog(std::string_view name)
 void FullscreenUI::CloseFixedPopupDialog()
 {
   s_state.fixed_popup_dialog.StartClose();
-}
-
-void FullscreenUI::CloseFixedPopupDialogImmediately()
-{
-  s_state.fixed_popup_dialog.CloseImmediately();
 }
 
 bool FullscreenUI::BeginFixedPopupDialog(float scaled_window_padding /* = LayoutScale(20.0f) */,
