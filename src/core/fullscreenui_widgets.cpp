@@ -72,6 +72,7 @@ static constexpr float DRAG_SCROLL_STOP_TIME = 0.04f;       // seconds without m
 static constexpr u32 DRAG_SCROLL_MAX_SAMPLES = 16;
 static constexpr float TOUCH_HIGHLIGHT_DELAY = 0.1f; // seconds
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
+static constexpr size_t NO_DRAWING_DIALOG = static_cast<size_t>(-1);
 
 static constexpr int MENU_BUTTON_SPLIT_LAYER_BACKGROUND = 0;
 static constexpr int MENU_BUTTON_SPLIT_LAYER_HIGHLIGHT = 1;
@@ -151,6 +152,9 @@ static void FinishOnScreenKeyboard();
 static void CloseOnScreenKeyboard(bool set_pending_confirmed);
 static std::span<const std::span<const OnScreenKeyboardKey>> GetOnScreenKeyboardRows();
 static bool IsOnScreenKeyboardKeyEnabled(const OnScreenKeyboardKey& key);
+
+static void DrawDialogStack(size_t index);
+static bool IsTopDialog(const PopupDialog* dialog);
 
 static constexpr std::array s_theme_display_names = {
   FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
@@ -445,17 +449,35 @@ public:
   ProgressDialog();
   ~ProgressDialog();
 
-  std::unique_ptr<ProgressCallbackWithPrompt> GetProgressCallback(std::string title, float window_unscaled_width);
+  std::unique_ptr<ProgressCallbackWithPrompt> Open(std::string title, float window_unscaled_width);
 
   void Draw();
 
 private:
   static constexpr float PROGRESS_BAR_ANIMATION_TIME = 0.5f;
 
+  // State accessed by the worker thread, which can outlive the dialog.
+  struct SharedState
+  {
+    std::atomic_bool cancelled{false};
+    std::atomic_bool prompt_result{false};
+    std::atomic_flag prompt_waiting = ATOMIC_FLAG_INIT;
+  };
+
+  // Releases the worker waiting on a prompt when destroyed, even if the prompt dialog never invokes its callback.
+  struct PromptReply
+  {
+    explicit PromptReply(std::shared_ptr<SharedState> state_) : state(std::move(state_)) {}
+    PromptReply(PromptReply&&) = default;
+    ~PromptReply();
+
+    std::shared_ptr<SharedState> state;
+  };
+
   class ProgressCallbackImpl : public ProgressCallbackWithPrompt
   {
   public:
-    ProgressCallbackImpl();
+    ProgressCallbackImpl(u32 dialog_serial, std::shared_ptr<SharedState> shared_state);
     ~ProgressCallbackImpl() override;
 
     bool IsCancelled() const override;
@@ -468,8 +490,13 @@ private:
     static std::string GetIconString(PromptIcon icon);
 
     void StateChanged(StateChange changed) override;
+
+  private:
+    std::shared_ptr<SharedState> m_shared_state;
+    u32 m_dialog_serial;
   };
 
+  std::shared_ptr<SharedState> m_shared_state;
   std::string m_status_text;
   float m_last_frac = 0.0f;
   float m_animation_start_frac = 0.0f;
@@ -479,9 +506,27 @@ private:
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
   bool m_cancellable = false;
-  std::atomic_bool m_cancelled{false};
-  std::atomic_bool m_prompt_result{false};
-  std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
+};
+
+class CustomDialog : public PopupDialog
+{
+public:
+  CustomDialog();
+  ~CustomDialog() override;
+
+  void Open(std::string title, float window_padding, float window_rounding, const ImVec2& window_size,
+            const ImVec2& min_window_size, CustomDialogDrawCallback draw_callback,
+            CustomDialogCloseCallback close_callback);
+
+  void Draw() override;
+
+private:
+  CustomDialogDrawCallback m_draw_callback;
+  CustomDialogCloseCallback m_close_callback;
+  ImVec2 m_window_size = {};
+  ImVec2 m_min_window_size = {};
+  float m_window_padding = 0.0f;
+  float m_window_rounding = 0.0f;
 };
 
 class FixedPopupDialog : public PopupDialog
@@ -491,6 +536,9 @@ public:
   ~FixedPopupDialog();
 
   void Open(std::string title);
+
+  // Drawn by its owner through Begin()/End(), not as part of the dialog stack.
+  void Draw() override {}
 
   bool Begin(float scaled_window_padding = LayoutScale(20.0f), float scaled_window_rounding = LayoutScale(20.0f),
              const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f));
@@ -572,16 +620,17 @@ struct WidgetsState
   ImGuiID toggle_button_animation_id = 0;
   double toggle_button_animation_start_time = 0.0;
 
-  // TODO: Make these dynamic rather than global state.
   OnScreenKeyboardState on_screen_keyboard;
-  ChoiceDialog choice_dialog;
-  DropdownDialog dropdown_dialog;
-  FileSelectorDialog file_selector_dialog;
-  DirectorySelectorDialog directory_selector_dialog;
-  InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
-  ProgressDialog progress_dialog;
-  MessageDialog message_dialog;
+
+  std::vector<std::unique_ptr<PopupDialog>> dialog_stack;
+  size_t drawing_dialog_index = NO_DRAWING_DIALOG;
+  u32 last_dialog_serial = 0;
+
+  // The menu button that opened the dropdown, used to position it and to highlight the button while it's open.
+  ImRect dropdown_anchor_value_bb;
+  ImRect dropdown_anchor_frame_bb;
+  u32 dropdown_dialog_serial = 0;
 
   std::string toast_title;
   std::string toast_message;
@@ -680,14 +729,8 @@ void FullscreenUI::ShutdownWidgets()
     s_state.last_fullscreen_footer_text.clear();
     s_state.fullscreen_text_change_time = 0.0f;
     s_state.on_screen_keyboard = {};
-    s_state.input_string_dialog.ClearState();
-    s_state.message_dialog.ClearState();
-    s_state.choice_dialog.ClearState();
-    s_state.dropdown_dialog.ClearState();
-    s_state.file_selector_dialog.ClearState();
-    s_state.directory_selector_dialog.ClearState();
+    s_state.dialog_stack.clear();
     s_state.fixed_popup_dialog.ClearState();
-    s_state.progress_dialog.ClearState();
     s_state.toggle_button_animation_id = 0;
     s_state.toggle_button_animation_start_time = 0.0;
     s_state.drag_scroll_active = false;
@@ -2181,13 +2224,11 @@ void FullscreenUI::BeginLayout()
 
 void FullscreenUI::EndLayout()
 {
-  s_state.choice_dialog.Draw();
-  s_state.dropdown_dialog.Draw();
-  s_state.file_selector_dialog.Draw();
-  s_state.directory_selector_dialog.Draw();
-  s_state.input_string_dialog.Draw();
-  s_state.progress_dialog.Draw();
-  s_state.message_dialog.Draw();
+  // Dialogs above the bottom are drawn from within their parent's EndRender().
+  DrawDialogStack(0);
+
+  // Remove closed dialogs. Done after drawing, so dialogs are not destroyed while their callbacks run.
+  std::erase_if(s_state.dialog_stack, [](const std::unique_ptr<PopupDialog>& dialog) { return !dialog->IsOpen(); });
 
   if (s_state.on_screen_keyboard.open)
     FinishOnScreenKeyboard();
@@ -2306,6 +2347,84 @@ bool FullscreenUI::BeginFixedPopupDialog(float scaled_window_padding /* = Layout
 void FullscreenUI::EndFixedPopupDialog()
 {
   s_state.fixed_popup_dialog.End();
+}
+
+FullscreenUI::CustomDialog::CustomDialog() = default;
+
+FullscreenUI::CustomDialog::~CustomDialog()
+{
+  if (m_close_callback)
+    m_close_callback();
+}
+
+void FullscreenUI::CustomDialog::Open(std::string title, float window_padding, float window_rounding,
+                                      const ImVec2& window_size, const ImVec2& min_window_size,
+                                      CustomDialogDrawCallback draw_callback, CustomDialogCloseCallback close_callback)
+{
+  SetTitleAndOpen(std::move(title));
+  m_draw_callback = std::move(draw_callback);
+  m_close_callback = std::move(close_callback);
+  m_window_size = window_size;
+  m_min_window_size = min_window_size;
+  m_window_padding = window_padding;
+  m_window_rounding = window_rounding;
+}
+
+void FullscreenUI::CustomDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  if (m_min_window_size.x > 0.0f || m_min_window_size.y > 0.0f)
+  {
+    ImGui::SetNextWindowSizeConstraints(LayoutScale(m_min_window_size.x, m_min_window_size.y),
+                                        ImVec2(FLT_MAX, FLT_MAX));
+  }
+
+  if (!BeginRender(LayoutScale(m_window_padding), LayoutScale(m_window_rounding),
+                   LayoutScale(m_window_size.x, m_window_size.y)))
+  {
+    ClearState();
+    return;
+  }
+
+  m_draw_callback();
+
+  EndRender();
+}
+
+void FullscreenUI::OpenCustomDialog(std::string title, float window_padding, float window_rounding,
+                                    const ImVec2& window_size, const ImVec2& min_window_size,
+                                    CustomDialogDrawCallback draw_callback,
+                                    CustomDialogCloseCallback close_callback /* = {} */)
+{
+  PushDialog<CustomDialog>()->Open(std::move(title), window_padding, window_rounding, window_size, min_window_size,
+                                   std::move(draw_callback), std::move(close_callback));
+}
+
+void FullscreenUI::CloseCurrentDialog()
+{
+  if (s_state.drawing_dialog_index != NO_DRAWING_DIALOG)
+    s_state.dialog_stack[s_state.drawing_dialog_index]->StartClose();
+}
+
+void FullscreenUI::CloseCurrentDialogImmediately()
+{
+  if (s_state.drawing_dialog_index != NO_DRAWING_DIALOG)
+    s_state.dialog_stack[s_state.drawing_dialog_index]->CloseImmediately();
+}
+
+u32 FullscreenUI::GetCurrentDialogSerial()
+{
+  return (s_state.drawing_dialog_index != NO_DRAWING_DIALOG) ?
+           s_state.dialog_stack[s_state.drawing_dialog_index]->GetSerial() :
+           0;
+}
+
+void FullscreenUI::CloseDialog(u32 serial)
+{
+  if (PopupDialog* const dialog = FindDialog(serial))
+    dialog->StartClose();
 }
 
 void FullscreenUI::RenderOverlays()
@@ -4287,7 +4406,7 @@ bool FullscreenUI::EnumChoiceButtonImpl(std::string_view title, std::string_view
         s_state.enum_choice_button_value = index;
 
       s_state.enum_choice_button_set = true;
-      CloseChoiceDialog();
+      CloseCurrentDialog();
     });
   }
 
@@ -4319,8 +4438,8 @@ bool FullscreenUI::MenuActionButton(std::string_view title, std::string_view sum
   if (!visible)
     return false;
 
-  if (!hovered && dropdown_icon && s_state.dropdown_dialog.IsOpen() &&
-      s_state.dropdown_dialog.GetHiddenTitle() == title)
+  const DropdownDialog* dropdown = dropdown_icon ? FindDialog<DropdownDialog>(s_state.dropdown_dialog_serial) : nullptr;
+  if (!hovered && dropdown && dropdown->GetHiddenTitle() == title)
   {
     ImGui::RenderFrame(bb.frame_bb.Min, bb.frame_bb.Max,
                        ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, UIStyle.IsDarkTheme ? 1.4f : 0.2f)),
@@ -4357,7 +4476,10 @@ bool FullscreenUI::MenuActionButton(std::string_view title, std::string_view sum
 
   // Store bounding boxes on the dropdown dialog for position calculations when opening.
   if (pressed)
-    s_state.dropdown_dialog.SetAnchorBounds(bb.value_bb, bb.frame_bb);
+  {
+    s_state.dropdown_anchor_value_bb = bb.value_bb;
+    s_state.dropdown_anchor_frame_bb = bb.frame_bb;
+  }
 
   return pressed;
 }
@@ -5253,13 +5375,21 @@ bool FullscreenUI::InputTextWithSuffix(const char* str_id, std::string_view suff
   return result;
 }
 
-FullscreenUI::PopupDialog::PopupDialog() = default;
+FullscreenUI::PopupDialog::PopupDialog() : m_serial(++s_state.last_dialog_serial)
+{
+}
 
 FullscreenUI::PopupDialog::~PopupDialog() = default;
 
 void FullscreenUI::PopupDialog::StartClose()
 {
   if (!IsOpen() || m_state == State::Closing || m_state == State::ClosingTrigger)
+    return;
+
+  // Closing the ImGui popup would also close the popups of the dialogs above it, cancelling them. This happens when an
+  // async task closes its dialog while another is open on top, so wait until they have gone, see BeginRender().
+  m_close_when_top = !IsTopDialog(this);
+  if (m_close_when_top)
     return;
 
   m_state = State::Closing;
@@ -5270,6 +5400,7 @@ void FullscreenUI::PopupDialog::ClearState()
 {
   m_state = State::Inactive;
   m_title = {};
+  m_close_when_top = false;
 }
 
 void FullscreenUI::PopupDialog::SetTitleAndOpen(std::string title, bool user_closeable /* = true */)
@@ -5277,6 +5408,7 @@ void FullscreenUI::PopupDialog::SetTitleAndOpen(std::string title, bool user_clo
   DebugAssert(!title.empty());
   m_title = std::move(title);
   m_user_closeable = user_closeable;
+  m_close_when_top = false;
   m_animation_time_remaining = UIStyle.Animations ? OPEN_TIME : 0.0f;
 
   if (m_state == State::Inactive)
@@ -5296,7 +5428,7 @@ void FullscreenUI::PopupDialog::CloseImmediately()
   if (!IsOpen())
     return;
 
-  if (!GImGui->BeginPopupStack.empty() && GImGui->BeginPopupStack.front().Window == ImGui::GetCurrentWindowRead())
+  if (!GImGui->BeginPopupStack.empty() && GImGui->BeginPopupStack.back().Window == ImGui::GetCurrentWindowRead())
   {
     ImGui::CloseCurrentPopup();
     ClearState();
@@ -5316,6 +5448,23 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
 {
   DebugAssert(IsOpen());
 
+  if (m_close_when_top && IsTopDialog(this))
+    StartClose();
+
+  // ImGui identifies windows by name, so stacked dialogs with the same title would share a window and its IDs. Include
+  // the stack depth in the name, since open dialogs are always at different depths. The depth rather than the serial,
+  // so that dialogs opened one after another reuse their window, since ImGui never frees them.
+  SmallString window_name;
+  if (s_state.drawing_dialog_index != NO_DRAWING_DIALOG &&
+      s_state.dialog_stack[s_state.drawing_dialog_index].get() == this)
+  {
+    window_name.format("{}##{}", m_title, s_state.drawing_dialog_index);
+  }
+  else
+  {
+    window_name = m_title;
+  }
+
   // reopening is messy...
   if (m_state == State::Reopening) [[unlikely]]
   {
@@ -5327,7 +5476,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   {
     // need to have the openpopup at the correct level
     m_state = State::Opening;
-    ImGui::OpenPopup(m_title.c_str());
+    ImGui::OpenPopup(window_name.c_str());
     QueueResetFocus(FocusResetType::PopupOpened);
 
     // hackity hack to disable imgui's background fade animation
@@ -5399,13 +5548,17 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
 
   // Based on BeginPopupModal(), because we need to control is_open smooth closing.
   const bool popup_open =
-    ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(IMSTR_START_END(m_title)), ImGuiPopupFlags_None);
+    ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(IMSTR_START_END(window_name)), ImGuiPopupFlags_None);
   const bool has_title = !m_title.starts_with("##");
   const ImGuiWindowFlags window_flags = ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoCollapse |
                                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                        (has_title ? 0 : ImGuiWindowFlags_NoTitleBar);
+                                        (has_title ? 0 : ImGuiWindowFlags_NoTitleBar) |
+                                        // ignore input while fading out, a second activation would find the
+                                        // dialog's callback already consumed
+                                        ((m_state == State::Closing) ? ImGuiWindowFlags_NoInputs : 0);
   bool is_open = true;
-  if (popup_open && !ImGui::Begin(m_title.c_str(), (has_title && m_user_closeable) ? &is_open : nullptr, window_flags))
+  if (popup_open &&
+      !ImGui::Begin(window_name.c_str(), (has_title && m_user_closeable) ? &is_open : nullptr, window_flags))
     is_open = false;
 
   if (popup_open && !is_open && m_state != State::ClosingTrigger)
@@ -5435,7 +5588,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
   ImGui::PopFont();
   ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight);
 
-  if (WantsToCloseMenu())
+  if (IsTopDialog(this) && WantsToCloseMenu())
     StartClose();
 
   return true;
@@ -5443,6 +5596,16 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
 
 void FullscreenUI::PopupDialog::EndRender()
 {
+  // Draw the next dialog in the stack as a child popup of this one, otherwise opening it would close this one.
+  // Closing this popup would also close the dialogs above it, so dialogs pushed while this one is closing are not drawn
+  // until it has gone. This lets it finish its animation and deliver its callback (e.g. a cancelled confirmation that
+  // resumes emulation) rather than being dropped, and a callback that closes its own dialog can still open another.
+  if (IsInteractable() && s_state.drawing_dialog_index != NO_DRAWING_DIALOG &&
+      s_state.dialog_stack[s_state.drawing_dialog_index].get() == this)
+  {
+    DrawDialogStack(s_state.drawing_dialog_index + 1);
+  }
+
   ImGui::EndPopup();
   ImGui::PopStyleColor(8);
   ImGui::PopStyleVar(6);
@@ -5636,20 +5799,10 @@ void FullscreenUI::FileSelectorDialog::Draw()
   }
 }
 
-bool FullscreenUI::IsFileSelectorOpen()
-{
-  return s_state.file_selector_dialog.IsOpen();
-}
-
 void FullscreenUI::OpenFileSelector(std::string_view title, FileSelectorFilters filters, std::string initial_directory,
                                     FileSelectorCallback callback)
 {
-  s_state.file_selector_dialog.Open(title, std::move(callback), std::move(filters), std::move(initial_directory));
-}
-
-void FullscreenUI::CloseFileSelector()
-{
-  s_state.file_selector_dialog.StartClose();
+  PushDialog<FileSelectorDialog>()->Open(title, std::move(callback), std::move(filters), std::move(initial_directory));
 }
 
 FullscreenUI::DirectorySelectorDialog::DirectorySelectorDialog() = default;
@@ -5840,21 +5993,11 @@ void FullscreenUI::DirectorySelectorDialog::Draw()
   }
 }
 
-bool FullscreenUI::IsDirectorySelectorOpen()
-{
-  return s_state.directory_selector_dialog.IsOpen();
-}
-
 void FullscreenUI::OpenDirectorySelector(std::string_view title, std::string initial_directory,
                                          std::string default_directory, DirectorySelectorCallback callback)
 {
-  s_state.directory_selector_dialog.Open(title, std::move(callback), std::move(initial_directory),
-                                         std::move(default_directory));
-}
-
-void FullscreenUI::CloseDirectorySelector()
-{
-  s_state.directory_selector_dialog.StartClose();
+  PushDialog<DirectorySelectorDialog>()->Open(title, std::move(callback), std::move(initial_directory),
+                                              std::move(default_directory));
 }
 
 FullscreenUI::ChoiceDialog::ChoiceDialog() = default;
@@ -5991,20 +6134,10 @@ void FullscreenUI::ChoiceDialog::Draw()
   }
 }
 
-bool FullscreenUI::IsChoiceDialogOpen()
-{
-  return s_state.choice_dialog.IsOpen();
-}
-
 void FullscreenUI::OpenChoiceDialog(std::string_view title, bool checkable, ChoiceDialogOptions options,
                                     ChoiceDialogCallback callback)
 {
-  s_state.choice_dialog.Open(title, std::move(options), std::move(callback), checkable);
-}
-
-void FullscreenUI::CloseChoiceDialog()
-{
-  s_state.choice_dialog.StartClose();
+  PushDialog<ChoiceDialog>()->Open(title, std::move(options), std::move(callback), checkable);
 }
 
 FullscreenUI::DropdownDialog::DropdownDialog() = default;
@@ -6179,38 +6312,21 @@ void FullscreenUI::DropdownDialog::Draw()
   }
 }
 
-bool FullscreenUI::IsDropdownDialogOpen()
-{
-  return s_state.dropdown_dialog.IsOpen();
-}
-
-std::string_view FullscreenUI::GetDropdownDialogHiddenTitle()
-{
-  return s_state.dropdown_dialog.GetHiddenTitle();
-}
-
 void FullscreenUI::OpenDropdownDialog(std::string_view hidden_title, DropdownDialogOptions options,
                                       DropdownDialogCallback callback, float min_width /* = 0.0f */)
 {
-  s_state.dropdown_dialog.Open(hidden_title, std::move(options), std::move(callback), min_width);
-}
-
-void FullscreenUI::CloseDropdownDialog()
-{
-  s_state.dropdown_dialog.StartClose();
-}
-
-bool FullscreenUI::IsInputDialogOpen()
-{
-  return s_state.input_string_dialog.IsOpen();
+  DropdownDialog* const dialog = PushDialog<DropdownDialog>();
+  dialog->SetAnchorBounds(s_state.dropdown_anchor_value_bb, s_state.dropdown_anchor_frame_bb);
+  dialog->Open(hidden_title, std::move(options), std::move(callback), min_width);
+  s_state.dropdown_dialog_serial = dialog->GetSerial();
 }
 
 void FullscreenUI::OpenInputStringDialog(std::string_view title, std::string message, std::string caption,
                                          std::string ok_button_text, std::string initial_value,
                                          InputStringDialogCallback callback)
 {
-  s_state.input_string_dialog.Open(title, std::move(message), std::move(caption), std::move(ok_button_text),
-                                   std::move(initial_value), std::move(callback));
+  PushDialog<InputStringDialog>()->Open(title, std::move(message), std::move(caption), std::move(ok_button_text),
+                                        std::move(initial_value), std::move(callback));
   QueueResetFocus(FocusResetType::PopupOpened);
 }
 
@@ -6309,11 +6425,6 @@ void FullscreenUI::InputStringDialog::Draw()
   }
 
   EndRender();
-}
-
-void FullscreenUI::CloseInputDialog()
-{
-  s_state.input_string_dialog.StartClose();
 }
 
 FullscreenUI::MessageDialog::MessageDialog() = default;
@@ -6439,42 +6550,39 @@ void FullscreenUI::MessageDialog::InvokeCallback(CallbackVariant& cb, std::optio
   }
 }
 
-bool FullscreenUI::IsMessageBoxDialogOpen()
-{
-  return s_state.message_dialog.IsOpen();
-}
-
 void FullscreenUI::OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                                             ConfirmMessageDialogCallback callback, std::string yes_button_text,
                                             std::string no_button_text)
 {
-  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
-                              std::move(yes_button_text), std::move(no_button_text), std::string());
+  PushDialog<MessageDialog>()->Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
+                                    std::move(yes_button_text), std::move(no_button_text), std::string());
 }
 
 void FullscreenUI::OpenInfoMessageDialog(std::string icon, std::string_view title, std::string message,
                                          InfoMessageDialogCallback callback, std::string button_text)
 {
-  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
-                              std::move(button_text), std::string(), std::string());
+  PushDialog<MessageDialog>()->Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
+                                    std::move(button_text), std::string(), std::string());
 }
 
 void FullscreenUI::OpenMessageDialog(std::string icon, std::string_view title, std::string message,
                                      MessageDialogCallback callback, std::string first_button_text,
                                      std::string second_button_text, std::string third_button_text)
 {
-  s_state.message_dialog.Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
-                              std::move(first_button_text), std::move(second_button_text),
-                              std::move(third_button_text));
-}
-
-void FullscreenUI::CloseMessageDialog()
-{
-  s_state.message_dialog.StartClose();
+  PushDialog<MessageDialog>()->Open(std::move(icon), std::move(title), std::move(message), std::move(callback),
+                                    std::move(first_button_text), std::move(second_button_text),
+                                    std::move(third_button_text));
 }
 
 FullscreenUI::ProgressDialog::ProgressDialog() = default;
-FullscreenUI::ProgressDialog::~ProgressDialog() = default;
+FullscreenUI::ProgressDialog::~ProgressDialog()
+{
+  // Closing the dialog by any means, e.g. the close button or back, cancels the worker. Otherwise only the cancel
+  // button would, and the task would carry on in the background with no UI. When the worker finishes normally, it has
+  // already destroyed its callback, so this has no effect.
+  if (m_shared_state)
+    m_shared_state->cancelled.store(true, std::memory_order_release);
+}
 
 void FullscreenUI::ProgressDialog::Draw()
 {
@@ -6584,9 +6692,9 @@ void FullscreenUI::ProgressDialog::Draw()
   {
     BeginHorizontalMenuButtons(1, 150.0f);
     if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel"),
-                             !m_cancelled.load(std::memory_order_relaxed)))
+                             !m_shared_state->cancelled.load(std::memory_order_relaxed)))
     {
-      m_cancelled.store(true, std::memory_order_release);
+      m_shared_state->cancelled.store(true, std::memory_order_release);
     }
 
     EndHorizontalMenuButtons();
@@ -6595,34 +6703,35 @@ void FullscreenUI::ProgressDialog::Draw()
   EndRender();
 }
 
-std::unique_ptr<ProgressCallbackWithPrompt>
-FullscreenUI::ProgressDialog::GetProgressCallback(std::string title, float window_unscaled_width)
+std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::ProgressDialog::Open(std::string title,
+                                                                               float window_unscaled_width)
 {
-  if (m_state == PopupDialog::State::Open)
-  {
-    // return dummy callback so the op can still go through
-    ERROR_LOG("Progress dialog is already open, cannot create dialog for '{}'.", std::move(title));
-    return std::make_unique<ProgressCallbackWithPrompt>();
-  }
-
   SetTitleAndOpen(std::move(title));
   m_width = LayoutScale(window_unscaled_width);
-  m_last_frac = 0.0f;
-  m_animation_start_frac = 0.0f;
-  m_animation_target_frac = 0.0f;
-  m_animation_time = 0.0f;
-  m_cancelled.store(false, std::memory_order_release);
-  return std::make_unique<ProgressCallbackImpl>();
+  m_shared_state = std::make_shared<SharedState>();
+  return std::make_unique<ProgressCallbackImpl>(GetSerial(), m_shared_state);
 }
 
-FullscreenUI::ProgressDialog::ProgressCallbackImpl::ProgressCallbackImpl() = default;
+FullscreenUI::ProgressDialog::PromptReply::~PromptReply()
+{
+  if (!state)
+    return;
+
+  state->prompt_waiting.clear(std::memory_order_release);
+  state->prompt_waiting.notify_one();
+}
+
+FullscreenUI::ProgressDialog::ProgressCallbackImpl::ProgressCallbackImpl(u32 dialog_serial,
+                                                                         std::shared_ptr<SharedState> shared_state)
+  : m_shared_state(std::move(shared_state)), m_dialog_serial(dialog_serial)
+{
+}
 
 FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
 {
-  static constexpr auto close_cb = []() {
-    if (!s_state.progress_dialog.IsOpen())
-      return;
-    s_state.progress_dialog.StartClose();
+  const auto close_cb = [serial = m_dialog_serial]() {
+    if (ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial))
+      dialog->StartClose();
   };
   if (VideoThread::IsOnThread())
   {
@@ -6630,45 +6739,46 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
     return;
   }
 
-  Host::RunOnCoreThread([]() { VideoThread::RunOnThread(close_cb); });
+  Host::RunOnCoreThread([close_cb]() { VideoThread::RunOnThread(close_cb); });
 }
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::StateChanged(StateChange changed)
 {
   if (changed & STATE_CHANGE_STATUS_TEXT)
   {
-    Host::RunOnCoreThread([text = m_status_text, range = m_progress_range, value = m_progress_value]() mutable {
-      VideoThread::RunOnThread([text = std::move(text), range, value]() mutable {
-        if (!s_state.progress_dialog.IsOpen())
-          return;
+    Host::RunOnCoreThread(
+      [serial = m_dialog_serial, text = m_status_text, range = m_progress_range, value = m_progress_value]() mutable {
+        VideoThread::RunOnThread([serial, text = std::move(text), range, value]() mutable {
+          ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial);
+          if (!dialog)
+            return;
 
-        s_state.progress_dialog.m_progress_range = range;
-        s_state.progress_dialog.m_progress_value = value;
-        s_state.progress_dialog.m_status_text = std::move(text);
+          dialog->m_progress_range = range;
+          dialog->m_progress_value = value;
+          dialog->m_status_text = std::move(text);
+        });
       });
-    });
   }
   else if (changed & STATE_CHANGE_PROGRESS)
   {
-    Host::RunOnCoreThread([range = m_progress_range, value = m_progress_value]() {
-      VideoThread::RunOnThread([range, value]() {
-        if (!s_state.progress_dialog.IsOpen())
+    Host::RunOnCoreThread([serial = m_dialog_serial, range = m_progress_range, value = m_progress_value]() {
+      VideoThread::RunOnThread([serial, range, value]() {
+        ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial);
+        if (!dialog)
           return;
 
-        s_state.progress_dialog.m_progress_range = range;
-        s_state.progress_dialog.m_progress_value = value;
+        dialog->m_progress_range = range;
+        dialog->m_progress_value = value;
       });
     });
   }
 
   if (changed & STATE_CHANGE_CANCELLABLE)
   {
-    Host::RunOnCoreThread([cancellable = m_cancellable]() {
-      VideoThread::RunOnThread([cancellable]() {
-        if (!s_state.progress_dialog.IsOpen())
-          return;
-
-        s_state.progress_dialog.m_cancellable = cancellable;
+    Host::RunOnCoreThread([serial = m_dialog_serial, cancellable = m_cancellable]() {
+      VideoThread::RunOnThread([serial, cancellable]() {
+        if (ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial))
+          dialog->m_cancellable = cancellable;
       });
     });
   }
@@ -6676,7 +6786,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::StateChanged(StateChang
 
 bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
 {
-  return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
+  return m_shared_state->cancelled.load(std::memory_order_acquire);
 }
 
 std::string FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(PromptIcon icon)
@@ -6697,113 +6807,105 @@ std::string FullscreenUI::ProgressDialog::ProgressCallbackImpl::GetIconString(Pr
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon icon, std::string_view message)
 {
-  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+  m_shared_state->prompt_waiting.test_and_set(std::memory_order_release);
 
-  Host::RunOnCoreThread([message = std::string(message), icon]() mutable {
-    VideoThread::RunOnThread([message = std::move(message), icon]() mutable {
-      if (!s_state.progress_dialog.IsOpen())
-      {
-        s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
-        s_state.progress_dialog.m_prompt_waiting.notify_one();
-        return;
-      }
+  Host::RunOnCoreThread(
+    [serial = m_dialog_serial, reply = PromptReply(m_shared_state), message = std::string(message), icon]() mutable {
+      VideoThread::RunOnThread([serial, reply = std::move(reply), message = std::move(message), icon]() mutable {
+        // reply is released when it goes out of scope, if the dialog has gone away
+        ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial);
+        if (!dialog)
+          return;
 
-      // need to save state, since opening the next dialog will close this one
-      std::string existing_title = s_state.progress_dialog.GetTitle();
-      u32 progress_range = s_state.progress_dialog.m_progress_range;
-      u32 progress_value = s_state.progress_dialog.m_progress_value;
-      float last_frac = s_state.progress_dialog.m_last_frac;
-      float width = s_state.progress_dialog.m_width;
-      s_state.progress_dialog.CloseImmediately();
-
-      OpenInfoMessageDialog(
-        GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
-        [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
-          s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
-          s_state.progress_dialog.m_progress_range = progress_range;
-          s_state.progress_dialog.m_progress_value = progress_value;
-          s_state.progress_dialog.m_last_frac = last_frac;
-          s_state.progress_dialog.m_width = width;
-          s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
-          s_state.progress_dialog.m_prompt_waiting.notify_one();
-        });
+        // stacked on top of the progress dialog, which stays open underneath
+        OpenInfoMessageDialog(GetIconString(icon), dialog->GetTitle(), std::move(message),
+                              [reply = std::move(reply)]() {});
+      });
     });
-  });
 
-  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
+  m_shared_state->prompt_waiting.wait(true, std::memory_order_acquire);
 }
 
 bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIcon icon, std::string_view message,
                                                                        std::string_view yes_text /* =  */,
                                                                        std::string_view no_text /* = */)
 {
-  s_state.progress_dialog.m_prompt_result.store(false, std::memory_order_relaxed);
-  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+  m_shared_state->prompt_result.store(false, std::memory_order_relaxed);
+  m_shared_state->prompt_waiting.test_and_set(std::memory_order_release);
 
-  Host::RunOnCoreThread(
-    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text), icon]() mutable {
-      VideoThread::RunOnThread(
-        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text), icon]() mutable {
-          if (!s_state.progress_dialog.IsOpen())
-          {
-            s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
-            s_state.progress_dialog.m_prompt_waiting.notify_one();
-            return;
-          }
+  Host::RunOnCoreThread([serial = m_dialog_serial, reply = PromptReply(m_shared_state), message = std::string(message),
+                         yes_text = std::string(yes_text), no_text = std::string(no_text), icon]() mutable {
+    VideoThread::RunOnThread([serial, reply = std::move(reply), message = std::move(message),
+                              yes_text = std::move(yes_text), no_text = std::move(no_text), icon]() mutable {
+      ProgressDialog* const dialog = FindDialog<ProgressDialog>(serial);
+      if (!dialog)
+        return;
 
-          // need to save state, since opening the next dialog will close this one
-          std::string existing_title = s_state.progress_dialog.GetTitle();
-          u32 progress_range = s_state.progress_dialog.m_progress_range;
-          u32 progress_value = s_state.progress_dialog.m_progress_value;
-          float last_frac = s_state.progress_dialog.m_last_frac;
-          float width = s_state.progress_dialog.m_width;
-          s_state.progress_dialog.CloseImmediately();
+      if (yes_text.empty())
+        yes_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes");
+      if (no_text.empty())
+        no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
 
-          if (yes_text.empty())
-            yes_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes");
-          if (no_text.empty())
-            no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
-
-          OpenConfirmMessageDialog(GetIconString(icon), s_state.progress_dialog.GetTitle(), std::move(message),
-                                   [existing_title = std::move(existing_title), progress_range, progress_value,
-                                    last_frac, width](bool result) mutable {
-                                     s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
-                                     s_state.progress_dialog.m_progress_range = progress_range;
-                                     s_state.progress_dialog.m_progress_value = progress_value;
-                                     s_state.progress_dialog.m_last_frac = last_frac;
-                                     s_state.progress_dialog.m_width = width;
-                                     s_state.progress_dialog.m_prompt_result.store(result, std::memory_order_relaxed);
-                                     s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
-                                     s_state.progress_dialog.m_prompt_waiting.notify_one();
-                                   });
-        });
+      OpenConfirmMessageDialog(GetIconString(icon), dialog->GetTitle(), std::move(message),
+                               [reply = std::move(reply)](bool result) {
+                                 reply.state->prompt_result.store(result, std::memory_order_relaxed);
+                               });
     });
+  });
 
-  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
-  return s_state.progress_dialog.m_prompt_result.load(std::memory_order_relaxed);
+  m_shared_state->prompt_waiting.wait(true, std::memory_order_acquire);
+  return m_shared_state->prompt_result.load(std::memory_order_relaxed);
 }
 
 std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialog(std::string title,
                                                                                   float window_unscaled_width)
 {
-  return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
+  return PushDialog<ProgressDialog>()->Open(std::move(title), window_unscaled_width);
 }
 
 bool FullscreenUI::AreAnyWidgetsDialogOpen()
 {
-  return (s_state.on_screen_keyboard.open || s_state.choice_dialog.IsOpen() || s_state.dropdown_dialog.IsOpen() ||
-          s_state.file_selector_dialog.IsOpen() || s_state.directory_selector_dialog.IsOpen() ||
-          s_state.input_string_dialog.IsOpen() || s_state.fixed_popup_dialog.IsOpen() ||
-          s_state.progress_dialog.IsOpen() || s_state.message_dialog.IsOpen());
+  return (s_state.on_screen_keyboard.open || s_state.fixed_popup_dialog.IsOpen() ||
+          std::ranges::any_of(s_state.dialog_stack, [](const auto& dialog) { return dialog->IsOpen(); }));
 }
 
 bool FullscreenUI::AreAnyWidgetsDialogInteractable()
 {
   return ((s_state.on_screen_keyboard.open && !s_state.on_screen_keyboard.closing) ||
-          s_state.choice_dialog.IsInteractable() || s_state.dropdown_dialog.IsInteractable() ||
-          s_state.file_selector_dialog.IsInteractable() || s_state.directory_selector_dialog.IsInteractable() ||
-          s_state.input_string_dialog.IsInteractable() || s_state.fixed_popup_dialog.IsInteractable() ||
-          s_state.progress_dialog.IsInteractable() || s_state.message_dialog.IsInteractable());
+          s_state.fixed_popup_dialog.IsInteractable() ||
+          std::ranges::any_of(s_state.dialog_stack, [](const auto& dialog) { return dialog->IsInteractable(); }));
+}
+
+FullscreenUI::PopupDialog* FullscreenUI::PushDialog(std::unique_ptr<PopupDialog> dialog)
+{
+  return s_state.dialog_stack.emplace_back(std::move(dialog)).get();
+}
+
+FullscreenUI::PopupDialog* FullscreenUI::FindDialog(u32 serial)
+{
+  for (const std::unique_ptr<PopupDialog>& dialog : s_state.dialog_stack)
+  {
+    if (dialog->GetSerial() == serial)
+      return dialog->IsOpen() ? dialog.get() : nullptr;
+  }
+
+  return nullptr;
+}
+
+void FullscreenUI::DrawDialogStack(size_t index)
+{
+  if (index >= s_state.dialog_stack.size())
+    return;
+
+  const size_t parent_index = std::exchange(s_state.drawing_dialog_index, index);
+  s_state.dialog_stack[index]->Draw();
+  s_state.drawing_dialog_index = parent_index;
+}
+
+bool FullscreenUI::IsTopDialog(const PopupDialog* dialog)
+{
+  // Dialogs that are not on the stack (e.g. fixed popups) are only on top when nothing is stacked.
+  return (s_state.dialog_stack.empty() || s_state.dialog_stack.back().get() == dialog);
 }
 
 ImGuiID FullscreenUI::GetBackgroundProgressID(std::string_view str_id)

@@ -56,9 +56,9 @@ class InputBindingDialog : public PopupDialog
 {
 public:
   InputBindingDialog();
-  ~InputBindingDialog();
+  ~InputBindingDialog() override;
 
-  void Draw();
+  void Draw() override;
   void ClearState();
 
   void Start(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section, std::string_view key,
@@ -263,7 +263,6 @@ struct SettingsLocals
   bool cover_downloader_urls_loaded = false;
   bool cover_downloader_use_serial_names = false;
   GPURenderer graphics_adapter_list_cache_renderer = GPURenderer::Count;
-  InputBindingDialog input_binding_dialog;
   std::unique_ptr<std::string> achievements_login_error;
   char achievements_login_username[256] = {};
   char achievements_login_password[256] = {};
@@ -449,7 +448,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     if (type == InputBindingInfo::Type::Motor || type == InputBindingInfo::Type::LED)
       BeginEffectBinding(bsi, type, section, name, display_name);
     else
-      s_settings_locals.input_binding_dialog.Start(bsi, type, section, name, display_name);
+      PushDialog<InputBindingDialog>()->Start(bsi, type, section, name, display_name);
   }
   else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
            (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false)))
@@ -462,7 +461,12 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
 FullscreenUI::InputBindingDialog::InputBindingDialog() = default;
 
-FullscreenUI::InputBindingDialog::~InputBindingDialog() = default;
+FullscreenUI::InputBindingDialog::~InputBindingDialog()
+{
+  // in case the dialog was removed without going through ClearState()
+  if (m_binding_type != InputBindingInfo::Type::Unknown)
+    Host::RunOnCoreThread(&InputManager::StopBindingCapture);
+}
 
 void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindingInfo::Type type,
                                              std::string_view section, std::string_view key,
@@ -522,21 +526,24 @@ void FullscreenUI::InputBindingDialog::SetStep(u32 step)
 void FullscreenUI::InputBindingDialog::StartCapture(bool continue_sequence)
 {
   // Updates from an earlier capture can still be queued, so each is tagged with the capture it came from. Only the
-  // video thread touches the dialog's state.
+  // video thread touches the dialog's state, and the dialog can be gone by the time an update arrives.
   // A sequence keeps the mouse for its buttons, even with mouse mapping.
   const u32 capture_id = ++m_capture_id;
   const bool capture_pointer = m_steps.empty();
-  Host::RunOnCoreThread([this, capture_id, type = m_binding_type, continue_sequence, capture_pointer]() {
-    InputManager::StartBindingCapture(
-      [this, capture_id, type](std::span<const InputBindingKey> keys, bool completed) {
-        VideoThread::RunOnThread(
-          [this, capture_id, completed,
-           binding = InputManager::ConvertInputBindingKeysToString(type, keys.data(), keys.size())]() mutable {
-            OnCaptureUpdate(capture_id, std::move(binding), completed);
-          });
-      },
-      continue_sequence, capture_pointer);
-  });
+  Host::RunOnCoreThread(
+    [serial = GetSerial(), capture_id, type = m_binding_type, continue_sequence, capture_pointer]() {
+      InputManager::StartBindingCapture(
+        [serial, capture_id, type](std::span<const InputBindingKey> keys, bool completed) {
+          VideoThread::RunOnThread(
+            [serial, capture_id, completed,
+             binding = InputManager::ConvertInputBindingKeysToString(type, keys.data(), keys.size())]() mutable {
+              // serials are unique, so the dialog with this serial can only be an input binding dialog
+              if (InputBindingDialog* const dialog = FindDialog<InputBindingDialog>(serial))
+                dialog->OnCaptureUpdate(capture_id, std::move(binding), completed);
+            });
+        },
+        continue_sequence, capture_pointer);
+    });
 }
 
 void FullscreenUI::InputBindingDialog::OnCaptureUpdate(u32 capture_id, SmallString binding, bool completed)
@@ -1834,7 +1841,6 @@ void FullscreenUI::PopulateHotkeyList()
 
 void FullscreenUI::ClearSettingsState()
 {
-  s_settings_locals.input_binding_dialog.ClearState();
   s_settings_locals.game_list_directories_cache = {};
   s_settings_locals.game_settings_entry.reset();
   s_settings_locals.game_settings_interface.reset();
@@ -2033,16 +2039,6 @@ void FullscreenUI::DoClearGameSettings()
 FullscreenUI::SettingsPage FullscreenUI::GetCurrentSettingsPage()
 {
   return s_settings_locals.settings_page;
-}
-
-bool FullscreenUI::IsInputBindingDialogOpen()
-{
-  return s_settings_locals.input_binding_dialog.IsOpen();
-}
-
-bool FullscreenUI::IsInputBindingDialogInteractable()
-{
-  return s_settings_locals.input_binding_dialog.IsInteractable();
 }
 
 void FullscreenUI::DrawSettingsWindow()
@@ -2283,8 +2279,6 @@ void FullscreenUI::DrawSettingsWindow()
     DrawCoverDownloaderWindow();
   else if (IsFixedPopupDialogOpen(ACHIEVEMENTS_LOGIN_DIALOG_NAME))
     DrawAchievementsLoginWindow();
-  else
-    s_settings_locals.input_binding_dialog.Draw();
 
   if (s_settings_locals.settings_changed)
   {
@@ -4450,7 +4444,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Bind All Buttons"),
                    FSUI_VSTR("Asks for each button and axis of this controller in turn.")))
     {
-      s_settings_locals.input_binding_dialog.StartBindAll(bsi, section, ci);
+      PushDialog<InputBindingDialog>()->StartBindAll(bsi, section, ci);
     }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_TRASH, "Clear Mappings"),

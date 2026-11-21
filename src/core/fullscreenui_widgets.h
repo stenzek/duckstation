@@ -369,6 +369,22 @@ bool BeginFixedPopupDialog(float scaled_window_padding = LayoutScale(20.0f),
                            const ImVec2& scaled_window_size = ImVec2(), const ImVec2& min_window_size = ImVec2());
 void EndFixedPopupDialog();
 
+/// Stacked dialog whose contents are drawn by a callback. Sizes are unscaled. The close callback runs once the
+/// dialog has been removed, however it was closed.
+using CustomDialogDrawCallback = MoveOnlyFunction<void()>;
+using CustomDialogCloseCallback = MoveOnlyFunction<void()>;
+void OpenCustomDialog(std::string title, float window_padding, float window_rounding, const ImVec2& window_size,
+                      const ImVec2& min_window_size, CustomDialogDrawCallback draw_callback,
+                      CustomDialogCloseCallback close_callback = {});
+
+/// Closes the dialog currently being drawn, i.e. call from within a custom dialog's draw callback.
+void CloseCurrentDialog();
+void CloseCurrentDialogImmediately();
+u32 GetCurrentDialogSerial();
+
+/// Closes a dialog later, e.g. from an async callback. Does nothing if the dialog has already gone.
+void CloseDialog(u32 serial);
+
 void RenderOverlays();
 
 void PushResetLayout();
@@ -607,44 +623,51 @@ bool InputTextWithSuffix(const char* str_id, std::string_view suffix, char* buf,
 bool AreAnyWidgetsDialogOpen();
 bool AreAnyWidgetsDialogInteractable();
 
+/// Dialogs are drawn as a stack, each nested inside the one below it. Only the top dialog receives input.
+class PopupDialog;
+PopupDialog* PushDialog(std::unique_ptr<PopupDialog> dialog);
+PopupDialog* FindDialog(u32 serial);
+
+/// Creates a dialog of type T with the given constructor arguments, and pushes it.
+template<typename T, typename... Args>
+T* PushDialog(Args&&... args)
+{
+  return static_cast<T*>(PushDialog(std::make_unique<T>(std::forward<Args>(args)...)));
+}
+
+/// Returns the open dialog with the given serial, or null. Serials are unique, so T must be the type that was pushed.
+template<typename T = PopupDialog>
+T* FindDialog(u32 serial)
+{
+  return static_cast<T*>(FindDialog(serial));
+}
+
 using FileSelectorCallback = MoveOnlyFunction<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
-bool IsFileSelectorOpen();
 void OpenFileSelector(std::string_view title, FileSelectorFilters filters, std::string initial_directory,
                       FileSelectorCallback callback);
-void CloseFileSelector();
 
 using DirectorySelectorCallback = MoveOnlyFunction<void(std::string path)>;
-bool IsDirectorySelectorOpen();
 void OpenDirectorySelector(std::string_view title, std::string initial_directory, std::string default_directory,
                            DirectorySelectorCallback callback);
-void CloseDirectorySelector();
 
 using ChoiceDialogCallback = MoveOnlyFunction<void(s32 index, const std::string& title, bool checked)>;
 using ChoiceDialogOptions = std::vector<std::pair<std::string, bool>>;
-bool IsChoiceDialogOpen();
 void OpenChoiceDialog(std::string_view title, bool checkable, ChoiceDialogOptions options,
                       ChoiceDialogCallback callback);
-void CloseChoiceDialog();
 
 using DropdownDialogCallback = MoveOnlyFunction<void(s32 index, const std::string& title)>;
 using DropdownDialogOptions = std::vector<std::pair<std::string, bool>>;
-bool IsDropdownDialogOpen();
-std::string_view GetDropdownDialogHiddenTitle();
 void OpenDropdownDialog(std::string_view hidden_title, DropdownDialogOptions options, DropdownDialogCallback callback,
                         float min_width = 0.0f);
-void CloseDropdownDialog();
 
 using InputStringDialogCallback = MoveOnlyFunction<void(std::string text)>;
-bool IsInputDialogOpen();
 void OpenInputStringDialog(std::string_view title, std::string message, std::string caption, std::string ok_button_text,
                            std::string initial_value, InputStringDialogCallback callback);
-void CloseInputDialog();
 
 using ConfirmMessageDialogCallback = MoveOnlyFunction<void(bool)>;
 using InfoMessageDialogCallback = MoveOnlyFunction<void()>;
 using MessageDialogCallback = MoveOnlyFunction<void(s32)>;
-bool IsMessageBoxDialogOpen();
 void OpenConfirmMessageDialog(std::string icon, std::string_view title, std::string message,
                               ConfirmMessageDialogCallback callback,
                               std::string yes_button_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes"),
@@ -654,7 +677,6 @@ void OpenInfoMessageDialog(std::string icon, std::string_view title, std::string
                            std::string button_text = FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close"));
 void OpenMessageDialog(std::string icon, std::string_view title, std::string message, MessageDialogCallback callback,
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
-void CloseMessageDialog();
 
 std::unique_ptr<ProgressCallbackWithPrompt> OpenModalProgressDialog(std::string title,
                                                                     float window_unscaled_width = 500.0f);
@@ -710,11 +732,14 @@ class PopupDialog
 {
 public:
   PopupDialog();
-  ~PopupDialog();
+  virtual ~PopupDialog();
 
+  ALWAYS_INLINE u32 GetSerial() const { return m_serial; }
   ALWAYS_INLINE const std::string& GetTitle() const { return m_title; }
   ALWAYS_INLINE bool IsOpen() const { return (m_state != State::Inactive); }
   ALWAYS_INLINE bool IsInteractable() const { return (m_state >= State::Open && m_state <= State::Opening); }
+
+  virtual void Draw() = 0;
 
   void StartClose();
   void CloseImmediately();
@@ -745,9 +770,11 @@ protected:
 
   std::string m_title;
   float m_animation_time_remaining = 0.0f;
+  u32 m_serial;
   State m_state = State::Inactive;
   bool m_user_closeable = true;
   bool m_reverse_animation = false;
+  bool m_close_when_top = false; // StartClose() was called with dialogs above this one, close once they have gone.
 };
 
 // Wrapper for computing menu button bounds.
