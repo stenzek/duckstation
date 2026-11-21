@@ -468,7 +468,9 @@ void HTTPDownloader::WaitForAllRequestsFromOwner(const void* owner)
     std::ranges::any_of(s_locals.pending_http_requests, [owner](const Request* req) { return req->owner == owner; }))
   {
     // Don't burn too much CPU.
+    lock.unlock();
     Timer::NanoSleep(WAIT_FOR_ALL_REQUESTS_POLL_INTERVAL_NS);
+    lock.lock();
     LockedPollRequests(lock);
   }
 }
