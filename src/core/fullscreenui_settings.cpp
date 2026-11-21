@@ -235,9 +235,6 @@ static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Typ
 static void StartAutomaticBindingForPort(u32 port);
 static void StartClearBindingsForPort(u32 port);
 
-static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievements_login";
-static constexpr std::string_view COVER_DOWNLOADER_DIALOG_NAME = "##cover_downloader";
-
 namespace {
 struct SettingsLocals
 {
@@ -2275,11 +2272,6 @@ void FullscreenUI::DrawSettingsWindow()
                  std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
   }
 
-  if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
-    DrawCoverDownloaderWindow();
-  else if (IsFixedPopupDialogOpen(ACHIEVEMENTS_LOGIN_DIALOG_NAME))
-    DrawAchievementsLoginWindow();
-
   if (s_settings_locals.settings_changed)
   {
     s_settings_locals.settings_changed = false;
@@ -3171,7 +3163,8 @@ void FullscreenUI::DrawGameListSettingsPage()
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Covers"),
                    FSUI_VSTR("Downloads covers from a user-specified URL template.")))
     {
-      OpenFixedPopupDialog(COVER_DOWNLOADER_DIALOG_NAME);
+      OpenCustomDialog("##cover_downloader", LAYOUT_LARGE_POPUP_PADDING, LAYOUT_LARGE_POPUP_ROUNDING,
+                       ImVec2(1000.0f, 0.0f), ImVec2(0.0f, 400.0f), &DrawCoverDownloaderWindow);
     }
   }
 
@@ -3194,12 +3187,6 @@ void FullscreenUI::DrawGameListSettingsPage()
 
 void FullscreenUI::DrawCoverDownloaderWindow()
 {
-  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(1000.0f, 0.0f), LayoutScale(0.0, 400.0f)))
-  {
-    return;
-  }
-
   if (!s_settings_locals.cover_downloader_urls_loaded)
   {
     s_settings_locals.cover_downloader_urls_loaded = true;
@@ -3265,50 +3252,47 @@ void FullscreenUI::DrawCoverDownloaderWindow()
 
     // TODO: Remove release once using move_only_function
     std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
-    Host::QueueAsyncTask([progress = progress.release(),
+    Host::QueueAsyncTask([progress = progress.release(), dialog_serial = GetCurrentDialogSerial(),
                           urls = StringUtil::SplitNewString(s_settings_locals.cover_downloader_template_urls, '\n'),
                           use_serial_names = s_settings_locals.cover_downloader_use_serial_names]() {
       Error error;
-      if (!GameList::DownloadCovers(
-            urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
-              // cache the cover path on our side once it's saved
-              Host::RunOnCoreThread([path = entry->path, save_path = std::move(save_path)]() mutable {
-                VideoThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
-                  FullscreenUI::SetCoverCacheEntry(std::move(path), std::move(save_path));
-                });
-              });
-            }))
-      {
-        OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Cover Download Error"), error.TakeDescription());
-      }
-
-      // close the parent window if we weren't cancelled
-      if (!progress->IsCancelled())
-      {
-        Host::RunOnCoreThread([]() {
-          VideoThread::RunOnThread([]() {
-            if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
-              CloseFixedPopupDialog();
+      const bool result = GameList::DownloadCovers(
+        urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
+          // cache the cover path on our side once it's saved
+          Host::RunOnCoreThread([path = entry->path, save_path = std::move(save_path)]() mutable {
+            VideoThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
+              FullscreenUI::SetCoverCacheEntry(std::move(path), std::move(save_path));
+            });
           });
         });
-      }
-
+      const bool cancelled = progress->IsCancelled();
       delete progress;
+
+      // Queued after the progress dialog's close. The parent window is closed before the error is opened, so that the
+      // error isn't stacked on a closing dialog, and dialogs can only be opened on the video thread.
+      Host::RunOnCoreThread([dialog_serial, result, cancelled, error = std::move(error)]() mutable {
+        VideoThread::RunOnThread([dialog_serial, result, cancelled, error = std::move(error)]() mutable {
+          // close the parent window if we weren't cancelled
+          if (!cancelled)
+            CloseDialog(dialog_serial);
+
+          if (!result)
+            OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Cover Download Error"), error.TakeDescription());
+        });
+      });
     });
   }
 
   if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Close")))
   {
     SaveCoverDownloaderURLs();
-    CloseFixedPopupDialog();
+    CloseCurrentDialog();
   }
 
   EndHorizontalMenuButtons();
 
   ImGui::PopFont();
   ImGui::PopStyleVar(2);
-
-  EndFixedPopupDialog();
 }
 
 void FullscreenUI::SaveCoverDownloaderURLs()
@@ -6063,7 +6047,17 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi,
       if (logged_in)
         Host::RunOnCoreThread(&Achievements::Logout);
       else
-        OpenFixedPopupDialog(ACHIEVEMENTS_LOGIN_DIALOG_NAME);
+      {
+        OpenCustomDialog("##achievements_login", LAYOUT_LARGE_POPUP_PADDING, LAYOUT_LARGE_POPUP_ROUNDING,
+                         ImVec2(600.0f, 0.0f), ImVec2(0.0f, 250.0f), &DrawAchievementsLoginWindow, []() {
+                           // NOTE: Deliberately memset()'ed because it's credentials.
+                           std::memset(s_settings_locals.achievements_login_username, 0,
+                                       sizeof(s_settings_locals.achievements_login_username));
+                           std::memset(s_settings_locals.achievements_login_password, 0,
+                                       sizeof(s_settings_locals.achievements_login_password));
+                           s_settings_locals.achievements_login_error.reset();
+                         });
+      }
     }
   }
 
@@ -6291,18 +6285,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 {
   static constexpr const char* LOGIN_PROGRESS_NAME = "AchievementsLogin";
 
-  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(600.0f, 0.0f), LayoutScale(0.0f, 250.0f)))
-  {
-    // NOTE: Deliberately memset()'ed because it's credentials.
-    std::memset(s_settings_locals.achievements_login_username, 0,
-                sizeof(s_settings_locals.achievements_login_username));
-    std::memset(s_settings_locals.achievements_login_password, 0,
-                sizeof(s_settings_locals.achievements_login_password));
-    s_settings_locals.achievements_login_error.reset();
-    return;
-  }
-
   static constexpr std::string_view ra_title = "RetroAchivements";
   const ImVec2 ra_title_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
                                                            IMSTR_START_END(ra_title));
@@ -6376,7 +6358,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     Achievements::LoginAsync(
       s_settings_locals.achievements_login_username, s_settings_locals.achievements_login_password,
-      [](bool result, std::string&& error_message, Achievements::LoginResult&& data) {
+      [dialog_serial = GetCurrentDialogSerial()](bool result, std::string&& error_message,
+                                                 Achievements::LoginResult&& data) {
         // callback runs on core thread
         DebugAssert(Host::IsOnCoreThread());
         if (result)
@@ -6386,12 +6369,12 @@ void FullscreenUI::DrawAchievementsLoginWindow()
           Host::CommitBaseSettingChanges();
         }
 
-        VideoThread::RunOnThread([result, error_message = std::move(error_message)]() {
+        VideoThread::RunOnThread([dialog_serial, result, error_message = std::move(error_message)]() {
           CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
 
           if (result)
           {
-            CloseFixedPopupDialog();
+            CloseDialog(dialog_serial);
             return;
           }
 
@@ -6403,11 +6386,9 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   }
 
   if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"), !is_logging_in))
-    CloseFixedPopupDialog();
+    CloseCurrentDialog();
 
   EndHorizontalMenuButtons();
-
-  EndFixedPopupDialog();
 }
 
 void FullscreenUI::StartAchievementsDatabaseRefresh()
