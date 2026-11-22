@@ -201,34 +201,61 @@ void FullscreenUI::DrawGameListWindow()
   auto game_list_lock = GameList::GetLock();
   PopulateGameListEntryList();
 
-  ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+  const ImGuiIO& io = ImGui::GetIO();
+  const ImVec2 heading_size = ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_PAGE_HEADER_HEIGHT));
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
-                            MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
+  if (BeginPageHeader("gamelist_header", GetPageBackgroundColor(), true))
   {
-    BeginNavBar();
-
-    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
+    if (PageHeaderBackButton())
     {
       BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME,
                       []() { SwitchToMainWindow(MainWindowType::Landing); });
     }
 
-    NavTitle(s_game_list_locals.grid_view ? FSUI_VSTR("Game Grid") : FSUI_VSTR("Game List"));
+    PageHeaderTitle(FSUI_VSTR("Library"));
+
+    // right to left: view selector, its hint
+    ImGuiWindow* const window = ImGui::GetCurrentWindow();
+    ImDrawList* const dl = window->DrawList;
+    const float spacing = LayoutScale(8.0f);
+    const IconStackString list_label(ICON_FA_LIST, FSUI_NSTR("List"));
+    const IconStackString grid_label(ICON_FA_TABLE_CELLS_LARGE, FSUI_NSTR("Grid"));
+    const ImVec2 view_size = GetSegmentedControlFrameSize(MeasureSegment(list_label) + MeasureSegment(grid_label));
+    const float view_left = window->WorkRect.Max.x - view_size.x;
+    const std::string_view view_hint = GetInputHint(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_F4);
+    DrawInputHint(dl, ImVec2(view_left - spacing - MeasureInputHint(view_hint), window->Pos.y), heading_size.y,
+                  view_hint);
+
+    // don't continue the back button's line, or the segments are placed relative to it
+    ImGui::NewLine();
+    ImGui::SetCursorScreenPos(ImVec2(view_left, window->Pos.y + ImFloor((heading_size.y - view_size.y) * 0.5f)));
+    BeginSegmentedControl("view");
+    for (u32 grid = 0; grid < 2; grid++)
+    {
+      if (Segment(grid ? grid_label.view() : list_label.view(), grid == BoolToUInt32(s_game_list_locals.grid_view)))
+      {
+        BeginTransition([grid]() {
+          s_game_list_locals.grid_view = ConvertToBoolUnchecked(grid);
+          Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
+                                        s_game_list_locals.grid_view);
+          Host::CommitBaseSettingChanges();
+          QueueResetFocus(FocusResetType::ViewChanged);
+        });
+      }
+    }
+    EndSegmentedControl();
 
     static constexpr const float& search_font_size = UIStyle.MediumFontSize;
     static constexpr const float& search_font_weight = UIStyle.NormalFontWeight;
 
-    const ImGuiStyle& style = ImGui::GetStyle();
-    const float search_width = LayoutScale(400.0f);
-    const ImVec2 prev_cursor_pos = ImGui::GetCursorPos();
-    ImGui::SetCursorPos(
-      ImFloor(ImVec2((ImGui::GetWindowWidth() - search_width) * 0.5f,
-                     (ImGui::GetWindowHeight() - search_font_size - (style.FramePadding.y * 2.0f)) * 0.5f)));
-    ImGui::PushStyleColor(ImGuiCol_Button, DarkerColor(UIStyle.PrimaryColor, 1.2f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, DarkerColor(UIStyle.PrimaryColor, 1.4f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, 9.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SurfaceRaisedColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f));
+
+    const float search_width = LayoutScale(320.0f);
+    const float search_height = search_font_size + ImGui::GetStyle().FramePadding.y * 2.0f;
+    ImGui::SetCursorScreenPos(ImFloor(ImVec2(window->Pos.x + (window->Size.x - search_width) * 0.5f,
+                                             window->Pos.y + (heading_size.y - search_height) * 0.5f)));
 
     const ImGuiInputTextFlags extra_flags =
       (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false)) ?
@@ -241,38 +268,21 @@ void FullscreenUI::DrawGameListWindow()
                           ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | extra_flags) ||
         (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGuiKey_Escape, false)))
     {
-      // Clear search on escape press.
+      // Clear search on escape press, and don't let the same press close the game list.
       if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      {
         s_game_list_locals.game_list_search_string[0] = '\0';
+        CancelPendingMenuClose();
+      }
 
       QueueResetFocus(FocusResetType::Other);
       ForceKeyNavEnabled();
     }
 
     ImGui::PopStyleColor(2);
-    ImGui::SetCursorPos(prev_cursor_pos);
-
-    RightAlignNavButtons(2u);
-
-    for (u32 grid = 0; grid < 2; grid++)
-    {
-      if (NavButton(grid ? ICON_FA_TABLE_CELLS_LARGE : ICON_FA_LIST, grid == BoolToUInt32(s_game_list_locals.grid_view),
-                    true, true))
-      {
-        BeginTransition([grid]() {
-          s_game_list_locals.grid_view = ConvertToBoolUnchecked(grid);
-          Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                        s_game_list_locals.grid_view);
-          Host::CommitBaseSettingChanges();
-          QueueResetFocus(FocusResetType::ViewChanged);
-        });
-      }
-    }
-
-    EndNavBar();
+    ImGui::PopStyleVar();
   }
-
-  EndFullscreenWindow();
+  EndPageHeader();
 
   if (s_game_list_locals.grid_view)
     DrawGameGrid(heading_size);
@@ -316,7 +326,7 @@ void FullscreenUI::DrawGameListWindow()
       std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
       std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
-      std::make_pair(ICON_PF_LEFT_SHOULDER_L1 ICON_PF_RIGHT_SHOULDER_R1, FSUI_VSTR("Change View")),
+      std::make_pair(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, FSUI_VSTR("Change View")),
       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
       std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Search")), std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});

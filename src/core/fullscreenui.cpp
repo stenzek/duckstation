@@ -1516,8 +1516,7 @@ void FullscreenUI::DrawLandingWindow()
   {
     ResetFocusHere();
 
-    if (UserThemeableHorizontalButton("fullscreenui/game-list.png", "fullscreenui/game-list.svg",
-                                      FSUI_VSTR("Game List"),
+    if (UserThemeableHorizontalButton("fullscreenui/game-list.png", "fullscreenui/game-list.svg", FSUI_VSTR("Library"),
                                       FSUI_VSTR("Launch a game from images scanned from your game directories.")))
     {
       BeginTransition(TransitionEffect::ZoomIn, DEFAULT_TRANSITION_TIME, &SwitchToGameList);
