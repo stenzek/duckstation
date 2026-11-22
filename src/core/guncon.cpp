@@ -190,17 +190,17 @@ std::unique_ptr<GunCon> GunCon::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, binding, genb)                                                           \
-  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
+#define BUTTON(name, display_name, icon_name, image_element, binding, genb)                                            \
+  {name, display_name, icon_name, image_element, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
 #define HALFAXIS(name, display_name, icon_name, binding, genb)                                                         \
-  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
+  {name, display_name, icon_name, nullptr, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
 
   // clang-format off
-  {"Pointer", TRANSLATE_NOOP("GunCon", "Pointer/Aiming"), ICON_PF_MOUSE, static_cast<u32>(GunCon::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},
-  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), ICON_PF_CROSS, GunCon::Binding::Trigger, GenericInputBinding::R2),
-  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), nullptr, GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
-  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), ICON_PF_BUTTON_A, GunCon::Binding::A, GenericInputBinding::Cross),
-  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), ICON_PF_BUTTON_B, GunCon::Binding::B, GenericInputBinding::Circle),
+  {"Pointer", TRANSLATE_NOOP("GunCon", "Pointer/Aiming"), ICON_PF_MOUSE, nullptr, static_cast<u32>(GunCon::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},
+  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), ICON_PF_CROSS, "Trigger", GunCon::Binding::Trigger, GenericInputBinding::R2),
+  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), nullptr, "Trigger", GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
+  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), ICON_PF_BUTTON_A, nullptr, GunCon::Binding::A, GenericInputBinding::Cross),
+  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), ICON_PF_BUTTON_B, "B", GunCon::Binding::B, GenericInputBinding::Circle),
 
   HALFAXIS("RelativeLeft", TRANSLATE_NOOP("GunCon", "Relative Left"), ICON_PF_ANALOG_LEFT, GunCon::Binding::RelativeLeft, GenericInputBinding::Unknown),
   HALFAXIS("RelativeRight", TRANSLATE_NOOP("GunCon", "Relative Right"), ICON_PF_ANALOG_RIGHT, GunCon::Binding::RelativeRight, GenericInputBinding::Unknown),

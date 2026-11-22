@@ -26,6 +26,7 @@ public:
     const char* name;
     const char* display_name;
     const char* icon_name;
+    const char* image_element; ///< Element ID in the controller image SVG, if any.
     u32 bind_index;
     InputBindingInfo::Type type;
     GenericInputBinding generic_mapping;

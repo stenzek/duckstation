@@ -600,11 +600,12 @@ std::unique_ptr<JogCon> JogCon::Create(u32 index)
 
 constinit const Controller::ControllerBindingInfo JogCon::s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+  {name, display_name, icon_name, nullptr, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 #define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
+   nullptr,                                                                                                            \
    HALFAXIS_BIND_START_INDEX + static_cast<u32>(halfaxis),                                                             \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
@@ -631,14 +632,14 @@ constinit const Controller::ControllerBindingInfo JogCon::s_binding_info[] = {
 
   // clang-format on
 
-  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_LED, LED_BIND_START_INDEX, InputBindingInfo::Type::LED,
-   GenericInputBinding::ModeLED},
+  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_LED, nullptr, LED_BIND_START_INDEX,
+   InputBindingInfo::Type::LED, GenericInputBinding::ModeLED},
 
-  {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), ICON_PF_VIBRATION, MOTOR_BIND_START_INDEX,
+  {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), ICON_PF_VIBRATION, nullptr, MOTOR_BIND_START_INDEX,
    InputBindingInfo::Type::Motor, GenericInputBinding::LargeMotor},
 
-  {"ForceFeedbackDevice", TRANSLATE_NOOP("JogCon", "Force Feedback Device"), nullptr, FFDEVICE_BIND_START_INDEX,
-   InputBindingInfo::Type::Device, GenericInputBinding::Unknown},
+  {"ForceFeedbackDevice", TRANSLATE_NOOP("JogCon", "Force Feedback Device"), nullptr, nullptr,
+   FFDEVICE_BIND_START_INDEX, InputBindingInfo::Type::Device, GenericInputBinding::Unknown},
 
 #undef BUTTON
 #undef AXIS

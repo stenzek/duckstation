@@ -14,11 +14,16 @@ class Error;
   X(plutosvg_document_get_width)                                                                                       \
   X(plutosvg_document_get_height)                                                                                      \
   X(plutosvg_document_render_to_surface)                                                                               \
+  X(plutosvg_document_render)                                                                                          \
+  X(plutovg_surface_create)                                                                                            \
   X(plutovg_surface_destroy)                                                                                           \
   X(plutovg_surface_get_width)                                                                                         \
   X(plutovg_surface_get_height)                                                                                        \
   X(plutovg_surface_get_data)                                                                                          \
-  X(plutovg_surface_get_stride)
+  X(plutovg_surface_get_stride)                                                                                        \
+  X(plutovg_canvas_create)                                                                                             \
+  X(plutovg_canvas_destroy)                                                                                            \
+  X(plutovg_canvas_scale)
 
 struct DynPlutoSvg
 {

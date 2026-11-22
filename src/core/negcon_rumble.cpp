@@ -629,35 +629,36 @@ std::unique_ptr<NeGconRumble> NeGconRumble::Create(u32 index)
 }
 
 constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
-#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
+#define BUTTON(name, display_name, icon_name, image_element, button, genb)                                             \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define AXIS(name, display_name, icon_name, image_element, halfaxis, genb)                                             \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
+   image_element,                                                                                                      \
    HALFAXIS_BIND_START_INDEX + static_cast<u32>(halfaxis),                                                             \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 #define MOTOR(name, display_name, icon_name, index, genb)                                                              \
-  {name, display_name, icon_name, MOTOR_BIND_START_INDEX + index, InputBindingInfo::Type::Motor, genb}
+  {name, display_name, icon_name, nullptr, MOTOR_BIND_START_INDEX + index, InputBindingInfo::Type::Motor, genb}
 #define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
-  {name, display_name, icon_name, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
+  {name, display_name, icon_name, nullptr, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
-  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), ICON_PF_DPAD_DOWN, NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), ICON_PF_DPAD_LEFT, NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"),ICON_PF_START, NeGconRumble::Button::Start, GenericInputBinding::Start),
-  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), ICON_PF_BUTTON_A, NeGconRumble::Button::A, GenericInputBinding::Circle),
-  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), ICON_PF_BUTTON_B, NeGconRumble::Button::B, GenericInputBinding::Triangle),
-  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), ICON_PF_BUTTON_ALT_1, NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
-  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), ICON_PF_BUTTON_ALT_2, NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
-  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), ICON_PF_LEFT_TRIGGER_LT, NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
-  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, NeGconRumble::Button::R, GenericInputBinding::R1),
-  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
-  BUTTON("Analog", TRANSLATE_NOOP("NeGcon", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, NeGconRumble::Button::Analog, GenericInputBinding::System),
+  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, "Up", NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, "Right", NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), ICON_PF_DPAD_DOWN, "Down", NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), ICON_PF_DPAD_LEFT, "Left", NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"),ICON_PF_START, "Start", NeGconRumble::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), ICON_PF_BUTTON_A, "A", NeGconRumble::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), ICON_PF_BUTTON_B, "B", NeGconRumble::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), ICON_PF_BUTTON_ALT_1, "I", NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
+  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), ICON_PF_BUTTON_ALT_2, "II", NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
+  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), ICON_PF_LEFT_TRIGGER_LT, "L", NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, "R", NeGconRumble::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, "Steering", NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, "Steering", NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  BUTTON("Analog", TRANSLATE_NOOP("NeGcon", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, nullptr, NeGconRumble::Button::Analog, GenericInputBinding::System),
   
   MOTOR("LargeMotor", TRANSLATE_NOOP("NeGcon", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("NeGcon", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),

@@ -139,30 +139,31 @@ std::unique_ptr<NeGcon> NeGcon::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
-#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
+#define BUTTON(name, display_name, icon_name, image_element, button, genb)                                             \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define AXIS(name, display_name, icon_name, image_element, halfaxis, genb)                                             \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
+   image_element,                                                                                                      \
    static_cast<u32>(NeGcon::Button::Count) + static_cast<u32>(halfaxis),                                               \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 
   // clang-format off
-  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, NeGcon::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, NeGcon::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), ICON_PF_DPAD_DOWN, NeGcon::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), ICON_PF_DPAD_LEFT, NeGcon::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"), ICON_PF_START, NeGcon::Button::Start, GenericInputBinding::Start),
-  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), ICON_PF_BUTTON_A, NeGcon::Button::A, GenericInputBinding::Circle),
-  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), ICON_PF_BUTTON_B, NeGcon::Button::B, GenericInputBinding::Triangle),
-  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), ICON_PF_BUTTON_ALT_1, NeGcon::HalfAxis::I, GenericInputBinding::R2),
-  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), ICON_PF_BUTTON_ALT_2, NeGcon::HalfAxis::II, GenericInputBinding::L2),
-  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), ICON_PF_LEFT_TRIGGER_LT, NeGcon::HalfAxis::L, GenericInputBinding::L1),
-  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, NeGcon::Button::R, GenericInputBinding::R1),
-  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, "Up", NeGcon::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("NeGcon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, "Right", NeGcon::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("NeGcon", "D-Pad Down"), ICON_PF_DPAD_DOWN, "Down", NeGcon::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("NeGcon", "D-Pad Left"), ICON_PF_DPAD_LEFT, "Left", NeGcon::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", TRANSLATE_NOOP("NeGcon", "Start"), ICON_PF_START, "Start", NeGcon::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("NeGcon", "A Button"), ICON_PF_BUTTON_A, "A", NeGcon::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", TRANSLATE_NOOP("NeGcon", "B Button"), ICON_PF_BUTTON_B, "B", NeGcon::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", TRANSLATE_NOOP("NeGcon", "I Button"), ICON_PF_BUTTON_ALT_1, "I", NeGcon::HalfAxis::I, GenericInputBinding::R2),
+  AXIS("II", TRANSLATE_NOOP("NeGcon", "II Button"), ICON_PF_BUTTON_ALT_2, "II", NeGcon::HalfAxis::II, GenericInputBinding::L2),
+  AXIS("L", TRANSLATE_NOOP("NeGcon", "Left Trigger"), ICON_PF_LEFT_TRIGGER_LT, "L", NeGcon::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, "R", NeGcon::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, "Steering", NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, "Steering", NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
 // clang-format on
 
 #undef AXIS

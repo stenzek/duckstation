@@ -9,10 +9,13 @@
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 
+#include <algorithm>
 #include <dyn_plutosvg.h>
 #include <limits>
 
 #include "moc_svgwidget.cpp"
+
+static constexpr qreal HIGHLIGHT_OPACITY = 0.85;
 
 static void CleanupSurface(void* surface)
 {
@@ -46,6 +49,7 @@ void SVGWidget::setSource(const QString& resource_path)
   destroyDocument();
   m_resource_path = resource_path;
   m_pixmap = {};
+  m_highlight_pixmap = {};
   m_last_raster_size = {};
 
   if (resource_path.isEmpty() || !g_dyn_plutosvg.Open())
@@ -94,9 +98,21 @@ QColor SVGWidget::effectiveColor() const
   return m_color.isValid() ? m_color : palette().color(QPalette::WindowText);
 }
 
+void SVGWidget::setHighlightedElement(const char* id)
+{
+  const std::string_view new_id = id ? std::string_view(id) : std::string_view();
+  if (m_highlight_element == new_id)
+    return;
+
+  m_highlight_element = new_id;
+  rasterizeHighlight();
+  update();
+}
+
 void SVGWidget::rasterize()
 {
   m_pixmap = {};
+  m_highlight_pixmap = {};
 
   if (!m_document || size().isEmpty())
     return;
@@ -156,6 +172,66 @@ void SVGWidget::rasterize()
 
   m_pixmap = QPixmap::fromImage(img);
   m_pixmap.setDevicePixelRatio(dpr);
+
+  rasterizeHighlight();
+}
+
+void SVGWidget::rasterizeHighlight()
+{
+  m_highlight_pixmap = {};
+
+  if (m_highlight_element.empty() || m_pixmap.isNull())
+    return;
+
+  const int width = m_pixmap.width();
+  const int height = m_pixmap.height();
+  plutovg_surface_t* const surface = g_dyn_plutosvg.plutovg_surface_create(width, height);
+  if (!surface)
+    return;
+
+  // Same scale as the full document render, so the element lines up with m_pixmap.
+  plutovg_canvas_t* const canvas = g_dyn_plutosvg.plutovg_canvas_create(surface);
+  g_dyn_plutosvg.plutovg_canvas_scale(
+    canvas, static_cast<float>(width) / g_dyn_plutosvg.plutosvg_document_get_width(m_document),
+    static_cast<float>(height) / g_dyn_plutosvg.plutosvg_document_get_height(m_document));
+
+  const QColor color = effectiveColor();
+  const plutovg_color_t current_color = {
+    .r = static_cast<float>(color.redF()),
+    .g = static_cast<float>(color.greenF()),
+    .b = static_cast<float>(color.blueF()),
+    .a = static_cast<float>(color.alphaF()),
+  };
+  const bool rendered = g_dyn_plutosvg.plutosvg_document_render(m_document, m_highlight_element.c_str(), canvas,
+                                                                &current_color, nullptr, nullptr);
+  g_dyn_plutosvg.plutovg_canvas_destroy(canvas);
+  if (!rendered)
+  {
+    g_dyn_plutosvg.plutovg_surface_destroy(surface);
+    return;
+  }
+
+  QImage img(g_dyn_plutosvg.plutovg_surface_get_data(surface), width, height,
+             g_dyn_plutosvg.plutovg_surface_get_stride(surface), QImage::Format_ARGB32_Premultiplied, CleanupSurface,
+             surface);
+
+  // The image doesn't change with the theme, so the highlight has to contrast with the image rather than the theme.
+  // Keep the theme's hue, but make it bright and saturated. Grey highlights (e.g. AMOLED) fall back to blue.
+  float hue, saturation, value;
+  palette().color(QPalette::Highlight).getHsvF(&hue, &saturation, &value);
+  if (saturation < 0.2f)
+    hue = 205.0f / 360.0f;
+  const QColor highlight_color = QColor::fromHsvF(hue, std::max(saturation, 0.75f), std::max(value, 0.95f));
+
+  // Replace the element's colours with the highlight colour, keeping its coverage.
+  {
+    QPainter painter(&img);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    painter.fillRect(img.rect(), highlight_color);
+  }
+
+  m_highlight_pixmap = QPixmap::fromImage(img);
+  m_highlight_pixmap.setDevicePixelRatio(m_pixmap.devicePixelRatio());
 }
 
 void SVGWidget::paintEvent(QPaintEvent* event)
@@ -173,6 +249,13 @@ void SVGWidget::paintEvent(QPaintEvent* event)
   const QPointF top_left((width() - logical_size.width()) / 2.0, (height() - logical_size.height()) / 2.0);
 
   painter.drawPixmap(QRectF(top_left, logical_size), m_pixmap, QRectF(QPointF(0, 0), m_pixmap.size()));
+
+  if (!m_highlight_pixmap.isNull())
+  {
+    painter.setOpacity(HIGHLIGHT_OPACITY);
+    painter.drawPixmap(QRectF(top_left, logical_size), m_highlight_pixmap,
+                       QRectF(QPointF(0, 0), m_highlight_pixmap.size()));
+  }
 }
 
 void SVGWidget::resizeEvent(QResizeEvent* event)

@@ -252,17 +252,17 @@ std::unique_ptr<Justifier> Justifier::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, binding, genb)                                                           \
-  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
+#define BUTTON(name, display_name, icon_name, image_element, binding, genb)                                            \
+  {name, display_name, icon_name, image_element, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
 #define HALFAXIS(name, display_name, icon_name, binding, genb)                                                         \
-  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
+  {name, display_name, icon_name, nullptr, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
 
   // clang-format off
-  {"Pointer", TRANSLATE_NOOP("Justifier", "Pointer/Aiming"), ICON_PF_MOUSE, static_cast<u32>(Justifier::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},
-  BUTTON("Trigger", TRANSLATE_NOOP("Justifier", "Trigger"), ICON_PF_CROSS, Justifier::Binding::Trigger, GenericInputBinding::R2),
-  BUTTON("ShootOffscreen", TRANSLATE_NOOP("Justifier", "Shoot Offscreen"), nullptr, Justifier::Binding::ShootOffscreen, GenericInputBinding::L2),
-  BUTTON("Start", TRANSLATE_NOOP("Justifier", "Start"), ICON_PF_START, Justifier::Binding::Start, GenericInputBinding::Cross),
-  BUTTON("Back", TRANSLATE_NOOP("Justifier", "Back"), ICON_PF_BACK, Justifier::Binding::Back, GenericInputBinding::Circle),
+  {"Pointer", TRANSLATE_NOOP("Justifier", "Pointer/Aiming"), ICON_PF_MOUSE, nullptr, static_cast<u32>(Justifier::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},
+  BUTTON("Trigger", TRANSLATE_NOOP("Justifier", "Trigger"), ICON_PF_CROSS, "Trigger", Justifier::Binding::Trigger, GenericInputBinding::R2),
+  BUTTON("ShootOffscreen", TRANSLATE_NOOP("Justifier", "Shoot Offscreen"), nullptr, "Trigger", Justifier::Binding::ShootOffscreen, GenericInputBinding::L2),
+  BUTTON("Start", TRANSLATE_NOOP("Justifier", "Start"), ICON_PF_START, "Start", Justifier::Binding::Start, GenericInputBinding::Cross),
+  BUTTON("Back", TRANSLATE_NOOP("Justifier", "Back"), ICON_PF_BACK, nullptr, Justifier::Binding::Back, GenericInputBinding::Circle),
 
   HALFAXIS("RelativeLeft", TRANSLATE_NOOP("Justifier", "Relative Left"), ICON_PF_ANALOG_LEFT, Justifier::Binding::RelativeLeft, GenericInputBinding::Unknown),
   HALFAXIS("RelativeRight", TRANSLATE_NOOP("Justifier", "Relative Right"), ICON_PF_ANALOG_RIGHT, Justifier::Binding::RelativeRight, GenericInputBinding::Unknown),

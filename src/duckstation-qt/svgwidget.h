@@ -12,6 +12,8 @@
 #include <QtGui/QPixmap>
 #include <QtWidgets/QWidget>
 
+#include <string>
+
 struct plutosvg_document;
 
 /**
@@ -40,6 +42,11 @@ public:
   /// Returns the path that was passed to setSource().
   const QString& source() const { return m_resource_path; }
 
+  /// Tints the element with the given ID using the palette highlight colour, or clears it if null/empty.
+  /// plutosvg ignores ancestor transforms and the viewBox mapping when rendering by ID, so the element must not
+  /// have any transformed ancestors, and the SVG must not have a width/height that differs from its viewBox.
+  void setHighlightedElement(const char* id);
+
   /// Renders a SVG for the specified widget and returns it.
   static QPixmap renderSVGToPixmap(const QString& resource_path, const QSize& size, qreal device_pixel_ratio,
                                    const QColor& color = QColor());
@@ -56,6 +63,9 @@ private:
   /// (Re)render m_document at the current widget size + DPR and store the result in m_pixmap.
   void rasterize();
 
+  /// Render m_highlight_element at the same size as m_pixmap, and store the tinted result in m_highlight_pixmap.
+  void rasterizeHighlight();
+
   /// Free the parsed document and clear associated data.
   void destroyDocument();
 
@@ -65,4 +75,6 @@ private:
   QPixmap m_pixmap;         ///< Last rasterized pixmap (physical pixels, DPR set).
   QSize m_last_raster_size; ///< Physical size used for the last rasterize() call.
   QColor m_color;           ///< Color to use when rasterizing the SVG (overrides currentColor in the SVG).
+  std::string m_highlight_element; ///< ID of the element to highlight, if any.
+  QPixmap m_highlight_pixmap;      ///< Tinted highlight element, same size as m_pixmap.
 };

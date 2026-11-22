@@ -16,6 +16,7 @@
 #include "ui_controllermacroeditwidget.h"
 
 class InputBindingWidget;
+class SVGWidget;
 class ControllerSettingsWindow;
 class ControllerCustomSettingsWidget;
 class ControllerMacroWidget;
@@ -37,6 +38,9 @@ public:
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
   ALWAYS_INLINE const QIcon& getIcon() { return m_icon; }
 
+protected:
+  bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
   void populateControllerTypes();
   void populateWidgets();
@@ -44,6 +48,7 @@ private:
   void bindBindingWidgets(QWidget* parent);
   void updateHeaderToolButtons();
   void updateBindingDeviceStatus();
+  void updateImageHighlight();
   void doDeviceAutomaticBinding(const QString& device);
 
   void onTypeChanged();
@@ -67,6 +72,9 @@ private:
   QWidget* m_bindings_widget = nullptr;
   ControllerCustomSettingsWidget* m_settings_widget = nullptr;
   ControllerMacroWidget* m_macros_widget = nullptr;
+  SVGWidget* m_image_widget = nullptr;
+  InputBindingWidget* m_hovered_binding = nullptr;
+  InputBindingWidget* m_focused_binding = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////

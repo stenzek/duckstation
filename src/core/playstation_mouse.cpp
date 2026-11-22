@@ -195,13 +195,13 @@ std::unique_ptr<PlayStationMouse> PlayStationMouse::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define BUTTON(name, display_name, icon_name, image_element, button, genb)                                             \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
-  { "Pointer", TRANSLATE_NOOP("PlayStationMouse", "Pointer"), ICON_PF_MOUSE_ANY, static_cast<u32>(PlayStationMouse::Binding::PointerX), InputBindingInfo::Type::RelativePointer, GenericInputBinding::Unknown },
-  BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), ICON_PF_MOUSE_BUTTON_1, PlayStationMouse::Binding::Left, GenericInputBinding::Cross),
-  BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), ICON_PF_MOUSE_BUTTON_2, PlayStationMouse::Binding::Right, GenericInputBinding::Circle),
+  { "Pointer", TRANSLATE_NOOP("PlayStationMouse", "Pointer"), ICON_PF_MOUSE_ANY, nullptr, static_cast<u32>(PlayStationMouse::Binding::PointerX), InputBindingInfo::Type::RelativePointer, GenericInputBinding::Unknown },
+  BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), ICON_PF_MOUSE_BUTTON_1, "Left", PlayStationMouse::Binding::Left, GenericInputBinding::Cross),
+  BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), ICON_PF_MOUSE_BUTTON_2, "Right", PlayStationMouse::Binding::Right, GenericInputBinding::Circle),
 // clang-format on
 
 #undef BUTTON

@@ -747,52 +747,53 @@ std::unique_ptr<AnalogController> AnalogController::Create(u32 index)
 }
 
 constinit const Controller::ControllerBindingInfo AnalogController::s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
-#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
+#define BUTTON(name, display_name, icon_name, image_element, button, genb)                                             \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define AXIS(name, display_name, icon_name, image_element, halfaxis, genb)                                             \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
+   image_element,                                                                                                      \
    HALFAXIS_BIND_START_INDEX + static_cast<u32>(halfaxis),                                                             \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 #define MOTOR(name, display_name, icon_name, index, genb)                                                              \
-  {name, display_name, icon_name, MOTOR_BIND_START_INDEX + index, InputBindingInfo::Type::Motor, genb}
-#define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
-  {name, display_name, icon_name, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
+  {name, display_name, icon_name, nullptr, MOTOR_BIND_START_INDEX + index, InputBindingInfo::Type::Motor, genb}
+#define MODE_LED(name, display_name, icon_name, image_element, index, genb)                                            \
+  {name, display_name, icon_name, image_element, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
-  BUTTON("Up", TRANSLATE_NOOP("AnalogController", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogController::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", TRANSLATE_NOOP("AnalogController", "D-Pad Right"), ICON_PF_DPAD_RIGHT, AnalogController::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", TRANSLATE_NOOP("AnalogController", "D-Pad Down"), ICON_PF_DPAD_DOWN, AnalogController::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", TRANSLATE_NOOP("AnalogController", "D-Pad Left"), ICON_PF_DPAD_LEFT, AnalogController::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Triangle", TRANSLATE_NOOP("AnalogController", "Triangle"), ICON_PF_BUTTON_TRIANGLE, AnalogController::Button::Triangle, GenericInputBinding::Triangle),
-  BUTTON("Circle", TRANSLATE_NOOP("AnalogController", "Circle"), ICON_PF_BUTTON_CIRCLE, AnalogController::Button::Circle, GenericInputBinding::Circle),
-  BUTTON("Cross", TRANSLATE_NOOP("AnalogController", "Cross"), ICON_PF_BUTTON_CROSS, AnalogController::Button::Cross, GenericInputBinding::Cross),
-  BUTTON("Square", TRANSLATE_NOOP("AnalogController", "Square"), ICON_PF_BUTTON_SQUARE, AnalogController::Button::Square, GenericInputBinding::Square),
-  BUTTON("Select", TRANSLATE_NOOP("AnalogController", "Select"), ICON_PF_SELECT_SHARE, AnalogController::Button::Select, GenericInputBinding::Select),
-  BUTTON("Start", TRANSLATE_NOOP("AnalogController", "Start"),ICON_PF_START, AnalogController::Button::Start, GenericInputBinding::Start),
-  BUTTON("Analog", TRANSLATE_NOOP("AnalogController", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, AnalogController::Button::Analog, GenericInputBinding::System),
-  BUTTON("L1", TRANSLATE_NOOP("AnalogController", "L1"), ICON_PF_LEFT_SHOULDER_L1, AnalogController::Button::L1, GenericInputBinding::L1),
-  BUTTON("R1", TRANSLATE_NOOP("AnalogController", "R1"), ICON_PF_RIGHT_SHOULDER_R1, AnalogController::Button::R1, GenericInputBinding::R1),
-  BUTTON("L2", TRANSLATE_NOOP("AnalogController", "L2"), ICON_PF_LEFT_TRIGGER_L2, AnalogController::Button::L2, GenericInputBinding::L2),
-  BUTTON("R2", TRANSLATE_NOOP("AnalogController", "R2"), ICON_PF_RIGHT_TRIGGER_R2, AnalogController::Button::R2, GenericInputBinding::R2),
-  BUTTON("L3", TRANSLATE_NOOP("AnalogController", "L3"), ICON_PF_LEFT_ANALOG_CLICK, AnalogController::Button::L3, GenericInputBinding::L3),
-  BUTTON("R3", TRANSLATE_NOOP("AnalogController", "R3"), ICON_PF_RIGHT_ANALOG_CLICK, AnalogController::Button::R3, GenericInputBinding::R3),
+  BUTTON("Up", TRANSLATE_NOOP("AnalogController", "D-Pad Up"), ICON_PF_DPAD_UP, "Up", AnalogController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("AnalogController", "D-Pad Right"), ICON_PF_DPAD_RIGHT, "Right", AnalogController::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("AnalogController", "D-Pad Down"), ICON_PF_DPAD_DOWN, "Down", AnalogController::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("AnalogController", "D-Pad Left"), ICON_PF_DPAD_LEFT, "Left", AnalogController::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", TRANSLATE_NOOP("AnalogController", "Triangle"), ICON_PF_BUTTON_TRIANGLE, "Triangle", AnalogController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", TRANSLATE_NOOP("AnalogController", "Circle"), ICON_PF_BUTTON_CIRCLE, "Circle", AnalogController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", TRANSLATE_NOOP("AnalogController", "Cross"), ICON_PF_BUTTON_CROSS, "Cross", AnalogController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", TRANSLATE_NOOP("AnalogController", "Square"), ICON_PF_BUTTON_SQUARE, "Square", AnalogController::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", TRANSLATE_NOOP("AnalogController", "Select"), ICON_PF_SELECT_SHARE, "Select", AnalogController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("AnalogController", "Start"),ICON_PF_START, "Start", AnalogController::Button::Start, GenericInputBinding::Start),
+  BUTTON("Analog", TRANSLATE_NOOP("AnalogController", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, "Analog", AnalogController::Button::Analog, GenericInputBinding::System),
+  BUTTON("L1", TRANSLATE_NOOP("AnalogController", "L1"), ICON_PF_LEFT_SHOULDER_L1, "L1", AnalogController::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", TRANSLATE_NOOP("AnalogController", "R1"), ICON_PF_RIGHT_SHOULDER_R1, "R1", AnalogController::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", TRANSLATE_NOOP("AnalogController", "L2"), ICON_PF_LEFT_TRIGGER_L2, "L2", AnalogController::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", TRANSLATE_NOOP("AnalogController", "R2"), ICON_PF_RIGHT_TRIGGER_R2, "R2", AnalogController::Button::R2, GenericInputBinding::R2),
+  BUTTON("L3", TRANSLATE_NOOP("AnalogController", "L3"), ICON_PF_LEFT_ANALOG_CLICK, "LStick", AnalogController::Button::L3, GenericInputBinding::L3),
+  BUTTON("R3", TRANSLATE_NOOP("AnalogController", "R3"), ICON_PF_RIGHT_ANALOG_CLICK, "RStick", AnalogController::Button::R3, GenericInputBinding::R3),
 
-  AXIS("LLeft", TRANSLATE_NOOP("AnalogController", "Left Stick Left"), ICON_PF_LEFT_ANALOG_LEFT, AnalogController::HalfAxis::LLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("LRight", TRANSLATE_NOOP("AnalogController", "Left Stick Right"), ICON_PF_LEFT_ANALOG_RIGHT, AnalogController::HalfAxis::LRight, GenericInputBinding::LeftStickRight),
-  AXIS("LDown", TRANSLATE_NOOP("AnalogController", "Left Stick Down"), ICON_PF_LEFT_ANALOG_DOWN, AnalogController::HalfAxis::LDown, GenericInputBinding::LeftStickDown),
-  AXIS("LUp", TRANSLATE_NOOP("AnalogController", "Left Stick Up"), ICON_PF_LEFT_ANALOG_UP, AnalogController::HalfAxis::LUp, GenericInputBinding::LeftStickUp),
-  AXIS("RLeft", TRANSLATE_NOOP("AnalogController", "Right Stick Left"), ICON_PF_RIGHT_ANALOG_LEFT, AnalogController::HalfAxis::RLeft, GenericInputBinding::RightStickLeft),
-  AXIS("RRight", TRANSLATE_NOOP("AnalogController", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, AnalogController::HalfAxis::RRight, GenericInputBinding::RightStickRight),
-  AXIS("RDown", TRANSLATE_NOOP("AnalogController", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
-  AXIS("RUp", TRANSLATE_NOOP("AnalogController", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
+  AXIS("LLeft", TRANSLATE_NOOP("AnalogController", "Left Stick Left"), ICON_PF_LEFT_ANALOG_LEFT, "LStick", AnalogController::HalfAxis::LLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("LRight", TRANSLATE_NOOP("AnalogController", "Left Stick Right"), ICON_PF_LEFT_ANALOG_RIGHT, "LStick", AnalogController::HalfAxis::LRight, GenericInputBinding::LeftStickRight),
+  AXIS("LDown", TRANSLATE_NOOP("AnalogController", "Left Stick Down"), ICON_PF_LEFT_ANALOG_DOWN, "LStick", AnalogController::HalfAxis::LDown, GenericInputBinding::LeftStickDown),
+  AXIS("LUp", TRANSLATE_NOOP("AnalogController", "Left Stick Up"), ICON_PF_LEFT_ANALOG_UP, "LStick", AnalogController::HalfAxis::LUp, GenericInputBinding::LeftStickUp),
+  AXIS("RLeft", TRANSLATE_NOOP("AnalogController", "Right Stick Left"), ICON_PF_RIGHT_ANALOG_LEFT, "RStick", AnalogController::HalfAxis::RLeft, GenericInputBinding::RightStickLeft),
+  AXIS("RRight", TRANSLATE_NOOP("AnalogController", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, "RStick", AnalogController::HalfAxis::RRight, GenericInputBinding::RightStickRight),
+  AXIS("RDown", TRANSLATE_NOOP("AnalogController", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, "RStick", AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
+  AXIS("RUp", TRANSLATE_NOOP("AnalogController", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, "RStick", AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
 
   MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
 
-  MODE_LED("AnalogLED", TRANSLATE_NOOP("AnalogController", "Analog LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
+  MODE_LED("AnalogLED", TRANSLATE_NOOP("AnalogController", "Analog LED"), ICON_PF_LED, "AnalogLED", 0, GenericInputBinding::ModeLED),
 
 // clang-format on
 

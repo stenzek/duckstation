@@ -101,6 +101,9 @@ void ControllerBindingWidget::populateWidgets()
     m_ui.stackedWidget->removeWidget(m_bindings_widget);
     delete m_bindings_widget;
     m_bindings_widget = nullptr;
+    m_image_widget = nullptr;
+    m_hovered_binding = nullptr;
+    m_focused_binding = nullptr;
   }
   if (m_settings_widget)
   {
@@ -120,7 +123,7 @@ void ControllerBindingWidget::populateWidgets()
   m_ui.settings->setEnabled(has_settings);
   m_ui.macros->setEnabled(has_macros);
 
-  SVGWidget* image_widget = nullptr;
+  m_image_widget = nullptr;
   m_bindings_widget = new QWidget(this);
   switch (m_controller_info->type)
   {
@@ -130,7 +133,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -140,7 +143,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/joystick-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -150,7 +153,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/controller-digital-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -160,7 +163,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -170,7 +173,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -180,7 +183,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -190,7 +193,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/mouse-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -200,7 +203,7 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
-      image_widget = ui.image;
+      m_image_widget = ui.image;
     }
     break;
 
@@ -218,8 +221,8 @@ void ControllerBindingWidget::populateWidgets()
     break;
   }
 
-  if (image_widget)
-    image_widget->setSource(QtHost::GetResourceQPath(m_controller_info->image_name, true));
+  if (m_image_widget)
+    m_image_widget->setSource(QtHost::GetResourceQPath(m_controller_info->image_name, true));
 
   m_ui.stackedWidget->addWidget(m_bindings_widget);
   m_ui.stackedWidget->setCurrentWidget(m_bindings_widget);
@@ -237,7 +240,13 @@ void ControllerBindingWidget::populateWidgets()
   }
 
   for (InputBindingWidget* const widget : m_bindings_widget->findChildren<InputBindingWidget*>())
+  {
     connect(widget, &InputBindingWidget::bindingsChanged, this, &ControllerBindingWidget::updateBindingDeviceStatus);
+
+    // Hover/focus highlights the bound part of the controller image.
+    if (m_image_widget)
+      widget->installEventFilter(this);
+  }
 
   updateBindingDeviceStatus();
   updateHeaderToolButtons();
@@ -337,6 +346,57 @@ void ControllerBindingWidget::updateBindingDeviceStatus()
   m_ui.boundDevice->setText(m_ui.boundDevice->fontMetrics().elidedText(status, Qt::ElideRight, MAX_BOUND_DEVICE_WIDTH));
   m_ui.boundDeviceFrame->setVisible(!status.isEmpty());
   m_ui.boundDeviceFrame->setToolTip(status);
+}
+
+bool ControllerBindingWidget::eventFilter(QObject* watched, QEvent* event)
+{
+  // Only installed on binding widgets. Listening for input keeps the highlight, because the widget has focus.
+  InputBindingWidget* const widget = static_cast<InputBindingWidget*>(watched);
+  switch (event->type())
+  {
+    case QEvent::Enter:
+      m_hovered_binding = widget;
+      break;
+
+    case QEvent::Leave:
+      if (m_hovered_binding == widget)
+        m_hovered_binding = nullptr;
+      break;
+
+    case QEvent::FocusIn:
+      m_focused_binding = widget;
+      break;
+
+    case QEvent::FocusOut:
+      {
+        if (m_focused_binding == widget)
+          m_focused_binding = nullptr;
+      }
+      break;
+
+    default:
+      return false;
+  }
+
+  updateImageHighlight();
+  return false;
+}
+
+void ControllerBindingWidget::updateImageHighlight()
+{
+  const char* element = nullptr;
+  if (const InputBindingWidget* const widget = m_hovered_binding ? m_hovered_binding : m_focused_binding)
+  {
+    const QString name = widget->objectName();
+    const auto it =
+      std::ranges::find_if(m_controller_info->bindings, [&name](const Controller::ControllerBindingInfo& bi) {
+        return (name == QLatin1StringView(bi.name));
+      });
+    if (it != m_controller_info->bindings.end())
+      element = it->image_element;
+  }
+
+  m_image_widget->setHighlightedElement(element);
 }
 
 void ControllerBindingWidget::updateHeaderToolButtons()

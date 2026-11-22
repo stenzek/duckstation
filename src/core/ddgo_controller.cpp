@@ -297,9 +297,9 @@ std::unique_ptr<DDGoController> DDGoController::Create(u32 index)
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 // clang-format off
 #define BUTTON(name, display_name, icon_name, button, genb) \
-  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+  {name, display_name, icon_name, nullptr, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 #define AXIS(name, display_name, icon_name, axis, genb) \
-  {name, display_name, icon_name, static_cast<u32>(axis), InputBindingInfo::Type::HalfAxis, genb}
+  {name, display_name, icon_name, nullptr, static_cast<u32>(axis), InputBindingInfo::Type::HalfAxis, genb}
 
   BUTTON("Select", TRANSLATE_NOOP("DDGoController", "Select"), ICON_PF_SELECT_SHARE, DDGoController::Bind::Select, GenericInputBinding::Select),
   BUTTON("Start", TRANSLATE_NOOP("DDGoController", "Start"), ICON_PF_START, DDGoController::Bind::Start, GenericInputBinding::Start),
