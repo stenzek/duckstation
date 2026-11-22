@@ -25,6 +25,7 @@ TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.");
 TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
+TRANSLATE_NOOP("FullscreenUI", "%d MB");
 TRANSLATE_NOOP("FullscreenUI", "%d cycles");
 TRANSLATE_NOOP("FullscreenUI", "%d ms");
 TRANSLATE_NOOP("FullscreenUI", "%d sectors");
@@ -525,6 +526,7 @@ TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerat
 TRANSLATE_NOOP("FullscreenUI", "Maximum (Safer)");
 TRANSLATE_NOOP("FullscreenUI", "Maximum Read Speedup Cycles");
 TRANSLATE_NOOP("FullscreenUI", "Maximum Seek Speedup Cycles");
+TRANSLATE_NOOP("FullscreenUI", "Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Maximum: {}");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Busy");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
@@ -888,6 +890,7 @@ TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when d
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
 TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
+TRANSLATE_NOOP("FullscreenUI", "Texture Cache Size");
 TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Texture Modulation Cropping (\"Old/v0\" GPU)");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");

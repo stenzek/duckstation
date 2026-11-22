@@ -545,6 +545,11 @@ public:
   void End();
 };
 
+struct TextureCacheWeigher
+{
+  static std::size_t operator()(const GPUTexture* tex) { return tex ? tex->GetVRAMUsage() : 0; }
+};
+
 struct WidgetsState
 {
   Threading::Mutex shared_state_mutex;
@@ -567,7 +572,7 @@ struct WidgetsState
 
   ImVec2 horizontal_menu_button_size = {};
 
-  LRUCache<std::string, GPUTexture*, GPUDevice::PooledTextureDeleter> texture_cache{128, true};
+  LRUCache<std::string, GPUTexture*, GPUDevice::PooledTextureDeleter, TextureCacheWeigher> texture_cache{256, true};
   std::unique_ptr<GPUTexture> placeholder_texture;
   std::deque<std::pair<std::string, Image>> texture_upload_queue;
   std::vector<std::unique_ptr<GPUTexture>> texture_recycle_queue;
@@ -757,6 +762,12 @@ void FullscreenUI::UpdateWidgetsSettings()
     Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIBlurMenuBackground", true);
   UIStyle.SoundEffects =
     Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUISoundEffects", true);
+
+  // Eviction happens at the start of the next frame.
+  s_state.texture_cache.SetMaxWeight(
+    static_cast<u64>(Core::GetBaseUIntSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUITextureCacheSize",
+                                                   DEFAULT_TEXTURE_CACHE_SIZE_MB)) *
+    1048576);
 
   const bool swap_face_buttons =
     Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUISwapGamepadFaceButtons", false);

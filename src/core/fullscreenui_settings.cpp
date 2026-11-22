@@ -6841,8 +6841,20 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading(FSUI_VSTR("Logging Settings"));
+  MenuHeading(FSUI_VSTR("Interface Settings"));
   ResetFocusHere();
+
+  DrawIntRangeSetting(
+    bsi, FSUI_VSTR("Texture Cache Size"),
+    FSUI_VSTR("Maximum amount of video memory used to cache cover art and other images in the Big Picture UI."),
+    Settings::INTERFACE_SECTION_NAME, "FullscreenUITextureCacheSize", DEFAULT_TEXTURE_CACHE_SIZE_MB, 256, 4096,
+    [](const void* param, int value) {
+      return SmallString(Host::FormatByteSize(static_cast<u64>(value) * 1048576, false));
+    },
+    nullptr, true,
+    []() { Host::RunOnCoreThread([]() { VideoThread::RunOnThread(&FullscreenUI::UpdateWidgetsSettings); }); });
+
+  MenuHeading(FSUI_VSTR("Logging Settings"));
 
   DrawEnumSetting(bsi, FSUI_VSTR("Log Level"),
                   FSUI_VSTR("Sets the verbosity of messages logged. Higher levels will log more messages."),

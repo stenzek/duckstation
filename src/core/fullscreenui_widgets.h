@@ -284,6 +284,7 @@ bool UpdateLayoutScale();
 
 /// Texture cache.
 inline constexpr std::string_view GENERATED_ARTWORK_KEY_PREFIX = "generated:";
+inline constexpr u32 DEFAULT_TEXTURE_CACHE_SIZE_MB = 512;
 GPUTexture* GetPlaceholderTexture();
 std::unique_ptr<GPUTexture> LoadTexture(std::string_view path);
 std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name);
