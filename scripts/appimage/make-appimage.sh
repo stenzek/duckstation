@@ -147,11 +147,6 @@ rm -fr "$OUTDIR/usr/bin/translations"
 mv "$OUTDIR/usr/translations" "$OUTDIR/usr/bin"
 cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 
-# Generate AppStream meta-info.
-echo "Generating AppStream metainfo..."
-mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
-
 echo "Generating AppImage..."
 rm -f "$ASSETNAME"
 "$APPIMAGETOOL" -v --runtime-file "$APPIMAGERUNTIME" "$OUTDIR" "$ASSETNAME"

@@ -306,11 +306,6 @@ cp -v "$SCRIPTDIR/org.duckstation.DuckStation.png" "$OUTDIR/usr/share/icons/hico
 ln -s "usr/share/applications/org.duckstation.DuckStation.desktop" "$OUTDIR"
 ln -s "usr/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png" "$OUTDIR"
 
-# Generate AppStream meta-info.
-echo "Generating AppStream metainfo..."
-mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
-
 # Link AppRun to main binary.
 ln -s "usr/bin/duckstation-qt" "$OUTDIR/AppRun"
 
