@@ -50,7 +50,9 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollArea>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QVBoxLayout>
 #include <algorithm>
 
 #include "moc_controllerbindingwidgets.cpp"
@@ -763,9 +765,8 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent) : QSplitter(parent)
+ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent) : QWidget(parent)
 {
-  setChildrenCollapsible(false);
   setWindowTitle(tr("Controller Port %1 Macros").arg(parent->getPortNumber() + 1u));
   createWidgets(parent);
 }
@@ -779,19 +780,41 @@ void ControllerMacroWidget::updateListItem(u32 index)
   QListWidgetItem* item = m_macroList->item(static_cast<int>(index));
   item->setText(tr("Macro %1\n%2").arg(index + 1).arg(summary));
   item->setToolTip(tooltip);
+  item->setForeground(tooltip.isEmpty() ? palette().color(QPalette::Disabled, QPalette::Text) : QBrush());
+}
+
+void ControllerMacroWidget::showEvent(QShowEvent* event)
+{
+  QWidget::showEvent(event);
+
+  // The size hints depend on the style, which isn't final until the widget is shown.
+  updateListHeight();
+}
+
+void ControllerMacroWidget::updateListHeight()
+{
+  // Fit a single row, plus the horizontal scroll bar for when the window is too narrow.
+  m_macroList->setFixedHeight(m_macroList->sizeHintForRow(0) + m_macroList->horizontalScrollBar()->sizeHint().height() +
+                              2 * m_macroList->frameWidth() + 4);
 }
 
 void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
 {
+  QVBoxLayout* layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+
+  // Horizontal strip of macros above the editor.
   m_macroList = new QListWidget(this);
   m_macroList->setIconSize(QSize(32, 32));
-  m_macroList->setMinimumWidth(150);
-  addWidget(m_macroList);
-  setStretchFactor(0, 1);
+  m_macroList->setFlow(QListView::LeftToRight);
+  m_macroList->setWrapping(false);
+  m_macroList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  m_macroList->setUniformItemSizes(true);
+  m_macroList->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+  layout->addWidget(m_macroList);
 
   m_container = new QStackedWidget(this);
-  addWidget(m_container);
-  setStretchFactor(1, 3);
+  layout->addWidget(m_container, 1);
 
   for (u32 i = 0; i < m_macros.size(); i++)
   {
@@ -804,6 +827,7 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
     updateListItem(i);
   }
 
+  updateListHeight();
   m_macroList->setCurrentRow(0);
   m_container->setCurrentIndex(0);
 
@@ -824,15 +848,6 @@ static const Controller::ControllerBindingInfo* findMacroBindingInfo(const Contr
   return nullptr;
 }
 
-static void setMacroSequenceEditingEnabled(Ui::ControllerMacroEditWidget& ui, bool enabled)
-{
-  for (QWidget* widget : std::initializer_list<QWidget*>{ui.addInput, ui.addWait, ui.remove, ui.moveUp, ui.moveDown,
-                                                         ui.clear, ui.quickSetup})
-  {
-    widget->setEnabled(enabled);
-  }
-}
-
 ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget,
                                                      u32 index)
   : QWidget(parent), m_parent(parent), m_bwidget(bwidget), m_index(index)
@@ -846,7 +861,9 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   DebugAssert(m_bwidget->getControllerInfo());
 
   const bool loop = loadSequence();
-  m_ui.sequence->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  m_ui.sequence->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+  m_ui.sequence->setColumnWidth(0, 220);
+  connect(m_ui.sequence, &QTableWidget::currentCellChanged, this, &ControllerMacroEditWidget::updateSequenceButtons);
   populateSequence(-1);
 
   ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
@@ -971,6 +988,18 @@ bool ControllerMacroEditWidget::eventFilter(QObject* watched, QEvent* event)
     }
     break;
 
+    case QEvent::FocusIn:
+    {
+      // The cell widgets hide the row selection, so focusing one selects its row.
+      if (watched != this && watched->isWidgetType())
+      {
+        const QModelIndex index = m_ui.sequence->indexAt(static_cast<QWidget*>(watched)->pos());
+        if (index.isValid())
+          m_ui.sequence->selectRow(index.row());
+      }
+    }
+    break;
+
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     {
@@ -1060,7 +1089,7 @@ void ControllerMacroEditWidget::startRecording()
   m_recorded_actions.clear();
   m_ui.record->setText(tr("Stop"));
   m_ui.record->setIcon(QIcon(u":/icons/monochrome/svg/stop-circle-line.svg"_s));
-  setMacroSequenceEditingEnabled(m_ui, false);
+  updateSequenceButtons();
 
   installEventFilter(this);
   grabKeyboard();
@@ -1100,7 +1129,7 @@ void ControllerMacroEditWidget::stopRecording(bool save)
 
   m_ui.record->setText(tr("Record"));
   m_ui.record->setIcon(QIcon(u":/icons/monochrome/svg/record-circle-line.svg"_s));
-  setMacroSequenceEditingEnabled(m_ui, true);
+  updateSequenceButtons();
 
   if (!save)
   {
@@ -1136,6 +1165,13 @@ void ControllerMacroEditWidget::onAddActionClicked(bool wait)
                      InputManager::MacroSequenceAction{bi->bind_index, 0, 1.0f});
   saveSequence();
   populateSequence(static_cast<s32>(pos));
+
+  // Waits are added with a default length, so go straight to editing it.
+  if (wait)
+  {
+    if (QWidget* const value_widget = m_ui.sequence->cellWidget(static_cast<int>(pos), 1))
+      value_widget->setFocus();
+  }
 }
 
 void ControllerMacroEditWidget::onRemoveClicked()
@@ -1253,6 +1289,37 @@ void ControllerMacroEditWidget::populateSequence(s32 selected_row)
 
   if (selected_row >= 0)
     m_ui.sequence->setCurrentCell(selected_row, 0);
+
+  updateSequenceButtons();
+}
+
+void ControllerMacroEditWidget::updateSequenceButtons()
+{
+  const bool editable = !m_recording;
+  const int row = m_ui.sequence->currentRow();
+  const bool has_row = (row >= 0 && row < static_cast<int>(m_actions.size()));
+  m_ui.addInput->setEnabled(editable);
+  m_ui.addWait->setEnabled(editable);
+  m_ui.quickSetup->setEnabled(editable);
+  m_ui.clear->setEnabled(editable && !m_actions.empty());
+  m_ui.remove->setEnabled(editable && has_row);
+  m_ui.moveUp->setEnabled(editable && has_row && row > 0);
+  m_ui.moveDown->setEnabled(editable && has_row && row + 1 < static_cast<int>(m_actions.size()));
+  updateSequenceSummary();
+}
+
+void ControllerMacroEditWidget::updateSequenceSummary()
+{
+  u64 total_frames = 0;
+  for (const InputManager::MacroSequenceAction& action : m_actions)
+  {
+    if (action.bind_index == InputManager::MacroSequenceAction::WAIT_BIND_INDEX)
+      total_frames += action.frames;
+  }
+
+  m_ui.groupBox->setTitle(tr("Sequence (%1, %2)")
+                            .arg(tr("%n action(s)", nullptr, static_cast<int>(m_actions.size())))
+                            .arg(tr("%n frame(s)", nullptr, static_cast<int>(total_frames))));
 }
 
 void ControllerMacroEditWidget::saveSequence()
@@ -1278,6 +1345,7 @@ void ControllerMacroEditWidget::saveSequence()
   dialog->clearSettingValue(section.c_str(), fmt::format("Macro{}Pressure", m_index + 1u).c_str());
   dialog->clearSettingValue(section.c_str(), fmt::format("Macro{}Frequency", m_index + 1u).c_str());
 
+  updateSequenceSummary();
   m_parent->updateListItem(m_index);
 }
 

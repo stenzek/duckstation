@@ -10,7 +10,7 @@
     <height>436</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -24,226 +24,234 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Trigger</string>
+     </property>
+     <layout class="QHBoxLayout" name="triggerLayout" stretch="1,0,0,0,0">
+      <item>
+       <widget class="InputBindingWidget" name="trigger">
+        <property name="toolTip">
+         <string>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="triggerSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Policy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>16</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Activation Deadzone:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="deadzone">
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="deadzoneValue">
+        <property name="minimumSize">
+         <size>
+          <width>36</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>100%</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Sequence</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QTableWidget" name="sequence">
-        <property name="selectionMode">
-         <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-        </property>
-        <property name="columnCount">
-         <number>2</number>
-        </property>
-        <attribute name="horizontalHeaderStretchLastSection">
-         <bool>true</bool>
-        </attribute>
-        <column>
-         <property name="text">
-          <string>Action</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Value</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="sequenceButtonsLayout">
+       <layout class="QHBoxLayout" name="sequenceLayout">
         <item>
-         <widget class="QPushButton" name="record">
-          <property name="text">
-           <string>Record</string>
+         <widget class="QTableWidget" name="sequence">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
           </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/record-circle-line.svg</normaloff>:/icons/monochrome/svg/record-circle-line.svg</iconset>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="quickSetup">
-          <property name="toolTip">
-           <string>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</string>
+          <property name="columnCount">
+           <number>2</number>
           </property>
-          <property name="text">
-           <string>Quick Setup</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/magic-line.svg</normaloff>:/icons/monochrome/svg/magic-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="addInput">
-          <property name="text">
-           <string>Add Input</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="addWait">
-          <property name="text">
-           <string>Add Wait</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/timer-line.svg</normaloff>:/icons/monochrome/svg/timer-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="remove">
-          <property name="text">
-           <string>Remove</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="moveUp">
-          <property name="text">
-           <string>Move Up</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/arrow-up-line.svg</normaloff>:/icons/monochrome/svg/arrow-up-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="moveDown">
-          <property name="text">
-           <string>Move Down</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/arrow-down-line.svg</normaloff>:/icons/monochrome/svg/arrow-down-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="sequenceButtonsSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="clear">
-          <property name="text">
-           <string>Clear</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources/duckstation-qt.qrc">
-            <normaloff>:/icons/monochrome/svg/eraser-line.svg</normaloff>:/icons/monochrome/svg/eraser-line.svg</iconset>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Trigger</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0,0">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-          </property>
-          <property name="wordWrap">
+          <attribute name="horizontalHeaderStretchLastSection">
            <bool>true</bool>
-          </property>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Action</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="loop">
-          <property name="toolTip">
-           <string>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</string>
-          </property>
-          <property name="text">
-           <string>Loop While Active</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="triggerToggle">
-          <property name="text">
-           <string>Press To Toggle</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="InputBindingWidget" name="trigger">
-        <property name="text">
-         <string notr="true">PushButton</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="deadzoneLayout" stretch="0,1,0">
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Deadzone:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="deadzone">
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="deadzoneValue">
-          <property name="minimumSize">
-           <size>
-            <width>36</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>100%</string>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="sequenceButtonsLayout">
+          <item>
+           <widget class="QPushButton" name="record">
+            <property name="text">
+             <string>Record</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/record-circle-line.svg</normaloff>:/icons/monochrome/svg/record-circle-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="quickSetup">
+            <property name="toolTip">
+             <string>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</string>
+            </property>
+            <property name="text">
+             <string>Quick Setup</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/magic-line.svg</normaloff>:/icons/monochrome/svg/magic-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addInput">
+            <property name="text">
+             <string>Add Input</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addWait">
+            <property name="text">
+             <string>Add Wait</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/timer-line.svg</normaloff>:/icons/monochrome/svg/timer-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="remove">
+            <property name="text">
+             <string>Remove</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/minus-line.svg</normaloff>:/icons/monochrome/svg/minus-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="moveUp">
+            <property name="text">
+             <string>Move Up</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/arrow-up-line.svg</normaloff>:/icons/monochrome/svg/arrow-up-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="moveDown">
+            <property name="text">
+             <string>Move Down</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/arrow-down-line.svg</normaloff>:/icons/monochrome/svg/arrow-down-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="clear">
+            <property name="text">
+             <string>Clear</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/eraser-line.svg</normaloff>:/icons/monochrome/svg/eraser-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="sequenceButtonsSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="loop">
+            <property name="toolTip">
+             <string>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</string>
+            </property>
+            <property name="text">
+             <string>Loop While Active</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="triggerToggle">
+            <property name="toolTip">
+             <string>Activates and deactivates the macro when the button is tapped instead of held.</string>
+            </property>
+            <property name="text">
+             <string>Press To Toggle</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

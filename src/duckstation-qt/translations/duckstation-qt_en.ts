@@ -180,6 +180,13 @@
             <numerusform>%n frames</numerusform>
         </translation>
     </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n action</numerusform>
+            <numerusform>%n actions</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>DebuggerWindow</name>

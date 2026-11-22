@@ -8,7 +8,7 @@
 
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QListWidget>
-#include <QtWidgets/QSplitter>
+#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QWidget>
 #include <functional>
 #include <vector>
@@ -80,7 +80,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-class ControllerMacroWidget : public QSplitter
+class ControllerMacroWidget : public QWidget
 {
   Q_OBJECT
 
@@ -90,8 +90,12 @@ public:
 
   void updateListItem(u32 index);
 
+protected:
+  void showEvent(QShowEvent* event) override;
+
 private:
   void createWidgets(ControllerBindingWidget* bwidget);
+  void updateListHeight();
 
   QListWidget* m_macroList;
   QStackedWidget* m_container;
@@ -128,6 +132,8 @@ private:
   void stopRecording(bool save);
   bool loadSequence();
   void populateSequence(s32 selected_row);
+  void updateSequenceButtons();
+  void updateSequenceSummary();
   void saveSequence();
 
   Ui::ControllerMacroEditWidget m_ui;
