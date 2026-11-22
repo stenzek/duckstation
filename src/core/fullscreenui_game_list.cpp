@@ -9,18 +9,22 @@
 #include "system.h"
 #include "video_thread.h"
 
+#include "util/gpu_device.h"
 #include "util/gpu_texture.h"
 #include "util/imgui_manager.h"
 
 #include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsPromptFont.h"
+
+LOG_CHANNEL(FullscreenUI);
 
 namespace FullscreenUI {
 
@@ -40,6 +44,7 @@ static void DrawGameListCover(const GameList::Entry* entry, bool fallback_to_ach
                               bool icon_style, bool show_localized_titles, ImDrawList* dl, const ImRect& rect);
 static void DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title, GameList::EntryType type,
                                  bool icon_style);
+static GPUTexture* GetGeneratedArtwork(std::string_view title, GameList::EntryType type, bool icon_style, u32 tex_size);
 static void DoSetCoverImage(std::string entry_path);
 static void DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path);
 
@@ -1285,19 +1290,68 @@ void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std:
 {
   using namespace GameList::GeneratedArtwork;
 
-  // Diagonal gradient, filled in white and then shaded, so it keeps the rounded corners.
-  const float size = rect.GetWidth();
+  // Rendered at the size it's drawn at.
+  GPUTexture* const tex = GetGeneratedArtwork(title, type, icon_style, static_cast<u32>(std::ceil(rect.GetWidth())));
+  if (!tex)
+    return;
+
+  // Lower-left origin APIs render the texture upside down.
+  const bool flip = g_gpu_device->UsesLowerLeftOrigin();
+  dl->AddImageRounded(tex, rect.Min, rect.Max, ImVec2(0.0f, flip ? 1.0f : 0.0f), ImVec2(1.0f, flip ? 0.0f : 1.0f),
+                      IM_COL32(255, 255, 255, 255),
+                      rect.GetWidth() * (icon_style ? ICON_CORNER_RADIUS : COVER_CORNER_RADIUS));
+}
+
+GPUTexture* FullscreenUI::GetGeneratedArtwork(std::string_view title, GameList::EntryType type, bool icon_style,
+                                              u32 tex_size)
+{
+  using namespace GameList::GeneratedArtwork;
+
+  // Rendered once per size, and cached alongside the covers.
+  const SmallString key = SmallString::from_format("{}{}:{}:{}:{}", GENERATED_ARTWORK_KEY_PREFIX,
+                                                   icon_style ? 'i' : 'c', tex_size, static_cast<u32>(type), title);
+  if (GPUTexture* const tex = FindCachedTexture(key))
+    return tex;
+
+  // Same format as the swap chain, since that's what the ImGui pipeline is compiled for.
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  if (!swap_chain)
+    return nullptr;
+
+  Error error;
+  GPUDevice::AutoRecycleTexture rt =
+    g_gpu_device->FetchAutoRecycleTexture(tex_size, tex_size, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                          swap_chain->GetFormat(), GPUTexture::Flags::None, nullptr, 0, &error);
+  std::unique_ptr<GPUTexture> tex =
+    rt ? g_gpu_device->FetchTexture(tex_size, tex_size, 1, 1, 1, GPUTexture::Type::Texture, rt->GetFormat(),
+                                    GPUTexture::Flags::None, nullptr, 0, &error) :
+         nullptr;
+  if (!tex)
+  {
+    ERROR_LOG("Failed to allocate {}x{} generated artwork texture: {}", tex_size, tex_size, error.GetDescription());
+    return nullptr;
+  }
+
+  DEV_LOG("Generating {}x{} {} artwork for '{}'", tex_size, tex_size, icon_style ? "icon" : "cover", title);
+
+  // Drawn square, the corners are rounded when the texture is drawn.
+  const ImGuiIO& io = ImGui::GetIO();
+  const float size = static_cast<float>(tex_size);
+  const ImVec2 rt_size(size, size);
+  ImDrawList dl(ImGui::GetDrawListSharedData());
+  dl._ResetForNewFrame();
+  dl.PushTexture(io.Fonts->TexRef);
+  dl.PushClipRect(ImVec2(0.0f, 0.0f), rt_size);
+
+  // Diagonal gradient, filled in white and then shaded.
   const auto [start_color, end_color] = GetColors(title);
-  const int vtx_start = dl->VtxBuffer.Size;
-  dl->AddRectFilled(rect.Min, rect.Max, IM_COL32(255, 255, 255, 255),
-                    size * (icon_style ? ICON_CORNER_RADIUS : COVER_CORNER_RADIUS));
-  ImGui::ShadeVertsLinearColorGradientKeepAlpha(dl, vtx_start, dl->VtxBuffer.Size, rect.Min, rect.Max, start_color,
+  dl.AddRectFilled(ImVec2(0.0f, 0.0f), rt_size, IM_COL32(255, 255, 255, 255));
+  ImGui::ShadeVertsLinearColorGradientKeepAlpha(&dl, 0, dl.VtxBuffer.Size, ImVec2(0.0f, 0.0f), rt_size, start_color,
                                                 end_color);
 
   // Font sizes are kept to whole pixels, so the font atlas doesn't bake a size for every cover scale.
   ImFont* const font = UIStyle.Font;
   const float font_weight = UIStyle.BoldFontWeight;
-  dl->PushClipRect(rect.Min, rect.Max, true);
 
   // Covers have a large faint monogram behind the title, which gives covers of different games distinct shapes.
   TinyString monogram = GetMonogram(title);
@@ -1312,10 +1366,9 @@ void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std:
       text_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(monogram));
     }
 
-    const float center_y = rect.Min.y + size * (icon_style ? 0.5f : COVER_MONOGRAM_CENTER_Y);
-    dl->AddText(font, font_size, font_weight,
-                ImVec2(rect.Min.x + (size - text_size.x) * 0.5f, center_y - text_size.y * 0.5f),
-                IM_COL32(255, 255, 255, icon_style ? 255 : COVER_MONOGRAM_ALPHA), IMSTR_START_END(monogram));
+    const float center_y = size * (icon_style ? 0.5f : COVER_MONOGRAM_CENTER_Y);
+    dl.AddText(font, font_size, font_weight, ImVec2((size - text_size.x) * 0.5f, center_y - text_size.y * 0.5f),
+               IM_COL32(255, 255, 255, icon_style ? 255 : COVER_MONOGRAM_ALPHA), IMSTR_START_END(monogram));
   }
 
   if (!icon_style)
@@ -1333,10 +1386,10 @@ void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std:
     }
 
     const float title_height = std::min(title_size.y, font_size * static_cast<float>(MAX_TITLE_LINES));
-    const ImVec2 title_pos(rect.Min.x + margin, rect.Max.y - margin - title_height);
-    const ImVec4 title_clip(title_pos.x, title_pos.y, rect.Max.x - margin, title_pos.y + title_height);
-    dl->AddText(font, font_size, font_weight, title_pos, IM_COL32(255, 255, 255, 255), IMSTR_START_END(title),
-                wrap_width, &title_clip);
+    const ImVec2 title_pos(margin, size - margin - title_height);
+    const ImVec4 title_clip(title_pos.x, title_pos.y, size - margin, title_pos.y + title_height);
+    dl.AddText(font, font_size, font_weight, title_pos, IM_COL32(255, 255, 255, 255), IMSTR_START_END(title),
+               wrap_width, &title_clip);
 
     // Content that isn't a plain disc gets a badge with its type.
     const char* badge_icon;
@@ -1354,15 +1407,31 @@ void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std:
     if (badge_icon)
     {
       const float radius = size * BADGE_RADIUS;
-      const ImVec2 center(rect.Max.x - margin - radius, rect.Min.y + margin + radius);
-      dl->AddCircleFilled(center, radius, IM_COL32(0, 0, 0, BADGE_ALPHA));
+      const ImVec2 center(size - margin - radius, margin + radius);
+      dl.AddCircleFilled(center, radius, IM_COL32(0, 0, 0, BADGE_ALPHA));
 
       const float icon_size = std::max(std::floor(radius * BADGE_ICON_SIZE), 1.0f);
       const ImVec2 icon_text_size = font->CalcTextSizeA(icon_size, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, badge_icon);
-      dl->AddText(font, icon_size, UIStyle.NormalFontWeight, center - icon_text_size * 0.5f,
-                  IM_COL32(255, 255, 255, 255), badge_icon);
+      dl.AddText(font, icon_size, UIStyle.NormalFontWeight, center - icon_text_size * 0.5f,
+                 IM_COL32(255, 255, 255, 255), badge_icon);
     }
   }
 
-  dl->PopClipRect();
+  // Textures includes the font atlas, so any glyphs baked above are uploaded before drawing.
+  ImDrawData draw_data;
+  draw_data.Valid = true;
+  draw_data.DisplaySize = rt_size;
+  draw_data.FramebufferScale = ImVec2(1.0f, 1.0f);
+  draw_data.Textures = &io.Fonts->TexList;
+  draw_data.AddDrawList(&dl);
+
+  // The ImGui pipeline doesn't write alpha, so clear it to opaque for the texture to be sampled as such.
+  g_gpu_device->ClearRenderTarget(rt.get(), 0xFF000000u);
+  g_gpu_device->SetRenderTarget(rt.get());
+  ImGuiManager::RenderDrawLists(&draw_data, tex_size, tex_size, WindowInfoPrerotation::Identity);
+
+  g_gpu_device->CopyTextureRegion(tex.get(), 0, 0, 0, 0, rt.get(), 0, 0, 0, 0, tex_size, tex_size);
+  tex->MakeReadyForSampling();
+
+  return InsertCachedTexture(std::string(key.view()), std::move(tex));
 }

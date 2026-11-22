@@ -695,6 +695,9 @@ FullscreenUI::WidgetsState::~WidgetsState()
 void FullscreenUI::SetFont(ImFont* ui_font)
 {
   UIStyle.Font = ui_font;
+
+  // Generated artwork was rendered with the old font.
+  InvalidateCachedTexture(GENERATED_ARTWORK_KEY_PREFIX);
 }
 
 bool FullscreenUI::InitializeWidgets(Error* error)
@@ -1148,6 +1151,11 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
 GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, const ImVec2& size)
 {
   return GetCachedTextureAsync(name, static_cast<u32>(size.x), static_cast<u32>(size.y));
+}
+
+GPUTexture* FullscreenUI::InsertCachedTexture(std::string name, std::unique_ptr<GPUTexture> texture)
+{
+  return *s_state.texture_cache.Insert(std::move(name), texture.release());
 }
 
 bool FullscreenUI::InvalidateCachedTexture(std::string_view path)

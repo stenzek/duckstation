@@ -283,6 +283,7 @@ void SetFont(ImFont* ui_font);
 bool UpdateLayoutScale();
 
 /// Texture cache.
+inline constexpr std::string_view GENERATED_ARTWORK_KEY_PREFIX = "generated:";
 GPUTexture* GetPlaceholderTexture();
 std::unique_ptr<GPUTexture> LoadTexture(std::string_view path);
 std::unique_ptr<GPUTexture> LoadTexture(std::string_view path, std::string_view name);
@@ -299,6 +300,7 @@ GPUTexture* GetCachedTextureAsync(std::string_view name);
 GPUTexture* GetCachedTextureAsync(std::string_view path, std::string_view name);
 GPUTexture* GetCachedTextureAsync(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTextureAsync(std::string_view name, const ImVec2& size);
+GPUTexture* InsertCachedTexture(std::string name, std::unique_ptr<GPUTexture> texture);
 bool InvalidateCachedTexture(std::string_view path);
 bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();
