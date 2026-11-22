@@ -11,6 +11,11 @@
 
 #include <xcb/xcb.h>
 
+// xkb.h uses explicit as a member name.
+#define explicit explicit_
+#include <xcb/xkb.h>
+#undef explicit
+
 #include <memory>
 #include <mutex>
 
@@ -36,6 +41,10 @@ LOG_CHANNEL(WindowInfo);
   X(xcb_free_colormap_checked)                                                                                         \
   X(xcb_configure_window_checked)
 
+#define XCB_XKB_FUNCTIONS(X)                                                                                           \
+  X(xcb_xkb_per_client_flags)                                                                                          \
+  X(xcb_xkb_per_client_flags_reply)
+
 namespace {
 
 template<typename T>
@@ -50,10 +59,12 @@ using XCBPointer = std::unique_ptr<T, XCBPointerDeleter<T>>;
 struct Locals
 {
   DynamicLibrary xcb_library;
+  DynamicLibrary xcb_xkb_library;
   std::once_flag xcb_once_flag;
 
 #define ADD_FUNC(F) decltype(&::F) F;
   XCB_FUNCTIONS(ADD_FUNC)
+  XCB_XKB_FUNCTIONS(ADD_FUNC)
 #undef ADD_FUNC
 };
 
@@ -133,8 +144,8 @@ X11Window& X11Window::operator=(X11Window&& move)
 
 static void SetErrorObject(Error* error, const char* prefix, const xcb_generic_error_t* xerror)
 {
-  Error::SetStringFmt(error, "{} failed: EC={} Major={} Minor={} Resource={:X}", xerror->error_code,
-                      xerror->response_type, xerror->major_code, xerror->minor_code, xerror->resource_id);
+  Error::SetStringFmt(error, "{}EC={} Major={} Minor={} Resource={:X}", prefix, xerror->error_code, xerror->major_code,
+                      xerror->minor_code, xerror->resource_id);
 }
 
 bool X11Window::Create(xcb_connection_t* connection, xcb_window_t parent_window, xcb_visualid_t vi, Error* error)
@@ -310,4 +321,52 @@ std::optional<std::pair<int, int>> X11Tools::GetWindowSize(xcb_connection_t* con
   }
 
   return std::make_pair(static_cast<int>(gwa->width), static_cast<int>(gwa->height));
+}
+
+bool X11Tools::EnableDetectableAutoRepeat(xcb_connection_t* connection, Error* error)
+{
+  // Only called once at startup, so no need to guard against concurrent loading.
+  if (!s_locals.xcb_xkb_library.IsOpen())
+  {
+    if (!s_locals.xcb_xkb_library.Open(DynamicLibrary::GetVersionedFilename("xcb-xkb", 1).c_str(), error))
+    {
+      Error::AddPrefix(error, "Failed to load xcb-xkb: ");
+      return false;
+    }
+
+    static const DynamicLibrary::SymbolTable symbols[] = {
+#define SYMBOL_ENTRY(F) {#F, reinterpret_cast<void**>(&s_locals.F)},
+      XCB_XKB_FUNCTIONS(SYMBOL_ENTRY)
+#undef SYMBOL_ENTRY
+    };
+
+    if (!s_locals.xcb_xkb_library.ResolveSymbols(symbols, error))
+    {
+      DynamicLibrary::ClearSymbols(symbols);
+      s_locals.xcb_xkb_library.Close();
+      return false;
+    }
+  }
+
+  xcb_generic_error_t* xerror = nullptr;
+  XCBPointer<xcb_xkb_per_client_flags_reply_t> reply(s_locals.xcb_xkb_per_client_flags_reply(
+    connection,
+    s_locals.xcb_xkb_per_client_flags(connection, XCB_XKB_ID_USE_CORE_KBD,
+                                      XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT,
+                                      XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT, 0, 0, 0),
+    &xerror));
+  if (!reply)
+  {
+    SetErrorObject(error, "xcb_xkb_per_client_flags_reply() failed: ", xerror);
+    free(xerror);
+    return false;
+  }
+
+  if (!(reply->value & XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT))
+  {
+    Error::SetStringView(error, "Detectable auto repeat is not supported by the server.");
+    return false;
+  }
+
+  return true;
 }

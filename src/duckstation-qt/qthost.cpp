@@ -56,6 +56,10 @@
 #include "util/postprocessing.h"
 #include "util/translation.h"
 
+#ifdef __linux__
+#include "util/x11_tools.h"
+#endif
+
 #include "scmversion/scmversion.h"
 
 #include "fmt/format.h"
@@ -3612,6 +3616,16 @@ int main(int argc, char* argv[])
   // created before the platform plugin is loaded. This is only here because GNOME plus Wankland
   // and their implementation of it is fucking terrible.
   ApplyWaylandWorkarounds();
+#endif
+
+#ifdef __linux__
+  // Qt detects auto-repeat by looking for the press after a release in its event queue, which isn't reliable, as the
+  // press may not have been read yet. Missed detections send spurious release/press pairs while a key is held.
+  if (const auto* x11_app = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())
+  {
+    if (Error error; !X11Tools::EnableDetectableAutoRepeat(x11_app->connection(), &error))
+      std::fprintf(stderr, "Failed to enable detectable auto repeat: %s\n", error.GetDescription().c_str());
+  }
 #endif
 
   // Type registration has to happen after hardware checks, clang emits ptest instructions otherwise.

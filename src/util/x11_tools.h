@@ -50,4 +50,8 @@ namespace X11Tools {
 /// Returns the size of a window as seen by the server.
 std::optional<std::pair<int, int>> GetWindowSize(xcb_connection_t* connection, xcb_window_t window);
 
+/// Stops the server sending a release before each repeated key press, so held keys only send presses.
+/// The XKB extension must already be initialized on the connection.
+bool EnableDetectableAutoRepeat(xcb_connection_t* connection, Error* error);
+
 } // namespace X11Tools
