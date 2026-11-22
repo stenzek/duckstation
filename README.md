@@ -23,7 +23,7 @@ Other features include:
 
  - CPU Recompiler/JIT (x86-64, armv7/AArch32, AArch64, RISC-V/RV64).
  - Hardware renderer supporting D3D11, D3D12, OpenGL, Vulkan and Metal APIs.
- - Upscaling, true colour (24-bit), and texture filters such as Sharp Bilinear, Monotonic Cubic, Adaptive Diagonal, and DCCI in hardware renderers.
+ - Upscaling, true colour (24-bit), and texture filters such as Bilinear, Monotonic Cubic, xBR, EPX and MMPX.
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
  - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - Texture replacement system in hardware renderers.
@@ -47,9 +47,9 @@ Other features include:
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
  - Time stretched audio when running outside of 100% speed.
- - Digital and analog controllers for input (rumble is forwarded to host).
- - GunCon and Justifier lightgun support (simulated with mouse).
- - NeGcon support.
+ - Emulated Digital, Analog, NeGcon, Jogcon, DDGo and Pop'n controllers with vibration/force feedback.
+ - GunCon and Justifier lightgun support (simulated with mouse or relative controller axes).
+ - Sequence macros (e.g. rapid fire, button combinations with delays).
  - Controller presets and per-game configuration.
  - Qt desktop and "Big Picture" interfaces, with a built-in on-screen keyboard in Big Picture mode.
  - Automatic updates with preview and latest channels.
