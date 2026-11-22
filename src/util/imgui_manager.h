@@ -139,6 +139,10 @@ void CreateDrawLists();
 void RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_height,
                      WindowInfoPrerotation prerotation);
 
+/// Draws everything between the push and pop with the given texture and nearest-neighbour filtering.
+void PushNearestSampler(ImDrawList* dl, GPUTexture* texture);
+void PopNearestSampler(ImDrawList* dl);
+
 /// Renders any on-screen display elements.
 void RenderOSDMessages();
 

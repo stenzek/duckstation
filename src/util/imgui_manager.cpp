@@ -102,6 +102,8 @@ static void ReloadFontDataIfActive();
 static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
 static void UpdateTextures(const ImDrawData* draw_data);
+static void DrawWithNearestSampler(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                   u32 base_index);
 static void DestroyTextures(bool recycle);
 static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
@@ -788,6 +790,39 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
       }
     }
   }
+}
+
+void ImGuiManager::PushNearestSampler(ImDrawList* dl, GPUTexture* texture)
+{
+  // Push the texture first, the command's texture isn't updated once it has a callback.
+  dl->PushTexture(texture);
+
+  // The push can merge with the previous command, so flush it.
+  if (dl->CmdBuffer.back().ElemCount > 0)
+    dl->AddDrawCmd();
+
+  dl->CmdBuffer.back().UserCallback = &DrawWithNearestSampler;
+}
+
+void ImGuiManager::PopNearestSampler(ImDrawList* dl)
+{
+  ImDrawCmd& cmd = dl->CmdBuffer.back();
+  DebugAssert(cmd.UserCallback == &DrawWithNearestSampler);
+
+  // allow imgui to clear empty draw commands
+  if (cmd.ElemCount == 0)
+    cmd.UserCallback = nullptr;
+  else
+    dl->AddDrawCmd();
+
+  dl->PopTexture();
+}
+
+void ImGuiManager::DrawWithNearestSampler(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                          u32 base_index)
+{
+  g_gpu_device->SetTextureSampler(0, cmd->GetTexID(), g_gpu_device->GetNearestSampler());
+  g_gpu_device->DrawIndexed(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset);
 }
 
 void ImGuiManager::UpdateTextures(const ImDrawData* draw_data)
