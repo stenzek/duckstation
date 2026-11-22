@@ -40,6 +40,7 @@ static void DrawGameCarousel(const ImVec2& heading_size);
 static void DrawCarouselCoverCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
                                       u32 base_index);
 static void SetGameListView(GameListView view);
+static void SetGameListSortColumn(GameList::Column column);
 static void HandleGameListActivate(const GameList::Entry* entry);
 static void HandleGameListOptions(const GameList::Entry* entry);
 static void HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* dsentry);
@@ -166,6 +167,14 @@ void FullscreenUI::SetGameListView(GameListView view)
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
+void FullscreenUI::SetGameListSortColumn(GameList::Column column)
+{
+  s_game_list_locals.sort_column = column;
+  Core::SetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_COLUMN,
+                                  GameList::GetColumnName(column));
+  Host::CommitBaseSettingChanges();
+}
+
 void FullscreenUI::DoSetCoverImage(std::string entry_path)
 {
   OpenFileSelector(FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"), GetImageFilters(), EmuFolders::Covers,
@@ -287,45 +296,78 @@ void FullscreenUI::DrawGameListWindow()
 
     PageHeaderTitle(FSUI_VSTR("Library"));
 
-    // right to left: view selector, its hint
     ImGuiWindow* const window = ImGui::GetCurrentWindow();
-    ImDrawList* const dl = window->DrawList;
     const float spacing = LayoutScale(8.0f);
+
+    // view pills after the title
     const std::array<IconStackString, static_cast<size_t>(GameListView::MaxCount)> view_labels = {{
       IconStackString(ICON_FA_TABLE_CELLS_LARGE, FSUI_NSTR("Grid")),
       IconStackString(ICON_FA_IMAGES, FSUI_NSTR("Carousel")),
       IconStackString(ICON_FA_LIST, FSUI_NSTR("List")),
     }};
-    const ImVec2 view_size = GetSegmentedControlFrameSize(
-      MeasureSegment(view_labels[0]) + MeasureSegment(view_labels[1]) + MeasureSegment(view_labels[2]));
-    const float view_left = window->WorkRect.Max.x - view_size.x;
-    const std::string_view view_hint = GetInputHint(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_F4);
-    DrawInputHint(dl, ImVec2(view_left - spacing - MeasureInputHint(view_hint), window->Pos.y), heading_size.y,
-                  view_hint);
 
-    // don't continue the back button's line, or the segments are placed relative to it
-    ImGui::NewLine();
-    ImGui::SetCursorScreenPos(ImVec2(view_left, window->Pos.y + ImFloor((heading_size.y - view_size.y) * 0.5f)));
-    BeginSegmentedControl("view");
+    // pills are the same height as the search box
+    static constexpr const float& search_font_size = UIStyle.MediumFontSize;
+    static constexpr const float& search_font_weight = UIStyle.NormalFontWeight;
+    const ImVec2 search_padding = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, 9.0f);
+    const float pill_height = search_font_size + search_padding.y * 2.0f;
+    const float pills_left = window->DC.CursorPos.x;
+    ImGui::NewLine(); // otherwise the pills after the first are placed on the back button's line
+    ImGui::SetCursorScreenPos(ImVec2(pills_left, window->Pos.y + ImFloor((heading_size.y - pill_height) * 0.5f)));
     for (size_t i = 0; i < view_labels.size(); i++)
     {
       const GameListView view = static_cast<GameListView>(i);
-      if (Segment(view_labels[i], view == s_game_list_locals.view))
+      const bool active = (view == s_game_list_locals.view);
+      bool hovered;
+      if (PillButton(window->GetID(GetGameListViewName(view)), view_labels[i], pill_height,
+                     active ? ImGui::GetColorU32(UIStyle.BackgroundTextColor) : 0,
+                     ImGui::GetColorU32(active ? UIStyle.SurfaceColor : UIStyle.MutedTextColor), 0, &hovered) &&
+          !active)
+      {
         BeginTransition([view]() { SetGameListView(view); });
+      }
+      ImGui::SameLine(0.0f, LayoutScale(4.0f));
     }
-    EndSegmentedControl();
+    const float pills_right = ImGui::GetItemRectMax().x;
 
-    static constexpr const float& search_font_size = UIStyle.MediumFontSize;
-    static constexpr const float& search_font_weight = UIStyle.NormalFontWeight;
+    // right to left: sort order (with the key that changes it inside the pill), search
+    const SmallString sort_label =
+      SmallString::from_format("{}  {}  {}", GetInputHint(ICON_PF_RIGHT_ANALOG_CLICK, ICON_PF_F6),
+                               GameList::GetColumnDisplayName(s_game_list_locals.sort_column),
+                               s_game_list_locals.sort_reversed ? ICON_FA_ARROW_DOWN : ICON_FA_ARROW_UP);
+    const float sort_left =
+      window->WorkRect.Max.x - MeasurePill(sort_label, pill_height, UIStyle.MediumFontSize, UIStyle.BoldFontWeight).x;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, 9.0f));
+    ImGui::NewLine();
+    ImGui::SetCursorScreenPos(ImVec2(sort_left, window->Pos.y + ImFloor((heading_size.y - pill_height) * 0.5f)));
+    bool sort_hovered;
+    if (PillButton(window->GetID("sort"), sort_label, pill_height, ImGui::GetColorU32(UIStyle.SurfaceRaisedColor),
+                   ImGui::GetColorU32(UIStyle.MutedTextColor), 0, &sort_hovered))
+    {
+      ChoiceDialogOptions options;
+      options.reserve(static_cast<size_t>(GameList::Column::MaxCount));
+      for (u32 i = 0; i < static_cast<u32>(GameList::Column::MaxCount); i++)
+      {
+        options.emplace_back(GameList::GetColumnDisplayName(static_cast<GameList::Column>(i)),
+                             static_cast<u32>(s_game_list_locals.sort_column) == i);
+      }
+      OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_SORT, "Sort By"), false, std::move(options),
+                       [](s32 index, const std::string& title, bool checked) {
+                         if (index >= 0)
+                           SetGameListSortColumn(static_cast<GameList::Column>(index));
+
+                         CloseCurrentDialog();
+                       });
+    }
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, search_padding);
     ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SurfaceRaisedColor);
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f));
 
-    const float search_width = LayoutScale(320.0f);
-    const float search_height = search_font_size + ImGui::GetStyle().FramePadding.y * 2.0f;
-    ImGui::SetCursorScreenPos(ImFloor(ImVec2(window->Pos.x + (window->Size.x - search_width) * 0.5f,
-                                             window->Pos.y + (heading_size.y - search_height) * 0.5f)));
+    // shrinks if it would run into the view pills
+    const float search_width = std::min(LayoutScale(320.0f), sort_left - pills_right - spacing * 3.0f);
+    const float search_x = sort_left - spacing - search_width;
+    ImGui::SetCursorScreenPos(ImFloor(ImVec2(search_x, window->Pos.y + (heading_size.y - pill_height) * 0.5f)));
 
     const ImGuiInputTextFlags extra_flags =
       (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false)) ?
@@ -380,6 +422,23 @@ void FullscreenUI::DrawGameListWindow()
       BeginTransition([step]() {
         SetGameListView(static_cast<GameListView>((static_cast<u32>(s_game_list_locals.view) + step) % count));
       });
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadR3, false) || ImGui::IsKeyPressed(ImGuiKey_F6, false))
+    {
+      // flips the order, then moves on to the next column
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+      const bool reversed = !s_game_list_locals.sort_reversed;
+      s_game_list_locals.sort_reversed = reversed;
+      Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_REVERSED, reversed);
+      if (!reversed)
+      {
+        SetGameListSortColumn(static_cast<GameList::Column>((static_cast<u32>(s_game_list_locals.sort_column) + 1) %
+                                                            static_cast<u32>(GameList::Column::MaxCount)));
+      }
+      else
+      {
+        Host::CommitBaseSettingChanges();
+      }
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
     {
