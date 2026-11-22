@@ -10766,7 +10766,7 @@ Se utilizará el color alternativo al activar el modo analógico.</translation>
     </message>
     <message>
         <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
-        <translation>El número de fotogramas que se alternará %n, introduce 0 para mantenerlo pulsado:</translation>
+        <translation>El número de fotogramas que se alternará %1, introduce 0 para mantenerlo pulsado:</translation>
     </message>
     <message>
         <source>Stop</source>
