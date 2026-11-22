@@ -141,6 +141,10 @@ static void DrawLoadingScreen();
 
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
 
+static void UpdateTextStyles();
+
+static float GetPillIconWidth(float height);
+
 static void UpdateDragScroll();
 static void AddDragScrollSample(double time, const ImVec2& position);
 static ImVec2 GetDragScrollReleaseVelocity();
@@ -169,7 +173,7 @@ static constexpr std::array s_theme_names = {
 
 // [0] = Mapping from Xbox button icons to PlayStation button icons.
 // [1] = Swapped south/east face buttons.
-using ControllerButtonMappingTable = std::array<std::pair<const char*, const char*>, 19>;
+using ControllerButtonMappingTable = std::array<std::pair<const char*, const char*>, 20>;
 static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, bool swap_south_east)
 {
   return ControllerButtonMappingTable{{
@@ -179,6 +183,9 @@ static constexpr ControllerButtonMappingTable GetButtonMapping(bool ps_buttons, 
      ps_buttons ? ICON_PF_LEFT_TRIGGER_L2 ICON_PF_RIGHT_TRIGGER_R2 : ICON_PF_LEFT_TRIGGER_LT ICON_PF_RIGHT_TRIGGER_RT},
     {ICON_PF_RIGHT_TRIGGER_RT, ps_buttons ? ICON_PF_RIGHT_TRIGGER_R2 : ICON_PF_RIGHT_TRIGGER_RT},
     {ICON_PF_LEFT_SHOULDER_LB, ps_buttons ? ICON_PF_LEFT_SHOULDER_L1 : ICON_PF_LEFT_SHOULDER_LB},
+    {ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, ps_buttons ?
+                                                           ICON_PF_LEFT_SHOULDER_L1 ICON_PF_RIGHT_SHOULDER_R1 :
+                                                           ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB},
     {ICON_PF_RIGHT_SHOULDER_RB, ps_buttons ? ICON_PF_RIGHT_SHOULDER_R1 : ICON_PF_RIGHT_SHOULDER_RB},
     {ICON_PF_BUTTON_X, ps_buttons ? ICON_PF_BUTTON_SQUARE : ICON_PF_BUTTON_X},
     {ICON_PF_BUTTON_Y, ps_buttons ? ICON_PF_BUTTON_TRIANGLE : ICON_PF_BUTTON_Y},
@@ -630,6 +637,9 @@ struct WidgetsState
   FixedPopupDialog fixed_popup_dialog;
 
   std::vector<std::unique_ptr<PopupDialog>> dialog_stack;
+
+  ImVec2 segmented_control_pos = {};
+  u32 segmented_control_index = 0;
   size_t drawing_dialog_index = NO_DRAWING_DIALOG;
   u32 last_dialog_serial = 0;
 
@@ -1883,6 +1893,16 @@ void FullscreenUI::DrawWithBlurTexture(const ImDrawList* parent_list, const ImDr
   g_gpu_device->DrawIndexed(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset);
 }
 
+void FullscreenUI::UpdateTextStyles()
+{
+  UIStyle.HeadingText = {UIStyle.LargeFontSize, UIStyle.BoldFontWeight, UIStyle.BackgroundTextColor};
+  UIStyle.TitleText = {UIStyle.MediumFontSize, UIStyle.BoldFontWeight, UIStyle.BackgroundTextColor};
+  UIStyle.BodyText = {UIStyle.MediumFontSize, UIStyle.NormalFontWeight, UIStyle.BackgroundTextColor};
+  UIStyle.MutedText = {UIStyle.MediumFontSize, UIStyle.NormalFontWeight, UIStyle.MutedTextColor};
+  UIStyle.SmallBoldText = {UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, UIStyle.BackgroundTextColor};
+  UIStyle.SmallMutedText = {UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, UIStyle.MutedTextColor};
+}
+
 bool FullscreenUI::UpdateLayoutScale()
 {
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
@@ -1913,6 +1933,7 @@ bool FullscreenUI::UpdateLayoutScale()
   UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
   UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
   UIStyle.MediumSmallFontSize = LayoutScale(LAYOUT_MEDIUM_SMALL_FONT_SIZE);
+  UpdateTextStyles();
 
   return (UIStyle.LayoutScale != old_scale);
 }
@@ -2877,6 +2898,22 @@ std::string_view FullscreenUI::GetControllerIconMapping(std::string_view icon)
   return icon;
 }
 
+std::string_view FullscreenUI::GetInputHint(std::string_view gamepad_icon, std::string_view keyboard_icon)
+{
+  return IsGamepadInputSource() ? GetControllerIconMapping(gamepad_icon) : keyboard_icon;
+}
+
+float FullscreenUI::MeasureInputHint(std::string_view hint)
+{
+  return MeasureText(UIStyle.MutedText, hint).x;
+}
+
+float FullscreenUI::DrawInputHint(ImDrawList* dl, const ImVec2& pos, float height, std::string_view hint)
+{
+  const TextStyle& style = UIStyle.MutedText;
+  return RenderText(dl, ImVec2(pos.x, pos.y + ImFloor((height - style.font_size) * 0.5f)), style, hint);
+}
+
 void FullscreenUI::AppendFooterTextItems(SmallStringBase& dest,
                                          std::span<const std::pair<const char*, std::string_view>> items)
 {
@@ -3602,6 +3639,249 @@ void FullscreenUI::RenderMultiLineShadowedTextClipped(ImDrawList* draw_list, ImF
     current_pos.y += line_size.y;
     text_ptr = line_end;
   }
+}
+
+void FullscreenUI::RenderShadowedTextClipped(ImDrawList* draw_list, const ImVec2& pos_min, const ImVec2& pos_max,
+                                             const TextStyle& style, std::string_view text,
+                                             const ImVec2& align /* = ImVec2(0.0f, 0.0f) */,
+                                             const ImRect* clip_rect /* = nullptr */)
+{
+  RenderShadowedTextClipped(draw_list, UIStyle.Font, style.font_size, style.font_weight, pos_min, pos_max,
+                            ImGui::GetColorU32(style.color), text, nullptr, align, 0.0f, clip_rect);
+}
+
+void FullscreenUI::RenderShadowedTextEllipsis(ImDrawList* draw_list, const ImVec2& pos_min, const ImVec2& pos_max,
+                                              const TextStyle& style, std::string_view text,
+                                              const ImVec2& align /* = ImVec2(0.0f, 0.0f) */)
+{
+  if (text.empty())
+    return;
+
+  ImFont* const font = UIStyle.Font;
+  const u32 color = ImGui::GetColorU32(style.color);
+  const float avail_width = pos_max.x - pos_min.x;
+  const ImVec2 text_size = MeasureText(style, text);
+  if (text_size.x <= avail_width)
+  {
+    RenderShadowedTextClipped(draw_list, font, style.font_size, style.font_weight, pos_min, pos_max, color, text,
+                              &text_size, align);
+    return;
+  }
+
+  char ellipsis[5];
+  const int ellipsis_len = ImTextCharToUtf8(ellipsis, font->EllipsisChar);
+  const float ellipsis_width = MeasureText(style, std::string_view(ellipsis, static_cast<size_t>(ellipsis_len))).x;
+
+  // keep as much as fits alongside the ellipsis, without trailing whitespace
+  const char* text_end = text.data() + text.length();
+  font->CalcTextSizeA(style.font_size, style.font_weight, std::max(avail_width - ellipsis_width, 0.0f), 0.0f,
+                      text.data(), text_end, &text_end);
+  while (text_end > text.data() && (text_end[-1] == ' ' || text_end[-1] == '\t'))
+    text_end--;
+
+  SmallString truncated;
+  truncated.append(std::string_view(text.data(), text_end));
+  truncated.append(std::string_view(ellipsis, static_cast<size_t>(ellipsis_len)));
+  RenderShadowedTextClipped(draw_list, font, style.font_size, style.font_weight, pos_min, pos_max, color, truncated,
+                            nullptr, align);
+}
+
+float FullscreenUI::RenderText(ImDrawList* draw_list, const ImVec2& pos, const TextStyle& style, std::string_view text)
+{
+  draw_list->AddText(UIStyle.Font, style.font_size, style.font_weight, pos, ImGui::GetColorU32(style.color),
+                     IMSTR_START_END(text));
+  return MeasureText(style, text).x;
+}
+
+FullscreenUI::InlineRun::InlineRun(float spacing) : m_spacing(spacing), m_next_spacing(spacing)
+{
+}
+
+FullscreenUI::InlineRun::Item& FullscreenUI::InlineRun::AddItem(ItemType type, float width, float height)
+{
+  DebugAssert(m_num_items < MAX_ITEMS);
+  Item& item = m_items[m_num_items++];
+  item = {};
+  item.type = type;
+  item.spacing = (m_num_items > 1) ? m_next_spacing : 0.0f;
+  item.width = width;
+  item.height = height;
+  m_next_spacing = m_spacing;
+  return item;
+}
+
+u32 FullscreenUI::InlineRun::AddText(const TextStyle& style, u32 offset, u8 flags)
+{
+  const std::string_view text = m_buffer.view().substr(offset);
+  Item& item = AddItem(ItemType::Text, MeasureText(style, text).x, style.font_size);
+  item.flags = flags;
+  item.text_offset = static_cast<u16>(offset);
+  item.text_length = static_cast<u16>(text.length());
+  item.style = style;
+  return m_num_items - 1;
+}
+
+u32 FullscreenUI::InlineRun::AddPill(const TextStyle& style, u32 offset, u32 bg_color, float height, float rounding)
+{
+  const std::string_view text = m_buffer.view().substr(offset);
+  Item& item = AddItem(ItemType::Pill, MeasurePill(text, height, style).x, height);
+  item.text_offset = static_cast<u16>(offset);
+  item.text_length = static_cast<u16>(text.length());
+  item.style = style;
+  item.bg_color = bg_color;
+  item.rounding = rounding;
+  return m_num_items - 1;
+}
+
+u32 FullscreenUI::InlineRun::Text(const TextStyle& style, std::string_view text, u8 flags)
+{
+  const u32 offset = m_buffer.length();
+  m_buffer.append(text);
+  return AddText(style, offset, flags);
+}
+
+u32 FullscreenUI::InlineRun::Hint(std::string_view hint)
+{
+  return Text(UIStyle.MutedText, hint);
+}
+
+u32 FullscreenUI::InlineRun::Pill(std::string_view text, const TextStyle& style, u32 bg_color, float height,
+                                  float rounding)
+{
+  const u32 offset = m_buffer.length();
+  m_buffer.append(text);
+  return AddPill(style, offset, bg_color, height, rounding);
+}
+
+u32 FullscreenUI::InlineRun::Space(float width, float height, u8 flags)
+{
+  AddItem(ItemType::Space, width, height).flags = flags;
+  return m_num_items - 1;
+}
+
+u32 FullscreenUI::InlineRun::Fill()
+{
+  AddItem(ItemType::Fill, 0.0f, 0.0f).spacing = 0.0f;
+  return m_num_items - 1;
+}
+
+void FullscreenUI::InlineRun::Spacing(float spacing)
+{
+  m_next_spacing = spacing;
+}
+
+float FullscreenUI::InlineRun::GetWidth() const
+{
+  float width = 0.0f;
+  for (u32 i = 0; i < m_num_items; i++)
+    width += m_items[i].spacing + m_items[i].width;
+  return width;
+}
+
+void FullscreenUI::InlineRun::Draw(ImDrawList* dl, const ImRect& bb, float align_x)
+{
+  const float avail_width = bb.GetWidth();
+  const float avail_height = bb.GetHeight();
+  const float width = GetWidth();
+  u32 num_fill = 0, num_shrink = 0;
+  float shrink_width = 0.0f;
+  for (u32 i = 0; i < m_num_items; i++)
+  {
+    num_fill += BoolToUInt32(m_items[i].type == ItemType::Fill);
+    if (m_items[i].flags & Shrink)
+    {
+      num_shrink++;
+      shrink_width += m_items[i].width;
+    }
+  }
+
+  // shrink items narrower than an equal share of their space keep their width, the rest split what's left
+  float shrink_limit = std::numeric_limits<float>::max();
+  if (width > avail_width && num_shrink > 0)
+  {
+    const float shrink_avail = avail_width - (width - shrink_width);
+    shrink_limit = shrink_avail / static_cast<float>(num_shrink);
+    for (u32 pass = 1; pass < num_shrink; pass++)
+    {
+      float kept_width = 0.0f;
+      u32 num_limited = 0;
+      for (u32 i = 0; i < m_num_items; i++)
+      {
+        if (!(m_items[i].flags & Shrink))
+          continue;
+        else if (m_items[i].width <= shrink_limit)
+          kept_width += m_items[i].width;
+        else
+          num_limited++;
+      }
+      if (num_limited == 0)
+        break;
+      shrink_limit = (shrink_avail - kept_width) / static_cast<float>(num_limited);
+    }
+    shrink_limit = std::max(shrink_limit, 0.0f);
+  }
+
+  const float fill_width = (num_fill > 0) ? (std::max(avail_width - width, 0.0f) / static_cast<float>(num_fill)) : 0.0f;
+  float x = bb.Min.x;
+  if (num_fill == 0 && width <= avail_width)
+    x += ImFloor((avail_width - width) * align_x);
+
+  for (u32 i = 0; i < m_num_items; i++)
+  {
+    Item& item = m_items[i];
+    x += item.spacing;
+
+    float item_width = item.width;
+    if (item.type == ItemType::Fill)
+    {
+      item_width = fill_width;
+    }
+    else if (item.flags & Shrink)
+    {
+      item_width = std::min(item_width, shrink_limit);
+    }
+
+    const float item_height = (item.height > 0.0f) ? item.height : avail_height;
+    const float item_top = bb.Min.y + ImFloor((avail_height - item_height) * ((item.flags & Bottom) ? 1.0f : 0.5f));
+    item.rect = ImRect(x, item_top, x + item_width, item_top + item_height);
+    x += item_width;
+
+    const std::string_view text = m_buffer.view().substr(item.text_offset, item.text_length);
+    switch (item.type)
+    {
+      case ItemType::Text:
+      {
+        if (item.flags & (Shadow | Shrink))
+          RenderShadowedTextEllipsis(dl, item.rect.Min, item.rect.Max, item.style, text);
+        else
+          RenderText(dl, item.rect.Min, item.style, text);
+      }
+      break;
+
+      case ItemType::Pill:
+        DrawPill(dl, item.rect.Min, item_height, text, item.style, item.bg_color, item.rounding);
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
+ImVec2 FullscreenUI::MeasurePill(std::string_view text, float height, float font_size, float font_weight)
+{
+  const float text_width = MeasureText(font_size, font_weight, text).x;
+  return ImVec2(text_width + height * 0.8f, height);
+}
+
+float FullscreenUI::DrawPill(ImDrawList* dl, const ImVec2& pos, float height, std::string_view text,
+                             const TextStyle& style, u32 bg_color, float rounding /* = -1.0f */)
+{
+  const ImVec2 size = MeasurePill(text, height, style);
+  const ImVec2 pos_max = pos + size;
+  dl->AddRectFilled(pos, pos_max, bg_color, (rounding < 0.0f) ? (height * 0.5f) : rounding);
+  RenderText(dl, pos + (size - MeasureText(style, text)) * 0.5f, style, text);
+  return size.x;
 }
 
 ImVec2 FullscreenUI::RenderOutlinedText(ImDrawList* draw_list, ImFont* font, float size, float weight,
@@ -4827,6 +5107,190 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
     nullptr, ImVec2(0.0f, 0.0f), 0.0f, &bb);
 
   return pressed;
+}
+
+float FullscreenUI::GetPillIconWidth(float height)
+{
+  return ImFloor(height * 0.6f) + LayoutScale(LAYOUT_ITEM_X_SPACING);
+}
+
+bool FullscreenUI::PillButton(ImGuiID id, std::string_view label, float height, u32 bg_color, u32 text_color,
+                              u32 border_color, bool* hovered, GPUTexture* icon /* = nullptr */)
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return false;
+
+  const float font_size = UIStyle.MediumFontSize;
+  const float icon_width = icon ? GetPillIconWidth(height) : 0.0f;
+  const float icon_size = ImFloor(height * 0.6f);
+  const ImVec2 size = MeasurePill(label, height, font_size, UIStyle.BoldFontWeight) + ImVec2(icon_width, 0.0f);
+  const ImVec2 pos = window->DC.CursorPos;
+  const ImRect bb(pos, pos + size);
+
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+  ImGui::ItemSize(size);
+  ImGui::SameLine();
+  ImGui::PopStyleVar();
+
+  // not used for gamepad navigation, these are switched with the bumpers/triggers
+  if (!ImGui::ItemAdd(bb, id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_NoNavDefaultFocus))
+    return false;
+
+  bool held;
+  const bool pressed =
+    ImGui::ButtonBehavior(bb, id, hovered, &held, ImGuiButtonFlags_NoFocus | ImGuiButtonFlags_NoNavFocus);
+  *hovered = (*hovered && ShouldHighlightHoveredItem(held));
+  if (*hovered && !(bg_color >> IM_COL32_A_SHIFT))
+  {
+    const ImVec4 hovered_bg = DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f);
+    bg_color = ImGui::GetColorU32(held ? DarkerColor(hovered_bg, 1.2f) : hovered_bg);
+  }
+
+  ImDrawList* const dl = window->DrawList;
+  if (bg_color >> IM_COL32_A_SHIFT)
+    dl->AddRectFilled(bb.Min, bb.Max, bg_color, height * 0.5f);
+  if (border_color >> IM_COL32_A_SHIFT)
+    dl->AddRect(bb.Min, bb.Max, border_color, height * 0.5f, LayoutScale(1.0f));
+
+  const ImVec2 text_size = MeasureText(font_size, UIStyle.BoldFontWeight, label);
+  const ImVec2 text_pos = pos + (size - text_size) * 0.5f + ImVec2(icon_width * 0.5f, 0.0f);
+  if (icon)
+  {
+    const ImRect icon_bb = CenterImage(
+      ImRectFromExtent(ImVec2(text_pos.x - icon_width, pos.y + (height - icon_size) * 0.5f), icon_size, icon_size),
+      icon);
+    dl->AddImage(icon, icon_bb.Min, icon_bb.Max);
+  }
+  dl->AddText(UIStyle.Font, font_size, UIStyle.BoldFontWeight, text_pos, text_color, IMSTR_START_END(label));
+  return pressed;
+}
+
+float FullscreenUI::MeasureSegment(std::string_view label, bool has_icon /* = false */)
+{
+  const float height = LayoutScale(SEGMENTED_CONTROL_HEIGHT);
+  return MeasurePill(label, height, UIStyle.MediumFontSize, UIStyle.BoldFontWeight).x +
+         (has_icon ? GetPillIconWidth(height) : 0.0f);
+}
+
+ImVec2 FullscreenUI::GetSegmentedControlFrameSize(float segments_width)
+{
+  const float padding = LayoutScale(SEGMENTED_CONTROL_PADDING);
+  return ImVec2(segments_width + padding * 2.0f, LayoutScale(SEGMENTED_CONTROL_HEIGHT) + padding * 2.0f);
+}
+
+void FullscreenUI::BeginSegmentedControl(std::string_view str_id)
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  const float padding = LayoutScale(SEGMENTED_CONTROL_PADDING);
+
+  // segments go on top of the container, which can only be drawn once its width is known
+  window->DrawList->ChannelsSplit(2);
+  window->DrawList->ChannelsSetCurrent(1);
+
+  ImGui::PushID(IMSTR_START_END(str_id));
+  ImGui::BeginGroup();
+  s_state.segmented_control_pos = window->DC.CursorPos;
+  s_state.segmented_control_index = 0;
+  ImGui::SetCursorScreenPos(window->DC.CursorPos + ImVec2(padding, padding));
+}
+
+bool FullscreenUI::Segment(std::string_view label, bool active, GPUTexture* icon /* = nullptr */)
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  bool hovered;
+  return (PillButton(window->GetID(static_cast<int>(s_state.segmented_control_index++)), label,
+                     LayoutScale(SEGMENTED_CONTROL_HEIGHT),
+                     active ? ImGui::GetColorU32(UIStyle.BackgroundTextColor) : 0,
+                     ImGui::GetColorU32(active ? UIStyle.SurfaceColor : UIStyle.MutedTextColor), 0, &hovered, icon) &&
+          !active);
+}
+
+void FullscreenUI::EndSegmentedControl()
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  const float height = LayoutScale(SEGMENTED_CONTROL_HEIGHT);
+  const float padding = LayoutScale(SEGMENTED_CONTROL_PADDING);
+
+  // extend the group over the container's right and bottom padding
+  ImGui::Dummy(ImVec2(padding, height + padding));
+  ImGui::EndGroup();
+  ImGui::SameLine();
+  ImGui::PopID();
+
+  window->DrawList->ChannelsSetCurrent(0);
+  window->DrawList->AddRectFilled(s_state.segmented_control_pos, ImGui::GetItemRectMax(),
+                                  ImGui::GetColorU32(UIStyle.SurfaceRaisedColor), height * 0.5f + padding);
+  window->DrawList->ChannelsMerge();
+}
+
+bool FullscreenUI::BeginPageHeader(const char* name, const ImVec4& background, bool blur,
+                                   float height /* = LAYOUT_PAGE_HEADER_HEIGHT */)
+{
+  const ImVec2 size = ImVec2(ImGui::GetIO().DisplaySize.x, LayoutScale(height));
+  if (!BeginFullscreenWindow(
+        ImVec2(), size, name, background, 0.0f, ImVec2(LAYOUT_PAGE_X_PADDING, 0.0f),
+        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse, blur))
+  {
+    return false;
+  }
+
+  // clicking the background focuses the window, but it isn't navigable, so give focus back to the page under it
+  // unless one of our items is active (e.g. text input)
+  if (ImGuiWindow* const window = ImGui::GetCurrentWindow();
+      GImGui->NavWindow == window && GImGui->ActiveIdWindow != window)
+  {
+    ImGui::FocusTopMostWindowUnderOne(window, window, nullptr, ImGuiFocusRequestFlags_RestoreFocusedChild);
+  }
+
+  const ImVec2 pos = ImGui::GetWindowPos();
+  ImGui::GetWindowDrawList()->AddLine(ImVec2(pos.x, pos.y + size.y - 1.0f), pos + size - ImVec2(0.0f, 1.0f),
+                                      ImGui::GetColorU32(UIStyle.BorderColor), LayoutScale(1.0f));
+  return true;
+}
+
+bool FullscreenUI::PageHeaderBackButton()
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  const float size = LayoutScale(35.0f);
+  const ImVec2 pos = ImVec2(window->DC.CursorPos.x, window->Pos.y + ImFloor((window->Size.y - size) * 0.5f));
+  const ImRect bb(pos, pos + ImVec2(size, size));
+  const ImGuiID id = window->GetID("back");
+  ImGui::SetCursorScreenPos(pos);
+  ImGui::ItemSize(bb.GetSize());
+  if (!ImGui::ItemAdd(bb, id))
+    return false;
+
+  bool hovered, held;
+  const bool pressed =
+    ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoFocus | ImGuiButtonFlags_NoNavFocus);
+  const ImVec4 hovered_bg = DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f);
+  const ImVec4 bg = held ? DarkerColor(hovered_bg, 1.2f) : (hovered ? hovered_bg : UIStyle.SurfaceRaisedColor);
+  ImDrawList* const dl = window->DrawList;
+  dl->AddCircleFilled(bb.GetCenter(), size * 0.5f, ImGui::GetColorU32(bg), 32);
+  RenderShadowedTextClipped(dl, bb.Min, bb.Max, UIStyle.TitleText, ICON_FA_CHEVRON_LEFT, ImVec2(0.5f, 0.5f));
+
+  ImGui::SameLine(0.0f, LayoutScale(14.0f));
+  return pressed;
+}
+
+void FullscreenUI::PageHeaderTitle(std::string_view title, std::string_view breadcrumb /* = {} */)
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  InlineRun run(LayoutScale(10.0f));
+  run.Text({UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight, UIStyle.BackgroundTextColor}, title,
+           InlineRun::Shrink);
+  if (!breadcrumb.empty())
+    run.Text(UIStyle.MutedText, breadcrumb, InlineRun::Shrink);
+  run.Draw(window->DrawList,
+           ImRect(window->DC.CursorPos.x, window->Pos.y, window->WorkRect.Max.x, window->Pos.y + window->Size.y));
+  ImGui::ItemSize(ImVec2(run.GetWidth(), 0.0f));
+  ImGui::SameLine(0.0f, LayoutScale(16.0f));
+}
+
+void FullscreenUI::EndPageHeader()
+{
+  EndFullscreenWindow();
 }
 
 bool FullscreenUI::BeginFloatingNavBar(float x, float y, float items_width,
@@ -9007,4 +9471,6 @@ void FullscreenUI::UpdateTheme()
   UIStyle.AccentTextColor = UIStyle.SecondaryTextColor;
   if (theme == "MidnightAmber")
     UIStyle.AccentTextColor = HEX_TO_IMVEC4(0x1a1305, 0xff);
+
+  UpdateTextStyles();
 }

@@ -12,6 +12,7 @@ add_executable(core-tests
   cpu_test_harness.cpp
   cpu_test_harness.h
   dma_tests.cpp
+  fullscreenui_widgets_tests.cpp
   game_list_tests.cpp
   gpu_sw_rasterizer_tests.cpp
   gpu_tests.cpp
@@ -29,3 +30,4 @@ add_executable(core-tests
 
 target_include_directories(core-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core-tests PRIVATE core gtest gtest_main)
+add_core_resources(core-tests)

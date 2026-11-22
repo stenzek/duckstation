@@ -78,7 +78,20 @@ inline constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
 inline constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
 inline constexpr float LAYOUT_WIDGET_FRAME_ROUNDING = 20.0f;
 inline constexpr float LAYOUT_FRAME_BORDER_SIZE = 1.0f;
+inline constexpr float LAYOUT_PAGE_HEADER_HEIGHT = 52.0f;
+inline constexpr float LAYOUT_PAGE_X_PADDING = 10.0f;
 inline constexpr ImVec2 LAYOUT_CENTER_ALIGN_TEXT = ImVec2(0.5f, 0.0f);
+
+/// Font size, weight and colour for text in the UI font. The colour goes through ImGui::GetColorU32() when drawn, so it
+/// follows the style alpha.
+struct TextStyle
+{
+  float font_size;
+  float font_weight;
+  ImVec4 color;
+
+  ALWAYS_INLINE TextStyle WithColor(const ImVec4& new_color) const { return {font_size, font_weight, new_color}; }
+};
 
 struct ALIGN_TO_CACHE_LINE UIStyles
 {
@@ -124,6 +137,14 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   float MediumLargeFontSize;
   float MediumSmallFontSize;
   float BlurBackgroundWeight;
+
+  // Text presets, updated with the layout scale and the theme.
+  TextStyle HeadingText;    // large bold, page titles
+  TextStyle TitleText;      // medium bold, row titles
+  TextStyle BodyText;       // medium
+  TextStyle MutedText;      // medium, muted colour
+  TextStyle SmallBoldText;  // medium-small bold
+  TextStyle SmallMutedText; // medium-small, muted colour
 
   static constexpr float NormalFontWeight = 0.0f;
   static constexpr float BoldFontWeight = 500.0f;
@@ -182,6 +203,26 @@ ALWAYS_INLINE ImRect ImRectFromLayoutExtent(const ImVec2& pos, const ImVec2& siz
 ALWAYS_INLINE ImRect ImRectFromLayoutExtent(const ImVec2& pos, const float width, const float height)
 {
   return ImRectFromExtent(pos, LayoutScale(width, height));
+}
+
+/// Size of a single unwrapped line of text in the UI font.
+ALWAYS_INLINE ImVec2 MeasureText(float font_size, float font_weight, std::string_view text)
+{
+  return text.empty() ?
+           ImVec2() :
+           UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, text.data(), text.data() + text.size());
+}
+ALWAYS_INLINE ImVec2 MeasureText(const TextStyle& style, std::string_view text)
+{
+  return MeasureText(style.font_size, style.font_weight, text);
+}
+
+/// Size of text word-wrapped to wrap_width.
+ALWAYS_INLINE ImVec2 MeasureText(const TextStyle& style, std::string_view text, float wrap_width)
+{
+  return text.empty() ? ImVec2() :
+                        UIStyle.Font->CalcTextSizeA(style.font_size, style.font_weight, FLT_MAX, wrap_width,
+                                                    text.data(), text.data() + text.size());
 }
 
 ALWAYS_INLINE ImVec4 ModAlpha(const ImVec4& v, float a)
@@ -449,6 +490,15 @@ enum class FooterBackground : u8
 
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
+
+/// The gamepad icon (mapped for the controller in use) or the keyboard icon, depending on the last input source.
+std::string_view GetInputHint(std::string_view gamepad_icon, std::string_view keyboard_icon);
+
+/// Input hints are drawn in the muted text style, vertically centred in [pos.y, pos.y + height].
+/// DrawInputHint() returns the width used.
+float MeasureInputHint(std::string_view hint);
+float DrawInputHint(ImDrawList* dl, const ImVec2& pos, float height, std::string_view hint);
+
 void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
 void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> left_items,
                              std::span<const std::pair<const char*, std::string_view>> right_items);
@@ -476,6 +526,109 @@ bool MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bo
 /// dragged, and on the frame it's released, when fling_distance is how much further a fling would carry the content.
 bool GetWindowDrag(ImVec2* fling_distance);
 
+/// A single line of text, pills and spaces, laid out when drawn. Each item is vertically centred in the rect passed to
+/// Draw(), or put on its bottom edge. Shrink items are ellipsised to make the line fit, each getting an equal share of
+/// what's left, Fill items share the space left over, and without any Fill items the line is aligned by align_x. Text
+/// is copied, so the caller's buffers can be reused straight away.
+class InlineRun
+{
+public:
+  enum Flags : u8
+  {
+    Shadow = (1 << 0),
+    Shrink = (1 << 1), // also drawn with a shadow
+    Bottom = (1 << 2), // e.g. smaller text after a title
+  };
+
+  explicit InlineRun(float spacing);
+
+  u32 Text(const TextStyle& style, std::string_view text, u8 flags = 0);
+  template<typename... T>
+  u32 TextFmt(const TextStyle& style, fmt::format_string<T...> fmt, T&&... args)
+  {
+    const u32 offset = m_buffer.length();
+    m_buffer.append_format(fmt, std::forward<T>(args)...);
+    return AddText(style, offset, 0);
+  }
+
+  /// Input hint, see DrawInputHint().
+  u32 Hint(std::string_view hint);
+  u32 Pill(std::string_view text, const TextStyle& style, u32 bg_color, float height, float rounding = -1.0f);
+  template<typename... T>
+  u32 PillFmt(const TextStyle& style, u32 bg_color, float height, float rounding, fmt::format_string<T...> fmt,
+              T&&... args)
+  {
+    const u32 offset = m_buffer.length();
+    m_buffer.append_format(fmt, std::forward<T>(args)...);
+    return AddPill(style, offset, bg_color, height, rounding);
+  }
+
+  /// Empty slot, e.g. for a widget drawn afterwards at GetItemRect(). Height 0 is the full height of the line.
+  u32 Space(float width, float height = 0.0f, u8 flags = 0);
+
+  /// Takes no spacing of its own, only the item after it is spaced.
+  u32 Fill();
+
+  /// Overrides the spacing before the next item.
+  void Spacing(float spacing);
+
+  /// Width of the line before any shrinking or filling.
+  float GetWidth() const;
+  void Draw(ImDrawList* dl, const ImRect& bb, float align_x = 0.0f);
+
+  /// Only valid after Draw().
+  const ImRect& GetItemRect(u32 index) const { return m_items[index].rect; }
+
+private:
+  static constexpr u32 MAX_ITEMS = 8;
+
+  enum class ItemType : u8
+  {
+    Text,
+    Pill,
+    Space,
+    Fill,
+  };
+
+  struct Item
+  {
+    ItemType type;
+    u8 flags;
+    u16 text_offset;
+    u16 text_length;
+    float spacing;
+    float width;
+    float height;
+    float rounding;
+    u32 bg_color;
+    TextStyle style;
+    ImRect rect;
+  };
+
+  Item& AddItem(ItemType type, float width, float height);
+  u32 AddText(const TextStyle& style, u32 offset, u8 flags);
+  u32 AddPill(const TextStyle& style, u32 offset, u32 bg_color, float height, float rounding);
+
+  Item m_items[MAX_ITEMS];
+  u32 m_num_items = 0;
+  float m_spacing;
+  float m_next_spacing;
+  SmallString m_buffer;
+};
+
+/// Rounded label. Rounding < 0 rounds the ends fully. DrawPill() returns the width used.
+ImVec2 MeasurePill(std::string_view text, float height, float font_size, float font_weight);
+ALWAYS_INLINE ImVec2 MeasurePill(std::string_view text, float height, const TextStyle& style)
+{
+  return MeasurePill(text, height, style.font_size, style.font_weight);
+}
+float DrawPill(ImDrawList* dl, const ImVec2& pos, float height, std::string_view text, const TextStyle& style,
+               u32 bg_color, float rounding = -1.0f);
+
+/// Mouse-clickable pill, not gamepad navigable. A transparent bg_color is filled when hovered.
+bool PillButton(ImGuiID id, std::string_view label, float height, u32 bg_color, u32 text_color, u32 border_color,
+                bool* hovered, GPUTexture* icon = nullptr);
+
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, bool held);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, float font_size, float font_weight, const ImVec2& pos_min,
@@ -494,6 +647,18 @@ void RenderMultiLineShadowedTextClipped(ImDrawList* draw_list, ImFont* font, flo
                                         const ImVec2& pos_min, const ImVec2& pos_max, u32 color, std::string_view text,
                                         const ImVec2& align, float wrap_width, const ImRect* clip_rect = nullptr,
                                         float shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET));
+void RenderShadowedTextClipped(ImDrawList* draw_list, const ImVec2& pos_min, const ImVec2& pos_max,
+                               const TextStyle& style, std::string_view text, const ImVec2& align = ImVec2(0.0f, 0.0f),
+                               const ImRect* clip_rect = nullptr);
+
+/// Single line, truncated with an ellipsis if it does not fit between pos_min.x and pos_max.x.
+void RenderShadowedTextEllipsis(ImDrawList* draw_list, const ImVec2& pos_min, const ImVec2& pos_max,
+                                const TextStyle& style, std::string_view text,
+                                const ImVec2& align = ImVec2(0.0f, 0.0f));
+
+/// Unshadowed single line at pos. Returns the width used.
+float RenderText(ImDrawList* draw_list, const ImVec2& pos, const TextStyle& style, std::string_view text);
+
 ImVec2 RenderOutlinedText(ImDrawList* draw_list, ImFont* font, float size, float weight, const ImVec2& pos, ImU32 col,
                           std::string_view text);
 void RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight, float label_weight,
@@ -569,6 +734,27 @@ void RightAlignNavButtons(u32 num_items);
 void RightAlignNavButtons(float total_width);
 bool NavButton(std::string_view title, bool is_active, bool enabled = true, bool show_active_indicator = false);
 bool NavTab(std::string_view title, bool is_active, bool enabled, float width);
+
+/// Mouse-clickable segmented control, not gamepad navigable. Call Segment() for each item between
+/// BeginSegmentedControl() and EndSegmentedControl(), it returns true when an inactive segment is clicked.
+/// MeasureSegment() and GetSegmentedControlFrameSize() give the size beforehand, e.g. for right alignment.
+inline constexpr float SEGMENTED_CONTROL_HEIGHT = 30.0f;
+inline constexpr float SEGMENTED_CONTROL_PADDING = 4.0f;
+float MeasureSegment(std::string_view label, bool has_icon = false);
+ImVec2 GetSegmentedControlFrameSize(float segments_width);
+void BeginSegmentedControl(std::string_view str_id);
+bool Segment(std::string_view label, bool active, GPUTexture* icon = nullptr);
+void EndSegmentedControl();
+
+/// Page header: a non-navigable window across the top of the screen, with a border along the bottom.
+bool BeginPageHeader(const char* name, const ImVec4& background, bool blur, float height = LAYOUT_PAGE_HEADER_HEIGHT);
+
+/// Round back button, returns true when clicked.
+bool PageHeaderBackButton();
+
+/// Heading-sized title, followed by a muted " / breadcrumb" if one is given. Items after it continue on the same line.
+void PageHeaderTitle(std::string_view title, std::string_view breadcrumb = {});
+void EndPageHeader();
 
 bool BeginFloatingNavBar(float x, float y, float items_width, float font_size = UIStyle.LargeFontSize,
                          float anchor_x = 0.0f, float anchor_y = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,

@@ -1392,6 +1392,14 @@ ImVec4 FullscreenUI::GetTransparentBackgroundColor(const ImVec4& no_background_c
     return ImVec4{};
 }
 
+ImVec4 FullscreenUI::GetPageBackgroundColor()
+{
+  // light themes draw directly over the menu background, rather than washing it out
+  return (UIStyle.IsDarkTheme || VideoThread::HasGPUBackend()) ?
+           ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()) :
+           GetTransparentBackgroundColor();
+}
+
 bool FullscreenUI::ShouldOpenToGameList()
 {
   return Core::GetBaseBoolSettingValue(Settings::INTERFACE_SECTION_NAME, "FullscreenUIOpenToGameList", false);
