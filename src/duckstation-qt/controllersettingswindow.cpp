@@ -32,6 +32,7 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
 {
   m_ui.setupUi(this);
   m_ui.buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
+  m_ui.buttonBox->button(QDialogButtonBox::Close)->setIcon(QIcon(u":/icons/monochrome/svg/close-line.svg"_s));
 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -62,7 +63,10 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
     m_ui.copyGlobalSettings = nullptr;
 
     if (QPushButton* button = m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults))
+    {
+      button->setIcon(QIcon(u":/icons/monochrome/svg/reset-left-line.svg"_s));
       connect(button, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
+    }
   }
   else
   {
