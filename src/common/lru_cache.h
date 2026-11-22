@@ -5,6 +5,7 @@
 #include "heterogeneous_containers.h"
 #include "types.h"
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <memory>
 #include <type_traits>
@@ -20,7 +21,14 @@ struct LRUCacheDefaultDeleter
   }
 };
 
-template<class K, class V, class Deleter = LRUCacheDefaultDeleter<V>>
+template<class V>
+struct LRUCacheDefaultWeigher
+{
+  static constexpr std::size_t operator()(const V&) noexcept { return 0; }
+};
+
+// When a weigher is used, values must only be replaced through Insert(), not through Lookup() or Apply().
+template<class K, class V, class Deleter = LRUCacheDefaultDeleter<V>, class Weigher = LRUCacheDefaultWeigher<V>>
 class LRUCache
 {
   using CounterType = std::uint64_t;
@@ -45,19 +53,29 @@ public:
 
   std::size_t GetSize() const { return m_items.size(); }
   std::size_t GetMaxCapacity() const { return m_max_capacity; }
+  u64 GetTotalWeight() const { return m_total_weight; }
+  u64 GetMaxWeight() const { return m_max_weight; }
 
   void Clear()
   {
     for (auto it = m_items.rbegin(); it != m_items.rend(); ++it)
       m_deleter(std::move(it->second.value));
     m_items.clear();
+    m_total_weight = 0;
   }
 
   void SetMaxCapacity(std::size_t capacity)
   {
     m_max_capacity = capacity;
-    if (m_items.size() > m_max_capacity)
-      Evict(m_items.size() - m_max_capacity);
+    if (!m_manual_evict)
+      ManualEvict();
+  }
+
+  void SetMaxWeight(u64 weight)
+  {
+    m_max_weight = weight;
+    if (!m_manual_evict)
+      ManualEvict();
   }
 
   template<typename KeyT>
@@ -76,14 +94,25 @@ public:
     auto iter = m_items.find(key);
     if (iter != m_items.end())
     {
+      m_total_weight = m_total_weight - m_weigher(iter->second.value) + m_weigher(value);
       m_deleter(std::move(iter->second.value));
       iter->second.value = std::move(value);
       iter->second.last_access = ++m_last_counter;
+
+      // the replaced item is now the most recently used, so it is only evicted if it's the last item
+      if (!m_manual_evict)
+      {
+        while (m_total_weight > m_max_weight && m_items.size() > 1)
+          Evict(1);
+      }
+
       return &iter->second.value;
     }
     else
     {
-      ShrinkForNewItem();
+      const u64 weight = m_weigher(value);
+      ShrinkForNewItem(weight);
+      m_total_weight += weight;
 
       Item it;
       it.last_access = ++m_last_counter;
@@ -103,6 +132,7 @@ public:
         if (lowest == m_items.end() || iter->second.last_access < lowest->second.last_access)
           lowest = iter;
       }
+      m_total_weight -= m_weigher(lowest->second.value);
       m_deleter(std::move(lowest->second.value));
       m_items.erase(lowest);
       count--;
@@ -117,6 +147,7 @@ public:
     {
       if (pred(iter->first))
       {
+        m_total_weight -= m_weigher(iter->second.value);
         m_deleter(std::move(iter->second.value));
         iter = m_items.erase(iter);
         removed_count++;
@@ -135,6 +166,7 @@ public:
     auto iter = m_items.find(key);
     if (iter == m_items.end())
       return false;
+    m_total_weight -= m_weigher(iter->second.value);
     m_deleter(std::move(iter->second.value));
     m_items.erase(iter);
     return true;
@@ -148,8 +180,10 @@ public:
   void ManualEvict()
   {
     // evict if we went over
-    while (m_items.size() > m_max_capacity)
+    if (m_items.size() > m_max_capacity)
       Evict(m_items.size() - m_max_capacity);
+    while (m_total_weight > m_max_weight && !m_items.empty())
+      Evict(1);
   }
 
   template<typename F>
@@ -160,17 +194,23 @@ public:
   }
 
 private:
-  void ShrinkForNewItem()
+  void ShrinkForNewItem(u64 new_weight)
   {
-    if (m_manual_evict || m_items.size() < m_max_capacity)
+    if (m_manual_evict)
       return;
 
-    Evict(m_items.size() - (m_max_capacity - 1));
+    if (m_items.size() >= m_max_capacity)
+      Evict(m_items.size() - (m_max_capacity - 1));
+    while ((m_total_weight + new_weight) > m_max_weight && !m_items.empty())
+      Evict(1);
   }
 
   MapType m_items;
   CounterType m_last_counter = 0;
   std::size_t m_max_capacity = 0;
+  u64 m_total_weight = 0;
+  u64 m_max_weight = std::numeric_limits<u64>::max();
   NO_UNIQUE_ADDRESS Deleter m_deleter;
+  NO_UNIQUE_ADDRESS Weigher m_weigher;
   bool m_manual_evict = false;
 };

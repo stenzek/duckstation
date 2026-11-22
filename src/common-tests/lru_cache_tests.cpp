@@ -26,6 +26,11 @@ struct PoolDeleter
 
   std::vector<std::unique_ptr<TrackedValue>>* pool;
 };
+
+struct IntWeigher
+{
+  static std::size_t operator()(const int& value) { return static_cast<std::size_t>(value); }
+};
 } // namespace
 
 TEST(LRUCache, InsertLookupClearAndCapacityAccessors)
@@ -249,4 +254,118 @@ TEST(LRUCache, CustomDeleterCanPoolUniquePointers)
 
   pool.clear();
   EXPECT_EQ(destruction_count, 3);
+}
+
+TEST(LRUCache, WeightTracksInsertReplaceRemoveAndClear)
+{
+  LRUCache<std::string, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(8);
+  EXPECT_EQ(cache.GetTotalWeight(), 0u);
+
+  cache.Insert("a1", 10);
+  cache.Insert("a2", 20);
+  cache.Insert("b1", 30);
+  EXPECT_EQ(cache.GetTotalWeight(), 60u);
+
+  cache.Insert("a1", 5);
+  EXPECT_EQ(cache.GetTotalWeight(), 55u);
+
+  EXPECT_TRUE(cache.Remove("b1"));
+  EXPECT_EQ(cache.GetTotalWeight(), 25u);
+
+  cache.Insert("b2", 40);
+  EXPECT_EQ(cache.RemoveMatchingItems([](const std::string& key) { return key.starts_with("a"); }), 2u);
+  EXPECT_EQ(cache.GetTotalWeight(), 40u);
+
+  cache.Evict();
+  EXPECT_EQ(cache.GetTotalWeight(), 0u);
+
+  cache.Insert("c", 7);
+  cache.Clear();
+  EXPECT_EQ(cache.GetTotalWeight(), 0u);
+}
+
+TEST(LRUCache, InsertEvictsLeastRecentlyUsedWhenOverWeight)
+{
+  LRUCache<int, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(8);
+  cache.SetMaxWeight(100);
+  EXPECT_EQ(cache.GetMaxWeight(), 100u);
+
+  cache.Insert(1, 40);
+  cache.Insert(2, 40);
+  ASSERT_NE(cache.Lookup(1), nullptr);
+  cache.Insert(3, 40);
+  EXPECT_EQ(cache.GetSize(), 2u);
+  EXPECT_EQ(cache.GetTotalWeight(), 80u);
+  EXPECT_NE(cache.Lookup(1), nullptr);
+  EXPECT_EQ(cache.Lookup(2), nullptr);
+  EXPECT_NE(cache.Lookup(3), nullptr);
+
+  // An item larger than the budget is still inserted, evicting everything else.
+  cache.Insert(4, 150);
+  EXPECT_EQ(cache.GetSize(), 1u);
+  EXPECT_EQ(cache.GetTotalWeight(), 150u);
+  EXPECT_NE(cache.Lookup(4), nullptr);
+}
+
+TEST(LRUCache, CountCapStillAppliesUnderWeightBudget)
+{
+  LRUCache<int, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(2);
+  cache.SetMaxWeight(1000);
+  cache.Insert(1, 1);
+  cache.Insert(2, 1);
+  cache.Insert(3, 1);
+  EXPECT_EQ(cache.GetSize(), 2u);
+  EXPECT_EQ(cache.GetTotalWeight(), 2u);
+  EXPECT_EQ(cache.Lookup(1), nullptr);
+}
+
+TEST(LRUCache, ManualEvictionDefersWeightLimit)
+{
+  LRUCache<int, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(8, true);
+  cache.SetMaxWeight(50);
+  cache.Insert(1, 30);
+  cache.Insert(2, 30);
+  cache.Insert(3, 30);
+  EXPECT_EQ(cache.GetSize(), 3u);
+  EXPECT_EQ(cache.GetTotalWeight(), 90u);
+
+  ASSERT_NE(cache.Lookup(1), nullptr);
+  cache.ManualEvict();
+  EXPECT_EQ(cache.GetSize(), 1u);
+  EXPECT_EQ(cache.GetTotalWeight(), 30u);
+  EXPECT_NE(cache.Lookup(1), nullptr);
+}
+
+TEST(LRUCache, SetMaxWeightShrinksCache)
+{
+  LRUCache<int, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(8);
+  cache.Insert(1, 30);
+  cache.Insert(2, 30);
+  cache.Insert(3, 30);
+  EXPECT_EQ(cache.GetSize(), 3u);
+
+  cache.SetMaxWeight(60);
+  EXPECT_EQ(cache.GetSize(), 2u);
+  EXPECT_EQ(cache.GetTotalWeight(), 60u);
+  EXPECT_EQ(cache.Lookup(1), nullptr);
+}
+
+TEST(LRUCache, ReplaceEvictsOtherItemsWhenOverWeight)
+{
+  LRUCache<int, int, LRUCacheDefaultDeleter<int>, IntWeigher> cache(8);
+  cache.SetMaxWeight(100);
+  cache.Insert(1, 40);
+  cache.Insert(2, 40);
+
+  int* value = cache.Insert(2, 80);
+  ASSERT_NE(value, nullptr);
+  EXPECT_EQ(*value, 80);
+  EXPECT_EQ(cache.GetSize(), 1u);
+  EXPECT_EQ(cache.GetTotalWeight(), 80u);
+  EXPECT_EQ(cache.Lookup(1), nullptr);
+
+  // A lone replacement over the budget is kept.
+  cache.Insert(2, 150);
+  EXPECT_EQ(cache.GetSize(), 1u);
+  EXPECT_EQ(cache.GetTotalWeight(), 150u);
 }
