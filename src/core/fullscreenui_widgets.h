@@ -470,6 +470,12 @@ bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect
                      ImGuiButtonFlags flags = 0);
 bool MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible, bool* hovered,
                      ImGuiButtonFlags flags = 0);
+
+/// For windows that handle pointer drags themselves instead of scrolling, e.g. a horizontal carousel. Drags are
+/// detected like drag scrolling, which cancels the press underneath. Returns true while the current window is being
+/// dragged, and on the frame it's released, when fling_distance is how much further a fling would carry the content.
+bool GetWindowDrag(ImVec2* fling_distance);
+
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, bool held);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, float font_size, float font_weight, const ImVec2& pos_min,

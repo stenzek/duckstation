@@ -142,8 +142,8 @@ static void DrawLoadingScreen();
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
 
 static void UpdateDragScroll();
-static void AddDragScrollSample(double time, float position);
-static float GetDragScrollReleaseVelocity();
+static void AddDragScrollSample(double time, const ImVec2& position);
+static ImVec2 GetDragScrollReleaseVelocity();
 
 static void UpdateOnScreenKeyboardInput();
 static void ActivateOnScreenKeyboardKey(const OnScreenKeyboardKey& key);
@@ -566,6 +566,7 @@ struct WidgetsState
   bool loading_screen_open = false;
 
   bool drag_scroll_active = false;
+  ImGuiID drag_scroll_released_window_id = 0; // only for the frame that the pointer is released
   ImGuiID drag_scroll_window_id = 0;
   float drag_scroll_position = 0.0f;
   float drag_scroll_velocity = 0.0f;
@@ -648,7 +649,7 @@ struct WidgetsState
   struct DragScrollSample
   {
     double time;
-    float position;
+    ImVec2 position;
   };
   std::array<DragScrollSample, DRAG_SCROLL_MAX_SAMPLES> drag_scroll_samples = {};
   u32 drag_scroll_sample_count = 0;
@@ -2052,12 +2053,16 @@ void FullscreenUI::UpdateDragScroll()
   ImGuiContext& g = *GImGui;
   const ImGuiIO& io = g.IO;
   const ImGuiID drag_id = ImHashStr("##drag_scroll");
+  s_state.drag_scroll_released_window_id = 0;
 
   // track the pointer from its press, so a flick's speed includes the movement before it started dragging
   if (io.MouseClicked[0])
     s_state.drag_scroll_sample_count = 0;
-  if ((io.MouseDown[0] || io.MouseReleased[0]) && (io.MouseClicked[0] || io.MouseDelta.y != 0.0f))
-    AddDragScrollSample(g.Time, io.MousePos.y);
+  if ((io.MouseDown[0] || io.MouseReleased[0]) &&
+      (io.MouseClicked[0] || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f))
+  {
+    AddDragScrollSample(g.Time, io.MousePos);
+  }
 
   // pressing while flinging catches it, without pressing what's under the pointer
   ImGuiWindow* fling_window = nullptr;
@@ -2147,7 +2152,7 @@ void FullscreenUI::UpdateDragScroll()
       if (!io.MouseClicked[0])
         s_state.drag_scroll_position -= io.MouseDelta.y;
       if (!io.MouseDown[0])
-        s_state.drag_scroll_velocity = GetDragScrollReleaseVelocity();
+        s_state.drag_scroll_velocity = GetDragScrollReleaseVelocity().y;
     }
     else
     {
@@ -2168,6 +2173,7 @@ void FullscreenUI::UpdateDragScroll()
     }
     else
     {
+      s_state.drag_scroll_released_window_id = g.ActiveIdWindow ? g.ActiveIdWindow->ID : 0;
       ImGui::ClearActiveID();
       s_state.drag_scroll_active = false;
     }
@@ -2181,28 +2187,29 @@ void FullscreenUI::UpdateDragScroll()
   }
 }
 
-void FullscreenUI::AddDragScrollSample(double time, float position)
+void FullscreenUI::AddDragScrollSample(double time, const ImVec2& position)
 {
   s_state.drag_scroll_samples[s_state.drag_scroll_sample_count % DRAG_SCROLL_MAX_SAMPLES] = {time, position};
   s_state.drag_scroll_sample_count++;
 }
 
-float FullscreenUI::GetDragScrollReleaseVelocity()
+ImVec2 FullscreenUI::GetDragScrollReleaseVelocity()
 {
   // Like Android's VelocityTracker, this fits a line to the pointer's recent positions, which evens out frames that
   // received more or fewer pointer updates than others. A pointer that stopped before it was released doesn't fling.
   const u32 count = std::min(s_state.drag_scroll_sample_count, DRAG_SCROLL_MAX_SAMPLES);
   if (count < 2)
-    return 0.0f;
+    return ImVec2();
 
   const ImGuiContext& g = *GImGui;
   const WidgetsState::DragScrollSample& newest =
     s_state.drag_scroll_samples[(s_state.drag_scroll_sample_count - 1) % DRAG_SCROLL_MAX_SAMPLES];
   if ((g.Time - newest.time) > (DRAG_SCROLL_STOP_TIME + g.IO.DeltaTime))
-    return 0.0f;
+    return ImVec2();
 
   // relative to the newest sample, to keep precision
-  float n = 0.0f, sum_t = 0.0f, sum_p = 0.0f, sum_tt = 0.0f, sum_tp = 0.0f;
+  float n = 0.0f, sum_t = 0.0f, sum_tt = 0.0f;
+  ImVec2 sum_p, sum_tp;
   for (u32 i = 0; i < count; i++)
   {
     const WidgetsState::DragScrollSample& sample =
@@ -2211,7 +2218,7 @@ float FullscreenUI::GetDragScrollReleaseVelocity()
     if (t < -DRAG_SCROLL_VELOCITY_HORIZON)
       break;
 
-    const float p = sample.position - newest.position;
+    const ImVec2 p = sample.position - newest.position;
     n += 1.0f;
     sum_t += t;
     sum_p += p;
@@ -2221,12 +2228,27 @@ float FullscreenUI::GetDragScrollReleaseVelocity()
 
   const float denominator = n * sum_tt - sum_t * sum_t;
   if (denominator <= 0.0f)
-    return 0.0f;
+    return ImVec2();
 
   // the content moves the opposite way to the pointer
-  const float velocity = -(n * sum_tp - sum_t * sum_p) / denominator;
+  const ImVec2 velocity = -(sum_tp * n - sum_p * sum_t) / denominator;
   const float max_velocity = LayoutScale(DRAG_SCROLL_MAX_VELOCITY);
-  return ImClamp(velocity, -max_velocity, max_velocity);
+  return ImClamp(velocity, ImVec2(-max_velocity, -max_velocity), ImVec2(max_velocity, max_velocity));
+}
+
+bool FullscreenUI::GetWindowDrag(ImVec2* fling_distance)
+{
+  const ImGuiContext& g = *GImGui;
+  const ImGuiWindow* const window = g.CurrentWindow;
+  *fling_distance = ImVec2();
+  if (s_state.drag_scroll_active)
+    return (g.ActiveIdWindow == window);
+  if (s_state.drag_scroll_released_window_id != window->ID)
+    return false;
+
+  // exponential decay from the release velocity travels velocity / friction in total
+  *fling_distance = GetDragScrollReleaseVelocity() / DRAG_SCROLL_FRICTION;
+  return true;
 }
 
 void FullscreenUI::BeginLayout()
