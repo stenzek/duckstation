@@ -1754,10 +1754,16 @@ void FullscreenUI::DrawPauseMenu()
     const std::string& game_path = VideoThread::GetGamePath();
     const float image_padding = LayoutScale(5.0f); // compensate for font baseline
     const float image_size = scaled_top_bar_height - scaled_top_bar_padding - scaled_top_bar_padding - image_padding;
-    DrawCoverForCurrentGame(dl,
-                            ImRect(scaled_top_bar_padding + image_padding, scaled_top_bar_padding + image_padding,
-                                   scaled_top_bar_padding + image_size, scaled_top_bar_padding + image_size),
-                            game_path, game_title);
+    {
+      // Use the running game's title, so the monogram matches the title shown next to it.
+      const ImRect image_rect(scaled_top_bar_padding + image_padding, scaled_top_bar_padding + image_padding,
+                              scaled_top_bar_padding + image_size, scaled_top_bar_padding + image_size);
+      const auto lock = GameList::GetLock();
+      if (const GameList::Entry* entry = GameList::GetEntryForPath(game_path))
+        DrawGameListIcon(entry, game_title, dl, image_rect, IM_COL32(255, 255, 255, 255), GameList::IconSource::Cover);
+      else
+        DrawGeneratedArtwork(dl, image_rect, game_title, GameList::EntryType::Disc, true, IM_COL32(255, 255, 255, 255));
+    }
 
     if (!game_serial.empty())
       buffer.format("{} - {}", game_serial, Path::GetFileName(game_path));

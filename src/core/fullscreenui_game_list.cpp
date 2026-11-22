@@ -53,8 +53,6 @@ static GPUTexture* GetGameListIcon(const GameList::Entry* entry);
 static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
 static void DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon, bool fallback_to_icon,
                               bool icon_style, bool show_localized_titles, ImDrawList* dl, const ImRect& rect);
-static void DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title, GameList::EntryType type,
-                                 bool icon_style);
 static GPUTexture* GetGeneratedArtwork(std::string_view title, GameList::EntryType type, bool icon_style, u32 tex_size);
 static void DoSetCoverImage(std::string entry_path);
 static void DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path);
@@ -551,27 +549,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       {
         const ImRect image_rect(ImVec2(mbb.title_bb.Min.x - row_left_margin, mbb.title_bb.Min.y),
                                 ImVec2(mbb.title_bb.Min.x - row_image_padding, mbb.title_bb.Min.y + image_size));
-        if (icon_source == GameList::IconSource::Cover)
-        {
-          DrawGameListCover(entry, false, false, true, s_game_list_locals.localized_titles, ImGui::GetWindowDrawList(),
-                            image_rect);
-        }
-        else
-        {
-          GPUTexture* const icon_texture = GetGameListIcon(entry);
-          if (icon_texture)
-          {
-            const ImRect icon_rect = CenterImage(image_rect, ImVec2(static_cast<float>(icon_texture->GetWidth()),
-                                                                    static_cast<float>(icon_texture->GetHeight())));
-            ImGui::GetWindowDrawList()->AddImage(icon_texture, icon_rect.Min, icon_rect.Max, ImVec2(0.0f, 0.0f),
-                                                 ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
-          }
-          else
-          {
-            DrawGeneratedArtwork(ImGui::GetWindowDrawList(), image_rect,
-                                 entry->GetDisplayTitle(s_game_list_locals.localized_titles), entry->type, true);
-          }
-        }
+        DrawGameListIcon(entry, entry->GetDisplayTitle(s_game_list_locals.localized_titles), ImGui::GetWindowDrawList(),
+                         image_rect, IM_COL32(255, 255, 255, 255));
       }
 
       RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
@@ -1354,8 +1333,8 @@ void FullscreenUI::DrawGameCarousel(const ImVec2& heading_size)
   const ImVec2 flag_size = LayoutScale(23.0f, 16.0f);
   const float flag_spacing = LayoutScale(6.0f);
   const float card_slide_distance = LayoutScale(100.0f);
-  const auto draw_card = [&dl, &window_pos, &window_size, &global_alpha, &generated_artwork_flip, &line_spacing,
-                          &chip_height, &panel_margin, &panel_padding, &flag_size,
+  const auto draw_card = [&dl, &window_pos, &window_size, &global_alpha, &line_spacing, &chip_height, &panel_margin,
+                          &panel_padding, &flag_size,
                           &flag_spacing](const GameList::Entry* entry, float card_x, float card_alpha) {
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, global_alpha * card_alpha);
     const GameDatabase::Entry* const dbentry = entry->dbentry;
@@ -1433,20 +1412,12 @@ void FullscreenUI::DrawGameCarousel(const ImVec2& heading_size)
       const ImVec2 icon_pos =
         ImFloor(ImVec2(panel_rect.Min.x + panel_padding, panel_rect.GetCenter().y - icon_size * 0.5f));
       const ImRect icon_rect(icon_pos, icon_pos + ImVec2(icon_size, icon_size));
-      if (GPUTexture* const icon_texture = GetGameListIcon(entry))
-      {
-        const ImRect rect = CenterImage(icon_rect, ImVec2(static_cast<float>(icon_texture->GetWidth()),
-                                                          static_cast<float>(icon_texture->GetHeight())));
-        dl->AddImage(icon_texture, rect.Min, rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), image_color);
-      }
-      else if (GPUTexture* const generated_icon =
-                 GetGeneratedArtwork(title, entry->type, true, static_cast<u32>(std::ceil(icon_size))))
-      {
-        dl->AddImageRounded(generated_icon, icon_rect.Min, icon_rect.Max,
-                            ImVec2(0.0f, generated_artwork_flip ? 1.0f : 0.0f),
-                            ImVec2(1.0f, generated_artwork_flip ? 0.0f : 1.0f), image_color,
-                            icon_size * GameList::GeneratedArtwork::ICON_CORNER_RADIUS);
-      }
+
+      // The carousel shows the cover already, so it uses memory card icons instead.
+      DrawGameListIcon(entry, title, dl, icon_rect, image_color,
+                       (s_game_list_locals.icon_source == GameList::IconSource::Cover) ?
+                         std::make_optional(GameList::IconSource::MemoryCard) :
+                         std::nullopt);
     }
 
     const float line_left = panel_rect.Min.x + panel_padding + icon_size + icon_spacing;
@@ -1786,7 +1757,7 @@ GPUTexture* FullscreenUI::GetGameListIcon(const GameList::Entry* entry)
     auto icon_it = s_game_list_locals.icon_image_map.find(entry->serial);
     if (icon_it == s_game_list_locals.icon_image_map.end())
     {
-      // The carousel shows the cover already, so it uses memory card icons, like the missing cover fallback.
+      // With covers configured only the carousel gets here, which shows the cover already, so use memory card icons.
       const GameList::IconSource icon_source = (s_game_list_locals.icon_source == GameList::IconSource::Cover) ?
                                                  GameList::IconSource::MemoryCard :
                                                  s_game_list_locals.icon_source;
@@ -1843,32 +1814,6 @@ GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType typ
   }
 }
 
-void FullscreenUI::DrawCoverForCurrentGame(ImDrawList* dl, const ImRect& rect, const std::string& game_path,
-                                           std::string_view game_title)
-{
-  GPUTexture* cover_texture = nullptr;
-  GameList::EntryType type = GameList::EntryType::Disc;
-  {
-    const auto lock = GameList::GetLock();
-    if (const GameList::Entry* entry = GameList::GetEntryForPath(game_path))
-    {
-      cover_texture = GetGameListCover(entry, true, true, false);
-      type = entry->type;
-    }
-  }
-
-  if (!cover_texture)
-  {
-    // Use the running game's title, so the monogram matches the title shown next to it.
-    DrawGeneratedArtwork(dl, rect, game_title, type, true);
-    return;
-  }
-
-  const ImRect image_rect = CenterImage(
-    rect, ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight())));
-  dl->AddImage(cover_texture, image_rect.Min, image_rect.Max);
-}
-
 void FullscreenUI::SetCoverCacheEntry(std::string path, std::string cover_path)
 {
   s_game_list_locals.cover_image_map.insert_or_assign(std::move(path), std::move(cover_path));
@@ -1897,7 +1842,8 @@ void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback
   GPUTexture* const cover_texture = GetGameListCover(entry, fallback_to_achievements_icon, fallback_to_icon, false);
   if (!cover_texture)
   {
-    DrawGeneratedArtwork(dl, rect, entry->GetDisplayTitle(show_localized_titles), entry->type, icon_style);
+    DrawGeneratedArtwork(dl, rect, entry->GetDisplayTitle(show_localized_titles), entry->type, icon_style,
+                         IM_COL32(255, 255, 255, 255));
     return;
   }
 
@@ -1907,8 +1853,39 @@ void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback
                IM_COL32(255, 255, 255, 255));
 }
 
+void FullscreenUI::DrawGameListIcon(const GameList::Entry* entry, std::string_view title, ImDrawList* dl,
+                                    const ImRect& rect, u32 color,
+                                    std::optional<GameList::IconSource> icon_source_override)
+{
+  const GameList::IconSource icon_source = icon_source_override.value_or(s_game_list_locals.icon_source);
+  if (icon_source == GameList::IconSource::None)
+    return;
+
+  // Missing covers fall back to the achievements badge or memory card icon, then generated artwork.
+  GPUTexture* const texture =
+    (icon_source == GameList::IconSource::Cover) ? GetGameListCover(entry, true, true, false) : GetGameListIcon(entry);
+  if (!texture)
+  {
+    DrawGeneratedArtwork(dl, rect, title, entry->type, true, color);
+    return;
+  }
+
+  const ImRect image_rect =
+    CenterImage(rect, ImVec2(static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight())));
+
+  // Memory card icons are tiny, so don't blur them when scaling up.
+  const bool nearest = (texture->GetWidth() <= 32 && texture->GetHeight() <= 32);
+  if (nearest)
+    ImGuiManager::PushNearestSampler(dl, texture);
+
+  dl->AddImage(texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), color);
+
+  if (nearest)
+    ImGuiManager::PopNearestSampler(dl);
+}
+
 void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title,
-                                        GameList::EntryType type, bool icon_style)
+                                        GameList::EntryType type, bool icon_style, u32 color)
 {
   using namespace GameList::GeneratedArtwork;
 
@@ -1920,8 +1897,7 @@ void FullscreenUI::DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std:
   // Lower-left origin APIs render the texture upside down.
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();
   dl->AddImageRounded(tex, rect.Min, rect.Max, ImVec2(0.0f, flip ? 1.0f : 0.0f), ImVec2(1.0f, flip ? 0.0f : 1.0f),
-                      IM_COL32(255, 255, 255, 255),
-                      rect.GetWidth() * (icon_style ? ICON_CORNER_RADIUS : COVER_CORNER_RADIUS));
+                      color, rect.GetWidth() * (icon_style ? ICON_CORNER_RADIUS : COVER_CORNER_RADIUS));
 }
 
 GPUTexture* FullscreenUI::GetGeneratedArtwork(std::string_view title, GameList::EntryType type, bool icon_style,

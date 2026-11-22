@@ -8,6 +8,8 @@
 #include "types.h"
 
 namespace GameList {
+enum class EntryType : u8;
+enum class IconSource : u8;
 struct Entry;
 }
 
@@ -119,8 +121,10 @@ void DrawGameListWindow();
 
 void DoStartPath(std::string path, std::string state = std::string(), std::optional<bool> fast_boot = std::nullopt);
 
-void DrawCoverForCurrentGame(ImDrawList* dl, const ImRect& rect, const std::string& game_path,
-                             std::string_view game_title);
+void DrawGameListIcon(const GameList::Entry* entry, std::string_view title, ImDrawList* dl, const ImRect& rect,
+                      u32 color, std::optional<GameList::IconSource> icon_source_override = std::nullopt);
+void DrawGeneratedArtwork(ImDrawList* dl, const ImRect& rect, std::string_view title, GameList::EntryType type,
+                          bool icon_style, u32 color);
 void SetCoverCacheEntry(std::string path, std::string cover_path);
 void RemoveCoverCacheEntry(const std::string& path);
 
