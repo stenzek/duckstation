@@ -5588,6 +5588,9 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
     ImGui::PopStyleVar(6);
     ImGui::PopFont();
     QueueResetFocus(FocusResetType::PopupClosed);
+
+    // NoInputs while closing hides the nav cursor, which blocks activation until it's moved
+    ForceKeyNavEnabled();
     return false;
   }
 
