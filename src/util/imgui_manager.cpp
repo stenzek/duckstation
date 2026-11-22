@@ -833,7 +833,10 @@ void ImGuiManager::UpdateTextures(const ImDrawData* draw_data)
 
         gtex->MakeReadyForSampling();
 
-        // Updates is cleared by ImGui NewFrame.
+        // Consume the updates now rather than waiting for NewFrame, since we can upload multiple times per frame.
+        tex->Updates.resize(0);
+        tex->UpdateRect.x = tex->UpdateRect.y = static_cast<unsigned short>(~0);
+        tex->UpdateRect.w = tex->UpdateRect.h = 0;
         tex->SetStatus(ImTextureStatus_OK);
       }
       break;
