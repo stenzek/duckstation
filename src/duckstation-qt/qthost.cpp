@@ -56,7 +56,7 @@
 #include "util/postprocessing.h"
 #include "util/translation.h"
 
-#ifdef __linux__
+#ifdef ENABLE_X11
 #include "util/x11_tools.h"
 #endif
 
@@ -3618,7 +3618,7 @@ int main(int argc, char* argv[])
   ApplyWaylandWorkarounds();
 #endif
 
-#ifdef __linux__
+#ifdef ENABLE_X11
   // Qt detects auto-repeat by looking for the press after a release in its event queue, which isn't reliable, as the
   // press may not have been read yet. Missed detections send spurious release/press pairs while a key is held.
   if (const auto* x11_app = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())
