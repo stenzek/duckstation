@@ -796,26 +796,21 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
 
 void ImGuiManager::PushNearestSampler(ImDrawList* dl, GPUTexture* texture)
 {
-  // Push the texture first, the command's texture isn't updated once it has a callback.
   dl->PushTexture(texture);
 
-  // The push can merge with the previous command, so flush it.
+  // The push can merge with the previous command, so flush it. The callback is set in PopNearestSampler(), imgui
+  // asserts if a command with a callback changes vertex offset.
   if (dl->CmdBuffer.back().ElemCount > 0)
     dl->AddDrawCmd();
-
-  dl->CmdBuffer.back().UserCallback = &DrawWithNearestSampler;
 }
 
 void ImGuiManager::PopNearestSampler(ImDrawList* dl)
 {
-  ImDrawCmd& cmd = dl->CmdBuffer.back();
-  DebugAssert(cmd.UserCallback == &DrawWithNearestSampler);
-
-  // allow imgui to clear empty draw commands
-  if (cmd.ElemCount == 0)
-    cmd.UserCallback = nullptr;
-  else
+  if (dl->CmdBuffer.back().ElemCount > 0)
+  {
+    dl->CmdBuffer.back().UserCallback = &DrawWithNearestSampler;
     dl->AddDrawCmd();
+  }
 
   dl->PopTexture();
 }

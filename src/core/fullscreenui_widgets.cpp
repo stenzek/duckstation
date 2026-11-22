@@ -1922,16 +1922,9 @@ bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_mi
   s_state.blur_active = true;
 
   // should flush the current draw, if any
-  ImDrawCmd* curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
-  if (curr_cmd->ElemCount > 0)
-  {
+  // the callback is set in EndBlurBackground(), imgui asserts if a command with a callback changes vertex offset
+  if (dl->CmdBuffer.back().ElemCount > 0)
     dl->AddDrawCmd();
-    curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
-  }
-
-  // mark it so we can check in EndPopBackgroundTexture
-  DebugAssert(curr_cmd->ElemCount == 0);
-  curr_cmd->UserCallback = &DrawWithBlurTexture;
 
   // use vertex rounding because we don't have the imgui texture..
   dl->PushDrawFlag(ImDrawFlags_UseTexForRoundCorners, false);
@@ -1941,17 +1934,14 @@ bool FullscreenUI::BeginBlurBackground(ImDrawList* const dl, const ImVec2& bb_mi
 void FullscreenUI::EndBlurBackground(ImDrawList* const dl)
 {
   ImDrawCmd* const curr_cmd = &dl->CmdBuffer.Data[dl->CmdBuffer.Size - 1];
-  DebugAssert(curr_cmd->UserCallback == &DrawWithBlurTexture);
-
-  // allow imgui to clear empty draw commands
   if (curr_cmd->ElemCount == 0)
   {
     GL_INS("No vertices drawn with blur background, skipping.");
-    curr_cmd->UserCallback = nullptr;
   }
   else
   {
     // flush the blurred draw
+    curr_cmd->UserCallback = &DrawWithBlurTexture;
     dl->AddDrawCmd();
   }
 
