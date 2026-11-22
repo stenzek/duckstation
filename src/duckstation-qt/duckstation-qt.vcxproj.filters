@@ -173,6 +173,9 @@
     <QtUi Include="memoryscannerwindow.ui" />
     <QtUi Include="controllerbindingwidget_negconrumble.ui" />
     <QtUi Include="controllerbindingwidget_justifier.ui" />
+    <QtUi Include="controllerbindingwidget_jogcon.ui" />
+    <QtUi Include="controllerbindingwidget_ddgo.ui" />
+    <QtUi Include="controllerbindingwidget_popn.ui" />
     <QtUi Include="selectdiscdialog.ui" />
     <QtUi Include="texturereplacementsettingsdialog.ui" />
     <QtUi Include="gamepatchsettingswidget.ui" />

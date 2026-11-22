@@ -14,12 +14,15 @@
 
 #include "ui_controllerbindingwidget_analog_controller.h"
 #include "ui_controllerbindingwidget_analog_joystick.h"
+#include "ui_controllerbindingwidget_ddgo.h"
 #include "ui_controllerbindingwidget_digital_controller.h"
 #include "ui_controllerbindingwidget_guncon.h"
+#include "ui_controllerbindingwidget_jogcon.h"
 #include "ui_controllerbindingwidget_justifier.h"
 #include "ui_controllerbindingwidget_mouse.h"
 #include "ui_controllerbindingwidget_negcon.h"
 #include "ui_controllerbindingwidget_negconrumble.h"
+#include "ui_controllerbindingwidget_popn.h"
 
 #include "core/controller.h"
 #include "core/host.h"
@@ -203,6 +206,36 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
+      m_image_widget = ui.image;
+    }
+    break;
+
+    case ControllerType::JogCon:
+    {
+      Ui::ControllerBindingWidget_JogCon ui;
+      ui.setupUi(m_bindings_widget);
+      bindBindingWidgets(m_bindings_widget);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
+      m_image_widget = ui.image;
+    }
+    break;
+
+    case ControllerType::DDGoController:
+    {
+      Ui::ControllerBindingWidget_DDGo ui;
+      ui.setupUi(m_bindings_widget);
+      bindBindingWidgets(m_bindings_widget);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
+      m_image_widget = ui.image;
+    }
+    break;
+
+    case ControllerType::PopnController:
+    {
+      Ui::ControllerBindingWidget_Popn ui;
+      ui.setupUi(m_bindings_widget);
+      bindBindingWidgets(m_bindings_widget);
+      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -704,7 +737,7 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
         bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer ||
         bi.type == InputBindingInfo::Type::RelativePointer || bi.type == InputBindingInfo::Type::Motor ||
-        bi.type == InputBindingInfo::Type::LED)
+        bi.type == InputBindingInfo::Type::LED || bi.type == InputBindingInfo::Type::Device)
     {
       InputBindingWidget* widget = parent->findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
       if (!widget)

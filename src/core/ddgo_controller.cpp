@@ -296,35 +296,35 @@ std::unique_ptr<DDGoController> DDGoController::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 // clang-format off
-#define BUTTON(name, display_name, icon_name, button, genb) \
-  {name, display_name, icon_name, nullptr, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
-#define AXIS(name, display_name, icon_name, axis, genb) \
-  {name, display_name, icon_name, nullptr, static_cast<u32>(axis), InputBindingInfo::Type::HalfAxis, genb}
+#define BUTTON(name, display_name, icon_name, image_element, button, genb) \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define AXIS(name, display_name, icon_name, image_element, axis, genb) \
+  {name, display_name, icon_name, image_element, static_cast<u32>(axis), InputBindingInfo::Type::HalfAxis, genb}
 
-  BUTTON("Select", TRANSLATE_NOOP("DDGoController", "Select"), ICON_PF_SELECT_SHARE, DDGoController::Bind::Select, GenericInputBinding::Select),
-  BUTTON("Start", TRANSLATE_NOOP("DDGoController", "Start"), ICON_PF_START, DDGoController::Bind::Start, GenericInputBinding::Start),
-  BUTTON("A", TRANSLATE_NOOP("DDGoController", "A"), ICON_PF_BUTTON_A, DDGoController::Bind::A, GenericInputBinding::Square),
-  BUTTON("B", TRANSLATE_NOOP("DDGoController", "B"), ICON_PF_BUTTON_B, DDGoController::Bind::B, GenericInputBinding::Cross),
-  BUTTON("C", TRANSLATE_NOOP("DDGoController", "C"), ICON_PF_BUTTON_C, DDGoController::Bind::C, GenericInputBinding::Circle),
-  BUTTON("VirtualPowerOff", TRANSLATE_NOOP("DDGoController", "Power Off"), ICON_PF_KEY_N, DDGoController::Bind::VirtualPowerOff, GenericInputBinding::Unknown),
-  BUTTON("VirtualPower1", TRANSLATE_NOOP("DDGoController", "Power 1"), ICON_PF_1, DDGoController::Bind::VirtualPower1, GenericInputBinding::Unknown),
-  BUTTON("VirtualPower2", TRANSLATE_NOOP("DDGoController", "Power 2"), ICON_PF_2, DDGoController::Bind::VirtualPower2, GenericInputBinding::Unknown),
-  BUTTON("VirtualPower3", TRANSLATE_NOOP("DDGoController", "Power 3"), ICON_PF_3, DDGoController::Bind::VirtualPower3, GenericInputBinding::Unknown),
-  BUTTON("VirtualPower4", TRANSLATE_NOOP("DDGoController", "Power 4"), ICON_PF_4, DDGoController::Bind::VirtualPower4, GenericInputBinding::Unknown),
-  BUTTON("VirtualPower5", TRANSLATE_NOOP("DDGoController", "Power 5"), ICON_PF_5, DDGoController::Bind::VirtualPower5, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrakeReleased", TRANSLATE_NOOP("DDGoController", "Brake Released"), ICON_PF_KEY_R, DDGoController::Bind::VirtualBrakeReleased, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake1", TRANSLATE_NOOP("DDGoController", "Brake 1"), ICON_PF_1, DDGoController::Bind::VirtualBrake1, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake2", TRANSLATE_NOOP("DDGoController", "Brake 2"), ICON_PF_2, DDGoController::Bind::VirtualBrake2, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake3", TRANSLATE_NOOP("DDGoController", "Brake 3"), ICON_PF_3, DDGoController::Bind::VirtualBrake3, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake4", TRANSLATE_NOOP("DDGoController", "Brake 4"), ICON_PF_4, DDGoController::Bind::VirtualBrake4, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake5", TRANSLATE_NOOP("DDGoController", "Brake 5"), ICON_PF_5, DDGoController::Bind::VirtualBrake5, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake6", TRANSLATE_NOOP("DDGoController", "Brake 6"), ICON_PF_6, DDGoController::Bind::VirtualBrake6, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake7", TRANSLATE_NOOP("DDGoController", "Brake 7"), ICON_PF_7, DDGoController::Bind::VirtualBrake7, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrake8", TRANSLATE_NOOP("DDGoController", "Brake 8"), ICON_PF_8, DDGoController::Bind::VirtualBrake8, GenericInputBinding::Unknown),
-  BUTTON("VirtualBrakeEmergency", TRANSLATE_NOOP("DDGoController", "Brake Emergency"), ICON_PF_KEY_E, DDGoController::Bind::VirtualBrakeEmergency, GenericInputBinding::Unknown),
+  BUTTON("Select", TRANSLATE_NOOP("DDGoController", "Select"), ICON_PF_SELECT_SHARE, "Select", DDGoController::Bind::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("DDGoController", "Start"), ICON_PF_START, "Start", DDGoController::Bind::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("DDGoController", "A"), ICON_PF_BUTTON_A, "A", DDGoController::Bind::A, GenericInputBinding::Square),
+  BUTTON("B", TRANSLATE_NOOP("DDGoController", "B"), ICON_PF_BUTTON_B, "B", DDGoController::Bind::B, GenericInputBinding::Cross),
+  BUTTON("C", TRANSLATE_NOOP("DDGoController", "C"), ICON_PF_BUTTON_C, "C", DDGoController::Bind::C, GenericInputBinding::Circle),
+  BUTTON("VirtualPowerOff", TRANSLATE_NOOP("DDGoController", "Power Off"), ICON_PF_KEY_N, "Power", DDGoController::Bind::VirtualPowerOff, GenericInputBinding::Unknown),
+  BUTTON("VirtualPower1", TRANSLATE_NOOP("DDGoController", "Power 1"), ICON_PF_1, "Power", DDGoController::Bind::VirtualPower1, GenericInputBinding::Unknown),
+  BUTTON("VirtualPower2", TRANSLATE_NOOP("DDGoController", "Power 2"), ICON_PF_2, "Power", DDGoController::Bind::VirtualPower2, GenericInputBinding::Unknown),
+  BUTTON("VirtualPower3", TRANSLATE_NOOP("DDGoController", "Power 3"), ICON_PF_3, "Power", DDGoController::Bind::VirtualPower3, GenericInputBinding::Unknown),
+  BUTTON("VirtualPower4", TRANSLATE_NOOP("DDGoController", "Power 4"), ICON_PF_4, "Power", DDGoController::Bind::VirtualPower4, GenericInputBinding::Unknown),
+  BUTTON("VirtualPower5", TRANSLATE_NOOP("DDGoController", "Power 5"), ICON_PF_5, "Power", DDGoController::Bind::VirtualPower5, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrakeReleased", TRANSLATE_NOOP("DDGoController", "Brake Released"), ICON_PF_KEY_R, "Brake", DDGoController::Bind::VirtualBrakeReleased, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake1", TRANSLATE_NOOP("DDGoController", "Brake 1"), ICON_PF_1, "Brake", DDGoController::Bind::VirtualBrake1, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake2", TRANSLATE_NOOP("DDGoController", "Brake 2"), ICON_PF_2, "Brake", DDGoController::Bind::VirtualBrake2, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake3", TRANSLATE_NOOP("DDGoController", "Brake 3"), ICON_PF_3, "Brake", DDGoController::Bind::VirtualBrake3, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake4", TRANSLATE_NOOP("DDGoController", "Brake 4"), ICON_PF_4, "Brake", DDGoController::Bind::VirtualBrake4, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake5", TRANSLATE_NOOP("DDGoController", "Brake 5"), ICON_PF_5, "Brake", DDGoController::Bind::VirtualBrake5, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake6", TRANSLATE_NOOP("DDGoController", "Brake 6"), ICON_PF_6, "Brake", DDGoController::Bind::VirtualBrake6, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake7", TRANSLATE_NOOP("DDGoController", "Brake 7"), ICON_PF_7, "Brake", DDGoController::Bind::VirtualBrake7, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrake8", TRANSLATE_NOOP("DDGoController", "Brake 8"), ICON_PF_8, "Brake", DDGoController::Bind::VirtualBrake8, GenericInputBinding::Unknown),
+  BUTTON("VirtualBrakeEmergency", TRANSLATE_NOOP("DDGoController", "Brake Emergency"), ICON_PF_KEY_E, "Brake", DDGoController::Bind::VirtualBrakeEmergency, GenericInputBinding::Unknown),
 
-  AXIS("Power", TRANSLATE_NOOP("DDGoController", "Power"), ICON_PF_KEY_P, DDGoController::Bind::Power, GenericInputBinding::L2),
-  AXIS("Brake", TRANSLATE_NOOP("DDGoController", "Brake"), ICON_PF_KEY_B, DDGoController::Bind::Brake, GenericInputBinding::R2),
+  AXIS("Power", TRANSLATE_NOOP("DDGoController", "Power"), ICON_PF_KEY_P, "Power", DDGoController::Bind::Power, GenericInputBinding::L2),
+  AXIS("Brake", TRANSLATE_NOOP("DDGoController", "Brake"), ICON_PF_KEY_B, "Brake", DDGoController::Bind::Brake, GenericInputBinding::R2),
 // clang-format on
 
 #undef AXIS
@@ -355,6 +355,6 @@ const Controller::ControllerInfo DDGoController::INFO = {ControllerType::DDGoCon
                                                          "DDGoController",
                                                          TRANSLATE_NOOP("ControllerType", "Densha de Go! Controller"),
                                                          ICON_PF_FIGHT_STICK_JOYSTICK,
-                                                         nullptr,
+                                                         "images/controllers/ddgo_controller.svg",
                                                          s_binding_info,
                                                          s_settings};

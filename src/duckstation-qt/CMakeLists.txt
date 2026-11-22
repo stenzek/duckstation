@@ -50,12 +50,15 @@ set(SRCS
   consolesettingswidget.ui
   controllerbindingwidget_analog_controller.ui
   controllerbindingwidget_analog_joystick.ui
+  controllerbindingwidget_ddgo.ui
   controllerbindingwidget_digital_controller.ui
   controllerbindingwidget_guncon.ui
+  controllerbindingwidget_jogcon.ui
   controllerbindingwidget_justifier.ui
   controllerbindingwidget_mouse.ui
   controllerbindingwidget_negcon.ui
   controllerbindingwidget_negconrumble.ui
+  controllerbindingwidget_popn.ui
   controllerbindingwidgets.cpp
   controllerbindingwidgets.h
   controllerbindingwidget.ui

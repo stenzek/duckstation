@@ -599,40 +599,40 @@ std::unique_ptr<JogCon> JogCon::Create(u32 index)
 }
 
 constinit const Controller::ControllerBindingInfo JogCon::s_binding_info[] = {
-#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {name, display_name, icon_name, nullptr, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
-#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
+#define BUTTON(name, display_name, icon_name, image_element, button, genb)                                             \
+  {name, display_name, icon_name, image_element, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
+#define AXIS(name, display_name, icon_name, image_element, halfaxis, genb)                                             \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
-   nullptr,                                                                                                            \
+   image_element,                                                                                                      \
    HALFAXIS_BIND_START_INDEX + static_cast<u32>(halfaxis),                                                             \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 
   // clang-format off
-  BUTTON("Up", TRANSLATE_NOOP("JogCon", "D-Pad Up"), ICON_PF_DPAD_UP, JogCon::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", TRANSLATE_NOOP("JogCon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, JogCon::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", TRANSLATE_NOOP("JogCon", "D-Pad Down"), ICON_PF_DPAD_DOWN, JogCon::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", TRANSLATE_NOOP("JogCon", "D-Pad Left"), ICON_PF_DPAD_LEFT, JogCon::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Triangle", TRANSLATE_NOOP("JogCon", "Triangle"), ICON_PF_BUTTON_TRIANGLE, JogCon::Button::Triangle, GenericInputBinding::Triangle),
-  BUTTON("Circle", TRANSLATE_NOOP("JogCon", "Circle"), ICON_PF_BUTTON_CIRCLE, JogCon::Button::Circle, GenericInputBinding::Circle),
-  BUTTON("Cross", TRANSLATE_NOOP("JogCon", "Cross"), ICON_PF_BUTTON_CROSS, JogCon::Button::Cross, GenericInputBinding::Cross),
-  BUTTON("Square", TRANSLATE_NOOP("JogCon", "Square"), ICON_PF_BUTTON_SQUARE, JogCon::Button::Square, GenericInputBinding::Square),
-  BUTTON("Select", TRANSLATE_NOOP("JogCon", "Select"), ICON_PF_SELECT_SHARE, JogCon::Button::Select, GenericInputBinding::Select),
-  BUTTON("Start", TRANSLATE_NOOP("JogCon", "Start"), ICON_PF_START, JogCon::Button::Start, GenericInputBinding::Start),
-  BUTTON("L1", TRANSLATE_NOOP("JogCon", "L1"), ICON_PF_LEFT_SHOULDER_L1, JogCon::Button::L1, GenericInputBinding::L1),
-  BUTTON("R1", TRANSLATE_NOOP("JogCon", "R1"), ICON_PF_RIGHT_SHOULDER_R1, JogCon::Button::R1, GenericInputBinding::R1),
-  BUTTON("L2", TRANSLATE_NOOP("JogCon", "L2"), ICON_PF_LEFT_TRIGGER_L2, JogCon::Button::L2, GenericInputBinding::L2),
-  BUTTON("R2", TRANSLATE_NOOP("JogCon", "R2"), ICON_PF_RIGHT_TRIGGER_R2, JogCon::Button::R2, GenericInputBinding::R2),
-  BUTTON("Mode", TRANSLATE_NOOP("JogCon", "Mode"), ICON_PF_ANALOG_LEFT_RIGHT, JogCon::Button::Mode, GenericInputBinding::System),
+  BUTTON("Up", TRANSLATE_NOOP("JogCon", "D-Pad Up"), ICON_PF_DPAD_UP, "Up", JogCon::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("JogCon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, "Right", JogCon::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("JogCon", "D-Pad Down"), ICON_PF_DPAD_DOWN, "Down", JogCon::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("JogCon", "D-Pad Left"), ICON_PF_DPAD_LEFT, "Left", JogCon::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", TRANSLATE_NOOP("JogCon", "Triangle"), ICON_PF_BUTTON_TRIANGLE, "Triangle", JogCon::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", TRANSLATE_NOOP("JogCon", "Circle"), ICON_PF_BUTTON_CIRCLE, "Circle", JogCon::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", TRANSLATE_NOOP("JogCon", "Cross"), ICON_PF_BUTTON_CROSS, "Cross", JogCon::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", TRANSLATE_NOOP("JogCon", "Square"), ICON_PF_BUTTON_SQUARE, "Square", JogCon::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", TRANSLATE_NOOP("JogCon", "Select"), ICON_PF_SELECT_SHARE, "Select", JogCon::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("JogCon", "Start"), ICON_PF_START, "Start", JogCon::Button::Start, GenericInputBinding::Start),
+  BUTTON("L1", TRANSLATE_NOOP("JogCon", "L1"), ICON_PF_LEFT_SHOULDER_L1, "L1", JogCon::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", TRANSLATE_NOOP("JogCon", "R1"), ICON_PF_RIGHT_SHOULDER_R1, "R1", JogCon::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", TRANSLATE_NOOP("JogCon", "L2"), ICON_PF_LEFT_TRIGGER_L2, "L2", JogCon::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", TRANSLATE_NOOP("JogCon", "R2"), ICON_PF_RIGHT_TRIGGER_R2, "R2", JogCon::Button::R2, GenericInputBinding::R2),
+  BUTTON("Mode", TRANSLATE_NOOP("JogCon", "Mode"), ICON_PF_ANALOG_LEFT_RIGHT, "Mode", JogCon::Button::Mode, GenericInputBinding::System),
 
-  AXIS("SteeringLeft", TRANSLATE_NOOP("JogCon", "Steering Left"), ICON_PF_ANALOG_LEFT, JogCon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", TRANSLATE_NOOP("JogCon", "Steering Right"), ICON_PF_ANALOG_RIGHT, JogCon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("JogCon", "Steering Left"), ICON_PF_ANALOG_LEFT, "Steering", JogCon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("JogCon", "Steering Right"), ICON_PF_ANALOG_RIGHT, "Steering", JogCon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
 
   // clang-format on
 
-  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_LED, nullptr, LED_BIND_START_INDEX,
+  {"ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_LED, "ModeLED", LED_BIND_START_INDEX,
    InputBindingInfo::Type::LED, GenericInputBinding::ModeLED},
 
   {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), ICON_PF_VIBRATION, nullptr, MOTOR_BIND_START_INDEX,
@@ -665,6 +665,10 @@ static const SettingInfo s_settings[] = {
    "0.03", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
 };
 
-const Controller::ControllerInfo JogCon::INFO = {
-  ControllerType::JogCon, "JogCon",  TRANSLATE_NOOP("ControllerType", "JogCon"), ICON_PF_JOGCON_CONTROLLER, nullptr,
-  s_binding_info,         s_settings};
+const Controller::ControllerInfo JogCon::INFO = {ControllerType::JogCon,
+                                                 "JogCon",
+                                                 TRANSLATE_NOOP("ControllerType", "JogCon"),
+                                                 ICON_PF_JOGCON_CONTROLLER,
+                                                 "images/controllers/jogcon.svg",
+                                                 s_binding_info,
+                                                 s_settings};

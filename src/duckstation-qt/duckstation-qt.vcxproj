@@ -317,6 +317,15 @@
     <QtUi Include="controllerbindingwidget_justifier.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="controllerbindingwidget_jogcon.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="controllerbindingwidget_ddgo.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="controllerbindingwidget_popn.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="selectdiscdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
