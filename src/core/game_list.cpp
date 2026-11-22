@@ -177,7 +177,7 @@ constexpr const char* const GameList::SETTING_KEY_SORT_REVERSED = "GameListSortR
 constexpr const char* const GameList::SETTING_KEY_ICON_SOURCE = "GameListIconSource";
 constexpr const char* const GameList::SETTING_KEY_MERGE_DISC_SETS = "GameListMergeDiscSets";
 constexpr const char* const GameList::SETTING_KEY_GRID_VIEW = "GameListGridView";
-constexpr const char* const GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW = "GameListFullscreenUIGridView";
+constexpr const char* const GameList::SETTING_KEY_FULLSCREENUI_VIEW = "GameListFullscreenUIView";
 constexpr const char* const GameList::SETTING_KEY_COVER_TITLES = "GameListCoverTitles";
 
 GameList::Entry::Entry() = default;

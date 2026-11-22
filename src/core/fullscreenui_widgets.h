@@ -7,9 +7,9 @@
 
 #include "util/translation.h"
 
+#include "common/move_only_function.h"
 #include "common/small_string.h"
 #include "common/types.h"
-#include "common/move_only_function.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
@@ -91,6 +91,12 @@ struct TextStyle
   ImVec4 color;
 
   ALWAYS_INLINE TextStyle WithColor(const ImVec4& new_color) const { return {font_size, font_weight, new_color}; }
+  ALWAYS_INLINE TextStyle WithSize(float new_size) const { return {new_size, font_weight, color}; }
+  ALWAYS_INLINE TextStyle WithWeight(float new_weight) const { return {font_size, new_weight, color}; }
+  ALWAYS_INLINE TextStyle WithSizeAndWeight(float new_size, float new_weight) const
+  {
+    return {new_size, new_weight, color};
+  }
 };
 
 struct ALIGN_TO_CACHE_LINE UIStyles
@@ -148,6 +154,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
 
   static constexpr float NormalFontWeight = 0.0f;
   static constexpr float BoldFontWeight = 500.0f;
+  static constexpr float ExtraBoldFontWeight = 800.0f;
 
   bool Animations : 1;
   bool SmoothScrolling : 1;
@@ -314,6 +321,7 @@ void ShutdownWidgets();
 bool CreateWidgetsGPUResources(Error* error);
 void DestroyWidgetsGPUResources();
 GPUPipeline* GetPresentCopyPipeline();
+GPUPipeline* GetCarouselPipeline();
 
 std::span<const char* const> GetThemeNames();
 std::span<const char* const> GetThemeDisplayNames();

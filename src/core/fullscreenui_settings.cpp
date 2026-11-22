@@ -3513,10 +3513,11 @@ void FullscreenUI::DrawGameListSettingsPage()
   {
     ResetFocusHere();
 
-    bool settings_changed = DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TABLE_CELLS_LARGE, "Grid View"),
-                                              FSUI_VSTR("Shows the game list as a grid instead of a vertical list."),
-                                              GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                              GameList::DEFAULT_FULLSCREENUI_GRID_VIEW);
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_TABLE_CELLS_LARGE, "View"),
+                    FSUI_VSTR("Determines how the game list is displayed."), GameList::UI_SECTION_NAME,
+                    GameList::SETTING_KEY_FULLSCREENUI_VIEW, DEFAULT_GAME_LIST_VIEW, &ParseGameListViewName,
+                    &GetGameListViewName, &GetGameListViewDisplayName, GameListView::MaxCount, true, false,
+                    &FullscreenUI::ReloadGameListSettings);
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SORT, "Sort By"),
                     FSUI_VSTR("Determines that field that the game list will be sorted by."), GameList::UI_SECTION_NAME,
                     GameList::SETTING_KEY_SORT_COLUMN, GameList::DEFAULT_SORT_COLUMN, &GameList::ParseColumnName,
@@ -3527,7 +3528,7 @@ void FullscreenUI::DrawGameListSettingsPage()
                     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_ICON_SOURCE, GameList::DEFAULT_ICON_SOURCE,
                     &GameList::ParseIconSourceName, &GameList::GetIconSourceName, &GameList::GetIconSourceDisplayName,
                     GameList::IconSource::MaxCount, true, false, &FullscreenUI::ReloadGameListSettings);
-    settings_changed |= DrawToggleSetting(
+    bool settings_changed = DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_ARROW_DOWN_Z_A, "Sort Reversed"),
       FSUI_VSTR("Reverses the game list sort order from the default (usually ascending to descending)."),
       GameList::UI_SECTION_NAME, GameList::SETTING_KEY_SORT_REVERSED, GameList::DEFAULT_SORT_REVERSED);

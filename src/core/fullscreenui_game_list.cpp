@@ -14,15 +14,21 @@
 #include "util/imgui_manager.h"
 
 #include "common/bitutils.h"
+#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
+#include "common/time_helpers.h"
 
 #include "IconsEmoji.h"
 #include "IconsPromptFont.h"
+
+#include <cmath>
+#include <cstring>
+#include <numbers>
 
 LOG_CHANNEL(FullscreenUI);
 
@@ -30,6 +36,10 @@ namespace FullscreenUI {
 
 static void DrawGameList(const ImVec2& heading_size);
 static void DrawGameGrid(const ImVec2& heading_size);
+static void DrawGameCarousel(const ImVec2& heading_size);
+static void DrawCarouselCoverCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                      u32 base_index);
+static void SetGameListView(GameListView view);
 static void HandleGameListActivate(const GameList::Entry* entry);
 static void HandleGameListOptions(const GameList::Entry* entry);
 static void HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* dsentry);
@@ -49,6 +59,23 @@ static void DoSetCoverImage(std::string entry_path);
 static void DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path);
 
 namespace {
+
+struct CarouselPushConstants
+{
+  GSMatrix4x4 mvp;
+  float color[4];
+  float fade_start;
+  float fade_scale;
+  float corner_radius[2];
+  float flip_y;
+};
+
+struct CarouselDrawData
+{
+  CarouselPushConstants push_constants;
+  GPUTexture* texture;
+};
+
 struct GameListLocals
 {
   // Lazily populated cover images.
@@ -60,7 +87,14 @@ struct GameListLocals
   bool sort_reversed = GameList::DEFAULT_SORT_REVERSED;
   bool localized_titles = GameList::DEFAULT_LOCALIZED_TITLES;
   bool merge_disc_sets = GameList::DEFAULT_MERGE_DISC_SETS;
-  bool grid_view = GameList::DEFAULT_FULLSCREENUI_GRID_VIEW;
+  GameListView view = DEFAULT_GAME_LIST_VIEW;
+  bool carousel_caught = false;
+  s32 carousel_index = 0;
+  float carousel_position = 0.0f;
+  float carousel_animation_start = 0.0f;
+  float carousel_animation_time = 0.0f;
+  s32 carousel_animation_target = 0;
+  float carousel_wheel_accum = 0.0f;
   bool cover_titles = GameList::DEFAULT_COVER_TITLES;
   bool compact_mode = true;
   bool show_trophy_icons = true;
@@ -91,6 +125,45 @@ void FullscreenUI::ClearGameListState()
   s_game_list_locals.icon_image_map.clear();
   s_game_list_locals.cover_image_map.clear();
   s_game_list_locals.game_list_sorted_entries = {};
+}
+
+static constexpr std::array<const char*, static_cast<size_t>(FullscreenUI::GameListView::MaxCount)>
+  s_game_list_view_names = {{"Grid", "Carousel", "List"}};
+static constexpr std::array<const char*, static_cast<size_t>(FullscreenUI::GameListView::MaxCount)>
+  s_game_list_view_display_names = {{FSUI_NSTR("Grid"), FSUI_NSTR("Carousel"), FSUI_NSTR("List")}};
+
+const char* FullscreenUI::GetGameListViewName(GameListView view)
+{
+  return (static_cast<size_t>(view) < s_game_list_view_names.size()) ?
+           s_game_list_view_names[static_cast<size_t>(view)] :
+           "";
+}
+
+const char* FullscreenUI::GetGameListViewDisplayName(GameListView view)
+{
+  return (static_cast<size_t>(view) < s_game_list_view_display_names.size()) ?
+           Host::TranslateToCString(FSUI_TR_CONTEXT, s_game_list_view_display_names[static_cast<size_t>(view)]) :
+           "";
+}
+
+std::optional<FullscreenUI::GameListView> FullscreenUI::ParseGameListViewName(std::string_view name)
+{
+  for (size_t i = 0; i < s_game_list_view_names.size(); i++)
+  {
+    if (name == s_game_list_view_names[i])
+      return static_cast<GameListView>(i);
+  }
+
+  return std::nullopt;
+}
+
+void FullscreenUI::SetGameListView(GameListView view)
+{
+  s_game_list_locals.view = view;
+  Core::SetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_VIEW,
+                                  GetGameListViewName(view));
+  Host::CommitBaseSettingChanges();
+  QueueResetFocus(FocusResetType::ViewChanged);
 }
 
 void FullscreenUI::DoSetCoverImage(std::string entry_path)
@@ -218,9 +291,13 @@ void FullscreenUI::DrawGameListWindow()
     ImGuiWindow* const window = ImGui::GetCurrentWindow();
     ImDrawList* const dl = window->DrawList;
     const float spacing = LayoutScale(8.0f);
-    const IconStackString list_label(ICON_FA_LIST, FSUI_NSTR("List"));
-    const IconStackString grid_label(ICON_FA_TABLE_CELLS_LARGE, FSUI_NSTR("Grid"));
-    const ImVec2 view_size = GetSegmentedControlFrameSize(MeasureSegment(list_label) + MeasureSegment(grid_label));
+    const std::array<IconStackString, static_cast<size_t>(GameListView::MaxCount)> view_labels = {{
+      IconStackString(ICON_FA_TABLE_CELLS_LARGE, FSUI_NSTR("Grid")),
+      IconStackString(ICON_FA_IMAGES, FSUI_NSTR("Carousel")),
+      IconStackString(ICON_FA_LIST, FSUI_NSTR("List")),
+    }};
+    const ImVec2 view_size = GetSegmentedControlFrameSize(
+      MeasureSegment(view_labels[0]) + MeasureSegment(view_labels[1]) + MeasureSegment(view_labels[2]));
     const float view_left = window->WorkRect.Max.x - view_size.x;
     const std::string_view view_hint = GetInputHint(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_F4);
     DrawInputHint(dl, ImVec2(view_left - spacing - MeasureInputHint(view_hint), window->Pos.y), heading_size.y,
@@ -230,18 +307,11 @@ void FullscreenUI::DrawGameListWindow()
     ImGui::NewLine();
     ImGui::SetCursorScreenPos(ImVec2(view_left, window->Pos.y + ImFloor((heading_size.y - view_size.y) * 0.5f)));
     BeginSegmentedControl("view");
-    for (u32 grid = 0; grid < 2; grid++)
+    for (size_t i = 0; i < view_labels.size(); i++)
     {
-      if (Segment(grid ? grid_label.view() : list_label.view(), grid == BoolToUInt32(s_game_list_locals.grid_view)))
-      {
-        BeginTransition([grid]() {
-          s_game_list_locals.grid_view = ConvertToBoolUnchecked(grid);
-          Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                        s_game_list_locals.grid_view);
-          Host::CommitBaseSettingChanges();
-          QueueResetFocus(FocusResetType::ViewChanged);
-        });
-      }
+      const GameListView view = static_cast<GameListView>(i);
+      if (Segment(view_labels[i], view == s_game_list_locals.view))
+        BeginTransition([view]() { SetGameListView(view); });
     }
     EndSegmentedControl();
 
@@ -284,10 +354,18 @@ void FullscreenUI::DrawGameListWindow()
   }
   EndPageHeader();
 
-  if (s_game_list_locals.grid_view)
-    DrawGameGrid(heading_size);
-  else
-    DrawGameList(heading_size);
+  switch (s_game_list_locals.view)
+  {
+    case GameListView::Carousel:
+      DrawGameCarousel(heading_size);
+      break;
+    case GameListView::List:
+      DrawGameList(heading_size);
+      break;
+    default:
+      DrawGameGrid(heading_size);
+      break;
+  }
 
   // note: has to come afterwards
   if (!AreAnyDialogsOpen())
@@ -295,13 +373,12 @@ void FullscreenUI::DrawGameListWindow()
     if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ||
         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
     {
+      // L1 goes to the previous view, R1/F4 to the next
+      static constexpr u32 count = static_cast<u32>(GameListView::MaxCount);
+      const u32 step = ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ? (count - 1) : 1;
       EnqueueSoundEffect(SFX_NAV_MOVE);
-      BeginTransition([]() {
-        s_game_list_locals.grid_view = !s_game_list_locals.grid_view;
-        Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW,
-                                      s_game_list_locals.grid_view);
-        Host::CommitBaseSettingChanges();
-        QueueResetFocus(FocusResetType::ViewChanged);
+      BeginTransition([step]() {
+        SetGameListView(static_cast<GameListView>((static_cast<u32>(s_game_list_locals.view) + step) % count));
       });
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
@@ -902,6 +979,477 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   EndFullscreenWindow();
 }
 
+void FullscreenUI::DrawCarouselCoverCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd, u32 base_vertex,
+                                             u32 base_index)
+{
+  // callback data buffer isn't necessarily aligned
+  CarouselDrawData data;
+  std::memcpy(&data, cmd->UserCallbackData, sizeof(data));
+  data.push_constants.mvp = ImGuiManager::GetCurrentProjectionMatrix() * data.push_constants.mvp;
+
+  g_gpu_device->SetPipeline(GetCarouselPipeline());
+  g_gpu_device->SetTextureSampler(0, data.texture, g_gpu_device->GetLinearSampler());
+  g_gpu_device->DrawWithPushConstants(4, 0, &data.push_constants, sizeof(data.push_constants));
+}
+
+void FullscreenUI::DrawGameCarousel(const ImVec2& heading_size)
+{
+  ImGuiIO& io = ImGui::GetIO();
+  if (!BeginFullscreenWindow(
+        ImVec2(0.0f, heading_size.y),
+        ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
+        "game_carousel", GetTransparentBackgroundColor(), 0.0f, ImVec2(),
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+  {
+    EndFullscreenWindow();
+    return;
+  }
+
+  if (ImGui::IsWindowFocused() && WantsToCloseMenu())
+  {
+    BeginTransition(TransitionEffect::ZoomOut, DEFAULT_TRANSITION_TIME,
+                    []() { SwitchToMainWindow(MainWindowType::Landing); });
+  }
+
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  const ImVec2 window_pos = window->Pos;
+  const ImVec2 window_size = window->Size;
+  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+  const auto& entries = s_game_list_locals.game_list_sorted_entries;
+  if (entries.empty())
+  {
+    RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, window_pos,
+                              window_pos + window_size, text_color, FSUI_VSTR("No games found."), nullptr,
+                              ImVec2(0.5f, 0.5f));
+    EndFullscreenWindow();
+    return;
+  }
+
+  const s32 count = static_cast<s32>(entries.size());
+  const float max_position = static_cast<float>(count - 1);
+  s32& index = s_game_list_locals.carousel_index;
+  float& position = s_game_list_locals.carousel_position;
+  index = std::clamp(index, 0, count - 1);
+  position = std::clamp(position, 0.0f, max_position);
+
+  // Cover layout, in screen pixels. The camera looks at the middle of the centre cover.
+  static constexpr float SIDE_ANGLE = 70.0f * static_cast<float>(std::numbers::pi / 180.0);
+  static constexpr u32 MAX_SIDE_COVERS = 20;
+  const float cover_size = std::min(window_size.y * 0.5f, LayoutScale(400.0f));
+  const float centre_gap = cover_size * 0.75f;
+  const float side_spacing = cover_size * 0.22f;
+  const float side_depth = cover_size * 0.6f;
+  const float focal_length = cover_size * 3.0f;
+  const float centre_x = window_pos.x + window_size.x * 0.5f;
+  const float floor_y = window_pos.y + window_size.y * 0.62f;
+  const float centre_y = floor_y - cover_size * 0.5f;
+  const float reflection_size = 0.35f;
+  const u32 side_count = std::min(
+    static_cast<u32>(std::ceil(std::max(window_size.x * 0.5f - centre_gap, 0.0f) / side_spacing)) + 2, MAX_SIDE_COVERS);
+
+  // Generated artwork is rendered at the size of the centre cover.
+  const u32 generated_artwork_size = static_cast<u32>(std::ceil(cover_size));
+  const bool generated_artwork_flip = g_gpu_device->UsesLowerLeftOrigin();
+
+  // One item covering the whole carousel, so that nav activation and mouse drag/clicks go through ImGui.
+  ResetFocusHere();
+  const ImGuiID id = window->GetID("carousel");
+  const ImRect bb(window_pos, window_pos + window_size);
+  ImGui::ItemSize(bb);
+  bool hovered = false, held = false, pressed = false;
+  if (ImGui::ItemAdd(bb, id))
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+  ImGui::SetItemDefaultFocus();
+
+  const bool can_navigate = ImGui::IsWindowFocused() && !AreAnyDialogsOpen();
+  const s32 prev_index = index;
+  if (can_navigate)
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
+      index--;
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
+      index++;
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadL2, true) || ImGui::IsKeyPressed(ImGuiKey_PageUp, true))
+      index -= 10;
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadR2, true) || ImGui::IsKeyPressed(ImGuiKey_PageDown, true))
+      index += 10;
+    else if (ImGui::IsKeyPressed(ImGuiKey_Home, false))
+      index = 0;
+    else if (ImGui::IsKeyPressed(ImGuiKey_End, false))
+      index = count - 1;
+
+    // only keyboard/gamepad moves make a sound, not the mouse
+    index = std::clamp(index, 0, count - 1);
+    if (index != prev_index)
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+  }
+
+  if (ImGui::IsWindowHovered() && !AreAnyDialogsOpen())
+  {
+    s_game_list_locals.carousel_wheel_accum -= io.MouseWheel + io.MouseWheelH;
+    const float steps = std::trunc(s_game_list_locals.carousel_wheel_accum);
+    s_game_list_locals.carousel_wheel_accum -= steps;
+    index += static_cast<s32>(steps);
+  }
+
+  // Pressing while it's moving stops it, without activating anything.
+  if (ImGui::IsItemActivated() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+  {
+    s_game_list_locals.carousel_caught = (std::abs(position - static_cast<float>(index)) > 0.5f);
+    if (s_game_list_locals.carousel_caught)
+      index = static_cast<s32>(std::round(position));
+  }
+
+  // Dragging moves the carousel directly. On release, a fling picks a cover further along, which is eased to like any
+  // other move.
+  const float drag_item_width = centre_gap * 0.5f;
+  ImVec2 fling_distance;
+  const bool dragging = GetWindowDrag(&fling_distance);
+  if (dragging)
+  {
+    position = std::clamp(position - io.MouseDelta.x / drag_item_width, 0.0f, max_position);
+    index = static_cast<s32>(std::round(position + fling_distance.x / drag_item_width));
+
+    // animate from wherever it's released
+    s_game_list_locals.carousel_animation_target = -1;
+  }
+
+  index = std::clamp(index, 0, count - 1);
+
+  // Dragging sets the position directly. Changing the target part way through starts a new animation from the current
+  // position.
+  if (!UIStyle.Animations && !dragging)
+  {
+    position = static_cast<float>(index);
+  }
+  else if (!dragging)
+  {
+    static constexpr float ANIMATION_TIME = 0.5f;
+    if (index != s_game_list_locals.carousel_animation_target)
+    {
+      s_game_list_locals.carousel_animation_target = index;
+      s_game_list_locals.carousel_animation_start = position;
+      s_game_list_locals.carousel_animation_time = 0.0f;
+    }
+
+    s_game_list_locals.carousel_animation_time += io.DeltaTime;
+    const float t = s_game_list_locals.carousel_animation_time / ANIMATION_TIME;
+    position = (t >= 1.0f) ?
+                 static_cast<float>(index) :
+                 std::lerp(s_game_list_locals.carousel_animation_start, static_cast<float>(index), Easing::OutExpo(t));
+  }
+
+  // Covers are drawn back-to-front, since there's no depth buffer.
+  const s32 centre_index = static_cast<s32>(std::round(position));
+  const s32 first_index = std::max(centre_index - static_cast<s32>(side_count), 0);
+  const s32 last_index = std::min(centre_index + static_cast<s32>(side_count), count - 1);
+  std::array<s32, MAX_SIDE_COVERS * 2 + 1> draw_order;
+  u32 draw_count = 0;
+  for (s32 i = first_index; i <= last_index; i++)
+    draw_order[draw_count++] = i;
+  std::sort(draw_order.begin(), draw_order.begin() + draw_count, [&](s32 lhs, s32 rhs) {
+    return std::abs(static_cast<float>(lhs) - position) > std::abs(static_cast<float>(rhs) - position);
+  });
+
+  // Pixel-space perspective projection, the ImGui projection is applied in the callback.
+  const GSMatrix4x4 projection(1.0f, 0.0f, centre_x / focal_length, centre_x, 0.0f, 1.0f, centre_y / focal_length,
+                               centre_y, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f / focal_length, 1.0f);
+  const float global_alpha = ImGui::GetStyle().Alpha;
+
+  std::array<ImRect, MAX_SIDE_COVERS * 2 + 1> cover_rects;
+  for (u32 draw_index = 0; draw_index < draw_count; draw_index++)
+  {
+    const s32 entry_index = draw_order[draw_index];
+    const GameList::Entry* const entry = entries[entry_index];
+
+    // empty rect, so it's not hit by the mouse
+    ImRect& rect = cover_rects[draw_index];
+    rect = ImRect(ImVec2(FLT_MAX, FLT_MAX), ImVec2(-FLT_MAX, -FLT_MAX));
+
+    GPUTexture* texture = GetGameListCover(entry, false, false, false);
+    const bool generated = !texture;
+    if (generated)
+    {
+      texture = GetGeneratedArtwork(entry->GetDisplayTitle(s_game_list_locals.localized_titles), entry->type, false,
+                                    generated_artwork_size);
+      if (!texture)
+        continue;
+    }
+
+    const float d = static_cast<float>(entry_index) - position;
+    const float side_t = std::clamp(d, -1.0f, 1.0f);
+    const float abs_d = std::abs(d);
+    const float x = (abs_d <= 1.0f) ? (d * centre_gap) : (std::copysign(centre_gap + (abs_d - 1.0f) * side_spacing, d));
+    const float z = std::abs(side_t) * side_depth;
+
+    // fit cover into the square, bottom-aligned
+    const float aspect = static_cast<float>(texture->GetWidth()) / static_cast<float>(texture->GetHeight());
+    const float width = (aspect >= 1.0f) ? cover_size : (cover_size * aspect);
+    const float height = (aspect >= 1.0f) ? (cover_size / aspect) : cover_size;
+
+    const GSMatrix4x4 placement =
+      projection * GSMatrix4x4::Translation(x, floor_y - centre_y, z) * GSMatrix4x4::RotationY(SIDE_ANGLE * side_t);
+    const GSMatrix4x4 cover_mvp = placement * GSMatrix4x4(width, 0.0f, 0.0f, 0.0f, 0.0f, height, 0.0f, 0.0f, 0.0f, 0.0f,
+                                                          1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+    const GSMatrix4x4 reflection_mvp = placement * GSMatrix4x4(width, 0.0f, 0.0f, 0.0f, 0.0f, -height, 0.0f, 0.0f, 0.0f,
+                                                               0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    // darken covers as they move to the side, and further with distance
+    const float brightness = std::max(1.0f - 0.5f * std::min(abs_d, 1.0f) - 0.05f * std::max(abs_d - 1.0f, 0.0f), 0.2f);
+    CarouselDrawData data = {};
+    data.texture = texture;
+    data.push_constants.mvp = reflection_mvp;
+    data.push_constants.color[0] = data.push_constants.color[1] = data.push_constants.color[2] = brightness;
+    data.push_constants.color[3] = 0.3f * global_alpha;
+    data.push_constants.fade_start = 1.0f - reflection_size;
+    data.push_constants.fade_scale = 1.0f / reflection_size;
+
+    // corner radius is relative to the shorter side, so it's the same as generated artwork in pixels
+    const float corner_radius = GameList::GeneratedArtwork::COVER_CORNER_RADIUS * std::min(width, height);
+    data.push_constants.corner_radius[0] = corner_radius / width;
+    data.push_constants.corner_radius[1] = corner_radius / height;
+    data.push_constants.flip_y = (generated && generated_artwork_flip) ? 1.0f : 0.0f;
+    dl->AddCallback(&DrawCarouselCoverCallback, &data, sizeof(data));
+
+    data.push_constants.mvp = cover_mvp;
+    data.push_constants.color[3] = global_alpha;
+    data.push_constants.fade_scale = 0.0f;
+    dl->AddCallback(&DrawCarouselCoverCallback, &data, sizeof(data));
+
+    // projected bounds for hit testing
+    for (const GSVector4& corner : {GSVector4(-0.5f, -1.0f, 0.0f, 1.0f), GSVector4(0.5f, -1.0f, 0.0f, 1.0f),
+                                    GSVector4(-0.5f, 0.0f, 0.0f, 1.0f), GSVector4(0.5f, 0.0f, 0.0f, 1.0f)})
+    {
+      const GSVector4 projected = cover_mvp * corner;
+      rect.Add(ImVec2(projected.x / projected.w, projected.y / projected.w));
+    }
+  }
+
+  // Covers off-screen are prefetched so they're ready when scrolling.
+  for (s32 i = std::max(first_index - 5, 0); i <= std::min(last_index + 5, count - 1); i++)
+  {
+    if (i < first_index || i > last_index)
+      GetGameListCover(entries[i], false, false, false);
+  }
+
+  // Hit test front-to-back for mouse clicks.
+  s32 mouse_index = -1;
+  if (hovered)
+  {
+    for (u32 draw_index = draw_count; draw_index > 0; draw_index--)
+    {
+      if (cover_rects[draw_index - 1].Contains(io.MousePos))
+      {
+        mouse_index = draw_order[draw_index - 1];
+        break;
+      }
+    }
+  }
+
+  const GameList::Entry* const selected_entry = entries[index];
+  if (pressed && !(s_game_list_locals.carousel_caught && ImGui::IsMouseReleased(ImGuiMouseButton_Left)))
+  {
+    if (!ImGui::IsMouseReleased(ImGuiMouseButton_Left) || mouse_index == index)
+    {
+      HandleGameListActivate(selected_entry);
+    }
+    else if (mouse_index >= 0)
+    {
+      index = mouse_index;
+    }
+  }
+  else if (hovered && mouse_index >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+  {
+    // right-clicking empty space goes back, like the grid and list
+    CancelPendingMenuClose();
+    HandleGameListOptions(entries[mouse_index]);
+  }
+  else if (can_navigate &&
+           (ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
+  {
+    CancelPendingMenuClose();
+    HandleGameListOptions(selected_entry);
+  }
+
+  // Trophy icon on the centre cover, once it's settled.
+  if (s_game_list_locals.show_trophy_icons && std::abs(static_cast<float>(index) - position) < 0.05f &&
+      cover_rects[draw_count - 1].Min.x < cover_rects[draw_count - 1].Max.x)
+  {
+    const ImRect& rect = cover_rects[draw_count - 1];
+    GPUTexture* const cover_trophy = GetGameListCoverTrophy(selected_entry, rect.GetSize());
+    if (cover_trophy)
+    {
+      const ImVec2 trophy_size =
+        ImVec2(static_cast<float>(cover_trophy->GetWidth()), static_cast<float>(cover_trophy->GetHeight()));
+      dl->AddImage(cover_trophy, rect.Max - trophy_size, rect.Max);
+    }
+  }
+
+  // Details for the game either side of the carousel position, in a card at the bottom. Cards slide and fade with the
+  // carousel position, so they follow the covers and are only fully visible once it settles.
+  const float line_spacing = LayoutScale(4.0f);
+  const float chip_height = LayoutScale(24.0f);
+  const float panel_margin = LayoutScale(24.0f);
+  const float panel_padding = LayoutScale(20.0f);
+  const ImVec2 flag_size = LayoutScale(23.0f, 16.0f);
+  const float flag_spacing = LayoutScale(6.0f);
+  const float card_slide_distance = LayoutScale(100.0f);
+  const auto draw_card = [&dl, &window_pos, &window_size, &global_alpha, &generated_artwork_flip, &line_spacing,
+                          &chip_height, &panel_margin, &panel_padding, &flag_size,
+                          &flag_spacing](const GameList::Entry* entry, float card_x, float card_alpha) {
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, global_alpha * card_alpha);
+    const GameDatabase::Entry* const dbentry = entry->dbentry;
+    const std::string_view title = entry->GetDisplayTitle(s_game_list_locals.localized_titles);
+    const u32 chip_color = ImGui::GetColorU32(UIStyle.SurfaceRaisedColor);
+    const u32 image_color = ImGui::GetColorU32(IM_COL32(255, 255, 255, 255));
+
+    InlineRun title_run(0.0f);
+    title_run.Text(UIStyle.HeadingText.WithWeight(UIStyle.ExtraBoldFontWeight), title, InlineRun::Shrink);
+
+    InlineRun developer_run(0.0f);
+    if (dbentry)
+    {
+      if (!dbentry->developer.empty())
+        developer_run.Text(UIStyle.MutedText, dbentry->developer, InlineRun::Shrink);
+
+      std::optional<std::tm> release_date;
+      if (dbentry->release_date != 0 &&
+          (release_date = Common::LocalTime(static_cast<std::time_t>(dbentry->release_date))).has_value())
+      {
+        if (!dbentry->developer.empty())
+          developer_run.Text(UIStyle.MutedText, " " ICON_EMOJI_MIDDLE_DOT " ");
+        developer_run.TextFmt(UIStyle.MutedText, "{}", release_date->tm_year + 1900);
+      }
+    }
+
+    // region pill has the flag before the text, so it's drawn once the line is laid out
+    InlineRun chips_run(LayoutScale(10.0f));
+    const std::string_view region_name = Settings::GetDiscRegionDisplayName(entry->region);
+    const u32 region_item = chips_run.Space(
+      MeasurePill(region_name, chip_height, UIStyle.SmallMutedText).x + flag_size.x + flag_spacing, chip_height);
+    if (!entry->serial.empty())
+      chips_run.Pill(entry->serial, UIStyle.SmallMutedText, chip_color, chip_height);
+    if (entry->num_achievements > 0)
+    {
+      if (entry->unlocked_achievements_hc > 0)
+      {
+        chips_run.PillFmt(UIStyle.SmallMutedText, chip_color, chip_height, -1.0f, ICON_FA_TROPHY " {} ({}) / {}",
+                          entry->unlocked_achievements, entry->unlocked_achievements_hc, entry->num_achievements);
+      }
+      else
+      {
+        chips_run.PillFmt(UIStyle.SmallMutedText, chip_color, chip_height, -1.0f, ICON_FA_TROPHY " {} / {}",
+                          entry->unlocked_achievements, entry->num_achievements);
+      }
+    }
+
+    InlineRun played_run(LayoutScale(10.0f));
+    if (entry->total_played_time > 0)
+    {
+      played_run.PillFmt(UIStyle.SmallMutedText, chip_color, chip_height, -1.0f, ICON_FA_HOURGLASS_HALF " {}",
+                         Host::FormatTimespan(entry->total_played_time, true));
+      played_run.PillFmt(UIStyle.SmallMutedText, chip_color, chip_height, -1.0f, ICON_FA_CLOCK " {}",
+                         Host::FormatRelativeDate(entry->last_played_time, false, true));
+    }
+
+    // Panel fits the text, lines that aren't present are dropped, and the icon is the height of the text.
+    const bool has_developer_line = (developer_run.GetWidth() > 0.0f);
+    const bool has_played_line = (played_run.GetWidth() > 0.0f);
+    const float text_width =
+      std::max({title_run.GetWidth(), developer_run.GetWidth(), chips_run.GetWidth(), played_run.GetWidth()});
+    const float text_height = UIStyle.HeadingText.font_size + line_spacing + chip_height +
+                              (has_developer_line ? (UIStyle.MutedText.font_size + line_spacing) : 0.0f) +
+                              (has_played_line ? (chip_height + line_spacing) : 0.0f);
+    const float icon_size = (s_game_list_locals.icon_source != GameList::IconSource::None) ? text_height : 0.0f;
+    const float icon_spacing = (icon_size > 0.0f) ? LayoutScale(12.0f) : 0.0f;
+    const float panel_width =
+      std::min(text_width + icon_size + icon_spacing + panel_padding * 2.0f, window_size.x - panel_margin * 2.0f);
+    const float panel_bottom = window_pos.y + window_size.y - panel_margin;
+    const ImRect panel_rect(
+      ImFloor(ImVec2(card_x - panel_width * 0.5f, panel_bottom - text_height - panel_padding * 2.0f)),
+      ImFloor(ImVec2(card_x + panel_width * 0.5f, panel_bottom)));
+    if (icon_size > 0.0f)
+    {
+      const ImVec2 icon_pos =
+        ImFloor(ImVec2(panel_rect.Min.x + panel_padding, panel_rect.GetCenter().y - icon_size * 0.5f));
+      const ImRect icon_rect(icon_pos, icon_pos + ImVec2(icon_size, icon_size));
+      if (GPUTexture* const icon_texture = GetGameListIcon(entry))
+      {
+        const ImRect rect = CenterImage(icon_rect, ImVec2(static_cast<float>(icon_texture->GetWidth()),
+                                                          static_cast<float>(icon_texture->GetHeight())));
+        dl->AddImage(icon_texture, rect.Min, rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), image_color);
+      }
+      else if (GPUTexture* const generated_icon =
+                 GetGeneratedArtwork(title, entry->type, true, static_cast<u32>(std::ceil(icon_size))))
+      {
+        dl->AddImageRounded(generated_icon, icon_rect.Min, icon_rect.Max,
+                            ImVec2(0.0f, generated_artwork_flip ? 1.0f : 0.0f),
+                            ImVec2(1.0f, generated_artwork_flip ? 0.0f : 1.0f), image_color,
+                            icon_size * GameList::GeneratedArtwork::ICON_CORNER_RADIUS);
+      }
+    }
+
+    const float line_left = panel_rect.Min.x + panel_padding + icon_size + icon_spacing;
+    const float line_right = panel_rect.Max.x - panel_padding;
+    float line_y = panel_rect.Min.y + panel_padding;
+    const auto draw_line = [&dl, &line_left, &line_right, &line_y, &line_spacing](InlineRun& run, float height) {
+      run.Draw(dl, ImRect(line_left, line_y, line_right, line_y + height));
+      line_y += height + line_spacing;
+    };
+    draw_line(title_run, UIStyle.HeadingText.font_size);
+    if (has_developer_line)
+      draw_line(developer_run, UIStyle.MutedText.font_size);
+    draw_line(chips_run, chip_height);
+    if (has_played_line)
+      draw_line(played_run, chip_height);
+
+    const ImRect& region_rect = chips_run.GetItemRect(region_item);
+    dl->AddRectFilled(region_rect.Min, region_rect.Max, chip_color, chip_height * 0.5f);
+    const ImVec2 flag_pos =
+      ImFloor(ImVec2(region_rect.Min.x + chip_height * 0.4f, region_rect.GetCenter().y - flag_size.y * 0.5f));
+    dl->AddImage(GetCachedTexture(entry->GetLanguageIconName(), flag_size), flag_pos, flag_pos + flag_size,
+                 ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), image_color);
+    RenderText(dl,
+               ImFloor(ImVec2(flag_pos.x + flag_size.x + flag_spacing,
+                              region_rect.GetCenter().y - MeasureText(UIStyle.SmallMutedText, region_name).y * 0.5f)),
+               UIStyle.SmallMutedText, region_name);
+
+    ImGui::PopStyleVar();
+  };
+
+  // Full-width band behind the cards, sized for the tallest card so it doesn't change between games. It fades in
+  // above the card, and is most opaque at the bottom where the text is.
+  {
+    const float max_text_height =
+      UIStyle.HeadingText.font_size + UIStyle.MutedText.font_size + chip_height * 2.0f + line_spacing * 4.0f;
+    const float band_bottom = io.DisplaySize.y;
+    const float band_mid = window_pos.y + window_size.y - panel_margin - max_text_height - panel_padding * 2.0f;
+    const float band_top = band_mid - LayoutScale(64.0f);
+    const u32 band_top_color = ImGui::GetColorU32(ModAlpha(UIStyle.SurfaceColor, 0.0f));
+    const u32 band_mid_color = ImGui::GetColorU32(ModAlpha(UIStyle.SurfaceColor, 0.75f));
+    const u32 band_bottom_color = ImGui::GetColorU32(ModAlpha(UIStyle.SurfaceColor, 0.85f));
+    // continues under the footer, so it isn't clipped to the window
+    dl->PushClipRect(ImVec2(0.0f, 0.0f), io.DisplaySize, false);
+    dl->AddRectFilledMultiColor(ImVec2(0.0f, band_top), ImVec2(io.DisplaySize.x, band_mid), band_top_color,
+                                band_top_color, band_mid_color, band_mid_color);
+    dl->AddRectFilledMultiColor(ImVec2(0.0f, band_mid), ImVec2(io.DisplaySize.x, band_bottom), band_mid_color,
+                                band_mid_color, band_bottom_color, band_bottom_color);
+    dl->PopClipRect();
+  }
+
+  const s32 first_card = static_cast<s32>(std::floor(position));
+  for (s32 card_index = first_card; card_index <= std::min(first_card + 1, count - 1); card_index++)
+  {
+    const float card_offset = static_cast<float>(card_index) - position;
+    const float card_alpha = 1.0f - std::abs(card_offset) * 2.0f;
+    if (card_alpha > 0.0f)
+      draw_card(entries[card_index], centre_x + card_offset * card_slide_distance, card_alpha);
+  }
+
+  EndFullscreenWindow(false, false);
+}
+
 void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 {
   if (entry->IsDiscSet())
@@ -1120,8 +1668,9 @@ void FullscreenUI::ReloadGameListSettings()
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_LOCALIZED_TITLES, GameList::DEFAULT_LOCALIZED_TITLES);
   s_game_list_locals.merge_disc_sets = Core::GetBaseBoolSettingValue(
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_MERGE_DISC_SETS, GameList::DEFAULT_MERGE_DISC_SETS);
-  s_game_list_locals.grid_view = Core::GetBaseBoolSettingValue(
-    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW, GameList::DEFAULT_FULLSCREENUI_GRID_VIEW);
+  s_game_list_locals.view = ParseGameListViewName(Core::GetBaseStringSettingValue(
+                                                    GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_VIEW))
+                              .value_or(DEFAULT_GAME_LIST_VIEW);
   s_game_list_locals.cover_titles = Core::GetBaseBoolSettingValue(
     GameList::UI_SECTION_NAME, GameList::SETTING_KEY_COVER_TITLES, GameList::DEFAULT_COVER_TITLES);
   s_game_list_locals.compact_mode =
@@ -1178,7 +1727,11 @@ GPUTexture* FullscreenUI::GetGameListIcon(const GameList::Entry* entry)
     auto icon_it = s_game_list_locals.icon_image_map.find(entry->serial);
     if (icon_it == s_game_list_locals.icon_image_map.end())
     {
-      std::string icon_path = GameList::GetGameIconPath(entry, s_game_list_locals.icon_source);
+      // The carousel shows the cover already, so it uses memory card icons, like the missing cover fallback.
+      const GameList::IconSource icon_source = (s_game_list_locals.icon_source == GameList::IconSource::Cover) ?
+                                                 GameList::IconSource::MemoryCard :
+                                                 s_game_list_locals.icon_source;
+      std::string icon_path = GameList::GetGameIconPath(entry, icon_source);
       icon_it = s_game_list_locals.icon_image_map.emplace(entry->serial, std::move(icon_path)).first;
     }
 

@@ -98,6 +98,20 @@ bool ShouldOpenToGameList();
 FileSelectorFilters GetDiscImageFilters();
 FileSelectorFilters GetImageFilters();
 
+enum class GameListView : u8
+{
+  Grid,
+  Carousel,
+  List,
+
+  MaxCount,
+};
+inline constexpr GameListView DEFAULT_GAME_LIST_VIEW = GameListView::Grid;
+
+const char* GetGameListViewName(GameListView view);
+const char* GetGameListViewDisplayName(GameListView view);
+std::optional<GameListView> ParseGameListViewName(std::string_view name);
+
 void ClearGameListState();
 void SwitchToGameList();
 void ReloadGameListSettings();

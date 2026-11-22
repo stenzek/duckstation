@@ -603,6 +603,7 @@ struct WidgetsState
   std::unique_ptr<GPUPipeline> blur_render_pipeline;
   std::unique_ptr<GPUPipeline> blur_apply_pipeline;
   std::unique_ptr<GPUPipeline> present_copy_pipeline;
+  std::unique_ptr<GPUPipeline> carousel_pipeline;
 
   // The header image uses the same blur pipelines, but has its own cached render targets.
   std::string header_background_image_key;
@@ -837,6 +838,7 @@ void FullscreenUI::DestroyWidgetsGPUResources()
   s_state.blur_render_pipeline.reset();
   s_state.blur_apply_pipeline.reset();
   s_state.present_copy_pipeline.reset();
+  s_state.carousel_pipeline.reset();
   s_state.blur_active = false;
   s_state.blur_valid = false;
 
@@ -853,6 +855,11 @@ void FullscreenUI::DestroyWidgetsGPUResources()
 GPUPipeline* FullscreenUI::GetPresentCopyPipeline()
 {
   return s_state.present_copy_pipeline.get();
+}
+
+GPUPipeline* FullscreenUI::GetCarouselPipeline()
+{
+  return s_state.carousel_pipeline.get();
 }
 
 GPUTexture* FullscreenUI::GetPlaceholderTexture()
@@ -1439,6 +1446,72 @@ bool FullscreenUI::CompilePipelines(Error* error)
     return false;
 
   GL_OBJECT_NAME(s_state.blur_apply_pipeline, "Blur Apply Pipeline");
+
+  // Game list carousel covers, with the reflection fade and rounded corners for generated artwork.
+  const auto uniforms = {"float4x4 u_mvp",     "float4 u_color",         "float u_fade_start",
+                         "float u_fade_scale", "float2 u_corner_radius", "float u_flip_y"};
+
+  // Quad is generated from the vertex ID, with the origin at the bottom-centre of the cover.
+  std::stringstream ss;
+  shadergen.WriteHeader(ss);
+  shadergen.DeclareUniformBuffer(ss, uniforms, true);
+  shadergen.DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << R"(
+{
+  v_tex0 = float2(float(v_id & 1u), float(v_id >> 1u));
+  v_pos = mul(u_mvp, float4(v_tex0.x - 0.5, v_tex0.y - 1.0, 0.0, 1.0));
+  #if API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+  vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), ss.str(), error);
+  if (!vs)
+    return false;
+  GL_OBJECT_NAME(vs, "Carousel Vertex Shader");
+
+  // Rendered textures are upside down on lower-left origin APIs, the fade and corners use the unflipped position.
+  ss.str(std::string());
+  shadergen.WriteHeader(ss);
+  shadergen.DeclareUniformBuffer(ss, uniforms, true);
+  shadergen.DeclareTexture(ss, "samp0", 0);
+  shadergen.DeclareFragmentEntryPoint(ss, 0, 1);
+  ss << R"(
+{
+  float2 coords = float2(v_tex0.x, (u_flip_y != 0.0) ? (1.0 - v_tex0.y) : v_tex0.y);
+  o_col0 = u_color * SAMPLE_TEXTURE(samp0, coords);
+  if (u_fade_scale > 0.0)
+    o_col0.a *= saturate((v_tex0.y - u_fade_start) * u_fade_scale);
+  if (u_corner_radius.x > 0.0)
+  {
+    float2 corner = max(abs(v_tex0 - float2(0.5, 0.5)) - (float2(0.5, 0.5) - u_corner_radius), float2(0.0, 0.0));
+    float dist = length(corner / u_corner_radius) - 1.0;
+    o_col0.a *= saturate(0.5 - dist / max(fwidth(dist), 0.00001));
+  }
+}
+)";
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), ss.str(), error);
+  if (!fs)
+    return false;
+  GL_OBJECT_NAME(fs, "Carousel Fragment Shader");
+
+  plconfig = {};
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.primitive = GPUPipeline::Primitive::TriangleStrips;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
+  plconfig.blend.write_mask = 0x7;
+  plconfig.SetTargetFormats(swap_chain ? swap_chain->GetFormat() : GPUTextureFormat::RGBA8);
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  plconfig.vertex_shader = vs.get();
+  plconfig.geometry_shader = nullptr;
+  plconfig.fragment_shader = fs.get();
+  s_state.carousel_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_state.carousel_pipeline)
+    return false;
+
+  GL_OBJECT_NAME(s_state.carousel_pipeline, "Carousel Pipeline");
   return true;
 }
 

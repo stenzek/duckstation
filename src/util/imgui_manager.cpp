@@ -248,6 +248,7 @@ struct ALIGN_TO_CACHE_LINE State
   bool notification_draw_list_used = false;
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
+  GSMatrix4x4 projection_matrix = GSMatrix4x4::Identity();
 
   ImFont* text_font = nullptr;
   ImFont* fixed_font = nullptr;
@@ -739,6 +740,7 @@ void ImGuiManager::RenderDrawLists(const ImDrawData* draw_data, u32 window_width
   }
   if (prerotated)
     uniforms.mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * uniforms.mproj;
+  s_state.projection_matrix = uniforms.mproj;
   GSVector2::store<true>(uniforms.blur_texture_scale, FullscreenUI::GetBlurTextureScale());
   uniforms.blur_background_weight = FullscreenUI::UIStyle.BlurBackgroundWeight;
   uniforms.inv_blur_background_weight = 1.0f - FullscreenUI::UIStyle.BlurBackgroundWeight;
@@ -823,6 +825,11 @@ void ImGuiManager::DrawWithNearestSampler(const ImDrawList* parent_list, const I
 {
   g_gpu_device->SetTextureSampler(0, cmd->GetTexID(), g_gpu_device->GetNearestSampler());
   g_gpu_device->DrawIndexed(cmd->ElemCount, base_index + cmd->IdxOffset, base_vertex + cmd->VtxOffset);
+}
+
+const GSMatrix4x4& ImGuiManager::GetCurrentProjectionMatrix()
+{
+  return s_state.projection_matrix;
 }
 
 void ImGuiManager::UpdateTextures(const ImDrawData* draw_data)

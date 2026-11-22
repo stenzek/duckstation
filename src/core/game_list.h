@@ -284,7 +284,7 @@ extern const char* const SETTING_KEY_SORT_REVERSED;
 extern const char* const SETTING_KEY_ICON_SOURCE;
 extern const char* const SETTING_KEY_MERGE_DISC_SETS;
 extern const char* const SETTING_KEY_GRID_VIEW;
-extern const char* const SETTING_KEY_FULLSCREENUI_GRID_VIEW;
+extern const char* const SETTING_KEY_FULLSCREENUI_VIEW;
 extern const char* const SETTING_KEY_COVER_TITLES;
 inline constexpr bool DEFAULT_LOCALIZED_TITLES = true;
 inline constexpr Column DEFAULT_SORT_COLUMN = Column::Title;
@@ -292,7 +292,6 @@ inline constexpr bool DEFAULT_SORT_REVERSED = false;
 inline constexpr IconSource DEFAULT_ICON_SOURCE = IconSource::MemoryCard;
 inline constexpr bool DEFAULT_MERGE_DISC_SETS = true;
 inline constexpr bool DEFAULT_GRID_VIEW = false;
-inline constexpr bool DEFAULT_FULLSCREENUI_GRID_VIEW = true;
 inline constexpr bool DEFAULT_COVER_TITLES = true;
 
 } // namespace GameList

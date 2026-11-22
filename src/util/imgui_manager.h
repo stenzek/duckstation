@@ -12,6 +12,7 @@
 #include <vector>
 
 class Error;
+class GSMatrix4x4;
 struct WindowInfo;
 
 class GPUSwapChain;
@@ -142,6 +143,9 @@ void RenderDrawLists(const ImDrawData* draw_data, u32 window_width, u32 window_h
 /// Draws everything between the push and pop with the given texture and nearest-neighbour filtering.
 void PushNearestSampler(ImDrawList* dl, GPUTexture* texture);
 void PopNearestSampler(ImDrawList* dl);
+
+/// Returns the projection matrix used by RenderDrawLists(). Only valid inside a draw callback.
+const GSMatrix4x4& GetCurrentProjectionMatrix();
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();

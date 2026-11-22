@@ -753,7 +753,8 @@ void SetupWizardDialog::onGridViewChanged(bool checked)
 
   // NOTE: No settings apply here, we explicitly change the layout.
   Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_GRID_VIEW, setting_value);
-  Core::SetBaseBoolSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_GRID_VIEW, setting_value);
+  Core::SetBaseStringSettingValue(GameList::UI_SECTION_NAME, GameList::SETTING_KEY_FULLSCREENUI_VIEW,
+                                  setting_value ? "Grid" : "List");
   Host::CommitBaseSettingChanges();
   g_main_window->getGameListWidget()->reloadViewModeFromSettings();
 }
