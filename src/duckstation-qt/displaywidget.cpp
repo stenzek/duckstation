@@ -54,6 +54,10 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
   setAttribute(Qt::WA_KeyCompression, false);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
+
+#if defined(_WIN32) || defined(__linux__)
+  connect(qApp, &QGuiApplication::applicationStateChanged, this, &DisplayWidget::onApplicationStateChanged);
+#endif
 }
 
 DisplayWidget::~DisplayWidget()
@@ -236,6 +240,17 @@ void DisplayWidget::onFocusWindowChanged(QWindow* window)
   updateRelativeMode(m_relative_mouse_enabled);
 }
 
+#if defined(_WIN32) || defined(__linux__)
+
+void DisplayWidget::onApplicationStateChanged(Qt::ApplicationState state)
+{
+  // Releases for keys held when the application loses focus go to other applications, and keyboard binds are cleared.
+  if (state != Qt::ApplicationActive)
+    m_pressed_keys.clear();
+}
+
+#endif
+
 void DisplayWidget::updateCursor(bool hidden)
 {
   if (m_cursor_hidden == hidden)
@@ -385,32 +400,31 @@ bool DisplayWidget::event(QEvent* event)
       if (key_event->isAutoRepeat())
         return true;
 
-      // For some reason, Windows sends "fake" key events.
-      // Scenario: Press shift, press F1, release shift, release F1.
-      // Events: Shift=Pressed, F1=Pressed, Shift=Released, **F1=Pressed**, F1=Released.
-      // To work around this, we keep track of keys pressed with modifiers in a list, and
-      // discard the press event when it's been previously activated. It's pretty gross,
-      // but I can't think of a better way of handling it, and there doesn't appear to be
-      // any window flag which changes this behavior that I can see.
+      const std::optional<u32> key = QtUtils::KeyEventToCode(key_event);
+      if (!key.has_value())
+        return true;
 
-      const Qt::KeyboardModifiers modifiers = key_event->modifiers();
       const bool pressed = (key_event->type() == QEvent::KeyPress);
-      const auto it =
-        std::find(m_keys_pressed_with_modifiers.begin(), m_keys_pressed_with_modifiers.end(), key_event->key());
-      if (it != m_keys_pressed_with_modifiers.end())
+
+#if defined(_WIN32) || defined(__linux__)
+      // Some repeated presses are not flagged as auto-repeat, so drop presses for keys which are already held.
+      // On Windows, Qt reports the next repeat as a new press when the modifiers change while a key is held.
+      // On X11, we enable detectable auto-repeat, and Qt only flags repeats when there is a release before them.
+      const auto it = std::find(m_pressed_keys.begin(), m_pressed_keys.end(), key.value());
+      if (it != m_pressed_keys.end())
       {
         if (pressed)
           return true;
         else
-          m_keys_pressed_with_modifiers.erase(it);
+          m_pressed_keys.erase(it);
       }
-      else if (modifiers != Qt::NoModifier && modifiers != Qt::KeypadModifier && pressed)
+      else if (pressed)
       {
-        m_keys_pressed_with_modifiers.push_back(key_event->key());
+        m_pressed_keys.push_back(key.value());
       }
+#endif
 
-      if (const std::optional<u32> key = QtUtils::KeyEventToCode(key_event))
-        emit windowKeyEvent(key.value(), pressed);
+      emit windowKeyEvent(key.value(), pressed);
 
       return true;
     }

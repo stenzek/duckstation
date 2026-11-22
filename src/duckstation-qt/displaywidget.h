@@ -79,11 +79,17 @@ private:
   void updateCenterPos();
   void onFocusWindowChanged(QWindow* window);
 
+#if defined(_WIN32) || defined(__linux__)
+  void onApplicationStateChanged(Qt::ApplicationState state);
+#endif
+
 #ifdef __APPLE__
   bool nativeEventFilter(const QByteArray& event_type, void* message, qintptr* result) override;
 #endif
 
-  std::vector<int> m_keys_pressed_with_modifiers;
+#if defined(_WIN32) || defined(__linux__)
+  std::vector<u32> m_pressed_keys;
+#endif
 
   QPoint m_relative_mouse_start_pos{};
   QPoint m_relative_mouse_center_pos{};
