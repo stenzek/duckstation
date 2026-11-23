@@ -2201,8 +2201,11 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32, s32> SPU::SampleVoice(Voice& voice, u
                                                                  bool pitch_modulation_enabled, bool irq9_enabled,
                                                                  s32 previous_voice_last_volume)
 {
+#ifdef SPU_DUMP_ALL_VOICES
+  // Otherwise handled by the caller.
   if (!voice.IsOn() && !irq9_enabled)
     return {};
+#endif
 
   if (!voice.has_samples)
   {
@@ -2675,6 +2678,19 @@ void SPU::Execute(void* param, TickCount ticks)
       u32 voice_index = 0;
       for (Voice& voice : s_state.voices)
       {
+#ifndef SPU_DUMP_ALL_VOICES
+        // Off voices contribute nothing, so skip the mixing below.
+        if (!voice.IsOn() && !irq9_enabled)
+        {
+          previous_voice_last_volume = 0;
+          noise_mode >>= 1;
+          pitch_modulation_enable >>= 1;
+          reverb_on_register >>= 1;
+          voice_index++;
+          continue;
+        }
+#endif
+
         const auto [left, right, volume] =
           SampleVoice(voice, voice_index, ConvertToBoolUnchecked(noise_mode & 1u),
                       ConvertToBoolUnchecked(pitch_modulation_enable & 1u), irq9_enabled, previous_voice_last_volume);
