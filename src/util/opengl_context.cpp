@@ -17,18 +17,12 @@
 
 #if defined(_WIN32) && !defined(_M_ARM64)
 #include "opengl_context_wgl.h"
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 #include "opengl_context_agl.h"
-#else
-#ifdef ENABLE_EGL
-#ifdef ENABLE_WAYLAND
+#elifdef __linux__
 #include "opengl_context_egl_wayland.h"
-#endif
-#ifdef ENABLE_X11
 #include "opengl_context_egl_xcb.h"
 #include "opengl_context_egl_xlib.h"
-#endif
-#endif
 #endif
 
 LOG_CHANNEL(GPUDevice);
@@ -141,20 +135,16 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   std::unique_ptr<OpenGLContext> context;
 #if defined(_WIN32) && !defined(_M_ARM64)
   context = OpenGLContextWGL::Create(wi, surface, versions_to_try, error);
-#elif defined(__APPLE__)
+#elifdef __APPLE__
   context = OpenGLContextAGL::Create(wi, surface, versions_to_try, error);
-#else
-#if defined(ENABLE_X11)
-  if (wi.type == WindowInfoType::Xlib)
+#elifdef __linux__
+  if (wi.type == WindowInfoType::Wayland)
+    context = OpenGLContextEGLWayland::Create(wi, surface, versions_to_try, error);
+  else if (wi.type == WindowInfoType::Xlib)
     context = OpenGLContextEGLXlib::Create(wi, surface, versions_to_try, error);
   else if (wi.type == WindowInfoType::XCB)
     context = OpenGLContextEGLXCB::Create(wi, surface, versions_to_try, error);
-#endif
-#if defined(ENABLE_WAYLAND)
-  if (wi.type == WindowInfoType::Wayland)
-    context = OpenGLContextEGLWayland::Create(wi, surface, versions_to_try, error);
-#endif
-  if (wi.type == WindowInfoType::Surfaceless)
+  else if (wi.type == WindowInfoType::Surfaceless)
     context = OpenGLContextEGL::Create(wi, surface, versions_to_try, error);
 #endif
 

@@ -120,17 +120,15 @@ target_link_libraries(util PUBLIC common imgui)
 target_link_libraries(util PRIVATE libchdr lzma reshadefx cubeb xxhash)
 target_link_libraries(util PRIVATE CURL::libcurl SDL3::Headers SoundTouch::SoundTouchDLL ZLIB::ZLIB zstd::libzstd_shared)
 
-if(ENABLE_X11)
+if(LINUX)
   target_sources(util PRIVATE
     x11_tools.cpp
     x11_tools.h
   )
-  target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
-  target_include_directories(util PRIVATE "${X11_xcb_INCLUDE_PATH}")
-endif()
-
-if(ENABLE_WAYLAND)
-  target_compile_definitions(util PRIVATE "-DENABLE_WAYLAND=1")
+  target_include_directories(util PRIVATE
+    "${X11_xcb_INCLUDE_PATH}"
+    "${Wayland_INCLUDE_DIRS}"
+  )
 endif()
 
 if(ENABLE_OPENGL)
@@ -150,30 +148,17 @@ if(ENABLE_OPENGL)
   target_compile_definitions(util PUBLIC "ENABLE_OPENGL=1")
   target_link_libraries(util PRIVATE glad)
 
-  if(LINUX OR BSD)
+  if(LINUX)
     target_sources(util PRIVATE
       opengl_context_egl.cpp
       opengl_context_egl.h
+      opengl_context_egl_xcb.cpp
+      opengl_context_egl_xcb.h
+      opengl_context_egl_xlib.cpp
+      opengl_context_egl_xlib.h
+      opengl_context_egl_wayland.cpp
+      opengl_context_egl_wayland.h
     )
-    target_compile_definitions(util PRIVATE "-DENABLE_EGL=1")
-
-    if(ENABLE_X11)
-      target_sources(util PRIVATE
-        opengl_context_egl_xcb.cpp
-        opengl_context_egl_xcb.h
-        opengl_context_egl_xlib.cpp
-        opengl_context_egl_xlib.h
-      )
-    endif()
-    if(ENABLE_WAYLAND)
-      target_sources(util PRIVATE
-        opengl_context_egl_wayland.cpp
-        opengl_context_egl_wayland.h
-      )
-      target_include_directories(util PRIVATE
-        "${Wayland_INCLUDE_DIRS}" # For wayland-egl
-      )
-    endif()
   endif()
 
   if(APPLE)

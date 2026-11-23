@@ -33,9 +33,7 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
-#endif
-
-#ifdef ENABLE_X11
+#elifdef __linux__
 #include <xcb/xcb.h>
 #endif
 
@@ -604,7 +602,7 @@ bool DisplayWidget::event(QEvent* event)
   }
 }
 
-#ifdef ENABLE_X11
+#ifdef __linux__
 
 bool DisplayWidget::nativeEvent(const QByteArray& event_type, void* message, qintptr* result)
 {
@@ -629,7 +627,7 @@ bool DisplayWidget::nativeEvent(const QByteArray& event_type, void* message, qin
   return QWidget::nativeEvent(event_type, message, result);
 }
 
-#endif
+#endif // __linux__
 
 DisplayContainer::DisplayContainer() : QStackedWidget(nullptr)
 {

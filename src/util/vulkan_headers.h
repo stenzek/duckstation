@@ -14,14 +14,9 @@ class Error;
 #include "common/windows_headers.h"
 #elifdef __APPLE__
 #define VK_USE_PLATFORM_METAL_EXT
-#else
-#ifdef ENABLE_X11
-#define VK_USE_PLATFORM_XCB_KHR
-#endif
-
-#ifdef ENABLE_WAYLAND
+#elifdef __linux__
 #define VK_USE_PLATFORM_WAYLAND_KHR
-#endif
+#define VK_USE_PLATFORM_XCB_KHR
 #endif
 
 #include "vulkan/vulkan.h"

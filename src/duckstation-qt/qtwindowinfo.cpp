@@ -19,19 +19,19 @@
 
 #include <cmath>
 
-#if defined(_WIN32)
+#ifdef _WIN32
 
 #include "common/windows_headers.h"
 #include <QtCore/QOperatingSystemVersion>
 #include <dwmapi.h>
 
-#elif defined(__APPLE__)
+#elifdef __APPLE__
 
 #include "common/cocoa_tools.h"
 #include <CoreFoundation/CFString.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
-#elif defined(__linux__)
+#elifdef __linux__
 
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusInterface>
@@ -39,9 +39,7 @@
 #include <QtDBus/QDBusReply>
 #include <qpa/qplatformnativeinterface.h>
 
-#ifdef ENABLE_X11
 #include "util/x11_tools.h"
-#endif
 
 #else
 
@@ -191,7 +189,7 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, RenderAPI render_api, WindowInf
 
     return;
   }
-#elif defined(ENABLE_X11)
+#elifdef __linux__
   // On X11, Qt's size is updated as soon as a resize is requested, and rounded from its logical size. The server's
   // size, which is what EGL/Vulkan see, is applied later by the window manager, and can be rounded differently with
   // fractional scaling. So use the server's size, DisplayWidget picks up changes to it from configure events.
