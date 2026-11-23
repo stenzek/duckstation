@@ -100,6 +100,7 @@ struct GameListLocals
   float game_list_current_selection_timeout = 0.0f;
   std::string game_list_current_selection_path;
   char game_list_search_string[256];
+  float search_expand_progress = 0.0f; // linear 0..1, eased when drawn
 };
 
 } // namespace
@@ -306,7 +307,7 @@ void FullscreenUI::DrawGameListWindow()
 
     // pills are the same height as the search box
     static constexpr const float& search_font_size = UIStyle.MediumFontSize;
-    static constexpr const float& search_font_weight = UIStyle.NormalFontWeight;
+    static constexpr const float& search_font_weight = UIStyle.BoldFontWeight;
     const ImVec2 search_padding = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, 9.0f);
     const float pill_height = search_font_size + search_padding.y * 2.0f;
     const float pills_left = window->DC.CursorPos.x;
@@ -326,15 +327,42 @@ void FullscreenUI::DrawGameListWindow()
       }
       ImGui::SameLine(0.0f, LayoutScale(4.0f));
     }
-    const float pills_right = ImGui::GetItemRectMax().x;
+    const float view_hint_x = ImGui::GetItemRectMax().x + spacing;
+    const float pills_right =
+      view_hint_x + DrawInputHint(window->DrawList, ImVec2(view_hint_x, window->Pos.y), heading_size.y,
+                                  GetInputHint(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_F4));
 
-    // right to left: sort order (with the key that changes it inside the pill), search
+    // right to left: sort order (with the key that changes it inside the pill), search (collapsed until used)
     const SmallString sort_label =
       SmallString::from_format("{}  {}  {}", GetInputHint(ICON_PF_RIGHT_ANALOG_CLICK, ICON_PF_F6),
                                GameList::GetColumnDisplayName(s_game_list_locals.sort_column),
                                s_game_list_locals.sort_reversed ? ICON_FA_ARROW_DOWN : ICON_FA_ARROW_UP);
     const float sort_left =
       window->WorkRect.Max.x - MeasurePill(sort_label, pill_height, UIStyle.MediumFontSize, UIStyle.BoldFontWeight).x;
+
+    // stays open while focused or filtering, progress is linear so that reversing part way through doesn't jump
+    static constexpr float SEARCH_ANIMATION_TIME = 0.1f;
+    const ImGuiID search_id = window->GetID("##game_list_search");
+    const bool search_has_filter = (s_game_list_locals.game_list_search_string[0] != '\0');
+    const bool search_open = (GImGui->ActiveId == search_id || search_has_filter);
+    const float search_step = UIStyle.Animations ? (io.DeltaTime / SEARCH_ANIMATION_TIME) : 1.0f;
+    float& search_progress = s_game_list_locals.search_expand_progress;
+    search_progress = std::clamp(search_progress + (search_open ? search_step : -search_step), 0.0f, 1.0f);
+
+    const std::string_view search_key = GetInputHint(ICON_PF_BUTTON_X, ICON_PF_F3);
+    const char* const search_hint = FSUI_CSTR("Search");
+    const float search_collapsed_width =
+      ImCeil(search_padding.x * 2.0f + MeasureText(search_font_size, search_font_weight, search_key).x +
+             ImCeil(search_font_size * 0.5f) + MeasureText(search_font_size, search_font_weight, search_hint).x);
+
+    // shrinks if it would run into the view pills
+    const float search_expanded_width =
+      std::max(search_collapsed_width, std::min(LayoutScale(250.0f), sort_left - pills_right - spacing * 3.0f));
+
+    // whole pixels, otherwise the right edge shimmers while animating
+    const float search_width =
+      ImCeil(std::lerp(search_collapsed_width, search_expanded_width, Easing::OutExpo(search_progress)));
+    const float search_x = sort_left - spacing - search_width;
 
     ImGui::NewLine();
     ImGui::SetCursorScreenPos(ImVec2(sort_left, window->Pos.y + ImFloor((heading_size.y - pill_height) * 0.5f)));
@@ -359,21 +387,39 @@ void FullscreenUI::DrawGameListWindow()
     }
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, search_padding);
-    ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SurfaceRaisedColor);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f));
 
-    // shrinks if it would run into the view pills
-    const float search_width = std::min(LayoutScale(320.0f), sort_left - pills_right - spacing * 3.0f);
-    const float search_x = sort_left - spacing - search_width;
-    ImGui::SetCursorScreenPos(ImFloor(ImVec2(search_x, window->Pos.y + (heading_size.y - pill_height) * 0.5f)));
+    // pill frame is drawn here to match the sort pill, so hide the input's own frame
+    const ImVec2 search_pos = ImFloor(ImVec2(search_x, window->Pos.y + (heading_size.y - pill_height) * 0.5f));
+    const ImVec2 search_max = search_pos + ImVec2(search_width, pill_height);
+    window->DrawList->AddRectFilled(search_pos, search_max,
+                                    ImGui::GetColorU32((GImGui->NavId == search_id) ?
+                                                         DarkerColor(UIStyle.SurfaceRaisedColor, 1.3f) :
+                                                         UIStyle.SurfaceRaisedColor),
+                                    pill_height * 0.5f);
+
+    static constexpr ImVec4 transparent = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    const ImVec4 search_text_color = search_open ? ImGui::GetStyleColorVec4(ImGuiCol_Text) : UIStyle.MutedTextColor;
+    ImGui::PushStyleColor(ImGuiCol_Button, transparent);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, transparent);
+    ImGui::PushStyleColor(ImGuiCol_Border, transparent);
+    ImGui::PushStyleColor(ImGuiCol_Text, search_text_color);
+    ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.MutedTextColor);
+
+    // leave room for the clear button at the end of the pill
+    const float search_clear_width =
+      MeasurePill(ICON_FA_XMARK, pill_height, UIStyle.MediumFontSize, UIStyle.BoldFontWeight).x;
+    const float search_input_width =
+      search_has_filter ? (search_width - search_clear_width + search_padding.x) : search_width;
+
+    ImGui::SetCursorScreenPos(search_pos);
 
     const ImGuiInputTextFlags extra_flags =
       (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false)) ?
         ImGuiInputTextFlags_AlwaysActivate :
         0;
-    if (InputTextWithIcon("##game_list_search", ICON_FA_MAGNIFYING_GLASS, FSUI_CSTR("Search"),
+    if (InputTextWithIcon("##game_list_search", search_open ? ICON_FA_MAGNIFYING_GLASS : search_key, search_hint,
                           s_game_list_locals.game_list_search_string,
-                          sizeof(s_game_list_locals.game_list_search_string), search_width, search_font_size,
+                          sizeof(s_game_list_locals.game_list_search_string), search_input_width, search_font_size,
                           search_font_weight,
                           ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | extra_flags) ||
         (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGuiKey_Escape, false)))
@@ -389,8 +435,24 @@ void FullscreenUI::DrawGameListWindow()
       ForceKeyNavEnabled();
     }
 
-    ImGui::PopStyleColor(2);
+    ImGui::PopStyleColor(5);
     ImGui::PopStyleVar();
+
+    if (search_has_filter)
+    {
+      ImGui::SetCursorScreenPos(ImVec2(search_max.x - search_clear_width, search_pos.y));
+      bool clear_hovered;
+      if (PillButton(window->GetID("clear_search"), ICON_FA_XMARK, pill_height, 0,
+                     ImGui::GetColorU32(UIStyle.MutedTextColor), 0, &clear_hovered))
+      {
+        s_game_list_locals.game_list_search_string[0] = '\0';
+        QueueResetFocus(FocusResetType::Other);
+      }
+
+      // after the button, otherwise its hover background covers the border
+      window->DrawList->AddRect(search_pos, search_max, ImGui::GetColorU32(UIStyle.AccentColor), pill_height * 0.5f,
+                                LayoutScale(1.0f));
+    }
   }
   EndPageHeader();
 
@@ -456,14 +518,12 @@ void FullscreenUI::DrawGameListWindow()
 
   if (IsGamepadInputSource())
   {
-    SetFullscreenFooterText(std::array{
-      std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
-      std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
-      std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
-      std::make_pair(ICON_PF_LEFT_SHOULDER_LB ICON_PF_RIGHT_SHOULDER_RB, FSUI_VSTR("Change View")),
-      std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
-      std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Search")), std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
-      std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
+                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
+                                       std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
+                                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
+                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
@@ -472,8 +532,6 @@ void FullscreenUI::DrawGameListWindow()
                      FSUI_VSTR("Select Game")),
       std::make_pair(ICON_PF_F1, FSUI_VSTR("Launch Options")),
       std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
-      std::make_pair(ICON_PF_F3, FSUI_VSTR("Search")),
-      std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
       std::make_pair(ICON_PF_F5, FSUI_VSTR("Resume Last Session")),
       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
@@ -1662,6 +1720,7 @@ void FullscreenUI::SwitchToGameList()
   s_game_list_locals.game_list_current_selection_path = {};
   s_game_list_locals.game_list_current_selection_timeout = 0.0f;
   s_game_list_locals.game_list_search_string[0] = '\0';
+  s_game_list_locals.search_expand_progress = 0.0f;
 
   // Wipe icon map, because a new save might give us an icon.
   for (const auto& it : s_game_list_locals.icon_image_map)

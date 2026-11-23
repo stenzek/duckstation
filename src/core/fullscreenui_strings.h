@@ -165,7 +165,6 @@ TRANSLATE_NOOP("FullscreenUI", "Change Page");
 TRANSLATE_NOOP("FullscreenUI", "Change Selection");
 TRANSLATE_NOOP("FullscreenUI", "Change Serial");
 TRANSLATE_NOOP("FullscreenUI", "Change Title");
-TRANSLATE_NOOP("FullscreenUI", "Change View");
 TRANSLATE_NOOP("FullscreenUI", "Changes settings for the application.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the amount of video RAM installed in the emulated console. Retail games do not use extra VRAM.");
