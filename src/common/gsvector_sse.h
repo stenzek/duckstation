@@ -1235,8 +1235,8 @@ public:
 
   ALWAYS_INLINE s32 addv_s32() const
   {
-    const __m128i pairs = _mm_hadd_epi32(m, m);
-    return _mm_cvtsi128_si32(_mm_hadd_epi32(pairs, pairs));
+    const __m128i pairs = _mm_add_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 0, 3, 2)));
+    return _mm_cvtsi128_si32(_mm_add_epi32(pairs, _mm_shuffle_epi32(pairs, _MM_SHUFFLE(2, 3, 0, 1))));
   }
 
 #define VECTOR4i_REDUCE_8(name, func, ret)                                                                             \
