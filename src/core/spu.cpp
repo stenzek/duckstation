@@ -2667,9 +2667,9 @@ void SPU::Execute(void* param, TickCount ticks)
       s32 reverb_in_left = 0;
       s32 reverb_in_right = 0;
 
-      u32 noise_mode = s_state.noise_mode_register;
-      u32 pitch_modulation_enable = s_state.pitch_modulation_enable_register & ~1u;
-      u32 reverb_on_register = s_state.reverb_on_register;
+      const u32 noise_mode = s_state.noise_mode_register;
+      const u32 pitch_modulation_enable = s_state.pitch_modulation_enable_register & ~1u;
+      const u32 reverb_on_register = s_state.reverb_on_register;
       s32 previous_voice_last_volume = 0;
       s32 capture_voice1_volume = 0;
       s32 capture_voice3_volume = 0;
@@ -2683,17 +2683,15 @@ void SPU::Execute(void* param, TickCount ticks)
         if (!voice.IsOn() && !irq9_enabled)
         {
           previous_voice_last_volume = 0;
-          noise_mode >>= 1;
-          pitch_modulation_enable >>= 1;
-          reverb_on_register >>= 1;
           voice_index++;
           continue;
         }
 #endif
 
         const auto [left, right, volume] =
-          SampleVoice(voice, voice_index, ConvertToBoolUnchecked(noise_mode & 1u),
-                      ConvertToBoolUnchecked(pitch_modulation_enable & 1u), irq9_enabled, previous_voice_last_volume);
+          SampleVoice(voice, voice_index, ConvertToBoolUnchecked((noise_mode >> voice_index) & 1u),
+                      ConvertToBoolUnchecked((pitch_modulation_enable >> voice_index) & 1u), irq9_enabled,
+                      previous_voice_last_volume);
         left_sum += left;
         right_sum += right;
 
@@ -2705,7 +2703,7 @@ void SPU::Execute(void* param, TickCount ticks)
         }
 #endif
 
-        if (reverb_on_register & 1u)
+        if ((reverb_on_register >> voice_index) & 1u)
         {
           reverb_in_left += left;
           reverb_in_right += right;
@@ -2713,9 +2711,6 @@ void SPU::Execute(void* param, TickCount ticks)
         capture_voice1_volume = (voice_index == 1) ? volume : capture_voice1_volume;
         capture_voice3_volume = (voice_index == 3) ? volume : capture_voice3_volume;
         previous_voice_last_volume = volume;
-        noise_mode >>= 1;
-        pitch_modulation_enable >>= 1;
-        reverb_on_register >>= 1;
         voice_index++;
       }
 
