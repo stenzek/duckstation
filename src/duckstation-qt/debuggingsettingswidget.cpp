@@ -285,6 +285,7 @@ void DebuggingSettingsWidget::onResetToDefaultClicked()
                            static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD_CYCLES)); // GPU max runahead
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Recompiler memory exceptions
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Recompiler block linking
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Recompiler idle loop fast forward
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
