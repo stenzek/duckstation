@@ -2826,59 +2826,9 @@ Bieżące powiązanie: %s</translation>
         <translation>Nie ustawiono wyzwalacza</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Nie ustawiono przycisków</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Makro nie będzie powtarzane.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Makro będzie przełączane co %d klatkę.</numerusform>
-            <numerusform>Makro będzie przełączane co %d klatki.</numerusform>
-            <numerusform>Makro będzie przełączane co %d klatek.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Wybierz powiązania</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s wyzwala %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s wyzwala %2$s co %3$d klatkę.</numerusform>
-            <numerusform>%1$s wyzwala %2$s co %3$d klatki.</numerusform>
-            <numerusform>%1$s wyzwala %2$s co %3$d klatek.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Wyzwalacz</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Przyciski</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Częstotliwość</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4830,6 +4780,186 @@ Bieżące powiązanie: %s</translation>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s uruchamia %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s uruchamia %2$s w pętli</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Powtarzaj, gdy makro jest aktywne</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Powtarza sekwencję, dopóki makro jest aktywne, zamiast odtwarzać ją raz po każdym naciśnięciu.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Naciśnij, aby włączyć lub wyłączyć</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Wyzwalacz włącza i wyłącza powtarzanie sekwencji bez konieczności przytrzymywania go.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Martwa strefa wyzwalacza</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Określa, jak głęboko trzeba wcisnąć analogowy spust, aby aktywować makro.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Sekwencja</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Sekwencja jest pusta. Dodaj wejścia i przerwy, użyj szybkiej konfiguracji lub nagraj sekwencję za pomocą kontrolera.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Dodaj wejście</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Dodaje naciśnięcie przycisku lub ruch osi na końcu sekwencji.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Dodaj przerwę</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Dodaje opóźnienie na końcu sekwencji.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Szybka konfiguracja</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Zastępuje sekwencję pojedynczym wejściem, które pozostaje wciśnięte albo jest naprzemiennie wciskane i zwalniane jak przycisk turbo.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Interwał turbo dla %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Przytrzymaj</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Przełączaj co %d klatkę</numerusform>
+            <numerusform>Przełączaj co %d klatki</numerusform>
+            <numerusform>Przełączaj co %d klatek</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Wyczyść sekwencję</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Usuwa wszystkie działania z sekwencji.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Usunąć wszystkie działania z sekwencji tego makra?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Wybierz wejście</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Czekaj</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d klatka</numerusform>
+            <numerusform>%d klatki</numerusform>
+            <numerusform>%d klatek</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Czas oczekiwania</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Wartość dla %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Opcje działania</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Zmień wejście</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Wstaw wejście po tej czynności</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Wstaw przerwę po tej czynności</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Nagraj</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Zatrzymaj nagrywanie</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Trwa nagrywanie. Wprowadź sekwencję za pomocą kontrolera lub klawiatury, a następnie dotknij „Zatrzymaj nagrywanie”. Wejścia z ekranu dotykowego nie są nagrywane.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>Włącz wibracje w grze</translation>
@@ -5500,7 +5630,7 @@ Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Pictur
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
+        <comment>list_item_move_up</comment>
         <translation>Przesuń w górę</translation>
     </message>
     <message>
@@ -5520,12 +5650,12 @@ Możesz to później zmienić za pomocą opcji „Uruchamiaj w trybie Big Pictur
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>Usuń</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
+        <comment>list_item_move_down</comment>
         <translation>Przesuń w dół</translation>
     </message>
     <message>
@@ -6088,6 +6218,26 @@ Czy na pewno chcesz kontynuować?</translation>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>Sterowanie kierownicą</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Makro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Makro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Makro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Makro 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9916,6 +10066,89 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Nastawnik jazdy</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Siła pociągowa</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Wyłączona</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Dźwignia hamulca</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Hamulec</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Zwolniony</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Hamowanie awaryjne</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -10040,6 +10273,93 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <source>Fire</source>
         <translation>Strzał</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Krzyżak</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Dół</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Lewo</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Góra</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Prawo</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Silnik wibracji</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Tryb</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Dioda trybu</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Przyciski akcji</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Krzyżyk</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Kwadrat</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Trójkąt</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Kółko</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Urządzenie z siłowym sprzężeniem zwrotnym</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Kierowanie</translation>
     </message>
 </context>
 <context>
@@ -10253,6 +10573,45 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Słabszy silniczek</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Lewe przyciski</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Żółty</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Niebieski/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Biały</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Zielony</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Prawe przyciski</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Środkowy czerwony/OK</translation>
     </message>
 </context>
 <context>
@@ -10470,48 +10829,84 @@ Kolor „alternatywny” jest używany, gdy aktywny jest tryb analogowy.</transl
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Powiązania/przyciski</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Wyzwalacz aktywuje makro i może być jednym przyciskiem lub kombinacją przycisków. Kliknij z wciśniętym klawiszem Shift, aby ustawić kilka wyzwalaczy.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Wybierz przyciski, które mają być aktywowane przy pomocy tego makra. Wszystkie przyciski są aktywowane jednocześnie.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Nacisk</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>W przypadku przycisków wrażliwych na nacisk ten suwak steruje siłą symulowaną, gdy makro jest aktywne.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Martwa strefa aktywacji:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Sekwencja</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Działanie</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wartość</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Nagraj</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Zastępuje sekwencję taką, która przytrzymuje przycisk albo wciska go i zwalnia na przemian co N klatek (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Szybka konfiguracja</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Dodaj wejście</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Dodaj przerwę</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Usuń</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Przesuń w górę</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Przesuń w dół</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Wyczyść</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Powtarza sekwencję, dopóki makro jest aktywne, zamiast odtwarzać ją raz po każdym naciśnięciu. Rozpoczęte powtórzenie zawsze jest odtwarzane do końca.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Powtarzaj, gdy makro jest aktywne</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Włącza i wyłącza makro krótkim naciśnięciem przycisku bez konieczności przytrzymania go.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Aktywator</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Wybierz aktywator tego makra. Może być to pojedynczy przycisk lub kombinacja przycisków. Shift-klik dla wielu aktywatorów.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Naciśnij, aby przełączyć</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Martwa strefa:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Częstotliwość</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Makro będzie przełączać się co N klatek.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10521,28 +10916,56 @@ Kolor „alternatywny” jest używany, gdy aktywny jest tryb analogowy.</transl
         <source>Not Configured</source>
         <translation>Nie skonfigurowano</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n przycisk</numerusform>
+            <numerusform>%n przyciski</numerusform>
+            <numerusform>%n przycisków</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Ustaw częstotliwość</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Liczba klatek między zmianami stanu %1 (0 oznacza przytrzymanie):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Częstotliwość: </translation>
+        <source>Stop</source>
+        <translation>Zatrzymaj</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Makro nie będzie powtarzane.</translation>
+        <source>Wait</source>
+        <translation>Czekaj</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Makro będzie przełączać przyciski co %n klatkę.</numerusform>
-            <numerusform>Makro będzie przełączać przyciski co %n klatki.</numerusform>
-            <numerusform>Makro będzie przełączać przyciski co %n klatek.</numerusform>
+            <numerusform>%n klatka</numerusform>
+            <numerusform>%n klatki</numerusform>
+            <numerusform>%n klatek</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> kl.</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Sekwencja (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n działanie</numerusform>
+            <numerusform>%n działania</numerusform>
+            <numerusform>%n działań</numerusform>
         </translation>
     </message>
 </context>
@@ -12370,6 +12793,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Zezwól na start bez pliku SBI</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Zastosuj</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Używaj łatek obrazów</translation>
     </message>
@@ -12486,6 +12913,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
         <translation>Rozmiar bufora</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>Przycisk</translation>
+    </message>
+    <message>
         <source>CD-ROM Emulation</source>
         <translation>Emulacja napędu CD-ROM</translation>
     </message>
@@ -12504,6 +12935,10 @@ Kliknięcie przycisku Resetuj przywróci numer seryjny do wartości odczytanej z
     <message>
         <source>Capture</source>
         <translation>Przechwytywanie</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Karuzela</translation>
     </message>
     <message>
         <source>Change Disc</source>
@@ -12965,14 +13400,6 @@ Błąd:</translation>
         <translation>Sterownik renderowania</translation>
     </message>
     <message>
-        <source>Game Grid</source>
-        <translation>Siatka gier</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Lista gier</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>Ustawienia widoku listy</translation>
     </message>
@@ -13165,10 +13592,6 @@ Błąd:</translation>
         <translation>Zmień zaznaczenie</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>Zmień widok</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>Zmienia ustawienia dla aplikacji.</translation>
     </message>
@@ -13191,6 +13614,10 @@ Błąd:</translation>
     <message>
         <source>Depth Clear Threshold</source>
         <translation>Próg czyszczenia głębi</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Określa sposób wyświetlania listy gier.</translation>
     </message>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
@@ -13265,6 +13692,14 @@ Błąd:</translation>
         <translation>Ustawienia graficzne</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Siatka</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Przytrzymaj</translation>
+    </message>
+    <message>
         <source>Installed RAM</source>
         <translation>Zainstalowana pamięć RAM</translation>
     </message>
@@ -13301,8 +13736,16 @@ Błąd:</translation>
         <translation>Tabele wyników</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Biblioteka</translation>
+    </message>
+    <message>
         <source>Line Detection</source>
         <translation>Wykrywanie linii</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Lista</translation>
     </message>
     <message>
         <source>List Icons</source>
@@ -13381,8 +13824,20 @@ Błąd:</translation>
         <translation>Rejestruje wiadomości do konsoli debuggera (gdzie jest to wspierane).</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Powtarzaj, gdy makro jest aktywne</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Sekwencja makra {}</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Sprawia, że gry działają bliżej częstotliwości klatek na konsoli, przy niewielkim koszcie w stosunku do wydajności.</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Maksymalna ilość pamięci wideo przeznaczona na przechowywanie okładek i innych obrazów w pamięci podręcznej interfejsu Big Picture.</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -13469,6 +13924,14 @@ Błąd:</translation>
         <translation>Nie wybrano gry</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Nie znaleziono gier.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Brak wejść.</translation>
+    </message>
+    <message>
         <source>No resume save state found.</source>
         <translation>Nie znaleziono zapisu do automatycznego wczytania.</translation>
     </message>
@@ -13495,6 +13958,10 @@ Błąd:</translation>
     <message>
         <source>Normalize Depth Scale</source>
         <translation>Normalizuj skalę głębi</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Nie skonfigurowano</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -13566,6 +14033,14 @@ Błąd:</translation>
         <translation>Zapobiega wytwarzaniu przez grę jakiegokolwiek słyszalnego dźwięku.</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>Szybka konfiguracja</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Nagraj</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Database</source>
         <translation>Odśwież bazę osiągnięć</translation>
     </message>
@@ -13584,6 +14059,10 @@ Błąd:</translation>
     <message>
         <source>Removes all bindings for this controller port.</source>
         <translation>Usuwa wszystkie przypisania dla tego portu kontrolera.</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Powtarza sekwencję, dopóki makro jest aktywne, zamiast odtwarzać ją raz po każdym naciśnięciu. Rozpoczęte powtórzenie zawsze jest odtwarzane do końca.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13730,6 +14209,10 @@ Błąd:</translation>
         <translation>Wybierz obraz BIOS</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Wybierz przycisk</translation>
+    </message>
+    <message>
         <source>Select Disc for {}</source>
         <translation>Wybierz płytę dla {}</translation>
     </message>
@@ -13776,6 +14259,10 @@ Błąd:</translation>
     <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Wybiera miejsce wyświetlania komunikatów na ekranie.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Sekwencja</translation>
     </message>
     <message>
         <source>Serial (*)</source>
@@ -13914,6 +14401,10 @@ Błąd:</translation>
         <translation>Uruchamia aplikację w trybie Big Picture zamiast w interfejsie pulpitu.</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Zatrzymaj</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Zapisuje bieżące ustawienia jako ustawienie wstępne kontrolera.</translation>
     </message>
@@ -13938,6 +14429,10 @@ Błąd:</translation>
         <translation>Przełącz na następną płytę po zatrzymaniu</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Rozmiar pamięci podręcznej tekstur</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Przycinanie modulacji tekstur (GPU „Old/v0”)</translation>
     </message>
@@ -13948,6 +14443,14 @@ Błąd:</translation>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
         <translation>Plik BIOS „{}” jest już zainstalowany. Czy chcesz go nadpisać?</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Przycisk, który będzie przytrzymywany lub naprzemiennie wciskany i zwalniany.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Wejścia odtwarzane przez to makro, nagrane lub skonfigurowane na podstawie jednego przycisku.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14096,6 +14599,10 @@ Błąd:</translation>
     <message>
         <source>Verifying Image</source>
         <translation>Weryfikowanie obrazu</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>Widok</translation>
     </message>
     <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
@@ -14306,10 +14813,6 @@ Tej operacji nie można cofnąć.</translation>
         <translation>Dół: </translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>Przyciski</translation>
-    </message>
-    <message>
         <source>Challenge Indicators</source>
         <translation>Wskaźniki wyzwań</translation>
     </message>
@@ -14498,10 +15001,6 @@ Tej operacji nie można cofnąć.</translation>
         <translation>Określa, jak duży nacisk przycisku jest ignorowany przed aktywowaniem makra.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Określa, jak duży nacisk jest symulowany podczas aktywnego makra.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>Określa zakres przycięcia obszaru wyświetlania.</translation>
     </message>
@@ -14512,10 +15011,6 @@ Tej operacji nie można cofnąć.</translation>
     <message>
         <source>Determines the format of the screenshot file names.</source>
         <translation>Określa format nazw plików zrzutów ekranu.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Określa częstotliwość przełączania przez makro przycisków między stanem włączonym i wyłączonym (czyli automatycznego strzelania).</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -14790,10 +15285,6 @@ Tej operacji nie można cofnąć.</translation>
         <translation>Liczba klatek na sekundę</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>Częstotliwość</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>Ekran gry</translation>
     </message>
@@ -14840,10 +15331,6 @@ Tej operacji nie można cofnąć.</translation>
     <message>
         <source>Grey Matter</source>
         <translation>Szare komórki</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>Widok siatki</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -15250,10 +15737,6 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
         <translation>Naciśnij, aby przełączyć</translation>
     </message>
     <message>
-        <source>Pressure</source>
-        <translation>Nacisk</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Uniemożliwia przetwarzanie wejścia, gdy aktywna jest inna aplikacja.</translation>
     </message>
@@ -15326,10 +15809,6 @@ Sprawdź nazwę użytkownika i hasło, a następnie spróbuj ponownie.</translat
         <translation>Wybierz klawisz</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Wyświetla listę gier jako siatkę zamiast pionowej listy.</translation>
-    </message>
-    <message>
         <source>Start: {}</source>
         <translation>Początek: {}</translation>
     </message>
@@ -15376,6 +15855,14 @@ Do you want to {1} anyway?</source>
         <translation>{0} odblokowań osiągnięć nie zostało potwierdzonych przez serwer. Kontynuowanie czynności {1} spowoduje utratę tych odblokowań. Po przywróceniu połączenia sieciowego te odblokowania zostaną automatycznie potwierdzone.
 
 Czy mimo to chcesz wykonać czynność {1}?</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>Wejścia: {0}, klatki: {1}</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>Klatki: {}</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15632,10 +16119,6 @@ Czy mimo to chcesz wykonać czynność {1}?</translation>
     <message>
         <source>Select Game</source>
         <translation>Wybierz grę</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Wybierz przypisania dla makra {}</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -16139,10 +16622,6 @@ Czy mimo to wykonać polecenie „{0}”?</translation>
         <translation>Zamknij</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} klatek</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} zostało usunięte.</translation>
     </message>
@@ -16170,6 +16649,14 @@ Czy mimo to wykonać polecenie „{0}”?</translation>
             <numerusform>Pozostała %n minuta</numerusform>
             <numerusform>Pozostały %n minuty</numerusform>
             <numerusform>Pozostało %n minut</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n przycisk</numerusform>
+            <numerusform>%n przyciski</numerusform>
+            <numerusform>%n przycisków</numerusform>
         </translation>
     </message>
     <message numerus="yes">

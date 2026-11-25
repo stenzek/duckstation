@@ -2783,55 +2783,9 @@ Pemetaan Saat Ini: %s</translation>
         <translation>Belum ada pemicu yang ditetapkan</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Belum ada tombol yang ditetapkan</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Makro tidak akan diulang.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Makro akan berganti status setiap %d frame.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Pilih Penetapan Tombol</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s memicu %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s memicu %2$s setiap %3$d frame.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Pemicu</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Tombol</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Frekuensi</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4775,6 +4729,182 @@ Pemetaan Saat Ini: %s</translation>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s memicu %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s memicu %2$s secara berulang</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Ulangi saat makro aktif</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Mengulang urutan selama makro aktif, alih-alih menjalankannya sekali setiap kali pemicu ditekan.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Tekan untuk mengaktifkan atau menonaktifkan</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Pemicu mengaktifkan atau menonaktifkan pengulangan urutan tanpa perlu ditahan.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Zona mati pemicu</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Menentukan seberapa jauh pelatuk analog harus ditekan untuk mengaktifkan makro.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Urutan</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Urutan masih kosong. Tambahkan masukan dan jeda, gunakan Penyiapan Cepat, atau rekam urutan dari pengontrol.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Tambah masukan</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Menambahkan penekanan tombol atau gerakan sumbu di akhir urutan.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Tambah jeda</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Menambahkan jeda di akhir urutan.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Penyiapan Cepat</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Mengganti urutan dengan satu masukan yang ditahan atau diaktifkan dan dinonaktifkan bergantian seperti tombol turbo.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Interval turbo untuk %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Tahan</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Aktif/nonaktif setiap %d bingkai</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Kosongkan urutan</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Menghapus semua tindakan dari urutan.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Hapus semua tindakan dari urutan makro ini?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Pilih masukan</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Tunggu</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d bingkai</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Durasi jeda</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Nilai %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Opsi tindakan</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Ubah masukan</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Sisipkan masukan setelahnya</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Sisipkan jeda setelahnya</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Rekam</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Hentikan perekaman</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Sedang merekam. Masukkan urutan dengan pengontrol atau papan ketik, lalu ketuk “Hentikan perekaman”. Masukan layar sentuh tidak direkam.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>Aktifkan Getaran Game</translation>
@@ -5443,8 +5573,8 @@ Anda dapat mengubahnya nanti melalui opsi &quot;Mulai dalam Mode Big Picture&quo
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>Pindahkan ke Atas</translation>
+        <comment>list_item_move_up</comment>
+        <translation>Pindahkan ke atas</translation>
     </message>
     <message>
         <source>Moves this shader up in the application order.</source>
@@ -5463,13 +5593,13 @@ Anda dapat mengubahnya nanti melalui opsi &quot;Mulai dalam Mode Big Picture&quo
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>Hapus</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>Pindahkan ke Bawah</translation>
+        <comment>list_item_move_down</comment>
+        <translation>Pindahkan ke bawah</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6029,6 +6159,26 @@ Apakah Anda yakin ingin melanjutkan?</translation>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>Kemudi</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Makro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Makro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Makro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Makro 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9841,6 +9991,89 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Tuas traksi</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Traksi</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Nonaktif</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Tuas rem</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Rem</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Dilepas</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Pengereman darurat</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9965,6 +10198,93 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     <message>
         <source>A</source>
         <translation>A</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Tombol arah</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Bawah</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Kiri</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Atas</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Kanan</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Motor getar</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>LED mode</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Tombol aksi</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Silang</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Kotak</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Segitiga</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Lingkaran</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Perangkat umpan balik gaya</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Kemudi</translation>
     </message>
 </context>
 <context>
@@ -10178,6 +10498,45 @@ Peringatan ini hanya akan ditampilkan sekali.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Motor Kecil</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Tombol kiri</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Kuning</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Biru/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Putih</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Hijau</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Tombol kanan</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Merah tengah/OK</translation>
     </message>
 </context>
 <context>
@@ -10395,48 +10754,84 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Pengikatan/Tombol</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Pemicu mengaktifkan makro dan dapat berupa satu tombol atau kombinasi tombol. Tahan Shift sambil mengeklik untuk menetapkan beberapa pemicu.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Pilih tombol yang ingin Anda aktifkan dengan makro ini. Semua tombol akan diaktifkan secara bersamaan.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Tekanan</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Untuk tombol yang sensitif terhadap tekanan, penggeser ini dapat mengontrol seberapa banyak tekanan yang akan disimulasikan saat makro diaktifkan.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Zona mati aktivasi:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Urutan</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Tindakan</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Nilai</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Rekam</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Mengganti urutan dengan urutan yang menahan tombol atau mengaktifkan dan menonaktifkannya setiap N bingkai (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Penyiapan Cepat</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Tambah masukan</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Tambah jeda</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Hapus</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Pindahkan ke atas</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Pindahkan ke bawah</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Kosongkan</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Mengulang urutan selama makro aktif, alih-alih menjalankannya sekali setiap kali pemicu ditekan. Pengulangan yang sedang berjalan selalu diselesaikan.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Ulangi saat makro aktif</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Mengaktifkan atau menonaktifkan makro dengan menekan tombol sebentar tanpa menahannya.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Pemicu</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Pilih pemicu untuk mengaktifkan makro ini. Ini dapat berupa satu tombol atau kombinasi tombol (chord). Shift-klik untuk beberapa pemicu.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Tekan untuk Mengalihkan</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Zona mati:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frekuensi</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Makro akan diaktifkan/dinonaktifkan setiap N frame.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10446,26 +10841,50 @@ Warna &quot;alternatif&quot; digunakan saat mode analog aktif.</translation>
         <source>Not Configured</source>
         <translation>Tidak Dikonfigurasi</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n tombol</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Atur Frekuensi</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Jarak antarperalihan status %1 dalam bingkai (0 untuk menahan):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Frekuensi: </translation>
+        <source>Stop</source>
+        <translation>Hentikan</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Makro tidak akan diulang.</translation>
+        <source>Wait</source>
+        <translation>Tunggu</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Makro akan mengaktifkan/menonaktifkan tombol setiap %n frame.</numerusform>
+            <numerusform>%n bingkai</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> bingkai</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Urutan (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n tindakan</numerusform>
         </translation>
     </message>
 </context>
@@ -12349,6 +12768,10 @@ Mengklik Atur Ulang akan mengembalikan nomor seri ke nilai yang dipindai dari ci
         <translation>Menerapkan filter tekstur sprite yang dipilih pada unggahan framebuffer. Ini dapat menghaluskan latar belakang di beberapa game sambil mempertahankan data tekstur dan video 24-bit.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Terapkan</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Terapkan Patch Citra</translation>
     </message>
@@ -12501,6 +12924,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
         <translation>Mendekatkan poligon yang digambar belakangan ke kamera, dalam satuan sepersejuta kedalaman. Mengurangi kedipan pada dekal.</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>Tombol</translation>
+    </message>
+    <message>
         <source>CD-ROM Emulation</source>
         <translation>Emulasi CD-ROM</translation>
     </message>
@@ -12515,6 +12942,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Capture</source>
         <translation>Tangkap</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Karusel</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -12747,6 +13178,10 @@ Tindakan ini tidak dapat dibatalkan.</translation>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Menentukan cara keluaran konsol yang diemulasikan diperbesar atau diperkecil agar sesuai dengan resolusi monitor Anda.</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Menentukan cara daftar gim ditampilkan.</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
@@ -13153,6 +13588,14 @@ Kesalahannya:</translation>
     <message>
         <source>Green Giant</source>
         <translation>Green Giant</translation>
+    </message>
+    <message>
+        <source>Grid</source>
+        <translation>Kisi</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Tahan</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -13959,6 +14402,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Langkah {} dari {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Hentikan</translation>
+    </message>
+    <message>
         <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
         <translation>Mencegah game kehabisan waktu saat menunggu vertical blank ketika dioverclock.</translation>
     </message>
@@ -13995,6 +14442,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Menonaktifkan sementara semua penyempurnaan, berguna saat pengujian.</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Ukuran cache tekstur</translation>
+    </message>
+    <message>
         <source>Texture Filtering</source>
         <translation>Filter Tekstur</translation>
     </message>
@@ -14005,6 +14456,14 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Textures Directory</source>
         <translation>Direktori Tekstur</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Tombol yang ditahan atau diaktifkan dan dinonaktifkan bergantian.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Masukan yang dijalankan oleh makro ini, baik yang direkam maupun yang disetel dari satu tombol.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -14255,10 +14714,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Pilih Game</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>Ubah Tampilan</translation>
-    </message>
-    <message>
         <source>Launch Options</source>
         <translation>Opsi Peluncuran</translation>
     </message>
@@ -14333,10 +14788,6 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
     <message>
         <source>Attempts to map the selected port to a chosen controller.</source>
         <translation>Mencoba memetakan port yang dipilih ke kontroler yang dipilih.</translation>
-    </message>
-    <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Menentukan berapa banyak tekanan yang disimulasikan ketika makro aktif.</translation>
     </message>
     <message>
         <source>Toggle every %d frames</source>
@@ -14647,6 +15098,10 @@ Silakan periksa nama pengguna dan kata sandi Anda, lalu coba lagi.</translation>
         <translation>Cache Vertex</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>Tampilan</translation>
+    </message>
+    <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>PERINGATAN: Mengaktifkan cheat dapat menyebabkan perilaku tak terduga, crash, soft-lock, atau game tersimpan yang rusak.</translation>
     </message>
@@ -14811,10 +15266,6 @@ Apakah Anda tetap ingin {0}?</translation>
         <translation>Tipe Kontroler Port {}</translation>
     </message>
     <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Pilih Penetapan Tombol Makro {}</translation>
-    </message>
-    <message>
         <source>All Time: {}</source>
         <translation>Total Waktu: {}</translation>
     </message>
@@ -14955,10 +15406,6 @@ Apakah Anda tetap ingin {0}?</translation>
         <translation>-</translation>
     </message>
     <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Menentukan seberapa sering makro akan mengaktifkan dan menonaktifkan tombol (auto fire).</translation>
-    </message>
-    <message>
         <source>restart</source>
         <translation>mulai ulang</translation>
     </message>
@@ -14969,14 +15416,6 @@ Do you want to {1} anyway?</source>
         <translation>{0} pembukaan pencapaian belum dikonfirmasi oleh server. Melanjutkan ke {1} akan menyebabkan pembukaan ini hilang. Setelah konektivitas jaringan pulih, pembukaan ini akan dikonfirmasi secara otomatis.
 
 Apakah Anda tetap ingin {1}?</translation>
-    </message>
-    <message>
-        <source>{} Frames</source>
-        <translation>{} Bingkai</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>Tampilan Kisi</translation>
     </message>
     <message>
         <source>${filetitle}: Name component of the game&apos;s filename.</source>
@@ -15175,10 +15614,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Font</translation>
     </message>
     <message>
-        <source>Game List</source>
-        <translation>Daftar Game</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>Pengaturan Daftar Game</translation>
     </message>
@@ -15209,10 +15644,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Global Settings</source>
         <translation>Pengaturan Global</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>Tampilan Kisi</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -15283,6 +15714,14 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Kiri: </translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Pustaka</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Daftar</translation>
+    </message>
+    <message>
         <source>List Compact Mode</source>
         <translation>Mode Daftar Ringkas</translation>
     </message>
@@ -15307,12 +15746,24 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Sedang Masuk...</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Ulangi saat makro aktif</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Makro {}</translation>
     </message>
     <message>
+        <source>Macro {} Sequence</source>
+        <translation>Urutan makro {}</translation>
+    </message>
+    <message>
         <source>Maximum (Safer)</source>
         <translation>Maksimum (Lebih Aman)</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Jumlah maksimum memori video untuk menyimpan sampul dan gambar lainnya di cache antarmuka Big Picture.</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -15355,8 +15806,20 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Tidak ada perangkat dengan LED yang terdeteksi.</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Tidak ada gim yang ditemukan.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Tidak ada masukan.</translation>
+    </message>
+    <message>
         <source>Normalize Depth Scale</source>
         <translation>Normalkan Skala Kedalaman</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Belum dikonfigurasi</translation>
     </message>
     <message>
         <source>Notification Location</source>
@@ -15435,6 +15898,14 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Durasi Pesan Cepat</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>Penyiapan Cepat</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Rekam</translation>
+    </message>
+    <message>
         <source>Refresh Achievement Database</source>
         <translation>Segarkan Basis Data Pencapaian</translation>
     </message>
@@ -15445,6 +15916,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Refreshes the list of unlocked achievements.</source>
         <translation>Menyegarkan daftar pencapaian yang terbuka.</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Mengulang urutan selama makro aktif, alih-alih menjalankannya sekali setiap kali pemicu ditekan. Pengulangan yang sedang berjalan selalu diselesaikan.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -15547,6 +16022,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Pilih Citra BIOS</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Pilih tombol</translation>
+    </message>
+    <message>
         <source>Selects between Xbox/PlayStation button icons in the footer and input binding.</source>
         <translation>Memilih ikon tombol Xbox/PlayStation pada footer dan pengikatan input.</translation>
     </message>
@@ -15569,6 +16048,10 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Memilih lokasi di layar tempat pesan ditampilkan.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Urutan</translation>
     </message>
     <message>
         <source>Serial (*)</source>
@@ -15625,10 +16108,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
         <translation>Menampilkan pesan OSD saat peristiwa terjadi. Kesalahan dan peringatan tetap ditampilkan terlepas dari pengaturan ini.</translation>
-    </message>
-    <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Menampilkan daftar game dalam bentuk kisi sebagai pengganti daftar vertikal.</translation>
     </message>
     <message>
         <source>Shows titles underneath the images in the game grid view.</source>
@@ -15761,6 +16240,14 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
     <message>
         <source>{0} (Missing)</source>
         <translation>{0} (Hilang)</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>{0} masukan, {1} bingkai</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} bingkai</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15927,18 +16414,6 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <translation>Atur Tombol Otomatis</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>Tombol</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frekuensi</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Tekanan</translation>
-    </message>
-    <message>
         <source>Covers Directory</source>
         <translation>Direktori Sampul</translation>
     </message>
@@ -16074,6 +16549,12 @@ Apakah Anda ingin menghapus status simpanan tersebut dan tetap mem-boot game?</t
         <comment>Loading time</comment>
         <translation>
             <numerusform>tersisa %n menit</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n tombol</numerusform>
         </translation>
     </message>
     <message numerus="yes">

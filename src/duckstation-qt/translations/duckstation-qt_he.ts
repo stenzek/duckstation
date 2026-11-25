@@ -2804,57 +2804,9 @@ Current Binding: %s</source>
         <translation>לא הוגדר מפעיל</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>לא הוגדרו כפתורים</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>המאקרו לא יחזור.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>המאקרו יחליף מצב בכל %d פריים.</numerusform>
-            <numerusform>המאקרו יחליף מצב בכל %d פריימים.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>בחירת מיפויים</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s מפעיל את %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s מפעיל את %2$s בכל %3$d פריים.</numerusform>
-            <numerusform>%1$s מפעיל את %2$s בכל %3$d פריימים.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>מפעיל</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>כפתורים</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>תדירות</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4802,6 +4754,184 @@ Current Binding: %s</source>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s מפעיל את %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s מפעיל את %2$s בלולאה</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>חזרה כל עוד המאקרו פעיל</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>חוזר על הרצף כל עוד המאקרו פעיל, במקום לבצע אותו פעם אחת בכל לחיצה.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>לחיצה להפעלה או לכיבוי</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>כל לחיצה על המפעיל מפעילה או מפסיקה את לולאת הרצף, בלי צורך להחזיק אותו לחוץ.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>אזור מת של המפעיל</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>קובע עד כמה צריך ללחוץ על הדק אנלוגי כדי להפעיל את המאקרו.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>רצף</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>הרצף ריק. אפשר להוסיף קלט והשהיות, להשתמש בהגדרה מהירה או להקליט את הרצף עם בקר.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>הוספת קלט</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>מוסיף לחיצה על כפתור או תנועה בציר לסוף הרצף.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>הוספת השהיה</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>מוסיף השהיה לסוף הרצף.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>הגדרה מהירה</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>מחליף את הרצף בקלט יחיד שמוחזק לחוץ או נלחץ ומשתחרר לסירוגין כמו כפתור טורבו.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>מרווח הטורבו של %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>החזקה</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>החלפת מצב במרווח של %d פריים</numerusform>
+            <numerusform>החלפת מצב כל %d פריימים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>ניקוי רצף</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>מסיר את כל הפעולות מהרצף.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>להסיר את כל הפעולות מהרצף של המאקרו הזה?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>בחירת קלט</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>המתנה</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d פריים</numerusform>
+            <numerusform>%d פריימים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>משך ההשהיה</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>הערך של %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>אפשרויות הפעולה</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>שינוי קלט</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>הוספת קלט לאחר הפעולה</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>הוספת השהיה לאחר הפעולה</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>הקלטה</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>עצירת ההקלטה</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>מתבצעת הקלטה. הזינו את הרצף באמצעות הבקר או המקלדת, ואז הקישו על ״עצירת ההקלטה״. קלט ממסך המגע אינו מוקלט.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>הפעלת רטט מהמשחק</translation>
@@ -5471,8 +5601,8 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>העבר למעלה</translation>
+        <comment>list_item_move_up</comment>
+        <translation>העברה למעלה</translation>
     </message>
     <message>
         <source>Moves this shader up in the application order.</source>
@@ -5491,13 +5621,13 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
-        <translation>הסר</translation>
+        <comment>list_item_remove</comment>
+        <translation>הסרה</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>העבר למטה</translation>
+        <comment>list_item_move_down</comment>
+        <translation>העברה למטה</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6058,6 +6188,26 @@ Are you sure you want to continue?</source>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>היגוי</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>מאקרו 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>מאקרו 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>מאקרו 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>מאקרו 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9878,6 +10028,89 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>ידית הנעה</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>הנעה</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>ללא הנעה</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>בחירה</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>התחלה</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>ידית בלם</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>בלם</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>משוחרר</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>בלימת חירום</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -10002,6 +10235,93 @@ This warning will only be shown once.</source>
     <message>
         <source>Fire</source>
         <translation>ירי</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>משטח כיוון</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>למטה</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>שמאלה</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>למעלה</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>ימינה</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>מנוע רטט</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>בחירה</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>התחלה</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>מצב</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>נורית חיווי מצב</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>כפתורים קדמיים</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>צלב</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>ריבוע</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>משולש</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>עיגול</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>התקן משוב כוח</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>היגוי</translation>
     </message>
 </context>
 <context>
@@ -10215,6 +10535,45 @@ This warning will only be shown once.</source>
     <message>
         <source>Small Motor</source>
         <translation>מנוע קטן</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>כפתורים שמאליים</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>צהוב</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>כחול/בחירה</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>לבן</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>ירוק</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>בחירה</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>התחלה</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>כפתורים ימניים</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>אדום מרכזי/אישור</translation>
     </message>
 </context>
 <context>
@@ -10432,48 +10791,84 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>מיפויים/לחצנים</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>המפעיל מפעיל את המאקרו ויכול להיות כפתור יחיד או שילוב כפתורים. לחצו תוך כדי החזקת Shift כדי להגדיר כמה מפעילים.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>בחר את הלחצנים שברצונך להפעיל באמצעות מאקרו זה. כל הלחצנים מופעלים בו-זמנית.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>לחץ</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>עבור לחצנים הרגישים ללחץ, מחוון זה שולט בכמות הכוח שתדומה בעת שהמאקרו פעיל.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>אזור מת להפעלה:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>רצף</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>פעולה</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>ערך</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>הקלטה</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>מחליף את הרצף ברצף שמחזיק כפתור לחוץ או לוחץ ומשחרר אותו לסירוגין כל N פריימים (טורבו).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>הגדרה מהירה</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>הוספת קלט</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>הוספת השהיה</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>הסרה</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>העברה למעלה</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>העברה למטה</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>ניקוי</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>חוזר על הרצף כל עוד המאקרו פעיל, במקום לבצע אותו פעם אחת בכל לחיצה. החזרה שכבר התחילה תמיד מתבצעת עד סופה.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>חזרה כל עוד המאקרו פעיל</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>מפעיל או מכבה את המאקרו בלחיצה קצרה על הכפתור, בלי צורך להחזיק אותו לחוץ.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>קלט הפעלה</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>בחר את הקלט להפעלת מאקרו זה. זה יכול להיות לחצן יחיד או שילוב לחצנים (צירוף). לחץ תוך החזקת Shift כדי לבחור כמה קלטי הפעלה.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>לחץ למעבר</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>אזור מת:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>תדירות</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>המאקרו יחליף מצב כל N פריימים.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10483,27 +10878,53 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <source>Not Configured</source>
         <translation>לא מוגדר</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n כפתור</numerusform>
+            <numerusform>%n כפתורים</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>הגדרת תדירות</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>מספר הפריימים בין החלפות המצב של %1 (0 להחזקה):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>תדירות: </translation>
+        <source>Stop</source>
+        <translation>עצירה</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>המאקרו לא יחזור.</translation>
+        <source>Wait</source>
+        <translation>המתנה</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>המאקרו יחליף את מצב הלחצנים כל פריים.</numerusform>
-            <numerusform>המאקרו יחליף את מצב הלחצנים כל %n פריימים.</numerusform>
+            <numerusform>%n פריים</numerusform>
+            <numerusform>%n פריימים</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> פריימים</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>רצף (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n פעולה</numerusform>
+            <numerusform>%n פעולות</numerusform>
         </translation>
     </message>
 </context>
@@ -12325,6 +12746,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>מחיל שינויים במאגר הפריים המוצג במהלך הצגת הפריים. נדרש לאפקטים של מסך מפוצל במשחקים מסוימים, אך גורם לקריעת תמונה באחרים.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>החלה</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>החלת תיקונים על תמונות תקליטור</translation>
     </message>
@@ -12441,6 +12866,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>גודל המאגר</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>כפתור</translation>
+    </message>
+    <message>
         <source>CD-ROM Emulation</source>
         <translation>אמולציית CD-ROM</translation>
     </message>
@@ -12455,6 +12884,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Cancel</source>
         <translation>ביטול</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>קרוסלה</translation>
     </message>
     <message>
         <source>Change Disc</source>
@@ -12651,6 +13084,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>קובע כיצד פלט הקונסולה המדומה מוגדל או מוקטן כדי להתאים לרזולוציית הצג שלך.</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>קובע כיצד מוצגת רשימת המשחקים.</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
@@ -12899,14 +13336,6 @@ Error was:</source>
         <translation>מרנדר GPU</translation>
     </message>
     <message>
-        <source>Game Grid</source>
-        <translation>רשת משחקים</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>רשימת משחקים</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>הגדרות רשימת משחקים</translation>
     </message>
@@ -12967,6 +13396,10 @@ Error was:</source>
         <translation>חריץ גלובלי {0}##global_slot_{0}</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>רשת</translation>
+    </message>
+    <message>
         <source>Hardcore Mode</source>
         <translation>מצב Hardcore</translation>
     </message>
@@ -12977,6 +13410,10 @@ Error was:</source>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>מסתיר את מצביע העכבר/הסמן כאשר האמולטור נמצא במצב מסך מלא.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>החזקה</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -13033,6 +13470,14 @@ Error was:</source>
     <message>
         <source>Leaderboards</source>
         <translation>לוחות תוצאות</translation>
+    </message>
+    <message>
+        <source>Library</source>
+        <translation>ספרייה</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>רשימה</translation>
     </message>
     <message>
         <source>List Icons</source>
@@ -13103,8 +13548,20 @@ Error was:</source>
         <translation>רושם הודעות במסוף ניפוי הבאגים, אם נתמך.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>חזרה כל עוד המאקרו פעיל</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>הרצף של מאקרו {}</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>גורם למשחקים לרוץ קרוב יותר לקצב הפריימים של הקונסולה שלהם, במחיר קטן של ביצועים.</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>הכמות המרבית של זיכרון וידאו המשמשת לשמירת עטיפות ותמונות נוספות במטמון במצב תמונה גדולה.</translation>
     </message>
     <message>
         <source>Memory Card Directory</source>
@@ -13415,10 +13872,6 @@ You cannot undo this action.</source>
         <translation>למטה: </translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>כפתורים</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>לכידה</translation>
     </message>
@@ -13457,10 +13910,6 @@ You cannot undo this action.</source>
     <message>
         <source>Change Title</source>
         <translation>שינוי כותרת</translation>
-    </message>
-    <message>
-        <source>Change View</source>
-        <translation>שינוי תצוגה</translation>
     </message>
     <message>
         <source>Changes settings for the application.</source>
@@ -13659,10 +14108,6 @@ You cannot undo this action.</source>
         <translation>קובע כמה מלחץ הכפתור יתעלם לפני הפעלת המאקרו.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>קובע כמה לחץ ידומה כאשר המאקרו פעיל.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>קובע כמה מאזור התצוגה ייחתך.</translation>
     </message>
@@ -13677,10 +14122,6 @@ You cannot undo this action.</source>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>קובע את התבנית שבה צילומי המסך יישמרו או יידחסו.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>קובע את התדירות שבה המאקרו יפעיל ויכבה את הכפתורים (המכונה גם אש אוטומטית).</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -14019,10 +14460,6 @@ You cannot undo this action.</source>
         <translation>מאגר זמן פריים</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>תדירות</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>תצוגת משחק</translation>
     </message>
@@ -14077,10 +14514,6 @@ You cannot undo this action.</source>
     <message>
         <source>Grey Matter</source>
         <translation>חומר אפור</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>תצוגת רשת</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -14355,6 +14788,14 @@ Please check your username and password, and try again.</source>
         <translation>לא זוהו התקנים עם מנועי רטט.</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>לא נמצאו משחקים.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>אין קלט.</translation>
+    </message>
+    <message>
         <source>No patches are available for this game.</source>
         <translation>אין תיקונים זמינים למשחק זה.</translation>
     </message>
@@ -14393,6 +14834,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Normalize Depth Scale</source>
         <translation>נרמול קנה המידה של העומק</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>לא הוגדר</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -14511,8 +14956,20 @@ Please check your username and password, and try again.</source>
         <translation>מונע מהמשחק להפיק צליל כלשהו.</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>הגדרה מהירה</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>הקלטה</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>תאריך פרסום: </translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>חוזר על הרצף כל עוד המאקרו פעיל, במקום לבצע אותו פעם אחת בכל לחיצה. החזרה שכבר התחילה תמיד מתבצעת עד סופה.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -14679,8 +15136,16 @@ Please check your username and password, and try again.</source>
         <translation>חיפוש</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>בחירת כפתור</translation>
+    </message>
+    <message>
         <source>Select Key</source>
         <translation>בחירת מקש</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>רצף</translation>
     </message>
     <message>
         <source>Settings reset to default.</source>
@@ -14763,6 +15228,10 @@ Please check your username and password, and try again.</source>
         <translation>שלב {} מתוך {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>עצירה</translation>
+    </message>
+    <message>
         <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
         <translation>מונע פקיעת זמן ההמתנה של המשחקים לסנכרון אנכי בעת האצת השעון.</translation>
     </message>
@@ -14773,6 +15242,18 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Subframes</source>
         <translation>תת־פריימים</translation>
+    </message>
+    <message>
+        <source>Texture Cache Size</source>
+        <translation>גודל מטמון המרקמים</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>הכפתור שיוחזק לחוץ או יילחץ וישוחרר לסירוגין.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>הקלט שהמאקרו מבצע, כפי שהוקלט או הוגדר באמצעות כפתור יחיד.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14875,6 +15356,10 @@ Please check your username and password, and try again.</source>
         <translation>ערך: {}</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>תצוגה</translation>
+    </message>
+    <message>
         <source>Web Cache Size: {0} ({1} in {2} objects)</source>
         <translation>גודל מטמון האינטרנט: {0} ({1} ב־{2} אובייקטים)</translation>
     </message>
@@ -14905,6 +15390,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
         <translation>כן, {} כעת ובכך להסתכן בפגיעה בכרטיס הזיכרון.</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>{0} קלטים, {1} פריימים</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} פריימים</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15049,10 +15542,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Press To Toggle</source>
         <translation>לחץ להחלפה</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>לחץ</translation>
     </message>
     <message>
         <source>Prevents inputs from being processed when another application is active.</source>
@@ -15363,10 +15852,6 @@ Please check your username and password, and try again.</source>
         <translation>בחירת משחק</translation>
     </message>
     <message>
-        <source>Select Macro {} Binds</source>
-        <translation>בחירת מיפויי מאקרו {}</translation>
-    </message>
-    <message>
         <source>Select State</source>
         <translation>בחירת מצב</translation>
     </message>
@@ -15605,10 +16090,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
         <translation>מציג את רזולוציית הרינדור הנוכחית של המערכת בפינה הימנית העליונה של התצוגה.</translation>
-    </message>
-    <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>מציג את רשימת המשחקים כרשת במקום כרשימה אנכית.</translation>
     </message>
     <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
@@ -16091,10 +16572,6 @@ Do you want to {1} anyway?</source>
 האם ברצונך לבצע {1} בכל זאת?</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} פריימים</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} נמחק.</translation>
     </message>
@@ -16120,6 +16597,13 @@ Do you want to {1} anyway?</source>
         <translation>
             <numerusform>נותרה עוד %n דקה</numerusform>
             <numerusform>נותרו עוד %n דקות</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n כפתור</numerusform>
+            <numerusform>%n כפתורים</numerusform>
         </translation>
     </message>
     <message numerus="yes">

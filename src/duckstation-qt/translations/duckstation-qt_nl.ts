@@ -2805,57 +2805,9 @@ Huidige toewijzing: %s</translation>
         <translation>Geen trigger ingesteld</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Geen knoppen ingesteld</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>De macro wordt niet herhaald.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>De macro schakelt elk %d frame om.</numerusform>
-            <numerusform>De macro schakelt elke %d frames om.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Toewijzingen kiezen</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s activeert %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s activeert %2$s elk %3$d frame.</numerusform>
-            <numerusform>%1$s activeert %2$s elke %3$d frames.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Trigger</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Knoppen</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Frequentie</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4803,6 +4755,184 @@ Huidige toewijzing: %s</translation>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s activeert %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s activeert %2$s in een lus</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Herhalen zolang actief</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Herhaalt de reeks zolang de macro actief is, in plaats van deze eenmaal per druk uit te voeren.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Drukken om aan of uit te zetten</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Met de trigger zet je de herhaling aan of uit zonder de trigger ingedrukt te houden.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Dode zone van de trigger</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Bepaalt hoe ver je een analoge trigger moet indrukken om de macro te activeren.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Reeks</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>De reeks is leeg. Voeg invoer en pauzes toe, gebruik Snelle instelling of neem de reeks op met een controller.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Invoer toevoegen</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Voegt een knop- of asinvoer toe aan het einde van de reeks.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Pauze toevoegen</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Voegt een pauze toe aan het einde van de reeks.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Snelle instelling</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Vervangt de reeks door één invoer die ingedrukt blijft of als een turboknop steeds wordt in- en uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Turbo-interval voor %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Ingedrukt houden</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Elk %d frame aan/uit</numerusform>
+            <numerusform>Elke %d frames aan/uit</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Reeks wissen</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Verwijdert alle acties uit de reeks.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Alle acties uit de reeks van deze macro verwijderen?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Invoer selecteren</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Wachten</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Duur: %d frame</numerusform>
+            <numerusform>Duur: %d frames</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Wachttijd</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Waarde van %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Actieopties</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Invoer wijzigen</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Invoer hierna invoegen</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Pauze hierna invoegen</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Opnemen</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Opname stoppen</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Bezig met opnemen. Voer de reeks in met een controller of toetsenbord en tik daarna op ‘Opname stoppen’. Invoer via het aanraakscherm wordt niet opgenomen.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>Trillingen van games inschakelen</translation>
@@ -5472,7 +5602,7 @@ U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
+        <comment>list_item_move_up</comment>
         <translation>Omhoog verplaatsen</translation>
     </message>
     <message>
@@ -5492,12 +5622,12 @@ U kunt dit later wijzigen met de optie &quot;Starten in Big Picture-modus&quot; 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>Verwijderen</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
+        <comment>list_item_move_down</comment>
         <translation>Omlaag verplaatsen</translation>
     </message>
     <message>
@@ -6059,6 +6189,26 @@ Weet je zeker dat je wilt doorgaan?</translation>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>Sturen</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Macro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Macro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Macro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Macro 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9880,6 +10030,89 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Tractiehendel</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Tractie</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Uit</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Remhendel</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Rem</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Gelost</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Noodrem</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -10004,6 +10237,93 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     <message>
         <source>Fire</source>
         <translation>Vuren</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Richtingsknoppen</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Omlaag</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Omhoog</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Trilmotor</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Modus</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Moduslampje</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Actieknoppen</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Kruis</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Vierkant</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Driehoek</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Cirkel</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Forcefeedbackapparaat</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Stuurinvoer</translation>
     </message>
 </context>
 <context>
@@ -10217,6 +10537,45 @@ Deze waarschuwing wordt maar een keer getoond.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Kleine motor</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Knoppen links</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Geel</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Blauw/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Wit</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Groen</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Knoppen rechts</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Rood midden/OK</translation>
     </message>
 </context>
 <context>
@@ -10434,48 +10793,84 @@ De &quot;alternatieve&quot; kleur wordt gebruikt wanneer de analoge modus actief
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Bindingen/knoppen</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>De trigger activeert de macro en kan één knop of een combinatie van knoppen zijn. Houd Shift ingedrukt tijdens het klikken om meerdere triggers in te stellen.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Selecteer de knoppen die u met deze macro wilt activeren. Alle knoppen worden gelijktijdig geactiveerd.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Druk</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Bij drukgevoelige knoppen bepaalt deze schuifregelaar hoeveel kracht wordt gesimuleerd wanneer de macro actief is.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Dode zone voor activering:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Reeks</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Actie</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Waarde</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Opnemen</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Vervangt de reeks door een reeks die een knop ingedrukt houdt of elke N frames aan- en uitzet (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Snelle instelling</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Invoer toevoegen</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Pauze toevoegen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Verwijderen</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Omhoog verplaatsen</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Omlaag verplaatsen</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Wissen</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Herhaalt de reeks zolang de macro actief is, in plaats van deze eenmaal per druk uit te voeren. De lopende herhaling wordt altijd afgemaakt.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Herhalen zolang actief</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Zet de macro aan of uit door de knop kort in te drukken in plaats van deze ingedrukt te houden.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Activeringsknop</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Selecteer de knop om deze macro te activeren. Dit kan één knop zijn of een combinatie van knoppen. Shift-klik voor meerdere activeringsknoppen.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Indrukken om te schakelen</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Dode zone:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frequentie</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>De macro schakelt elke N frames.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10485,27 +10880,53 @@ De &quot;alternatieve&quot; kleur wordt gebruikt wanneer de analoge modus actief
         <source>Not Configured</source>
         <translation>Niet geconfigureerd</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n knop</numerusform>
+            <numerusform>%n knoppen</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Frequentie instellen</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Frames tussen het aan- en uitzetten van %1 (0 om ingedrukt te houden):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Frequentie: </translation>
+        <source>Stop</source>
+        <translation>Stoppen</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>De macro wordt niet herhaald.</translation>
+        <source>Wait</source>
+        <translation>Wachten</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>De macro schakelt de knoppen elke %n frame.</numerusform>
-            <numerusform>De macro schakelt de knoppen elke %n frames.</numerusform>
+            <numerusform>%n frame</numerusform>
+            <numerusform>%n frames</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> frames</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Reeks (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n actie</numerusform>
+            <numerusform>%n acties</numerusform>
         </translation>
     </message>
 </context>
@@ -12327,6 +12748,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Past wijzigingen in de weergegeven framebuffer toe terwijl een frame wordt weergegeven. Nodig voor split-screeneffecten in sommige games, maar veroorzaakt tearing in andere games.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Toepassen</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Schijfkopiepatches toepassen</translation>
     </message>
@@ -12443,6 +12868,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
         <translation>Buffergrootte</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>Knop</translation>
+    </message>
+    <message>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM-emulatie</translation>
     </message>
@@ -12457,6 +12886,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Cancel</source>
         <translation>Annuleren</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Carrousel</translation>
     </message>
     <message>
         <source>Change Disc</source>
@@ -12653,6 +13086,10 @@ Als u op Resetten klikt, wordt het serienummer teruggezet naar de waarde die uit
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Bepaalt hoe de uitvoer van de geëmuleerde console wordt op- of afgeschaald naar de resolutie van uw monitor.</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Bepaalt hoe de lijst met spellen wordt weergegeven.</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
@@ -12901,14 +13338,6 @@ De fout was:</translation>
         <translation>GPU-renderer</translation>
     </message>
     <message>
-        <source>Game Grid</source>
-        <translation>Gameraster</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Gamelijst</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>Instellingen gamelijst</translation>
     </message>
@@ -12969,6 +13398,10 @@ De fout was:</translation>
         <translation>Globaal slot {0}##global_slot_{0}</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Raster</translation>
+    </message>
+    <message>
         <source>Hardcore Mode</source>
         <translation>Hardcoremodus</translation>
     </message>
@@ -12979,6 +13412,10 @@ De fout was:</translation>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Verbergt de muisaanwijzer/-cursor wanneer de emulator in de volledigeschermmodus staat.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Ingedrukt houden</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -13035,6 +13472,14 @@ De fout was:</translation>
     <message>
         <source>Leaderboards</source>
         <translation>Klassementen</translation>
+    </message>
+    <message>
+        <source>Library</source>
+        <translation>Bibliotheek</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Lijst</translation>
     </message>
     <message>
         <source>List Icons</source>
@@ -13105,8 +13550,20 @@ De fout was:</translation>
         <translation>Logt berichten naar de debugconsole waar dit wordt ondersteund.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Herhalen zolang actief</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Reeks van macro {}</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Laat games dichter bij de framesnelheid van hun console draaien, met een kleine invloed op de prestaties.</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Maximale hoeveelheid videogeheugen voor het cachen van hoesafbeeldingen en andere afbeeldingen in de Big Picture-interface.</translation>
     </message>
     <message>
         <source>Memory Card Directory</source>
@@ -13417,10 +13874,6 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Onder: </translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>Knoppen</translation>
-    </message>
-    <message>
         <source>Capture</source>
         <translation>Opname</translation>
     </message>
@@ -13459,10 +13912,6 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Change Title</source>
         <translation>Titel wijzigen</translation>
-    </message>
-    <message>
-        <source>Change View</source>
-        <translation>Weergave wijzigen</translation>
     </message>
     <message>
         <source>Changes settings for the application.</source>
@@ -13661,10 +14110,6 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Bepaalt hoeveel knopdruk wordt genegeerd voordat de macro wordt geactiveerd.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Bepaalt hoeveel druk wordt gesimuleerd wanneer de macro actief is.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>Bepaalt hoeveel van het weergavegebied wordt bijgesneden.</translation>
     </message>
@@ -13679,10 +14124,6 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>Bepaalt de indeling waarin schermafbeeldingen worden opgeslagen of gecomprimeerd.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Bepaalt hoe vaak de macro de knoppen in- en uitschakelt (ook wel autofire genoemd).</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -14021,10 +14462,6 @@ U kunt deze actie niet ongedaan maken.</translation>
         <translation>Frametijdbuffer</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>Frequentie</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>Gameweergave</translation>
     </message>
@@ -14079,10 +14516,6 @@ U kunt deze actie niet ongedaan maken.</translation>
     <message>
         <source>Grey Matter</source>
         <translation>Grey Matter</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>Rasterweergave</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -14357,6 +14790,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Er zijn geen apparaten met trilmotoren gedetecteerd.</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Geen spellen gevonden.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Geen invoer.</translation>
+    </message>
+    <message>
         <source>No patches are available for this game.</source>
         <translation>Er zijn geen patches beschikbaar voor deze game.</translation>
     </message>
@@ -14395,6 +14836,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Normalize Depth Scale</source>
         <translation>Diepteschaal normaliseren</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Niet ingesteld</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -14513,8 +14958,20 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Zorgt ervoor dat de game geen hoorbaar geluid produceert.</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>Snelle instelling</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Opnemen</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>Releasedatum: </translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Herhaalt de reeks zolang de macro actief is, in plaats van deze eenmaal per druk uit te voeren. De lopende herhaling wordt altijd afgemaakt.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -14681,8 +15138,16 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Zoeken</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Knop selecteren</translation>
+    </message>
+    <message>
         <source>Select Key</source>
         <translation>Toets selecteren</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Reeks</translation>
     </message>
     <message>
         <source>Settings reset to default.</source>
@@ -14765,6 +15230,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Stap {} van {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Stoppen</translation>
+    </message>
+    <message>
         <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
         <translation>Voorkomt dat games een time-out krijgen terwijl ze tijdens overklokken op verticale blanking wachten.</translation>
     </message>
@@ -14775,6 +15244,18 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Subframes</source>
         <translation>Subframes</translation>
+    </message>
+    <message>
+        <source>Texture Cache Size</source>
+        <translation>Grootte van de textuurcache</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>De knop die ingedrukt blijft of wordt in- en uitgeschakeld.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>De invoer die deze macro afspeelt, opgenomen of ingesteld met één knop.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14877,6 +15358,10 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Waarde: {}</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>Weergave</translation>
+    </message>
+    <message>
         <source>Web Cache Size: {0} ({1} in {2} objects)</source>
         <translation>Webcachegrootte: {0} ({1} in {2} objecten)</translation>
     </message>
@@ -14907,6 +15392,14 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Yes, {} now and risk memory card corruption.</source>
         <translation>Ja, {} nu en riskeer beschadiging van de geheugenkaart.</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>Invoer: {0}, frames: {1}</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>Frames: {}</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15051,10 +15544,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Press To Toggle</source>
         <translation>Indrukken om te schakelen</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Druk</translation>
     </message>
     <message>
         <source>Prevents inputs from being processed when another application is active.</source>
@@ -15365,10 +15854,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
         <translation>Game selecteren</translation>
     </message>
     <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Macrobindingen voor {} selecteren</translation>
-    </message>
-    <message>
         <source>Select State</source>
         <translation>Opslagstatus selecteren</translation>
     </message>
@@ -15607,10 +16092,6 @@ Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.</translation>
     <message>
         <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
         <translation>Toont de huidige renderresolutie van het systeem rechtsboven in het scherm.</translation>
-    </message>
-    <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Toont de gamelijst als een raster in plaats van een verticale lijst.</translation>
     </message>
     <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
@@ -16093,10 +16574,6 @@ Do you want to {1} anyway?</source>
 Wil je toch doorgaan met {1}?</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} frames</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} verwijderd.</translation>
     </message>
@@ -16122,6 +16599,13 @@ Wil je toch doorgaan met {1}?</translation>
         <translation>
             <numerusform>Nog %n minuut</numerusform>
             <numerusform>Nog %n minuten</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n knop</numerusform>
+            <numerusform>%n knoppen</numerusform>
         </translation>
     </message>
     <message numerus="yes">

@@ -2789,55 +2789,9 @@ Current Binding: %s</source>
         <translation>설정된 트리거 없음</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>설정된 버튼 없음</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>매크로는 반복하지 않습니다.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>매크로가 %d프레임마다 전환됩니다.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>할당 선택</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s이(가) %2$s을(를) 작동시킵니다</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s이(가) %3$d프레임마다 %2$s을(를) 작동시킵니다.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>트리거</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>버튼</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>빈도</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4781,6 +4735,182 @@ Current Binding: %s</source>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s 입력으로 %2$s 실행</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s 입력으로 %2$s 반복 실행</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>활성 상태에서 반복</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>누를 때마다 시퀀스를 한 번만 실행하는 대신 매크로가 활성 상태인 동안 반복합니다.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>눌러서 켜기/끄기</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>트리거를 길게 누르지 않아도 누를 때마다 시퀀스 반복을 켜거나 끌 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>트리거 데드존</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>매크로를 활성화하려면 아날로그 트리거를 얼마나 눌러야 하는지 정합니다.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>시퀀스</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>시퀀스가 비어 있습니다. 입력과 대기를 추가하거나 빠른 설정을 사용하거나 컨트롤러로 녹화하세요.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>입력 추가</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>버튼 또는 축 입력을 시퀀스 끝에 추가합니다.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>대기 추가</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>대기 시간을 시퀀스 끝에 추가합니다.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>빠른 설정</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>시퀀스를 하나의 입력으로 바꾸고, 그 입력을 계속 유지하거나 터보 버튼처럼 켜고 끄기를 반복합니다.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>%1$s 터보 간격</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>계속 누르기</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d 프레임마다 전환</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>시퀀스 비우기</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>시퀀스의 모든 동작을 제거합니다.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>이 매크로 시퀀스의 모든 동작을 제거할까요?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>입력 선택</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>대기</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d 프레임</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>대기 시간</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>%1$s 값</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>동작 옵션</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>입력 변경</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>뒤에 입력 삽입</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>뒤에 대기 삽입</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>녹화</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>녹화 중지</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>녹화 중입니다. 컨트롤러나 키보드로 시퀀스를 입력한 후 ‘녹화 중지’를 탭하세요. 터치스크린 입력은 녹화되지 않습니다.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>게임 진동 활성화</translation>
@@ -5449,8 +5579,8 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>위로</translation>
+        <comment>list_item_move_up</comment>
+        <translation>위로 이동</translation>
     </message>
     <message>
         <source>Moves this shader up in the application order.</source>
@@ -5469,13 +5599,13 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>제거</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>아래로</translation>
+        <comment>list_item_move_down</comment>
+        <translation>아래로 이동</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6035,6 +6165,26 @@ Are you sure you want to continue?</source>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>조향</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>매크로 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>매크로 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>매크로 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>매크로 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9852,6 +10002,89 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>동력 조절 레버</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>동력</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>꺼짐</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>브레이크 레버</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>브레이크</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>해제</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>비상 제동</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9976,6 +10209,93 @@ This warning will only be shown once.</source>
     <message>
         <source>Fire</source>
         <translation>발사</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>방향 패드</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>아래</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>왼쪽</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>위</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>오른쪽</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>진동 모터</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>모드</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>모드 LED</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>전면 버튼</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Ｘ</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>□</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>○</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>포스 피드백 장치</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>조향</translation>
     </message>
 </context>
 <context>
@@ -10189,6 +10509,45 @@ This warning will only be shown once.</source>
     <message>
         <source>Small Motor</source>
         <translation>소형 모터</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>왼쪽 버튼</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>노란색</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>파란색/선택</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>흰색</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>초록색</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>오른쪽 버튼</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>가운데 빨간색/확인</translation>
     </message>
 </context>
 <context>
@@ -10407,48 +10766,84 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>할당/버튼</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>트리거는 매크로를 활성화하는 단일 버튼이나 버튼 조합입니다. 여러 트리거를 지정하려면 Shift 키를 누른 채 클릭하세요.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>이 매크로로 트리거할 버튼을 선택합니다. 모든 버튼이 동시에 활성화됩니다.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>압력</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>압력 감지 버튼의 경우, 이 슬라이더는 매크로가 활성화될 때 얼마나 많은 힘이 시뮬레이션될지 제어합니다.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>활성화 데드존:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>시퀀스</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>동작</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>값</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>녹화</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>시퀀스를 버튼을 계속 누르거나 N 프레임마다 켜고 끄는(터보) 시퀀스로 바꿉니다.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>빠른 설정</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>입력 추가</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>대기 추가</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>제거</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>위로 이동</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>아래로 이동</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>비우기</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>누를 때마다 시퀀스를 한 번만 실행하는 대신 매크로가 활성 상태인 동안 반복합니다. 이미 시작한 반복은 항상 끝까지 실행합니다.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>활성 상태에서 반복</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>버튼을 길게 누르는 대신 짧게 누를 때마다 매크로를 켜거나 끕니다.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>트리거</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>이 매크로를 활성화할 트리거를 선택합니다. 단일 버튼 또는 버튼의 조합(코드)일 수 있습니다. 여러 트리거를 사용하려면 Shift 키를 누른 채 클릭합니다.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>눌러서 전환</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>데드존 :</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>빈도</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>매크로는 N 프레임마다 전환됩니다.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10458,26 +10853,50 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <source>Not Configured</source>
         <translation>구성되지 않음</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>버튼 %n개</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>빈도 설정</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>%1을(를) 켜고 끄는 간격(프레임, 0은 계속 누르기):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>빈도: </translation>
+        <source>Stop</source>
+        <translation>중지</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>매크로는 반복하지 않습니다.</translation>
+        <source>Wait</source>
+        <translation>대기</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>매크로는 %n프레임마다 버튼을 전환합니다.</numerusform>
+            <numerusform>%n 프레임</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> 프레임</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>시퀀스 (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>동작 %n개</numerusform>
         </translation>
     </message>
 </context>
@@ -12518,10 +12937,6 @@ You cannot undo this action.</source>
         <translation>버퍼 크기</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>버튼</translation>
-    </message>
-    <message>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM 에뮬레이션</translation>
     </message>
@@ -12540,6 +12955,10 @@ You cannot undo this action.</source>
     <message>
         <source>Capture</source>
         <translation>캡처</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>캐러셀</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -12788,10 +13207,6 @@ You cannot undo this action.</source>
         <translation>일반적으로 소비자 TV 세트에서 보이지 않는 영역을 얼마나 잘라내거나 숨길지 결정합니다.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>매크로가 활성화될 때 얼마나 많은 압력을 시뮬레이션할지 결정합니다.</translation>
-    </message>
-    <message>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>에뮬레이트된 CPU가 명령을 실행하는 방식을 결정합니다.</translation>
     </message>
@@ -12822,10 +13237,6 @@ You cannot undo this action.</source>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>스크린샷을 저장/압축할 형식을 결정합니다.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>매크로가 버튼을 누르고 떼는 빈도를 결정합니다(연사라고도 함).</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -13131,10 +13542,6 @@ Error was:</source>
         <translation>필요 여부에 관계없이 텍스처 업로드 추적을 강제로 활성화합니다.</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>빈도</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>게임 화면</translation>
     </message>
@@ -13373,10 +13780,6 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Press To Toggle</source>
         <translation>전환하려면 누르기</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>압력</translation>
     </message>
     <message>
         <source>Removes all bindings for this controller port.</source>
@@ -13783,10 +14186,6 @@ Please check your username and password, and try again.</source>
         <translation>선택 사항 변경</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>표시 변경</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>앱의 설정을 변경합니다.</translation>
     </message>
@@ -13963,14 +14362,6 @@ Please check your username and password, and try again.</source>
         <translation>GPU 렌더러</translation>
     </message>
     <message>
-        <source>Game Grid</source>
-        <translation>게임 그리드</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>게임 목록</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>게임 목록 설정</translation>
     </message>
@@ -14035,6 +14426,10 @@ Please check your username and password, and try again.</source>
         <translation>전역 슬롯 {0}##global_slot_{0}</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>격자</translation>
+    </message>
+    <message>
         <source>Hardcore Mode</source>
         <translation>하드코어 모드</translation>
     </message>
@@ -14045,6 +14440,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>에뮬레이터가 전체 화면 모드일 때, 마우스 포인터/커서를 숨깁니다.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>계속 누르기</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -14101,6 +14500,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Leaderboards</source>
         <translation>순위표</translation>
+    </message>
+    <message>
+        <source>Library</source>
+        <translation>라이브러리</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>목록</translation>
     </message>
     <message>
         <source>List Settings</source>
@@ -14167,6 +14574,14 @@ Please check your username and password, and try again.</source>
         <translation>지원되는 경우, 디버그 콘솔에 메시지를 기록합니다.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>활성 상태에서 반복</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>매크로 {} 시퀀스</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>약간의 성능 저하를 감수하고 게임을 콘솔 프레임 속도에 더 가깝게 실행합니다.</translation>
     </message>
@@ -14177,6 +14592,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Maximum Seek Speedup Cycles</source>
         <translation>최대 탐색 속도 향상 주기</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>빅피처 모드에서 커버 이미지와 기타 이미지를 캐시하는 데 사용할 최대 비디오 메모리 용량입니다.</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -14247,6 +14666,14 @@ Please check your username and password, and try again.</source>
         <translation>선택한 게임 없음</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>게임을 찾을 수 없습니다.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>입력 없음.</translation>
+    </message>
+    <message>
         <source>No resume save state found.</source>
         <translation>상태 저장을 찾을 수 없어 재개할 수 없습니다.</translation>
     </message>
@@ -14269,6 +14696,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>None (Normal Speed)</source>
         <translation>없음(정상 속도)</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>설정되지 않음</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -14448,12 +14879,24 @@ Please check your username and password, and try again.</source>
         <translation>퍼플 레인</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>빠른 설정</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>녹화</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>공개일 : </translation>
     </message>
     <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
         <translation>각 객체의 변환 배율이 심도 값에 미치는 영향을 제거합니다. 일부 게임에서 지오메트리가 누락되는 문제를 해결하지만, 다른 게임에서는 문제를 일으킵니다. 자동으로 설정하면 게임 데이터베이스의 설정을 사용합니다.</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>누를 때마다 시퀀스를 한 번만 실행하는 대신 매크로가 활성 상태인 동안 반복합니다. 이미 시작한 반복은 항상 끝까지 실행합니다.</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -14509,6 +14952,10 @@ Please check your username and password, and try again.</source>
         <translation>인터레이스 렌더링에서 줄 건너뛰기를 내부 해상도에 맞게 조정하여 눈에 띄지 않게 만듭니다. 일반적으로 활성화하는 것이 안전합니다.</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>버튼 선택</translation>
+    </message>
+    <message>
         <source>Select Disc for {}</source>
         <translation>{}의 디스크 선택</translation>
     </message>
@@ -14519,6 +14966,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Selects the color style to be used for Big Picture UI.</source>
         <translation>빅피처 UI에 사용할 색상 스타일을 선택합니다.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>시퀀스</translation>
     </message>
     <message>
         <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
@@ -14563,12 +15014,28 @@ Please check your username and password, and try again.</source>
         <translation>내려받기 시작</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>중지</translation>
+    </message>
+    <message>
         <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
         <translation>XInput 프로토콜을 사용하는 컨트롤러를 지원합니다. XInput은 XInput 래퍼 라이브러리를 사용하는 경우에만 사용해야 합니다.</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
         <translation>중지 시, 다음 디스크로 전환</translation>
+    </message>
+    <message>
+        <source>Texture Cache Size</source>
+        <translation>텍스처 캐시 크기</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>계속 누르거나 켜고 끌 버튼입니다.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>이 매크로가 재생할 입력입니다. 입력을 녹화하거나 버튼 하나로 설정할 수 있습니다.</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -14630,6 +15097,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Value Range</source>
         <translation>값 범위</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>보기</translation>
     </message>
     <message>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
@@ -14993,10 +15464,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>전체 설정</translation>
     </message>
     <message>
-        <source>Grid View</source>
-        <translation>격자 보기</translation>
-    </message>
-    <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
         <translation>게임을 다시 시작할 때까지 하드코어 모드가 활성화되지 않습니다. 지금 게임을 다시 시작하시겠습니까?</translation>
     </message>
@@ -15249,10 +15716,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>되감기 상태를 위한 메모리를 할당하지 못했습니다.</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>게임 목록을 세로 목록 대신 격자로 표시합니다.</translation>
-    </message>
-    <message>
         <source>State {0} of {1} (frame {2})</source>
         <translation>상태 {0}/{1} (프레임 {2})</translation>
     </message>
@@ -15263,6 +15726,14 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>restart</source>
         <translation>다시 시작</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>입력 {0}개, {1} 프레임</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} 프레임</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15281,8 +15752,16 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>플레이 시간 초기화</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>적용</translation>
+    </message>
+    <message>
         <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
         <translation>나중에 그려지는 폴리곤을 심도의 백만분의 일 단위로 카메라 쪽에 더 가깝게 배치합니다. 데칼의 깜박임을 줄입니다.</translation>
+    </message>
+    <message>
+        <source>Button</source>
+        <translation>버튼</translation>
     </message>
     <message>
         <source>Changes the amount of RAM installed in the emulated console. Retail games do not use extra RAM.</source>
@@ -15303,6 +15782,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Depth Bias</source>
         <translation>심도 바이어스</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>게임 목록을 표시하는 방식을 정합니다.</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -15471,10 +15954,6 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Select Disc Image</source>
         <translation>디스크 이미지 선택</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>매크로 {} 할당 선택</translation>
     </message>
     <message>
         <source>Selects between Xbox/PlayStation button icons in the footer and input binding.</source>
@@ -16073,10 +16552,6 @@ Do you want to {1} anyway?</source>
 그래도 {1}하시겠습니까?</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{}프레임</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{}이(가) 삭제되었습니다.</translation>
     </message>
@@ -16108,6 +16583,12 @@ Do you want to {1} anyway?</source>
         <comment>Loading time</comment>
         <translation>
             <numerusform>%n분 남음</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>버튼 %n개</numerusform>
         </translation>
     </message>
     <message numerus="yes">

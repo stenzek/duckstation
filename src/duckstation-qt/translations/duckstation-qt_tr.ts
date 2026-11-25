@@ -2783,55 +2783,9 @@ Mevcut Atama: %s</translation>
         <translation>Tetikleyici ayarlanmadı</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Düğme ayarlanmadı</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Tuş makrosu tekrarlanmayacak.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Makro her %d karede bir açılıp kapanacak.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Atamaları Seç</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s, %2$s tetikler</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s, her %3$d karede bir %2$s tetikler.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Tetikleyici</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Tuşlar</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Sıklık</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4775,6 +4729,182 @@ Mevcut Atama: %s</translation>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s, %2$s girdisini tetikler</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s, %2$s girdisini döngü halinde tetikler</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Etkin olduğu sürece yinele</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Her basışta diziyi bir kez oynatmak yerine makro etkinken yineler.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Basarak aç veya kapat</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Tetikleyiciye basmak dizi döngüsünü açar veya kapatır. Basılı tutmak gerekmez.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Tetikleyici ölü bölgesi</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Makroyu etkinleştirmek için analog tetiğe ne kadar basılması gerektiğini belirler.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Dizi</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Dizi boş. Girdi ve bekleme ekleyin, hızlı kurulumu kullanın veya diziyi bir kontrolcüyle kaydedin.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Girdi ekle</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Dizinin sonuna bir düğmeye basma veya eksen hareketi ekler.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Bekleme ekle</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Dizinin sonuna bir gecikme ekler.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Hızlı kurulum</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Diziyi, basılı tutulan veya bir turbo düğmesi gibi art arda basılıp bırakılan tek bir girdiyle değiştirir.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>%1$s için turbo aralığı</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Basılı tut</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Her %d karede bir aç veya kapat</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Diziyi temizle</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Dizideki tüm işlemleri kaldırır.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Bu makronun dizisindeki tüm işlemler kaldırılsın mı?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Girdi seç</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Bekle</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d kare</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Bekleme süresi</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>%1$s değeri</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>İşlem seçenekleri</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Girdiyi değiştir</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Ardına girdi ekle</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Ardına bekleme ekle</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Kaydet</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Kaydı durdur</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Kayıt yapılıyor. Diziyi bir kontrolcü veya klavyeyle girin, ardından “Kaydı durdur”a dokunun. Dokunmatik ekran girdisi kaydedilmez.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>Oyun Titreşimini Etkinleştir</translation>
@@ -5443,8 +5573,8 @@ Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>Yukarı Çıkar</translation>
+        <comment>list_item_move_up</comment>
+        <translation>Yukarı taşı</translation>
     </message>
     <message>
         <source>Moves this shader up in the application order.</source>
@@ -5463,13 +5593,13 @@ Bunu daha sonra Arayüz Ayarları&apos;ndaki &quot;Büyük Resim Modunda Başlat
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>Kaldır</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>Aşağı İndir</translation>
+        <comment>list_item_move_down</comment>
+        <translation>Aşağı taşı</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6029,6 +6159,26 @@ Devam etmek istediğinize emin misiniz?</translation>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>Direksiyon</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Makro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Makro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Makro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Makro 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9841,6 +9991,89 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Çekiş kolu</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Çekiş</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Kapalı</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Fren kolu</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Fren</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Serbest</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Acil fren</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9965,6 +10198,93 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     <message>
         <source>Fire</source>
         <translation>Ateş</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Yön tuşları</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Aşağı</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Sol</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Yukarı</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Sağ</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Titreşim motoru</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Mod</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Mod LED’i</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Ön düğmeler</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Çarpı</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Kare</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Üçgen</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Daire</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Kuvvet geri bildirim aygıtı</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Direksiyon</translation>
     </message>
 </context>
 <context>
@@ -10178,6 +10498,45 @@ Bu uyarı yalnızca bir kez gösterilecektir.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Küçük Motor</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Sol düğmeler</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Sarı</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Mavi/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Beyaz</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Yeşil</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Sağ düğmeler</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Ortadaki kırmızı/Onayla</translation>
     </message>
 </context>
 <context>
@@ -10395,48 +10754,84 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Atamalar/Tuşlar</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Tetikleyici makroyu etkinleştirir ve tek bir düğme ya da düğme birleşimi olabilir. Birden çok tetikleyici ayarlamak için Shift tuşunu basılı tutarak tıklayın.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Bu makroyla tetiklemek istediğiniz tuşları seçin. Tüm tuşlar aynı anda etkinleştirilir.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Basınç</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Basınca duyarlı tuşlarda bu kaydırıcı, makro etkinken ne kadar kuvvet uygulanacağını belirler.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Etkinleştirme ölü bölgesi:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Dizi</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>İşlem</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Değer</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Kaydet</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Diziyi, bir düğmeyi basılı tutan veya her N karede bir basılı ve serbest durumlar arasında geçiş yapan bir diziyle değiştirir (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Hızlı kurulum</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Girdi ekle</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Bekleme ekle</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Kaldır</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Yukarı taşı</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Aşağı taşı</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Temizle</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Her basışta diziyi bir kez oynatmak yerine makro etkinken yineler. Başlamış olan tekrar her zaman tamamlanır.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Etkin olduğu sürece yinele</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Düğmeyi basılı tutmak yerine düğmeye kısa süre basarak makroyu etkinleştirir veya devre dışı bırakır.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Tetik</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Bu tuş makrosunu aktive edecek tetiği seçiniz. Bu tek bir tuş yada tuş kombinasyonu olabilir. Birden çok tetik seçmek için Shift ile seçim yapınız.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Aç/Kapa İçin Bas</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Analog Deadzone/Ölü Bölge:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frekans</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Her X tane karede tuş makrosu aç/kapa olacak.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10446,26 +10841,50 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <source>Not Configured</source>
         <translation>Ayarlanmamış</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n düğme</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Frekans Ayarla</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>“%1” girdisinin durum değişiklikleri arasındaki kare sayısı (0, basılı tutar):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Frekans: </translation>
+        <source>Stop</source>
+        <translation>Durdur</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Tuş makrosu tekrarlanmayacak.</translation>
+        <source>Wait</source>
+        <translation>Bekle</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Makro, her %n karede düğmeleri değiştirir.</numerusform>
+            <numerusform>%n kare</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> kare</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Dizi (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n işlem</numerusform>
         </translation>
     </message>
 </context>
@@ -12281,6 +12700,10 @@ Sıfırla&apos;ya tıklamak, seri numarasını disk görüntüsünden taranan de
         <translation>Seçilen sprite doku filtresini kare arabelleğine yapılan yüklemelere uygular. Bu, doku verilerini ve 24 bit videoyu korurken bazı oyunlarda arka planları yumuşatabilir.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Uygula</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>CD Yamalarını Uygula</translation>
     </message>
@@ -12423,10 +12846,6 @@ Bu işlemi geri alamazsınız.</translation>
     <message>
         <source>Buffer Size</source>
         <translation>Tampon Hafıza Boyutu</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <translation>Tuşlar</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -12753,10 +13172,6 @@ Bu işlemi geri alamazsınız.</translation>
         <translation>Televizyonda genelde görünmeyen kısmın ne kadarının kırpılacağını ayarlar.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Makro etkinken ne kadar basınç uygulanacağını belirler.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>Görüntü alanının ne kadar kırpılacağını belirler.</translation>
     </message>
@@ -12791,10 +13206,6 @@ Bu işlemi geri alamazsınız.</translation>
     <message>
         <source>Determines the format of the screenshot file names.</source>
         <translation>Ekran görüntüsü dosya adlarının biçimini belirler.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Makronun tuşları aç kapa yapma sıklığını ayarlar. (Autofire diye geçer).</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -13033,14 +13444,6 @@ Hata şuydu:</translation>
     <message>
         <source>GPU Renderer</source>
         <translation>Çizici</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>Oyun Izgarası</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Oyun Listesi</translation>
     </message>
     <message>
         <source>Game List Settings</source>
@@ -13331,10 +13734,6 @@ Hata şuydu:</translation>
         <translation>Aç/Kapa İçin Bas</translation>
     </message>
     <message>
-        <source>Pressure</source>
-        <translation>Basınç</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>Başka bir uygulama etkinken girdilerin işlenmesini engeller.</translation>
     </message>
@@ -13539,10 +13938,6 @@ Hata şuydu:</translation>
         <translation>Seçimi Değiştir</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>Görünümü Değiştir</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>Uygulamanın ayarlarını değiştirir.</translation>
     </message>
@@ -13589,6 +13984,10 @@ Hata şuydu:</translation>
     <message>
         <source>Desktop Mode</source>
         <translation>Masaüstü Modu</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Oyun listesinin nasıl görüntüleneceğini belirler.</translation>
     </message>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
@@ -13703,6 +14102,14 @@ Hata şuydu:</translation>
         <translation>Grafik Ayarları</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Izgara</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Basılı tut</translation>
+    </message>
+    <message>
         <source>Internal Resolution</source>
         <translation>Dahili Çözünürlük</translation>
     </message>
@@ -13719,8 +14126,16 @@ Hata şuydu:</translation>
         <translation>Bir oyunu dosyadan veya CD&apos;den başlatır ya da konsolu CD takılmadan başlatır.</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Kitaplık</translation>
+    </message>
+    <message>
         <source>Line Detection</source>
         <translation>Çizgi Tespit Etme</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
     </message>
     <message>
         <source>List Settings</source>
@@ -13735,8 +14150,20 @@ Hata şuydu:</translation>
         <translation>Giriş belirteci {} oluşturuldu</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Etkin olduğu sürece yinele</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Makro {} dizisi</translation>
+    </message>
+    <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>Küçük bir performans kaybıyla oyunları konsoldaki kare sayısına yaklaştırır.</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Büyük Resim Modu’nda kapak resimlerini ve diğer görselleri önbelleğe almak için kullanılacak azami video belleği.</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -13757,6 +14184,30 @@ Hata şuydu:</translation>
     <message>
         <source>Memory Card {} Type</source>
         <translation>Hafıza Kartı {} Türü</translation>
+    </message>
+    <message>
+        <source>No games found.</source>
+        <translation>Oyun bulunamadı.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Girdi yok.</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Yapılandırılmadı</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Hızlı kurulum</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Kaydet</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Her basışta diziyi bir kez oynatmak yerine makro etkinken yineler. Başlamış olan tekrar her zaman tamamlanır.</translation>
     </message>
     <message>
         <source>Reset Unlock</source>
@@ -13863,6 +14314,10 @@ Hata şuydu:</translation>
         <translation>BIOS Görüntüsünü Seç</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Düğme seç</translation>
+    </message>
+    <message>
         <source>Select Disc for {}</source>
         <translation>{} İçin CD Seçin</translation>
     </message>
@@ -13909,6 +14364,10 @@ Hata şuydu:</translation>
     <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Mesajların ekranda gösterileceği konumu seçer.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Dizi</translation>
     </message>
     <message>
         <source>Serial (*)</source>
@@ -14019,6 +14478,10 @@ Hata şuydu:</translation>
         <translation>Masaüstü arayüzü yerine uygulamayı Büyük Resim Modunda başlatır.</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Durdur</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Şimdiki ayarları kol profiline kaydeder.</translation>
     </message>
@@ -14043,6 +14506,10 @@ Hata şuydu:</translation>
         <translation>CD Durduğunda Sonraki CD&apos;ye Geç</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Doku önbelleği boyutu</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>Doku Modülasyonu Kırpması (&quot;Eski/v0&quot; GPU)</translation>
     </message>
@@ -14053,6 +14520,14 @@ Hata şuydu:</translation>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
         <translation>BIOS dosyası &apos;{}&apos; zaten kurulu. Üzerine yazmak istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Basılı tutulacak veya arka arkaya basılıp bırakılacak düğme.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Bu makronun oynattığı, kaydedilmiş veya tek bir düğmeden ayarlanmış girdiler.</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14173,6 +14648,10 @@ Hata şuydu:</translation>
     <message>
         <source>Value: {}</source>
         <translation>Değer: {}</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>Görünüm</translation>
     </message>
     <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
@@ -14329,6 +14808,14 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     <message>
         <source>Brings later polygons closer to the camera, in millionths of depth. Reduces flickering of decals.</source>
         <translation>Sonradan çizilen çokgenleri derinliğin milyonda biri cinsinden kameraya yaklaştırır. Yüzey çıkartmalarının titremesini azaltır.</translation>
+    </message>
+    <message>
+        <source>Button</source>
+        <translation>Düğme</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Karusel</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -14505,10 +14992,6 @@ Durum kaydını silip oyunu yine de başlatmak istiyor musunuz?</translation>
     <message>
         <source>Frame Rate</source>
         <translation>Kare Hızı</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frekans</translation>
     </message>
     <message>
         <source>Game Display</source>
@@ -14797,10 +15280,6 @@ Hata: {}
     <message>
         <source>Global Settings</source>
         <translation>Genel Ayarlar</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>Izgara Görünümü</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -15168,10 +15647,6 @@ Hata: {}
         <translation>Geri sarma durum kayıtları için bellek ayrılamadı.</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Oyun listesini dikey liste yerine ızgara olarak gösterir.</translation>
-    </message>
-    <message>
         <source>State {0} of {1} (frame {2})</source>
         <translation>Durum kaydı {0} / {1} (kare {2})</translation>
     </message>
@@ -15202,6 +15677,14 @@ Do you want to {1} anyway?</source>
         <translation>{0} başarım açılımı sunucu tarafından doğrulanmadı. {1} işlemine devam ederseniz bu açılımlar kaybolacak. Ağ bağlantısı yeniden kurulduğunda bu açılımlar otomatik olarak doğrulanacaktır.
 
 Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>{0} girdi, {1} kare</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} kare</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -15474,10 +15957,6 @@ Yine de {1} işlemine devam etmek istiyor musunuz?</translation>
     <message>
         <source>Select Key</source>
         <translation>Tuş Seç</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Makro {} Atamaları Seç</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -16048,10 +16527,6 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
         <translation>Sistemi Kapat</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} Kare</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} Silindi.</translation>
     </message>
@@ -16075,6 +16550,12 @@ Yine de &quot;{0}&quot; işlemine devam etmek istiyor musunuz?</translation>
         <comment>Loading time</comment>
         <translation>
             <numerusform>%n dakika kaldı</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n düğme</numerusform>
         </translation>
     </message>
     <message numerus="yes">

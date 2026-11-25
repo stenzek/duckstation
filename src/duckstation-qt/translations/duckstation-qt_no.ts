@@ -3887,57 +3887,9 @@ Gjeldende tilordning: %s</translation>
         <translation>Ingen utløser angitt</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Ingen knapper angitt</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Makroen gjentas ikke.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Makroen veksler hver %d. bilderamme.</numerusform>
-            <numerusform>Makroen veksler hver %d. bilderamme.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Velg tilordninger</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s utløser %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s utløser %2$s hver %3$d. bilderamme.</numerusform>
-            <numerusform>%1$s utløser %2$s hver %3$d. bilderamme.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Utløser</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Knapper</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Frekvens</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -5070,11 +5022,6 @@ Du kan endre dette senere med «Start i Big Picture-modus» i grensesnittinnstil
         <translation>Redigerer alternativene for denne shaderen.</translation>
     </message>
     <message>
-        <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>Flytt opp</translation>
-    </message>
-    <message>
         <source>Moves this shader up in the application order.</source>
         <comment>postfx_setting_summary_move_up</comment>
         <translation>Flytter denne shaderen opp i bruksrekkefølgen.</translation>
@@ -5088,16 +5035,6 @@ Du kan endre dette senere med «Start i Big Picture-modus» i grensesnittinnstil
         <source>Removes this shader from the post-processing pipeline.</source>
         <comment>postfx_setting_summary_remove_shader</comment>
         <translation>Fjerner denne shaderen fra etterbehandlingskjeden.</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
-        <translation>Fjern</translation>
-    </message>
-    <message>
-        <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>Flytt ned</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6257,6 +6194,184 @@ Spill med flere spor i bin-format krever et CUE-ark (.cue) for å starte.</trans
         <translation>Sveip for høyre spak</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s utløser %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s utløser %2$s med gjentakelse</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Gjenta mens makroen er aktiv</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Gjentar sekvensen mens makroen er aktiv, i stedet for å spille den av én gang per trykk.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Trykk for å slå av eller på</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Utløseren slår gjentakelse av sekvensen av og på uten at den må holdes inne.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Dødsone for utløseren</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Angir hvor langt en analog avtrekker må trykkes inn før makroen aktiveres.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Sekvens</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Sekvensen er tom. Legg til inndata og pauser, bruk hurtigoppsett eller ta opp sekvensen med en kontroller.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Legg til inndata</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Legger til et knappetrykk eller en aksebevegelse på slutten av sekvensen.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Legg til pause</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Legger til en forsinkelse på slutten av sekvensen.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Hurtigoppsett</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Erstatter sekvensen med én inndata som holdes aktiv eller slås av og på som en turboknapp.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Turbointervall for %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Hold inne</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Slå av/på hvert %d. bilde</numerusform>
+            <numerusform>Slå av/på hvert %d. bilde</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Tøm sekvens</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Fjerner alle handlinger fra sekvensen.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Vil du fjerne alle handlinger fra sekvensen til denne makroen?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Velg inndata</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Vent</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d bilde</numerusform>
+            <numerusform>%d bilder</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Ventetid</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Verdi for %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Handlingsvalg</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Endre inndata</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Sett inn inndata etter</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Sett inn pause etter</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Ta opp</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Stopp opptak</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Tar opp. Angi sekvensen med en kontroller eller et tastatur, og trykk deretter på «Stopp opptak». Inndata fra berøringsskjermen tas ikke opp.</translation>
+    </message>
+    <message>
         <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
         <comment>settings_summary_bind_to_right_stick</comment>
         <translation>Sveiping utenfor kontrollene beveger høyre spak. Når Flytende venstre spak er på, gjelder dette bare høyre halvdel av skjermen.</translation>
@@ -6272,9 +6387,44 @@ Spill med flere spor i bin-format krever et CUE-ark (.cue) for å starte.</trans
         <translation>Berøring av venstre halvdel av skjermen plasserer venstre spak under fingeren din i stedet for på en fast plass.</translation>
     </message>
     <message>
+        <source>Move Up</source>
+        <comment>list_item_move_up</comment>
+        <translation>Flytt opp</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <comment>list_item_remove</comment>
+        <translation>Fjern</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>list_item_move_down</comment>
+        <translation>Flytt ned</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcore mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Utilgjengelig mens hardcore-modus for RetroAchievements er aktiv.</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Makro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Makro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Makro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Makro 8</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
@@ -9878,6 +10028,89 @@ Denne advarselen vises bare én gang.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Kjørespak</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Trekkraft</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Av</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Bremsespak</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Brems</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Løsnet</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Nødbrems</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -10002,6 +10235,93 @@ Denne advarselen vises bare én gang.</translation>
     <message>
         <source>A</source>
         <translation>A</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Styrekors</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Ned</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Venstre</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Opp</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Høyre</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Vibrasjonsmotor</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Modus</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Moduslampe</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Frontknapper</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Kryss</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Firkant</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Trekant</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Sirkel</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Enhet med krafttilbakemelding</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Styring</translation>
     </message>
 </context>
 <context>
@@ -10215,6 +10535,45 @@ Denne advarselen vises bare én gang.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Liten motor</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Venstre knapper</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Gul</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Blå/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Hvit</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Grønn</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Høyre knapper</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Rød i midten/OK</translation>
     </message>
 </context>
 <context>
@@ -10432,48 +10791,84 @@ Den «alternative» fargen brukes når analog modus er aktiv.</translation>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Tilordninger/knapper</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Utløseren aktiverer makroen og kan være én knapp eller en kombinasjon av knapper. Hold Shift inne mens du klikker for å angi flere utløsere.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Velg knappene du vil utløse med denne makroen. Alle knappene aktiveres samtidig.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Trykk</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>For trykkfølsomme knapper styrer denne glidebryteren hvor mye kraft som simuleres når makroen er aktiv.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Dødsone for aktivering:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Sekvens</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Handling</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Verdi</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Ta opp</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Erstatter sekvensen med en sekvens som holder en knapp inne eller slår den av og på hvert N. bilde (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Hurtigoppsett</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Legg til inndata</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Legg til pause</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Fjern</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Flytt opp</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Flytt ned</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Tøm</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Gjentar sekvensen mens makroen er aktiv, i stedet for å spille den av én gang per trykk. Gjentakelsen som pågår, spilles alltid helt ferdig.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Gjenta mens makroen er aktiv</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Slår makroen av og på med et kort trykk uten at knappen må holdes inne.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Utløser</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Velg utløseren som skal aktivere denne makroen. Dette kan være én knapp eller en kombinasjon av knapper. Shift-klikk for flere utløsere.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Trykk for å slå av/på</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Dødsone:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Frekvens</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Makroen slås av/på hvert N. bilde.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10483,27 +10878,53 @@ Den «alternative» fargen brukes når analog modus er aktiv.</translation>
         <source>Not Configured</source>
         <translation>Ikke konfigurert</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n knapp</numerusform>
+            <numerusform>%n knapper</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Angi frekvens</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Bilder mellom hvert tilstandsskifte for %1 (0 for å holde inne):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Frekvens: </translation>
+        <source>Stop</source>
+        <translation>Stopp</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Makroen gjentas ikke.</translation>
+        <source>Wait</source>
+        <translation>Vent</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Makroen slår knappene av/på hvert %n. bilde.</numerusform>
-            <numerusform>Makroen slår knappene av/på hvert %n. bilde.</numerusform>
+            <numerusform>%n bilde</numerusform>
+            <numerusform>%n bilder</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> bilder</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Sekvens (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n handling</numerusform>
+            <numerusform>%n handlinger</numerusform>
         </translation>
     </message>
 </context>
@@ -12513,6 +12934,10 @@ Vil du slette lagringstilstanden og starte spillet likevel?</translation>
         <translation>Bruker det valgte teksturfilteret for spriter på opplastinger til bildebufferen. Dette kan jevne ut bakgrunner i enkelte spill samtidig som teksturdata og 24-bits video bevares.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Bruk</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Bruk plateavbildningsrettelser</translation>
     </message>
@@ -12713,10 +13138,6 @@ Denne handlingen kan ikke angres.</translation>
         <translation>Bufferstørrelse</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>Knapper</translation>
-    </message>
-    <message>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM-emulering</translation>
     </message>
@@ -12771,10 +13192,6 @@ Denne handlingen kan ikke angres.</translation>
     <message>
         <source>Change Title</source>
         <translation>Endre tittel</translation>
-    </message>
-    <message>
-        <source>Change View</source>
-        <translation>Bytt visning</translation>
     </message>
     <message>
         <source>Changes settings for the application.</source>
@@ -13153,10 +13570,6 @@ Denne handlingen kan ikke angres.</translation>
         <translation>Bestemmer hvor mye av området som vanligvis ikke er synlig på et vanlig TV-apparat, som skal beskjæres/skjules.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Bestemmer hvor mye trykk som simuleres når makroen er aktiv.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>Bestemmer hvor mye av visningsområdet som beskjæres.</translation>
     </message>
@@ -13195,10 +13608,6 @@ Denne handlingen kan ikke angres.</translation>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>Bestemmer formatet skjermbilder lagres/komprimeres med.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Bestemmer hvor ofte makroen slår knappene av og på (automatisk skyting).</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -13521,6 +13930,10 @@ Denne handlingen kan ikke angres.</translation>
         <translation>Hurtigspoler når spillet slutter å oppdatere skjermen mens det leser fra platen. Gjelder ikke animerte lasteskjermer.</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Rutenett</translation>
+    </message>
+    <message>
         <source>Installed VRAM</source>
         <translation>Installert VRAM</translation>
     </message>
@@ -13539,6 +13952,10 @@ Denne handlingen kan ikke angres.</translation>
     <message>
         <source>Scale Idle Timeout</source>
         <translation>Skaler tidsavbrudd for inaktivitet</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Sekvens</translation>
     </message>
     <message>
         <source>Skips over the busy loop that games use to wait for vertical blank.</source>
@@ -13585,8 +14002,20 @@ Denne handlingen kan ikke angres.</translation>
         <translation>Tilordne alle knapper</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>Knapp</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Karusell</translation>
+    </message>
+    <message>
         <source>Clear</source>
         <translation>Tøm</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Bestemmer hvordan spillisten vises.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13815,10 +14244,6 @@ Feilen var:</translation>
         <translation>Bildetidsbuffer</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>Frekvens</translation>
-    </message>
-    <message>
         <source>From File...</source>
         <translation>Fra fil...</translation>
     </message>
@@ -13837,14 +14262,6 @@ Feilen var:</translation>
     <message>
         <source>Game Display</source>
         <translation>Spillvisning</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>Spillrutenett</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Spilliste</translation>
     </message>
     <message>
         <source>Game List Settings</source>
@@ -13959,10 +14376,6 @@ Feilen var:</translation>
         <translation>Grey Matter</translation>
     </message>
     <message>
-        <source>Grid View</source>
-        <translation>Rutenettvisning</translation>
-    </message>
-    <message>
         <source>Hardcore Mode</source>
         <translation>Hardcore-modus</translation>
     </message>
@@ -13981,6 +14394,10 @@ Feilen var:</translation>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Skjuler musepekeren/markøren når emulatoren er i fullskjermmodus.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Hold inne</translation>
     </message>
     <message>
         <source>Hotkeys</source>
@@ -14131,12 +14548,20 @@ Feilen var:</translation>
         <translation>Lengde: {}</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Bibliotek</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>Lys</translation>
     </message>
     <message>
         <source>Line Detection</source>
         <translation>Linjeoppdagelse</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
     </message>
     <message>
         <source>List Compact Mode</source>
@@ -14259,8 +14684,16 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Logger meldinger til feilsøkingskonsollen der det støttes.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Gjenta mens makroen er aktiv</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Makro {}</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Sekvens for makro {}</translation>
     </message>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
@@ -14277,6 +14710,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Maximum Seek Speedup Cycles</source>
         <translation>Maksimalt antall sykluser for søkeakselerasjon</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Maksimal mengde videominne som brukes til å mellomlagre omslag og andre bilder i Big Picture-grensesnittet.</translation>
     </message>
     <message>
         <source>Maximum: {}</source>
@@ -14423,6 +14860,14 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Fant ingen enheter med vibrasjonsmotorer.</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Fant ingen spill.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Ingen inndata.</translation>
+    </message>
+    <message>
         <source>No patches are available for this game.</source>
         <translation>Ingen spillrettelser er tilgjengelige for dette spillet.</translation>
     </message>
@@ -14457,6 +14902,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Normalize Depth Scale</source>
         <translation>Normaliser dybdeskala</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Ikke konfigurert</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -14691,8 +15140,20 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Viser ekstra bilder for effekter som innsetting av svarte bilder.</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>Hurtigoppsett</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Ta opp</translation>
+    </message>
+    <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
         <translation>Fjerner skaleringsfaktoren i hvert objekts transformasjon fra dybdeverdiene. Retter manglende geometri i enkelte spill, men fører til feil i andre. Automatisk bruker innstillingen fra spilldatabasen.</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>Inndata: {0}, bilder: {1}</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -14701,10 +15162,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Press To Toggle</source>
         <translation>Trykk for å slå av/på</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Trykk</translation>
     </message>
     <message>
         <source>Prevents inputs from being processed when another application is active.</source>
@@ -14849,6 +15306,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Rendering</source>
         <translation>Gjengivelse</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Gjentar sekvensen mens makroen er aktiv, i stedet for å spille den av én gang per trykk. Gjentakelsen som pågår, spilles alltid helt ferdig.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -15135,6 +15596,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Velg BIOS-avbildning</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Velg knapp</translation>
+    </message>
+    <message>
         <source>Select Device</source>
         <translation>Velg enhet</translation>
     </message>
@@ -15161,10 +15626,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>Select Key</source>
         <translation>Velg tast</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Velg tilordninger for makro {}</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -15447,10 +15908,6 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Viser systemets gjeldende gjengivelsesoppløsning øverst til høyre på skjermen.</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Viser spillisten som et rutenett i stedet for en loddrett liste.</translation>
-    </message>
-    <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Viser spillet du spiller, som en del av profilen din i Discord.</translation>
     </message>
@@ -15619,6 +16076,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Trinn {} av {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Stopp</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Lagrer gjeldende innstillinger som en kontrollerforhåndsinnstilling.</translation>
     </message>
@@ -15667,6 +16128,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Deaktiverer alle forbedringer midlertidig, nyttig ved testing.</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Størrelse på teksturbuffer</translation>
+    </message>
+    <message>
         <source>Texture Filtering</source>
         <translation>Teksturfiltrering</translation>
     </message>
@@ -15693,6 +16158,14 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>Lydsystemet bestemmer hvordan lydrammene som emulatoren lager, sendes til verten.</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Knappen som skal holdes inne eller slås av og på.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Inndataene makroen spiller av, tatt opp eller konfigurert med én knapp.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -15955,6 +16428,10 @@ Kontroller brukernavnet og passordet, og prøv igjen.</translation>
         <translation>Vertikal synkronisering (VSync)</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>Visning</translation>
+    </message>
+    <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>ADVARSEL: Aktivering av juksekoder kan gi uforutsigbar oppførsel, krasj, fastlåste spill eller ødelagte spillagringer.</translation>
     </message>
@@ -16079,16 +16556,16 @@ Do you want to {1} anyway?</source>
 Vil du {1} likevel?</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} bilder</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} slettet.</translation>
     </message>
     <message>
         <source>{} does not exist.</source>
         <translation>{} finnes ikke.</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>Bilder: {}</translation>
     </message>
     <message>
         <source>{} is not a valid disc image.</source>
@@ -16120,6 +16597,13 @@ Vil du {1} likevel?</translation>
         <translation>
             <numerusform>%n minutt gjenstår</numerusform>
             <numerusform>%n minutter gjenstår</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n knapp</numerusform>
+            <numerusform>%n knapper</numerusform>
         </translation>
     </message>
     <message numerus="yes">

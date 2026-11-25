@@ -2783,55 +2783,9 @@ Current Binding: %s</source>
         <translation>トリガー未設定</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>ボタン未設定</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>マクロは繰り返されません。</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>マクロは %d フレームごとにオン/オフを切り替えます。</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>割り当てを選択</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s で %2$s を実行</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s で %3$d フレームごとに %2$s を実行します。</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>トリガー</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>ボタン</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>頻度</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4775,6 +4729,182 @@ Current Binding: %s</source>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s で %2$s を実行</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s で %2$s を繰り返し実行</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>有効な間は繰り返す</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>押すたびにシーケンスを1回だけ実行する代わりに、マクロが有効な間は繰り返します。</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>押すたびに切り替える</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>トリガーを押すたびにシーケンスの繰り返しを開始または停止します。押し続ける必要はありません。</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>トリガーのデッドゾーン</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>マクロを起動するまでにアナログトリガーをどれだけ押し込む必要があるかを指定します。</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>シーケンス</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>シーケンスが空です。入力と待機を追加するか、クイック設定を使うか、コントローラーから記録してください。</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>入力を追加</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>ボタンや軸の操作をシーケンスの末尾に追加します。</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>待機を追加</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>待ち時間をシーケンスの末尾に追加します。</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>クイック設定</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>シーケンスを単一の入力に置き換え、その入力を押し続けるか、連射ボタンのようにオンとオフを繰り返します。</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>%1$s の連射間隔</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>押し続ける</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d フレームごとに切り替え</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>シーケンスを消去</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>シーケンス内のすべての操作を削除します。</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>このマクロのシーケンス内のすべての操作を削除しますか？</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>入力を選択</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>待機</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d フレーム</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>待機時間</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>%1$s の値</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>操作のオプション</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>入力を変更</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>後ろに入力を挿入</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>後ろに待機を挿入</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>記録</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>記録を停止</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>記録中です。コントローラーかキーボードで一連の操作を入力し、「記録を停止」をタップしてください。タッチスクリーンの入力は記録されません。</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>ゲームの振動を有効化</translation>
@@ -5443,8 +5573,8 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>上へ</translation>
+        <comment>list_item_move_up</comment>
+        <translation>上へ移動</translation>
     </message>
     <message>
         <source>Moves this shader up in the application order.</source>
@@ -5463,13 +5593,13 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>削除</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>下へ</translation>
+        <comment>list_item_move_down</comment>
+        <translation>下へ移動</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6029,6 +6159,26 @@ Are you sure you want to continue?</source>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>ステアリング</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>マクロ 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>マクロ 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>マクロ 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>マクロ 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9841,6 +9991,89 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>マスコンレバー</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>力行</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>切</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>セレクト</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>スタート</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>ブレーキレバー</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>ブレーキ</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>解除</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>非常</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9965,6 +10198,93 @@ This warning will only be shown once.</source>
     <message>
         <source>Fire</source>
         <translation>発射</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>方向キー</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>下</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>上</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>振動モーター</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>セレクト</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>スタート</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>モード</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>モードランプ</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>フェイスボタン</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>×</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>□</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>○</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>フォースフィードバック機器</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>ステアリング</translation>
     </message>
 </context>
 <context>
@@ -10178,6 +10498,45 @@ This warning will only be shown once.</source>
     <message>
         <source>Small Motor</source>
         <translation>小型モーター</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>左側のボタン</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>黄</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>青／セレクト</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>白</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>緑</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>セレクト</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>スタート</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>右側のボタン</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>中央の赤／決定</translation>
     </message>
 </context>
 <context>
@@ -10395,48 +10754,84 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>割り当て/ボタン</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>トリガーはマクロを起動するボタンまたはボタンの組み合わせです。複数のトリガーを設定するには、Shift キーを押しながらクリックしてください。</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>このマクロでトリガーするボタンを選択します。すべてのボタンが同時にアクティブになります。</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>押圧</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>感圧対応ボタンについて、マクロが有効なときに再現する押圧の強さをこのスライダーで調整します。</translation>
+        <source>Activation Deadzone:</source>
+        <translation>起動デッドゾーン：</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>シーケンス</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>操作</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>値</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>記録</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>シーケンスを、ボタンを押し続けるか N フレームごとにオンとオフを切り替える（連射する）シーケンスに置き換えます。</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>クイック設定</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>入力を追加</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>待機を追加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>上へ移動</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>下へ移動</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>消去</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>押すたびにシーケンスを1回だけ実行する代わりに、マクロが有効な間は繰り返します。実行中の回は必ず最後まで実行します。</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>有効な間は繰り返す</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>ボタンを押し続ける代わりに、短く押すたびにマクロをオンまたはオフにします。</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>トリガー</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>このマクロを発動するためのトリガーを選択します。単一のボタン、または複数のボタンの組み合わせ (同時押し) を設定できます。Shift キーを押しながらクリックすると複数のトリガーを設定できます。</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>押して切り替える</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>デッドゾーン:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>頻度</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>マクロは N フレームごとに切り替わります。</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10446,26 +10841,50 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <source>Not Configured</source>
         <translation>設定されていません</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n 個のボタン</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>頻度を設定</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>%1 をオン・オフする間隔（フレーム数、0 で押し続ける）：</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>頻度: </translation>
+        <source>Stop</source>
+        <translation>停止</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>マクロは繰り返されません。</translation>
+        <source>Wait</source>
+        <translation>待機</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>マクロは %n フレームごとにボタンのオン/オフを切り替えます。</numerusform>
+            <numerusform>%n フレーム</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> フレーム</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>シーケンス（%1、%2）</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n 個の操作</numerusform>
         </translation>
     </message>
 </context>
@@ -12291,6 +12710,10 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>選択したスプライトテクスチャフィルターを、フレームバッファへのアップロードに適用します。テクスチャデータと 24 ビット映像を維持しながら、一部のゲームの背景を滑らかにできます。</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>適用</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>ディスクイメージパッチの適用</translation>
     </message>
@@ -12459,10 +12882,6 @@ You cannot undo this action.</source>
         <translation>バッファサイズ</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>ボタン</translation>
-    </message>
-    <message>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM エミュレーション</translation>
     </message>
@@ -12481,6 +12900,10 @@ You cannot undo this action.</source>
     <message>
         <source>Capture</source>
         <translation>キャプチャ</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>カルーセル</translation>
     </message>
     <message>
         <source>Challenge Indicators</source>
@@ -12727,10 +13150,6 @@ You cannot undo this action.</source>
         <translation>一般的なテレビでは通常見えない領域をどの程度クロップして隠すかを設定します。</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>マクロの有効時にシミュレートする圧力を設定します。</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>表示領域のクロップ量を設定します。</translation>
     </message>
@@ -12765,10 +13184,6 @@ You cannot undo this action.</source>
     <message>
         <source>Determines the format of the screenshot file names.</source>
         <translation>スクリーンショットのファイル名形式を設定します。</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>マクロがボタンのオンとオフを切り替える頻度 (連射) を設定します。</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -13071,14 +13486,6 @@ Error was:</source>
     <message>
         <source>GPU Renderer</source>
         <translation>GPU レンダラー</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>ゲームグリッド</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>ゲームリスト</translation>
     </message>
     <message>
         <source>Game List Settings</source>
@@ -13505,10 +13912,6 @@ You cannot undo this action.</source>
         <translation>選択を変更</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>表示を変更</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>アプリケーションの設定を変更します。</translation>
     </message>
@@ -13669,6 +14072,10 @@ You cannot undo this action.</source>
         <translation>デスティネーションアルファブレンディング</translation>
     </message>
     <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>ゲームリストの表示方法を設定します。</translation>
+    </message>
+    <message>
         <source>Disable Speedup on MDEC</source>
         <translation>MDEC で高速化を無効化</translation>
     </message>
@@ -13757,6 +14164,22 @@ You cannot undo this action.</source>
         <translation>FMVに4:3を強制</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>グリッド</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>押し続ける</translation>
+    </message>
+    <message>
+        <source>Library</source>
+        <translation>ライブラリー</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>リスト</translation>
+    </message>
+    <message>
         <source>Load Preset</source>
         <translation>プリセットを読み込む</translation>
     </message>
@@ -13765,8 +14188,20 @@ You cannot undo this action.</source>
         <translation>ログイン中...</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>有効な間は繰り返す</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>マクロ {}</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>マクロ {} のシーケンス</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>ビッグピクチャーモードでカバー画像などをキャッシュするために使用するビデオメモリの上限です。</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -13813,12 +14248,24 @@ You cannot undo this action.</source>
         <translation>振動モーターを備えたデバイスは検出されませんでした。</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>ゲームが見つかりません。</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>入力がありません。</translation>
+    </message>
+    <message>
         <source>No patches are available for this game.</source>
         <translation>このゲームで使用できるパッチはありません。</translation>
     </message>
     <message>
         <source>Normalize Depth Scale</source>
         <translation>深度スケールを正規化</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>未設定</translation>
     </message>
     <message>
         <source>PGXP Depth Buffer</source>
@@ -13829,8 +14276,20 @@ You cannot undo this action.</source>
         <translation>ゲームの音声を一切出力しないようにします。</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>クイック設定</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>記録</translation>
+    </message>
+    <message>
         <source>Release Date: </source>
         <translation>発売日: </translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>押すたびにシーケンスを1回だけ実行する代わりに、マクロが有効な間は繰り返します。実行中の回は必ず最後まで実行します。</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13965,6 +14424,14 @@ You cannot undo this action.</source>
         <translation>スクリーンショットのファイル名形式</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>ボタンを選択</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>シーケンス</translation>
+    </message>
+    <message>
         <source>Settings reset to default.</source>
         <translation>設定をデフォルトに戻しました。</translation>
     </message>
@@ -14021,8 +14488,24 @@ You cannot undo this action.</source>
         <translation>2D オブジェクト上の拡大テクスチャのブロック感を滑らかにします。</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
         <source>Subframes</source>
         <translation>サブフレーム</translation>
+    </message>
+    <message>
+        <source>Texture Cache Size</source>
+        <translation>テクスチャキャッシュのサイズ</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>押し続けるか、オンとオフを切り替えるボタンです。</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>このマクロが再生する入力です。記録するか、単一のボタンから設定できます。</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -14121,6 +14604,10 @@ You cannot undo this action.</source>
         <translation>値: {}</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>表示</translation>
+    </message>
+    <message>
         <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
         <translation>各フレームを表示する前にディスプレイの更新を待ち、ティアリングを防ぎます。GSync/FreeSync 対応ディスプレイでも有効のままにしてください。</translation>
     </message>
@@ -14159,6 +14646,14 @@ Do you want to {1} anyway?</source>
         <translation>{0} 件の実績解除がサーバーで確認されていません。{1} を続行すると、これらの解除情報が失われます。ネットワーク接続が復旧すると、これらの解除は自動的に確認されます。
 
 それでも {1} しますか?</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>入力 {0} 件、{1} フレーム</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} フレーム</translation>
     </message>
     <message>
         <source>{} of {}</source>
@@ -14381,10 +14876,6 @@ Do you want to {1} anyway?</source>
         <translation>フレームタイムバッファ</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>頻度</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>ゲーム表示</translation>
     </message>
@@ -14439,10 +14930,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Grey Matter</source>
         <translation>グレーマター</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>グリッド表示</translation>
     </message>
     <message>
         <source>Hardcore mode will not be enabled until the game is restarted. Do you want to restart the game now?</source>
@@ -14917,10 +15404,6 @@ Do you want to {1} anyway?</source>
         <translation>押して切り替える</translation>
     </message>
     <message>
-        <source>Pressure</source>
-        <translation>押圧</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>別のアプリケーションがアクティブなときに入力が処理されるのを防ぎます。</translation>
     </message>
@@ -15105,10 +15588,6 @@ Do you want to {1} anyway?</source>
         <translation>対応するコントローラーをシリアル番号またはデバイスの識別情報で保存し、ポートや接続順序が変わっても、可能な限り入力割り当てを維持します。</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>ゲームリストを縦のリストの代わりにグリッドで表示します。</translation>
-    </message>
-    <message>
         <source>Start Disc</source>
         <translation>ディスク起動</translation>
     </message>
@@ -15143,6 +15622,10 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Bind All Buttons</source>
         <translation>すべてのボタンを割り当て</translation>
+    </message>
+    <message>
+        <source>Button</source>
+        <translation>ボタン</translation>
     </message>
     <message>
         <source>Clear</source>
@@ -15316,10 +15799,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>Select Key</source>
         <translation>キーを選択</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>マクロ {} の割り当てを選択</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -16050,10 +16529,6 @@ Do you want to {0} anyway?</source>
         <translation>{0} (見つかりません)</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} フレーム</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} を削除しました。</translation>
     </message>
@@ -16077,6 +16552,12 @@ Do you want to {0} anyway?</source>
         <comment>Loading time</comment>
         <translation>
             <numerusform>残り %n 分</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n 個のボタン</numerusform>
         </translation>
     </message>
     <message numerus="yes">

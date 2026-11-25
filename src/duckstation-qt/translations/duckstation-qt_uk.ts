@@ -2825,59 +2825,9 @@ Current Binding: %s</source>
         <translation>Тригер не задано</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Кнопки не задано</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Макрос не повторюватиметься.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Макрос перемикатиметься кожен %d кадр.</numerusform>
-            <numerusform>Макрос перемикатиметься кожні %d кадри.</numerusform>
-            <numerusform>Макрос перемикатиметься кожні %d кадрів.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Вибрати прив&apos;язки</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s активує %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s активує %2$s кожен %3$d кадр.</numerusform>
-            <numerusform>%1$s активує %2$s кожні %3$d кадри.</numerusform>
-            <numerusform>%1$s активує %2$s кожні %3$d кадрів.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Тригер</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Кнопки</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Частота</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4829,6 +4779,186 @@ Current Binding: %s</source>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s запускає %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s запускає %2$s циклічно</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Повторювати, поки макрос активний</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Повторює послідовність, поки макрос активний, замість одноразового відтворення за кожного натискання.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Натисніть, щоб увімкнути або вимкнути</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Тригер вмикає та вимикає повторення послідовності без потреби його утримувати.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Мертва зона тригера</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Визначає, наскільки потрібно натиснути аналоговий курок, щоб активувати макрос.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Послідовність</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Послідовність порожня. Додайте введення й паузи, скористайтеся швидким налаштуванням або запишіть послідовність із контролера.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Додати введення</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Додає натискання кнопки або рух осі в кінець послідовності.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Додати паузу</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Додає затримку в кінець послідовності.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Швидке налаштування</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Замінює послідовність одним введенням, яке утримується або поперемінно вмикається й вимикається як турбокнопка.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Інтервал турбо для %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Утримувати</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Перемикати з інтервалом в %d кадр</numerusform>
+            <numerusform>Перемикати кожні %d кадри</numerusform>
+            <numerusform>Перемикати кожні %d кадрів</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Очистити послідовність</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Вилучає всі дії з послідовності.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Вилучити всі дії з послідовності цього макросу?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Вибрати введення</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Чекати</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d кадр</numerusform>
+            <numerusform>%d кадри</numerusform>
+            <numerusform>%d кадрів</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Тривалість паузи</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Значення для %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Параметри дії</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Змінити введення</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Вставити введення після поточної дії</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Вставити паузу після поточної дії</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Записати</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Зупинити запис</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Триває запис. Введіть послідовність із контролера або клавіатури й торкніться «Зупинити запис». Введення із сенсорного екрана не записується.</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>Увімкнути вібрацію гри</translation>
@@ -5499,7 +5629,7 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
+        <comment>list_item_move_up</comment>
         <translation>Перемістити вгору</translation>
     </message>
     <message>
@@ -5519,12 +5649,12 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
-        <translation>Видалити</translation>
+        <comment>list_item_remove</comment>
+        <translation>Вилучити</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
+        <comment>list_item_move_down</comment>
         <translation>Перемістити вниз</translation>
     </message>
     <message>
@@ -6087,6 +6217,26 @@ Are you sure you want to continue?</source>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>Кермування</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Макрос 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Макрос 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Макрос 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Макрос 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9915,6 +10065,89 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Руків’я тяги</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Тяга</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Вимкнено</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Вибір</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Старт</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Руків’я гальма</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Гальмо</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Відпущено</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Екстрене гальмування</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -10039,6 +10272,93 @@ This warning will only be shown once.</source>
     <message>
         <source>Fire</source>
         <translation>Вогонь</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Хрестовина</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Вниз</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Ліворуч</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Вгору</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Праворуч</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Вібромотор</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Вибір</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Старт</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Режим</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Індикатор режиму</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Кнопки дій</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Хрестик</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Квадрат</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Трикутник</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Коло</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Пристрій із силовим зворотним зв’язком</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Кермування</translation>
     </message>
 </context>
 <context>
@@ -10252,6 +10572,45 @@ This warning will only be shown once.</source>
     <message>
         <source>Small Motor</source>
         <translation>Малий вібромотор</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Ліві кнопки</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Жовта</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Синя/Вибір</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Біла</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Зелена</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Вибір</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Старт</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Праві кнопки</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Червона посередині/ОК</translation>
     </message>
 </context>
 <context>
@@ -10469,48 +10828,84 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Прив’язки/кнопки</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Тригер активує макрос. Це може бути одна кнопка або комбінація кнопок. Щоб призначити кілька тригерів, клацніть, утримуючи Shift.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Виберіть кнопки, які потрібно викликати за допомогою цього макросу. Усі кнопки активуються одночасно.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Сила натискання</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Для кнопок, чутливих до сили натискання, цей повзунок регулює, який ступінь зусилля буде імітуватися, коли макрос активний.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Мертва зона активації:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Послідовність</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Дія</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Значення</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Записати</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Замінює послідовність на таку, яка утримує кнопку або поперемінно натискає й відпускає її кожні N кадрів (турбо).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Швидке налаштування</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Додати введення</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Додати паузу</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Вилучити</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Перемістити вгору</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Перемістити вниз</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистити</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Повторює послідовність, поки макрос активний, замість одноразового відтворення за кожного натискання. Поточне повторення завжди відтворюється до кінця.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Повторювати, поки макрос активний</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Вмикає та вимикає макрос коротким натисканням кнопки без потреби її утримувати.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Тригер</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Виберіть тригер для активації цього макросу. Це може бути одна кнопка або комбінація кнопок (акорд). Використовуйте Shift+клацання для вибору кількох тригерів.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Натисніть для перемикання</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Мертва зона:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Частота</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Макрос перемикатиметься кожні N кадрів.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10520,28 +10915,56 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <source>Not Configured</source>
         <translation>Не налаштовано</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n кнопка</numerusform>
+            <numerusform>%n кнопки</numerusform>
+            <numerusform>%n кнопок</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Встановити частоту</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Кількість кадрів між перемиканнями %1 (0 — утримувати):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Частота: </translation>
+        <source>Stop</source>
+        <translation>Зупинити</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Макрос не повторюватиметься.</translation>
+        <source>Wait</source>
+        <translation>Чекати</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Макрос перемикатиме кнопки кожен %n кадр.</numerusform>
-            <numerusform>Макрос перемикатиме кнопки кожні %n кадри.</numerusform>
-            <numerusform>Макрос перемикатиме кнопки кожні %n кадрів.</numerusform>
+            <numerusform>%n кадр</numerusform>
+            <numerusform>%n кадри</numerusform>
+            <numerusform>%n кадрів</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> кадр.</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Послідовність (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n дія</numerusform>
+            <numerusform>%n дії</numerusform>
+            <numerusform>%n дій</numerusform>
         </translation>
     </message>
 </context>
@@ -12333,6 +12756,18 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>Зовнішній вигляд</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Застосувати</translation>
+    </message>
+    <message>
+        <source>Button</source>
+        <translation>Кнопка</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Карусель</translation>
+    </message>
+    <message>
         <source>Determines whether a prompt will be displayed to confirm closing the game.</source>
         <translation>Визначити, чи буде виводитись підказка для підтвердження закриття гри.</translation>
     </message>
@@ -12647,10 +13082,6 @@ You cannot undo this action.</source>
     <message>
         <source>Buffer Size</source>
         <translation>Розмір буфера</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <translation>Кнопки</translation>
     </message>
     <message>
         <source>CD-ROM Emulation</source>
@@ -13007,6 +13438,10 @@ You cannot undo this action.</source>
     <message>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Визначає, як вивід емульованої консолі буде масштабуватися відповідно до роздільної здатності вашого монітора.</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Визначає спосіб відображення списку ігор.</translation>
     </message>
     <message>
         <source>Determines quality of audio when not running at 100% speed.</source>
@@ -13383,10 +13818,6 @@ Error was:</source>
         <translation>Примусово вмикає відстеження завантаження текстур незалежно від того, чи це потрібно.</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>Частота</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>Відображення гри</translation>
     </message>
@@ -13413,10 +13844,6 @@ Error was:</source>
     <message>
         <source>Grey Matter</source>
         <translation>Сіра матерія</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>Вигляд сіткою</translation>
     </message>
     <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
@@ -13651,16 +14078,20 @@ Please check your username and password, and try again.</source>
         <translation>Натисніть для перемикання</translation>
     </message>
     <message>
-        <source>Pressure</source>
-        <translation>Тиск</translation>
-    </message>
-    <message>
         <source>Progress Indicators</source>
         <translation>Індикатори прогресу</translation>
     </message>
     <message>
         <source>Purple Rain</source>
         <translation>Фіолетовий дощ</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Швидке налаштування</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Записати</translation>
     </message>
     <message>
         <source>Release Date: </source>
@@ -13673,6 +14104,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
         <translation>Усуває вплив масштабу перетворення кожного об’єкта на значення глибини. Виправляє зникнення геометрії в деяких іграх, але порушує роботу інших. Варіант «Автоматично» використовує налаштування з бази даних ігор.</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Повторює послідовність, поки макрос активний, замість одноразового відтворення за кожного натискання. Поточне повторення завжди відтворюється до кінця.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -13809,6 +14244,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Select</source>
         <translation>Вибір</translation>
+    </message>
+    <message>
+        <source>Select Button</source>
+        <translation>Вибрати кнопку</translation>
     </message>
     <message>
         <source>Select Disc Drive</source>
@@ -14051,6 +14490,14 @@ Do you want to {1} anyway?</source>
 Виконати дію «{1}» попри це?</translation>
     </message>
     <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>Введень: {0}, кадрів: {1}</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>Кадри: {}</translation>
+    </message>
+    <message>
         <source>{} of {}</source>
         <translation>{} з {}</translation>
     </message>
@@ -14247,10 +14694,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Змінити вибір</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>Змінити вигляд</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>Змінити установки програми.</translation>
     </message>
@@ -14319,16 +14762,8 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Визначити, наскільки сильне натискання кнопки ігнорується перед активацією макросу.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Визначити, яка сила натискання моделюється, коли макрос активний.</translation>
-    </message>
-    <message>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
         <translation>Визначає область зображення накладки, у межах якої відображатиметься екран гри.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Визначити частоту, з якою макрос включатиме і вимикатиме кнопки (так званий автоматичний вогонь).</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -14495,14 +14930,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Рендерер ГП</translation>
     </message>
     <message>
-        <source>Game Grid</source>
-        <translation>Сітка ігор</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Список ігор</translation>
-    </message>
-    <message>
         <source>Game List Settings</source>
         <translation>Налаштування списку ігор</translation>
     </message>
@@ -14575,6 +15002,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Глобальний слот {0}##global_slot_{0}</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Сітка</translation>
+    </message>
+    <message>
         <source>Hardcore Mode</source>
         <translation>Режим &quot;Хардкору&quot;</translation>
     </message>
@@ -14589,6 +15020,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Приховує вказівник/курсор миші, коли емулятор перебуває у повноекранному режимі.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Утримувати</translation>
     </message>
     <message>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
@@ -14667,6 +15102,14 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Таблиці лідерів</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Бібліотека</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Список</translation>
+    </message>
+    <message>
         <source>List Icons</source>
         <translation>Піктограми списку</translation>
     </message>
@@ -14739,8 +15182,16 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Записує повідомлення в консоль налагодження, де це підтримується.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Повторювати, поки макрос активний</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Макрос {}</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Послідовність макросу {}</translation>
     </message>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
@@ -14749,6 +15200,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Maximum (Safer)</source>
         <translation>Максимальний (безпечніше)</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Максимальний обсяг відеопам’яті для кешування обкладинок та інших зображень в інтерфейсі Big Picture.</translation>
     </message>
     <message>
         <source>Memory Card Busy</source>
@@ -14831,6 +15286,14 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Гра не обрана</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Ігор не знайдено.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Немає введення.</translation>
+    </message>
+    <message>
         <source>No resume save state found.</source>
         <translation>Не знайдено збереженого стану для відновлення.</translation>
     </message>
@@ -14857,6 +15320,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>None (Normal Speed)</source>
         <translation>Ні (нормальна швидкість)</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Не налаштовано</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -15255,10 +15722,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Серійний номер:</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Відображає ігри у вигляді сітки замість вертикального списку.</translation>
-    </message>
-    <message>
         <source>Start In Big Picture Mode</source>
         <translation>Запускати в режимі Big Picture</translation>
     </message>
@@ -15531,10 +15994,6 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Вибрати образ диска</translation>
     </message>
     <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Вибрати прив&apos;язки макросу {}</translation>
-    </message>
-    <message>
         <source>Selects between Xbox/PlayStation button icons in the footer and input binding.</source>
         <translation>Вибір піктограм кнопок Xbox або PlayStation у нижній панелі та прив&apos;язках введення.</translation>
     </message>
@@ -15573,6 +16032,10 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>Вибір місця на екрані, де відображатимуться повідомлення.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Послідовність</translation>
     </message>
     <message>
         <source>Serial</source>
@@ -15823,6 +16286,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Крок {} з {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Зупинити</translation>
+    </message>
+    <message>
         <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
         <translation>Запобігає тайм-ауту ігор під час очікування вертикального гасіння при розгоні.</translation>
     </message>
@@ -15859,6 +16326,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Тимчасово відключає всі покращення, що корисно під час тестування.</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Розмір кешу текстур</translation>
+    </message>
+    <message>
         <source>Texture Filtering</source>
         <translation>Фільтрування текстур</translation>
     </message>
@@ -15877,6 +16348,14 @@ Do you want to delete the save state and boot the game anyway?</source>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>Двигун звуку визначає, як кадри, створені емулятором, передаються на хост.</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Кнопка, яку слід утримувати або поперемінно натискати й відпускати.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Введення, яке відтворює макрос. Його можна записати або налаштувати за допомогою однієї кнопки.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -16039,6 +16518,10 @@ Do you want to delete the save state and boot the game anyway?</source>
         <translation>Вертикальна синхронізація (VSync)</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>Вигляд</translation>
+    </message>
+    <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>УВАГА: Увімкнення читів може спричинити непередбачувану поведінку, аварійне завершення, блокування подальшого проходження або пошкодження збережень.</translation>
     </message>
@@ -16135,10 +16618,6 @@ Do you want to {0} anyway?</source>
         <translation>вимкнення</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} кадрів</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>{} видалено.</translation>
     </message>
@@ -16166,6 +16645,14 @@ Do you want to {0} anyway?</source>
             <numerusform>Залишилася %n хвилина</numerusform>
             <numerusform>Залишилося %n хвилини</numerusform>
             <numerusform>Залишилося %n хвилин</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n кнопка</numerusform>
+            <numerusform>%n кнопки</numerusform>
+            <numerusform>%n кнопок</numerusform>
         </translation>
     </message>
     <message numerus="yes">

@@ -3864,55 +3864,9 @@ Nút gán hiện tại: %s</translation>
         <translation>Chưa đặt nút kích hoạt</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>Chưa đặt nút</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>Macro sẽ không lặp lại.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>Macro sẽ chuyển trạng thái sau mỗi %d khung hình.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>Chọn các phép gán</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s kích hoạt %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s kích hoạt %2$s sau mỗi %3$d khung hình.</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>Kích hoạt</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>Các nút</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>Tần suất</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -5042,11 +4996,6 @@ Bạn có thể thay đổi sau bằng tùy chọn &quot;Khởi động ở ch�
         <translation>Chỉnh sửa tùy chọn cho bộ đổ bóng này.</translation>
     </message>
     <message>
-        <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
-        <translation>Di chuyển lên</translation>
-    </message>
-    <message>
         <source>Moves this shader up in the application order.</source>
         <comment>postfx_setting_summary_move_up</comment>
         <translation>Đưa bộ đổ bóng này lên trước trong thứ tự áp dụng.</translation>
@@ -5060,16 +5009,6 @@ Bạn có thể thay đổi sau bằng tùy chọn &quot;Khởi động ở ch�
         <source>Removes this shader from the post-processing pipeline.</source>
         <comment>postfx_setting_summary_remove_shader</comment>
         <translation>Xóa bộ đổ bóng này khỏi quy trình hậu xử lý.</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
-        <translation>Xóa</translation>
-    </message>
-    <message>
-        <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
-        <translation>Di chuyển xuống</translation>
     </message>
     <message>
         <source>Moves this shader down in the application order.</source>
@@ -6228,6 +6167,182 @@ Trò chơi nhiều rãnh ở định dạng bin cần có tệp mô tả rãnh (
         <translation>Vuốt để điều khiển cần phải</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s kích hoạt %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s kích hoạt %2$s và lặp lại</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>Lặp khi macro đang hoạt động</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>Lặp lại chuỗi khi macro đang hoạt động, thay vì chỉ chạy một lần mỗi lần nhấn.</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>Nhấn để bật hoặc tắt</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>Nút kích hoạt bật hoặc tắt chế độ lặp chuỗi mà không cần giữ nút.</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>Vùng chết của nút kích hoạt</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>Xác định cần nhấn cò analog sâu đến đâu để kích hoạt macro.</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>Chuỗi</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>Chuỗi đang trống. Hãy thêm thao tác và khoảng chờ, dùng Thiết lập nhanh hoặc ghi lại chuỗi bằng tay cầm.</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>Thêm thao tác</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>Thêm một lần nhấn nút hoặc di chuyển trục vào cuối chuỗi.</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>Thêm khoảng chờ</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>Thêm một khoảng chờ vào cuối chuỗi.</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>Thiết lập nhanh</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>Thay chuỗi bằng một thao tác được giữ liên tục hoặc luân phiên nhấn và nhả như nút turbo.</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>Khoảng cách giữa các lần chuyển trạng thái turbo của %1$s</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>Giữ</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>Chuyển trạng thái sau mỗi %d khung hình</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>Xóa chuỗi</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>Xóa mọi hành động khỏi chuỗi.</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>Xóa mọi hành động khỏi chuỗi của macro này?</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>Chọn thao tác</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>Chờ</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d khung hình</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>Thời gian chờ</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>Giá trị của %1$s</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>Tùy chọn hành động</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>Đổi thao tác</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>Chèn thao tác vào sau</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>Chèn khoảng chờ vào sau</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>Ghi</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>Dừng ghi</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>Đang ghi. Nhập chuỗi bằng tay cầm hoặc bàn phím, sau đó chạm vào “Dừng ghi”. Thao tác trên màn hình cảm ứng không được ghi lại.</translation>
+    </message>
+    <message>
         <source>Swiping outside the controls moves the right stick. With Floating Left Stick on, only the right half of the screen does.</source>
         <comment>settings_summary_bind_to_right_stick</comment>
         <translation>Vuốt bên ngoài các nút điều khiển để di chuyển cần phải. Khi bật Cần trái nổi, thao tác này chỉ hoạt động ở nửa bên phải màn hình.</translation>
@@ -6243,9 +6358,44 @@ Trò chơi nhiều rãnh ở định dạng bin cần có tệp mô tả rãnh (
         <translation>Chạm vào nửa bên trái màn hình sẽ đặt cần trái dưới ngón tay thay vì ở một vị trí cố định.</translation>
     </message>
     <message>
+        <source>Move Up</source>
+        <comment>list_item_move_up</comment>
+        <translation>Di chuyển lên</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <comment>list_item_remove</comment>
+        <translation>Xóa</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <comment>list_item_move_down</comment>
+        <translation>Di chuyển xuống</translation>
+    </message>
+    <message>
         <source>Unavailable while RetroAchievements hardcore mode is active.</source>
         <comment>patch_codes_hardcore_restricted</comment>
         <translation>Không khả dụng khi chế độ Hardcore của RetroAchievements đang bật.</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>Macro 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>Macro 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>Macro 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>Macro 8</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. Depending on your jurisdiction, game covers may be copyrighted. You are only authorized to use this tool with your own servers and images, we do not provide any.</source>
@@ -9841,6 +9991,89 @@ Cảnh báo này chỉ xuất hiện một lần.</translation>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>Cần điều khiển lực kéo</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Lực kéo</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Tắt</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>Cần phanh</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Phanh</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>Đã nhả</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>Phanh khẩn cấp</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9965,6 +10198,93 @@ Cảnh báo này chỉ xuất hiện một lần.</translation>
     <message>
         <source>A</source>
         <translation>A</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>Phím điều hướng</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Xuống</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Trái</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Lên</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Phải</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>Mô-tơ rung</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Chế độ</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Đèn báo chế độ</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>Các nút mặt trước</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>Dấu chéo</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>Vuông</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>Tam giác</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Tròn</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>Thiết bị phản hồi lực</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>Lái</translation>
     </message>
 </context>
 <context>
@@ -10178,6 +10498,45 @@ Cảnh báo này chỉ xuất hiện một lần.</translation>
     <message>
         <source>Small Motor</source>
         <translation>Mô-tơ nhỏ</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>Các nút bên trái</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>Vàng</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>Xanh dương/Select</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>Trắng</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Xanh lá</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>Các nút bên phải</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>Đỏ ở giữa/OK</translation>
     </message>
 </context>
 <context>
@@ -10395,48 +10754,84 @@ Màu “thay thế” được dùng khi chế độ analog đang hoạt động
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>Nút gán/Nút bấm</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>Nút kích hoạt macro có thể là một nút đơn hoặc một tổ hợp nút. Giữ Shift khi nhấp để đặt nhiều cách kích hoạt.</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Chọn các nút bạn muốn kích hoạt bằng macro này. Tất cả nút được kích hoạt đồng thời.</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Lực nhấn</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>Với các nút nhạy lực nhấn, thanh trượt này điều khiển lực được mô phỏng khi macro hoạt động.</translation>
+        <source>Activation Deadzone:</source>
+        <translation>Vùng chết kích hoạt:</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>Chuỗi</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Hành động</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Giá trị</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Ghi</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>Thay chuỗi bằng một chuỗi giữ nút hoặc luân phiên nhấn và nhả nút sau mỗi N khung hình (turbo).</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>Thiết lập nhanh</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>Thêm thao tác</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>Thêm khoảng chờ</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Xóa</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Di chuyển lên</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Di chuyển xuống</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Xóa hết</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Lặp lại chuỗi khi macro đang hoạt động, thay vì chỉ chạy một lần mỗi lần nhấn. Lượt đang chạy luôn được thực hiện đến hết.</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>Lặp khi macro đang hoạt động</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>Bật hoặc tắt macro bằng cách nhấn nhanh thay vì giữ nút.</translation>
+    </message>
+    <message>
         <source>Trigger</source>
         <translation>Nút kích hoạt</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>Chọn nút kích hoạt macro này. Có thể là một nút hoặc tổ hợp nút. Giữ Shift rồi nhấp để đặt nhiều nút kích hoạt.</translation>
-    </message>
-    <message>
         <source>Press To Toggle</source>
         <translation>Nhấn để bật/tắt</translation>
-    </message>
-    <message>
-        <source>Deadzone:</source>
-        <translation>Vùng chết:</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>Tần suất</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>Macro sẽ bật/tắt sau mỗi N khung hình.</translation>
     </message>
     <message>
         <source>Controller %1 Macro %2</source>
@@ -10446,26 +10841,50 @@ Màu “thay thế” được dùng khi chế độ analog đang hoạt động
         <source>Not Configured</source>
         <translation>Chưa cấu hình</translation>
     </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n nút</numerusform>
+        </translation>
+    </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>Đặt tần suất</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>Số khung hình giữa các lần chuyển trạng thái của %1 (0 để giữ):</translation>
     </message>
     <message>
-        <source>Frequency: </source>
-        <translation>Tần suất: </translation>
+        <source>Stop</source>
+        <translation>Dừng</translation>
     </message>
     <message>
-        <source>Macro will not repeat.</source>
-        <translation>Macro sẽ không lặp lại.</translation>
+        <source>Wait</source>
+        <translation>Chờ</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>Macro sẽ bật/tắt các nút sau mỗi %n khung hình.</numerusform>
+            <numerusform>%n khung hình</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source> frames</source>
+        <translation> khung hình</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>Chuỗi (%1, %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n hành động</numerusform>
         </translation>
     </message>
 </context>
@@ -12469,6 +12888,10 @@ Bạn có muốn xóa trạng thái lưu và vẫn khởi động trò chơi kh�
         <translation>Áp dụng bộ lọc họa tiết sprite đã chọn cho dữ liệu tải lên bộ đệm khung hình. Có thể làm mượt nền trong một số trò chơi mà vẫn giữ nguyên dữ liệu họa tiết và video 24 bit.</translation>
     </message>
     <message>
+        <source>Apply</source>
+        <translation>Áp dụng</translation>
+    </message>
+    <message>
         <source>Apply Image Patches</source>
         <translation>Áp dụng bản vá ảnh đĩa</translation>
     </message>
@@ -12669,10 +13092,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Kích thước bộ đệm</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>Các nút</translation>
-    </message>
-    <message>
         <source>CD-ROM Emulation</source>
         <translation>Giả lập CD-ROM</translation>
     </message>
@@ -12727,10 +13146,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Change Title</source>
         <translation>Đổi tên</translation>
-    </message>
-    <message>
-        <source>Change View</source>
-        <translation>Đổi chế độ xem</translation>
     </message>
     <message>
         <source>Changes settings for the application.</source>
@@ -13109,10 +13524,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Xác định phần diện tích thường không nhìn thấy trên TV dân dụng cần cắt/ẩn.</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>Xác định mức lực nhấn được mô phỏng khi macro hoạt động.</translation>
-    </message>
-    <message>
         <source>Determines how much to crop the display area.</source>
         <translation>Xác định mức cắt vùng hiển thị.</translation>
     </message>
@@ -13151,10 +13562,6 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>Xác định định dạng lưu/nén ảnh chụp màn hình.</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>Xác định tần suất macro bật và tắt các nút (còn gọi là bắn tự động).</translation>
     </message>
     <message>
         <source>Determines the image shown next to each game in the list view.</source>
@@ -13477,6 +13884,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Tua nhanh khi game ngừng cập nhật màn hình trong lúc đọc đĩa. Không áp dụng cho màn hình tải có hoạt ảnh.</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>Lưới</translation>
+    </message>
+    <message>
         <source>Installed VRAM</source>
         <translation>VRAM đã lắp</translation>
     </message>
@@ -13495,6 +13906,10 @@ Bạn không thể hoàn tác thao tác này.</translation>
     <message>
         <source>Scale Idle Timeout</source>
         <translation>Điều chỉnh thời gian chờ khi nhàn rỗi</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>Chuỗi</translation>
     </message>
     <message>
         <source>Skips over the busy loop that games use to wait for vertical blank.</source>
@@ -13541,8 +13956,20 @@ Bạn không thể hoàn tác thao tác này.</translation>
         <translation>Gán tất cả nút</translation>
     </message>
     <message>
+        <source>Button</source>
+        <translation>Nút</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>Băng chuyền</translation>
+    </message>
+    <message>
         <source>Clear</source>
         <translation>Xóa</translation>
+    </message>
+    <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>Xác định cách hiển thị danh sách trò chơi.</translation>
     </message>
     <message>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
@@ -13771,10 +14198,6 @@ Lỗi:</translation>
         <translation>Bộ đệm thời gian khung hình</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>Tần suất</translation>
-    </message>
-    <message>
         <source>From File...</source>
         <translation>Từ tệp...</translation>
     </message>
@@ -13793,14 +14216,6 @@ Lỗi:</translation>
     <message>
         <source>Game Display</source>
         <translation>Hiển thị trò chơi</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>Lưới trò chơi</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>Danh sách trò chơi</translation>
     </message>
     <message>
         <source>Game List Settings</source>
@@ -13915,10 +14330,6 @@ Lỗi:</translation>
         <translation>Chất xám</translation>
     </message>
     <message>
-        <source>Grid View</source>
-        <translation>Dạng lưới</translation>
-    </message>
-    <message>
         <source>Hardcore Mode</source>
         <translation>Chế độ Hardcore</translation>
     </message>
@@ -13937,6 +14348,10 @@ Lỗi:</translation>
     <message>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Ẩn con trỏ chuột khi trình giả lập ở chế độ toàn màn hình.</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>Giữ</translation>
     </message>
     <message>
         <source>Hotkeys</source>
@@ -14087,12 +14502,20 @@ Lỗi:</translation>
         <translation>Độ dài: {}</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>Thư viện</translation>
+    </message>
+    <message>
         <source>Light</source>
         <translation>Sáng</translation>
     </message>
     <message>
         <source>Line Detection</source>
         <translation>Phát hiện đường kẻ</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Danh sách</translation>
     </message>
     <message>
         <source>List Compact Mode</source>
@@ -14215,8 +14638,16 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Ghi thông báo vào bảng điều khiển gỡ lỗi nếu được hỗ trợ.</translation>
     </message>
     <message>
+        <source>Loop While Active</source>
+        <translation>Lặp khi macro đang hoạt động</translation>
+    </message>
+    <message>
         <source>Macro {}</source>
         <translation>Macro {}</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>Chuỗi của macro {}</translation>
     </message>
     <message>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
@@ -14233,6 +14664,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Maximum Seek Speedup Cycles</source>
         <translation>Số chu kỳ tăng tốc tìm kiếm tối đa</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>Dung lượng bộ nhớ video tối đa dùng để lưu ảnh bìa và các hình ảnh khác vào bộ nhớ đệm trong chế độ Big Picture.</translation>
     </message>
     <message>
         <source>Maximum: {}</source>
@@ -14379,6 +14814,14 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Không phát hiện thiết bị nào có mô-tơ rung.</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>Không tìm thấy trò chơi nào.</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>Không có thao tác nào.</translation>
+    </message>
+    <message>
         <source>No patches are available for this game.</source>
         <translation>Không có bản vá cho trò chơi này.</translation>
     </message>
@@ -14413,6 +14856,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Normalize Depth Scale</source>
         <translation>Chuẩn hóa thang độ sâu</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>Chưa thiết lập</translation>
     </message>
     <message>
         <source>Not Logged In</source>
@@ -14647,8 +15094,20 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Hiển thị thêm khung hình cho các hiệu ứng như chèn khung hình đen.</translation>
     </message>
     <message>
+        <source>Quick Setup</source>
+        <translation>Thiết lập nhanh</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>Ghi</translation>
+    </message>
+    <message>
         <source>Removes the scale of each object&apos;s transform from depth values. Fixes missing geometry in some games, but breaks others. Automatic uses the game database setting.</source>
         <translation>Loại bỏ ảnh hưởng của hệ số co giãn trong phép biến đổi của từng đối tượng khỏi các giá trị độ sâu. Khắc phục hình học bị thiếu trong một số trò chơi, nhưng gây lỗi ở những trò chơi khác. Tự động sẽ dùng cài đặt trong cơ sở dữ liệu trò chơi.</translation>
+    </message>
+    <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>{0} thao tác, {1} khung hình</translation>
     </message>
     <message>
         <source>Preserve Projection Precision</source>
@@ -14657,10 +15116,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Press To Toggle</source>
         <translation>Nhấn để bật/tắt</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>Lực nhấn</translation>
     </message>
     <message>
         <source>Prevents inputs from being processed when another application is active.</source>
@@ -14805,6 +15260,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Rendering</source>
         <translation>Kết xuất</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>Lặp lại chuỗi khi macro đang hoạt động, thay vì chỉ chạy một lần mỗi lần nhấn. Lượt đang chạy luôn được thực hiện đến hết.</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -15091,6 +15550,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Chọn ảnh BIOS</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>Chọn nút</translation>
+    </message>
+    <message>
         <source>Select Device</source>
         <translation>Chọn thiết bị</translation>
     </message>
@@ -15117,10 +15580,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>Select Key</source>
         <translation>Chọn phím</translation>
-    </message>
-    <message>
-        <source>Select Macro {} Binds</source>
-        <translation>Chọn nút gán cho macro {}</translation>
     </message>
     <message>
         <source>Select State</source>
@@ -15403,10 +15862,6 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Hiển thị độ phân giải kết xuất hiện tại của hệ thống ở góc trên bên phải màn hình.</translation>
     </message>
     <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>Hiển thị danh sách trò chơi dạng lưới thay vì danh sách dọc.</translation>
-    </message>
-    <message>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Hiển thị trò chơi bạn đang chơi trong hồ sơ Discord.</translation>
     </message>
@@ -15575,6 +16030,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Bước {} trên {}</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Dừng</translation>
+    </message>
+    <message>
         <source>Stores the current settings to a controller preset.</source>
         <translation>Lưu cài đặt hiện tại vào một cấu hình tay cầm đặt sẵn.</translation>
     </message>
@@ -15623,6 +16082,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Tạm tắt mọi cải tiến, hữu ích khi thử nghiệm.</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>Kích thước bộ nhớ đệm họa tiết</translation>
+    </message>
+    <message>
         <source>Texture Filtering</source>
         <translation>Lọc họa tiết</translation>
     </message>
@@ -15649,6 +16112,14 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>Bộ xử lý âm thanh quyết định cách gửi các khung âm thanh do trình giả lập tạo ra đến hệ thống chủ.</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>Nút cần giữ hoặc cần luân phiên nhấn và nhả.</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>Các thao tác mà macro này phát lại, được ghi hoặc thiết lập từ một nút duy nhất.</translation>
     </message>
     <message>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
@@ -15911,6 +16382,10 @@ Hãy kiểm tra tên người dùng và mật khẩu rồi thử lại.</transla
         <translation>Đồng bộ dọc (VSync)</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>Kiểu hiển thị</translation>
+    </message>
+    <message>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
         <translation>CẢNH BÁO: Bật gian lận có thể gây hành vi khó đoán, lỗi chương trình, kẹt tiến trình hoặc hỏng bản lưu trò chơi.</translation>
     </message>
@@ -16035,16 +16510,16 @@ Do you want to {1} anyway?</source>
 Bạn vẫn muốn {1} chứ?</translation>
     </message>
     <message>
-        <source>{} Frames</source>
-        <translation>{} khung hình</translation>
-    </message>
-    <message>
         <source>{} deleted.</source>
         <translation>Đã xóa {}.</translation>
     </message>
     <message>
         <source>{} does not exist.</source>
         <translation>{} không tồn tại.</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} khung hình</translation>
     </message>
     <message>
         <source>{} is not a valid disc image.</source>
@@ -16074,6 +16549,12 @@ Bạn vẫn muốn {1} chứ?</translation>
         <comment>Loading time</comment>
         <translation>
             <numerusform>Còn %n phút</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n nút</numerusform>
         </translation>
     </message>
     <message numerus="yes">

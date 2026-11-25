@@ -2783,55 +2783,9 @@ Current Binding: %s</source>
         <translation>未设置触发器</translation>
     </message>
     <message>
-        <source>No buttons set</source>
-        <comment>edit_macro_buttons_no_bindings</comment>
-        <translation>未设置按钮</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <comment>edit_macro_button_no_repeat</comment>
-        <translation>宏将不会重复。</translation>
-    </message>
-    <message numerus="yes">
-        <source>Macro will toggle every %d frames.</source>
-        <comment>edit_macro_button_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;Macro will toggle every %d frame.&quot;; other=&quot;Macro will toggle every %d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>宏将每隔 %d 帧切换一次。</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Choose Bindings</source>
-        <comment>edit_macro_button_choose_bindings</comment>
-        <translation>选择绑定</translation>
-    </message>
-    <message>
-        <source>%1$s triggers %2$s</source>
-        <comment>edit_macro_button_summary_no_repeat</comment>
-        <translation>%1$s 触发 %2$s</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1$s triggers %2$s every %3$d frames.</source>
-        <comment>edit_macro_button_summary_repeat</comment>
-        <extracomment>Android plural quantities: one=&quot;%1$s triggers %2$s every %3$d frame.&quot;; other=&quot;%1$s triggers %2$s every %3$d frames.&quot;</extracomment>
-        <translation>
-            <numerusform>%1$s 每隔 %3$d 帧触发 %2$s。</numerusform>
-        </translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <comment>edit_macro_button_trigger</comment>
         <translation>触发器</translation>
-    </message>
-    <message>
-        <source>Buttons</source>
-        <comment>edit_macro_button_buttons</comment>
-        <translation>按钮</translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <comment>edit_macro_button_frequency</comment>
-        <translation>频率</translation>
     </message>
     <message>
         <source>Macro %d</source>
@@ -4775,6 +4729,182 @@ Current Binding: %s</source>
         <translation>%1$s×</translation>
     </message>
     <message>
+        <source>%1$s triggers %2$s</source>
+        <comment>edit_macro_button_summary</comment>
+        <translation>%1$s 触发 %2$s</translation>
+    </message>
+    <message>
+        <source>%1$s triggers %2$s, looping</source>
+        <comment>edit_macro_button_summary_loop</comment>
+        <translation>%1$s 触发 %2$s 并循环执行</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <comment>edit_macro_loop</comment>
+        <translation>激活时循环</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once per press.</source>
+        <comment>edit_macro_loop_summary</comment>
+        <translation>宏处于激活状态时循环执行序列，而非每次按下只执行一次。</translation>
+    </message>
+    <message>
+        <source>Press To Toggle</source>
+        <comment>edit_macro_toggle</comment>
+        <translation>按下以切换</translation>
+    </message>
+    <message>
+        <source>The trigger turns the looping sequence on and off, instead of having to be held.</source>
+        <comment>edit_macro_toggle_summary</comment>
+        <translation>每次按下触发键时开始或停止循环，无需持续按住。</translation>
+    </message>
+    <message>
+        <source>Trigger Deadzone</source>
+        <comment>edit_macro_deadzone</comment>
+        <translation>触发死区</translation>
+    </message>
+    <message>
+        <source>How far an analog trigger must be pressed before the macro activates.</source>
+        <comment>edit_macro_deadzone_summary</comment>
+        <translation>设置模拟扳机需要按下多深才能激活宏。</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <comment>edit_macro_sequence</comment>
+        <translation>序列</translation>
+    </message>
+    <message>
+        <source>The sequence is empty. Add inputs and waits, use Quick Setup, or record it from a controller.</source>
+        <comment>edit_macro_sequence_empty</comment>
+        <translation>序列为空。请添加输入和等待、使用快速设置，或用手柄录制序列。</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <comment>edit_macro_add_input</comment>
+        <translation>添加输入</translation>
+    </message>
+    <message>
+        <source>Adds a button or axis press to the end of the sequence.</source>
+        <comment>edit_macro_add_input_summary</comment>
+        <translation>在序列末尾添加一次按键或轴输入。</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <comment>edit_macro_add_wait</comment>
+        <translation>添加等待</translation>
+    </message>
+    <message>
+        <source>Adds a delay to the end of the sequence.</source>
+        <comment>edit_macro_add_wait_summary</comment>
+        <translation>在序列末尾添加一段等待。</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <comment>edit_macro_quick_setup</comment>
+        <translation>快速设置</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one input that is held, or toggled on and off as a turbo button.</source>
+        <comment>edit_macro_quick_setup_summary</comment>
+        <translation>将序列替换为单个输入，可以持续按住，也可以像连发键一样交替按下和松开。</translation>
+    </message>
+    <message>
+        <source>Turbo Interval for %1$s</source>
+        <comment>edit_macro_quick_setup_interval_title</comment>
+        <translation>%1$s 的连发间隔</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <comment>edit_macro_hold</comment>
+        <translation>按住</translation>
+    </message>
+    <message numerus="yes">
+        <source>Toggle every %d frames</source>
+        <comment>edit_macro_toggle_every_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;Toggle every %d frame&quot;; other=&quot;Toggle every %d frames&quot;</extracomment>
+        <translation>
+            <numerusform>每隔 %d 帧切换一次</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Clear Sequence</source>
+        <comment>edit_macro_clear_sequence</comment>
+        <translation>清空序列</translation>
+    </message>
+    <message>
+        <source>Removes every action from the sequence.</source>
+        <comment>edit_macro_clear_sequence_summary</comment>
+        <translation>删除序列中的所有动作。</translation>
+    </message>
+    <message>
+        <source>Remove every action from this macro&apos;s sequence?</source>
+        <comment>edit_macro_clear_sequence_confirm</comment>
+        <translation>要删除此宏序列中的所有动作吗？</translation>
+    </message>
+    <message>
+        <source>Select Input</source>
+        <comment>edit_macro_select_input</comment>
+        <translation>选择输入</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <comment>edit_macro_wait</comment>
+        <translation>等待</translation>
+    </message>
+    <message numerus="yes">
+        <source>%d frames</source>
+        <comment>edit_macro_wait_frames</comment>
+        <extracomment>Android plural quantities: one=&quot;%d frame&quot;; other=&quot;%d frames&quot;</extracomment>
+        <translation>
+            <numerusform>%d 帧</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wait Duration</source>
+        <comment>edit_macro_wait_title</comment>
+        <translation>等待时长</translation>
+    </message>
+    <message>
+        <source>%1$s Value</source>
+        <comment>edit_macro_value_title</comment>
+        <translation>%1$s 的值</translation>
+    </message>
+    <message>
+        <source>Action options</source>
+        <comment>edit_macro_action_options</comment>
+        <translation>动作选项</translation>
+    </message>
+    <message>
+        <source>Change Input</source>
+        <comment>edit_macro_change_input</comment>
+        <translation>更改输入</translation>
+    </message>
+    <message>
+        <source>Insert Input After</source>
+        <comment>edit_macro_insert_input_after</comment>
+        <translation>在后面插入输入</translation>
+    </message>
+    <message>
+        <source>Insert Wait After</source>
+        <comment>edit_macro_insert_wait_after</comment>
+        <translation>在后面插入等待</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <comment>edit_macro_record</comment>
+        <translation>录制</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <comment>edit_macro_stop_recording</comment>
+        <translation>停止录制</translation>
+    </message>
+    <message>
+        <source>Recording. Press the inputs of the sequence on a controller or keyboard, then tap Stop. Touchscreen input is not recorded.</source>
+        <comment>edit_macro_recording_message</comment>
+        <translation>正在录制。用手柄或键盘输入序列，然后点按「停止录制」。触摸屏输入不会被录制。</translation>
+    </message>
+    <message>
         <source>Enable Game Vibration</source>
         <comment>settings_touchscreen_enable_vibration</comment>
         <translation>启用游戏震动</translation>
@@ -5443,7 +5573,7 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Move Up</source>
-        <comment>postfx_setting_move_up</comment>
+        <comment>list_item_move_up</comment>
         <translation>上移</translation>
     </message>
     <message>
@@ -5463,12 +5593,12 @@ You can change this later with the &quot;Start in Big Picture Mode&quot; option 
     </message>
     <message>
         <source>Remove</source>
-        <comment>postfx_setting_remove_shader</comment>
+        <comment>list_item_remove</comment>
         <translation>删除</translation>
     </message>
     <message>
         <source>Move Down</source>
-        <comment>postfx_setting_move_down</comment>
+        <comment>list_item_move_down</comment>
         <translation>下移</translation>
     </message>
     <message>
@@ -6029,6 +6159,26 @@ Are you sure you want to continue?</source>
         <source>Steering</source>
         <comment>touchscreen_controller_steering</comment>
         <translation>转向</translation>
+    </message>
+    <message>
+        <source>Macro 5</source>
+        <comment>touchscreen_controller_macro_5</comment>
+        <translation>宏 5</translation>
+    </message>
+    <message>
+        <source>Macro 6</source>
+        <comment>touchscreen_controller_macro_6</comment>
+        <translation>宏 6</translation>
+    </message>
+    <message>
+        <source>Macro 7</source>
+        <comment>touchscreen_controller_macro_7</comment>
+        <translation>宏 7</translation>
+    </message>
+    <message>
+        <source>Macro 8</source>
+        <comment>touchscreen_controller_macro_8</comment>
+        <translation>宏 8</translation>
     </message>
     <message>
         <source>N/A</source>
@@ -9841,6 +9991,89 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
+    <name>ControllerBindingWidget_DDGo</name>
+    <message>
+        <source>Power Lever</source>
+        <translation>牵引手柄</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>牵引</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation>3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation>4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation>5</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>选择键</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>开始键</translation>
+    </message>
+    <message>
+        <source>Brake Lever</source>
+        <translation>制动手柄</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>制动</translation>
+    </message>
+    <message>
+        <source>Released</source>
+        <translation>缓解</translation>
+    </message>
+    <message>
+        <source>6</source>
+        <translation>6</translation>
+    </message>
+    <message>
+        <source>7</source>
+        <translation>7</translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation>8</translation>
+    </message>
+    <message>
+        <source>Emergency</source>
+        <translation>紧急制动</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation>A</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation>C</translation>
+    </message>
+</context>
+<context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
         <source>L1</source>
@@ -9965,6 +10198,93 @@ This warning will only be shown once.</source>
     <message>
         <source>Fire Offscreen</source>
         <translation>屏幕外射击</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_JogCon</name>
+    <message>
+        <source>D-Pad</source>
+        <translation>方向键</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>下</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>上</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <source>Vibration Motor</source>
+        <translation>振动马达</translation>
+    </message>
+    <message>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>选择键</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>开始键</translation>
+    </message>
+    <message>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>模式指示灯</translation>
+    </message>
+    <message>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <source>Face Buttons</source>
+        <translation>正面按键</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>叉键</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>方块键</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>三角键</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>圆圈键</translation>
+    </message>
+    <message>
+        <source>Force Feedback Device</source>
+        <translation>力反馈设备</translation>
+    </message>
+    <message>
+        <source>Steering</source>
+        <translation>转向</translation>
     </message>
 </context>
 <context>
@@ -10178,6 +10498,45 @@ This warning will only be shown once.</source>
     <message>
         <source>Small Motor</source>
         <translation>小电机</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Popn</name>
+    <message>
+        <source>Left Buttons</source>
+        <translation>左侧按键</translation>
+    </message>
+    <message>
+        <source>Yellow</source>
+        <translation>黄色</translation>
+    </message>
+    <message>
+        <source>Blue/Sel</source>
+        <translation>蓝色/选择</translation>
+    </message>
+    <message>
+        <source>White</source>
+        <translation>白色</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>绿色</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>选择键</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>开始键</translation>
+    </message>
+    <message>
+        <source>Right Buttons</source>
+        <translation>右侧按键</translation>
+    </message>
+    <message>
+        <source>Middle Red/Okay</source>
+        <translation>中央红键/确定</translation>
     </message>
 </context>
 <context>
@@ -10395,78 +10754,138 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <source>Binds/Buttons</source>
-        <translation>绑定/按钮</translation>
+        <source>The trigger activates the macro, and can be a single button or combination of buttons. Shift-click for multiple triggers.</source>
+        <translation>触发键用于激活宏，可以是单个按键或按键组合。按住 Shift 并点击可设置多个触发键。</translation>
     </message>
     <message>
-        <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>选择您想要用此宏来触发的按钮。全部按钮均同时激活。</translation>
-    </message>
-    <message>
-        <source>Pressure</source>
-        <translation>压力</translation>
-    </message>
-    <message>
-        <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation>对于压力感应按钮，该滑块用于控制宏激活时模拟的力的大小。</translation>
+        <source>Activation Deadzone:</source>
+        <translation>激活死区：</translation>
     </message>
     <message>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
+        <source>Sequence</source>
+        <translation>序列</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>动作</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>值</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>录制</translation>
+    </message>
+    <message>
+        <source>Replaces the sequence with one which holds a button, or toggles it on and off every N frames (turbo).</source>
+        <translation>将序列替换为按住一个按键或每隔 N 帧切换一次按下和松开状态的序列（连发）。</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>快速设置</translation>
+    </message>
+    <message>
+        <source>Add Input</source>
+        <translation>添加输入</translation>
+    </message>
+    <message>
+        <source>Add Wait</source>
+        <translation>添加等待</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>宏处于激活状态时循环执行序列，而非每次按下只执行一次。当前这一轮始终会执行完毕。</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>激活时循环</translation>
+    </message>
+    <message>
+        <source>Activates and deactivates the macro when the button is tapped instead of held.</source>
+        <translation>每次轻按按键即可激活或停用宏，无需持续按住。</translation>
+    </message>
+    <message>
         <source>Press To Toggle</source>
         <translation>按下以切换</translation>
     </message>
     <message>
-        <source>Deadzone:</source>
-        <translation>死区:</translation>
-    </message>
-    <message>
         <source>Controller %1 Macro %2</source>
         <translation>控制器%1宏%2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n 个按键</numerusform>
+        </translation>
     </message>
     <message>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <source>Set Frequency</source>
-        <translation>设置频率</translation>
+        <source>Frames to toggle %1 on and off for, or 0 to hold it:</source>
+        <translation>切换 %1 按下和松开状态的帧间隔（0 表示持续按住）：</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <source>Wait</source>
+        <translation>等待</translation>
     </message>
     <message numerus="yes">
-        <source>Macro will toggle buttons every %n frame(s).</source>
+        <source>%n frame(s)</source>
         <translation>
-            <numerusform>宏将每隔%n帧切换一次按钮。</numerusform>
+            <numerusform>%n 帧</numerusform>
         </translation>
     </message>
     <message>
-        <source>Macro will toggle every N frames.</source>
-        <translation>宏将每隔N帧切换一次。</translation>
+        <source> frames</source>
+        <translation> 帧</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <source>Sequence (%1, %2)</source>
+        <translation>序列（%1，%2）</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n action(s)</source>
+        <translation>
+            <numerusform>%n 个动作</numerusform>
+        </translation>
     </message>
     <message>
         <source>Not Configured</source>
         <translation>未配置</translation>
     </message>
     <message>
-        <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
-        <translation>选择激活此宏的触发器。可以是单个按钮，也可以是多个按钮同时按下的组合。按住Shift后点击可绑定多个触发器。</translation>
-    </message>
-    <message>
         <source>Trigger</source>
         <translation>触发器</translation>
-    </message>
-    <message>
-        <source>Frequency: </source>
-        <translation>频率: </translation>
-    </message>
-    <message>
-        <source>Frequency</source>
-        <translation>频率</translation>
-    </message>
-    <message>
-        <source>Macro will not repeat.</source>
-        <translation>宏将不会重复。</translation>
     </message>
 </context>
 <context>
@@ -12197,10 +12616,6 @@ Clicking Reset will restore the serial back to the value scanned from in the dis
         <translation>更改选择</translation>
     </message>
     <message>
-        <source>Change View</source>
-        <translation>更改视图</translation>
-    </message>
-    <message>
         <source>Changes settings for the application.</source>
         <translation>更改本应用程序的设置。</translation>
     </message>
@@ -12617,10 +13032,6 @@ You cannot undo this action.</source>
         <translation>将后绘制的多边形向摄像机方向偏移，偏移量以深度的百万分之一为单位。可减少贴花闪烁。</translation>
     </message>
     <message>
-        <source>Buttons</source>
-        <translation>按钮</translation>
-    </message>
-    <message>
         <source>Challenge Indicators</source>
         <translation>挑战指示器</translation>
     </message>
@@ -12801,6 +13212,10 @@ You cannot undo this action.</source>
         <translation>确定显示区域的裁剪量。</translation>
     </message>
     <message>
+        <source>Determines how the game list is displayed.</source>
+        <translation>设置游戏列表的显示方式。</translation>
+    </message>
+    <message>
         <source>Determines the format of the screenshot file names.</source>
         <translation>确定屏幕截图的文件名格式。</translation>
     </message>
@@ -12925,12 +13340,40 @@ You cannot undo this action.</source>
         <translation>帧率</translation>
     </message>
     <message>
+        <source>Grid</source>
+        <translation>网格</translation>
+    </message>
+    <message>
+        <source>Hold</source>
+        <translation>按住</translation>
+    </message>
+    <message>
         <source>Installed RAM</source>
         <translation>已安装 RAM</translation>
     </message>
     <message>
+        <source>Library</source>
+        <translation>游戏库</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>列表</translation>
+    </message>
+    <message>
         <source>List Icons</source>
         <translation>列表图标</translation>
+    </message>
+    <message>
+        <source>Loop While Active</source>
+        <translation>激活时循环</translation>
+    </message>
+    <message>
+        <source>Macro {} Sequence</source>
+        <translation>宏 {} 的序列</translation>
+    </message>
+    <message>
+        <source>Maximum amount of video memory used to cache cover art and other images in the Big Picture UI.</source>
+        <translation>大视画模式中用于缓存封面及其他图像的显存上限。</translation>
     </message>
     <message>
         <source>Menu Volume</source>
@@ -12945,8 +13388,20 @@ You cannot undo this action.</source>
         <translation>游戏静音</translation>
     </message>
     <message>
+        <source>No games found.</source>
+        <translation>未找到游戏。</translation>
+    </message>
+    <message>
+        <source>No inputs.</source>
+        <translation>没有输入。</translation>
+    </message>
+    <message>
         <source>Normalize Depth Scale</source>
         <translation>归一化深度缩放</translation>
+    </message>
+    <message>
+        <source>Not Configured</source>
+        <translation>未配置</translation>
     </message>
     <message>
         <source>Password</source>
@@ -12959,6 +13414,18 @@ You cannot undo this action.</source>
     <message>
         <source>Prevents the game from producing any audible sound.</source>
         <translation>使游戏不发出任何声音。</translation>
+    </message>
+    <message>
+        <source>Quick Setup</source>
+        <translation>快速设置</translation>
+    </message>
+    <message>
+        <source>Record</source>
+        <translation>录制</translation>
+    </message>
+    <message>
+        <source>Repeats the sequence while the macro is active, instead of playing it once for each press. The current repeat is always finished.</source>
+        <translation>宏处于激活状态时循环执行序列，而非每次按下只执行一次。当前这一轮始终会执行完毕。</translation>
     </message>
     <message>
         <source>Reset SPU On Game Start</source>
@@ -12983,10 +13450,6 @@ You cannot undo this action.</source>
     <message>
         <source>Shows every frame the game draws, evenly spaced. Only turn this off if your computer can&apos;t keep the game at full speed, and you&apos;re getting stuttering or crackling sound.</source>
         <translation>以均匀的间隔显示游戏绘制的每一帧。仅在计算机无法让游戏保持全速运行，且出现卡顿或爆音时才关闭此选项。</translation>
-    </message>
-    <message>
-        <source>Shows the game list as a grid instead of a vertical list.</source>
-        <translation>以网格而非垂直列表显示游戏列表。</translation>
     </message>
     <message>
         <source>State {0} of {1} (frame {2})</source>
@@ -13015,6 +13478,18 @@ You cannot undo this action.</source>
     <message>
         <source>Session: {}</source>
         <translation>会话: {}</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>应用</translation>
+    </message>
+    <message>
+        <source>Button</source>
+        <translation>按键</translation>
+    </message>
+    <message>
+        <source>Carousel</source>
+        <translation>封面流</translation>
     </message>
     <message>
         <source>Enable Stage</source>
@@ -13529,14 +14004,6 @@ Error was:</source>
     <message>
         <source>Remove From Chain</source>
         <translation>从链中移除</translation>
-    </message>
-    <message>
-        <source>Game Grid</source>
-        <translation>游戏网格</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation>游戏列表</translation>
     </message>
     <message>
         <source>Logs messages to duckstation.log in the user directory.</source>
@@ -14327,10 +14794,6 @@ Error was:</source>
         <translation>倒带保存频率</translation>
     </message>
     <message>
-        <source>Select Macro {} Binds</source>
-        <translation>设置宏{}绑定</translation>
-    </message>
-    <message>
         <source>BIOS Settings</source>
         <translation>BIOS设置</translation>
     </message>
@@ -14627,16 +15090,8 @@ Error was:</source>
         <translation>确定在激活宏之前忽略多少按钮压力。</translation>
     </message>
     <message>
-        <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation>确定宏激活时模拟的压力大小。</translation>
-    </message>
-    <message>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
         <translation>确定覆盖图像中用于绘制游戏画面的区域。</translation>
-    </message>
-    <message>
-        <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
-        <translation>确定宏切换按钮开和关 (又称自动触发) 的频率。</translation>
     </message>
     <message>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
@@ -14811,10 +15266,6 @@ Error was:</source>
         <translation>强制启用纹理上传跟踪，无论是否需要。</translation>
     </message>
     <message>
-        <source>Frequency</source>
-        <translation>频率</translation>
-    </message>
-    <message>
         <source>Game Display</source>
         <translation>游戏显示</translation>
     </message>
@@ -14833,10 +15284,6 @@ Error was:</source>
     <message>
         <source>Grey Matter</source>
         <translation>灰质</translation>
-    </message>
-    <message>
-        <source>Grid View</source>
-        <translation>网格视图</translation>
     </message>
     <message>
         <source>How much memory will be reserved for rewind states. Determines how far back you can rewind.</source>
@@ -15127,10 +15574,6 @@ Please check your username and password, and try again.</source>
         <translation>按下以切换</translation>
     </message>
     <message>
-        <source>Pressure</source>
-        <translation>压力</translation>
-    </message>
-    <message>
         <source>Prevents inputs from being processed when another application is active.</source>
         <translation>当其他应用程序处于活动状态时阻止处理输入。</translation>
     </message>
@@ -15383,6 +15826,10 @@ Please check your username and password, and try again.</source>
         <translation>选择 BIOS 镜像</translation>
     </message>
     <message>
+        <source>Select Button</source>
+        <translation>选择按键</translation>
+    </message>
+    <message>
         <source>Select Disc</source>
         <translation>选择光盘</translation>
     </message>
@@ -15453,6 +15900,10 @@ Please check your username and password, and try again.</source>
     <message>
         <source>Selects which location on the screen messages are displayed.</source>
         <translation>选择消息在屏幕上的显示位置。</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>序列</translation>
     </message>
     <message>
         <source>Serial (*)</source>
@@ -15611,6 +16062,10 @@ Please check your username and password, and try again.</source>
         <translation>第 {} 步，共 {} 步</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
         <source>Stops games from timing out while waiting for vertical blank when overclocking.</source>
         <translation>超频时，防止游戏等待垂直消隐期间超时。</translation>
     </message>
@@ -15639,6 +16094,10 @@ Please check your username and password, and try again.</source>
         <translation>在停止时切换到下一张光盘</translation>
     </message>
     <message>
+        <source>Texture Cache Size</source>
+        <translation>纹理缓存大小</translation>
+    </message>
+    <message>
         <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
         <translation>纹理调制裁剪 (&quot;旧版/v0&quot; GPU)</translation>
     </message>
@@ -15649,6 +16108,14 @@ Please check your username and password, and try again.</source>
     <message>
         <source>The BIOS file &apos;{}&apos; is already installed. Do you want to overwrite it?</source>
         <translation>BIOS 文件“{}”已安装。要覆盖它吗？</translation>
+    </message>
+    <message>
+        <source>The button to hold or toggle.</source>
+        <translation>要持续按住或交替按下和松开的按键。</translation>
+    </message>
+    <message>
+        <source>The inputs this macro plays, recorded or set up from a single button.</source>
+        <translation>此宏要回放的输入，可通过录制获得，也可用单个按键设置。</translation>
     </message>
     <message>
         <source>The unlock state for &apos;{}&apos; will be removed. This cannot be undone.</source>
@@ -15751,6 +16218,10 @@ Please check your username and password, and try again.</source>
         <translation>正在验证镜像</translation>
     </message>
     <message>
+        <source>View</source>
+        <translation>视图</translation>
+    </message>
+    <message>
         <source>Waits for your display to refresh before showing each frame, which stops tearing. Leave this on with GSync/FreeSync displays too.</source>
         <translation>在显示每一帧之前等待显示器刷新，以防止画面撕裂。使用 GSync/FreeSync 显示器时也请保持此选项开启。</translation>
     </message>
@@ -15787,6 +16258,14 @@ Do you want to {1} anyway?</source>
 您仍然想要{1}吗？</translation>
     </message>
     <message>
+        <source>{0} inputs, {1} frames</source>
+        <translation>{0} 个输入，{1} 帧</translation>
+    </message>
+    <message>
+        <source>{} frames</source>
+        <translation>{} 帧</translation>
+    </message>
+    <message>
         <source>{} of {}</source>
         <translation>{}/{}</translation>
     </message>
@@ -15813,10 +16292,6 @@ Do you want to {1} anyway?</source>
     <message>
         <source>shut down</source>
         <translation>关闭</translation>
-    </message>
-    <message>
-        <source>{} Frames</source>
-        <translation>{}帧</translation>
     </message>
     <message>
         <source>{} deleted.</source>
@@ -16074,6 +16549,12 @@ Do you want to {1} anyway?</source>
         <comment>Loading time</comment>
         <translation>
             <numerusform>剩余%n分</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n button(s)</source>
+        <translation>
+            <numerusform>%n 个按键</numerusform>
         </translation>
     </message>
     <message numerus="yes">
