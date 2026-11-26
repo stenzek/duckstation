@@ -56,6 +56,16 @@ MemoryCard::~MemoryCard()
   s_save_pending[m_index].wait(true, std::memory_order_acquire);
 }
 
+void MemoryCard::SetIndex(u32 index)
+{
+  if (m_index == index)
+    return;
+
+  // Wait for pending saves, they use the index.
+  Flush();
+  m_index = index;
+}
+
 TickCount MemoryCard::GetSaveDelayInTicks()
 {
   return System::GetTicksPerSecond() * SAVE_DELAY_IN_SECONDS;
@@ -79,10 +89,45 @@ void MemoryCard::Flush()
   s_save_pending[m_index].wait(true, std::memory_order_acquire);
 }
 
-bool MemoryCard::DoState(StateWrapper& sw)
+bool MemoryCard::DoState(StateWrapper& sw, bool ignore_state_on_data_mismatch)
 {
   if (sw.IsReading())
-    SaveIfChanged(true);
+  {
+    if (ignore_state_on_data_mismatch)
+    {
+      // Card data follows the header fields, and is followed by m_changed.
+      static constexpr u32 DATA_OFFSET = STATE_SIZE - MemoryCardImage::DATA_SIZE - 1;
+      if ((sw.GetDataSize() - sw.GetPosition()) < STATE_SIZE)
+        return false;
+
+      if (std::memcmp(sw.GetData() + sw.GetPosition() + DATA_OFFSET, m_data.data(), m_data.size()) != 0)
+      {
+        Host::AddIconOSDMessage(
+          OSDMessageType::Error, fmt::format("CardLoadWarning{}", m_index), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("Pad", "Memory card {} from save state does not match current card data."),
+                      m_index + 1u),
+          TRANSLATE_STR("Pad", "Simulating replugging. The game may not be able to handle this."));
+
+        WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", m_index + 1u);
+        System::SetTaint(System::Taint::MemoryCardMismatch);
+        sw.SkipBytes(STATE_SIZE);
+        Reset();
+        return !sw.HasError();
+      }
+
+      // Don't save here, the card may be partway through a sector write. Drop the pending save too, its time is
+      // from this session. The card is saved on the next write or at shutdown instead.
+      DEV_LOG("Card {} data matches, copying state", m_index + 1u);
+      m_save_event.Deactivate();
+    }
+    else
+    {
+      SaveIfChanged(true);
+    }
+  }
+
+  // Unsaved changes to matching card data must not be dropped. Always false after SaveIfChanged() above.
+  const bool live_changed = m_changed;
 
   sw.Do(&m_state, State::GetID4);
   sw.Do(&m_FLAG.bits);
@@ -94,22 +139,12 @@ bool MemoryCard::DoState(StateWrapper& sw)
   sw.Do(&m_changed);
 
   if (sw.IsReading())
+  {
     m_sector_offset &= OFFSET_MASK;
+    m_changed |= live_changed;
+  }
 
   return !sw.HasError();
-}
-
-void MemoryCard::CopyState(const MemoryCard* src)
-{
-  DebugAssert(m_data == src->m_data);
-
-  m_state = src->m_state;
-  m_FLAG.bits = src->m_FLAG.bits;
-  m_address = src->m_address;
-  m_sector_offset = src->m_sector_offset;
-  m_checksum = src->m_checksum;
-  m_last_byte = src->m_last_byte;
-  m_changed = src->m_changed;
 }
 
 void MemoryCard::ResetTransferState()

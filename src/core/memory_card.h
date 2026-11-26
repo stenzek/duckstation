@@ -31,8 +31,8 @@ public:
 
   void Reset();
   void Flush();
-  bool DoState(StateWrapper& sw);
-  void CopyState(const MemoryCard* src);
+  void SetIndex(u32 index);
+  bool DoState(StateWrapper& sw, bool ignore_state_on_data_mismatch = false);
 
   void ResetTransferState();
   bool Transfer(const u8 data_in, u8* data_out);

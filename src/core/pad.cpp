@@ -144,7 +144,6 @@ static bool MultitapTransferMemoryCard(u32 port, u32 slot, u8 data_in, u8* data_
 
 static bool DoStateController(StateWrapper& sw, u32 i);
 static bool DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state);
-static MemoryCard* GetDummyMemcard();
 static void BackupMemoryCardState();
 static void RestoreMemoryCardState();
 static void UpdateMemoryCardTransferFrame();
@@ -190,7 +189,6 @@ struct PadState
 
   u32 last_memory_card_transfer_frame = 0;
   DynamicHeapArray<u8> memory_card_backup;
-  std::unique_ptr<MemoryCard> dummy_card;
 };
 } // namespace
 
@@ -303,55 +301,28 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     s_state.memory_cards[i] = MemoryCard::Create(i);
   }
 
-  MemoryCard* card_ptr = s_state.memory_cards[i].get();
   if (card_present_in_state)
   {
-    if (sw.IsReading() && !g_settings.load_devices_from_save_states)
-    {
-      // load memcard into a temporary: If the card datas match, take the one from the savestate
-      // since it has other useful non-data state information. Otherwise take the user's card
-      // and perform a re-plugging.
-      card_ptr = GetDummyMemcard();
-    }
-
-    if (!sw.DoMarker("MemoryCard") || !card_ptr->DoState(sw))
+    if (!sw.DoMarker("MemoryCard"))
       return false;
-  }
 
-  if (sw.IsWriting())
-    return true; // all done as far as writes concerned.
-
-  if (card_ptr != s_state.memory_cards[i].get())
-  {
-    if (s_state.memory_cards[i])
-    {
-      if (s_state.memory_cards[i]->GetData() == card_ptr->GetData())
-      {
-        DEV_LOG("Card {} data matches, copying state", i + 1u);
-        s_state.memory_cards[i]->CopyState(card_ptr);
-      }
-      else
-      {
-        Host::AddIconOSDMessage(
-          OSDMessageType::Error, fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
-          fmt::format(TRANSLATE_FS("Pad", "Memory card {} from save state does not match current card data."), i + 1u),
-          TRANSLATE_STR("Pad", "Simulating replugging. The game may not be able to handle this."));
-
-        WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
-        System::SetTaint(System::Taint::MemoryCardMismatch);
-        s_state.memory_cards[i]->Reset();
-      }
-    }
-    else
+    if (!s_state.memory_cards[i])
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Error, fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
         fmt::format(TRANSLATE_FS("Pad", "Memory card {} present in save state but not in system."), i + 1u),
         TRANSLATE_STR("Pad", "Ignoring card."));
+      sw.SkipBytes(MemoryCard::STATE_SIZE);
+      return !sw.HasError();
     }
 
-    return true;
+    // When not loading devices, a card whose data differs from the save state is kept and reinserted.
+    if (!s_state.memory_cards[i]->DoState(sw, sw.IsReading() && !g_settings.load_devices_from_save_states))
+      return false;
   }
+
+  if (sw.IsWriting())
+    return true; // all done as far as writes concerned.
 
   if (!card_present_in_state && s_state.memory_cards[i])
   {
@@ -374,13 +345,6 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   }
 
   return true;
-}
-
-MemoryCard* Pad::GetDummyMemcard()
-{
-  if (!s_state.dummy_card)
-    s_state.dummy_card = MemoryCard::Create(0);
-  return s_state.dummy_card.get();
 }
 
 void Pad::BackupMemoryCardState()
@@ -495,13 +459,14 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     // Still have to parse through the data if it's present.
     if (state_has_memcards)
     {
-      MemoryCard* dummy_card = process_memcard_state ? nullptr : GetDummyMemcard();
       for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
       {
         if (s_state.memory_cards[i])
         {
-          MemoryCard* const mc = process_memcard_state ? s_state.memory_cards[i].get() : dummy_card;
-          mc->DoState(sw);
+          if (process_memcard_state)
+            s_state.memory_cards[i]->DoState(sw);
+          else
+            sw.SkipBytes(MemoryCard::STATE_SIZE);
         }
       }
     }
@@ -602,6 +567,9 @@ void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
 {
   INFO_LOG("Memory card slot {}: {}", slot,
            dev ? (dev->GetPath().empty() ? "<no file configured>" : dev->GetPath().c_str()) : "<unplugged>");
+
+  if (dev)
+    dev->SetIndex(slot);
 
   s_state.memory_cards[slot] = std::move(dev);
 }
@@ -1085,7 +1053,7 @@ bool Pad::MultitapTransfer(u32 port, const u8 data_in, u8* data_out)
           // Only an access to Slot A can return all controllers, the other slots are always accessed on their own.
           if (tap.transfer_all_controllers && tap.selected_slot == 0)
           {
-            // Send access byte to remaining controllers for this transfer mode.
+            // Slot A's access byte also goes to the other three controllers in this mode.
             u8 controller_data_out;
             for (u32 i = 1; i < 4; i++)
               MultitapTransferController(port, i, 0x01, &controller_data_out);
@@ -1123,7 +1091,7 @@ bool Pad::MultitapTransfer(u32 port, const u8 data_in, u8* data_out)
       {
         if (all_controllers)
         {
-          // Unknown if 0x42 is the only valid command byte here, but other tested command bytes cause early aborts
+          // Only 42h is known to work for all controllers. Other tested commands abort early.
           *data_out = 0x80;
           tap.invalid_transfer_all_command = (data_in != 0x42);
           ack = true;
@@ -1152,7 +1120,7 @@ bool Pad::MultitapTransfer(u32 port, const u8 data_in, u8* data_out)
           tap.transfer_state = MultitapTransferState::SingleController;
         }
 
-        // Queue up request for next transfer cycle (not sure if this is always queued on invalid commands)
+        // Bit 0 selects all-controllers mode for the next access.
         tap.transfer_all_controllers = (data_in & 0x01);
         tap.controller_transfer_step = 0;
       }

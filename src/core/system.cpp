@@ -4392,6 +4392,9 @@ void System::SwapMemoryCards()
   if (!IsValid())
     return;
 
+  // need to invalidate runahead states, because it stores memory card data
+  ClearMemorySaveStates(false, false);
+
   std::unique_ptr<MemoryCard> first = Pad::RemoveMemoryCard(0);
   std::unique_ptr<MemoryCard> second = Pad::RemoveMemoryCard(1);
   Pad::SetMemoryCard(0, std::move(second));
