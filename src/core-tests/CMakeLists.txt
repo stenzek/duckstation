@@ -22,6 +22,7 @@ add_executable(core-tests
   macro_sequence_tests.cpp
   mdec_tests.cpp
   negcon_base_tests.cpp
+  pad_tests.cpp
   psxdiag_tests.cpp
   spu_tests.cpp
   stub_host.cpp
