@@ -9,8 +9,11 @@
 #include "core/memory_card.h"
 #include "core/multitap.h"
 #include "core/pad.h"
+#include "core/save_state_version.h"
 #include "core/system.h"
 #include "core/timing_event.h"
+
+#include "util/state_wrapper.h"
 
 #include <gtest/gtest.h>
 
@@ -108,12 +111,11 @@ static std::vector<u8> AllControllersPoll(u8 first = 0x01)
 /// Fills a sector with a pattern, and returns the expected reply to reading it with ReadSectorCommand().
 static std::vector<u8> PrepareReadSector(MemoryCard* card, u16 sector, u8 seed = 0)
 {
-  const u16 masked = sector & 0x3FF; // 1024 sectors
-  u8* const data = card->GetData().data() + masked * MemoryCardImage::FRAME_SIZE;
-  u8 checksum = Truncate8(masked >> 8) ^ Truncate8(masked);
+  u8* const data = card->GetData().data() + sector * MemoryCardImage::FRAME_SIZE;
+  u8 checksum = Truncate8(sector >> 8) ^ Truncate8(sector);
 
   std::vector<u8> ret = {
-    0xFF, 0x08, 0x5A, 0x5D, 0x00, Truncate8(sector >> 8), 0x5C, 0x5D, Truncate8(masked >> 8), Truncate8(masked)};
+    0xFF, 0x08, 0x5A, 0x5D, 0x00, Truncate8(sector >> 8), 0x5C, 0x5D, Truncate8(sector >> 8), Truncate8(sector)};
   for (u32 i = 0; i < MemoryCardImage::FRAME_SIZE; i++)
   {
     data[i] = static_cast<u8>(i * 5 + sector + seed);
@@ -834,14 +836,66 @@ TEST_F(PadTest, InvalidCommands)
   EXPECT_EQ(Command(GetIDCommand(0x81)), GET_ID_REPLY);
 }
 
-TEST_F(PadTest, MemoryCardAddressMask)
+TEST_F(PadTest, MemoryCardInvalidSector)
 {
   MemoryCard* const card = PlugMemoryCard(1);
 
-  // Sector 0xFFFF is masked to 0x3FF. The echoed LSB is the previous byte sent.
-  const std::vector<u8> expected = PrepareReadSector(card, 0xFFFF);
+  // Like Sony cards, sectors past 0x3FF are confirmed as FFFF, and the transfer ends there.
+  for (const u16 sector : {0x400, 0xFFFF})
+  {
+    Select(1);
+    EXPECT_EQ(Command({0x81, 0x52, 0x00, 0x00, Truncate8(sector >> 8), Truncate8(sector), 0x00, 0x00, 0x00, 0x00}),
+              (std::vector<u8>{0xFF, 0x08, 0x5A, 0x5D, 0x00, Truncate8(sector >> 8), 0x5C, 0x5D, 0xFF, 0xFF}))
+      << "sector 0x" << std::hex << sector;
+    Deselect();
+  }
+
+  // The last valid sector still works.
+  const std::vector<u8> expected = PrepareReadSector(card, 0x3FF);
   Select(1);
-  EXPECT_EQ(Command(ReadSectorCommand(0x81, 0xFFFF)), expected);
+  EXPECT_EQ(Command(ReadSectorCommand(0x81, 0x3FF)), expected);
+  Deselect();
+
+  // Writes to invalid sectors don't change anything.
+  const MemoryCardImage::DataArray before = card->GetData();
+  std::vector<u8> tx = {0x81, 0x57, 0x00, 0x00, 0x04, 0x00};
+  tx.resize(tx.size() + MemoryCardImage::FRAME_SIZE, 0xAA);
+  tx.insert(tx.end(), {0x04, 0x00, 0x00, 0x00});
+  Select(1);
+  Command(tx);
+  EXPECT_EQ(card->GetData(), before);
+}
+
+TEST_F(PadTest, MemoryCardInvalidSector_SaveState)
+{
+  MemoryCard* const card = PlugMemoryCard(0);
+  const MemoryCardImage::DataArray before = card->GetData();
+
+  // Saving and loading a state partway through a command keeps the invalid sector, instead of wrapping it to sector 0.
+  const auto round_trip = [card]() {
+    std::vector<u8> data(2 * sizeof(MemoryCardImage::DataArray));
+    StateWrapper write_sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+    ASSERT_TRUE(card->DoState(write_sw));
+    StateWrapper read_sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+    ASSERT_TRUE(card->DoState(read_sw));
+  };
+
+  Select(0);
+  for (const u8 tx : {0x81, 0x52, 0x00, 0x00, 0x04, 0x00})
+    EXPECT_TRUE(Exchange(tx).ack);
+  round_trip();
+  EXPECT_EQ(Command({0x00, 0x00, 0x00, 0x00}), (std::vector<u8>{0x5C, 0x5D, 0xFF, 0xFF}));
+  Deselect();
+
+  Select(0);
+  for (const u8 tx : {0x81, 0x57, 0x00, 0x00, 0x04, 0x00})
+    EXPECT_TRUE(Exchange(tx).ack);
+  round_trip();
+  std::vector<u8> tx(MemoryCardImage::FRAME_SIZE, 0xAA);
+  tx.insert(tx.end(), {0x04, 0x00, 0x00, 0x00});
+  Command(tx);
+  Deselect();
+  EXPECT_EQ(card->GetData(), before);
 }
 
 TEST_F(PadTest, ACKTiming_WholeCommands)

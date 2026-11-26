@@ -94,10 +94,7 @@ bool MemoryCard::DoState(StateWrapper& sw)
   sw.Do(&m_changed);
 
   if (sw.IsReading())
-  {
-    m_address &= ADDRESS_MASK;
     m_sector_offset &= OFFSET_MASK;
-  }
 
   return !sw.HasError();
 }
@@ -148,7 +145,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   {                                                                                                                    \
     *data_out = 0x00;                                                                                                  \
     ack = true;                                                                                                        \
-    m_address = ((m_address & u16(0x00FF)) | (ZeroExtend16(data_in) << 8)) & ADDRESS_MASK;                             \
+    m_address = (m_address & u16(0x00FF)) | (ZeroExtend16(data_in) << 8);                                              \
     m_state = next_state;                                                                                              \
   }                                                                                                                    \
   break;
@@ -158,7 +155,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   {                                                                                                                    \
     *data_out = m_last_byte;                                                                                           \
     ack = true;                                                                                                        \
-    m_address = ((m_address & u16(0xFF00)) | ZeroExtend16(data_in)) & ADDRESS_MASK;                                    \
+    m_address = (m_address & u16(0xFF00)) | ZeroExtend16(data_in);                                                     \
     m_sector_offset = 0;                                                                                               \
     m_state = next_state;                                                                                              \
   }                                                                                                                    \
@@ -172,12 +169,25 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     ADDRESS_STATE_LSB(State::ReadAddressLSB, State::ReadACK1);
     FIXED_REPLY_STATE(State::ReadACK1, 0x5C, true, State::ReadACK2);
     FIXED_REPLY_STATE(State::ReadACK2, 0x5D, true, State::ReadConfirmAddressMSB);
-    FIXED_REPLY_STATE(State::ReadConfirmAddressMSB, Truncate8(m_address >> 8), true, State::ReadConfirmAddressLSB);
-    FIXED_REPLY_STATE(State::ReadConfirmAddressLSB, Truncate8(m_address), true, State::ReadData);
+
+    // Official cards confirm invalid sectors as FFFFh, and end the transfer there.
+    FIXED_REPLY_STATE(State::ReadConfirmAddressMSB, (m_address > ADDRESS_MASK) ? 0xFF : Truncate8(m_address >> 8), true,
+                      State::ReadConfirmAddressLSB);
+
+    case State::ReadConfirmAddressLSB:
+    {
+      const bool valid = (m_address <= ADDRESS_MASK);
+      *data_out = valid ? Truncate8(m_address) : 0xFF;
+      ack = valid;
+      m_state = valid ? State::ReadData : State::Idle;
+    }
+    break;
 
     case State::ReadData:
     {
-      const u8 bits = m_data[ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset];
+      const u8 bits = (m_address <= ADDRESS_MASK) ?
+                        m_data[ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset] :
+                        0xFF;
       if (m_sector_offset == 0)
       {
         DEV_LOG("Reading memory card sector {}", m_address);
@@ -225,9 +235,12 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         m_checksum ^= data_in;
       }
 
-      const u32 offset = ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset;
-      m_changed |= (m_data[offset] != data_in);
-      m_data[offset] = data_in;
+      if (m_address <= ADDRESS_MASK)
+      {
+        const u32 offset = ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset;
+        m_changed |= (m_data[offset] != data_in);
+        m_data[offset] = data_in;
+      }
 
       *data_out = m_last_byte;
       ack = true;
