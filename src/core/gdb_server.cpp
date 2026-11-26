@@ -1,5 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
+// Original GDB server idea and protocol implementation by Jean-Baptiste Boric,
+// credit maintained for historical reasons (no original code remains).
 
 #include "gdb_server.h"
 
@@ -297,26 +300,24 @@ private:
 
 } // namespace
 
-static u8 ComputeChecksum(std::string_view str);
-
-static bool Cmd$_questionMark(ClientSocket* client, std::string_view data);
-static bool Cmd$g(ClientSocket* client, std::string_view data);
-static bool Cmd$G(ClientSocket* client, std::string_view data);
-static bool Cmd$p(ClientSocket* client, std::string_view data);
-static bool Cmd$P(ClientSocket* client, std::string_view data);
-static bool Cmd$H(ClientSocket* client, std::string_view data);
-static bool Cmd$m(ClientSocket* client, std::string_view data);
-static bool Cmd$M(ClientSocket* client, std::string_view data);
-static bool Cmd$c(ClientSocket* client, std::string_view data);
-static bool Cmd$C(ClientSocket* client, std::string_view data);
-static bool Cmd$s(ClientSocket* client, std::string_view data);
-static bool Cmd$S(ClientSocket* client, std::string_view data);
+static bool HandleStopReasonCommand(ClientSocket* client, std::string_view data);
+static bool HandleReadGeneralRegistersCommand(ClientSocket* client, std::string_view data);
+static bool HandleWriteGeneralRegistersCommand(ClientSocket* client, std::string_view data);
+static bool HandleReadRegisterCommand(ClientSocket* client, std::string_view data);
+static bool HandleWriteRegisterCommand(ClientSocket* client, std::string_view data);
+static bool HandleSetThreadCommand(ClientSocket* client, std::string_view data);
+static bool HandleReadMemoryCommand(ClientSocket* client, std::string_view data);
+static bool HandleWriteMemoryCommand(ClientSocket* client, std::string_view data);
+static bool HandleContinueCommand(ClientSocket* client, std::string_view data);
+static bool HandleContinueWithSignalCommand(ClientSocket* client, std::string_view data);
+static bool HandleSingleStepCommand(ClientSocket* client, std::string_view data);
+static bool HandleSingleStepWithSignalCommand(ClientSocket* client, std::string_view data);
 template<bool add_breakpoint>
-static bool Cmd$z(ClientSocket* client, std::string_view data);
-static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
-static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
-static bool Cmd$qXferFeaturesRead(ClientSocket* client, std::string_view data);
-static bool Cmd$qXferMemoryMapRead(ClientSocket* client, std::string_view data);
+static bool HandleBreakpointCommand(ClientSocket* client, std::string_view data);
+static bool HandleMustReplyEmptyCommand(ClientSocket* client, std::string_view data);
+static bool HandleQuerySupportedCommand(ClientSocket* client, std::string_view data);
+static bool HandleReadFeaturesCommand(ClientSocket* client, std::string_view data);
+static bool HandleReadMemoryMapCommand(ClientSocket* client, std::string_view data);
 
 static bool ParseOptionalAddress(std::string_view data, std::optional<VirtualMemoryAddress>* address);
 static bool ParseSignalAndOptionalAddress(std::string_view data, u8* signal,
@@ -334,14 +335,19 @@ static CPU::BreakpointCallbackAction OnBreakpointHit(CPU::BreakpointType type, V
 
 static bool IsPacketAck(std::string_view data);
 static bool IsPacketInterrupt(std::string_view data);
-
 static bool IsPacketComplete(std::string_view data);
+
+static u8 CalculateChecksum(std::string_view str);
+
 static bool ProcessPacket(ClientSocket* socket, std::string_view data);
 
 /// Number of registers in the legacy GDB remote protocol packet for MIPS I.
 static constexpr u32 NUM_GDB_REGISTERS = 73;
 static constexpr u32 FIRST_GTE_GDB_REGISTER = NUM_GDB_REGISTERS;
 static constexpr u32 NUM_EXTENDED_GDB_REGISTERS = NUM_GDB_REGISTERS + GTE::NUM_REGS;
+
+/// The remote protocol marks a register as unavailable with an 'x' in place of each hex digit, here for 32 bits.
+static constexpr std::string_view UNAVAILABLE_REGISTER_VALUE = "xxxxxxxx";
 
 /// List of GDB remote protocol registers for MIPS I (excluding FP).
 static constexpr std::array<u32*, 38> REGISTERS{
@@ -388,24 +394,24 @@ static constexpr std::array<u32*, 38> REGISTERS{
 
 /// List of all GDB remote protocol packets supported by us.
 static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string_view)> COMMANDS[] = {
-  {"?", Cmd$_questionMark},
-  {"g", Cmd$g},
-  {"G", Cmd$G},
-  {"p", Cmd$p},
-  {"P", Cmd$P},
-  {"H", Cmd$H},
-  {"m", Cmd$m},
-  {"M", Cmd$M},
-  {"c", Cmd$c},
-  {"C", Cmd$C},
-  {"s", Cmd$s},
-  {"S", Cmd$S},
-  {"z", Cmd$z<false>},
-  {"Z", Cmd$z<true>},
-  {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
-  {"qXfer:features:read:", Cmd$qXferFeaturesRead},
-  {"qXfer:memory-map:read:", Cmd$qXferMemoryMapRead},
-  {"qSupported", Cmd$qSupported},
+  {"?", HandleStopReasonCommand},
+  {"g", HandleReadGeneralRegistersCommand},
+  {"G", HandleWriteGeneralRegistersCommand},
+  {"p", HandleReadRegisterCommand},
+  {"P", HandleWriteRegisterCommand},
+  {"H", HandleSetThreadCommand},
+  {"m", HandleReadMemoryCommand},
+  {"M", HandleWriteMemoryCommand},
+  {"c", HandleContinueCommand},
+  {"C", HandleContinueWithSignalCommand},
+  {"s", HandleSingleStepCommand},
+  {"S", HandleSingleStepWithSignalCommand},
+  {"z", HandleBreakpointCommand<false>},
+  {"Z", HandleBreakpointCommand<true>},
+  {"vMustReplyEmpty", HandleMustReplyEmptyCommand},
+  {"qXfer:features:read:", HandleReadFeaturesCommand},
+  {"qXfer:memory-map:read:", HandleReadMemoryMapCommand},
+  {"qSupported", HandleQuerySupportedCommand},
 };
 
 namespace {
@@ -424,17 +430,7 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 } // namespace GDBServer
 
-u8 GDBServer::ComputeChecksum(std::string_view str)
-{
-  u8 checksum = 0;
-  for (char c : str)
-    checksum = (checksum + c) % 256;
-
-  return checksum;
-}
-
-/// Get stop reason.
-bool GDBServer::Cmd$_questionMark(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleStopReasonCommand(ClientSocket* client, std::string_view data)
 {
   if (!data.empty())
   {
@@ -557,8 +553,7 @@ bool GDBServer::WriteRegisterValue(u32 index, u32 value)
   return false;
 }
 
-/// Get general registers.
-bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleReadGeneralRegistersCommand(ClientSocket* client, std::string_view data)
 {
   if (!data.empty())
   {
@@ -571,9 +566,10 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
   for (const u32* reg : REGISTERS)
     AppendRegisterValue(&reply, *reg);
 
-  // Pad with dummy data (FP registers stuff).
+  // The rest of the legacy packet is registers which the PS1 CPU lacks, mostly FPU ones. They still need
+  // to be sent as unavailable, so that the packet is the size GDB expects.
   for (u32 i = static_cast<u32>(REGISTERS.size()); i < NUM_GDB_REGISTERS; i++)
-    reply.append("xxxxxxxx");
+    reply.append(UNAVAILABLE_REGISTER_VALUE);
 
   if (client->IsUsingTargetDescription())
   {
@@ -585,8 +581,7 @@ bool GDBServer::Cmd$g(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Set general registers.
-bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleWriteGeneralRegistersCommand(ClientSocket* client, std::string_view data)
 {
   const u32 num_registers = client->IsUsingTargetDescription() ? NUM_EXTENDED_GDB_REGISTERS : NUM_GDB_REGISTERS;
   if (data.size() != (num_registers * sizeof(u32) * 2))
@@ -657,8 +652,7 @@ bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Get one register.
-bool GDBServer::Cmd$p(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleReadRegisterCommand(ClientSocket* client, std::string_view data)
 {
   std::string_view end;
   const std::optional<u32> index = StringUtil::FromChars<u32>(data, 16, &end);
@@ -673,7 +667,7 @@ bool GDBServer::Cmd$p(ClientSocket* client, std::string_view data)
   const std::optional<u32> value = ReadRegisterValue(index.value());
   if (!value.has_value())
   {
-    client->SendReplyWithAck("xxxxxxxx");
+    client->SendReplyWithAck(UNAVAILABLE_REGISTER_VALUE);
     return true;
   }
 
@@ -683,8 +677,7 @@ bool GDBServer::Cmd$p(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Set one register.
-bool GDBServer::Cmd$P(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleWriteRegisterCommand(ClientSocket* client, std::string_view data)
 {
   std::string_view caret;
   const std::optional<u32> index = StringUtil::FromChars<u32>(data, 16, &caret);
@@ -709,16 +702,16 @@ bool GDBServer::Cmd$P(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Thread operations, ignored.
-bool GDBServer::Cmd$H(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleSetThreadCommand(ClientSocket* client, std::string_view data)
 {
+  // Thread operations, ignored.
+
   WARNING_LOG("Ignoring thread command '{}'", data);
   client->SendReplyWithAck("OK");
   return true;
 }
 
-/// Get memory.
-bool GDBServer::Cmd$m(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleReadMemoryCommand(ClientSocket* client, std::string_view data)
 {
   // address,length
   std::string_view caret = data;
@@ -756,8 +749,7 @@ bool GDBServer::Cmd$m(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Set memory.
-bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleWriteMemoryCommand(ClientSocket* client, std::string_view data)
 {
   // address,length:data
   std::string_view caret = data;
@@ -803,8 +795,7 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Continue.
-bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleContinueCommand(ClientSocket* client, std::string_view data)
 {
   std::optional<VirtualMemoryAddress> address;
   if (!ParseOptionalAddress(data, &address))
@@ -821,8 +812,7 @@ bool GDBServer::Cmd$c(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Continue with signal.
-bool GDBServer::Cmd$C(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleContinueWithSignalCommand(ClientSocket* client, std::string_view data)
 {
   u8 signal;
   std::optional<VirtualMemoryAddress> address;
@@ -841,8 +831,7 @@ bool GDBServer::Cmd$C(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Single step.
-bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleSingleStepCommand(ClientSocket* client, std::string_view data)
 {
   std::optional<VirtualMemoryAddress> address;
   if (!ParseOptionalAddress(data, &address))
@@ -859,8 +848,7 @@ bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Single step with signal.
-bool GDBServer::Cmd$S(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleSingleStepWithSignalCommand(ClientSocket* client, std::string_view data)
 {
   u8 signal;
   std::optional<VirtualMemoryAddress> address;
@@ -879,11 +867,11 @@ bool GDBServer::Cmd$S(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Remove hardware breakpoint (z).
-/// Insert hardware breakpoint (Z).
 template<bool add_breakpoint>
-bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleBreakpointCommand(ClientSocket* client, std::string_view data)
 {
+  // Handles both remove hardware breakpoint (z) and insert hardware breakpoint (Z).
+
   std::string_view caret = data;
   std::optional<u32> bptype;
   std::optional<VirtualMemoryAddress> bpaddr;
@@ -934,31 +922,35 @@ bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
   return true;
 }
 
-template bool GDBServer::Cmd$z<false>(ClientSocket* client, std::string_view data);
-template bool GDBServer::Cmd$z<true>(ClientSocket* client, std::string_view data);
+template bool GDBServer::HandleBreakpointCommand<false>(ClientSocket* client, std::string_view data);
+template bool GDBServer::HandleBreakpointCommand<true>(ClientSocket* client, std::string_view data);
 
-bool GDBServer::Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleMustReplyEmptyCommand(ClientSocket* client, std::string_view data)
 {
+  // Unknown packet probe, must send an empty reply.
+
   client->SendReplyWithAck();
   return true;
 }
 
-bool GDBServer::Cmd$qSupported(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleQuerySupportedCommand(ClientSocket* client, std::string_view data)
 {
   client->SendReplyWithAck(
     TinyString::from_format("PacketSize={:x};qXfer:features:read+;qXfer:memory-map:read+", MAX_PACKET_SIZE));
   return true;
 }
 
-bool GDBServer::Cmd$qXferFeaturesRead(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleReadFeaturesCommand(ClientSocket* client, std::string_view data)
 {
+  // Get target description.
+
   if (data.starts_with("target.xml:"))
     client->SetUseTargetDescription();
 
   return SendXferRead(client, data, "target.xml", TARGET_XML);
 }
 
-bool GDBServer::Cmd$qXferMemoryMapRead(ClientSocket* client, std::string_view data)
+bool GDBServer::HandleReadMemoryMapCommand(ClientSocket* client, std::string_view data)
 {
   return SendXferRead(client, data, {}, MEMORY_MAP_XML);
 }
@@ -1087,45 +1079,49 @@ bool GDBServer::IsPacketComplete(std::string_view data)
   return ((data.size() == 1) && (data[0] == '\003')) || ((data.size() > 3) && (*(data.end() - 3) == '#'));
 }
 
+u8 GDBServer::CalculateChecksum(std::string_view str)
+{
+  u8 ret = 0;
+  for (const char c : str)
+    ret += static_cast<u8>(c);
+
+  return ret;
+}
+
 bool GDBServer::ProcessPacket(ClientSocket* client, std::string_view data)
 {
-  // Validate packet.
-  if ((data.size() < 4) || (data[0] != '$') || (data[data.size() - 3] != '#'))
+  if ((data.size() < 4) || (data[0] != '$') || (data[data.size() - 3] != '#')) [[unlikely]]
   {
     ERROR_LOG("Invalid packet: {}", data);
     return false;
   }
 
-  // Verify checksum.
   const std::string_view request = data.substr(1, data.size() - 4);
   std::array<u8, 1> packet_checksum;
-  if (StringUtil::DecodeHex(packet_checksum, data.substr(data.size() - 2, 2)) != 1)
+  if (StringUtil::DecodeHex(packet_checksum, data.substr(data.size() - 2, 2)) != 1) [[unlikely]]
   {
     ERROR_LOG("Invalid checksum in packet '{}'", data);
     return false;
   }
 
-  const u8 computed_checksum = ComputeChecksum(request);
-  if (packet_checksum[0] != computed_checksum)
+  const u8 computed_checksum = CalculateChecksum(request);
+  if (packet_checksum[0] != computed_checksum) [[unlikely]]
   {
     ERROR_LOG("Incorrect checksum, expected 0x{:02x} got 0x{:02x} for '{}'", computed_checksum, packet_checksum[0],
               data);
     return false;
   }
 
-  // Try to invoke packet command.
   for (const auto& command : COMMANDS)
   {
     if (request.starts_with(command.first))
     {
+      // NOTE: Command handler doesn't get the command name prefix.
       DEV_LOG("Processing command '{}'", command.first);
-
-      // Invoke command, remove command name from payload.
       return command.second(client, request.substr(command.first.size()));
     }
   }
 
-  // Don't bail out on unknown command
   WARNING_LOG("Failed to process packet '{}'", request);
   client->SendReplyWithAck({});
   return true;
@@ -1458,7 +1454,7 @@ void GDBServer::ClientSocket::SendAck()
 
 void GDBServer::ClientSocket::SendReply(std::string_view reply)
 {
-  m_last_reply.format("${}#{:02x}", reply, ComputeChecksum(reply));
+  m_last_reply.format("${}#{:02x}", reply, CalculateChecksum(reply));
   SendPacket(m_last_reply);
 }
 
