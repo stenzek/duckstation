@@ -58,7 +58,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "preview"
           prerelease: true
-          title: "Latest Preview Build"
+          title: "Preview Release"
           files: |
             ./artifacts/duckstation-windows-x64-installer.exe
             ./artifacts/duckstation-windows-x64-release.zip
@@ -75,14 +75,14 @@ jobs:
             ./artifacts/DuckStation-armhf.AppImage
             ./artifacts/duckstation-mac-release.zip
 
-      - name: Create Rolling Release
+      - name: Create Stable Release
         if: github.ref == 'refs/heads/dev'
         uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
           prerelease: false
-          title: "Latest Rolling Release"
+          title: "Stable Release"
           files: |
             ./artifacts/duckstation-windows-x64-installer.exe
             ./artifacts/duckstation-windows-x64-release.zip
