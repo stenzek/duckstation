@@ -730,7 +730,6 @@ void Pad::BeginTransfer()
   DebugAssert(s_state.state == State::Idle && CanTransfer());
   DEBUG_LOG("Starting transfer");
 
-  s_state.JOY_CTRL.RXEN = true;
   s_state.transmit_value = s_state.transmit_buffer;
   s_state.transmit_buffer_full = false;
 
@@ -761,9 +760,6 @@ void Pad::DoTransfer()
   const u8 device_index = s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled() ? 4u : s_state.JOY_CTRL.SLOT;
   Controller* const controller = s_state.controllers[device_index].get();
   MemoryCard* const memory_card = s_state.memory_cards[device_index].get();
-
-  // set rx?
-  s_state.JOY_CTRL.RXEN = true;
 
   const u8 data_out = s_state.transmit_value;
 
@@ -854,6 +850,10 @@ void Pad::DoTransfer()
 
   s_state.receive_buffer = data_in;
   s_state.receive_buffer_full = true;
+
+  // RXEN forces receiving a single byte, it clears once one has been received.
+  s_state.JOY_CTRL.RXEN = false;
+
   if (s_state.JOY_CTRL.RXINTEN)
     TriggerIRQ("RX");
 

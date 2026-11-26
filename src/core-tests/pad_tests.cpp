@@ -1309,3 +1309,24 @@ TEST_F(PadTest, QueuedByteAfterNoACK)
   EXPECT_FALSE(Pad::IsTransmitting());
   EXPECT_EQ(Pad::ReadRegister(JOY_STAT) & (STAT_TXRDY | STAT_TXDONE), STAT_TXRDY | STAT_TXDONE);
 }
+
+TEST_F(PadTest, RXENClearsAfterByte)
+{
+  static constexpr u32 CTRL_RXEN = (1u << 2);
+  PlugController(0);
+
+  // Transfers don't set it.
+  Select(0);
+  ASSERT_TRUE(Exchange(0x01).ack);
+  EXPECT_EQ(Pad::ReadRegister(JOY_CTRL) & CTRL_RXEN, 0u);
+  Deselect();
+
+  // It stays set until a byte is received.
+  Select(0, CTRL_ACKINTEN | CTRL_RXEN);
+  EXPECT_NE(Pad::ReadRegister(JOY_CTRL) & CTRL_RXEN, 0u);
+  Pad::WriteRegister(JOY_DATA, 0x01);
+  Run(TRANSFER_TICKS - 1);
+  EXPECT_NE(Pad::ReadRegister(JOY_CTRL) & CTRL_RXEN, 0u);
+  Run(1);
+  EXPECT_EQ(Pad::ReadRegister(JOY_CTRL) & CTRL_RXEN, 0u);
+}
