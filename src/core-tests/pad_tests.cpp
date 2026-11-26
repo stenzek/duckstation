@@ -1273,3 +1273,39 @@ TEST_F(PadTest, ResetBit)
   Select(0);
   EXPECT_EQ(Command(POLL), PollReply(NO_BUTTONS));
 }
+
+TEST_F(PadTest, QueuedByteAfterNoACK)
+{
+  PlugController(0);
+  Select(0);
+
+  // The last byte of a poll isn't acknowledged, the byte queued behind it is sent straight after.
+  for (size_t i = 0; i < POLL.size() - 1; i++)
+    ASSERT_TRUE(Exchange(POLL[i]).ack);
+  Pad::WriteRegister(JOY_DATA, POLL.back());
+  Run(10);
+  Pad::WriteRegister(JOY_DATA, 0x01);
+  ASSERT_EQ(RunUntil(RXReady, TRANSFER_TICKS * 2), TRANSFER_TICKS - 10);
+  EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0xFF);
+  EXPECT_TRUE(Pad::IsTransmitting());
+  EXPECT_EQ(RunUntil(RXReady, TRANSFER_TICKS * 2), TRANSFER_TICKS);
+  EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0xFF);
+
+  // That was the start of a new poll.
+  EXPECT_EQ(RunUntil(PadIRQPending, ACK_WINDOW), CONTROLLER_ACK_TICKS);
+  AckIRQ();
+  EXPECT_EQ(Exchange(0x42).data, 0x41);
+  Deselect();
+
+  // Same with nothing connected.
+  Select(1);
+  Pad::WriteRegister(JOY_DATA, 0x01);
+  Run(1);
+  Pad::WriteRegister(JOY_DATA, 0x01);
+  EXPECT_EQ(RunUntil(RXReady, TRANSFER_TICKS * 2), TRANSFER_TICKS - 1);
+  Pad::ReadRegister(JOY_DATA);
+  EXPECT_EQ(RunUntil(RXReady, TRANSFER_TICKS * 2), TRANSFER_TICKS);
+  Pad::ReadRegister(JOY_DATA);
+  EXPECT_FALSE(Pad::IsTransmitting());
+  EXPECT_EQ(Pad::ReadRegister(JOY_STAT) & (STAT_TXRDY | STAT_TXDONE), STAT_TXRDY | STAT_TXDONE);
+}

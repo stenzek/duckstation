@@ -862,6 +862,10 @@ void Pad::DoTransfer()
   {
     s_state.active_device = ActiveDevice::None;
     EndTransfer();
+
+    // A byte written during the transfer goes out straight after it.
+    if (CanTransfer())
+      BeginTransfer();
   }
   else
   {
