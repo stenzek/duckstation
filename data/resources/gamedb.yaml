@@ -36104,6 +36104,8 @@ SLPS-01025:
   controllers:
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Required for PGXP to work properly.
   metadata:
     publisher: "Harvest One"
     developer: "Supersonic Software"
@@ -36127,6 +36129,8 @@ SLUS-00300:
   controllers:
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Required for PGXP to work properly.
   metadata:
     publisher: "Mindscape"
     developer: "Supersonic Software"
