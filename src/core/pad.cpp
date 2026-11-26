@@ -698,6 +698,7 @@ void Pad::SoftReset()
   s_state.JOY_CTRL.bits = 0;
   s_state.JOY_STAT.bits = 0;
   s_state.JOY_MODE.bits = 0;
+  s_state.JOY_BAUD = 0;
   s_state.receive_buffer = 0;
   s_state.receive_buffer_full = false;
   s_state.transmit_buffer = 0;

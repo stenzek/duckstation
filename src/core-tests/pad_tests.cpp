@@ -1226,3 +1226,29 @@ TEST_F(PadTest, Multitap_MemoryCardErrors)
   Select(0);
   EXPECT_EQ(Command({0x02, 0x42, 0x00, 0x00, 0x00}), PollReply(NO_BUTTONS));
 }
+
+TEST_F(PadTest, ResetBit)
+{
+  PlugController(0);
+  Select(0, CTRL_ACKINTEN | CTRL_RXINTEN);
+
+  // Reset partway through a byte.
+  Pad::WriteRegister(JOY_DATA, 0x01);
+  Run(TRANSFER_TICKS / 2);
+  Pad::WriteRegister(JOY_CTRL, CTRL_RESET | CTRL_TXEN | CTRL_SELECT);
+  EXPECT_FALSE(Pad::IsTransmitting());
+
+  // Everything reads back as zero, and the port is ready to send.
+  EXPECT_EQ(Pad::ReadRegister(JOY_CTRL), 0u);
+  EXPECT_EQ(Pad::ReadRegister(JOY_MODE), 0u);
+  EXPECT_EQ(Pad::ReadRegister(JOY_BAUD), 0u);
+  EXPECT_EQ(Pad::ReadRegister(JOY_STAT), STAT_TXRDY | STAT_TXDONE);
+  EXPECT_EQ(RunUntil(PadIRQPending, TRANSFER_TICKS * 4), NOT_REACHED);
+  EXPECT_EQ(Pad::ReadRegister(JOY_STAT) & STAT_RXFIFONEMPTY, 0u);
+
+  // The controller starts a new command afterwards.
+  Pad::WriteRegister(JOY_MODE, BIOS_JOY_MODE);
+  Pad::WriteRegister(JOY_BAUD, BIOS_JOY_BAUD);
+  Select(0);
+  EXPECT_EQ(Command(POLL), PollReply(NO_BUTTONS));
+}
