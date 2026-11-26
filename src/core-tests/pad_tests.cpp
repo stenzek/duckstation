@@ -7,7 +7,6 @@
 #include "core/digital_controller.h"
 #include "core/interrupt_controller.h"
 #include "core/memory_card.h"
-#include "core/multitap.h"
 #include "core/pad.h"
 #include "core/save_state_version.h"
 #include "core/system.h"
@@ -20,6 +19,9 @@
 #include <algorithm>
 #include <array>
 #include <vector>
+
+// These tests check what is currently emulated. Comments starting with "psx-spx:" mark places where that differs from
+// the behaviour documented there, see the notes in pad.cpp and memory_card.cpp.
 
 namespace {
 
@@ -71,6 +73,12 @@ const std::vector<u8> GET_ID_REPLY = {0xFF, 0x08, 0x5A, 0x5D, 0x5C, 0x5D, 0x04, 
 using Block = std::vector<u8>;
 const Block POLL_BLOCK = {0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const Block EMPTY_BLOCK = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+const Block ZERO_BLOCK = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+// psx-spx's "garbage" reply: the multitap ID, then Slot A's reply to the rejected command byte, and no more ACKs.
+// psx-spx: that byte is the controller's ID LSB, but the controllers here reply FFh to an invalid command byte.
+const std::vector<u8> GARBAGE_TX = {0x01, 0x42, 0x01, 0x00};
+const std::vector<u8> GARBAGE_REPLY = {0xFF, 0x80, 0x5A, 0xFF};
 
 static std::vector<u8> GetIDCommand(u8 first)
 {
@@ -163,7 +171,7 @@ protected:
 
     Pad::Initialize();
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
-      Pad::GetMultitap(i)->SetEnable(false, i);
+      Pad::SetMultitapEnabled(i, false);
 
     Pad::WriteRegister(JOY_MODE, BIOS_JOY_MODE);
     Pad::WriteRegister(JOY_BAUD, BIOS_JOY_BAUD);
@@ -173,7 +181,7 @@ protected:
   {
     Pad::Shutdown();
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
-      Pad::GetMultitap(i)->SetEnable(false, i);
+      Pad::SetMultitapEnabled(i, false);
     DeactivateAllEvents();
   }
 
@@ -367,6 +375,7 @@ TEST_F(PadTest, ACKTiming_Controller)
   EXPECT_EQ(RunUntil(PadIRQPending, ACK_WINDOW), CONTROLLER_ACK_TICKS);
 
   // ACKINPUT is set with the interrupt, and cleared by reading JOY_STAT.
+  // psx-spx: it follows the /ACK line instead, and goes back to zero after ~100 cycles.
   const u32 stat = Pad::ReadRegister(JOY_STAT);
   EXPECT_NE(stat & STAT_ACKINPUT, 0u);
   EXPECT_NE(stat & STAT_INTR, 0u);
@@ -388,6 +397,7 @@ TEST_F(PadTest, ACKTiming_Controller)
   EXPECT_FALSE(PadIRQPending());
 }
 
+// psx-spx: memory card IRQs arrive around 1500 cycles after the byte starts, rather than 1088 + 170.
 TEST_F(PadTest, ACKTiming_MemoryCard)
 {
   PlugMemoryCard(0);
@@ -400,7 +410,7 @@ TEST_F(PadTest, ACKTiming_MemoryCard)
 
 TEST_F(PadTest, ACKTiming_Multitap)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
   PlugMemoryCard(2);
 
@@ -461,6 +471,7 @@ TEST_F(PadTest, QueuedByteDuringACKWait)
   EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0xFF);
 
   // The next byte is written while waiting for the ACK, so it is sent once the ACK arrives.
+  // psx-spx: it would be sent straight away, since the previous byte has finished.
   Pad::WriteRegister(JOY_DATA, 0x42);
   EXPECT_TRUE(Pad::IsTransmitting());
   EXPECT_EQ(Pad::ReadRegister(JOY_STAT) & STAT_TXRDY, 0u);
@@ -476,6 +487,7 @@ TEST_F(PadTest, DeselectAbortsTransfer)
   Select(0);
 
   // Deselect partway through a byte.
+  // psx-spx: the byte would finish being sent, there just wouldn't be a device to reply.
   Pad::WriteRegister(JOY_DATA, 0x01);
   Run(TRANSFER_TICKS / 2);
   Deselect();
@@ -588,7 +600,7 @@ TEST_F(PadTest, MemoryCardGetID)
 
 TEST_F(PadTest, Multitap_SingleController)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
 
   // Sub-ports A-D on port 1 are pads 0, 2, 3, 4. Leave C empty.
   static constexpr u32 pads[] = {0, 2, 3, 4};
@@ -619,7 +631,7 @@ TEST_F(PadTest, Multitap_SingleController)
 
 TEST_F(PadTest, Multitap_AllControllers)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
 
   // A, B and D connected, C empty.
   static constexpr u32 pads[] = {0, 2, 3, 4};
@@ -641,14 +653,7 @@ TEST_F(PadTest, Multitap_AllControllers)
   for (u32 i = 0; i < 4; i++)
     tx.insert(tx.end(), {0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 
-  // The replies are buffered from the previous poll, so this one is empty.
   std::vector<u8> expected = {0xFF, 0x80, 0x5A};
-  expected.resize(tx.size(), 0xFF);
-  Select(0);
-  EXPECT_EQ(Command(tx), expected);
-  Deselect();
-
-  expected = {0xFF, 0x80, 0x5A};
   for (u32 i = 0; i < 4; i++)
   {
     if (i == 2)
@@ -661,13 +666,18 @@ TEST_F(PadTest, Multitap_AllControllers)
     expected.insert(expected.end(), {0x41, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8), 0xFF, 0xFF, 0xFF, 0xFF});
   }
 
-  Select(0);
-  EXPECT_EQ(Command(tx), expected);
+  // Every poll returns all four, including the first.
+  for (u32 i = 0; i < 2; i++)
+  {
+    Select(0);
+    EXPECT_EQ(Command(tx), expected) << "poll " << i;
+    Deselect();
+  }
 }
 
 TEST_F(PadTest, Multitap_MemoryCard)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
   PlugMemoryCard(3);
 
@@ -687,7 +697,7 @@ TEST_F(PadTest, Multitap_MemoryCard)
 
 TEST_F(PadTest, Multitap_Port2)
 {
-  Pad::GetMultitap(1)->SetEnable(true, 1);
+  Pad::SetMultitapEnabled(1, true);
 
   // Sub-ports A-D on port 2 are pads 1, 5, 6, 7.
   PlugController(1);
@@ -729,6 +739,7 @@ TEST_F(PadTest, Registers)
   EXPECT_EQ(Pad::ReadRegister(JOY_CTRL), 0u);
 
   // An empty RX buffer reads as 0xFF, and the byte is repeated across the word.
+  // psx-spx: an empty FIFO returns the last byte received, then 00h.
   EXPECT_EQ(Pad::ReadRegister(JOY_DATA), 0xFFFFFFFFu);
   PlugController(0);
   Pad::WriteRegister(JOY_BAUD, BIOS_JOY_BAUD);
@@ -740,6 +751,7 @@ TEST_F(PadTest, Registers)
   EXPECT_EQ(Pad::ReadRegister(JOY_DATA), 0xFFFFFFFFu);
 }
 
+// psx-spx: the TX interrupt is raised while TXRDY or TXDONE is set, not when JOY_DATA is written.
 TEST_F(PadTest, TXInterrupt)
 {
   Select(0, CTRL_TXINTEN);
@@ -749,6 +761,7 @@ TEST_F(PadTest, TXInterrupt)
   EXPECT_NE(Pad::ReadRegister(JOY_STAT) & STAT_INTR, 0u);
 }
 
+// psx-spx: only TXEN is needed to send, SELECT just asserts /CS.
 TEST_F(PadTest, TransferWaitsForSelectAndTXEN)
 {
   PlugController(0);
@@ -898,6 +911,33 @@ TEST_F(PadTest, MemoryCardInvalidSector_SaveState)
   EXPECT_EQ(card->GetData(), before);
 }
 
+TEST_F(PadTest, MemoryCardWrite_SaveState)
+{
+  static constexpr u16 SECTOR = 0x55;
+  PlugController(0);
+  MemoryCard* const card = PlugMemoryCard(0);
+
+  std::vector<u8> state(4 * sizeof(MemoryCardImage::DataArray));
+  Select(0);
+  for (const u8 tx : std::vector<u8>{0x81, 0x57, 0x00, 0x00, Truncate8(SECTOR >> 8), Truncate8(SECTOR)})
+    EXPECT_TRUE(Exchange(tx).ack);
+  StateWrapper write_sw(std::span<u8>(state), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(write_sw, false));
+
+  // Deselecting resets the devices, so loading the state has to restore which one was being accessed. Otherwise the
+  // idle controller would take the 01h data bytes.
+  Deselect();
+  StateWrapper read_sw(std::span<const u8>(state), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(read_sw, false));
+
+  const std::vector<u8> data(MemoryCardImage::FRAME_SIZE, 0x01);
+  std::vector<u8> tx = data;
+  tx.insert(tx.end(), {static_cast<u8>(Truncate8(SECTOR >> 8) ^ Truncate8(SECTOR)), 0x00, 0x00, 0x00});
+  EXPECT_EQ(Command(tx).back(), 0x47);
+  Deselect();
+  EXPECT_TRUE(std::equal(data.begin(), data.end(), card->GetData().begin() + SECTOR * MemoryCardImage::FRAME_SIZE));
+}
+
 TEST_F(PadTest, MemoryCardWriteBadChecksum)
 {
   static constexpr u16 SECTOR = 0x3F;
@@ -937,7 +977,7 @@ TEST_F(PadTest, ACKTiming_WholeCommands)
   Deselect();
 
   // Same through the multitap.
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   Select(0);
   Command(POLL);
   EXPECT_EQ(m_ack_ticks, std::vector<u32>(POLL.size() - 1, CONTROLLER_ACK_TICKS));
@@ -980,7 +1020,7 @@ TEST_F(PadTest, Multitap_Disabled)
 
 TEST_F(PadTest, Multitap_InvalidFirstByte)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   for (const u32 pad : {0u, 2u, 3u, 4u})
   {
     PlugController(pad);
@@ -997,7 +1037,7 @@ TEST_F(PadTest, Multitap_InvalidFirstByte)
 
 TEST_F(PadTest, Multitap_MemoryCardReadSector)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(4);
   MemoryCard* const card = PlugMemoryCard(4);
 
@@ -1014,7 +1054,7 @@ TEST_F(PadTest, Multitap_MemoryCardReadSector)
 
 TEST_F(PadTest, Multitap_SingleMode_Analog)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugAnalogController(3);
 
   // Sub-port C, through config mode and back.
@@ -1028,7 +1068,7 @@ TEST_F(PadTest, Multitap_SingleMode_Analog)
 
 TEST_F(PadTest, Multitap_AllControllers_Analog)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
 
   // A: digital pad, B: analog in analog mode, C: empty, D: analog in digital mode.
   PlugController(0);
@@ -1055,7 +1095,7 @@ TEST_F(PadTest, Multitap_AllControllers_Analog)
 
 TEST_F(PadTest, Multitap_AllControllers_CommandPassthrough)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
   PlugAnalogController(2);
 
@@ -1063,14 +1103,14 @@ TEST_F(PadTest, Multitap_AllControllers_CommandPassthrough)
   Command({0x01, 0x42, 0x01, 0x00, 0x00});
   Deselect();
 
-  // Each block's bytes go to that sub-port's controller. Enter config mode on B.
+  // Each block's bytes go to that sub-port's controller in the next poll. Enter config mode on B.
   Select(0);
   EXPECT_EQ(Command(AllControllersCommand(
               0x01, 0x01, {POLL_BLOCK, {0x43, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00}, POLL_BLOCK, POLL_BLOCK})),
-            AllControllersReply({EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+            AllControllersReply({DigitalBlock(NO_BUTTONS), DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK}));
   Deselect();
 
-  // The reply to that shows up on the next poll, and B's config mode poll on the one after.
+  // B gets the config mode command on the next poll, and replies with its config mode poll on the one after.
   Select(0);
   EXPECT_EQ(Command(AllControllersPoll()),
             AllControllersReply({DigitalBlock(NO_BUTTONS), DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK}));
@@ -1083,7 +1123,7 @@ TEST_F(PadTest, Multitap_AllControllers_CommandPassthrough)
 
 TEST_F(PadTest, Multitap_AllControllers_SubportAEmpty)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(2);
   PlugController(4);
   Press(2, DigitalController::Button::Triangle);
@@ -1097,19 +1137,17 @@ TEST_F(PadTest, Multitap_AllControllers_SubportAEmpty)
   EXPECT_EQ(Command({0x01}), std::vector<u8>{0xFF});
   Deselect();
 
-  // Any connected sub-port can start it, the blocks still start from A.
+  // The other sub-ports are always accessed on their own, even with the request queued.
   Select(0);
-  EXPECT_EQ(Command(AllControllersPoll(0x02)),
-            AllControllersReply({EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+  EXPECT_EQ(Command({0x02, 0x42, 0x01, 0x00, 0x00}), PollReply(NO_BUTTONS & ~(1u << 12)));
   Deselect();
   Select(0);
-  EXPECT_EQ(Command(AllControllersPoll(0x04)), AllControllersReply({EMPTY_BLOCK, DigitalBlock(NO_BUTTONS & ~(1u << 12)),
-                                                                    EMPTY_BLOCK, DigitalBlock(NO_BUTTONS)}));
+  EXPECT_EQ(Command({0x04, 0x42, 0x01, 0x00, 0x00}), PollReply(NO_BUTTONS));
 }
 
 TEST_F(PadTest, Multitap_AllControllers_InvalidCommand)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
 
   Select(0);
@@ -1131,7 +1169,7 @@ TEST_F(PadTest, Multitap_AllControllers_InvalidCommand)
 
 TEST_F(PadTest, Multitap_AllControllers_Exit)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
 
   Select(0);
@@ -1141,7 +1179,7 @@ TEST_F(PadTest, Multitap_AllControllers_Exit)
   // A request byte of 0x00 leaves all-controllers mode after this poll.
   const std::vector<u8> tx = AllControllersCommand(0x01, 0x00, {POLL_BLOCK, POLL_BLOCK, POLL_BLOCK, POLL_BLOCK});
   Select(0);
-  EXPECT_EQ(Command(tx), AllControllersReply({EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+  EXPECT_EQ(Command(tx), AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
   Deselect();
 
   Select(0);
@@ -1150,7 +1188,7 @@ TEST_F(PadTest, Multitap_AllControllers_Exit)
 
 TEST_F(PadTest, Multitap_AllControllers_MemoryCardKeepsMode)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
   PlugMemoryCard(0);
 
@@ -1164,41 +1202,174 @@ TEST_F(PadTest, Multitap_AllControllers_MemoryCardKeepsMode)
   Deselect();
 
   Select(0);
-  EXPECT_EQ(Command(AllControllersPoll()), AllControllersReply({EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+  EXPECT_EQ(Command(AllControllersPoll()),
+            AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
 }
 
 TEST_F(PadTest, Multitap_SetEnableResets)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(0);
 
-  // Enabling again without a change keeps the queued mode and the buffered replies.
+  // Queue up all-controllers mode, and send 00h at the start of Slot A's block.
   Select(0);
   Command({0x01, 0x42, 0x01, 0x00, 0x00});
   Deselect();
   Select(0);
-  Command(AllControllersPoll());
-  Deselect();
-  Pad::GetMultitap(0)->SetEnable(true, 0);
-  Select(0);
-  EXPECT_EQ(Command(AllControllersPoll()),
+  EXPECT_EQ(Command(AllControllersCommand(0x01, 0x01, {ZERO_BLOCK, POLL_BLOCK, POLL_BLOCK, POLL_BLOCK})),
             AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
   Deselect();
 
+  // Enabling again without a change keeps the queued mode and the bytes for the controllers.
+  Pad::SetMultitapEnabled(0, true);
+  Select(0);
+  EXPECT_EQ(Command(GARBAGE_TX), GARBAGE_REPLY);
+  Deselect();
+
   // Disabling and enabling clears both.
-  Pad::GetMultitap(0)->SetEnable(false, 0);
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, false);
+  Pad::SetMultitapEnabled(0, true);
   Select(0);
   EXPECT_EQ(Command({0x01, 0x42, 0x01, 0x00, 0x00}), PollReply(NO_BUTTONS));
   Deselect();
   Select(0);
-  EXPECT_EQ(Command(AllControllersPoll()), AllControllersReply({EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+  EXPECT_EQ(Command(AllControllersPoll()),
+            AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+}
+
+TEST_F(PadTest, Multitap_AllControllers_Garbage)
+{
+  Pad::SetMultitapEnabled(0, true);
+  PlugController(0);
+
+  const std::vector<u8> long_reply =
+    AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK});
+  const auto check = [this](const std::vector<u8>& tx, const std::vector<u8>& expected, const char* what) {
+    Select(0);
+    EXPECT_EQ(Command(tx), expected) << what;
+    Deselect();
+  };
+
+  // Sending 00h at the start of each block returns all controllers once, then garbage. Each controller gets the
+  // bytes from the previous access, so Slot A doesn't ACK the 00h command.
+  check({0x01, 0x42, 0x01, 0x00, 0x00}, PollReply(NO_BUTTONS), "queue");
+  check(AllControllersCommand(0x01, 0x01, {ZERO_BLOCK, ZERO_BLOCK, ZERO_BLOCK, ZERO_BLOCK}), long_reply, "00h");
+  check(GARBAGE_TX, GARBAGE_REPLY, "garbage");
+
+  // It stays that way while the request bit is set and 00h is sent at the start of the block.
+  check(GARBAGE_TX, GARBAGE_REPLY, "garbage again");
+
+  // An access with the request bit clear is still garbage, and the one after it is a normal access.
+  check({0x01, 0x42, 0x00, 0x00}, GARBAGE_REPLY, "garbage with request clear");
+  check(POLL, PollReply(NO_BUTTONS), "normal after garbage");
+
+  // Requesting it again from a normal access works.
+  check({0x01, 0x42, 0x01, 0x00, 0x00}, PollReply(NO_BUTTONS), "queue again");
+  check(AllControllersPoll(), long_reply, "42h");
+
+  // Sending 42h at the start of each block keeps returning all controllers.
+  check(AllControllersPoll(), long_reply, "42h again");
+
+  // Toggling the request bit alternates between the two.
+  const std::vector<u8> long_exit = AllControllersCommand(0x01, 0x00, {POLL_BLOCK, POLL_BLOCK, POLL_BLOCK, POLL_BLOCK});
+  check(long_exit, long_reply, "toggle long 1");
+  check({0x01, 0x42, 0x01, 0x00, 0x00}, PollReply(NO_BUTTONS), "toggle normal 1");
+  check(long_exit, long_reply, "toggle long 2");
+  check(POLL, PollReply(NO_BUTTONS), "toggle normal 2");
+
+  // The byte sent at the start of Slot A's block in a garbage access is still passed on, so sending 42h there makes
+  // the next access valid. Quake II relies on this after probing a digital controller with 43h.
+  check({0x01, 0x42, 0x01, 0x00, 0x00}, PollReply(NO_BUTTONS), "queue before 42h");
+  check(AllControllersCommand(0x01, 0x01, {ZERO_BLOCK, POLL_BLOCK, POLL_BLOCK, POLL_BLOCK}), long_reply, "00h once");
+  check({0x01, 0x42, 0x01, 0x42}, GARBAGE_REPLY, "garbage with 42h");
+  check(AllControllersPoll(), long_reply, "valid after 42h");
+}
+
+TEST_F(PadTest, Multitap_AllControllers_SubportGarbage)
+{
+  Pad::SetMultitapEnabled(0, true);
+  PlugController(0);
+  PlugController(2);
+
+  Select(0);
+  Command({0x01, 0x42, 0x01, 0x00, 0x00});
+  Deselect();
+
+  // Only Slot B's block starts with 00h, and an empty Slot C is still padded.
+  Select(0);
+  EXPECT_EQ(Command(AllControllersCommand(0x01, 0x01, {POLL_BLOCK, ZERO_BLOCK, POLL_BLOCK, POLL_BLOCK})),
+            AllControllersReply({DigitalBlock(NO_BUTTONS), DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK}));
+  Deselect();
+
+  // Slot B not ACKing its command stops the access after its ID byte too.
+  std::vector<u8> tx = AllControllersPoll();
+  tx.resize(3 + 8 + 1);
+  std::vector<u8> expected = AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK});
+  expected.resize(3 + 8);
+  expected.push_back(0xFF);
+  Select(0);
+  EXPECT_EQ(Command(tx), expected);
+}
+
+TEST_F(PadTest, Multitap_SaveState)
+{
+  Pad::SetMultitapEnabled(0, true);
+  PlugController(0);
+
+  const auto round_trip = [](u32 version) {
+    std::vector<u8> data(64 * 1024);
+    StateWrapper write_sw(std::span<u8>(data), StateWrapper::Mode::Write, version);
+    ASSERT_TRUE(Pad::DoState(write_sw, false));
+    StateWrapper read_sw(std::span<const u8>(data), StateWrapper::Mode::Read, version);
+    ASSERT_TRUE(Pad::DoState(read_sw, false));
+  };
+
+  Select(0);
+  Command({0x01, 0x42, 0x01, 0x00, 0x00});
+  Deselect();
+  Select(0);
+  Command(AllControllersCommand(0x01, 0x01, {ZERO_BLOCK, ZERO_BLOCK, ZERO_BLOCK, ZERO_BLOCK}));
+  Deselect();
+
+  // The queued mode and the bytes for the controllers are kept, so the next access is garbage.
+  round_trip(SAVE_STATE_VERSION);
+  Select(0);
+  EXPECT_EQ(Command(GARBAGE_TX), GARBAGE_REPLY);
+  Deselect();
+
+  // Older states have the previous replies there instead, so they go back to a plain poll.
+  round_trip(102);
+  Select(0);
+  EXPECT_EQ(Command(AllControllersPoll()),
+            AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
+}
+
+TEST_F(PadTest, Multitap_SaveStateDifferentSetting)
+{
+  PlugMemoryCard(1);
+  MemoryCard* const tap_card = PlugMemoryCard(4);
+
+  // Save partway through a Get ID on port 2, without the multitap.
+  std::vector<u8> state(4 * sizeof(MemoryCardImage::DataArray));
+  Select(1);
+  for (const u8 tx : {0x81, 0x53})
+    EXPECT_TRUE(Exchange(tx).ack);
+  StateWrapper write_sw(std::span<u8>(state), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(write_sw, false));
+  Deselect();
+
+  // Loading it with the multitap on port 2 doesn't send the rest of the command to a card behind the multitap.
+  Pad::SetMultitapEnabled(1, true);
+  StateWrapper read_sw(std::span<const u8>(state), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(read_sw, false));
+  Exchange(0x81);
+  EXPECT_FALSE(tap_card->IsTransferring());
 }
 
 TEST_F(PadTest, Multitap_BothPorts)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
-  Pad::GetMultitap(1)->SetEnable(true, 1);
+  Pad::SetMultitapEnabled(0, true);
+  Pad::SetMultitapEnabled(1, true);
   PlugController(0);
   PlugController(1);
   PlugController(5);
@@ -1227,8 +1398,8 @@ TEST_F(PadTest, Multitap_BothPorts)
 TEST_F(PadTest, Multitap_MemoryCardRouting)
 {
   static constexpr u16 SECTOR = 0x77;
-  Pad::GetMultitap(0)->SetEnable(true, 0);
-  Pad::GetMultitap(1)->SetEnable(true, 1);
+  Pad::SetMultitapEnabled(0, true);
+  Pad::SetMultitapEnabled(1, true);
 
   // A card on every sub-port of both ports, each with different data in the same sector.
   std::array<std::vector<u8>, NUM_CONTROLLER_AND_CARD_PORTS> expected;
@@ -1251,7 +1422,7 @@ TEST_F(PadTest, Multitap_MemoryCardRouting)
 TEST_F(PadTest, Multitap_MemoryCardWriteSector)
 {
   static constexpr u16 SECTOR = 0x1C3;
-  Pad::GetMultitap(1)->SetEnable(true, 1);
+  Pad::SetMultitapEnabled(1, true);
   for (const u32 pad : {1u, 5u, 6u, 7u})
     PlugMemoryCard(pad);
 
@@ -1301,7 +1472,7 @@ TEST_F(PadTest, Multitap_MemoryCardWriteSector)
 
 TEST_F(PadTest, Multitap_MemoryCardErrors)
 {
-  Pad::GetMultitap(0)->SetEnable(true, 0);
+  Pad::SetMultitapEnabled(0, true);
   PlugController(2);
   PlugMemoryCard(2);
 

@@ -167,6 +167,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     FIXED_REPLY_STATE(State::ReadCardID2, 0x5D, true, State::ReadAddressMSB);
     ADDRESS_STATE_MSB(State::ReadAddressMSB, State::ReadAddressLSB);
     ADDRESS_STATE_LSB(State::ReadAddressLSB, State::ReadACK1);
+    // NOTE: original cards take an extra ~31000 cycles to ACK this byte, which isn't emulated.
     FIXED_REPLY_STATE(State::ReadACK1, 0x5C, true, State::ReadACK2);
     FIXED_REPLY_STATE(State::ReadACK2, 0x5D, true, State::ReadConfirmAddressMSB);
 
@@ -259,6 +260,8 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     case State::WriteChecksum:
     {
       // The checksum is replaced by the end byte: 47h=Good, 4Eh=BadChecksum, FFh=BadSector.
+      // psx-spx doesn't say whether a bad checksum still writes the data, or whether a bad sector
+      // clears the FLAG bit. Here, both do.
       m_checksum = (m_address > ADDRESS_MASK) ? 0xFF : ((data_in == m_checksum) ? 0x47 : 0x4E);
       *data_out = m_last_byte;
       ack = true;

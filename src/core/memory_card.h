@@ -36,6 +36,7 @@ public:
 
   void ResetTransferState();
   bool Transfer(const u8 data_in, u8* data_out);
+  ALWAYS_INLINE bool IsTransferring() const { return m_state != State::Idle; }
 
   bool IsOrWasRecentlyWriting() const;
 

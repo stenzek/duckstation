@@ -113,8 +113,6 @@ add_library(core
   memory_scanner.cpp
   memory_scanner.h
   mips_encoder.h
-  multitap.cpp
-  multitap.h
   negcon.cpp
   negcon.h
   negcon_base.cpp

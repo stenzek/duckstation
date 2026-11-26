@@ -29,7 +29,6 @@
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "memory_card.h"
-#include "multitap.h"
 #include "pad.h"
 #include "pcdrv.h"
 #include "performance_counters.h"
@@ -4424,40 +4423,9 @@ void System::SwapMemoryCards()
 
 void System::UpdateMultitaps()
 {
-  switch (g_settings.multitap_mode)
-  {
-    case MultitapMode::Disabled:
-    {
-      Pad::GetMultitap(0)->SetEnable(false, 0);
-      Pad::GetMultitap(1)->SetEnable(false, 1);
-    }
-    break;
-
-    case MultitapMode::Port1Only:
-    {
-      Pad::GetMultitap(0)->SetEnable(true, 0);
-      Pad::GetMultitap(1)->SetEnable(false, 1);
-    }
-    break;
-
-    case MultitapMode::Port2Only:
-    {
-      Pad::GetMultitap(0)->SetEnable(false, 0);
-      Pad::GetMultitap(1)->SetEnable(true, 1);
-    }
-    break;
-
-    case MultitapMode::BothPorts:
-    {
-      Pad::GetMultitap(0)->SetEnable(true, 0);
-      Pad::GetMultitap(1)->SetEnable(true, 1);
-    }
-    break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
+  const std::array<bool, 2> enabled = Controller::GetMultitapEnabledPorts(g_settings.multitap_mode);
+  for (u32 i = 0; i < NUM_MULTITAPS; i++)
+    Pad::SetMultitapEnabled(i, enabled[i]);
 }
 
 bool System::DumpRAM(std::string path, Error* error)

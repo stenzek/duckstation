@@ -43,7 +43,6 @@
   X(MediaCapture)                                                                                                      \
   X(MemMap)                                                                                                            \
   X(MemoryCard)                                                                                                        \
-  X(Multitap)                                                                                                          \
   X(PCDrv)                                                                                                             \
   X(Pad)                                                                                                               \
   X(PerfMon)                                                                                                           \

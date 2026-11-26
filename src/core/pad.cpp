@@ -5,7 +5,6 @@
 #include "controller.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
-#include "multitap.h"
 #include "save_state_version.h"
 #include "system.h"
 #include "types.h"
@@ -28,6 +27,17 @@
 
 LOG_CHANNEL(Pad);
 
+// Known differences from the SIO0 behaviour documented in psx-spx:
+//  - A byte written while another is being sent goes out once the device ACKs (or straight away if it doesn't),
+//    instead of as soon as the current byte finishes. Transfers also need SELECT as well as TXEN, and clearing either
+//    aborts a byte in progress, rather than TXEN being latched at the JOY_DATA write.
+//  - JOY_STAT.ACKINPUT stays set until JOY_STAT is read, instead of following the /ACK line (low for ~100 cycles).
+//    INTR can also be acknowledged while /ACK is still low.
+//  - The TX interrupt fires when JOY_DATA is written, instead of while TXRDY or TXDONE is set.
+//  - The RX FIFO holds a single byte instead of eight, so the RX interrupt mode (BUFSZ) is ignored, and reading it
+//    while empty returns FFh instead of the last byte received or 00h.
+//  - The baud rate timer in JOY_STAT bits 11-31 always reads zero.
+
 namespace Pad {
 
 enum class State : u32
@@ -43,6 +53,15 @@ enum class ActiveDevice : u8
   Controller,
   MemoryCard,
   Multitap
+};
+
+enum class MultitapTransferState : u8
+{
+  Idle,
+  MemoryCard,
+  ControllerCommand,
+  SingleController,
+  AllControllers
 };
 
 union JOYCTRLRegister
@@ -99,6 +118,7 @@ static TickCount GetTransferTicks();
 // ACK lasts ~96 ticks or approximately 2.84us at master clock (not implemented).
 // ACK delay is between 6.8us-13.7us, or ~338 ticks at master clock for approximately 9.98us.
 // Memory card responds faster, approximately 5us or ~170 ticks.
+// psx-spx puts the memory card IRQ at around 1500 cycles from the start of the byte, which would be ~400 ticks here.
 static constexpr TickCount GetACKTicks(bool memory_card)
 {
   return memory_card ? 170 : 450;
@@ -114,20 +134,44 @@ static void EndTransfer();
 static void ResetDeviceTransferState();
 static void TriggerIRQ(const char* type);
 
+static void ResetMultitap(u32 port);
+static void ResetMultitapTransferState(u32 port);
+static void ResetMultitapCommands(u32 port);
+static bool DoStateMultitap(StateWrapper& sw, u32 port);
+static bool MultitapTransfer(u32 port, u8 data_in, u8* data_out);
+static bool MultitapTransferController(u32 port, u32 slot, u8 data_in, u8* data_out);
+static bool MultitapTransferMemoryCard(u32 port, u32 slot, u8 data_in, u8* data_out);
+
 static bool DoStateController(StateWrapper& sw, u32 i);
 static bool DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state);
 static MemoryCard* GetDummyMemcard();
 static void BackupMemoryCardState();
 static void RestoreMemoryCardState();
+static void UpdateMemoryCardTransferFrame();
+static bool TransferMemoryCard(MemoryCard* card, u8 data_in, u8* data_out);
 
 namespace {
+
+struct MultitapState
+{
+  MultitapTransferState transfer_state = MultitapTransferState::Idle;
+  u8 selected_slot = 0;
+  u32 controller_transfer_step = 0;
+  bool invalid_transfer_all_command = false;
+  bool transfer_all_controllers = false;
+  bool current_controller_done = false;
+  bool enabled = false;
+
+  // Bytes sent to each sub-port's controller in an all-controllers access, 8 per sub-port.
+  std::array<u8, 32> transfer_buffer{};
+};
 
 struct PadState
 {
   std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> controllers;
   std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> memory_cards;
 
-  std::array<Multitap, NUM_MULTITAPS> multitaps;
+  std::array<MultitapState, NUM_MULTITAPS> multitaps;
 
   TimingEvent transfer_event{"Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr};
   State state = State::Idle;
@@ -186,7 +230,7 @@ void Pad::Reset()
   }
 
   for (u32 i = 0; i < NUM_MULTITAPS; i++)
-    s_state.multitaps[i].Reset();
+    ResetMultitap(i);
 }
 
 bool Pad::ShouldAvoidSavingToState()
@@ -368,6 +412,29 @@ void Pad::RestoreMemoryCardState()
   }
 }
 
+void Pad::UpdateMemoryCardTransferFrame()
+{
+  // back up memory card state in case we roll back to before this transfer begun
+  const u32 frame_number = System::GetFrameNumber();
+
+  // consider u32 overflow case
+  if (ShouldAvoidSavingToState() &&
+      (frame_number - s_state.last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
+    BackupMemoryCardState();
+
+  s_state.last_memory_card_transfer_frame = frame_number;
+}
+
+bool Pad::TransferMemoryCard(MemoryCard* card, u8 data_in, u8* data_out)
+{
+  // Every byte of an access counts as a transfer, including the last one, but not controller bytes that the card
+  // ignores. The backup is taken before the card receives the byte.
+  if (data_in == 0x81 || card->IsTransferring())
+    UpdateMemoryCardTransferFrame();
+
+  return card->Transfer(data_in, data_out);
+}
+
 bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
 {
   if (is_memory_state && ShouldAvoidSavingToState())
@@ -443,20 +510,15 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
       if (s_state.controllers[i])
-      {
-        // Ignore input state, use the current. I think we want this?
         s_state.controllers[i]->DoState(sw, false);
-      }
     }
   }
   else
   {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      if ((sw.GetVersion() < 50) && (i >= 2)) [[unlikely]]
+      if (sw.GetVersion() < 50 && i >= 2) [[unlikely]]
       {
-        // loading from old savestate which only had max 2 controllers.
-        // honoring load_devices_from_save_states in this case seems debatable, but might as well...
         if (s_state.controllers[i])
         {
           if (g_settings.load_devices_from_save_states)
@@ -473,7 +535,6 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
             s_state.memory_cards[i]->Reset();
         }
 
-        // and make sure to skip trying to read controller_type / card_present flags which don't exist in old states.
         continue;
       }
 
@@ -489,12 +550,16 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   {
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
     {
-      if (!s_state.multitaps[i].DoState(sw))
+      if (!DoStateMultitap(sw, i))
         return false;
     }
   }
 
   sw.Do(&s_state.state, State::WaitingForACK);
+  if (sw.GetVersion() >= 103) [[likely]]
+    sw.Do(&s_state.active_device, ActiveDevice::Multitap);
+  else
+    s_state.active_device = ActiveDevice::None;
   sw.Do(&s_state.JOY_CTRL.bits);
   sw.Do(&s_state.JOY_STAT.bits);
   sw.Do(&s_state.JOY_MODE.bits);
@@ -503,6 +568,14 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   sw.Do(&s_state.transmit_buffer);
   sw.Do(&s_state.receive_buffer_full);
   sw.Do(&s_state.transmit_buffer_full);
+
+  // The multitap setting isn't part of the state, so don't continue a transfer that was going to a different device.
+  if (sw.IsReading() && s_state.active_device != ActiveDevice::None &&
+      (s_state.active_device == ActiveDevice::Multitap) != s_state.multitaps[s_state.JOY_CTRL.SLOT].enabled)
+  {
+    WARNING_LOG("Multitap setting differs from save state, aborting transfer.");
+    s_state.active_device = ActiveDevice::None;
+  }
 
   if (sw.IsReading() && IsTransmitting())
     s_state.transfer_event.Activate();
@@ -541,9 +614,13 @@ std::unique_ptr<MemoryCard> Pad::RemoveMemoryCard(u32 slot)
   return ret;
 }
 
-Multitap* Pad::GetMultitap(u32 slot)
+void Pad::SetMultitapEnabled(u32 port, bool enabled)
 {
-  return &s_state.multitaps[slot];
+  if (s_state.multitaps[port].enabled != enabled)
+  {
+    s_state.multitaps[port].enabled = enabled;
+    ResetMultitap(port);
+  }
 }
 
 void Pad::TriggerIRQ(const char* type)
@@ -757,7 +834,7 @@ void Pad::DoTransfer()
 {
   DEBUG_LOG("Transferring slot {}", s_state.JOY_CTRL.SLOT.GetValue());
 
-  const u8 device_index = s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled() ? 4u : s_state.JOY_CTRL.SLOT;
+  const u8 device_index = s_state.multitaps[s_state.JOY_CTRL.SLOT].enabled ? 4u : s_state.JOY_CTRL.SLOT;
   Controller* const controller = s_state.controllers[device_index].get();
   MemoryCard* const memory_card = s_state.memory_cards[device_index].get();
 
@@ -770,9 +847,9 @@ void Pad::DoTransfer()
   {
     case ActiveDevice::None:
     {
-      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled())
+      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].enabled)
       {
-        if ((ack = s_state.multitaps[s_state.JOY_CTRL.SLOT].Transfer(data_out, &data_in)) == true)
+        if ((ack = MultitapTransfer(s_state.JOY_CTRL.SLOT, data_out, &data_in)) == true)
         {
           TRACE_LOG("Active device set to tap {}, sent 0x{:02X}, received 0x{:02X}",
                     static_cast<int>(s_state.JOY_CTRL.SLOT), data_out, data_in);
@@ -783,7 +860,7 @@ void Pad::DoTransfer()
       {
         if (!controller || (ack = controller->Transfer(data_out, &data_in)) == false)
         {
-          if (!memory_card || (ack = memory_card->Transfer(data_out, &data_in)) == false)
+          if (!memory_card || (ack = TransferMemoryCard(memory_card, data_out, &data_in)) == false)
           {
             // nothing connected to this port
             TRACE_LOG("Nothing connected or ACK'ed");
@@ -793,16 +870,6 @@ void Pad::DoTransfer()
             // memory card responded, make it the active device until non-ack
             TRACE_LOG("Transfer to memory card, data_out=0x{:02X}, data_in=0x{:02X}", data_out, data_in);
             s_state.active_device = ActiveDevice::MemoryCard;
-
-            // back up memory card state in case we roll back to before this transfer begun
-            const u32 frame_number = System::GetFrameNumber();
-
-            // consider u32 overflow case
-            if (ShouldAvoidSavingToState() &&
-                (frame_number - s_state.last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
-              BackupMemoryCardState();
-
-            s_state.last_memory_card_transfer_frame = frame_number;
           }
         }
         else
@@ -829,8 +896,7 @@ void Pad::DoTransfer()
     {
       if (memory_card)
       {
-        s_state.last_memory_card_transfer_frame = System::GetFrameNumber();
-        ack = memory_card->Transfer(data_out, &data_in);
+        ack = TransferMemoryCard(memory_card, data_out, &data_in);
         TRACE_LOG("Transfer to memory card, data_out=0x{:02X}, data_in=0x{:02X}", data_out, data_in);
       }
     }
@@ -838,9 +904,9 @@ void Pad::DoTransfer()
 
     case ActiveDevice::Multitap:
     {
-      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled())
+      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].enabled)
       {
-        ack = s_state.multitaps[s_state.JOY_CTRL.SLOT].Transfer(data_out, &data_in);
+        ack = MultitapTransfer(s_state.JOY_CTRL.SLOT, data_out, &data_in);
         TRACE_LOG("Transfer tap {}, sent 0x{:02X}, received 0x{:02X}, acked: {}",
                   static_cast<int>(s_state.JOY_CTRL.SLOT), data_out, data_in, ack ? "true" : "false");
       }
@@ -869,9 +935,10 @@ void Pad::DoTransfer()
   }
   else
   {
-    const bool memcard_transfer = s_state.active_device == ActiveDevice::MemoryCard ||
-                                  (s_state.active_device == ActiveDevice::Multitap &&
-                                   s_state.multitaps[s_state.JOY_CTRL.SLOT].IsReadingMemoryCard());
+    const bool memcard_transfer =
+      s_state.active_device == ActiveDevice::MemoryCard ||
+      (s_state.active_device == ActiveDevice::Multitap &&
+       s_state.multitaps[s_state.JOY_CTRL.SLOT].transfer_state == MultitapTransferState::MemoryCard);
 
     const TickCount ack_timer = GetACKTicks(memcard_transfer);
     DEBUG_LOG("Delaying ACK for {} ticks", ack_timer);
@@ -912,11 +979,252 @@ void Pad::ResetDeviceTransferState()
     if (s_state.controllers[i])
       s_state.controllers[i]->ResetTransferState();
     if (s_state.memory_cards[i])
+    {
+      // Aborting a command changes the card's state, so a rollback across it has to restore the card.
+      if (s_state.memory_cards[i]->IsTransferring())
+        UpdateMemoryCardTransferFrame();
       s_state.memory_cards[i]->ResetTransferState();
+    }
   }
 
   for (u32 i = 0; i < NUM_MULTITAPS; i++)
-    s_state.multitaps[i].ResetTransferState();
+    ResetMultitapTransferState(i);
 
   s_state.active_device = ActiveDevice::None;
+}
+
+void Pad::ResetMultitap(u32 port)
+{
+  MultitapState& tap = s_state.multitaps[port];
+  tap.transfer_state = MultitapTransferState::Idle;
+  tap.selected_slot = 0;
+  tap.controller_transfer_step = 0;
+  tap.transfer_all_controllers = false;
+  tap.invalid_transfer_all_command = false;
+  tap.current_controller_done = false;
+  ResetMultitapCommands(port);
+}
+
+void Pad::ResetMultitapTransferState(u32 port)
+{
+  MultitapState& tap = s_state.multitaps[port];
+  tap.transfer_state = MultitapTransferState::Idle;
+  tap.selected_slot = 0;
+  tap.controller_transfer_step = 0;
+  tap.current_controller_done = false;
+
+  // Don't reset transfer_all_controllers here, since it's queued up for the next transfer sequence
+  // Controller and memory card transfer resets are handled in ResetDeviceTransferState()
+}
+
+void Pad::ResetMultitapCommands(u32 port)
+{
+  // A plain poll (42h 00h...) for each sub-port.
+  std::array<u8, 32>& buffer = s_state.multitaps[port].transfer_buffer;
+  for (u32 i = 0; i < buffer.size(); i++)
+    buffer[i] = (i % 8 == 0) ? 0x42 : 0x00;
+}
+
+bool Pad::DoStateMultitap(StateWrapper& sw, u32 port)
+{
+  MultitapState& tap = s_state.multitaps[port];
+  sw.Do(&tap.transfer_state, MultitapTransferState::AllControllers);
+  sw.Do(&tap.selected_slot);
+  sw.Do(&tap.controller_transfer_step);
+  sw.Do(&tap.invalid_transfer_all_command);
+  sw.Do(&tap.transfer_all_controllers);
+  sw.Do(&tap.current_controller_done);
+  sw.Do(&tap.transfer_buffer);
+
+  // Older states have the previous replies in the buffer, rather than the bytes to send to the controllers.
+  if (sw.IsReading() && sw.GetVersion() < 103)
+    ResetMultitapCommands(port);
+
+  return !sw.HasError();
+}
+
+bool Pad::MultitapTransferController(u32 port, u32 slot, const u8 data_in, u8* data_out)
+{
+  Controller* const selected_controller = s_state.controllers[Controller::ConvertPortAndSlotToPad(port, slot)].get();
+  if (!selected_controller)
+  {
+    *data_out = 0xFF;
+    return false;
+  }
+
+  return selected_controller->Transfer(data_in, data_out);
+}
+
+bool Pad::MultitapTransferMemoryCard(u32 port, u32 slot, const u8 data_in, u8* data_out)
+{
+  MemoryCard* const selected_memcard = s_state.memory_cards[Controller::ConvertPortAndSlotToPad(port, slot)].get();
+  if (!selected_memcard)
+  {
+    *data_out = 0xFF;
+    return false;
+  }
+
+  return TransferMemoryCard(selected_memcard, data_in, data_out);
+}
+
+bool Pad::MultitapTransfer(u32 port, const u8 data_in, u8* data_out)
+{
+  MultitapState& tap = s_state.multitaps[port];
+  bool ack;
+  switch (tap.transfer_state)
+  {
+    case MultitapTransferState::Idle:
+    {
+      if (data_in >= 0x01 && data_in <= 0x04)
+      {
+        tap.selected_slot = data_in - 1u;
+        if ((ack = MultitapTransferController(port, tap.selected_slot, 0x01, data_out)))
+        {
+          tap.transfer_state = MultitapTransferState::ControllerCommand;
+
+          // Only an access to Slot A can return all controllers, the other slots are always accessed on their own.
+          if (tap.transfer_all_controllers && tap.selected_slot == 0)
+          {
+            // Send access byte to remaining controllers for this transfer mode.
+            u8 controller_data_out;
+            for (u32 i = 1; i < 4; i++)
+              MultitapTransferController(port, i, 0x01, &controller_data_out);
+          }
+        }
+      }
+      else if (data_in >= 0x81 && data_in <= 0x84)
+      {
+        tap.selected_slot = (data_in & 0x0Fu) - 1u;
+        if ((ack = MultitapTransferMemoryCard(port, tap.selected_slot, 0x81, data_out)))
+          tap.transfer_state = MultitapTransferState::MemoryCard;
+      }
+      else
+      {
+        *data_out = 0xFF;
+        ack = false;
+      }
+    }
+    break;
+
+    case MultitapTransferState::MemoryCard:
+    {
+      if (!(ack = MultitapTransferMemoryCard(port, tap.selected_slot, data_in, data_out)))
+      {
+        DEV_LOG("Memory card transfer ended");
+        tap.transfer_state = MultitapTransferState::Idle;
+      }
+    }
+    break;
+
+    case MultitapTransferState::ControllerCommand:
+    {
+      const bool all_controllers = (tap.transfer_all_controllers && tap.selected_slot == 0);
+      if (tap.controller_transfer_step == 0) // Command byte
+      {
+        if (all_controllers)
+        {
+          // Unknown if 0x42 is the only valid command byte here, but other tested command bytes cause early aborts
+          *data_out = 0x80;
+          tap.invalid_transfer_all_command = (data_in != 0x42);
+          ack = true;
+        }
+        else
+        {
+          ack = MultitapTransferController(port, tap.selected_slot, data_in, data_out);
+        }
+
+        tap.controller_transfer_step++;
+      }
+      else if (tap.controller_transfer_step == 1) // Request byte
+      {
+        if (all_controllers)
+        {
+          *data_out = 0x5A;
+
+          ack = !tap.invalid_transfer_all_command;
+          tap.transfer_state = MultitapTransferState::AllControllers;
+        }
+        else
+        {
+          // The bytes sent to the controllers in the next all-controllers access go back to a plain poll.
+          ResetMultitapCommands(port);
+          ack = MultitapTransferController(port, tap.selected_slot, 0x00, data_out);
+          tap.transfer_state = MultitapTransferState::SingleController;
+        }
+
+        // Queue up request for next transfer cycle (not sure if this is always queued on invalid commands)
+        tap.transfer_all_controllers = (data_in & 0x01);
+        tap.controller_transfer_step = 0;
+      }
+      else
+      {
+        UnreachableCode();
+      }
+    }
+    break;
+
+    case MultitapTransferState::SingleController:
+    {
+      if (!(ack = MultitapTransferController(port, tap.selected_slot, data_in, data_out)))
+      {
+        DEV_LOG("Controller transfer ended");
+        tap.transfer_state = MultitapTransferState::Idle;
+      }
+    }
+    break;
+
+    case MultitapTransferState::AllControllers:
+    {
+      // Each sub-port gets 8 bytes, and the controllers' replies are passed straight through. The bytes sent to each
+      // controller are the ones the console sent in that sub-port's block in the previous all-controllers access, so
+      // sending 00h instead of 42h at the start of a block breaks the access after it. psx-spx calls this "garbage":
+      // the controller doesn't ACK the command byte, so the multitap stops after its ID byte. The byte sent in its
+      // place is still stored, so it continues while 00h is sent there with the request bit set. Quake II needs this,
+      // as it probes Slot A with 43h, which a digital controller doesn't ACK, then sends 42h after the garbage.
+      // Once a controller stops ACKing (or for empty sub-ports), the rest of the block is padded with FFh.
+      // psx-spx only checked this with a controller in Slot A. Stopping on the other sub-ports' command bytes, and
+      // normal accesses resetting the bytes to a plain poll, are guesses. psx-spx also shows the controller's ID LSB
+      // as the last garbage byte, but the controllers here reply FFh to an invalid command byte.
+      const u32 step = tap.controller_transfer_step;
+      const u32 pad = Controller::ConvertPortAndSlotToPad(port, tap.selected_slot);
+
+      if (tap.current_controller_done || !s_state.controllers[pad])
+      {
+        *data_out = 0xFF;
+        tap.current_controller_done = true;
+        ack = true;
+      }
+      else if (!s_state.controllers[pad]->Transfer(tap.transfer_buffer[step], data_out))
+      {
+        tap.current_controller_done = true;
+        ack = (step % 8) != 0;
+      }
+      else
+      {
+        ack = true;
+      }
+
+      tap.transfer_buffer[step] = data_in;
+
+      tap.controller_transfer_step++;
+      if ((tap.controller_transfer_step % 8) == 0)
+      {
+        tap.current_controller_done = false;
+        tap.selected_slot = (tap.selected_slot + 1) % 4;
+        if (tap.selected_slot == 0)
+          ack = false;
+      }
+
+      if (!ack)
+      {
+        DEV_LOG("All controllers transfer ended");
+        ResetMultitapTransferState(port);
+      }
+    }
+    break;
+
+      DefaultCaseIsUnreachable();
+  }
+
+  return ack;
 }

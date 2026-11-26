@@ -69,7 +69,6 @@
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="memory_scanner.cpp" />
-    <ClCompile Include="multitap.cpp" />
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="negcon_base.cpp" />
@@ -167,7 +166,6 @@
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="memory_scanner.h" />
-    <ClInclude Include="multitap.h" />
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
     <ClInclude Include="negcon_base.h" />

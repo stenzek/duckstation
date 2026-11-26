@@ -11,7 +11,6 @@ class StateWrapper;
 
 class Controller;
 class MemoryCard;
-class Multitap;
 
 namespace Pad {
 
@@ -27,7 +26,7 @@ MemoryCard* GetMemoryCard(u32 slot);
 void SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev);
 std::unique_ptr<MemoryCard> RemoveMemoryCard(u32 slot);
 
-Multitap* GetMultitap(u32 slot);
+void SetMultitapEnabled(u32 port, bool enabled);
 
 u32 ReadRegister(u32 offset);
 void WriteRegister(u32 offset, u32 value);
