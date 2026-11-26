@@ -862,7 +862,7 @@ TEST_F(PadTest, MemoryCardInvalidSector)
   tx.resize(tx.size() + MemoryCardImage::FRAME_SIZE, 0xAA);
   tx.insert(tx.end(), {0x04, 0x00, 0x00, 0x00});
   Select(1);
-  Command(tx);
+  EXPECT_EQ(Command(tx).back(), 0xFF);
   EXPECT_EQ(card->GetData(), before);
 }
 
@@ -893,9 +893,32 @@ TEST_F(PadTest, MemoryCardInvalidSector_SaveState)
   round_trip();
   std::vector<u8> tx(MemoryCardImage::FRAME_SIZE, 0xAA);
   tx.insert(tx.end(), {0x04, 0x00, 0x00, 0x00});
-  Command(tx);
+  EXPECT_EQ(Command(tx).back(), 0xFF);
   Deselect();
   EXPECT_EQ(card->GetData(), before);
+}
+
+TEST_F(PadTest, MemoryCardWriteBadChecksum)
+{
+  static constexpr u16 SECTOR = 0x3F;
+  PlugMemoryCard(0);
+
+  // Checksum is MSB ^ LSB ^ data, which is 0x3F for a zero-filled sector.
+  for (const auto [checksum, end] :
+       {std::pair<u8, u8>{0x00, 0x4E}, std::pair<u8, u8>{0x3F, 0x47}, std::pair<u8, u8>{0x3E, 0x4E}})
+  {
+    std::vector<u8> tx = {0x81, 0x57, 0x00, 0x00, Truncate8(SECTOR >> 8), Truncate8(SECTOR)};
+    tx.resize(tx.size() + MemoryCardImage::FRAME_SIZE, 0x00);
+    tx.insert(tx.end(), {checksum, 0x00, 0x00, 0x00});
+    Select(0);
+    const std::vector<u8> rx = Command(tx);
+    ASSERT_EQ(rx.size(), tx.size());
+    EXPECT_EQ(rx[rx.size() - 4], 0x00) << "checksum 0x" << std::hex << u32(checksum);
+    EXPECT_EQ(rx[rx.size() - 3], 0x5C);
+    EXPECT_EQ(rx[rx.size() - 2], 0x5D);
+    EXPECT_EQ(rx.back(), end) << "checksum 0x" << std::hex << u32(checksum);
+    Deselect();
+  }
 }
 
 TEST_F(PadTest, ACKTiming_WholeCommands)

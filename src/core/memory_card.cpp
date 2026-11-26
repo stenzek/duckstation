@@ -256,10 +256,19 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     }
     break;
 
-      FIXED_REPLY_STATE(State::WriteChecksum, m_last_byte, true, State::WriteACK1);
+    case State::WriteChecksum:
+    {
+      // The checksum is replaced by the end byte: 47h=Good, 4Eh=BadChecksum, FFh=BadSector.
+      m_checksum = (m_address > ADDRESS_MASK) ? 0xFF : ((data_in == m_checksum) ? 0x47 : 0x4E);
+      *data_out = m_last_byte;
+      ack = true;
+      m_state = State::WriteACK1;
+    }
+    break;
+
       FIXED_REPLY_STATE(State::WriteACK1, 0x5C, true, State::WriteACK2);
       FIXED_REPLY_STATE(State::WriteACK2, 0x5D, true, State::WriteEnd);
-      FIXED_REPLY_STATE(State::WriteEnd, 0x47, false, State::Idle);
+      FIXED_REPLY_STATE(State::WriteEnd, m_checksum, false, State::Idle);
 
       // TODO: This really needs a proper buffer system...
       FIXED_REPLY_STATE(State::GetIDCardID1, 0x5A, true, State::GetIDCardID2);
