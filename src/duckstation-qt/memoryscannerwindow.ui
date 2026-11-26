@@ -82,7 +82,7 @@
          <widget class="QLineEdit" name="scanValue"/>
         </item>
         <item>
-         <widget class="QComboBox" name="scanValueSigned">
+         <widget class="QComboBox" name="valueSigned">
           <property name="currentIndex">
            <number>1</number>
           </property>
@@ -99,7 +99,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="scanValueBase">
+         <widget class="QComboBox" name="valueBase">
           <property name="currentIndex">
            <number>1</number>
           </property>
@@ -245,7 +245,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="scanStartAddress"/>
+       <widget class="QLineEdit" name="startAddress"/>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_5">
@@ -255,7 +255,7 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="scanEndAddress"/>
+       <widget class="QLineEdit" name="endAddress"/>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_6">
@@ -265,7 +265,7 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QComboBox" name="scanPresetRange">
+       <widget class="QComboBox" name="presetRange">
         <item>
          <property name="text">
           <string>RAM</string>
@@ -291,7 +291,7 @@
        </widget>
       </item>
       <item row="6" column="1">
-       <widget class="QLabel" name="scanResultCount">
+       <widget class="QLabel" name="resultCount">
         <property name="text">
          <string>0</string>
         </property>
@@ -300,14 +300,14 @@
       <item row="7" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QPushButton" name="scanNewSearch">
+         <widget class="QPushButton" name="newSearch">
           <property name="text">
            <string>New Search</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="scanSearchAgain">
+         <widget class="QPushButton" name="searchAgain">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -317,7 +317,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="scanResetSearch">
+         <widget class="QPushButton" name="resetSearch">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -329,7 +329,7 @@
        </layout>
       </item>
       <item row="8" column="0" colspan="2">
-       <widget class="QPushButton" name="scanAddWatch">
+       <widget class="QPushButton" name="addWatch">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -422,7 +422,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="scanSaveWatch">
+        <widget class="QPushButton" name="saveWatch">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -442,7 +442,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="scanFreezeWatch">
+        <widget class="QPushButton" name="toggleWatchFreeze">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -452,7 +452,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="scanRemoveWatch">
+        <widget class="QPushButton" name="removeWatch">
          <property name="enabled">
           <bool>false</bool>
          </property>

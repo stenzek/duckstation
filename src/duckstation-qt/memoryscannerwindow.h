@@ -43,7 +43,7 @@ private:
 
   void addToWatchClicked();
   void addManualWatchAddressClicked();
-  void freezeWatchClicked();
+  void toggleWatchFreezeClicked();
   void removeWatchClicked();
   void scanCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
   void scanItemChanged(QTableWidgetItem* item);
