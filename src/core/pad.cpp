@@ -687,7 +687,10 @@ bool Pad::CanTransfer()
 
 TickCount Pad::GetTransferTicks()
 {
-  return static_cast<TickCount>(ZeroExtend32(s_state.JOY_BAUD) * 8);
+  // Bit time is (reload * factor) with the low bit cleared, at least one cycle. Factor is x1 for both 0 and 1 on SIO0.
+  static constexpr std::array<u8, 4> factor_shift = {0, 0, 4, 6};
+  const u32 bit_ticks = (ZeroExtend32(s_state.JOY_BAUD) << factor_shift[s_state.JOY_MODE.reload_factor]) & ~1u;
+  return static_cast<TickCount>(std::max(bit_ticks, 1u) * 8);
 }
 
 void Pad::SoftReset()

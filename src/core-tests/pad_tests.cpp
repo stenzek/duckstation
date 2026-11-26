@@ -308,25 +308,45 @@ protected:
 
 } // namespace
 
-TEST_F(PadTest, TransferTiming_RXAfterBaudTimes8)
+TEST_F(PadTest, TransferTiming_RX)
 {
   PlugController(0);
   Select(0);
 
-  for (const u32 baud : {static_cast<u32>(BIOS_JOY_BAUD), 0x44u, 0x123u})
+  // Eight bits of ((reload * factor) AND NOT 1), at least one cycle each. The factor is x1 for both 0 and 1.
+  static constexpr struct
+  {
+    u32 mode;
+    u32 baud;
+    u32 ticks;
+  } cases[] = {
+    {BIOS_JOY_MODE, BIOS_JOY_BAUD, 0x88 * 8},
+    {0x0C, 0x44, 0x44 * 8},
+    {BIOS_JOY_MODE, 0x123, 0x122 * 8},
+    {0x0E, 0x10, 0x10 * 16 * 8},
+    {0x0F, 0x10, 0x10 * 64 * 8},
+    {BIOS_JOY_MODE, 1, 8},
+    {BIOS_JOY_MODE, 0, 8},
+  };
+
+  for (const auto& c : cases)
   {
     Deselect();
-    Pad::WriteRegister(JOY_BAUD, baud);
+    Pad::WriteRegister(JOY_MODE, c.mode);
+    Pad::WriteRegister(JOY_BAUD, c.baud);
     Select(0);
 
     Pad::WriteRegister(JOY_DATA, 0x01);
     EXPECT_EQ(Pad::ReadRegister(JOY_STAT) & (STAT_TXDONE | STAT_RXFIFONEMPTY), 0u);
-    EXPECT_EQ(RunUntil(RXReady, baud * 16), baud * 8) << "baud 0x" << std::hex << baud;
+    EXPECT_EQ(RunUntil(RXReady, c.ticks * 2), c.ticks) << "mode 0x" << std::hex << c.mode << " baud 0x" << c.baud;
     EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0xFF);
+    RunUntil(PadIRQPending, ACK_WINDOW);
+    AckIRQ();
   }
 
   // Same time when nothing reads the registers, using the RX interrupt instead.
   Deselect();
+  Pad::WriteRegister(JOY_MODE, BIOS_JOY_MODE);
   Pad::WriteRegister(JOY_BAUD, BIOS_JOY_BAUD);
   Select(0, CTRL_RXINTEN);
   Pad::WriteRegister(JOY_DATA, 0x01);
@@ -695,6 +715,7 @@ TEST_F(PadTest, Registers)
   EXPECT_EQ(Pad::ReadRegister(JOY_MODE), BIOS_JOY_MODE);
   Pad::WriteRegister(JOY_MODE, 0xFFFF);
   EXPECT_EQ(Pad::ReadRegister(JOY_MODE), 0x013Fu);
+  Pad::WriteRegister(JOY_MODE, BIOS_JOY_MODE);
 
   Pad::WriteRegister(JOY_BAUD, 0x1234);
   EXPECT_EQ(Pad::ReadRegister(JOY_BAUD), 0x1234u);
