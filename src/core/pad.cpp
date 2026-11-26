@@ -616,6 +616,7 @@ void Pad::WriteRegister(u32 offset, u32 value)
       if (!IsTransmitting() && CanTransfer())
         BeginTransfer();
 
+      UpdateJoyStat();
       return;
     }
 
@@ -746,6 +747,7 @@ void Pad::BeginTransfer()
 
   s_state.state = State::Transmitting;
   s_state.transfer_event.SetPeriodAndSchedule(GetTransferTicks());
+  UpdateJoyStat();
 }
 
 void Pad::DoTransfer()
