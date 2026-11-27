@@ -128,7 +128,7 @@ protected:
   {
     EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
     EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, analog ? 0x01 : 0x00, 0x02)), ANALOG_CONFIG_REPLY);
-    EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+    EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
     EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   }
 
@@ -315,7 +315,7 @@ TEST_F(AnalogControllerTest, SetAnalogModeResetsRumble)
             (std::vector<u8>{0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
 
   // And the mapping is gone.
-  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
 }
 
 TEST_F(AnalogControllerTest, GetAnalogMode)
@@ -362,13 +362,12 @@ TEST_F(AnalogControllerTest, MapMotors)
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
 
   // The previous mapping is returned.
-  // Current behaviour: the sixth byte isn't stored or returned.
   EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF})),
-            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(MapMotorsCommand({0x01, 0x00, 0x05, 0x40, 0x00, 0x01})),
-            ConfigReply({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0x00}));
+            ConfigReply({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF})),
-            ConfigReply({0x01, 0x00, 0x05, 0x40, 0x00, 0x00}));
+            ConfigReply({0x01, 0x00, 0x05, 0x40, 0x00, 0x01}));
 
   // The motors are driven by the mapped bytes. Other values don't map anything.
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
@@ -382,14 +381,17 @@ TEST_F(AnalogControllerTest, MapMotors)
   TransferBytes(m_controller, std::vector<u8>(tx.begin(), tx.end() - 1));
   EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
   std::vector<bool> acks;
-  EXPECT_EQ(TransferBytes(m_controller, {tx.back()}, &acks), std::vector<u8>{0x00});
+  EXPECT_EQ(TransferBytes(m_controller, {tx.back()}, &acks), std::vector<u8>{0xFF});
   EXPECT_EQ(acks, std::vector<bool>{false});
   EXPECT_EQ(SmallMotor(), 1.0f);
   EXPECT_EQ(LargeMotor(), 0.0f);
 
-  // Current behaviour: mapping a motor to the sixth byte is ignored, so it's stopped.
+  // Mapping it to the sixth byte instead keeps it running.
   EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00})),
-            ConfigReply({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+            ConfigReply({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF})),
+            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
   EXPECT_EQ(SmallMotor(), 0.0f);
 }
 
@@ -442,16 +444,19 @@ TEST_F(AnalogControllerTest, DualShockRumble)
   EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
 }
 
-TEST_F(AnalogControllerTest, DualShockRumble_SixthByte)
+TEST_F(AnalogControllerTest, DualShockRumble_LastBytes)
 {
-  // Current behaviour: the sixth motor byte isn't used.
+  // The motors can be mapped to any of the six bytes.
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x01})),
-            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00, 0x00, 0x00, 0x01, 0xFF})), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
+  EXPECT_EQ(LargeMotor(), 1.0f);
+  EXPECT_EQ(Transfer(RumblePoll({0x01, 0xFF, 0x00, 0x00, 0x00, 0x00})), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(SmallMotor(), 0.0f);
   EXPECT_EQ(LargeMotor(), 0.0f);
 }
 
@@ -462,6 +467,41 @@ TEST_F(AnalogControllerTest, DualShockRumble_DigitalMode)
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0x80}, 5)), PollReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
   EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+}
+
+TEST_F(AnalogControllerTest, DualShockRumble_DigitalModeLength)
+{
+  // Mapping a motor past the second byte lengthens the reply in digital mode, to include it.
+  SetupDualShock(false);
+  EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF})),
+            ConfigReply({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00, 0x01}, 7)), (std::vector<u8>{0xFF, 0x42, 0x5A, 0xFF, 0xFF, 0x00, 0x00}));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+
+  // Including 43h outside config mode.
+  EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x01, 0x00, 0x00, 0x00}),
+            (std::vector<u8>{0xFF, 0x42, 0x5A, 0xFF, 0xFF, 0x00, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01})),
+            ConfigReply({0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00, 0x00, 0x00, 0x00, 0xFF})),
+            (std::vector<u8>{0xFF, 0x43, 0x5A, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}));
+  EXPECT_EQ(LargeMotor(), 1.0f);
+
+  // Analog mode is unchanged, and unmapping it goes back to the normal length.
+  EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), (std::vector<u8>{0xFF, 0x43, 0x5A, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}));
+  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x02)), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01})),
+            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x00, 0x02)), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, LegacyRumble)
@@ -610,7 +650,7 @@ TEST_F(AnalogControllerTest, Reset)
   ToggleAnalog();
   ToggleAnalog();
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG)[2], 0x00);
-  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   TransferBytes(m_controller, RumblePoll({0x01, 0xFF}, 5));
   EXPECT_EQ(SmallMotor(), 1.0f);
 
@@ -624,7 +664,7 @@ TEST_F(AnalogControllerTest, Reset)
   EXPECT_EQ(Transfer(RumblePoll({0x40, 0x01})), AnalogPollReply(Pressed({Button::Cross})));
   EXPECT_EQ(SmallMotor(), 1.0f);
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), AnalogPollReply(Pressed({Button::Cross})));
-  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
 
   // Not if the game can't start in analog mode.
   SetCanStartInAnalogMode(false);
@@ -975,7 +1015,7 @@ TEST_F(AnalogControllerTest, SaveState_MapMotors)
 
   for (AnalogController* controller : {&m_controller, &loaded})
   {
-    EXPECT_EQ(TransferCommand(*controller, {0xFF, 0xFF, 0xFF, 0xFF}), (std::vector<u8>{0xFF, 0xFF, 0xFF, 0x00}));
+    EXPECT_EQ(TransferCommand(*controller, {0xFF, 0xFF, 0xFF, 0xFF}), (std::vector<u8>{0xFF, 0xFF, 0xFF, 0xFF}));
     EXPECT_EQ(TransferCommand(*controller, ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
     EXPECT_EQ(TransferCommand(*controller, RumblePoll({0x01, 0x80})), AnalogPollReply(NO_BUTTONS));
     EXPECT_EQ(controller->GetBindState(GetBindIndex(AnalogController::INFO, "SmallMotor")), 1.0f);

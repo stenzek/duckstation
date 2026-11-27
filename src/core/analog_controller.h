@@ -160,9 +160,6 @@ private:
   bool m_analog_toggle_queued = false;
   u8 m_status_byte = 0;
 
-  // TODO: Set this with command 0x4D and increase response length in digital mode accordingly
-  u8 m_digital_mode_extra_halfwords = 0;
-
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
 

@@ -111,7 +111,6 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
     sw.Do(&m_configuration_mode);
     sw.DoBytes(m_rumble_config.data(), m_rumble_config.size());
     sw.Do(&m_status_byte);
-    // sw.Do(&m_digital_mode_extra_halfwords); // always zero
 
     auto axis_state = m_axis_state;
     u16 button_state = m_button_state;
@@ -436,7 +435,15 @@ u8 AnalogController::GetResponseNumHalfwords() const
   if (m_configuration_mode || m_analog_mode)
     return 0x3;
 
-  return (0x1 + m_digital_mode_extra_halfwords);
+  // Actuators mapped past the first two motor bytes extend the reply in digital mode, to include the halfword
+  // with that byte. The motor bytes start at the third byte after the command.
+  for (u32 i = static_cast<u32>(m_rumble_config.size()) - 1; i >= 2; i--)
+  {
+    if (m_rumble_config[i] < NUM_MOTORS)
+      return static_cast<u8>((i + 2) / 2);
+  }
+
+  return 0x1;
 }
 
 u8 AnalogController::GetModeID() const
@@ -583,7 +590,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_dualshock_enabled)
       {
-        if (m_command_step >= 2 && m_command_step < 7)
+        if (m_command_step >= 2)
         {
           const u8 motor_to_set = m_rumble_config[m_command_step - 2];
           if (motor_to_set <= LargeMotor)
@@ -688,7 +695,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
     case Command::GetSetRumble:
     {
-      if (m_command_step >= 2 && m_command_step < 7)
+      if (m_command_step >= 2)
       {
         const u8 index = m_command_step - 2;
         m_tx_buffer[m_command_step] = m_rumble_config[index];
@@ -699,7 +706,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         else if (data_in == SmallMotor)
           DEBUG_LOG("Small motor mapped to byte index {}", index);
       }
-      else if (m_command_step == 7)
+
+      if (m_command_step == 7)
       {
         // reset motor value if we're no longer mapping it
         bool has_small = false;
