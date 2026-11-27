@@ -166,18 +166,33 @@ TEST_F(AnalogControllerTest, DigitalModePoll)
   EXPECT_FALSE(AnalogLED());
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 
+  // L3/R3 are only sent in analog mode, but are still reported.
   Press(Button::Cross);
+  Press(Button::L3);
   Press(Button::R3);
-  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross, Button::R3})));
+  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross})));
+  EXPECT_EQ(m_controller.GetButtonStateBits(),
+            static_cast<u32>(ButtonBit(Button::Cross) | ButtonBit(Button::L3) | ButtonBit(Button::R3)));
 
   // 43h that doesn't enter config mode is a poll too.
-  EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x00, 0x00}), PollReply(Pressed({Button::Cross, Button::R3})));
-  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross, Button::R3})));
+  EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x00, 0x00}), PollReply(Pressed({Button::Cross})));
+  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross})));
 
   // The sticks aren't sent, but are still reported.
   SetHalfAxis(HalfAxis::RRight, 1.0f);
-  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross, Button::R3})));
+  EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross})));
   EXPECT_EQ(m_controller.GetAnalogInputBytes(), 0x7F7F7FFFu);
+
+  // Config mode sends them, as well as the sticks.
+  EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(Pressed({Button::Cross})));
+  std::vector<u8> expected = AnalogPollReply(Pressed({Button::Cross, Button::L3, Button::R3}), 0xFF);
+  expected[1] = 0xF3;
+  EXPECT_EQ(Transfer(ANALOG_POLL), expected);
+
+  // As does analog mode.
+  EXPECT_EQ(Transfer(SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(Pressed({Button::Cross, Button::L3, Button::R3}), 0xFF));
 }
 
 TEST_F(AnalogControllerTest, AnalogModePoll)

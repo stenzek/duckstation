@@ -468,7 +468,12 @@ void AnalogController::Poll()
   m_tx_buffer[0] = GetIDByte();
   m_tx_buffer[1] = m_status_byte;
 
-  const u16 button_mask = m_button_state & GetExtraButtonMask();
+  // L3/R3 are only sent in analog and config mode.
+  const u16 l3r3_released =
+    (m_analog_mode || m_configuration_mode) ?
+      0 :
+      static_cast<u16>((1u << static_cast<u8>(Button::L3)) | (1u << static_cast<u8>(Button::R3)));
+  const u16 button_mask = (m_button_state | l3r3_released) & GetExtraButtonMask();
   const u16 button_state = m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(button_mask) : button_mask;
   m_tx_buffer[2] = Truncate8(button_state);
   m_tx_buffer[3] = Truncate8(button_state >> 8);
