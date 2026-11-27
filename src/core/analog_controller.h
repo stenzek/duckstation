@@ -134,7 +134,7 @@ private:
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
   float m_button_deadzone = 0.0f;
-  std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
+  std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_SMALL_MOTOR_VIBRATION_BIAS, DEFAULT_LARGE_MOTOR_VIBRATION_BIAS};
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
 

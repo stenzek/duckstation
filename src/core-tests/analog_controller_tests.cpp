@@ -479,15 +479,15 @@ TEST_F(AnalogControllerTest, DualShockRumble)
   EXPECT_EQ(SmallMotor(), 1.0f);
   EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_128);
 
-  // Current behaviour: the small motor uses the large motor's bias, and the other way around.
-  si.SetIntValue(SECTION, "LargeMotorVibrationBias", -128);
-  LoadSettings(si);
-  EXPECT_FLOAT_EQ(SmallMotor(), STRENGTH_127);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_128);
-  si.SetIntValue(SECTION, "LargeMotorVibrationBias", 0);
-  si.SetIntValue(SECTION, "SmallMotorVibrationBias", 8);
+  // Each motor uses its own bias.
+  si.SetIntValue(SECTION, "LargeMotorVibrationBias", -1);
   LoadSettings(si);
   EXPECT_EQ(SmallMotor(), 1.0f);
+  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_127);
+  si.SetIntValue(SECTION, "LargeMotorVibrationBias", 8);
+  si.SetIntValue(SECTION, "SmallMotorVibrationBias", -128);
+  LoadSettings(si);
+  EXPECT_FLOAT_EQ(SmallMotor(), STRENGTH_127);
   EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
 }
 

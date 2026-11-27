@@ -935,9 +935,9 @@ void AnalogController::LoadSettings(const SettingsInterface& si, const char* sec
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
   m_button_deadzone = std::clamp(si.GetFloatValue(section, "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE), 0.01f, 1.0f);
-  m_vibration_bias[0] = static_cast<s16>(
+  m_vibration_bias[LargeMotor] = static_cast<s16>(
     std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
-  m_vibration_bias[1] = static_cast<s16>(
+  m_vibration_bias[SmallMotor] = static_cast<s16>(
     std::clamp(si.GetIntValue(section, "SmallMotorVibrationBias", DEFAULT_SMALL_MOTOR_VIBRATION_BIAS), -255, 255));
   m_invert_left_stick = static_cast<u8>(si.GetUIntValue(section, "InvertLeftStick", 0u));
   m_invert_right_stick = static_cast<u8>(si.GetUIntValue(section, "InvertRightStick", 0u));
