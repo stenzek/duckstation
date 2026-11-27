@@ -44,6 +44,7 @@ void AnalogController::Reset()
   m_rx_buffer.fill(0x00);
   m_tx_buffer.fill(0x00);
   m_analog_mode = false;
+  m_analog_locked = false;
   m_configuration_mode = false;
 
   for (u32 i = 0; i < NUM_MOTORS; i++)

@@ -734,15 +734,14 @@ TEST_F(AnalogControllerTest, Reset)
   EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross})));
 }
 
-TEST_F(AnalogControllerTest, Reset_KeepsLock)
+TEST_F(AnalogControllerTest, Reset_ClearsLock)
 {
-  // Current behaviour: the lock isn't cleared.
   EnterAnalogMode(m_controller);
   m_controller.Reset();
   EXPECT_FALSE(AnalogLED());
   ToggleAnalog();
-  EXPECT_FALSE(AnalogLED());
-  EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
+  EXPECT_TRUE(AnalogLED());
+  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, ButtonDeadzone)
