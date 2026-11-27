@@ -113,7 +113,8 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
         return true;
       }
 
-      *data_out = 0xFF;
+      // The ID is sent while the command byte is received, so it's still there for unknown commands.
+      *data_out = Truncate8(ID);
       return false;
     }
 

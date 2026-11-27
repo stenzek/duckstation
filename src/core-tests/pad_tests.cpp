@@ -27,10 +27,10 @@ const Block POLL_BLOCK = {0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const Block EMPTY_BLOCK = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const Block ZERO_BLOCK = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-// psx-spx's "garbage" reply: the multitap ID, then Slot A's reply to the rejected command byte, and no more ACKs.
-// psx-spx: that byte is the controller's ID LSB, but the controllers here reply FFh to an invalid command byte.
+// psx-spx's "garbage" reply: the multitap ID, then Slot A's reply to the rejected command byte (its ID LSB), and no
+// more ACKs.
 const std::vector<u8> GARBAGE_TX = {0x01, 0x42, 0x01, 0x00};
-const std::vector<u8> GARBAGE_REPLY = {0xFF, 0x80, 0x5A, 0xFF};
+const std::vector<u8> GARBAGE_REPLY = {0xFF, 0x80, 0x5A, 0x41};
 
 static std::vector<u8> GetIDCommand(u8 first)
 {
@@ -610,7 +610,7 @@ TEST_F(PadTest, ControllerAndMemoryCardSharePort)
 
   // Once the controller has answered, it gets the rest of the bytes, and the card isn't asked.
   Select(0);
-  EXPECT_EQ(Command({0x01, 0x81}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(Command({0x01, 0x81}), (std::vector<u8>{0xFF, 0x41}));
   Deselect();
   Select(0);
   EXPECT_EQ(Command(GetIDCommand(0x81)), GET_ID_REPLY);
@@ -622,7 +622,7 @@ TEST_F(PadTest, InvalidCommands)
   PlugMemoryCard(0);
 
   Select(0);
-  EXPECT_EQ(Command({0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(Command({0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
   Deselect();
   Select(0);
   EXPECT_EQ(Command({0x81, 0x00}), (std::vector<u8>{0xFF, 0x08}));
@@ -1100,7 +1100,7 @@ TEST_F(PadTest, Multitap_AllControllers_SubportGarbage)
   tx.resize(3 + 8 + 1);
   std::vector<u8> expected = AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK});
   expected.resize(3 + 8);
-  expected.push_back(0xFF);
+  expected.push_back(0x41);
   Select(0);
   EXPECT_EQ(Command(tx), expected);
 }

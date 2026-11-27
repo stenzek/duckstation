@@ -242,26 +242,31 @@ TEST_F(AnalogControllerTest, RejectedBytes)
     EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
   }
 
-  // Config mode commands are only accepted in config mode.
+  // Config mode commands are only accepted in config mode. The ID byte is still sent, but not ACKed.
   for (const u8 command :
        {0x00, 0x40, 0x41, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x53})
   {
-    EXPECT_EQ(Transfer({0x01, command}), (std::vector<u8>{0xFF, 0xFF})) << "command 0x" << std::hex << u32(command);
+    EXPECT_EQ(Transfer({0x01, command}), (std::vector<u8>{0xFF, 0x41})) << "command 0x" << std::hex << u32(command);
     m_controller.ResetTransferState();
   }
 
   // Current behaviour: a rejected command leaves the pad waiting for a command, until the transfer state is reset.
-  EXPECT_EQ(Transfer({0x01, 0x44}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(Transfer({0x01, 0x44}), (std::vector<u8>{0xFF, 0x41}));
   EXPECT_EQ(Transfer({0x42, 0x00, 0x00, 0x00}), (std::vector<u8>{0x41, 0x5A, 0xFF, 0xFF}));
 
   // Commands that aren't config commands are still rejected in config mode.
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   for (const u8 command : {0x00, 0x3F, 0x50, 0x53, 0x81, 0xFF})
   {
-    EXPECT_EQ(Transfer({0x01, command}), (std::vector<u8>{0xFF, 0xFF})) << "command 0x" << std::hex << u32(command);
+    EXPECT_EQ(Transfer({0x01, command}), (std::vector<u8>{0xFF, 0xF3})) << "command 0x" << std::hex << u32(command);
     m_controller.ResetTransferState();
     EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), ANALOG_CONFIG_REPLY);
   }
+
+  // And in analog mode.
+  EXPECT_EQ(Transfer(SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer({0x01, 0x45}), (std::vector<u8>{0xFF, 0x73}));
 }
 
 TEST_F(AnalogControllerTest, SetAnalogMode)

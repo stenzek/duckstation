@@ -596,7 +596,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         if (m_configuration_mode)
           ERROR_LOG("Unimplemented config mode command 0x{:02X}", data_in);
 
-        *data_out = 0xFF;
+        // The ID is sent while the command byte is received, so it's still there for unknown commands.
+        *data_out = GetIDByte();
         return false;
       }
     }

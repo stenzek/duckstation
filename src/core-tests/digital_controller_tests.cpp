@@ -70,18 +70,19 @@ TEST(DigitalController, RejectedBytes)
     EXPECT_EQ(TransferCommand(controller, POLL), PollReply(NO_BUTTONS));
   }
 
+  // The ID byte is still sent for other commands, but not ACKed.
   for (const u8 command : {0x00, 0x43, 0x44, 0x45, 0x4D, 0x53})
   {
-    EXPECT_EQ(TransferCommand(controller, {0x01, command}), (std::vector<u8>{0xFF, 0xFF}))
+    EXPECT_EQ(TransferCommand(controller, {0x01, command}), (std::vector<u8>{0xFF, 0x41}))
       << "command 0x" << std::hex << u32(command);
     controller.ResetTransferState();
     EXPECT_EQ(TransferCommand(controller, POLL), PollReply(NO_BUTTONS));
   }
 
   // Current behaviour: a rejected command leaves the pad waiting for a command, until the transfer state is reset.
-  EXPECT_EQ(TransferCommand(controller, {0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(TransferCommand(controller, {0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
   EXPECT_EQ(TransferCommand(controller, {0x42, 0x00, 0x00, 0x00}), (std::vector<u8>{0x41, 0x5A, 0xFF, 0xFF}));
-  EXPECT_EQ(TransferCommand(controller, {0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(TransferCommand(controller, {0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
   controller.ResetTransferState();
   EXPECT_EQ(TransferCommand(controller, {0x42}), std::vector<u8>{0xFF});
 }

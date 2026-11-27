@@ -1154,8 +1154,8 @@ bool Pad::MultitapTransfer(u32 port, const u8 data_in, u8* data_out)
       // as it probes Slot A with 43h, which a digital controller doesn't ACK, then sends 42h after the garbage.
       // Once a controller stops ACKing (or for empty sub-ports), the rest of the block is padded with FFh.
       // psx-spx only checked this with a controller in Slot A. Stopping on the other sub-ports' command bytes, and
-      // normal accesses resetting the bytes to a plain poll, are guesses. psx-spx also shows the controller's ID LSB
-      // as the last garbage byte, but the controllers here reply FFh to an invalid command byte.
+      // normal accesses resetting the bytes to a plain poll, are guesses. The last garbage byte is the controller's
+      // reply to the rejected command byte, its ID LSB.
       const u32 step = tap.controller_transfer_step;
       const u32 pad = Controller::ConvertPortAndSlotToPad(port, tap.selected_slot);
 
