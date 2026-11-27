@@ -167,7 +167,6 @@ void JogCon::SetJogConMode(bool enabled, bool show_message)
     return;
 
   m_jogcon_mode = enabled;
-  m_configuration_mode = enabled && m_configuration_mode;
 
   InputManager::SetPadLEDState(m_index, BoolToFloat(enabled));
 
@@ -198,7 +197,7 @@ u8 JogCon::GetModeID() const
 
 u8 JogCon::GetResponseNumHalfwords() const
 {
-  return m_jogcon_mode ? 3 : 1;
+  return (m_jogcon_mode || m_configuration_mode) ? 3 : 1;
 }
 
 void JogCon::SetMotorState(u8 value)
@@ -371,12 +370,13 @@ bool JogCon::Transfer(const u8 data_in, u8* data_out)
         m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         Poll();
       }
-      else if (m_jogcon_mode && data_in == 0x43)
+      else if ((m_jogcon_mode || m_configuration_mode) && data_in == 0x43)
       {
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
         m_command = Command::SetMode;
         m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        Poll();
+        if (!m_configuration_mode)
+          Poll();
       }
       else if (m_configuration_mode && data_in == 0x44)
       {
@@ -460,7 +460,7 @@ bool JogCon::Transfer(const u8 data_in, u8* data_out)
 
     case Command::SetMode:
     {
-      m_configuration_mode = (m_rx_buffer[2] == 1 && m_jogcon_mode);
+      m_configuration_mode = (m_rx_buffer[2] == 1);
 
       if (m_configuration_mode)
         m_status_byte = 0x5A;

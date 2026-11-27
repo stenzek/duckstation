@@ -77,7 +77,7 @@ protected:
   {
     EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), JogReply(NO_BUTTONS, 0, 0, last_command));
   }
-  void ExitConfigMode() { EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x00)), ConfigPollReply(NO_BUTTONS)); }
+  void ExitConfigMode() { EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x00)), ANALOG_CONFIG_REPLY); }
 
   /// Maps the motor to the first byte after the TAP byte in 42h.
   void MapMotor()
@@ -269,9 +269,9 @@ TEST_F(JogConTest, ConfigMode)
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), JogReply(Pressed({Button::Circle}), 127, 1));
   EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(Pressed({Button::Circle}), 127, 0));
 
-  // In config mode 43h still polls. Parameters other than 01h leave.
-  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x01)), ConfigPollReply(Pressed({Button::Circle}), 127, 0));
-  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x02)), ConfigPollReply(Pressed({Button::Circle}), 127, 0));
+  // In config mode 43h replies with zeros. Parameters other than 01h leave.
+  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x01)), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(LONG_POLL), JogReply(Pressed({Button::Circle}), 127, 0));
 
   // An aborted 43h still enters config mode, if the parameter byte was sent.
@@ -294,15 +294,18 @@ TEST_F(JogConTest, SetMode)
   ToggleMode();
   EXPECT_TRUE(ModeLED());
 
-  // Values other than 00h/01h are ignored. Toggling the mode left config mode, so enter it again.
-  EnterConfigMode();
+  // Values other than 00h/01h are ignored. Toggling the mode stayed in config mode.
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x02, 0x00)), ANALOG_CONFIG_REPLY);
   EXPECT_TRUE(ModeLED());
 
-  // Current behaviour: switching to digital mode also leaves config mode, and 43h isn't available to get back.
+  // Switching to digital mode stays in config mode, with the full reply, and 43h leaves it.
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x00, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_FALSE(ModeLED());
+  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(NO_BUTTONS));
+  ExitConfigMode();
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
+
+  // 43h can't enter config mode from digital mode.
   EXPECT_EQ(Transfer({0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
   m_jogcon.ResetTransferState();
 }
@@ -476,12 +479,16 @@ TEST_F(JogConTest, ModeButton)
   m_jogcon.ResetTransferState();
   EXPECT_FALSE(ModeLED());
 
-  // Switching modes in config mode leaves it.
+  // Switching modes in config mode stays in it.
   ToggleMode();
   EnterConfigMode();
   ToggleMode();
   ToggleMode();
-  EXPECT_EQ(Transfer(LONG_POLL), JogReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(NO_BUTTONS));
+  ToggleMode();
+  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(NO_BUTTONS));
+  ExitConfigMode();
+  EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 }
 
 TEST_F(JogConTest, SaveState)
