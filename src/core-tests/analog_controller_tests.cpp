@@ -273,16 +273,16 @@ TEST_F(AnalogControllerTest, SetAnalogMode)
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   EXPECT_EQ(get_mode(), 0x00);
 
-  // 00h/01h set the mode, and 02h/03h the lock. Other values are ignored.
+  // 00h/01h set the mode, other values are ignored.
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x03)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(get_mode(), 0x01);
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x02, 0x04)), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x02, 0x03)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(get_mode(), 0x01);
-  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0xFF, 0x00)), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0xFF, 0x03)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(get_mode(), 0x01);
 
-  // Still locked.
+  // Locked.
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   ToggleAnalog();
   EXPECT_TRUE(AnalogLED());
@@ -297,6 +297,23 @@ TEST_F(AnalogControllerTest, SetAnalogMode)
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
   ToggleAnalog();
   EXPECT_TRUE(AnalogLED());
+}
+
+TEST_F(AnalogControllerTest, SetAnalogModeLock)
+{
+  // 00h-02h unlock and 03h locks, higher values act as the low two bits.
+  for (const auto [lock, locked] :
+       {std::pair<u8, bool>{0x00, false}, std::pair<u8, bool>{0x01, false}, std::pair<u8, bool>{0x02, false},
+        std::pair<u8, bool>{0x03, true}, std::pair<u8, bool>{0x04, false}, std::pair<u8, bool>{0x07, true},
+        std::pair<u8, bool>{0xFC, false}, std::pair<u8, bool>{0xFF, true}})
+  {
+    m_controller.Reset();
+    EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
+    EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, lock)), ANALOG_CONFIG_REPLY);
+    EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+    ToggleAnalog();
+    EXPECT_EQ(AnalogLED(), locked) << "lock 0x" << std::hex << u32(lock);
+  }
 }
 
 TEST_F(AnalogControllerTest, SetAnalogModeResetsRumble)

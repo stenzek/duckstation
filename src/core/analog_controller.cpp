@@ -635,8 +635,8 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       {
         DEV_LOG("analog mode lock 0x{:02x}", data_in);
 
-        if (data_in == 0x02 || data_in == 0x03)
-          m_analog_locked = (data_in == 0x03);
+        // 00h-02h unlock, 03h locks, and higher values are masked.
+        m_analog_locked = ((data_in & 0x03) == 0x03);
       }
     }
     break;
