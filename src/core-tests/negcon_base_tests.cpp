@@ -464,13 +464,12 @@ TEST_F(NeGconRumbleTest, ConfigMode)
 
 TEST_F(NeGconRumbleTest, RejectedBytes)
 {
-  ExpectRejectedBytes(m_rumble, {0x00, 0x40, 0x44, 0x45, 0x46, 0x47, 0x4C, 0x4D, 0x53}, 0xFF, POLL,
+  // The ID byte is still sent for other commands, but not ACKed.
+  ExpectRejectedBytes(m_rumble, {0x00, 0x40, 0x44, 0x45, 0x46, 0x47, 0x4C, 0x4D, 0x53}, 0x41, POLL,
                       PollReply(NO_BUTTONS));
 
-  // Current behaviour: the other config mode commands aren't answered.
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
-  ExpectRejectedBytes(m_rumble, {0x00, 0x40, 0x41, 0x48, 0x49, 0x4A, 0x4B, 0x4E, 0x4F}, 0xFF, LONG_POLL,
-                      RumbleConfigPollReply(NO_BUTTONS));
+  ExpectRejectedBytes(m_rumble, {0x00, 0x3F, 0x50, 0x53}, 0xF3, LONG_POLL, RumbleConfigPollReply(NO_BUTTONS));
 }
 
 TEST_F(NeGconRumbleTest, ResetTransferState)
@@ -510,12 +509,13 @@ TEST_F(NeGconRumbleTest, SetAnalogModeLock)
   ToggleAnalog();
   EXPECT_TRUE(ModeLED());
 
-  // Current behaviour: lock values other than 02h/03h are ignored, rather than masked.
+  // 00h-02h unlock and 03h locks, higher values act as the low two bits.
   // Toggling in DualShock mode clears the status byte, until config mode is entered again.
   u8 status = 0x5A;
   for (const auto [lock, locked] :
-       {std::pair<u8, bool>{0x00, true}, std::pair<u8, bool>{0x02, false}, std::pair<u8, bool>{0x07, false},
-        std::pair<u8, bool>{0x03, true}, std::pair<u8, bool>{0x01, true}})
+       {std::pair<u8, bool>{0x00, false}, std::pair<u8, bool>{0x03, true}, std::pair<u8, bool>{0x01, false},
+        std::pair<u8, bool>{0x02, false}, std::pair<u8, bool>{0x04, false}, std::pair<u8, bool>{0x07, true},
+        std::pair<u8, bool>{0xFC, false}, std::pair<u8, bool>{0xFF, true}})
   {
     EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), WithStatus(RumbleReply(NO_BUTTONS), status)) << u32(lock);
     EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, lock)), ANALOG_CONFIG_REPLY);
@@ -564,12 +564,21 @@ TEST_F(NeGconRumbleTest, ConfigTables)
     {0x46, 0x02, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}, {0x47, 0x00, {0x00, 0x00, 0x02, 0x00, 0x01, 0x00}},
     {0x47, 0x01, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}, {0x4C, 0x00, {0x00, 0x00, 0x00, 0x04, 0x00, 0x00}},
     {0x4C, 0x01, {0x00, 0x00, 0x00, 0x02, 0x00, 0x00}}, {0x4C, 0x02, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
+    {0x48, 0x00, {0x00, 0x00, 0x00, 0x00, 0x01, 0x00}}, {0x48, 0x01, {0x00, 0x00, 0x00, 0x00, 0x01, 0x00}},
+    {0x48, 0x02, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}, {0x48, 0xFF, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
   };
   for (const auto& c : cases)
   {
     EXPECT_EQ(Transfer(ConfigCommand(c.command, c.param)),
               ConfigReply({c.reply[0], c.reply[1], c.reply[2], c.reply[3], c.reply[4], c.reply[5]}))
       << std::hex << u32(c.command) << " " << u32(c.param);
+  }
+
+  // The DualShock 2 and unused commands only return zeros, whatever is sent.
+  for (const u8 command : {0x40, 0x41, 0x49, 0x4A, 0x4B, 0x4E, 0x4F})
+  {
+    EXPECT_EQ(Transfer({0x01, command, 0x00, 0x01, 0xFF, 0x02, 0x03, 0x04, 0xFF}), ConfigReply({}))
+      << "command 0x" << std::hex << u32(command);
   }
 }
 
@@ -583,9 +592,9 @@ TEST_F(NeGconRumbleTest, MapMotors)
   EXPECT_EQ(Transfer(MapMotorsCommand({0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x00})),
             ConfigReply({0x00, 0x01, 0x02, 0x03, 0x04, 0x05}));
 
-  // The last bytes work, and unmapping stops the motors.
+  // The last bytes work, and unmapping stops the motors. In digital mode the reply is lengthened to include them.
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), (std::vector<u8>{0xFF, 0x43, 0x5A, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}));
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00})),
             ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
@@ -652,15 +661,25 @@ TEST_F(NeGconRumbleTest, DualShockRumble_DigitalMode)
   EXPECT_EQ(SmallMotor(), 1.0f);
   EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
 
-  // Current behaviour: mapping a motor past the second byte doesn't lengthen the reply, so it can't be used.
+  // Mapping a motor past the second byte lengthens the reply, to include it.
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00}, 5)), PollReply(NO_BUTTONS));
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF})),
             ConfigReply({0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(SmallMotor(), 0.0f);
-  EXPECT_EQ(Transfer(RumblePoll({0x01, 0x01}, 5)), PollReply(NO_BUTTONS));
-  EXPECT_EQ(SmallMotor(), 0.0f);
+  EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00, 0x01}, 7)), (std::vector<u8>{0xFF, 0x42, 0x5A, 0xFF, 0xFF, 0x00, 0x00}));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+
+  // Including 43h outside config mode.
+  EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x01, 0x00, 0x00, 0x00}),
+            (std::vector<u8>{0xFF, 0x42, 0x5A, 0xFF, 0xFF, 0x00, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01})),
+            ConfigReply({0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00, 0x00, 0x00, 0x00, 0xFF})),
+            (std::vector<u8>{0xFF, 0x43, 0x5A, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}));
+  EXPECT_EQ(LargeMotor(), 1.0f);
 }
 
 TEST_F(NeGconRumbleTest, LegacyRumble)
@@ -776,14 +795,13 @@ TEST_F(NeGconRumbleTest, Reset)
   EXPECT_FALSE(ModeLED());
 }
 
-TEST_F(NeGconRumbleTest, Reset_KeepsLock)
+TEST_F(NeGconRumbleTest, Reset_ClearsLock)
 {
-  // Current behaviour: the lock survives a reset.
   EnterAnalogMode(m_rumble);
   m_rumble.Reset();
   EXPECT_FALSE(ModeLED());
   ToggleAnalog();
-  EXPECT_FALSE(ModeLED());
+  EXPECT_TRUE(ModeLED());
 }
 
 TEST_F(NeGconRumbleTest, DisableSOCD)

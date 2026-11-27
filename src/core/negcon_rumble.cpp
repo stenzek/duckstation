@@ -43,6 +43,7 @@ void NeGconRumble::Reset()
   m_rx_buffer.fill(0x00);
   m_tx_buffer.fill(0x00);
   m_analog_mode = false;
+  m_analog_locked = false;
   m_configuration_mode = false;
 
   for (u32 i = 0; i < NUM_MOTORS; i++)
@@ -238,7 +239,15 @@ u8 NeGconRumble::GetResponseNumHalfwords() const
   if (m_configuration_mode || m_analog_mode)
     return 0x3;
 
-  return (0x1);
+  // Actuators mapped past the first two motor bytes extend the reply in digital mode, to include the halfword
+  // with that byte. The motor bytes start at the third byte after the command.
+  for (u32 i = static_cast<u32>(m_rumble_config.size()) - 1; i >= 2; i--)
+  {
+    if (m_rumble_config[i] < NUM_MOTORS)
+      return static_cast<u8>((i + 2) / 2);
+  }
+
+  return 0x1;
 }
 
 u8 NeGconRumble::GetModeID() const
@@ -343,12 +352,29 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         m_rumble_config_large_motor_index = -1;
         m_rumble_config_small_motor_index = -1;
       }
+      else if (m_configuration_mode && data_in == 0x48)
+      {
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::Command48;
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      }
+      else if (m_configuration_mode && (data_in == 0x40 || data_in == 0x41 || (data_in >= 0x49 && data_in <= 0x4B) ||
+                                        data_in == 0x4E || data_in == 0x4F))
+      {
+        // DualShock 2 and unused commands, these only return zeros on PSX pads.
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::UnusedConfig;
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      }
       else
       {
         if (m_configuration_mode)
           ERROR_LOG("Unimplemented config mode command 0x{:02X}", data_in);
 
-        *data_out = 0xFF;
+        // The ID is sent while the command byte is received, so it's still there for unknown commands.
+        *data_out = GetIDByte();
         return false;
       }
     }
@@ -516,8 +542,8 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
       {
         DEV_LOG("analog mode lock 0x{:02x}", data_in);
 
-        if (data_in == 0x02 || data_in == 0x03)
-          m_analog_locked = (data_in == 0x03);
+        // 00h-02h unlock, 03h locks, and higher values are masked.
+        m_analog_locked = ((data_in & 0x03) == 0x03);
       }
     }
     break;
@@ -571,6 +597,18 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         else if (data_in == 0x01)
           m_tx_buffer[5] = 0x02;
       }
+    }
+    break;
+
+    case Command::Command48:
+    {
+      if (m_command_step == 2 && data_in <= 0x01)
+        m_tx_buffer[6] = 0x01;
+    }
+    break;
+
+    case Command::UnusedConfig:
+    {
     }
     break;
 
