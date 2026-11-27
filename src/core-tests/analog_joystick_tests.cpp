@@ -100,20 +100,27 @@ TEST_F(AnalogJoystickTest, DigitalModePoll)
   Press(Button::Mode);
   EXPECT_FALSE(ModeLED());
   Press(Button::Square);
+  Press(Button::L3);
+  Press(Button::R3);
   SetHalfAxis(HalfAxis::LRight, 1.0f);
 
-  // Digital mode stops after the buttons.
+  // Digital mode stops after the buttons, and doesn't send L3/R3.
   EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Square})));
+  EXPECT_EQ(m_joystick.GetBindState(static_cast<u32>(Button::L3)), 1.0f);
 
   // Analog mode comes back on reset.
   m_joystick.Reset();
   EXPECT_TRUE(ModeLED());
-  EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(Pressed({Button::Square}), 0x7F, 0x7F, 0xFF, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL),
+            JoystickReply(Pressed({Button::Square, Button::L3, Button::R3}), 0x7F, 0x7F, 0xFF, 0x7F));
 }
 
 TEST_F(AnalogJoystickTest, RejectedBytes)
 {
-  ExpectRejectedBytes(m_joystick, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0xFF, LONG_POLL, JoystickReply(NO_BUTTONS));
+  // The ID byte is still sent for other commands, but not ACKed.
+  ExpectRejectedBytes(m_joystick, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x53, LONG_POLL, JoystickReply(NO_BUTTONS));
+  Press(Button::Mode);
+  ExpectRejectedBytes(m_joystick, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x41, POLL, PollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogJoystickTest, ResetTransferState)
@@ -260,9 +267,9 @@ TEST_F(AnalogJoystickTest, StickDeadzone)
   SetHalfAxis(HalfAxis::LRight, 0.2f);
   EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(NO_BUTTONS));
 
-  // Current behaviour: leaving it through one axis leaves the other one centred, until it changes.
+  // Leaving it through one axis restores the other one.
   SetHalfAxis(HalfAxis::LRight, 0.5f);
-  EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA1));
   SetHalfAxis(HalfAxis::LDown, 0.21f);
   EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
 
