@@ -58,7 +58,7 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
   u16 irq_first_line = m_irq_first_line;
   u16 irq_last_line = m_irq_last_line;
   u16 irq_tick = m_irq_tick;
-  bool shoot_offscreen = m_shoot_offscreen;
+  u8 shoot_offscreen = m_shoot_offscreen;
   bool position_valid = m_position_valid;
 
   sw.Do(&irq_first_line);
@@ -293,20 +293,20 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Integer, "FirstLineOffset", TRANSLATE_NOOP("Justifier", "Line Start Offset"),
    TRANSLATE_NOOP("Justifier",
                   "Offset applied to lightgun vertical position that the Justifier will first trigger on."),
-   "-12", "-128", "127", "1", "%u", nullptr, 0.0f},
+   "-12", "-128", "127", "1", "%d", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "LastLineOffset", TRANSLATE_NOOP("Justifier", "Line End Offset"),
    TRANSLATE_NOOP("Justifier", "Offset applied to lightgun vertical position that the Justifier will last trigger on."),
-   "-6", "-128", "127", "1", "%u", nullptr, 0.0f},
+   "-6", "-128", "127", "1", "%d", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "TickOffset", TRANSLATE_NOOP("Justifier", "Tick Offset"),
    TRANSLATE_NOOP("Justifier", "Offset applied to lightgun horizontal position that the Justifier will trigger on."),
-   "50", "-1000", "1000", "1", "%u", nullptr, 0.0f},
+   "50", "-1000", "1000", "1", "%d", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "OffscreenOOBFrames", TRANSLATE_NOOP("Justifier", "Off-Screen Out-Of-Bounds Frames"),
    TRANSLATE_NOOP("Justifier", "Number of frames that the Justifier is pointed out-of-bounds for an off-screen shot."),
    "5", "0", "80", "1", "%u", nullptr, 0.0f},
   {SettingInfo::Type::Integer, "OffscreenTriggerFrames", TRANSLATE_NOOP("Justifier", "Off-Screen Trigger Frames"),
    TRANSLATE_NOOP("Justifier", "Number of frames that the trigger is held for an off-screen shot."), "5", "0", "80",
    "1", "%u", nullptr, 0.0f},
-  {SettingInfo::Type::Integer, "OffscreenReleaseFrames", TRANSLATE_NOOP("Justifier", "Off-Screen Trigger Frames"),
+  {SettingInfo::Type::Integer, "OffscreenReleaseFrames", TRANSLATE_NOOP("Justifier", "Off-Screen Release Frames"),
    TRANSLATE_NOOP("Justifier", "Number of frames that the Justifier is pointed out-of-bounds after the trigger is "
                                "released, for an off-screen shot."),
    "5", "0", "80", "1", "%u", nullptr, 0.0f},
@@ -343,6 +343,6 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
     static_cast<s8>(std::clamp<int>(si.GetIntValue(section, "OffscreenReleaseFrames", DEFAULT_OFFSCREEN_RELEASE_FRAMES),
                                     std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
   m_offscreen_oob_frames = offscreen_oob_frames + offscreen_trigger_frames + offscreen_release_frames;
-  m_offscreen_trigger_frames = m_offscreen_oob_frames - offscreen_trigger_frames;
-  m_offscreen_release_frames = m_offscreen_trigger_frames - offscreen_release_frames;
+  m_offscreen_trigger_frames = m_offscreen_oob_frames - offscreen_oob_frames;
+  m_offscreen_release_frames = m_offscreen_trigger_frames - offscreen_trigger_frames;
 }

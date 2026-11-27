@@ -418,8 +418,8 @@ TEST(Justifier, ShootOffscreen)
   }
   EXPECT_EQ(TransferCommand(*justifier, POLL), JustifierReply(NO_BUTTONS));
 
-  // Current behaviour: the settings don't match their descriptions. The trigger frames are spent before the trigger
-  // is pulled, it's held for the release frames, and the out-of-bounds frames come after it's released.
+  // Out of bounds for the out-of-bounds frames, then the trigger is held for the trigger frames, and released for the
+  // release frames.
   INISettingsInterface si;
   si.SetIntValue("Pad1", "OffscreenOOBFrames", 1);
   si.SetIntValue("Pad1", "OffscreenTriggerFrames", 2);
@@ -429,7 +429,7 @@ TEST(Justifier, ShootOffscreen)
   PressBinding(*short_justifier, offscreen);
   for (u32 poll = 1; poll <= 7; poll++)
   {
-    const bool pressed = (poll >= 3 && poll <= 5);
+    const bool pressed = (poll >= 2 && poll <= 3);
     EXPECT_EQ(TransferCommand(*short_justifier, POLL),
               JustifierReply(pressed ? Low(JUSTIFIER_TRIGGER_BIT) : NO_BUTTONS))
       << poll;
@@ -443,6 +443,17 @@ TEST(Justifier, MemberDefaults)
   justifier.SetBindState(static_cast<u32>(Justifier::Binding::ShootOffscreen), 1.0f);
   for (u32 poll = 1; poll <= 16; poll++)
     EXPECT_EQ(TransferCommand(justifier, POLL), JustifierReply(NO_BUTTONS)) << poll;
+}
+
+TEST(Justifier, Settings)
+{
+  ExpectSignedIntegerFormats(Justifier::INFO);
+
+  for (const SettingInfo& si : Justifier::INFO.settings)
+  {
+    if (std::string_view(si.name) == "OffscreenReleaseFrames")
+      EXPECT_EQ(std::string_view(si.display_name), "Off-Screen Release Frames");
+  }
 }
 
 TEST(Justifier, SaveState)
@@ -464,8 +475,7 @@ TEST(Justifier, SaveState)
     EXPECT_EQ(TransferCommand(*loaded, POLL), JustifierReply(Low(JUSTIFIER_START_BIT)));
   }
 
-  // Current behaviour: the off-screen countdown is saved as a bool, so after loading it only has one frame left and
-  // the trigger is never pulled.
+  // The off-screen countdown continues after loading.
   justifier->SetBindState(static_cast<u32>(Justifier::Binding::Start), 0.0f);
   justifier->SetBindState(static_cast<u32>(Justifier::Binding::ShootOffscreen), 1.0f);
   for (u32 poll = 1; poll <= 3; poll++)
@@ -475,7 +485,11 @@ TEST(Justifier, SaveState)
     const auto loaded = MakeJustifier();
     LoadState(*loaded, state, true);
     for (u32 poll = 4; poll <= 16; poll++)
-      EXPECT_EQ(TransferCommand(*loaded, POLL), JustifierReply(NO_BUTTONS)) << poll;
+    {
+      const bool pressed = (poll >= 6 && poll <= 10);
+      EXPECT_EQ(TransferCommand(*loaded, POLL), JustifierReply(pressed ? Low(JUSTIFIER_TRIGGER_BIT) : NO_BUTTONS))
+        << poll;
+    }
 
     // It's over, so a new shot works.
     loaded->SetBindState(static_cast<u32>(Justifier::Binding::ShootOffscreen), 1.0f);
